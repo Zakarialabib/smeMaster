@@ -1,10 +1,10 @@
 export interface Invoice {
   id: string;
   company_id: string;
-  contact_id: string | null;
+  client_id: string;
   document_type: 'invoice' | 'delivery_bill' | 'shipping_print';
   invoice_number: string;
-  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  status: 'draft' | 'sent' | 'paid' | 'partial' | 'cancelled';
   issue_date: number;
   due_date: number | null;
   currency: string;
@@ -21,12 +21,14 @@ export interface Invoice {
 export interface InvoiceItem {
   id: string;
   invoice_id: string;
+  item_id: string | null;
   description: string;
-  quantity: number;
+  qty: number;
+  unit: string;
   unit_price: number;
   tax_rate: number;
   tax_amount: number;
-  total_amount: number;
+  line_total: number;
   sort_order: number;
   created_at: number;
 }
@@ -36,9 +38,48 @@ export interface InvoiceWithItems {
   items: InvoiceItem[];
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  tax_id: string | null;
+  role: 'customer' | 'supplier' | 'both';
+  credit_limit: number;
+  payment_terms: number;
+  notes: string | null;
+  created_at: number;
+  updated_at: number;
+  deleted_at: number | null;
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'product' | 'service';
+  sku: string | null;
+  category_id: string | null;
+  unit: string;
+  buy_price: number;
+  sell_price: number;
+  stock_qty: number;
+  stock_alert: number;
+  tax_rate: number;
+  barcode: string | null;
+  image_url: string | null;
+  active: number;
+  company_id: string;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface CreateInvoiceRequest {
   companyId: string;
-  contactId?: string | null;
+  clientId: string;
   documentType: 'invoice' | 'delivery_bill' | 'shipping_print';
   invoiceNumber: string;
   issueDate: number;
@@ -47,9 +88,10 @@ export interface CreateInvoiceRequest {
   notes?: string | null;
   itemsReq: Array<{
     description: string;
-    quantity: number;
-    unit_price: number;
-    tax_rate: number;
-    sort_order: number;
+    qty: number;
+    unit: string;
+    unitPrice: number;
+    taxRate: number;
+    sortOrder: number;
   }>;
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Building2, Save, BadgeCheck } from "lucide-react";
+import { Save } from "lucide-react";
 import { Button } from "@shared/components/ui/Button";
 import { SettingsSection, SettingsRow } from "@shared/components/settings";
 import { getCompany, updateCompany } from "@shared/services/db/db-invoke";
@@ -10,7 +9,6 @@ const inputClass =
   "w-full px-3 py-2 rounded-lg border border-border-primary bg-bg-secondary text-text-primary text-sm focus:ring-1 focus:ring-accent/30 focus:outline-none transition-colors";
 
 export default function BusinessProfileTab() {
-  const { t } = useTranslation();
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
