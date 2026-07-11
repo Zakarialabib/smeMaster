@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -42,7 +42,7 @@ function formatTooltipLabel(val: string): string {
   return val;
 }
 
-export function ContactGrowthWidget() {
+export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   const [data, setData] = useState<DashboardTimeSeries[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,10 +76,16 @@ export function ContactGrowthWidget() {
     return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
   }
 
+  const weeks = Math.max(1, Math.round(rangeDays / 7));
+  const visible = useMemo(
+    () => data.slice(-Math.min(weeks, data.length)),
+    [data, weeks],
+  );
+
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <WidgetHeader icon={<TrendingUp size={16} />} title="Contact Growth (12w)" />
+        <WidgetHeader icon={<TrendingUp size={16} />} title={`Contact Growth (${weeks}w)`} />
         <div className="flex items-center gap-0.5 bg-bg-tertiary rounded-lg p-0.5">
           <button
             onClick={() => setChartMode("area")}
@@ -107,7 +113,7 @@ export function ContactGrowthWidget() {
           </button>
         </div>
       </div>
-      {data.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <TrendingUp className="w-8 h-8 text-text-tertiary mb-2" />
           <p className="text-sm text-text-tertiary font-medium">No growth data</p>
@@ -117,7 +123,7 @@ export function ContactGrowthWidget() {
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
             {chartMode === "area" ? (
-              <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+              <AreaChart data={visible} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <defs>
                   <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.3} />
@@ -153,7 +159,7 @@ export function ContactGrowthWidget() {
                 />
               </AreaChart>
             ) : (
-              <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+              <BarChart data={visible} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-primary)" />
                 <XAxis
                   dataKey="date"

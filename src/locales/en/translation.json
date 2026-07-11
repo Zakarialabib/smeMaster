@@ -1159,7 +1159,8 @@
     "unlock": "Unlock"
   },
   "dashboard": {
-    "title": "Business",
+    "title": "Dashboard",
+    "description": "Track your business metrics, monitor compliance, and stay on top of upcoming work.",
     "compliancePending": "Compliance checks pending",
     "recentVaultActivity": "Recent vault activity",
     "upcomingCampaigns": "Upcoming campaigns",
@@ -1170,13 +1171,28 @@
     "noUpcomingCampaigns": "No upcoming campaigns",
     "noFollowUps": "No follow-up reminders",
     "noBackupScheduled": "No backup scheduled",
-    "description": "Track your business metrics, monitor compliance, and stay on top of upcoming work.",
     "emptyTitle": "Welcome to Your Dashboard",
     "emptySubtitle": "As you use the app, your key metrics, upcoming campaigns, and follow-up reminders will appear here.",
     "customize": "Customize",
+    "customizeWidgets": "Customize widgets",
     "heroTotalContacts": "Total Contacts",
-    "heroTrendLabel": "vs last 12 weeks",
-    "customizeWidgets": "Customize widgets"
+    "heroNewContacts": "New Contacts",
+    "heroTasksDue": "Tasks Due",
+    "heroOverdue": "Overdue",
+    "heroCampaigns": "Campaigns",
+    "heroTrendLabel": "vs previous period",
+    "range": "Range",
+    "density": "Density",
+    "autoRefresh": "Auto-refresh",
+    "refresh": "Refresh",
+    "updatedSeconds": "Updated {{n}}s ago",
+    "updatedMinutes": "Updated {{n}}m ago",
+    "updatedHours": "Updated {{n}}h ago",
+    "businessHealth": {
+      "title": "Business Health",
+      "nextBackup": "Next backup",
+      "notScheduled": "Not scheduled"
+    }
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
