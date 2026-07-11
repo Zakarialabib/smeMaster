@@ -175,7 +175,6 @@ pub fn generate_invoice_pdf(
             left,
             current_y,
         );
-        current_y -= 13.0;
     }
 
     // ─── Separator line ─────────────────────────────────────────────────

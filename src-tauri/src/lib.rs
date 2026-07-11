@@ -33,6 +33,7 @@ pub mod orchestrator;
 mod invoicing;
 mod services;
 mod platform;
+mod pos;
 #[cfg(target_os = "android")]
 mod android;
 mod assets;
