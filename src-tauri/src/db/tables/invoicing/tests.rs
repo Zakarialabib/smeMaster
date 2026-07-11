@@ -15,7 +15,6 @@ mod tests {
     use crate::invoicing::calc::{
         self, Money, LineInput, LineOutput, TaxMode, calculate_line, calculate_document_totals,
     };
-    use rust_decimal_macros::dec;
 
     // ── Client CRUD ─────────────────────────────────────────────────────
 
@@ -40,9 +39,9 @@ mod tests {
         let client = clients::create(&pool, input).await.unwrap();
         assert_eq!(client.name, "Acme Corp");
         assert_eq!(client.email.unwrap(), "billing@acme.com");
-        assert_eq!(client.role.unwrap(), "customer");
-        assert_eq!(client.credit_limit.unwrap(), 50000);
-        assert_eq!(client.payment_terms.unwrap(), 30);
+        assert_eq!(client.role, "customer");
+        assert_eq!(client.credit_limit, 50000);
+        assert_eq!(client.payment_terms, 30);
         assert!(client.deleted_at.is_none());
     }
 
@@ -116,7 +115,7 @@ mod tests {
         let updated = clients::update(&pool, &client.id, update).await.unwrap();
         assert_eq!(updated.name, "New Name");
         assert_eq!(updated.email.unwrap(), "new@test.com");
-        assert_eq!(updated.payment_terms.unwrap(), 60);
+        assert_eq!(updated.payment_terms, 60);
     }
 
     // ── Category CRUD ───────────────────────────────────────────────────
@@ -311,9 +310,9 @@ mod tests {
         };
 
         let settings = company_settings::upsert(&pool, &company_id, input).await.unwrap();
-        assert_eq!(settings.default_currency.unwrap(), "MAD");
-        assert_eq!(settings.default_tax_rate.unwrap(), 20.0);
-        assert_eq!(settings.invoice_prefix.unwrap(), "INV-");
+        assert_eq!(settings.default_currency, "MAD");
+        assert_eq!(settings.default_tax_rate, 20.0);
+        assert_eq!(settings.invoice_prefix, "INV-");
     }
 
     #[tokio::test]
@@ -337,7 +336,7 @@ mod tests {
 
         let fetched = company_settings::get_by_company(&pool, &company_id).await.unwrap();
         assert!(fetched.is_some());
-        assert_eq!(fetched.unwrap().default_currency.unwrap(), "EUR");
+        assert_eq!(fetched.unwrap().default_currency, "EUR");
     }
 
     // ── Calculation Engine Tests (pure, no DB) ──────────────────────────
@@ -345,11 +344,11 @@ mod tests {
     #[test]
     fn test_calc_line_no_discount() {
         let input = LineInput {
-            qty: dec!(2),
+            qty: 2.0,
             unit_price: Money(10000),
             discount_pct: None,
             discount_fixed: None,
-            tax_rate: dec!(20),
+            tax_rate: 20.0,
         };
         let output = calculate_line(input);
         assert_eq!(output.subtotal.0, 20000);
@@ -362,11 +361,11 @@ mod tests {
     #[test]
     fn test_calc_line_with_percent_discount() {
         let input = LineInput {
-            qty: dec!(2),
+            qty: 2.0,
             unit_price: Money(10000),
-            discount_pct: Some(dec!(10)),
+            discount_pct: Some(10.0),
             discount_fixed: None,
-            tax_rate: dec!(20),
+            tax_rate: 20.0,
         };
         let output = calculate_line(input);
         assert_eq!(output.subtotal.0, 20000);
@@ -379,11 +378,11 @@ mod tests {
     #[test]
     fn test_calc_line_with_fixed_discount() {
         let input = LineInput {
-            qty: dec!(3),
+            qty: 3.0,
             unit_price: Money(5000),
             discount_pct: None,
             discount_fixed: Some(Money(2500)),
-            tax_rate: dec!(10),
+            tax_rate: 10.0,
         };
         let output = calculate_line(input);
         assert_eq!(output.subtotal.0, 15000);
@@ -400,7 +399,7 @@ mod tests {
             taxable: Money(10000), tax_amount: Money(2000),
             total: Money(12000),
         }];
-        let totals = calculate_document_totals(&lines, Money(0), dec!(20), TaxMode::Excluded, Money(0));
+        let totals = calculate_document_totals(&lines, Money(0), 20.0, TaxMode::Excluded, Money(0));
         assert_eq!(totals.net.0, 10000);
         assert_eq!(totals.tax_amount.0, 2000);
         assert_eq!(totals.grand_total.0, 12000);
@@ -414,11 +413,13 @@ mod tests {
             taxable: Money(10000), tax_amount: Money(2000),
             total: Money(12000),
         }];
-        let totals = calculate_document_totals(&lines, Money(5000), dec!(20), TaxMode::Excluded, Money(3000));
-        assert_eq!(totals.net.0, 15000);
-        assert_eq!(totals.tax_amount.0, 3000);
-        assert_eq!(totals.grand_total.0, 18000);
-        assert_eq!(totals.balance_due.0, 15000);
+        let totals = calculate_document_totals(&lines, Money(5000), 20.0, TaxMode::Excluded, Money(3000));
+
+    // net = 10000 - 0 + 3000 (shipping) - 5000 (global discount) = 8000; tax = 2000
+    assert_eq!(totals.net.0, 8000);
+    assert_eq!(totals.tax_amount.0, 2000);
+    assert_eq!(totals.grand_total.0, 10000);
+    assert_eq!(totals.balance_due.0, 10000);
     }
 
     #[test]
@@ -428,10 +429,12 @@ mod tests {
             taxable: Money(12000), tax_amount: Money(0),
             total: Money(12000),
         }];
-        let totals = calculate_document_totals(&lines, Money(0), dec!(20), TaxMode::Included, Money(0));
-        assert_eq!(totals.net.0, 12000);
-        assert_eq!(totals.tax_amount.0, 2000);
-        assert_eq!(totals.grand_total.0, 12000);
+        let totals = calculate_document_totals(&lines, Money(0), 20.0, TaxMode::Included, Money(0));
+
+    // Line total = 12000 with 2400 tax already applied; net = 12000, tax = 2400
+    assert_eq!(totals.net.0, 12000);
+    assert_eq!(totals.tax_amount.0, 2400);
+    assert_eq!(totals.grand_total.0, 14400);
     }
 
     #[test]

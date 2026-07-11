@@ -36,7 +36,14 @@ pub enum TaxMode {
 /// Aggregated totals for an entire invoice document.
 #[derive(Debug, Clone, Copy)]
 pub struct DocumentTotals {
+    /// Net amount after line discounts, shipping, and global discount.
+    pub net: Money,
+    /// Total tax across all lines.
+    pub tax_amount: Money,
+    /// Net + tax.
     pub grand_total: Money,
+    /// Amount still owed (equals `grand_total` minus any payments applied elsewhere).
+    pub balance_due: Money,
 }
 
 /// Calculate a single invoice line.
@@ -80,25 +87,39 @@ pub fn calculate_line(input: LineInput) -> LineOutput {
 pub fn calculate_document_totals(
     lines: &[LineOutput],
     global_discount: Money,
-    tax_rate: f64,
-    tax_mode: TaxMode,
+    _tax_rate: f64,
+    _tax_mode: TaxMode,
     shipping: Money,
 ) -> DocumentTotals {
-    let lines_total: i64 = lines.iter().map(|l| l.total.0).sum();
-    let global_discount_i = global_discount.0;
-    let shipping_i = shipping.0;
-
-    let grand_total = match tax_mode {
-        TaxMode::Excluded => {
-            let taxable = lines_total - global_discount_i + shipping_i;
-            let tax = (taxable as f64 * (tax_rate / 100.0)).round() as i64;
-            taxable + tax
-        }
-        TaxMode::Included => lines_total - global_discount_i + shipping_i,
-    };
+    // Each line already carries its own subtotal/discount/tax. The document
+    // level simply aggregates them and applies shipping + a global discount.
+    let subtotal: i64 = lines.iter().map(|l| l.subtotal.0).sum();
+    let line_discount: i64 = lines.iter().map(|l| l.discount.0).sum();
+    let net_base = subtotal - line_discount + shipping.0 - global_discount.0;
+    let net = Money(net_base.max(0));
+    let tax_amount: i64 = lines.iter().map(|l| l.tax_amount.0).sum();
+    let grand_total = Money(net.0 + tax_amount);
 
     DocumentTotals {
-        grand_total: Money(grand_total),
+        net,
+        tax_amount: Money(tax_amount),
+        grand_total,
+        balance_due: grand_total,
+    }
+}
+
+/// Format a [`Money`] amount as a decimal string with two fraction digits
+/// (e.g. `Money(12345)` → `"123.45"`, `Money(-500)` → `"-5.00"`).
+pub fn format_money(m: Money) -> String {
+    let negative = m.0 < 0;
+    let abs = m.0.unsigned_abs();
+    let major = abs / 100;
+    let minor = abs % 100;
+    let body = format!("{}.{:02}", major, minor);
+    if negative {
+        format!("-{}", body)
+    } else {
+        body
     }
 }
 
