@@ -39,6 +39,7 @@ pub struct PendingOperation {
     pub next_retry_at: Option<i64>,
     pub error_message: Option<String>,
     pub campaign_id: Option<String>,
+    pub hold_until: Option<i64>,
     pub created_at: i64,
 }
 
@@ -56,6 +57,7 @@ pub struct CleanupRule {
     pub retention_days: Option<i64>,
     pub is_scheduled: i64,
     pub schedule_cron: Option<String>,
+    pub last_run_at: Option<i64>,
     pub next_run_at: Option<i64>,
     pub created_at: i64,
     pub updated_at: i64,

@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-07-11 (evening)
 >
-> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Complete (2026-07-11):** Full billing/ERP suite with 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, and frontend invoke wrappers. Company legal identifiers (ICE/IF/RC/CNSS) for Morocco tax compliance.
+> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Partial (verified 2026-07-11):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. **Frontend UI is stub/thin** (`InvoiceEditor` is non-functional; `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI are missing) and **`db/tables/invoicing/tests.rs` does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`). Campaigns + Mobile are genuinely complete.
 >
 > 🖨️ **POS Hardware Integration — Merged (2026-07-11):** Point-of-Sale module with ESC/POS thermal printer support, system printer fallback, barcode scanner hook, hardware settings tab — merged cleanly via PR #2.
 >
@@ -18,7 +18,7 @@
 >
 > - `npx tsc --noEmit` → **zero errors** ✅
 > - `cargo check` → **zero errors, zero warnings** ✅
-> - `cargo test` → **735/735 passing** ✅
+> - `cargo test` → **735/735 passing** ✅ (note: `src-tauri/src/db/tables/invoicing/tests.rs` currently fails to compile, so the invoicing integration tests are effectively excluded)
 > - `npx vitest run --exclude integration` → **2,470/2,470 passing** ✅
 > - `npx eslint src` → **0 errors, 0 warnings** ✅
 > - `vite build` → **builds clean** ✅
@@ -32,7 +32,7 @@
 
 ### Invoicing Module — Full Billing/ERP (Morocco DGI-Compliant)
 
-Implemented the complete invoicing subsystem per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. All money stored as i64 minor units (centimes), computed with f64 arithmetic.
+Implemented the invoicing **backend** per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. Backend is complete; the **frontend UI is partial** — `InvoiceEditor` is a stub, and `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI are not built. The Rust `db/tables/invoicing/tests.rs` does not compile (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`). All money stored as i64 minor units (centimes), computed with f64 arithmetic.
 
 | Layer              | Details                                                                                                                                                                                                                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ Implemented the complete invoicing subsystem per `docs/06-ROADMAP/smeMaster_Simp
 | **PDF Generator**  | lopdf-based A4 invoice PDF with company header (legal identifiers), client block, line-items table, totals section, footer                                                                                                             |
 | **PEPPOL XML**     | UBL 2.1 compliant XML with ICE/IF/RC identifiers, tax breakdown, monetary totals                                                                                                                                                       |
 | **Tauri Commands** | 24 `db_*` commands: invoices (list/get/get-with-items/create/update/delete/add-item/remove-item/status/calculate/send), clients CRUD, items CRUD, company get/update, document generation                                              |
-| **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, updated `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry                                                                                     |
+| **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry. **Partial:** `InvoiceEditor` is a non-functional stub; `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI and document-send wiring are not built. |
 
 ### POS Hardware Integration — Merged via PR #2
 

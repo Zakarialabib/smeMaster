@@ -2,14 +2,14 @@
   "table": "template_categories",
   "timestamp_fields": [],
   "records": [
-    { "id": "cat-email-followup", "account_id": null, "name": "Follow-Up", "icon": "MailQuestion", "sort_order": 0 },
-    { "id": "cat-email-sales", "account_id": null, "name": "Sales", "icon": "BadgeDollarSign", "sort_order": 0 },
-    { "id": "cat-email-cs", "account_id": null, "name": "Customer Success", "icon": "HeartHandshake", "sort_order": 0 },
-    { "id": "cat-email-internal", "account_id": null, "name": "Internal", "icon": "Building2", "sort_order": 0 },
-    { "id": "cat-email-personal", "account_id": null, "name": "Personal", "icon": "User", "sort_order": 0 },
-    { "id": "cat-campaign-marketing", "account_id": null, "name": "Marketing", "icon": "Megaphone", "sort_order": 0 },
-    { "id": "cat-campaign-sales", "account_id": null, "name": "Sales", "icon": "BadgeDollarSign", "sort_order": 0 },
-    { "id": "cat-campaign-cs", "account_id": null, "name": "Customer Success", "icon": "HeartHandshake", "sort_order": 0 },
-    { "id": "cat-campaign-transactional", "account_id": null, "name": "Transactional", "icon": "Receipt", "sort_order": 0 }
+    { "id": "cat-email-followup", "company_id": "demo-company-1", "name": "Follow-Up", "icon": "MailQuestion", "sort_order": 0 },
+    { "id": "cat-email-sales", "company_id": "demo-company-1", "name": "Sales", "icon": "BadgeDollarSign", "sort_order": 0 },
+    { "id": "cat-email-cs", "company_id": "demo-company-1", "name": "Customer Success", "icon": "HeartHandshake", "sort_order": 0 },
+    { "id": "cat-email-internal", "company_id": "demo-company-1", "name": "Internal", "icon": "Building2", "sort_order": 0 },
+    { "id": "cat-email-personal", "company_id": "demo-company-1", "name": "Personal", "icon": "User", "sort_order": 0 },
+    { "id": "cat-campaign-marketing", "company_id": "demo-company-1", "name": "Marketing", "icon": "Megaphone", "sort_order": 0 },
+    { "id": "cat-campaign-sales", "company_id": "demo-company-1", "name": "Sales", "icon": "BadgeDollarSign", "sort_order": 0 },
+    { "id": "cat-campaign-cs", "company_id": "demo-company-1", "name": "Customer Success", "icon": "HeartHandshake", "sort_order": 0 },
+    { "id": "cat-campaign-transactional", "company_id": "demo-company-1", "name": "Transactional", "icon": "Receipt", "sort_order": 0 }
   ]
 }

@@ -25,6 +25,7 @@ pub mod system_desktop;
 pub mod pos;
 pub mod tasks;
 pub mod updater_commands;
+pub mod onboarding_cmds;
 pub mod workflows;
 
 pub use idle::IdleRegistry;
@@ -171,6 +172,14 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::orchestrator::gating::get_subsystem_status,
             crate::orchestrator::gating::get_tool_state,
             crate::orchestrator::gating::apply_tool_state,
+
+            // === commands::onboarding_cmds (6 commands) ===
+            onboarding_cmds::db_save_onboarding_step,
+            onboarding_cmds::db_get_onboarding_progress,
+            onboarding_cmds::db_seed_demo_preset,
+            onboarding_cmds::db_finalize_onboarding,
+            onboarding_cmds::db_has_email_accounts,
+            onboarding_cmds::db_get_tool_status,
 
             // === pairing (3 commands) ===
             crate::pairing::generate_qr_token,

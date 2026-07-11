@@ -17,8 +17,8 @@ use crate::db::error::AppDbError;
 pub struct TemplateCategory {
     /// Primary key of the category.
     pub id: String,
-    /// Owning account; `None` for global categories.
-    pub account_id: Option<String>,
+    /// Owning company (foreign key to `companies`).
+    pub company_id: String,
     /// Display name of the category.
     pub name: String,
     /// Optional icon identifier.
@@ -38,20 +38,19 @@ pub struct CountRow {
     pub count: i64,
 }
 
-/// List categories visible to an account, including global (NULL account) ones,
-/// ordered by `sort_order` ascending.
+/// List categories belonging to a company, ordered by `sort_order` ascending.
 ///
-/// * `account_id` — account scope; NULL-account rows are always included.
+/// * `company_id` — owning company.
 /// * Returns the matching `TemplateCategory` rows.
 /// * Errors: `AppDbError::Database` on SQL failure.
 pub async fn list(
     pool: &SqlitePool,
-    account_id: &str,
+    company_id: &str,
 ) -> Result<Vec<TemplateCategory>, AppDbError> {
     sqlx::query_as::<_, TemplateCategory>(
-        "SELECT * FROM template_categories WHERE account_id IS NULL OR account_id = ? ORDER BY sort_order ASC",
+        "SELECT * FROM template_categories WHERE company_id = ? ORDER BY sort_order ASC",
     )
-    .bind(account_id)
+    .bind(company_id)
     .fetch_all(pool)
     .await
     .map_err(AppDbError::Database)
@@ -88,11 +87,11 @@ pub async fn create(
     let now = chrono::Utc::now().timestamp();
     sqlx::query_as::<_, TemplateCategory>(
         r#"INSERT INTO template_categories (
-            id, account_id, name, icon, sort_order, is_system, created_at
+            id, company_id, name, icon, sort_order, is_system, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *"#,
     )
     .bind(&id)
-    .bind(&data.account_id)
+    .bind(&data.company_id)
     .bind(&data.name)
     .bind(&data.icon)
     .bind(data.sort_order)
@@ -163,18 +162,18 @@ pub async fn count(pool: &SqlitePool) -> Result<i64, AppDbError> {
 pub async fn insert_ignore(
     pool: &SqlitePool,
     id: &str,
-    account_id: Option<&str>,
+    company_id: &str,
     name: &str,
     icon: Option<&str>,
     sort_order: i64,
 ) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query(
-        r#"INSERT OR IGNORE INTO template_categories (id, account_id, name, icon, sort_order, is_system, created_at)
+        r#"INSERT OR IGNORE INTO template_categories (id, company_id, name, icon, sort_order, is_system, created_at)
         VALUES (?, ?, ?, ?, ?, 0, ?)"#,
     )
     .bind(id)
-    .bind(account_id)
+    .bind(company_id)
     .bind(name)
     .bind(icon)
     .bind(sort_order)
@@ -189,24 +188,24 @@ pub async fn insert_ignore(
 /// already exists (`ON CONFLICT(id) DO UPDATE`).
 ///
 /// * `id` — primary key (used for conflict resolution).
-/// * `account_id` / `name` / `icon` — category fields; `is_system` defaults to 0.
+/// * `company_id` / `name` / `icon` — category fields; `is_system` defaults to 0.
 /// * Returns `()`.
 /// * Errors: `AppDbError::Database` on SQL failure.
 pub async fn upsert(
     pool: &SqlitePool,
     id: &str,
-    account_id: Option<&str>,
+    company_id: &str,
     name: &str,
     icon: Option<&str>,
 ) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query(
-        r#"INSERT INTO template_categories (id, account_id, name, icon, sort_order, is_system, created_at)
+        r#"INSERT INTO template_categories (id, company_id, name, icon, sort_order, is_system, created_at)
         VALUES (?, ?, ?, ?, 0, 0, ?)
         ON CONFLICT(id) DO UPDATE SET name = excluded.name, icon = excluded.icon"#,
     )
     .bind(id)
-    .bind(account_id)
+    .bind(company_id)
     .bind(name)
     .bind(icon)
     .bind(now)
@@ -233,10 +232,10 @@ mod tests {
         pool
     }
 
-    fn make_category(account_id: &str, name: &str) -> TemplateCategory {
+    fn make_category(company_id: &str, name: &str) -> TemplateCategory {
         TemplateCategory {
             id: String::new(),
-            account_id: Some(account_id.to_string()),
+            company_id: company_id.to_string(),
             name: name.to_string(),
             icon: Some("Folder".to_string()),
             sort_order: 0,
@@ -266,13 +265,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_categories_includes_global() {
+    async fn test_list_categories_filters_by_company() {
         let pool = create_test_pool().await;
         helpers::insert_test_account(&pool, "acct_1").await;
-        let mut global = make_category("acct_1", "Global");
-        global.account_id = None;
-        create(&pool, &global).await.unwrap();
-        create(&pool, &make_category("acct_1", "Personal")).await.unwrap();
+        create(&pool, &make_category("acct_1", "Company A")).await.unwrap();
+        create(&pool, &make_category("acct_1", "Company A - Second")).await.unwrap();
         let rows = list(&pool, "acct_1").await.unwrap();
         assert_eq!(rows.len(), 2);
     }

@@ -65,6 +65,7 @@ pub struct Message {
     pub message_id_header: Option<String>,
     pub references_header: Option<String>,
     pub in_reply_to_header: Option<String>,
+    pub unsubscribe_status: Option<String>,
     pub imap_uid: Option<i64>,
     pub imap_folder: Option<String>,
 }

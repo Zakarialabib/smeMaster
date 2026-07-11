@@ -1,8 +1,8 @@
 // src/features/onboarding/types.ts
 
-export type BusinessType = "solo" | "small_team" | "sales" | "other";
+export type DemoPresetId = "solo_freelancer" | "small_team" | "sales_focused" | "custom" | "skip";
 
-export type DemoPresetId = "solo_freelancer" | "small_team" | "sales_focused" | "custom";
+export type ThemeMode = "light" | "dark" | "system";
 
 export interface DemoPreset {
   id: DemoPresetId;
@@ -18,15 +18,17 @@ export interface ToolSelections {
   campaigns: boolean;
   calendar: boolean;
   ai: boolean;
-  sync: boolean;
 }
 
 export interface OnboardingData {
+  step: number;
   businessName: string;
-  businessType: BusinessType;
+  theme: ThemeMode;
   tools: ToolSelections;
   demoPreset: DemoPresetId | null;
   accountSkipped: boolean;
+  emailConnected: boolean;
+  acknowledgedPro: boolean;
 }
 
 export interface StepConfig {
@@ -36,7 +38,7 @@ export interface StepConfig {
 }
 
 export const ONBOARDING_STEPS: StepConfig[] = [
-  { id: "welcome", title: "Welcome", description: "Language & Profile" },
+  { id: "welcome", title: "Welcome", description: "Theme & Profile" },
   { id: "tools", title: "Features", description: "Choose Capabilities" },
   { id: "account", title: "Account", description: "Connect Email" },
   { id: "complete", title: "Ready", description: "Launch" },
@@ -48,5 +50,4 @@ export const DEFAULT_TOOLS: ToolSelections = {
   campaigns: false,
   calendar: false,
   ai: false,
-  sync: false,
 };

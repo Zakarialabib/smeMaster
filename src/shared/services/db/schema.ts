@@ -126,6 +126,7 @@ export interface Message {
   message_id_header: string | null;
   references_header: string | null;
   in_reply_to_header: string | null;
+  unsubscribe_status: string | null;
   imap_uid: number | null;
   imap_folder: string | null;
 }
@@ -153,6 +154,10 @@ export interface FolderSyncState {
   last_uid: number;
   modseq: number | null;
   last_sync_at: number | null;
+  sync_phase: string | null;
+  last_error: string | null;
+  retry_count: number | null;
+  is_paused: boolean | null;
 }
 
 export interface Setting {
@@ -590,7 +595,7 @@ export interface FollowUpReminder {
 
 export interface PendingOperation {
   id: string;
-  account_id: string;
+  company_id: string;
   operation_type: string;
   resource_id: string;
   params: string;
@@ -598,6 +603,7 @@ export interface PendingOperation {
   retry_count: number;
   max_retries: number;
   next_retry_at: number | null;
+  hold_until: number | null;
   error_message: string | null;
   campaign_id: string | null;
   created_at: number;
@@ -749,6 +755,7 @@ export interface TemplateCategory {
   icon: string | null;
   sort_order: number;
   is_system: number;
+  created_at: number;
 }
 
 // ─── AI (continued) ─────────────────────────────────────────────────────────
@@ -918,6 +925,7 @@ export interface CleanupRule {
   is_scheduled: number;
   schedule_cron: string | null;
   next_run_at: number | null;
+  last_run_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -938,6 +946,7 @@ export interface CleanupHistory {
 
 export interface Client {
   id: string;
+  company_id: string;
   name: string;
   email: string | null;
   phone: string | null;
@@ -1038,5 +1047,29 @@ export interface Category {
   id: string;
   name: string;
   company_id: string | null;
+  created_at: number;
+}
+
+export interface SyncJob {
+  id: string;
+  account_id: string;
+  sync_type: string;
+  status: string;
+  started_at: number | null;
+  completed_at: number | null;
+  error_message: string | null;
+  items_processed: number;
+  items_total: number;
+  created_at: number;
+}
+
+export interface SyncConflict {
+  id: string;
+  account_id: string;
+  conflict_type: string;
+  local_data: string;
+  remote_data: string;
+  resolution: string | null;
+  resolved_at: number | null;
   created_at: number;
 }

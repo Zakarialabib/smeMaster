@@ -8,7 +8,11 @@ pub struct Invoice {
     pub id: String,
     pub company_id: String,
     pub client_id: String,
+    #[serde(rename = "type")]
+    #[sqlx(rename = "type")]
     pub document_type: String,
+    #[serde(rename = "document_number")]
+    #[sqlx(rename = "document_number")]
     pub invoice_number: String,
     pub status: String,
     pub issue_date: i64,
@@ -52,6 +56,7 @@ pub struct InvoiceWithItems {
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Client {
     pub id: String,
+    pub company_id: String,
     pub name: String,
     pub email: Option<String>,
     pub phone: Option<String>,
@@ -88,6 +93,7 @@ pub struct CatalogItem {
     pub image_url: Option<String>,
     pub active: i64,
     pub company_id: String,
+    pub category_id: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
 }

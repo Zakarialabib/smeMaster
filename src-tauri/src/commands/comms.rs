@@ -331,11 +331,11 @@ pub async fn db_list_template_categories(
 pub async fn db_upsert_template_category(
     pool: State<'_, SqlitePool>,
     id: String,
-    company_id: Option<String>,
+    company_id: String,
     name: String,
     icon: Option<String>,
 ) -> CmdResult<()> {
-    crate::db::tables::comms::template_categories::upsert(&pool, &id, company_id.as_deref(), &name, icon.as_deref()).await.map_err(Into::into)
+    crate::db::tables::comms::template_categories::upsert(&pool, &id, &company_id, &name, icon.as_deref()).await.map_err(Into::into)
 }
 
 /// Delete a template category by id.
@@ -403,13 +403,13 @@ pub async fn db_count_template_categories(
 pub async fn db_insert_template_category_ignore(
     pool: State<'_, SqlitePool>,
     id: String,
-    company_id: Option<String>,
+    company_id: String,
     name: String,
     icon: Option<String>,
     sort_order: Option<i64>,
 ) -> CmdResult<()> {
     crate::db::tables::comms::template_categories::insert_ignore(
-        &pool, &id, company_id.as_deref(), &name, icon.as_deref(), sort_order.unwrap_or(0),
+        &pool, &id, &company_id, &name, icon.as_deref(), sort_order.unwrap_or(0),
     ).await.map_err(Into::into)
 }
 

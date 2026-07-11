@@ -1,5 +1,5 @@
 // src/features/onboarding/steps/CompletionStep.tsx
-import { CheckCircle2, Sparkles, Inbox, Users, Settings, ArrowLeft, Zap } from "lucide-react";
+import { CheckCircle2, Inbox, Mail, Zap, ArrowLeft, Crown, Shield, Brain } from "lucide-react";
 import { GlassPanel } from "@shared/components/ui/glass-panel";
 import type { OnboardingData } from "../types";
 
@@ -9,26 +9,29 @@ interface CompletionStepProps {
   onBack: () => void;
 }
 
-const TIPS = [
-  { icon: Inbox, text: "Use ` to open the command palette and control everything from your keyboard" },
-  { icon: Users, text: "Tag your contacts and set up segments for targeted campaigns" },
-  { icon: Settings, text: "Configure auto-labeling rules in Settings to organize emails automatically" },
-  { icon: Sparkles, text: "AI features can draft replies, extract tasks, and suggest labels" },
-];
-
 const toolLabels: Record<string, string> = {
-  mail: "Email",
+  mail: "Mail",
   crm: "CRM",
   campaigns: "Campaigns",
   calendar: "Calendar",
   ai: "AI Features",
-  sync: "Device Sync",
 };
+
+const PRO_BENEFITS = [
+  { icon: Inbox, text: "Smart inbox with priority sorting and automated folders" },
+  { icon: Brain, text: "AI writing assistant for composing and replying" },
+  { icon: Zap, text: "Campaign analytics with open/click tracking" },
+  { icon: Shield, text: "GDPR/CCPA compliance tools and data protection" },
+  { icon: Crown, text: "Priority support with dedicated onboarding" },
+];
 
 export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps) {
   const enabledTools = Object.entries(data.tools)
     .filter(([, v]) => v)
     .map(([k]) => toolLabels[k] || k);
+
+  const hasEmail = data.emailConnected;
+  const isSkippedDemo = data.demoPreset === "skip";
 
   return (
     <div
@@ -59,9 +62,8 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
           <div>
             <p className="font-medium">{data.businessName}</p>
             <p className="text-xs text-muted-foreground/70">
-              {data.businessType === "solo" ? "Solo Freelancer" :
-               data.businessType === "small_team" ? "Small Team" :
-               data.businessType === "sales" ? "Sales Focused" : "Custom"} profile
+              {data.theme === "light" ? "Light" : data.theme === "dark" ? "Dark" : "System"} theme
+              {isSkippedDemo ? " · Demo data" : ` · ${(data.demoPreset ?? "custom").replace(/_/g, " ")} profile`}
             </p>
           </div>
         </div>
@@ -74,15 +76,33 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
               {tool}
             </span>
           ))}
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+              hasEmail
+                ? "border-green-500/20 bg-green-500/5 text-green-500"
+                : "border-muted-foreground/20 bg-muted/5 text-muted-foreground"
+            }`}
+          >
+            <Mail className="h-3 w-3" />
+            {hasEmail ? "Email connected" : "Email not connected"}
+          </span>
         </div>
       </GlassPanel>
 
-      {/* Pro Tips */}
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pro Tips</p>
+      {/* Pro Benefits */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Crown className="h-4 w-4 text-amber-500" />
+          <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
+            Pro Benefits
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-1">
+          Connect your email to unlock:
+        </p>
         <div className="grid gap-2">
-          {TIPS.map((tip, i) => {
-            const Icon = tip.icon;
+          {PRO_BENEFITS.map((benefit, i) => {
+            const Icon = benefit.icon;
             return (
               <div
                 key={i}
@@ -92,10 +112,10 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
                   animationDelay: `${(i + 1) * 80}ms`,
                 }}
               >
-                <div className="rounded-lg p-1.5 bg-accent/8 mt-0.5">
-                  <Icon className="h-4 w-4 text-accent" />
+                <div className="rounded-lg p-1.5 bg-amber-500/8 mt-0.5">
+                  <Icon className="h-4 w-4 text-amber-500" />
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{tip.text}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{benefit.text}</p>
               </div>
             );
           })}
