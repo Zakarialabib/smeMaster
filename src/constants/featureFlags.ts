@@ -326,6 +326,52 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     group: "Offline & Sync",
     isCore: false,
   },
+
+  // ─── Intelligence & Insights ───
+  {
+    id: "rag",
+    name: "Local RAG",
+    description: "On-device retrieval-augmented generation for private, context-aware AI answers over your mail and documents",
+    icon: "BrainCircuit",
+    tier: "pro",
+    basicLimit: { max: 0, unit: "RAG indexes" },
+    proLimit: null,
+    group: "AI & Automation",
+    isCore: false,
+  },
+  {
+    id: "business-profile",
+    name: "Business Profile",
+    description: "Company legal, tax, and compliance identity (ICE, CNSS, RC) used across documents and invoicing",
+    icon: "Building2",
+    tier: "basic",
+    basicLimit: null,
+    proLimit: null,
+    group: "Getting Started",
+    isCore: false,
+  },
+  {
+    id: "dashboard",
+    name: "Dashboard",
+    description: "Business health, KPIs, and analytics across mail, tasks, and campaigns",
+    icon: "Gauge",
+    tier: "basic",
+    basicLimit: null,
+    proLimit: null,
+    group: "Monitoring",
+    isCore: true,
+  },
+  {
+    id: "invoicing",
+    name: "Invoicing",
+    description: "Create, send, and track professional invoices and estimates with PDF export",
+    icon: "FileSpreadsheet",
+    tier: "pro",
+    basicLimit: { max: 0, unit: "invoices" },
+    proLimit: null,
+    group: "Business",
+    isCore: false,
+  },
 ];
 
 /** Lookup a feature flag by id */

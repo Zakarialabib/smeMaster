@@ -35,6 +35,8 @@ import { useLogs, useClearLogs } from "@shared/hooks/useLogs";
 import type { LogEntry } from "@shared/services/logger";
 import { cn } from "@shared/utils/cn";
 import SubsystemStatusPanel from "@features/settings/components/SubsystemStatusPanel";
+import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
+import { FEATURE_FLAGS, isDevProMode, getFeatureAccessWithDevPro } from "@/constants/featureFlags";
 
 // ── Log Level Filter Type ──────────────────────────────────────────────────
 type LogFilterLevel = "error" | "warning" | "info" | "debug" | "critical";
@@ -454,6 +456,18 @@ export default function DeveloperTab() {
 
   const { t } = useTranslation();
 
+  // ── Overview (at-a-glance) derived state ──────────────────────────────
+  const tier = useFeatureFlagStore((s) => s.tier);
+  const overrideEnabled = useFeatureFlagStore((s) => s.overrideEnabled);
+  const overrideTier = useFeatureFlagStore((s) => s.overrideTier);
+  const devPro = isDevProMode();
+  const effectiveTier: "basic" | "pro" = overrideEnabled ? overrideTier : tier;
+  const totalFeatures = FEATURE_FLAGS.length;
+  const enabledFeatures = FEATURE_FLAGS.filter(
+    (f) => getFeatureAccessWithDevPro(f.id, effectiveTier, 0) === "enabled",
+  ).length;
+  const ragAvailable = getFeatureAccessWithDevPro("rag", effectiveTier, 0) === "enabled";
+
   // ── Health Dashboard State ──────────────────────────────────────────
   const [healthStats, setHealthStats] = useState<DbHealthStats>({
     dbSizeBytes: 0,
@@ -502,6 +516,40 @@ export default function DeveloperTab() {
 
   return (
     <div className="space-y-6 pb-8">
+      {/* ── Overview ──────────────────────────────────────────────────── */}
+      <SettingGroup
+        title="Overview"
+        description="At-a-glance status of your SME Master environment and feature availability."
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <InfoCard label="Environment" value={platformLabel} icon={Monitor} />
+          <InfoCard
+            label="Mode"
+            value={devPro ? "Dev Pro" : effectiveTier === "pro" ? "Pro" : "Basic"}
+            icon={Cpu}
+          />
+          <InfoCard
+            label="Features Enabled"
+            value={`${enabledFeatures} / ${totalFeatures}`}
+            icon={Zap}
+          />
+          <InfoCard
+            label="Local RAG"
+            value={ragAvailable ? "Available" : "Locked"}
+            icon={Activity}
+          />
+        </div>
+        <p className="mt-3 text-xs text-text-tertiary">
+          {devPro
+            ? "Developer Pro Mode is active — every feature is unlocked regardless of tier."
+            : effectiveTier === "pro"
+              ? "Running on the Pro tier — all capabilities are available."
+              : "Running on the Basic tier — some Pro features are locked. Open the Feature Flags tab to preview Pro."}
+          {" "}
+          Toggle tiers or enable Dev Pro Mode from the Feature Flags tab.
+        </p>
+      </SettingGroup>
+
       {/* ── Health Dashboard ──────────────────────────────────────────── */}
       <SettingGroup
         title="Health Dashboard"

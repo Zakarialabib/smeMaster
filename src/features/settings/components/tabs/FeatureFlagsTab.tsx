@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useFeatureFlagStore, type FeatureUsage } from "@features/settings/stores/featureFlagStore";
 import {
-  FEATURE_FLAGS, type FeatureFlag, type Tier,
+  FEATURE_FLAGS, type FeatureFlag, type Tier, setDevProMode, isDevProMode,
 } from "@/constants/featureFlags";
 import { SettingGroup } from "@features/settings/components/SettingsHelpers";
 import { Toggle } from "@shared/components/ui/Toggle";
@@ -176,6 +176,7 @@ export default function FeatureFlagsTab() {
   const { t } = useTranslation();
   const store = useFeatureFlagStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [devPro, setDevPro] = useState(() => isDevProMode());
 
   // Load store on mount
   useEffect(() => { store.init(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -264,6 +265,24 @@ export default function FeatureFlagsTab() {
           <Toggle
             checked={store.overrideEnabled}
             onChange={() => store.setOverrideEnabled(!store.overrideEnabled)}
+          />
+        </div>
+
+        {/* Dev Pro Mode — force-unlock every feature regardless of tier */}
+        <div className="flex items-center justify-between gap-4 py-2">
+          <div className="min-w-0">
+            <span className="text-sm font-medium text-[var(--text-primary)]">Developer Pro Mode</span>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Unlock every feature (incl. RAG &amp; Invoicing) regardless of tier or usage limits.
+            </p>
+          </div>
+          <Toggle
+            checked={devPro}
+            onChange={() => {
+              const next = !devPro;
+              setDevPro(next);
+              setDevProMode(next);
+            }}
           />
         </div>
 

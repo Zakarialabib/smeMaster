@@ -10,7 +10,7 @@ import {
   Settings, UserCircle, PenLine, Bell, Keyboard,
   Sparkles, Filter, Lock, ShieldCheck, HardDrive, Smartphone,
   BarChart3, ClipboardCheck, Info, HelpCircle, Calendar, Code2,
-  MonitorCheck, Laptop, Activity, Trash2, Cpu,Building2,
+  MonitorCheck, Laptop, Activity, Trash2, Cpu,Building2, Flag,
 } from "lucide-react";
 import {
   GeneralTab, ComposingTab, AccountsTab, ShortcutsTab,
@@ -30,7 +30,7 @@ export type SettingsTabId =
   | "compliance" | "pgp" | "mail-rules" | "presend"
   | "calendar" | "developer"
   | "license" | "feature-flags"
-  | "queue" | "account-cleaning" | "hardware";
+  | "queue" | "account-cleaning" | "hardware"
   | "business-profile";
 
 export type SettingsPlatform = "all" | "desktop" | "mobile";
@@ -224,6 +224,13 @@ export const tabGroups: SettingsGroup[] = [
         subtitle: "Sync queue, pending operations, retry inspector",
         platform: "desktop",
       },
+      {
+        id: "feature-flags",
+        label: "Feature Flags",
+        icon: Flag,
+        subtitle: "Basic vs Pro tiers, usage overrides, progressive disclosure",
+        platform: "desktop",
+      },
     ],
   },
   {
@@ -291,6 +298,7 @@ export const TAB_KEYWORDS: Record<string, string[]> = {
   "account-cleaning": ["clean", "cleanup", "retention", "purge", "archive", "delete", "maintenance", "rule", "schedule", "storage", "old email"],
   license: ["license", "key", "activation", "tier", "trial", "pro", "basic", "upgrade", "subscription", "premium"],
   "business-profile": ["company", "business", "ice", "tax", "rc", "cnss", "legal", "morocco", "dgi"],
+    "feature-flags": ["feature", "flag", "flags", "tier", "pro", "basic", "override", "beta", "experimental", "rag", "progressive", "disclosure"],
 };
 
 // ── Tab Label (i18n-aware) ─────────────────────────────────────────────────
@@ -344,6 +352,7 @@ export function getSectionSubtitle(id: string): string | undefined {
     queue: "Outgoing send queue, background sync operations, retry inspector, and pause/resume controls",
     "account-cleaning": "Mailbox cleanup rules, retention policies, scheduled maintenance, and cleanup history",
     license: "Manage your license tier, activate a Pro key, or start a free trial",
+    "feature-flags": "Toggle Basic vs Pro tiers, override usage counts, and preview progressive disclosure of locked features",
   };
   return subtitles[id];
 }
