@@ -1,8 +1,9 @@
 # SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 0.9 → 1.0.0-rc · **DB:** 56 migrations · **Tests:** 2,470 TS + 735 Rust ✅
-> **Locales:** en, fr, ar, ja, it · **Commands:** 652 · **Stores:** 21 Zustand
+> **Version:** 0.9 → 1.0.0-rc · **DB:** 60 migrations · **Tests:** 2,470 TS + 735 Rust ✅
+> **Locales:** en, fr, ar, ja, it · **Commands:** 764 · **Stores:** 38 Zustand
+> **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **UI/UX Phases Complete:** 5/8 (Shell, Gestures, Adaptive, Focus, Polish) ✅
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — 9 phases of remaining work (~191h)
 
@@ -111,18 +112,18 @@ What the app does, grouped by functional area.
 
 ### Intelligence And UX
 
-| Doc                                                                 | Covers                                                        |
-| ------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [AI](04-FEATURES/22-ai-integration.md)                              | Providers and AI-powered helpers                              |
-| [AI RAG — Overview](04-FEATURES/ai-rag.md)              | Local semantic search & RAG architecture                      |
-| [AI RAG — Backend](02-BACKEND/ai-rag.md)   | Rust: candle, LanceDB, parser, indexer                        |
-| [AI RAG — Commands](02-BACKEND/ai-rag.md)        | Tauri IPC command reference                                   |
-| [AI RAG — Frontend](03-FRONTEND/ai-rag.md)  | TS wrappers, store, components, routing                       |
-| [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md)   | **All AI prompts** — email, inbox, CRM, RAG, task extraction  |
-| [Context Engineering](03-FRONTEND/ai-context-engineering.md) | **Context construction** — data sourcing, truncation, quality |
-| [Contact Intelligence](04-FEATURES/30-contact-intelligence.md)      | Scoring and insight layer for contacts                        |
-| [Shortcuts](04-FEATURES/31-keyboard-shortcuts.md)                   | Keyboard workflow                                             |
-| [i18n](04-FEATURES/32-i18n-localization.md)                         | Locales and RTL                                               |
+| Doc                                                            | Covers                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------- |
+| [AI](04-FEATURES/22-ai-integration.md)                         | Providers and AI-powered helpers                              |
+| [AI RAG — Overview](04-FEATURES/ai-rag.md)                     | Local semantic search & RAG architecture                      |
+| [AI RAG — Backend](02-BACKEND/ai-rag.md)                       | Rust: candle, LanceDB, parser, indexer                        |
+| [AI RAG — Commands](02-BACKEND/ai-rag.md)                      | Tauri IPC command reference                                   |
+| [AI RAG — Frontend](03-FRONTEND/ai-rag.md)                     | TS wrappers, store, components, routing                       |
+| [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md)     | **All AI prompts** — email, inbox, CRM, RAG, task extraction  |
+| [Context Engineering](03-FRONTEND/ai-context-engineering.md)   | **Context construction** — data sourcing, truncation, quality |
+| [Contact Intelligence](04-FEATURES/30-contact-intelligence.md) | Scoring and insight layer for contacts                        |
+| [Shortcuts](04-FEATURES/31-keyboard-shortcuts.md)              | Keyboard workflow                                             |
+| [i18n](04-FEATURES/32-i18n-localization.md)                    | Locales and RTL                                               |
 
 ### Device And Mobile
 

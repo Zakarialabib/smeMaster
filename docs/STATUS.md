@@ -1,6 +1,10 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-07-11
+> **Last updated:** 2026-07-11 (evening)
+>
+> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Complete (2026-07-11):** Full billing/ERP suite with 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, and frontend invoke wrappers. Company legal identifiers (ICE/IF/RC/CNSS) for Morocco tax compliance.
+>
+> 🖨️ **POS Hardware Integration — Merged (2026-07-11):** Point-of-Sale module with ESC/POS thermal printer support, system printer fallback, barcode scanner hook, hardware settings tab — merged cleanly via PR #2.
 >
 > 🔄 **account_id → company_id Rename (2026-07-09):** All company-scoped Tauri command parameters, frontend invoke wrappers, feature-layer wrappers, stores, and components renamed from `account_id`/`accountId` to `company_id`/`companyId`. 30+ files modified across the full stack — Rust commands, SQL queries, db-invoke wrapper (89+ fixes), 15+ feature wrappers, 6 stores, 8+ components. Zero TypeScript errors, zero Rust errors. See "Recently Completed" below.
 >
@@ -13,7 +17,7 @@
 > Green checkmarks across the board:
 >
 > - `npx tsc --noEmit` → **zero errors** ✅
-> - `cargo check` → **zero errors, zero warnings** ✅ (previously 15 dead-code warnings)
+> - `cargo check` → **zero errors, zero warnings** ✅
 > - `cargo test` → **735/735 passing** ✅
 > - `npx vitest run --exclude integration` → **2,470/2,470 passing** ✅
 > - `npx eslint src` → **0 errors, 0 warnings** ✅
@@ -26,16 +30,43 @@
 
 ## ✅ Recently Completed (2026-07-11)
 
+### Invoicing Module — Full Billing/ERP (Morocco DGI-Compliant)
+
+Implemented the complete invoicing subsystem per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. All money stored as i64 minor units (centimes), computed with f64 arithmetic.
+
+| Layer              | Details                                                                                                                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**         | 7-table invoicing schema (clients, items, invoices, invoice_items, company_settings, categories) + ALTER TABLE for ICE/IF/RC/CNSS on companies                                                                                         |
+| **Calc Engine**    | `Money(i64)`, `LineInput/LineOutput`, `TaxMode::Inclusive/Exclusive`, `calculate_line()`, `calculate_document_totals()` — 13 unit tests                                                                                                |
+| **Table CRUD**     | Full transaction-support CRUD: invoices (create/list/get/update/totals/status/xml_path/pdf_path/delete), items (create/list/delete), clients (create/read/update/soft-delete/hard-delete), catalog_items, company_settings, categories |
+| **PDF Generator**  | lopdf-based A4 invoice PDF with company header (legal identifiers), client block, line-items table, totals section, footer                                                                                                             |
+| **PEPPOL XML**     | UBL 2.1 compliant XML with ICE/IF/RC identifiers, tax breakdown, monetary totals                                                                                                                                                       |
+| **Tauri Commands** | 24 `db_*` commands: invoices (list/get/get-with-items/create/update/delete/add-item/remove-item/status/calculate/send), clients CRUD, items CRUD, company get/update, document generation                                              |
+| **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, updated `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry                                                                                     |
+
+### POS Hardware Integration — Merged via PR #2
+
+PR #2 (`pos-hardware-integration-9631348871942594063`) merged into `dev` — adds full Point-of-Sale module:
+
+| Area             | Details                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Rust backend** | `pos.rs` commands (36), `020_pos_hardware.sql` migration, ESC/POS thermal printer driver, system printer fallback |
+| **Frontend**     | `POSPage`, `useBarcodeScanner` hook, `hardwareStore`, `posStore`                                                  |
+| **Settings**     | `HardwareSettings.tsx` with printer configuration UI                                                              |
+| **Routing**      | `/pos` route + nav entry + hardware tab in settings                                                               |
+
+**Merge review verdict: APPROVED** ✅ — clean structural separation, no conflicts with invoicing module. Non-blocking notes: POS commands should use transactions for multi-item sales; barcode scanner keyboard capture may interfere with forms.
+
 ### AI RAG UI Spec — Moved & Marked Complete
 
 The `docs/specs/ai-rag-ui.md` spec (the only file in the `docs/specs/` staging folder) is now **complete**: its feature is fully built in code and verified against the live codebase.
 
-| Change | Details |
-| ------ | ------- |
-| **RAG docs reorganized** | `docs/specs/ai-rag-ui.md` → `docs/04-FEATURES/ai-rag.md` (single feature doc); backend/frontend split out; prompt/context guides → `03-FRONTEND/` |
-| **Marked complete** | All FR1–FR8, NFR1–NFR5, AC1–AC14 checkboxes ticked; 3 open questions (Q1–Q3) left open |
-| **Evidence** | 5 Rust commands, `src/shared/services/db/invoke/rag.ts`, `src/features/assistant/` (store + page + 4 components), `LocalRagSettings.tsx` in `AiTab`, `/ai-assistant` route + nav entry |
-| **Cross-refs fixed** | Canonical doc is now `docs/04-FEATURES/ai-rag.md`; `00-INDEX.md`, `22-ai-integration.md`, `30-contact-intelligence.md` links updated |
+| Change                   | Details                                                                                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **RAG docs reorganized** | `docs/specs/ai-rag-ui.md` → `docs/04-FEATURES/ai-rag.md` (single feature doc); backend/frontend split out; prompt/context guides → `03-FRONTEND/`                                      |
+| **Marked complete**      | All FR1–FR8, NFR1–NFR5, AC1–AC14 checkboxes ticked; 3 open questions (Q1–Q3) left open                                                                                                 |
+| **Evidence**             | 5 Rust commands, `src/shared/services/db/invoke/rag.ts`, `src/features/assistant/` (store + page + 4 components), `LocalRagSettings.tsx` in `AiTab`, `/ai-assistant` route + nav entry |
+| **Cross-refs fixed**     | Canonical doc is now `docs/04-FEATURES/ai-rag.md`; `00-INDEX.md`, `22-ai-integration.md`, `30-contact-intelligence.md` links updated                                                   |
 
 **Status verification of the `analysis.md` blueprint:** the Wondershare-style monetization/entitlement recommendations (§8) remain **deferred to post-v1.0** and are **not implemented in code** (zero matches in `src-tauri`/`src` for `EntitlementEngine`, `check_entitlement`, `paywall-trigger`, `owned_modules`, `entitlement_overrides`, `gating="execute"`, `usePaywallTrigger`). Deferred plans: `docs/06-ROADMAP/10-` to `13-monetization-*.md`.
 
@@ -233,7 +264,6 @@ Additionally:
 | TypeScript/TSX files     | —      | **1,132** in `src/`                                                                  |
 | Rust `pub fn` (db layer) | 367    | **586** across 123 files in `src-tauri/src/db/`                                      |
 
-
 ## Test Suite — All Green
 
 ### Frontend (TypeScript/Vitest)
@@ -376,6 +406,8 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | `commands/db.rs`             | ~13      | Admin, health, sync status, bootstrap state, status snapshot, offline availability CRUD                                   |
 | `commands/imap.rs`           | ~28      | IMAP operations                                                                                                           |
 | `commands/smtp.rs`           | ~2       | SMTP operations                                                                                                           |
+| `commands/invoicing.rs`      | ~24      | Invoices CRUD, clients CRUD, items CRUD, company update, document generation (PEPPOL/PDF), status lifecycle               |
+| `commands/pos.rs`            | ~36      | POS sale CRUD, ESC/POS thermal printing, system printer, cash drawer, barcode scanning                                    |
 | Subsystem Lifecycle          | ~4       | complete_onboarding, get_subsystem_status, get_tool_state, apply_tool_state                                               |
 | Non-command modules          | ~20      | OAuth, PGP, Vault, Export, Pairing, Device, DNS, etc.                                                                     |
 | Vault                        | ~24      | Vault DB ops, folder CRUD, file CRUD, search, categorization, storage stats                                               |
@@ -384,7 +416,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | Updater                      | ~5       | Update check, download, install, rollback                                                                                 |
 | Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                            |
 | Assets                       | ~3       | Asset management                                                                                                          |
-| **Total**                    | **704**  | All registered via `tauri::generate_handler!` — 36 new commands added since last count                                    |
+| **Total**                    | **764**  | All registered via `tauri::generate_handler!` — 60 new commands added since last count (+24 invoicing, +36 POS)           |
 
 ---
 
@@ -401,12 +433,14 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | Calendar     | ✅ Complete | calendars.ts, calendarEvents.ts, snoozePresets.ts                                                       |
 | Settings     | ✅ Complete | settings.ts                                                                                             |
 | Dashboard    | ✅ Complete | dashboardStore.ts                                                                                       |
+| Invoicing    | ✅ Complete | invoicing.ts, invoicingStore.ts                                                                         |
+| POS          | ✅ Complete | posStore.ts, hardwareStore.ts, useBarcodeScanner.ts                                                     |
 
 ### Production Frontend → Rust IPC Calls
 
 - **15 unique commands** called from production (non-test) TypeScript code
 - **78 commands** used in tests only
-- **504 db\_\* commands** registered and tested from Rust side
+- **528 db\_\* commands** registered and tested from Rust side (+24 invoicing)
 - **1 mismatch fixed:** `close_splashscreen` — was missing Rust command, now added
 
 ---
@@ -560,7 +594,9 @@ src/
 │   ├── vault/             ← Store + 7 components + page (refactored from monolith)
 │   ├── mobile/            ← Shell + 5 mobile-specific components
 │   ├── workflows/         ← Store + 4 components + page (partially built)
-│   └── calendar/          ← Wired to Rust db_* commands
+│   ├── calendar/          ← Wired to Rust db_* commands
+│   ├── invoicing/         ← Components (dashboard, editor, preview), store, types, invoke wrappers (NEW)
+│   └── pos/               ← POS page, hardware store, barcode scanner hook (NEW)
 ├── shared/
 │   ├── components/ui/     ← Barrel expanded (VirtualList, Modal focus trap, a11y)
 │   ├── services/
@@ -571,8 +607,10 @@ src/
 │   │   └── mobile-animations.css
 │   └── stores/            ← 38 Zustand stores (was 21)
 └── src-tauri/
-    ├── commands/           ← 704 #[tauri::command] across 17 domain modules (+vault, background, licensing, updater)
-    ├── db/                 ← 586 pub fn across 123 files in 11 domain table modules
+    ├── commands/           ← 764 #[tauri::command] across 19 domain modules (+vault, background, licensing, updater, invoicing, pos)
+    ├── db/                 ← 586 pub fn across 130+ files in 13 domain table modules (invoicing, pos added)
+    ├── invoicing/          ← Line-item calc engine (Money, TaxMode, calculate_line, calculate_document_totals) (NEW)
+    ├── pos/                ← ESC/POS thermal printer driver, system printer fallback (NEW)
     │   ├── tables/         ← 78 query files
     │   ├── crypto.rs       ← AES-256-GCM encrypt/decrypt primitives
     │   ├── connection.rs   ← SQLite pool + version check + create_dir_all fix
