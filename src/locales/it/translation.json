@@ -35,7 +35,8 @@
     "crm": "CRM",
     "label": "Etichetta",
     "noItems": "Nessun elemento",
-    "aiAssistant": "Assistente AI"
+    "aiAssistant": "Assistente AI",
+    "erp": "ERP"
   },
   "onboarding": {
     "step1_title": "Benvenuto in SMEMaster",

@@ -35,6 +35,7 @@ import {
   FolderLock,
   Cpu,
   LayoutDashboard,
+  Calculator,
 } from "lucide-react";
 import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/navigate";
 import { router } from "@/router";
@@ -88,6 +89,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: LayoutDashboard,
     items: [
       { id: "invoicing", label: "nav.invoicing", icon: ReceiptText, path: "/invoicing" },
+      { id: "erp", label: "nav.erp", icon: Calculator, path: "/erp" },
     ]
   },
   {
@@ -238,6 +240,7 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/attachments")) return "mail";
   if (pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/invoicing")) return "dashboard";
+  if (pathname.startsWith("/erp")) return "dashboard";
   if (pathname.startsWith("/ai-assistant")) return "ai-assistant";
   if (pathname.startsWith("/pos")) return "mail"; // Or a separate 'pos' group if we add it
   return "mail";
@@ -267,6 +270,7 @@ export function getActiveSubItem(pathname: string): string | null {
   // Analytics sub-items
   if (pathname.startsWith("/dashboard")) return null;
   if (pathname.startsWith("/invoicing")) return "invoicing";
+  if (pathname.startsWith("/erp")) return "erp";
 
   const helpMatch = pathname.match(/^\/help\/([^/]+)/);
   if (helpMatch) return helpMatch[1]!;

@@ -35,7 +35,8 @@
     "crm": "إدارة العملاء",
     "label": "تسمية",
     "noItems": "لا توجد عناصر",
-    "aiAssistant": "المساعد الذكي"
+    "aiAssistant": "المساعد الذكي",
+    "erp": "ERP"
   },
   "onboarding": {
     "step1_title": "مرحباً بك في SMEMaster",

@@ -1,129 +1,125 @@
-import { useEffect } from "react";
-import { FileText, Plus, ArrowUpRight, DollarSign, Clock, CheckCircle2 } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { useInvoicingStore } from "../stores/invoicingStore";
-import { format } from "date-fns";
+import { useEffect, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import {
+  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown,
+} from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { useInvoicingStore } from '../stores/invoicingStore';
+import { ACTIVE_COMPANY_ID } from '../utils/format';
+import InvoiceList from './InvoiceList';
+import ClientList from './clients/ClientList';
+import ItemList from './items/ItemList';
+import BusinessProfilePanel from './BusinessProfilePanel';
+import SettingsDrawer from './SettingsDrawer';
+
+type TabId = 'invoices' | 'clients' | 'items' | 'settings';
+
+const TABS: { id: TabId; label: string; icon: typeof ReceiptText }[] = [
+  { id: 'invoices', label: 'Documents', icon: ReceiptText },
+  { id: 'clients', label: 'Clients', icon: Users },
+  { id: 'items', label: 'Items', icon: Package },
+  { id: 'settings', label: 'Settings', icon: Settings2 },
+];
 
 export default function InvoicingDashboard() {
-  const { invoices, fetchInvoices, isLoading } = useInvoicingStore();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<TabId>('invoices');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const company = useInvoicingStore((s) => s.company);
+  const fetchInvoices = useInvoicingStore((s) => s.fetchInvoices);
+  const fetchClients = useInvoicingStore((s) => s.fetchClients);
+  const fetchItems = useInvoicingStore((s) => s.fetchItems);
+  const fetchCompany = useInvoicingStore((s) => s.fetchCompany);
 
   useEffect(() => {
-    fetchInvoicingData();
-  }, []);
+    fetchCompany(ACTIVE_COMPANY_ID);
+  }, [fetchCompany]);
 
-  const fetchInvoicingData = async () => {
-    await fetchInvoices("demo-company-1");
-  };
-
-  const stats = {
-    total: invoices.reduce((acc, inv) => acc + inv.total_amount, 0),
-    pending: invoices.filter(i => i.status === 'sent').reduce((acc, i) => acc + i.total_amount, 0),
-    paid: invoices.filter(i => i.status === 'paid').reduce((acc, i) => acc + i.total_amount, 0),
-  };
+  useEffect(() => {
+    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID);
+    if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID);
+    if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID);
+  }, [tab, fetchInvoices, fetchClients, fetchItems]);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Invoicing</h1>
-          <p className="text-text-secondary text-sm">Manage your invoices and PEPPOL compliance</p>
-        </div>
-        <Button icon={<Plus size={18} />}>Create Invoice</Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          label="Total Invoiced"
-          value={stats.total}
-          icon={<DollarSign className="text-accent" />}
-          currency="MAD"
-        />
-        <StatCard
-          label="Pending Payment"
-          value={stats.pending}
-          icon={<Clock className="text-warning" />}
-          currency="MAD"
-        />
-        <StatCard
-          label="Paid to Date"
-          value={stats.paid}
-          icon={<CheckCircle2 className="text-success" />}
-          currency="MAD"
-        />
-      </div>
-
-      <div className="bg-bg-secondary rounded-2xl border border-border-primary overflow-hidden">
-        <div className="px-6 py-4 border-b border-border-primary flex items-center justify-between bg-bg-primary/50">
-          <h2 className="font-semibold text-text-primary flex items-center gap-2">
-            <FileText size={18} className="text-text-tertiary" />
-            Recent Invoices
-          </h2>
-          <Button variant="ghost" size="sm" icon={<ArrowUpRight size={14} />}>View All</Button>
-        </div>
-
-        {isLoading ? (
-          <div className="p-12 text-center text-text-tertiary">Loading...</div>
-        ) : invoices.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 bg-bg-tertiary rounded-full flex items-center justify-center mx-auto mb-3">
-              <FileText size={24} className="text-text-tertiary" />
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-bg-primary">
+      {/* Frosted header */}
+      <header className="sticky top-0 z-20 px-5 sm:px-8 py-4 border-b border-border-primary bg-bg-primary/70 backdrop-blur-[16px]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
+              <ReceiptText size={22} />
             </div>
-            <p className="text-text-secondary font-medium">No invoices found</p>
-            <p className="text-text-tertiary text-sm mt-1">Start by creating your first invoice</p>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-text-primary leading-tight truncate">Invoicing</h1>
+              <button
+                type="button"
+                className="group flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-secondary transition-colors"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Building2 size={13} />
+                <span className="truncate max-w-[180px]">{company?.name ?? 'Your Company'}</span>
+                <ChevronDown size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="text-text-tertiary border-b border-border-primary">
-                  <th className="px-6 py-3 font-medium">Invoice #</th>
-                  <th className="px-6 py-3 font-medium">Customer</th>
-                  <th className="px-6 py-3 font-medium">Date</th>
-                  <th className="px-6 py-3 font-medium text-right">Amount</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-primary">
-                {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-bg-hover/30 transition-colors group">
-                    <td className="px-6 py-4 font-mono text-xs text-text-primary">{inv.invoice_number}</td>
-                    <td className="px-6 py-4 text-text-secondary">Customer ID: {inv.contact_id || 'N/A'}</td>
-                    <td className="px-6 py-4 text-text-tertiary">{format(inv.issue_date * 1000, 'MMM d, yyyy')}</td>
-                    <td className="px-6 py-4 text-right font-semibold text-text-primary">
-                      {inv.total_amount.toLocaleString(undefined, { style: 'currency', currency: inv.currency })}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        inv.status === 'paid' ? 'bg-success/10 text-success' :
-                        inv.status === 'sent' ? 'bg-accent/10 text-accent' :
-                        'bg-bg-tertiary text-text-tertiary'
-                      }`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
-function StatCard({ label, value, icon, currency }: { label: string, value: number, icon: React.ReactNode, currency: string }) {
-  return (
-    <div className="bg-bg-primary p-5 rounded-2xl border border-border-primary shadow-sm flex items-start gap-4">
-      <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center shrink-0">
-        {icon}
-      </div>
-      <div>
-        <p className="text-text-tertiary text-xs font-medium uppercase tracking-wider">{label}</p>
-        <p className="text-xl font-bold text-text-primary mt-1">
-          {value.toLocaleString(undefined, { style: 'currency', currency })}
-        </p>
-      </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<Settings2 size={16} />}
+              onClick={() => setSettingsOpen(true)}
+              className="hidden sm:inline-flex"
+            />
+            <Button
+              icon={<Plus size={18} />}
+              onClick={() => navigate({ to: '/invoicing/new' })}
+            >
+              New Document
+            </Button>
+          </div>
+        </div>
+
+        {/* Tab bar */}
+        <nav className="mt-4 flex items-center gap-1 overflow-x-auto no-scrollbar">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                  active
+                    ? 'bg-accent/10 text-accent'
+                    : 'text-text-secondary hover:bg-bg-hover/60 hover:text-text-primary'
+                }`}
+              >
+                <Icon size={16} />
+                {t.label}
+                {active && (
+                  <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full bg-accent" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </header>
+
+      {/* Tab content */}
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          {tab === 'invoices' && <InvoiceList />}
+          {tab === 'clients' && <ClientList />}
+          {tab === 'items' && <ItemList />}
+          {tab === 'settings' && <BusinessProfilePanel />}
+        </div>
+      </main>
+
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

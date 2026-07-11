@@ -95,6 +95,12 @@ const POSPage = lazy(() =>
   })),
 );
 
+const ErpPage = lazy(() =>
+  import("@features/erp/ErpPage").then((m) => ({
+    default: m.default,
+  })),
+);
+
 // ── Generic page wrapper helper ──────────────────────────────────────────
 // All pages go through DesktopShell (which owns PremiumSidebar + icon rail),
 // so AppPageWrapper is never needed — it would create double-sidebar chrome.
@@ -320,6 +326,14 @@ export const invoiceCreateRoute = createRoute({
   component: InvoiceEditorWrapper,
 });
 
+const ErpPageWrapper = createPageWrapper("Erp", ErpPage as LazyComponent);
+
+export const erpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "erp",
+  component: ErpPageWrapper,
+});
+
 // ---------- /vault ----------
 const VaultPageWrapper = createPageWrapper("Vault", VaultPage as LazyComponent);
 
@@ -465,6 +479,7 @@ export const routeTree = rootRoute.addChildren([
   campaignsRoute,
   businessRoute,
   invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
+  erpRoute,
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,

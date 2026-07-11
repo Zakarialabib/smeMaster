@@ -35,7 +35,8 @@
     "crm": "CRM",
     "label": "ラベル",
     "noItems": "項目なし",
-    "aiAssistant": "AIアシスタント"
+    "aiAssistant": "AIアシスタント",
+    "erp": "ERP"
   },
   "onboarding": {
     "step1_title": "SMEMasterへようこそ",
