@@ -14,6 +14,7 @@ import {
   Bug,
   Paperclip,
   BarChart3,
+  ReceiptText,
   CheckSquare,
   FolderSearch,
   Tag,
@@ -34,6 +35,7 @@ import {
   FolderLock,
   Megaphone,
   Cpu,
+  LayoutDashboard,
 } from "lucide-react";
 import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/navigate";
 import { router } from "@/router";
@@ -82,10 +84,12 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
 
 export const NAV_GROUPS: NavRailGroup[] = [
   {
-    id: "business",
-    label: "nav.business",
-    icon: BarChart3,
-    items: []
+    id: "dashboard",
+    label: "nav.dashboard",
+    icon: LayoutDashboard,
+    items: [
+      { id: "invoicing", label: "nav.invoicing", icon: ReceiptText, path: "/invoicing" },
+    ]
   },
   {
     id: "mail",
@@ -240,7 +244,8 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/help")) return "help";
   if (pathname.startsWith("/tasks")) return "tasks";
   if (pathname.startsWith("/attachments")) return "mail";
-  if (pathname.startsWith("/business")) return "business";
+  if (pathname.startsWith("/dashboard")) return "dashboard";
+  if (pathname.startsWith("/invoicing")) return "dashboard";
   if (pathname.startsWith("/ai-assistant")) return "ai-assistant";
   if (pathname.startsWith("/pos")) return "mail"; // Or a separate 'pos' group if we add it
   return "mail";
@@ -269,7 +274,8 @@ export function getActiveSubItem(pathname: string): string | null {
 
   // Analytics sub-items
   if (pathname.startsWith("/campaigns")) return "campaigns";
-  if (pathname.startsWith("/business")) return "business";
+  if (pathname.startsWith("/dashboard")) return null;
+  if (pathname.startsWith("/invoicing")) return "invoicing";
 
   const helpMatch = pathname.match(/^\/help\/([^/]+)/);
   if (helpMatch) return helpMatch[1]!;
@@ -333,8 +339,8 @@ export function handleNavSelect(id: string): void {
     case "people":
       router.navigate({ to: "/people" });
       break;
-    case "business":
-      navigateToLabel("business");
+    case "dashboard":
+      router.navigate({ to: "/dashboard" });
       break;
     case "ai-assistant":
       router.navigate({ to: "/ai-assistant" });

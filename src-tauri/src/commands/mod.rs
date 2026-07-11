@@ -11,6 +11,7 @@ pub mod deliverability;
 pub mod discovery;
 pub mod idle;
 pub mod imap;
+pub mod invoicing;
 pub mod logging;
 pub mod security;
 pub mod settings;
@@ -707,6 +708,32 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             imap::imap_sync_folder_headers,
             imap::imap_batch_mark_read,
             imap::imap_mark_read,
+
+            // === commands::invoicing (24 commands) ===
+            invoicing::db_list_invoices,
+            invoicing::db_get_invoice,
+            invoicing::db_get_invoice_with_items,
+            invoicing::db_create_invoice,
+            invoicing::db_update_invoice,
+            invoicing::db_delete_invoice,
+            invoicing::db_add_invoice_item,
+            invoicing::db_remove_invoice_item,
+            invoicing::db_update_invoice_status,
+            invoicing::db_list_clients,
+            invoicing::db_get_client,
+            invoicing::db_create_client,
+            invoicing::db_update_client,
+            invoicing::db_delete_client,
+            invoicing::db_list_items,
+            invoicing::db_get_item,
+            invoicing::db_create_item,
+            invoicing::db_update_item,
+            invoicing::db_delete_item,
+            invoicing::db_get_company,
+            invoicing::db_update_company,
+            invoicing::db_generate_invoice_documents,
+            invoicing::db_send_invoice,
+            invoicing::db_calculate_invoice,
 
             // === commands::logging (4 commands) ===
             logging::get_logs,

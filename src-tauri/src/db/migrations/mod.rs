@@ -37,6 +37,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("017_vault_items", include_str!("017_vault_items.sql")),
     ("018_offline_availability", include_str!("018_offline_availability.sql")),
     ("019_sync_migration", include_str!("019_sync_migration.sql")),
+    ("020_invoicing", include_str!("020_invoicing.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────

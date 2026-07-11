@@ -17,6 +17,11 @@ export interface Company {
   timezone: string;
   logo_url: string | null;
   settings_json: string;
+  // Morocco legal identifiers
+  ice: string | null;
+  tax_id: string | null;
+  rc: string | null;
+  cnss: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -927,4 +932,111 @@ export interface CleanupHistory {
   status: string;
   error_message: string | null;
   executed_at: number;
+}
+
+// ─── Invoicing ──────────────────────────────────────────────────────────────
+
+export interface Client {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  tax_id: string | null;
+  role: 'customer' | 'supplier' | 'both';
+  credit_limit: number;
+  payment_terms: number;
+  notes: string | null;
+  created_at: number;
+  updated_at: number;
+  deleted_at: number | null;
+}
+
+export interface Invoice {
+  id: string;
+  company_id: string;
+  client_id: string;
+  document_type: 'invoice' | 'delivery_bill' | 'shipping_print';
+  invoice_number: string;
+  status: 'draft' | 'sent' | 'paid' | 'partial' | 'cancelled';
+  issue_date: number;
+  due_date: number | null;
+  currency: string;
+  subtotal: number;
+  tax_total: number;
+  total_amount: number;
+  notes: string | null;
+  peppol_xml_path: string | null;
+  pdf_path: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  item_id: string | null;
+  description: string;
+  qty: number;
+  unit: string;
+  unit_price: number;
+  tax_rate: number;
+  tax_amount: number;
+  line_total: number;
+  sort_order: number;
+  created_at: number;
+}
+
+export interface InvoiceWithItems {
+  invoice: Invoice;
+  items: InvoiceItem[];
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'product' | 'service';
+  sku: string | null;
+  category_id: string | null;
+  unit: string;
+  buy_price: number;
+  sell_price: number;
+  stock_qty: number;
+  stock_alert: number;
+  tax_rate: number;
+  barcode: string | null;
+  image_url: string | null;
+  active: number;
+  company_id: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CompanySetting {
+  company_id: string;
+  default_currency: string;
+  default_tax_rate: number;
+  invoice_prefix: string;
+  invoice_suffix: string;
+  quote_prefix: string;
+  default_template_id: string | null;
+  logo_url: string | null;
+  signature_text: string | null;
+  bank_details: string | null;
+  terms_default: string | null;
+  theme_color: string;
+  units_enabled: string;
+  tax_position: string;
+  decimal_places: number;
+  updated_at: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  company_id: string | null;
+  created_at: number;
 }

@@ -10,7 +10,7 @@ import {
   Settings, UserCircle, PenLine, Bell, Keyboard,
   Sparkles, Filter, Lock, ShieldCheck, HardDrive, Smartphone,
   BarChart3, ClipboardCheck, Info, HelpCircle, Calendar, Code2,
-  MonitorCheck, Laptop, Activity, Trash2, Cpu,
+  MonitorCheck, Laptop, Activity, Trash2, Cpu,Building2,
 } from "lucide-react";
 import {
   GeneralTab, ComposingTab, AccountsTab, ShortcutsTab,
@@ -18,7 +18,7 @@ import {
   MailRulesTab, NotificationsTab, PgpTab,
   PresendTab, CalendarTab, DeveloperTab,
   LicenseTab, DeliverabilityTab, FeatureFlagsTab,
-  QueueTab, AccountCleaningTab, HardwareTab,
+  QueueTab, AccountCleaningTab, HardwareTab,BusinessProfileTab,
 } from "./tabs";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -31,6 +31,7 @@ export type SettingsTabId =
   | "calendar" | "developer"
   | "license" | "feature-flags"
   | "queue" | "account-cleaning" | "hardware";
+  | "business-profile";
 
 export type SettingsPlatform = "all" | "desktop" | "mobile";
 
@@ -81,6 +82,12 @@ export const tabGroups: SettingsGroup[] = [
         label: "Shortcuts",
         icon: Keyboard,
         subtitle: "Custom keyboard shortcuts",
+      },
+      {
+        id: "business-profile",
+        label: "Business Profile",
+        icon: Building2,
+        subtitle: "Company info, ICE, IF, RC, CNSS",
       },
     ],
   },
@@ -258,6 +265,7 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   queue: QueueTab,
   "account-cleaning": AccountCleaningTab,
   hardware: HardwareTab,
+  "business-profile": BusinessProfileTab,
 };
 
 // ── Search Keywords ────────────────────────────────────────────────────────
@@ -282,6 +290,7 @@ export const TAB_KEYWORDS: Record<string, string[]> = {
   queue: ["sync", "pending", "operation", "queue", "retry", "inspector", "fail", "background", "outbox", "send"],
   "account-cleaning": ["clean", "cleanup", "retention", "purge", "archive", "delete", "maintenance", "rule", "schedule", "storage", "old email"],
   license: ["license", "key", "activation", "tier", "trial", "pro", "basic", "upgrade", "subscription", "premium"],
+  "business-profile": ["company", "business", "ice", "tax", "rc", "cnss", "legal", "morocco", "dgi"],
 };
 
 // ── Tab Label (i18n-aware) ─────────────────────────────────────────────────

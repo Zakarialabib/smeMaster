@@ -30,6 +30,7 @@ mod pgp;
 mod smtp;
 mod vault;
 pub mod orchestrator;
+mod invoicing;
 mod services;
 mod platform;
 #[cfg(target_os = "android")]
@@ -447,13 +448,20 @@ pub fn run() {
             subsystem_registry,
         );
 
-        // ── Onboarding completion listener (block_on avoids dashmap Send bounds) ──
+        // ── Onboarding completion listener ──
+        // Tauri runs `once` callbacks on the async runtime's worker thread, so:
+        //  • `block_on` here panics ("runtime within a runtime");
+        //  • `spawn` fails to prove the future is `Send` (DashMap<&'static str> key).
+        // Fix: hop to a dedicated OS thread and `block_on` there — a fresh runtime,
+        // no panic, and Send only needs to hold at the type level (which it does).
         let sm = state_machine.clone();
         app.handle().once("onboarding:completed", move |_| {
             let sm = sm.clone();
-            tauri::async_runtime::block_on(async move {
-                sm.transition(SystemState::Ready).await;
-                log::info!("[orchestrator] Onboarding completed → Ready (via listener)");
+            std::thread::spawn(move || {
+                tauri::async_runtime::block_on(async move {
+                    sm.transition(SystemState::Ready).await;
+                    log::info!("[orchestrator] Onboarding completed → Ready (via listener)");
+                });
             });
         });
 

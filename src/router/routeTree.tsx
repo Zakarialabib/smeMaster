@@ -36,14 +36,21 @@ const CampaignPage = lazy(() =>
     default: m.CampaignPage,
   })),
 );
-const BusinessDashboard = lazy(() =>
-  import("@features/mail/components/layout/BusinessDashboard").then((m) => ({
-    default: m.BusinessDashboard,
-  })),
-);
 const VaultPage = lazy(() =>
   import("@features/vault/pages/VaultPage").then((m) => ({
     default: m.VaultPage,
+  })),
+);
+
+const InvoicingDashboard = lazy(() =>
+  import("@features/invoicing/components/InvoicingDashboard").then((m) => ({
+    default: m.default,
+  })),
+);
+
+const InvoiceEditor = lazy(() =>
+  import("@features/invoicing/components/InvoiceEditor").then((m) => ({
+    default: m.default,
   })),
 );
 const DevicePairingPage = lazy(() =>
@@ -287,13 +294,35 @@ export const automationRoute = createRoute({
   component: AutomationPageWrapper,
 });
 
-// ---------- /business ----------
-const BusinessDashboardWrapper = createPageWrapper("BusinessDashboard", BusinessDashboard as LazyComponent);
-
+// ---------- /business (legacy) → redirect to the real dashboard ----------
 export const businessRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "business",
-  component: BusinessDashboardWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard" });
+  },
+});
+
+const InvoicingDashboardWrapper = createPageWrapper("Invoicing", InvoicingDashboard as LazyComponent);
+
+export const invoicingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "invoicing",
+  component: InvoicingDashboardWrapper,
+});
+
+const InvoiceEditorWrapper = createPageWrapper("InvoiceEditor", InvoiceEditor as LazyComponent);
+
+export const invoiceEditorRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "edit/$invoiceId",
+  component: InvoiceEditorWrapper,
+});
+
+export const invoiceCreateRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "new",
+  component: InvoiceEditorWrapper,
 });
 
 // ---------- /vault ----------
@@ -440,6 +469,7 @@ export const routeTree = rootRoute.addChildren([
   workflowsRoute,
   campaignsRoute,
   businessRoute,
+  invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,

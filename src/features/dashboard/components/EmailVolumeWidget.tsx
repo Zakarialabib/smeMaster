@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -10,7 +10,7 @@ import { WidgetHeader } from "./WidgetHelpers";
 
 type ChartMode = "bar" | "line";
 
-export function EmailVolumeWidget() {
+export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   const [data, setData] = useState<DashboardTimeSeries[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +44,15 @@ export function EmailVolumeWidget() {
     return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
   }
 
+  const visible = useMemo(
+    () => data.slice(-Math.min(rangeDays, data.length)),
+    [data, rangeDays],
+  );
+
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <WidgetHeader icon={<Mail size={16} />} title="Email Volume (30d)" />
+        <WidgetHeader icon={<Mail size={16} />} title={`Email Volume (${rangeDays}d)`} />
         <div className="flex items-center gap-0.5 bg-bg-tertiary rounded-lg p-0.5">
           <button
             onClick={() => setChartMode("bar")}
@@ -75,7 +80,7 @@ export function EmailVolumeWidget() {
           </button>
         </div>
       </div>
-      {data.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Mail className="w-8 h-8 text-text-tertiary mb-2" />
           <p className="text-sm text-text-tertiary font-medium">No email activity</p>
@@ -85,7 +90,7 @@ export function EmailVolumeWidget() {
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
             {chartMode === "bar" ? (
-              <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+              <BarChart data={visible} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-primary)" />
                 <XAxis
                   dataKey="date"
@@ -115,7 +120,7 @@ export function EmailVolumeWidget() {
                 <Bar dataKey="score" fill="var(--color-accent)" radius={[2, 2, 0, 0]} />
               </BarChart>
             ) : (
-              <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+              <LineChart data={visible} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-primary)" />
                 <XAxis
                   dataKey="date"

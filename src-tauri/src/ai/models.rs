@@ -1,5 +1,5 @@
 use anyhow::Result;
-use hf_hub::api::tokio::{Api, ApiBuilder};
+use hf_hub::api::tokio::ApiBuilder;
 use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri::Manager;

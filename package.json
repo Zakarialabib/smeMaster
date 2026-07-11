@@ -80,6 +80,7 @@
     "@types/d3-force": "^3.0.10",
     "@xyflow/react": "^12.11.1",
     "d3-force": "^3.0.0",
+    "date-fns": "^4.4.0",
     "dompurify": "^3.4.0",
     "i18next": "^26.1.0",
     "lucide-react": "^0.563.0",

@@ -7,6 +7,7 @@ pub mod compliance;
 pub mod core;
 pub mod crm;
 pub mod deliverability;
+pub mod invoicing;
 pub mod security;
 pub mod tasks;
 pub mod workflows;

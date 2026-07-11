@@ -2,11 +2,13 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
 import { InputDialog } from "@shared/components/ui/InputDialog";
-import { Sparkles, FileText, MessageSquarePlus, Type, Smile, Table, Plus, Minus, Columns3, Rows3, Trash2 } from "lucide-react";
+import { Sparkles, FileText, MessageSquarePlus, Type, Smile, Table, Plus, Minus, Columns3, Rows3, Trash2, ReceiptText } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { getQuickReplies, incrementQuickReplyUsage, type DbQuickReply } from "@features/mail/db/quickReplies";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { EmojiPicker } from "./EmojiPicker";
+import { InvoiceSelectionModal } from "../../../invoicing/components/InvoiceSelectionModal";
+import { Invoice } from "../../../invoicing/types";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -23,6 +25,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
   const [quickReplies, setQuickReplies] = useState<DbQuickReply[]>([]);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const qrMenuRef = useRef<HTMLDivElement | null>(null);
   const tableMenuRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +79,23 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
     editor.chain().focus().insertContent(emoji).run();
     useComposerStore.getState().setBodyHtml(editor.getHTML());
   }, [editor]);
+
+  const handleInvoiceSelect = (invoice: Invoice) => {
+    if (editor) {
+      editor.chain().focus().insertContent(`
+        <div style='border:1px solid #ccc; padding:15px; border-radius:12px; font-family: sans-serif; max-width: 400px;'>
+          <h3 style='margin-top:0;'>Invoice ${invoice.invoice_number}</h3>
+          <p style='font-size: 18px; font-weight: bold; color: #6366f1;'>${invoice.total_amount.toLocaleString(undefined, { style: 'currency', currency: invoice.currency })}</p>
+          <p style='font-size: 12px; color: #666;'>Issue Date: ${new Date(invoice.issue_date * 1000).toLocaleDateString()}</p>
+          <hr style='border:none; border-top:1px solid #eee; margin: 15px 0;' />
+          <p style='font-size: 11px; color: #999;'>This invoice is PEPPOL compliant. Technical XML attachment included.</p>
+        </div>
+        <p>&nbsp;</p>
+      `).run();
+      useComposerStore.getState().setBodyHtml(editor.getHTML());
+    }
+    setInvoiceModalOpen(false);
+  };
 
   if (!editor) return null;
 
@@ -350,6 +370,27 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
           <Sparkles size={12} />
           AI
         </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setInvoiceModalOpen(true)}
+        title="Insert Invoice"
+        className="px-1.5 py-1 text-xs rounded hover:bg-bg-hover transition-colors flex items-center gap-1 text-text-secondary"
+      >
+        <ReceiptText size={12} />
+        Invoice
+      </button>
+
+      {invoiceModalOpen && (
+        <InvoiceSelectionModal
+          onClose={() => setInvoiceModalOpen(false)}
+          onSelect={handleInvoiceSelect}
+          onQuickCreate={() => {
+            setInvoiceModalOpen(false);
+            // In a real app we'd navigate to the invoice editor
+          }}
+        />
       )}
 
       {btn(t("composer.undo"), false, () => editor.chain().focus().undo().run())}

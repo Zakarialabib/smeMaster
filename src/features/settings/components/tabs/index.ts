@@ -19,4 +19,5 @@ export { default as FeatureFlagsTab } from "./FeatureFlagsTab";
 export { default as LicenseTab } from "./LicenseTab";
 export { default as AccountCleaningTab } from "./AccountCleaningTab";
 export { default as HardwareTab } from "./HardwareTab";
+export { default as BusinessProfileTab } from "../../../invoicing/components/tabs/BusinessProfileTab";
 export { default as PairingSettings } from "../PairingSettings";
