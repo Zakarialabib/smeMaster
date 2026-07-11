@@ -46,6 +46,18 @@ const VaultPage = lazy(() =>
     default: m.VaultPage,
   })),
 );
+
+const InvoicingDashboard = lazy(() =>
+  import("@features/invoicing/components/InvoicingDashboard").then((m) => ({
+    default: m.default,
+  })),
+);
+
+const InvoiceEditor = lazy(() =>
+  import("@features/invoicing/components/InvoiceEditor").then((m) => ({
+    default: m.default,
+  })),
+);
 const DevicePairingPage = lazy(() =>
   import("@features/settings/pages/DevicePairingPage").then((m) => ({
     default: m.DevicePairingPage,
@@ -290,6 +302,28 @@ export const businessRoute = createRoute({
   component: BusinessDashboardWrapper,
 });
 
+const InvoicingDashboardWrapper = createPageWrapper("Invoicing", InvoicingDashboard as LazyComponent);
+
+export const invoicingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "invoicing",
+  component: InvoicingDashboardWrapper,
+});
+
+const InvoiceEditorWrapper = createPageWrapper("InvoiceEditor", InvoiceEditor as LazyComponent);
+
+export const invoiceEditorRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "edit/$invoiceId",
+  component: InvoiceEditorWrapper,
+});
+
+export const invoiceCreateRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "new",
+  component: InvoiceEditorWrapper,
+});
+
 // ---------- /vault ----------
 const VaultPageWrapper = createPageWrapper("Vault", VaultPage as LazyComponent);
 
@@ -425,6 +459,7 @@ export const routeTree = rootRoute.addChildren([
   workflowsRoute,
   campaignsRoute,
   businessRoute,
+  invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,
