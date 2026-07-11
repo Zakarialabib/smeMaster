@@ -36,11 +36,6 @@ const CampaignPage = lazy(() =>
     default: m.CampaignPage,
   })),
 );
-const BusinessDashboard = lazy(() =>
-  import("@features/mail/components/layout/BusinessDashboard").then((m) => ({
-    default: m.BusinessDashboard,
-  })),
-);
 const VaultPage = lazy(() =>
   import("@features/vault/pages/VaultPage").then((m) => ({
     default: m.VaultPage,
@@ -293,13 +288,13 @@ export const automationRoute = createRoute({
   component: AutomationPageWrapper,
 });
 
-// ---------- /business ----------
-const BusinessDashboardWrapper = createPageWrapper("BusinessDashboard", BusinessDashboard as LazyComponent);
-
+// ---------- /business (legacy) → redirect to the real dashboard ----------
 export const businessRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "business",
-  component: BusinessDashboardWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard" });
+  },
 });
 
 const InvoicingDashboardWrapper = createPageWrapper("Invoicing", InvoicingDashboard as LazyComponent);

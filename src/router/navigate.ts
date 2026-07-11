@@ -50,11 +50,6 @@ export function navigateToLabel(
     return;
   }
 
-  if (label === "business") {
-    router.navigate({ to: "/business" });
-    return;
-  }
-
   if (label === "help") {
     router.navigate({
       to: "/help/$topic",
@@ -275,9 +270,6 @@ export function getActiveLabel(): string {
     }
     if (match.routeId === "/campaigns") {
       return "campaigns";
-    }
-    if (match.routeId === "/business") {
-      return "business";
     }
     if (match.routeId === "/dashboard") {
       return "dashboard";
