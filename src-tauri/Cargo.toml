@@ -87,6 +87,7 @@ docx-rs = "0.4"
 calamine = "0.26"
 tokenizers = "0.21"
 ring = "0.17.14"
+rust_decimal = { version = "1", features = ["macros"] }
 
 [dev-dependencies]
 tempfile = "3"
