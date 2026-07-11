@@ -176,7 +176,7 @@ pub async fn db_dashboard_email_volume(
 ) -> CmdResult<Vec<EngagementTrendPoint>> {
     let cutoff = chrono::Utc::now().timestamp() - 30 * 86400;
     let rows = sqlx::query_as::<_, EngagementTrendPoint>(
-        "SELECT date(created_at, 'unixepoch') as date, COUNT(*) as score \
+        "SELECT date(created_at, 'unixepoch') as date, CAST(COUNT(*) AS REAL) as score \
          FROM engagement_log \
          WHERE event_type IN ('email_sent', 'email_received') AND created_at >= ? \
          GROUP BY date(created_at, 'unixepoch') \
@@ -196,7 +196,7 @@ pub async fn db_dashboard_contact_growth(
 ) -> CmdResult<Vec<EngagementTrendPoint>> {
     let cutoff = chrono::Utc::now().timestamp() - 84 * 86400;
     let rows = sqlx::query_as::<_, EngagementTrendPoint>(
-        "SELECT strftime('%Y-W%W', created_at, 'unixepoch') as date, COUNT(*) as score \
+        "SELECT strftime('%Y-W%W', created_at, 'unixepoch') as date, CAST(COUNT(*) AS REAL) as score \
          FROM contacts \
          WHERE created_at >= ? \
          GROUP BY strftime('%Y-W%W', created_at, 'unixepoch') \
