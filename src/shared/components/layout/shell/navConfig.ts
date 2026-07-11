@@ -33,7 +33,6 @@ import {
   HelpCircle,
   Info,
   FolderLock,
-  Megaphone,
   Cpu,
   LayoutDashboard,
 } from "lucide-react";
@@ -150,12 +149,6 @@ export const NAV_GROUPS: NavRailGroup[] = [
     items: [],
   },
   {
-    id: "campaigns",
-    icon: Megaphone,
-    label: "campaign.campaigns",
-    items: [],
-  },
-  {
     id: "settings",
     icon: Settings,
     label: "nav.settings",
@@ -239,7 +232,6 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/workflows")) return "automation";
   if (pathname.startsWith("/vault")) return "vault";
-  if (pathname.startsWith("/campaigns")) return "campaigns";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/help")) return "help";
   if (pathname.startsWith("/tasks")) return "tasks";
@@ -273,7 +265,6 @@ export function getActiveSubItem(pathname: string): string | null {
   if (pathname.startsWith("/attachments")) return "attachments";
 
   // Analytics sub-items
-  if (pathname.startsWith("/campaigns")) return "campaigns";
   if (pathname.startsWith("/dashboard")) return null;
   if (pathname.startsWith("/invoicing")) return "invoicing";
 
@@ -332,9 +323,6 @@ export function handleNavSelect(id: string): void {
       break;
     case "vault":
       router.navigate({ to: "/vault" });
-      break;
-    case "campaigns":
-      navigateToLabel("campaigns");
       break;
     case "people":
       router.navigate({ to: "/people" });

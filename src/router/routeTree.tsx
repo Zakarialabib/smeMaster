@@ -31,9 +31,9 @@ const AttachmentLibrary = lazy(() =>
     (m) => ({ default: m.AttachmentLibrary }),
   ),
 );
-const CampaignPage = lazy(() =>
-  import("@features/campaigns/components/CampaignPage").then((m) => ({
-    default: m.CampaignPage,
+const AutomationCampaignsPage = lazy(() =>
+  import("@features/automation/pages/AutomationCampaignsPage").then((m) => ({
+    default: m.AutomationCampaignsPage,
   })),
 );
 const VaultPage = lazy(() =>
@@ -66,11 +66,6 @@ const ContactsPage = lazy(() =>
 const ContactDetailPage = lazy(() =>
   import("@features/contacts/pages/ContactDetailPage").then((m) => ({
     default: m.ContactDetailPage,
-  })),
-);
-const AutomationPage = lazy(() =>
-  import("@features/automation/pages/AutomationPage").then((m) => ({
-    default: m.AutomationPage,
   })),
 );
 const DashboardPage = lazy(() =>
@@ -286,7 +281,7 @@ export const calendarRoute = createRoute({
 });
 
 // ---------- /automation ----------
-const AutomationPageWrapper = createPageWrapper("Automation", AutomationPage as LazyComponent);
+const AutomationPageWrapper = createPageWrapper("Automation & Campaigns", AutomationCampaignsPage as LazyComponent);
 
 export const automationRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -334,13 +329,13 @@ export const vaultRoute = createRoute({
   component: VaultPageWrapper,
 });
 
-// ---------- /campaigns ----------
-const CampaignPageWrapper = createPageWrapper("Campaigns", CampaignPage as LazyComponent);
-
+// ---------- /campaigns (legacy) → redirect to the merged automation page ----------
 export const campaignsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "campaigns",
-  component: CampaignPageWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/automation" });
+  },
 });
 
 // ---------- /workflows (redirect to /automation) ----------

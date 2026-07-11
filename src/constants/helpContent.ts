@@ -1264,7 +1264,8 @@ export const HELP_CATEGORIES: HelpCategory[] = [
         description:
           "Build email campaigns using a 4-step wizard: audience, content, settings, review. Use mail merge variables ({{name}}, {{email}}, {{custom_field}}) for personalization. Select recipients from contacts, segments, or CSV import. Track opens, clicks, bounces, and unsubscribes in real-time.",
         tips: [
-          { text: "Open Campaigns from the sidebar." },
+          { text: "Open Automation & Campaigns from the sidebar, then the Campaigns tab." },
+          { text: "Campaigns and Automation share one page — switch tabs at the top." },
           { text: "4-step wizard: Audience → Content → Settings → Review." },
           { text: "Mail merge variables: {{name}}, {{email}}, {{company}}, etc." },
           { text: "Import recipients from CSV or select from segments." },
@@ -1281,7 +1282,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
         description:
           "Real-time campaign dashboard shows delivery rate, open rate, click rate, bounce rate, and unsubscribe rate. Drill down into individual recipient activity. Export reports as CSV.",
         tips: [
-          { text: "View campaign metrics in the Campaigns list." },
+          { text: "View campaign metrics in the Campaigns tab of Automation & Campaigns." },
           { text: "Click a campaign for detailed recipient-level tracking." },
           { text: "Track pixel opens and link clicks automatically." },
           { text: "Export campaign reports as CSV." },
@@ -1315,7 +1316,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
         description:
           "Create automation rules that trigger on email events (received, sent, replied) or time-based schedules. Set conditions (sender, subject, labels, custom fields) and actions (apply label, archive, star, reply, forward, create task, send notification). Rules run automatically during sync.",
         tips: [
-          { text: "Create rules in Settings > Automation." },
+          { text: "Open Automation & Campaigns from the sidebar, then the Automation tab." },
           { text: "Triggers: email received, sent, replied, scheduled." },
           { text: "Conditions: from, subject, labels, custom fields (AND logic)." },
           { text: "Actions: label, archive, star, reply, forward, create task, notify." },

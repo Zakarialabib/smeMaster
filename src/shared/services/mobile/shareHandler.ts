@@ -2,7 +2,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { invokeCommand } from "@shared/services/db/invoke/command";
 import { isAndroid } from "@shared/services/nativeBridges";
-import { isAndroid } from "@shared/services/nativeBridges";
 import { escapeHtml } from "@shared/utils/sanitize";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 

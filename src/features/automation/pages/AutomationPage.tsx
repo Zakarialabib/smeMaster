@@ -239,21 +239,36 @@ export function AutomationPage() {
 
       {/* Rules list or empty state */}
       {rules.length === 0 && !showEditor ? (
-        <EmptyState
-          icon={Workflow}
-          title="No automation rules yet"
-          subtitle="Create your first rule to automate email actions like archiving, starring, and forwarding."
-          action={
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Plus size={14} />}
-              onClick={openEditor}
-            >
-              Create Rule
-            </Button>
-          }
-        />
+        <div className="space-y-4">
+          <EmptyState
+            icon={Workflow}
+            title="No automation rules yet"
+            subtitle="Automation rules watch your mail and run actions automatically — no manual work required."
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Plus size={14} />}
+                onClick={openEditor}
+              >
+                Create Rule
+              </Button>
+            }
+          />
+          <GlassPanel variant="card" className="p-4 max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+              What you can automate
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-text-secondary">
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Auto-archive newsletters and receipts</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Star or label VIP senders instantly</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Auto-reply to common requests</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Create tasks from flagged emails</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Forward invoices to your accountant</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Snooze follow-ups until later</li>
+            </ul>
+          </GlassPanel>
+        </div>
       ) : viewMode === "cards" ? (
         <ErrorBoundary name="AutomationRulesList">
           <GlassPanel variant="card" className="p-4">
