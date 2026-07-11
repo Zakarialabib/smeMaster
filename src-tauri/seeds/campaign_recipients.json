@@ -1,0 +1,12 @@
+{
+  "table": "campaign_recipients",
+  "timestamp_fields": ["opened_at", "clicked_at"],
+  "records": [
+    { "campaign_id": "demo-campaign-2", "contact_id": "demo-contact-1", "status": "opened", "opened_at": -518400, "clicked_at": null, "variant": null, "is_winner": null },
+    { "campaign_id": "demo-campaign-2", "contact_id": "demo-contact-2", "status": "clicked", "opened_at": -518400, "clicked_at": -432000, "variant": null, "is_winner": null },
+    { "campaign_id": "demo-campaign-2", "contact_id": "demo-contact-3", "status": "sent", "opened_at": null, "clicked_at": null, "variant": null, "is_winner": null },
+    { "campaign_id": "demo-campaign-3", "contact_id": "demo-contact-1", "status": "opened", "opened_at": -172800, "clicked_at": null, "variant": null, "is_winner": null },
+    { "campaign_id": "demo-campaign-3", "contact_id": "demo-contact-4", "status": "sent", "opened_at": null, "clicked_at": null, "variant": null, "is_winner": null },
+    { "campaign_id": "demo-campaign-3", "contact_id": "demo-contact-5", "status": "sent", "opened_at": null, "clicked_at": null, "variant": null, "is_winner": null }
+  ]
+}

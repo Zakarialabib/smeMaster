@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=SMEMaster
+Comment=Minimal email, automation, and CRM workspace for SMEs
+Exec=smemaster
+Icon=com.smemaster.app
+Type=Application
+Categories=Network;Email;Office;
+StartupWMClass=SMEMaster
+StartupNotify=true

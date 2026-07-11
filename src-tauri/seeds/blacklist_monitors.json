@@ -1,0 +1,9 @@
+{
+  "table": "blacklist_monitors",
+  "timestamp_fields": ["last_check_at", "created_at", "updated_at"],
+  "records": [
+    { "id": "demo-monitor-1", "account_id": "demo-account-1", "target": "192.168.1.100", "check_type": "ip", "interval_minutes": 1440, "alerts_json": "[\"email\"]", "enabled": 1, "last_check_at": -86400, "created_at": -1209600, "updated_at": -86400 },
+    { "id": "demo-monitor-2", "account_id": "demo-account-1", "target": "smemaster.app", "check_type": "domain", "interval_minutes": 720, "alerts_json": "[\"email\",\"dashboard\"]", "enabled": 1, "last_check_at": -43200, "created_at": -604800, "updated_at": -43200 },
+    { "id": "demo-monitor-3", "account_id": "demo-account-1", "target": "newsletter.example.com", "check_type": "domain", "interval_minutes": 1440, "alerts_json": "[\"email\"]", "enabled": 0, "last_check_at": null, "created_at": -259200, "updated_at": -259200 }
+  ]
+}

@@ -1,0 +1,27 @@
+name: Documentation Improvement
+description: Suggest improvements to documentation
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: improvement
+    attributes:
+      label: What needs improvement
+      description: Which docs are missing, unclear, or outdated?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested changes
+      description: How should the documentation be improved?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context or references
+    validations:
+      required: false

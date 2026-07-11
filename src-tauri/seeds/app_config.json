@@ -1,0 +1,7 @@
+{
+  "table": "app_config",
+  "timestamp_fields": [],
+  "records": [
+    { "key": "is_initialized", "value": "1" }
+  ]
+}

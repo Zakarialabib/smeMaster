@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderTemplate > renders campaign-style template > campaign-style-body 1`] = `"<p>Hello John,</p><p>Welcome to acme!</p>"`;
+
+exports[`renderTemplate > renders campaign-style template > campaign-style-subject 1`] = `"Hello John"`;
+
+exports[`renderTemplate > renders in voice mode > voice-body-html 1`] = `"<p>Hi John,</p><p>Check out our CTA: <a href="https://example.com">Click here</a></p><p>Thanks!</p>"`;
+
+exports[`renderTemplate > renders in voice mode > voice-script 1`] = `
+"Hi John,
+
+Check out our 
+
+[ACTION REQUIRED]:  Click here
+
+Thanks!"
+`;
+
+exports[`renderTemplate > renders simple template > simple-body-html 1`] = `"<p>Hi John,</p><p>Thanks for your interest in acme.</p>"`;
+
+exports[`renderTemplate > renders simple template > simple-body-text 1`] = `"Hi John,Thanks for your interest in acme."`;
+
+exports[`renderTemplate > renders simple template > simple-subject 1`] = `"Hello John"`;
+
+exports[`renderTemplate > renders with all variables empty (graceful degradation) > graceful-degradation 1`] = `"<p>Hi ,  </p>"`;
+
+exports[`renderTemplate > renders with all variables empty (graceful degradation) > graceful-subject 1`] = `""`;
+
+exports[`renderTemplate > renders with conditional false branch > conditional-false 1`] = `"<p>Hello there</p>"`;
+
+exports[`renderTemplate > renders with conditional true branch > conditional-true 1`] = `"<p>Hello acme</p>"`;
+
+exports[`resolveCampaignVariablesInPipeline > resolves known variables with fallback context values > resolve-campaign-vars 1`] = `"Hello John at acme"`;

@@ -1,0 +1,178 @@
+export interface WarmupPreset {
+  id: string;
+  name: string;
+  subject: string;
+  bodyHtml: string;
+  style: 'follow_up' | 'thank_you' | 'introduction' | 'meeting_request' | 'check_in' | 'sharing_content';
+}
+
+export const warmupPresets: WarmupPreset[] = [
+  {
+    id: 'warmup-followup-1',
+    name: 'Quick Follow-Up',
+    subject: 'Just checking in',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Hope you are having a good week. I wanted to circle back on our last chat and see if you had any updates.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'follow_up',
+  },
+  {
+    id: 'warmup-followup-2',
+    name: 'Gentle Reminder',
+    subject: 'Quick reminder',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Just a gentle reminder about {{subject}}. Let me know if you need anything from me.</p><p>Thanks,<br>{{my_name}}</p>',
+    style: 'follow_up',
+  },
+  {
+    id: 'warmup-followup-3',
+    name: 'Checking Progress',
+    subject: 'How are things going?',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I was wondering how things are progressing on your end. Happy to help if you need any support.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'follow_up',
+  },
+  {
+    id: 'warmup-followup-4',
+    name: 'Follow-Up Note',
+    subject: 'Following up',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Wanted to touch base and see if you had any questions come up since we last spoke.</p><p>Talk soon,<br>{{my_name}}</p>',
+    style: 'follow_up',
+  },
+  {
+    id: 'warmup-thanks-1',
+    name: 'Simple Thanks',
+    subject: 'Thank you',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Just wanted to say thank you for your help earlier. It made a real difference.</p><p>Appreciate it,<br>{{my_name}}</p>',
+    style: 'thank_you',
+  },
+  {
+    id: 'warmup-thanks-2',
+    name: 'Grateful',
+    subject: 'Much appreciated',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I really appreciate you taking the time to help out. Thank you for being so generous with your time.</p><p>Warmly,<br>{{my_name}}</p>',
+    style: 'thank_you',
+  },
+  {
+    id: 'warmup-thanks-3',
+    name: 'Thanks for the Chat',
+    subject: 'Great talking with you',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I really enjoyed our conversation. Thanks for sharing your perspective.</p><p>Looking forward to next time,<br>{{my_name}}</p>',
+    style: 'thank_you',
+  },
+  {
+    id: 'warmup-thanks-4',
+    name: 'Thank You Note',
+    subject: 'Thanks!',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Thank you for everything. It meant a lot to me.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'thank_you',
+  },
+  {
+    id: 'warmup-intro-1',
+    name: 'Quick Intro',
+    subject: 'Nice to meet you',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I do not believe we have met yet. I am {{my_name}} from {{company}}. Looking forward to connecting.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'introduction',
+  },
+  {
+    id: 'warmup-intro-2',
+    name: 'Mutual Connection',
+    subject: 'Introduced by {{referral_name}}',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>{{referral_name}} suggested we connect. I work at {{company}} and would love to learn more about what you do.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'introduction',
+  },
+  {
+    id: 'warmup-intro-3',
+    name: 'Introduction Request',
+    subject: 'Would love to connect',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I came across your profile and was impressed by your work. I would love to connect and learn from your experience.</p><p>Best regards,<br>{{my_name}}</p>',
+    style: 'introduction',
+  },
+  {
+    id: 'warmup-intro-4',
+    name: 'Hello There',
+    subject: 'Hello from {{company}}',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Just wanted to say hello. I am {{my_name}} and I work at {{company}}. Always great to meet new people in the industry.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'introduction',
+  },
+  {
+    id: 'warmup-meeting-1',
+    name: 'Quick Call?',
+    subject: 'Available for a quick call?',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Would you have 15 minutes this week for a brief call? I would love to chat about {{subject}}.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'meeting_request',
+  },
+  {
+    id: 'warmup-meeting-2',
+    name: 'Schedule Meeting',
+    subject: 'Schedule a meeting',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Are you free next week for a quick meeting? I have some time on Tuesday or Wednesday.</p><p>Let me know what works,<br>{{my_name}}</p>',
+    style: 'meeting_request',
+  },
+  {
+    id: 'warmup-meeting-3',
+    name: 'Coffee Chat',
+    subject: 'Coffee this week?',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Would you be up for a coffee chat this week? I would love to pick your brain about {{subject}}.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'meeting_request',
+  },
+  {
+    id: 'warmup-meeting-4',
+    name: 'Meeting Invite',
+    subject: 'Meeting invitation',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I would like to invite you to a meeting to discuss {{subject}}. Please let me know your availability.</p><p>Thanks,<br>{{my_name}}</p>',
+    style: 'meeting_request',
+  },
+  {
+    id: 'warmup-checkin-1',
+    name: 'How Are You?',
+    subject: 'How are you?',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Just checking in to see how you are doing. Hope everything is going well on your end.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'check_in',
+  },
+  {
+    id: 'warmup-checkin-2',
+    name: 'Weekly Check-In',
+    subject: 'Weekly check-in',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Hope you are having a productive week. Just checking in to see if there is anything you need from me.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'check_in',
+  },
+  {
+    id: 'warmup-checkin-3',
+    name: 'Thinking of You',
+    subject: 'Thinking of you',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Just wanted to reach out and say hi. Hope you and your team at {{company}} are doing great.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'check_in',
+  },
+  {
+    id: 'warmup-checkin-4',
+    name: 'Quick Hello',
+    subject: 'Quick hello',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Dropping a quick note to say hello and see how things are going. No rush to reply.</p><p>Take care,<br>{{my_name}}</p>',
+    style: 'check_in',
+  },
+  {
+    id: 'warmup-sharing-1',
+    name: 'Interesting Article',
+    subject: 'Thought you might like this',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>Came across this article about {{subject}} and thought of you. I found it quite insightful.</p><p>Hope you enjoy it,<br>{{my_name}}</p>',
+    style: 'sharing_content',
+  },
+  {
+    id: 'warmup-sharing-2',
+    name: 'Shared Resource',
+    subject: 'Sharing something useful',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I stumbled upon this resource that might be useful for you and {{company}}. Thought I would share.</p><p>Cheers,<br>{{my_name}}</p>',
+    style: 'sharing_content',
+  },
+  {
+    id: 'warmup-sharing-3',
+    name: 'Recommendation',
+    subject: 'You might find this helpful',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>I wanted to share this with you since we discussed {{subject}} last time. I think you will find it relevant.</p><p>Best,<br>{{my_name}}</p>',
+    style: 'sharing_content',
+  },
+  {
+    id: 'warmup-sharing-4',
+    name: 'Just Sharing',
+    subject: 'Thought of you',
+    bodyHtml: '<p>Hi {{first_name}},</p><p>This made me think of you and our conversation about {{subject}}. Hope you find it interesting.</p><p>Talk soon,<br>{{my_name}}</p>',
+    style: 'sharing_content',
+  },
+];

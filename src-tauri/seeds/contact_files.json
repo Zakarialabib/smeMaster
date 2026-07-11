@@ -1,0 +1,10 @@
+{
+  "table": "contact_files",
+  "timestamp_fields": ["created_at"],
+  "records": [
+    { "id": "cf-1", "company_id": "demo-company-1", "contact_id": "demo-contact-1", "filename": "Q3_Report.pdf", "original_name": "Q3_Report.pdf", "mime_type": "application/pdf", "size": 245760, "category": "document", "starred": 0, "sender_email": null, "message_id": null, "local_path": null, "created_at": -864000 },
+    { "id": "cf-2", "company_id": "demo-company-1", "contact_id": "demo-contact-2", "filename": "Contract_Signed.docx", "original_name": "Contract_Signed.docx", "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "size": 51200, "category": "document", "starred": 0, "sender_email": null, "message_id": null, "local_path": null, "created_at": -432000 },
+    { "id": "cf-3", "company_id": "demo-company-1", "contact_id": "demo-contact-3", "filename": "Product_Specs_v2.xlsx", "original_name": "Product_Specs_v2.xlsx", "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "size": 102400, "category": "document", "starred": 0, "sender_email": null, "message_id": null, "local_path": null, "created_at": -259200 },
+    { "id": "cf-4", "company_id": "demo-company-1", "contact_id": "demo-contact-4", "filename": "Meeting_Notes.txt", "original_name": "Meeting_Notes.txt", "mime_type": "text/plain", "size": 15360, "category": "document", "starred": 0, "sender_email": null, "message_id": null, "local_path": null, "created_at": -86400 }
+  ]
+}

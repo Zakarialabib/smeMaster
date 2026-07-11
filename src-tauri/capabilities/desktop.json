@@ -1,0 +1,52 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "desktop",
+  "description": "Permissions for Windows desktop platform",
+  "windows": ["main", "compose-*", "thread-*"],
+  "platforms": ["windows"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-create",
+    "core:webview:allow-create-webview-window",
+    "notification:default",
+    "notification:allow-is-permission-granted",
+    "notification:allow-request-permission",
+    "notification:allow-notify",
+    "opener:default",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-appdata-read-recursive",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-exists",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA/**" }
+      ]
+    },
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-is-maximized",
+    "core:window:allow-start-dragging",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "deep-link:default",
+    "core:window:allow-set-badge-count",
+    "core:window:allow-set-size",
+    "core:window:allow-set-position",
+    "core:window:allow-get-all-windows",
+    "clipboard-manager:default",
+    "store:default",
+    "global-shortcut:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
+    "global-shortcut:allow-is-registered",
+    "global-shortcut:allow-register-all",
+    "global-shortcut:allow-unregister-all"
+  ]
+}

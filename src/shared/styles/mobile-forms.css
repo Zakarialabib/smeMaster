@@ -1,0 +1,15 @@
+/* Mobile form UX fixes - prevents iOS auto-zoom on input focus */
+/* iOS Safari zooms into inputs with font-size < 16px */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  input[type="password"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

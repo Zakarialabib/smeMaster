@@ -1,0 +1,10 @@
+{
+  "table": "settings",
+  "timestamp_fields": [],
+  "records": [
+    { "key": "app_theme", "value": "light" },
+    { "key": "app_language", "value": "en" },
+    { "key": "onboarding_completed", "value": "true" },
+    { "key": "search_synonyms_enabled", "value": "true" }
+  ]
+}

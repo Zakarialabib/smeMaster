@@ -1,0 +1,9 @@
+{
+  "table": "campaigns",
+  "timestamp_fields": ["sent_at", "created_at"],
+  "records": [
+    { "id": "demo-campaign-1", "company_id": "demo-company-1", "name": "Summer Sale 2025", "template_id": null, "segment_id": null, "status": "draft", "sent_count": 0, "sent_at": null, "ab_test_config": null, "analytics_json": null, "created_at": -1209600 },
+    { "id": "demo-campaign-2", "company_id": "demo-company-1", "name": "Product Launch Announcement", "template_id": null, "segment_id": null, "status": "sent", "sent_count": 3, "sent_at": -604800, "ab_test_config": null, "analytics_json": null, "created_at": -1814400 },
+    { "id": "demo-campaign-3", "company_id": "demo-company-1", "name": "Customer Feedback Survey", "template_id": null, "segment_id": null, "status": "sent", "sent_count": 2, "sent_at": -259200, "ab_test_config": null, "analytics_json": null, "created_at": -864000 }
+  ]
+}

@@ -1,0 +1,1983 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@plugin "tailwindcss-animate";
+
+@import '../shared/components/layout/shell/mobile.css';
+
+@theme {
+  /* ─── Typography Scale (modular 1.25 ratio) ─── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+
+  --font-size-xs: 0.6875rem; /* 11px */
+  --font-size-sm: 0.8125rem; /* 13px */
+  --font-size-base: 0.9375rem; /* 15px — desktop-optimized */
+  --font-size-lg: 1.0625rem; /* 17px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+
+  /* ─── Spacing System (8-point grid) ─── */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
+  /* Component-specific spacing (mapped to 8-point grid) */
+  --space-section: var(--space-4);
+  --space-content: var(--space-3);
+  --space-item: var(--space-2);
+
+  /* ─── Colors — Frosted Glass Light Theme ─── */
+  --color-bg-primary: rgba(255, 255, 255, 0.7);
+  --color-bg-secondary: rgba(255, 255, 255, 0.55);
+  --color-bg-tertiary: rgba(255, 255, 255, 0.4);
+  --color-bg-hover: rgba(255, 255, 255, 0.35);
+  --color-bg-selected: rgba(11, 87, 208, 0.12);
+  --color-bg-elevated: rgba(255, 255, 255, 0.82);
+
+  --color-text-primary: #1c1b1f;
+  --color-text-secondary: #49454f;
+  --color-text-tertiary: #7a7680;
+
+  --color-border-primary: rgba(255, 255, 255, 0.3);
+  --color-border-secondary: rgba(255, 255, 255, 0.18);
+
+  --color-accent: #0b57d0;
+  --color-accent-hover: #0842a0;
+  --color-accent-active: #062e70;
+  --color-accent-light: #d3e3fd;
+  --color-accent-subtle: rgba(11, 87, 208, 0.08);
+
+  /* Semantic colors */
+  --color-danger: #e11d48;
+  --color-danger-hover: #be123c;
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-success: #059669;
+  --color-success-light: #d1fae5;
+  --color-info: #0284c7;
+  --color-info-light: #e0f2fe;
+
+  /* Frosted Glass surface tokens */
+  --color-frost-bg: rgba(255, 255, 255, 0.25);
+  --color-frost-bg-strong: rgba(255, 255, 255, 0.45);
+  --color-frost-border: rgba(255, 255, 255, 0.35);
+  --color-frost-border-strong: rgba(255, 255, 255, 0.55);
+  --color-frost-highlight: rgba(255, 255, 255, 0.5);
+
+  --color-sidebar-bg: rgba(255, 255, 255, 0.78);
+  --color-sidebar-text: #1c1b1f;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.45);
+  --color-sidebar-active: #0b57d0;
+
+  /* ─── Icon Sizing System ─── */
+  --icon-xs: 12px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+  --icon-xl: 32px;
+
+  /* ─── Frosted Glass / Border-based Depth ─── */
+  --glass-blur: 24px;
+  --glass-blur-heavy: 32px;
+  --glass-blur-light: 12px;
+  --frost-border: 1px solid rgba(255, 255, 255, 0.35);
+  --frost-border-strong: 1.5px solid rgba(255, 255, 255, 0.55);
+  --frost-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.55);
+  --frost-highlight-strong: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.7);
+  --frost-radius: 24px;
+  --frost-radius-sm: 16px;
+  --frost-radius-lg: 32px;
+  --backdrop-blur-overlay: 20px;
+
+  /* ─── Removed: drop-shadow elevations replaced by white-translucent borders ─── */
+
+  /* ─── Liquid Glass ─── */
+  --liquid-shimmer: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.12) 55%,
+    transparent 70%,
+    transparent 100%
+  );
+  --liquid-sheen: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 255, 255, 0.15) 48%,
+    rgba(255, 255, 255, 0.08) 56%,
+    transparent 75%
+  );
+  --liquid-orbit-duration: 8s;
+  --liquid-sheen-duration: 4s;
+
+  /* ─── Desktop Superapp — Density & Keyboard-first ─── */
+  --desktop-density-compact: 32px;
+  --desktop-density-normal: 40px;
+  --desktop-density-relaxed: 48px;
+  --desktop-nav-item-height: 36px;
+  --desktop-toolbar-height: 44px;
+  --desktop-statusbar-height: 28px;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Dark mode overrides
+ */
+.dark {
+  --color-bg-primary: rgba(15, 23, 42, 0.72);
+  --color-bg-secondary: rgba(30, 41, 59, 0.65);
+  --color-bg-tertiary: rgba(51, 65, 85, 0.58);
+  --color-bg-hover: rgba(51, 65, 85, 0.45);
+  --color-bg-selected: rgba(99, 133, 243, 0.18);
+  --color-bg-elevated: rgba(30, 41, 59, 0.82);
+
+  --color-text-primary: #e6e1e5;
+  --color-text-secondary: #c4c0c8;
+  --color-text-tertiary: #9e9ba3;
+
+  --color-border-primary: rgba(255, 255, 255, 0.1);
+  --color-border-secondary: rgba(255, 255, 255, 0.06);
+
+  --color-accent: #8ab4f8;
+  --color-accent-hover: #aecbfa;
+  --color-accent-active: #669df6;
+  --color-accent-light: rgba(138, 180, 248, 0.15);
+  --color-accent-subtle: rgba(138, 180, 248, 0.08);
+
+  --color-danger: #f28b82;
+  --color-danger-hover: #e11d48;
+  --color-warning: #fdd663;
+  --color-warning-light: rgba(253, 214, 99, 0.15);
+  --color-success: #81c995;
+  --color-success-light: rgba(129, 201, 149, 0.15);
+  --color-info: #78c4f8;
+  --color-info-light: rgba(120, 196, 248, 0.15);
+
+  --color-frost-bg: rgba(255, 255, 255, 0.06);
+  --color-frost-bg-strong: rgba(255, 255, 255, 0.14);
+  --color-frost-border: rgba(255, 255, 255, 0.1);
+  --color-frost-border-strong: rgba(255, 255, 255, 0.2);
+  --color-frost-highlight: rgba(255, 255, 255, 0.08);
+
+  --color-sidebar-bg: rgba(15, 23, 42, 0.82);
+  --color-sidebar-text: #e6e1e5;
+  --color-sidebar-hover: rgba(30, 41, 59, 0.6);
+  --color-sidebar-active: #8ab4f8;
+
+  --frost-border: 1px solid rgba(255, 255, 255, 0.1);
+  --frost-border-strong: 1.5px solid rgba(255, 255, 255, 0.2);
+  --frost-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  --frost-highlight-strong: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.14);
+}
+
+/* (Base styles, blob animations, glass utilities, scrollbar, keyframes,
+   CSSTransition classes, TipTap styles, mentions, link-previews, etc.) */
+
+/* Font scale — set on <html> like .dark */
+html.font-scale-small {
+  font-size: 82%;
+}
+html.font-scale-default {
+  font-size: 100%;
+}
+html.font-scale-large {
+  font-size: 118%;
+}
+html.font-scale-xlarge {
+  font-size: 136%;
+}
+
+/* Base styles */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Safe area padding — mobile only (set by usePlatform hook) */
+html.mobile body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-inline-start: env(safe-area-inset-left, 0px);
+  padding-inline-end: env(safe-area-inset-right, 0px);
+}
+
+body {
+  font-family: var(--font-sans);
+  background: linear-gradient(
+    135deg,
+    #e8f0fe 0%,
+    #f0e6ff 25%,
+    #fce4ec 50%,
+    #fff3e0 75%,
+    #e3f2fd 100%
+  );
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+.dark body {
+  background-image: linear-gradient(135deg, #0f1923 0%, #1a1220 35%, #1e0a26 65%, #0d1b2a 100%);
+}
+
+html[dir='rtl'] body {
+  font-family: Tajawal, var(--font-sans);
+}
+
+/* ─── Input modality: disable hover effects on touch devices ────────── */
+
+/* Touch: remove hover backgrounds, keep focus rings for accessibility */
+html[data-input-modality='touch'] * {
+  /* Disable hover-only UI effects */
+  --hover-bg: transparent !important;
+  --hover-border: transparent !important;
+}
+html[data-input-modality='touch'] .hover\:bg-bg-hover:hover,
+html[data-input-modality='touch'] [class*='hover:bg-']:hover {
+  background-color: transparent !important;
+}
+html[data-input-modality='touch'] .hover\:border-accent\/25:hover {
+  border-color: transparent !important;
+}
+html[data-input-modality='touch'] .hover\:shadow-md:hover {
+  box-shadow: none !important;
+}
+/* Keep focus-visible for keyboard accessibility */
+html[data-input-modality='touch'] *:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Keyboard: strong focus indicators */
+html[data-input-modality='keyboard'] *:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Animated gradient blobs behind content */
+.animated-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.animated-bg .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: blobMove 20s ease-in-out infinite alternate;
+}
+
+/* When user enables "Reduce motion" in settings, hide animated blobs entirely */
+.reduce-motion .animated-bg {
+  display: none;
+}
+
+.animated-bg .blob {
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.animated-bg .blob:nth-child(1) {
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(
+    circle at 30% 40%,
+    #818cf8 0%,
+    #6366f1 30%,
+    #4f46e5 55%,
+    transparent 72%
+  );
+  top: -12%;
+  inset-inline-start: -5%;
+  animation-duration: 25s;
+  opacity: 0.55;
+}
+
+.animated-bg .blob:nth-child(2) {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle at 60% 30%,
+    #c4b5fd 0%,
+    #8b5cf6 30%,
+    #6d28d9 50%,
+    transparent 68%
+  );
+  top: 20%;
+  inset-inline-end: -8%;
+  animation-duration: 20s;
+  animation-delay: -5s;
+  opacity: 0.5;
+}
+
+.animated-bg .blob:nth-child(3) {
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(
+    circle at 40% 60%,
+    #fbcfe8 0%,
+    #f472b6 30%,
+    #e11d48 50%,
+    transparent 68%
+  );
+  bottom: -8%;
+  inset-inline-start: 28%;
+  animation-duration: 28s;
+  animation-delay: -10s;
+  opacity: 0.4;
+}
+
+.animated-bg .blob:nth-child(4) {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #ccfbf1 0%,
+    #2dd4bf 30%,
+    #0d9488 50%,
+    transparent 68%
+  );
+  bottom: 15%;
+  inset-inline-start: -6%;
+  animation-duration: 22s;
+  animation-delay: -3s;
+  opacity: 0.4;
+}
+
+.animated-bg .blob:nth-child(5) {
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(
+    circle at 50% 40%,
+    #fef3c7 0%,
+    #fbbf24 30%,
+    #d97706 50%,
+    transparent 68%
+  );
+  top: 8%;
+  left: 52%;
+  animation-duration: 26s;
+  animation-delay: -8s;
+  opacity: 0.35;
+}
+
+/* Sixth blob: ethereal mist */
+.animated-bg .blob:nth-child(6) {
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #e0e7ff 0%,
+    #c4b5fd 20%,
+    #6366f1 40%,
+    transparent 60%
+  );
+  top: 35%;
+  inset-inline-start: 38%;
+  animation: orbitalDrift 30s ease-in-out infinite alternate;
+  animation-delay: -15s;
+  opacity: 0.18;
+  filter: blur(120px);
+}
+
+@keyframes blobMove {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(60px, -40px, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-30px, 50px, 0) scale(0.92);
+  }
+  75% {
+    transform: translate3d(40px, 30px, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-20px, -60px, 0) scale(1);
+  }
+}
+
+/* ─── Liquid Glass Animations ─────────────────────────────────────────── */
+
+/* Sheen sweep: a diagonal light streak that travels across a surface */
+@keyframes liquidSheen {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(15deg);
+  }
+  100% {
+    transform: translateX(200%) translateY(200%) rotate(15deg);
+  }
+}
+
+/* Ambient shimmer: subtle micro-movement like rippling liquid */
+@keyframes liquidShimmer {
+  0%,
+  100% {
+    background-position: 200% 0%;
+  }
+  50% {
+    background-position: -100% 0%;
+  }
+}
+
+/* Pulse glow: gentle accent-colored breathing light */
+@keyframes liquidGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--color-accent) 25%, transparent),
+      0 0 40px color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+}
+
+/* Liquid fill: simulates a surface filling up like liquid */
+@keyframes liquidFill {
+  0% {
+    background-size: 100% 200%;
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+/* Orbital drift: slow circular motion for ambient elements */
+@keyframes orbitalDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(20px, -15px) scale(1.03);
+  }
+  50% {
+    transform: translate(-10px, 25px) scale(0.97);
+  }
+  75% {
+    transform: translate(15px, 10px) scale(1.02);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Dark mode blobs */
+.dark .animated-bg .blob:nth-child(1) {
+  background: radial-gradient(
+    circle at 30% 40%,
+    #1e3a8a 0%,
+    #1e40af 35%,
+    #2563eb 55%,
+    transparent 72%
+  );
+  opacity: 0.3;
+}
+
+.dark .animated-bg .blob:nth-child(2) {
+  background: radial-gradient(
+    circle at 60% 30%,
+    #4c1d95 0%,
+    #5b21b6 35%,
+    #6d28d9 55%,
+    transparent 70%
+  );
+  opacity: 0.25;
+}
+
+.dark .animated-bg .blob:nth-child(3) {
+  background: radial-gradient(
+    circle at 40% 60%,
+    #831843 0%,
+    #9d174d 35%,
+    #be185d 55%,
+    transparent 70%
+  );
+  opacity: 0.2;
+}
+
+.dark .animated-bg .blob:nth-child(4) {
+  background: radial-gradient(
+    circle at 50% 50%,
+    #134e4a 0%,
+    #0f766e 35%,
+    #0d9488 55%,
+    transparent 72%
+  );
+  opacity: 0.2;
+}
+
+.dark .animated-bg .blob:nth-child(5) {
+  background: radial-gradient(
+    circle at 50% 40%,
+    #78350f 0%,
+    #92400e 35%,
+    #b45309 55%,
+    transparent 70%
+  );
+  opacity: 0.18;
+}
+
+.dark .animated-bg .blob:nth-child(6) {
+  background: radial-gradient(
+    circle at 50% 50%,
+    #2e1065 0%,
+    #1e1b4b 25%,
+    #0f172a 55%,
+    transparent 70%
+  );
+  opacity: 0.15;
+}
+
+/* Prevent text selection on UI chrome (not email content) */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ─── Frosted Glass Component Classes ────────────────────────────────── */
+
+/* Frosted background: full-screen animated orb container */
+.frosted-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Individual animated gradient orb */
+.frosted-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: frostedDrift 24s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes frostedDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(50px, -30px, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(-25px, 40px, 0) scale(0.94);
+  }
+  75% {
+    transform: translate3d(35px, 25px, 0) scale(1.03);
+  }
+  100% {
+    transform: translate3d(-15px, -50px, 0) scale(1);
+  }
+}
+
+@keyframes orbitalDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(20px, -15px) scale(1.03);
+  }
+  50% {
+    transform: translate(-10px, 25px) scale(0.97);
+  }
+  75% {
+    transform: translate(15px, 10px) scale(1.02);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Frosted glass panels — no drop-shadow, border-based depth only */
+.glass-panel {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-frost-bg);
+  border: var(--frost-border);
+  box-shadow: var(--frost-highlight);
+}
+
+.glass-modal {
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  background: var(--color-frost-bg-strong);
+  border: var(--frost-border-strong);
+  box-shadow: var(--frost-highlight-strong);
+}
+
+.glass-backdrop {
+  backdrop-filter: blur(var(--backdrop-blur-overlay));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur-overlay));
+}
+
+/* ─── Frosted Glass Surface Variants ────────────────────────────────── */
+
+.frost-surface {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-frost-bg);
+  border: var(--frost-border);
+  box-shadow: var(--frost-highlight);
+}
+
+.frost-surface-strong {
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  background: var(--color-frost-bg-strong);
+  border: var(--frost-border-strong);
+  box-shadow: var(--frost-highlight-strong);
+}
+
+/* ─── Liquid Glass: elevated glass with animated sheen ──────────────── */
+
+.liquid-glass {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-frost-bg);
+  border: var(--frost-border);
+  box-shadow: var(--frost-highlight);
+}
+
+/* Sheen overlay that sweeps diagonally on hover */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--liquid-shimmer);
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.liquid-glass:hover::before {
+  opacity: 1;
+  animation: liquidShimmer 3s ease-in-out infinite;
+}
+
+/* Elevated liquid glass variant with stronger highlight */
+.liquid-glass-elevated {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  transform: translateZ(0);
+  background: var(--color-frost-bg-strong);
+  border: var(--frost-border-strong);
+  box-shadow:
+    var(--frost-highlight-strong),
+    0 0 24px color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.liquid-glass-elevated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--liquid-sheen);
+  background-size: 200% 200%;
+  opacity: 0.6;
+  animation: liquidShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Sheen burst: quick diagonal flash on click/active */
+.liquid-sheen-burst::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.25) 48%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.25) 52%,
+    transparent 60%
+  );
+  transform: translateX(-100%) translateY(-100%) rotate(15deg);
+  pointer-events: none;
+}
+
+.liquid-sheen-burst:active::after {
+  animation: liquidSheen 0.6s ease-out forwards;
+}
+
+/* Liquid glow variant: subtle breathing accent glow */
+.liquid-glow {
+  animation: liquidGlow 3s ease-in-out infinite;
+}
+
+/* Accent-tinted glass surface */
+.glass-accent-tint {
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  box-shadow: var(--frost-highlight);
+}
+
+.glass-accent-tint:hover {
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* ─── Frosted dropdown / menu surface ───────────────────────────────── */
+.glass-dropdown {
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  background: color-mix(in srgb, var(--color-bg-primary), 80%);
+  border: var(--frost-border);
+  box-shadow: var(--frost-highlight-strong);
+}
+
+/* Frosted nav panel */
+.glass-panel-sidebar {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-sidebar-bg);
+  border-inline-end: var(--frost-border);
+  box-shadow: var(--frost-highlight);
+}
+
+/* Frosted nav rail */
+.glass-nav-rail {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: color-mix(in srgb, var(--color-bg-tertiary), 70%);
+  border-inline-end: var(--frost-border);
+}
+
+/* Frosted thread row */
+.glass-thread-row {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.glass-thread-row:hover {
+  background: color-mix(in srgb, var(--color-bg-hover), 60%);
+  border-left: 2px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+}
+.glass-thread-row.selected {
+  background: var(--color-bg-selected);
+  border-left: 2px solid var(--color-accent);
+}
+
+/* Frosted category tabs bar */
+.glass-category-bar {
+  backdrop-filter: blur(var(--glass-blur-light, 8px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light, 8px));
+  background: color-mix(in srgb, var(--color-bg-secondary), 40%);
+  border-bottom: var(--frost-border);
+}
+
+/* ─── Frosted input field ──────────────────────────────────────────── */
+.glass-input {
+  backdrop-filter: blur(var(--glass-blur-light, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light, 12px));
+  background: color-mix(in srgb, var(--color-bg-tertiary), 60%);
+  border: var(--frost-border);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+.glass-input:hover {
+  background: color-mix(in srgb, var(--color-bg-secondary), 60%);
+}
+.glass-input:focus,
+.glass-input:focus-within {
+  background: color-mix(in srgb, var(--color-bg-primary), 70%);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--color-accent) 15%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  outline: none;
+}
+
+/* Frosted select element */
+.glass-select {
+  backdrop-filter: blur(var(--glass-blur-light, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light, 12px));
+  background: color-mix(in srgb, var(--color-bg-tertiary), 60%);
+  border: var(--frost-border);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+.glass-select:hover {
+  background: color-mix(in srgb, var(--color-bg-secondary), 60%);
+}
+.glass-select:focus {
+  background: color-mix(in srgb, var(--color-bg-primary), 70%);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--color-accent) 15%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  outline: none;
+}
+
+/* Frosted top bar */
+.glass-top-bar {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-frost-bg);
+  border-bottom: var(--frost-border);
+}
+
+/* Frosted workspace */
+.glass-workspace {
+  backdrop-filter: blur(var(--glass-blur-light, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light, 12px));
+  background: var(--color-frost-bg);
+}
+
+/* Hide scrollbar utility — still scrollable via trackpad/wheel */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+/* ============================================
+ * Animation System
+ * ============================================ */
+
+/* Timing custom properties */
+:root {
+  /* Task UI tokens (spec §7.3) */
+  --task-row-height-compact: 40px;
+  --task-row-height-normal: 52px;
+  --task-row-height-comfortable: 64px;
+  --task-card-padding-compact: 8px 12px;
+  --task-card-padding-normal: 12px 16px;
+  --task-card-padding-comfortable: 16px 20px;
+  --task-kanban-column-width: 280px;
+  --task-kanban-card-gap: 8px;
+  --task-calendar-day-height: 100px;
+
+  /* Animation timings */
+  --anim-fast: 150ms;
+  --anim-normal: 200ms;
+  --anim-slow: 300ms;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-16px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes countdownBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes starPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* CSSTransition: modal (scale + fade overlay, scale panel) */
+.modal-enter {
+  opacity: 0;
+}
+.modal-enter .modal-panel {
+  transform: scale(0.95);
+}
+.modal-enter-active {
+  opacity: 1;
+  transition: opacity var(--anim-normal) ease-out;
+}
+.modal-enter-active .modal-panel {
+  transform: scale(1);
+  transition: transform var(--anim-normal) ease-out;
+}
+.modal-exit {
+  opacity: 1;
+}
+.modal-exit-active {
+  opacity: 0;
+  transition: opacity var(--anim-fast) ease-in;
+}
+.modal-exit-active .modal-panel {
+  transform: scale(0.95);
+  transition: transform var(--anim-fast) ease-in;
+}
+
+/* CSSTransition: slide-up (backdrop fades in independently, panel slides up) */
+.slide-up-enter .slide-up-panel {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.slide-up-enter-active .slide-up-panel {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--anim-normal) ease-out,
+    transform var(--anim-normal) ease-out;
+}
+.slide-up-exit .slide-up-panel {
+  opacity: 1;
+}
+.slide-up-exit-active .backdrop-animate {
+  opacity: 0;
+  transition: opacity var(--anim-fast) ease-in;
+}
+.slide-up-exit-active .slide-up-panel {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--anim-fast) ease-in,
+    transform var(--anim-fast) ease-in;
+}
+
+/* CSSTransition: slide-down (multi-select bar) */
+.slide-down-enter {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+.slide-down-enter-active {
+  opacity: 1;
+  max-height: 60px;
+  transition: all var(--anim-fast) ease-out;
+}
+.slide-down-exit {
+  opacity: 1;
+  max-height: 60px;
+}
+.slide-down-exit-active {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all var(--anim-fast) ease-in;
+}
+
+/* CSSTransition: toast (slide up from bottom + fade) */
+.toast-enter {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.toast-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all var(--anim-normal) ease-out;
+}
+.toast-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-exit-active {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all var(--anim-normal) ease-in;
+}
+
+/* Utility: hover lift — includes color transitions so it can replace transition-colors */
+.hover-lift {
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke, transform,
+    box-shadow;
+  transition-duration: var(--anim-fast);
+  transition-timing-function: ease;
+}
+.hover-lift:hover:not(:active) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Utility: press scale */
+.press-scale:active {
+  transform: scale(0.97);
+}
+
+/* Utility: interactive button (hover lift + press scale) */
+.interactive-btn {
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke, transform,
+    box-shadow;
+  transition-duration: var(--anim-fast);
+  transition-timing-function: ease;
+}
+.interactive-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.interactive-btn:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* Utility: star pop animation */
+.star-animate {
+  animation: starPop var(--anim-slow) ease-out;
+}
+
+/* Backdrop blur fade-in */
+.backdrop-animate {
+  animation: backdropIn var(--anim-slow) ease-out forwards;
+}
+
+@keyframes backdropIn {
+  from {
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    background-color: rgba(0, 0, 0, 0);
+  }
+  to {
+    backdrop-filter: blur(var(--backdrop-blur-overlay));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur-overlay));
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Utility: stagger-in for list items */
+.stagger-in {
+  animation: fadeIn var(--anim-normal) ease-out both;
+}
+
+/* Stagger children: each child fades in with increasing delay */
+.stagger-children > * {
+  animation: fadeIn 200ms ease-out both;
+}
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 30ms;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 60ms;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 90ms;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 120ms;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 150ms;
+}
+.stagger-children > *:nth-child(7) {
+  animation-delay: 180ms;
+}
+.stagger-children > *:nth-child(8) {
+  animation-delay: 210ms;
+}
+
+/* Page transition */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
+}
+.page-exit {
+  opacity: 1;
+}
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
+
+/* Slide in from left (back navigation on mobile) */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.slide-in-left {
+  animation: slideInLeft 200ms ease-out both;
+}
+
+/* Utility: responsive aspect-ratio containers */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+.aspect-3-2 {
+  aspect-ratio: 3 / 2;
+}
+
+/* Utility: hover reveal (show child on hover) */
+.hover-reveal .reveal-target {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.hover-reveal:hover .reveal-target,
+.hover-reveal:focus-within .reveal-target {
+  opacity: 1;
+}
+
+/* ============================================
+ * TipTap Table Styles
+ * ============================================ */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1em 0;
+  overflow: hidden;
+}
+
+.tiptap table td,
+.tiptap table th {
+  min-width: 80px;
+  border: 2px solid var(--color-border-primary);
+  padding: 6px 8px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.tiptap table th {
+  background-color: var(--color-bg-tertiary);
+  font-weight: 600;
+  text-align: start;
+}
+
+.tiptap table .selectedCell::after {
+  z-index: 2;
+  position: absolute;
+  content: '';
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  pointer-events: none;
+}
+
+.tiptap table .column-resize-handle {
+  position: absolute;
+  inset-inline-end: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--color-accent);
+  pointer-events: none;
+}
+
+.tiptap .tableWrapper {
+  overflow-x: auto;
+}
+
+.tiptap .resize-cursor {
+  cursor: col-resize;
+}
+
+/* ============================================
+ * TipTap Mention Styles
+ * ============================================ */
+.mention-tag {
+  background-color: var(--color-accent-light);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: var(--color-accent);
+  font-weight: 500;
+  font-size: 0.9em;
+  text-decoration: none;
+  cursor: default;
+}
+
+.mention-tag:hover {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.mention-popup {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  box-shadow: var(--glass-shadow-elevated);
+  padding: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  min-width: 220px;
+}
+
+.mention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  transition: background-color var(--anim-fast);
+}
+
+.mention-item:hover,
+.mention-item.is-selected {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.mention-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mention-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mention-name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mention-email {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+ * Link Preview Card Styles
+ * ============================================ */
+.link-preview-card {
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  margin: 8px 0;
+  max-width: 400px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+}
+
+.link-preview-card:hover {
+  border-color: var(--color-accent);
+}
+
+.link-preview-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.link-preview-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  object-fit: contain;
+}
+
+.link-preview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.link-preview-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.link-preview-description {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.link-preview-domain {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.link-preview-loading {
+  padding: 12px;
+}
+
+.link-preview-loading-bar {
+  height: 8px;
+  background: var(--color-bg-tertiary);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+/* ─── Premium Micro-interactions ─────────────────────────────────────── */
+
+/* Ripple: expanding circle from click point */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Float: gentle vertical hover bobble */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Shimmer sweep (for loading skeletons / glass shimmer) */
+@keyframes shimmerSweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Scale pop: quick scale + fade for entrance */
+@keyframes scalePop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Glass edge glow: subtle border breathing */
+@keyframes edgeGlow {
+  0%,
+  100% {
+    border-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+  50% {
+    border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+ * Accessibility & Focus
+ * ============================================ */
+
+/* Visible focus ring for keyboard users (not mouse clicks) */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove focus ring for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip-to-content link (hidden until focused) */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  z-index: 100;
+  padding: 8px 16px;
+  background: var(--color-accent);
+  color: white;
+  font-size: 14px;
+  transition: top 150ms ease;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animated-bg,
+  .frosted-bg {
+    display: none;
+  }
+}
+
+/* Mobile: disable heavy animated blobs for GPU/performance */
+@media (max-width: 768px) {
+  .animated-bg {
+    display: none;
+  }
+  .frosted-bg {
+    opacity: 0.3;
+  }
+}
+
+/* ============================================
+ * Desktop-specific refinements
+ * ============================================ */
+html:not(.mobile) {
+  /* Desktop hover states for interactive elements */
+  --btn-hover-scale: 1.02;
+  --card-hover-lift: -2px;
+}
+
+/* Custom desktop pointer refinements */
+html:not(.mobile) .interactive-btn:hover {
+  transform: scale(var(--btn-hover-scale));
+  transition: transform 150ms ease;
+}
+
+html:not(.mobile) .card-hover:hover {
+  transform: translateY(var(--card-hover-lift));
+  box-shadow: var(--glass-shadow-elevated);
+  transition: all 200ms ease;
+}
+
+/* Desktop split pane styling */
+html:not(.mobile) .desktop-split-pane {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(400px, 2fr);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Desktop thread list refinements */
+html:not(.mobile) .thread-list-item {
+  cursor: pointer;
+}
+html:not(.mobile) .thread-list-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* Desktop sidebar � wider scrollbar, proper collapse */
+html:not(.mobile) .sidebar-scroll {
+  scrollbar-width: thin;
+}
+
+/* Ensure desktop never gets mobile touch styles */
+html:not(.mobile) button,
+html:not(.mobile) a,
+html:not(.mobile) [role='button'] {
+  min-height: unset; /* Remove Apple HIG 44px on desktop */
+}
+
+/* Desktop shell layout */
+.desktop-shell main {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Desktop: OfflineQueueIndicator floats bottom-right */
+.desktop-shell .offline-queue-indicator {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 50;
+  max-width: 360px;
+  box-shadow: var(--glass-shadow-elevated);
+}
+
+/* ============================================
+ * Desktop Settings — Education Block Styles
+ * ============================================ */
+
+/* Education block: Why/How/When container */
+.education-block {
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 12px;
+  transition: background 200ms ease;
+}
+
+/* Education block items */
+.education-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.education-item:not(:last-child) {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 8%, transparent);
+  margin-bottom: 6px;
+  padding-bottom: 12px;
+}
+
+.education-item .edu-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.education-item .edu-icon.why {
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: var(--color-warning);
+}
+
+.education-item .edu-icon.how {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+}
+
+.education-item .edu-icon.when {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.education-item .edu-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.education-item .edu-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+/* Desktop settings card refinements — legacy, replaced by SettingGroup Tailwind classes */
+html:not(.mobile) .settings-card {
+  border-radius: 12px;
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  padding: 24px;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+html:not(.mobile) .settings-card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+html:not(.mobile) .settings-card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Help center sidebar */
+.help-sidebar-panel {
+  width: 320px;
+  border-left: 1px solid var(--color-border-primary);
+  background: var(--color-bg-primary);
+  overflow-y: auto;
+  animation: slideInRight 200ms ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inline tooltip (?) icon */
+.info-tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: help;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.info-tooltip-trigger:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+/* Live preview area for Composing settings */
+.live-preview-area {
+  border: 1px solid var(--color-border-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  transition: all 200ms ease;
+}
+
+.live-preview-area .preview-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-secondary);
+  background: var(--color-bg-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-preview-area .preview-body {
+  padding: 20px;
+  min-height: 120px;
+}
+
+/* Desktop focus ring refinements */
+html:not(.mobile) .settings-focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ============================================
+ * Desktop Thread List
+ * ============================================ */
+html:not(.mobile) .desktop-thread-list {
+  height: 100vh;
+}
+
+html:not(.mobile) .desktop-thread-row {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border-secondary);
+  transition: background-color 150ms ease;
+}
+
+html:not(.mobile) .desktop-thread-row:hover {
+  background-color: var(--color-bg-hover);
+}
+
+html:not(.mobile) .desktop-thread-row.selected {
+  background-color: var(--color-bg-selected);
+}
+
+/* Show actions on hover on desktop */
+html:not(.mobile) .desktop-thread-row .row-actions {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+html:not(.mobile) .desktop-thread-row:hover .row-actions {
+  opacity: 1;
+}
+
+/* ============================================
+ * Desktop Composer / Editor Toolbar
+ * ============================================ */
+html:not(.mobile) .composer-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border-secondary);
+  background: var(--color-bg-secondary);
+}
+
+html:not(.mobile) .composer-toolbar button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  min-height: unset;
+}
+
+html:not(.mobile) .composer-toolbar .shortcut-badge {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-left: 4px;
+}
+
+/* ============================================
+ * Desktop Settings Page
+ * ============================================ */
+html:not(.mobile) .settings-page {
+  height: 100%;
+  overflow: hidden;
+}
+
+html:not(.mobile) .settings-nav {
+  border-right: 1px solid var(--color-border-primary);
+  overflow-y: auto;
+  padding: 20px 0;
+}
+
+html:not(.mobile) .settings-nav > div > div:first-child {
+  /* group label heading */
+}
+
+html:not(.mobile) .settings-content {
+  overflow-y: auto;
+}
+
+html:not(.mobile) .settings-section {
+  max-width: 896px;
+}
+
+/* ============================================
+ * Desktop Calendar
+ * ============================================ */
+html:not(.mobile) .calendar-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+html:not(.mobile) .calendar-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+html:not(.mobile) .calendar-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--color-border-secondary);
+}
+
+html:not(.mobile) .calendar-cell {
+  min-height: 100px;
+  background: var(--color-bg-primary);
+  padding: 8px;
+  cursor: pointer;
+}
+
+html:not(.mobile) .calendar-cell:hover {
+  background: var(--color-bg-hover);
+}
+
+/* ============================================
+ * Desktop Sidebar Navigation
+ * ============================================ */
+
+/* Increase nav item vertical padding on desktop */
+html:not(.mobile) .sidebar-nav-item {
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+
+/* Subtle accent left-border hover indicator on desktop */
+html:not(.mobile) .sidebar-nav-item:hover {
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent) 25%, transparent);
+}

@@ -1,0 +1,93 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+test-buildroot/
+.flatpak-builder/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/schemas
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+nul
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.project
+.classpath
+.settings/
+
+# Claude Code — ignore local settings but track shared skills
+.claude/*
+!.claude/skills/
+
+# Debug files
+debug-*.mjs
+
+# Tauri signing keys
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.jks
+*.keystore
+keystore.properties
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# i18n tooling output
+missing-keys.json
+
+# Packaging Artifacts
+build-dir/
+repo/
+*.flatpak
+*.rpm
+*.src.rpm
+/.agents
+package-lock.json
+src-tauri/Cargo.lock
+opencode.json
+.opencode/skills/*
+.trae/documents/*
+issues.md
+tmp/*
+verification/
+src-tauri/gen/android/app/*

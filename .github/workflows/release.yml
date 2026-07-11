@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_call:
+    inputs:
+      tag_name:
+        required: false
+        type: string
+      release_id:
+        required: false
+        type: string
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2.0"
+      
+      - name: Build Windows MSI
+        run: cargo tauri build --bundles msi
+        working-directory: src-tauri
+      
+      - name: Upload MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: smemaster-windows
+          path: src-tauri/target/release/bundle/msi/*.msi
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2.0"
+      
+      - name: Build Android APK
+        run: cargo tauri android build --apk
+        working-directory: src-tauri
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: smemaster-android
+          path: src-tauri/gen/android/app/build/outputs/apk/release/app-release.apk
+
+  create-release:
+    needs: [build-windows, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: smemaster-windows
+          path: artifacts/windows
+      
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: smemaster-android
+          path: artifacts/android
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          files: |
+            artifacts/windows/*.msi
+            artifacts/android/*.apk
+          generate_release_notes: true

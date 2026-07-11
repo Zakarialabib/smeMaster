@@ -1,0 +1,9 @@
+{
+  "table": "quick_replies",
+  "timestamp_fields": [],
+  "records": [
+    { "id": "demo-qr-ty", "account_id": "demo-account-1", "title": "Thank you", "body_html": "<p>Thank you for your email. I'll get back to you shortly.</p>", "shortcut": "ty", "sort_order": 0 },
+    { "id": "demo-qr-gotit", "account_id": "demo-account-1", "title": "Got it", "body_html": "<p>Got it, thanks!</p>", "shortcut": "gotit", "sort_order": 1 },
+    { "id": "demo-qr-ooa", "account_id": "demo-account-1", "title": "Out of office", "body_html": "<p>I'm currently out of the office. I'll respond to your email as soon as I return.</p>", "shortcut": "ooa", "sort_order": 2 }
+  ]
+}

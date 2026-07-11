@@ -1,0 +1,16 @@
+{
+  "table": "deliverability_events",
+  "timestamp_fields": ["created_at"],
+  "records": [
+    { "id": "demo-dev-1", "account_id": "demo-account-1", "event_type": "bounce", "event_data_json": "{\"email\":\"bounce@example.com\",\"bounceType\":\"soft\",\"reason\":\"Mailbox full\"}", "created_at": -172800 },
+    { "id": "demo-dev-2", "account_id": "demo-account-1", "event_type": "complaint", "event_data_json": "{\"email\":\"complaint@example.com\",\"provider\":\"gmail\"}", "created_at": -259200 },
+    { "id": "demo-dev-3", "account_id": "demo-account-1", "event_type": "delivered", "event_data_json": "{\"email\":\"alice@example.com\"}", "created_at": -86400 },
+    { "id": "demo-dev-4", "account_id": "demo-account-1", "event_type": "open", "event_data_json": "{\"email\":\"alice@example.com\"}", "created_at": -43200 },
+    { "id": "demo-dev-5", "account_id": "demo-account-1", "event_type": "click", "event_data_json": "{\"email\":\"bob@example.com\",\"link\":\"https://example.com/offer\"}", "created_at": -28800 },
+    { "id": "demo-dev-6", "account_id": "demo-account-1", "event_type": "bounce", "event_data_json": "{\"email\":\"invalid@example.com\",\"bounceType\":\"hard\",\"reason\":\"User unknown\"}", "created_at": -345600 },
+    { "id": "demo-dev-7", "account_id": "demo-account-1", "event_type": "unsubscribe", "event_data_json": "{\"email\":\"unsub@example.com\"}", "created_at": -432000 },
+    { "id": "demo-dev-8", "account_id": "demo-account-1", "event_type": "spam_report", "event_data_json": "{\"email\":\"spam@example.com\",\"provider\":\"yahoo\"}", "created_at": -518400 },
+    { "id": "demo-dev-9", "account_id": "demo-account-1", "event_type": "delay", "event_data_json": "{\"email\":\"delayed@example.com\",\"delay_seconds\":3600}", "created_at": -604800 },
+    { "id": "demo-dev-10", "account_id": "demo-account-1", "event_type": "delivered", "event_data_json": "{\"email\":\"carol@example.com\"}", "created_at": -64800 }
+  ]
+}

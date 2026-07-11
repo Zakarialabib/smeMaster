@@ -1,0 +1,60 @@
+/* ============================================
+ * Thread list item animations (CSSTransition)
+ * ============================================ */
+
+/* Entry animation */
+.thread-item-enter {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+.thread-item-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 250ms ease-out,
+    transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Exit animation */
+.thread-item-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+.thread-item-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition:
+    opacity 200ms ease-in,
+    transform 200ms ease-in;
+}
+
+/* ============================================
+ * Modal overlay fade animation
+ * ============================================ */
+
+/* Fade-only overlay (for full-screen modals, bottom sheets) */
+.modal-overlay-enter {
+  opacity: 0;
+}
+.modal-overlay-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+.modal-overlay-exit {
+  opacity: 1;
+}
+.modal-overlay-exit-active {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+/* ============================================
+ * Swipe action hint (subtle glow when actionable)
+ * ============================================ */
+.swipe-hint-left {
+  background: linear-gradient(to left, transparent, rgba(79, 70, 229, 0.06));
+}
+
+.swipe-hint-right {
+  background: linear-gradient(to right, transparent, rgba(79, 70, 229, 0.06));
+}

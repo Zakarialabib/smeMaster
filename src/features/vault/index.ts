@@ -1,0 +1,11 @@
+export { VaultPage } from "./pages/VaultPage";
+export { VaultFileCard } from "./components/VaultFileCard";
+export { VaultFileList } from "./components/VaultFileList";
+export { VaultFilePreview } from "./components/VaultFilePreview";
+export { VaultSearchBar } from "./components/VaultSearchBar";
+export { VaultStorageIndicator } from "./components/VaultStorageIndicator";
+export { VaultToolbar } from "./components/VaultToolbar";
+export { VaultUploadZone } from "./components/VaultUploadZone";
+export { VaultBreadcrumb } from "./components/VaultBreadcrumb";
+export { VaultEmptyState } from "./components/VaultEmptyState";
+export { useVaultStore } from "./stores/vaultStore";

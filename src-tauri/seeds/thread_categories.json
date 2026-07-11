@@ -1,0 +1,31 @@
+{
+  "table": "thread_categories",
+  "timestamp_fields": ["applied_at"],
+  "records": [
+    { "thread_id": "demo-thread-1", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-2", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-3", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-4", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-5", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-6", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-7", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-8", "account_id": "demo-account-1", "category": "newsletters", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-9", "account_id": "demo-account-1", "category": "promotions", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-10", "account_id": "demo-account-1", "category": "social", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-11", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-12", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-13", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-14", "account_id": "demo-account-1", "category": "promotions", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-15", "account_id": "demo-account-1", "category": "promotions", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-16", "account_id": "demo-account-1", "category": "newsletters", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-17", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-18", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-19", "account_id": "demo-account-1", "category": "promotions", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-20", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-21", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-22", "account_id": "demo-account-1", "category": "primary", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-23", "account_id": "demo-account-1", "category": "social", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-24", "account_id": "demo-account-1", "category": "promotions", "is_manual": 0, "is_user_override": 0, "applied_at": 0 },
+    { "thread_id": "demo-thread-25", "account_id": "demo-account-1", "category": "newsletters", "is_manual": 0, "is_user_override": 0, "applied_at": 0 }
+  ]
+}

@@ -1,0 +1,212 @@
+/* Spring-based transitions for mobile */
+:root {
+  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-gentle: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Mobile page/tab transitions ────────────────────────────────── */
+.mobile-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.mobile-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 200ms var(--spring-smooth),
+    transform 250ms var(--spring-bounce);
+}
+.mobile-exit {
+  opacity: 1;
+}
+.mobile-exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition:
+    opacity 150ms ease,
+    transform 200ms ease;
+}
+
+/* Legacy alias: tab-* classes */
+.tab-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.tab-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 200ms var(--spring-smooth),
+    transform 250ms var(--spring-bounce);
+}
+.tab-exit {
+  opacity: 1;
+}
+.tab-exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition:
+    opacity 150ms ease,
+    transform 200ms ease;
+}
+
+/* ── Modal open/close ──────────────────────────────────────────── */
+.modal-open {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.modal-open-active {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 200ms ease,
+    transform 250ms var(--spring-bounce);
+}
+.modal-close {
+  opacity: 1;
+  transform: scale(1);
+}
+.modal-close-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+/* Legacy alias: modal-* classes */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 200ms ease,
+    transform 250ms var(--spring-bounce);
+}
+.modal-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+/* ── Bottom sheet (slide up) ───────────────────────────────────── */
+.bottom-sheet-enter {
+  transform: translateY(100%);
+}
+.bottom-sheet-enter-active {
+  transform: translateY(0);
+  transition: transform 300ms var(--spring-bounce);
+}
+.bottom-sheet-exit {
+  transform: translateY(0);
+}
+.bottom-sheet-exit-active {
+  transform: translateY(100%);
+  transition: transform 200ms ease;
+}
+
+/* Legacy alias: sheet-* classes */
+.sheet-enter {
+  transform: translateY(100%);
+}
+.sheet-enter-active {
+  transform: translateY(0);
+  transition: transform 300ms var(--spring-bounce);
+}
+.sheet-exit {
+  transform: translateY(0);
+}
+.sheet-exit-active {
+  transform: translateY(100%);
+  transition: transform 200ms ease;
+}
+
+/* ── List item stagger ─────────────────────────────────────────── */
+.list-item-enter {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.list-item-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 250ms var(--spring-smooth),
+    transform 300ms var(--spring-bounce);
+}
+
+/* Page slide transitions - added 2026-07-05 */
+.page-slide-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.page-slide-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
+}
+.page-slide-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+.page-slide-exit-active {
+  transform: translateX(-30%);
+  opacity: 0;
+  transition: transform 250ms ease, opacity 250ms ease;
+}
+
+/* Slide up transitions for bottom sheets */
+.slide-up-enter {
+  transform: translateY(100%);
+}
+.slide-up-enter-active {
+  transform: translateY(0);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.slide-up-exit {
+  transform: translateY(0);
+}
+.slide-up-exit-active {
+  transform: translateY(100%);
+  transition: transform 250ms ease;
+}
+
+/* Scale transitions for modals */
+.scale-enter {
+  transform: scale(0.95);
+  opacity: 0;
+}
+.scale-enter-active {
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.scale-exit {
+  transform: scale(1);
+  opacity: 1;
+}
+.scale-exit-active {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+/* Reconnection animation - added 2026-07-05 */
+@keyframes reconnect-pulse {
+  0% { background-color: rgb(34 197 94 / 0); transform: scale(1); }
+  50% { background-color: rgb(34 197 94 / 0.1); transform: scale(1.02); }
+  100% { background-color: rgb(34 197 94 / 0); transform: scale(1); }
+}
+
+.reconnect-animate {
+  animation: reconnect-pulse 1s ease-out;
+}

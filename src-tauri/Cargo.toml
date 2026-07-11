@@ -1,0 +1,103 @@
+[package]
+name = "smemaster"
+version = "1.0.0" # x-release-please-version
+description = "Mobile-first email, automation, and lightweight CRM for SMEs"
+authors = ["SMEMaster Team"]
+license = "Apache-2.0"
+repository = "https://github.com/Zakarialabib/smeMaster"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+pgp = "0.19.0"
+rand = "0.8"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+async-trait = "0.1"
+log = "0.4"
+tauri = { version = "2.11", features = ["tray-icon"] }
+tauri-plugin-log = "2.8.0"
+tauri-plugin-notification = "2.3.3"
+tauri-plugin-opener = "2.5.4"
+tauri-plugin-dialog = "2.7.1"
+tauri-plugin-fs = "2.5.1"
+tauri-plugin-single-instance = "2.4.2"
+tauri-plugin-deep-link = "2.4.9"
+tauri-plugin-updater = { version = "2.10.1", optional = true }
+sqlx = { version = "0.9.0", features = ["runtime-tokio", "sqlite", "uuid", "chrono"] }
+tokio = { version = "1", features = ["net", "io-util", "sync", "macros", "rt", "time", "fs"] }
+futures = "0.3"
+async-imap = { version = "0.11.2", default-features = false, features = ["runtime-tokio"] }
+mail-parser = "0.11.3"
+lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "tokio1-rustls-tls", "rustls-tls",  "builder"] }
+base64 = "0.22"
+hex = "0.4"
+aes-gcm = "0.10"
+chrono = { version = "=0.4.38", default-features = false, features = ["std", "clock", "serde"] }
+utf7-imap = "0.3"
+socket2 = "0.6.3"
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls-no-provider", "json", "http2", "form"] }
+trust-dns-resolver = { version = "0.23", default-features = false, features = ["tokio-runtime"] }
+dirs = "6.0.0"
+url = "2"
+webpki-roots = "0.26"  
+
+# TLS: rustls by default, native-tls for legacy builds
+# NOTE: default-features=false to exclude aws-lc-sys (fails on NDK cross-compile)
+# NOTE: native-tls will NOT link on Android NDK — use only on desktop (rustls is safe)
+rustls = { version = "0.23.40", default-features = false, features = ["ring", "std", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+# webpki-roots is used instead of rustls-native-certs for Android TLS support
+native-tls = { version = "0.2", optional = true }
+tokio-native-tls = { version = "0.3", optional = true }
+tauri-plugin-persisted-scope = "2.3.7"
+tauri-plugin-biometric = "2.3.2"
+tauri-plugin-window-state = "2.4.1"
+tauri-plugin-clipboard-manager = "2.3.2"
+tauri-plugin-store = "2.4.2"
+tauri-plugin-global-shortcut = "2.2.1"
+auto-launch = "0.6.0"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }
+glob = "0.3"
+smallvec = "1"
+thiserror = "2"
+sysinfo = "0.32"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+dashmap = "6.1"
+automerge = "0.6"
+mdns-sd = "0.11"
+rig-core = { version = "0.3.0", default-features = false }
+lancedb = { version = "0.6", default-features = false }
+arrow = "51"
+candle-core = "0.8.1"
+candle-nn = "0.8.1"
+candle-transformers = "0.8.1"
+hf-hub = "0.4"
+lopdf = "0.34"
+docx-rs = "0.4"
+calamine = "0.26"
+tokenizers = "0.21"
+ring = "0.17.14"
+
+[dev-dependencies]
+tempfile = "3"
+env_logger = "0.11"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_UI_Shell"] }
+
+[features]
+default = ["rustls-tls"]
+native-tls = ["dep:native-tls", "dep:tokio-native-tls"]
+rustls-tls = []
+updater = ["dep:tauri-plugin-updater"]
+devtools = ["tauri/devtools"]

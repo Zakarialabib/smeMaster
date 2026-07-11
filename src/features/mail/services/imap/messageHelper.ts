@@ -1,0 +1,132 @@
+import {
+  executeSearchQuery,
+  bulkUpdateMessageImapFolder,
+} from "@shared/services/db/db-invoke";
+import type { DbMessage } from "@shared/services/db/messages";
+
+export interface ImapMessageInfo {
+  uid: number;
+  folder: string;
+}
+
+/**
+ * Look up imap_uid and imap_folder from the messages DB table for the given message IDs.
+ * Only returns entries where both imap_uid and imap_folder are non-null.
+ */
+export async function getImapUidsForMessages(
+  accountId: string,
+  messageIds: string[],
+): Promise<Map<string, ImapMessageInfo>> {
+  if (messageIds.length === 0) {
+    return new Map();
+  }
+
+  const placeholders = messageIds.map((_, i) => `$${i + 2}`).join(", ");
+  const rows = await executeSearchQuery(
+    `SELECT id, imap_uid, imap_folder FROM messages WHERE account_id = $1 AND id IN (${placeholders})`,
+    [accountId, ...messageIds],
+  ) as Pick<DbMessage, "id" | "imap_uid" | "imap_folder">[];
+
+  const result = new Map<string, ImapMessageInfo>();
+  for (const row of rows) {
+    if (row.imap_uid != null && row.imap_folder != null) {
+      result.set(row.id, { uid: row.imap_uid, folder: row.imap_folder });
+    }
+  }
+  return result;
+}
+
+/**
+ * Group IMAP UIDs by their folder path.
+ */
+export function groupMessagesByFolder(
+  messages: Map<string, ImapMessageInfo>,
+): Map<string, number[]> {
+  const grouped = new Map<string, number[]>();
+  for (const { uid, folder } of messages.values()) {
+    const existing = grouped.get(folder);
+    if (existing) {
+      existing.push(uid);
+    } else {
+      grouped.set(folder, [uid]);
+    }
+  }
+  return grouped;
+}
+
+/**
+ * Map from special-use flags to the expected label IDs in the DB.
+ */
+const SPECIAL_USE_TO_LABEL_ID: Record<string, string> = {
+  "\\Trash": "TRASH",
+  "\\Junk": "SPAM",
+  "\\Sent": "SENT",
+  "\\Drafts": "DRAFT",
+  "\\Archive": "archive",
+};
+
+/**
+ * Find the folder path for a special-use folder (e.g. \\Trash, \\Junk, \\Sent, \\Drafts, \\Archive).
+ * Looks up the labels table using the imap_special_use column first, then falls back to label ID.
+ */
+export async function findSpecialFolder(
+  accountId: string,
+  specialUse: string,
+): Promise<string | null> {
+  // Primary: look up by imap_special_use attribute
+  const rows = await executeSearchQuery(
+    "SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND imap_special_use = $2 LIMIT 1",
+    [accountId, specialUse],
+  ) as { imap_folder_path: string | null; name: string }[];
+  if (rows.length > 0) {
+    return rows[0]!.imap_folder_path ?? rows[0]!.name;
+  }
+
+  // Fallback: look up by the well-known label ID (e.g. "TRASH", "SPAM")
+  // This covers servers where folder name heuristics detected the folder type
+  // but didn't set imap_special_use (or the attribute wasn't reported by the server).
+  const labelId = SPECIAL_USE_TO_LABEL_ID[specialUse];
+  if (labelId) {
+    const fallbackRows = await executeSearchQuery(
+      "SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND id = $2 AND imap_folder_path IS NOT NULL LIMIT 1",
+      [accountId, labelId],
+    ) as { imap_folder_path: string | null; name: string }[];
+    if (fallbackRows.length > 0) {
+      return fallbackRows[0]!.imap_folder_path ?? fallbackRows[0]!.name;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Map DB security values to ImapConfig/SmtpConfig security types.
+ * DB stores 'ssl'/'starttls'/'none', but configs use 'tls'/'starttls'/'none'.
+ */
+export function securityToConfigType(
+  dbSecurity: string,
+): "tls" | "starttls" | "none" {
+  switch (dbSecurity) {
+    case "ssl":
+      return "tls";
+    case "starttls":
+      return "starttls";
+    case "none":
+      return "none";
+    default:
+      return "tls";
+  }
+}
+
+/**
+ * Update the imap_folder column for messages after a move operation.
+ */
+export async function updateMessageImapFolder(
+  accountId: string,
+  messageIds: string[],
+  newFolder: string,
+): Promise<void> {
+  if (messageIds.length === 0) return;
+
+  await bulkUpdateMessageImapFolder(accountId, messageIds, newFolder);
+}

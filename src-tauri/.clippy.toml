@@ -1,0 +1,14 @@
+# ── Clippy Lint Configuration ──────────────────────────────────────────
+# Applied on every `cargo clippy` run. Designed for a Tauri 2 + SQLite
+# desktop app. Deny lints are CI-blocking; warn lints are advisory.
+
+# === Deny (CI-breaking) ===
+disallowed-names = ["foo", "bar", "baz", "qux"]
+doc-valid-idents = ["const", "impl", "fn", "struct", "enum", "trait", "type", "let"]
+
+# === Warn ===
+# large-enum-variant-threshold = 3
+
+# === Allow ===
+too-many-arguments-threshold = 12
+struct-field-name-threshold = 40

@@ -1,0 +1,324 @@
+/* Mobile-specific styles — only activate when:
+ * 1. Viewport is ≤ 768px (phone/phone-folded)
+ * 2. html has .mobile class (set by usePlatform hook)
+ */
+
+@media (max-width: 768px) {
+  html.mobile,
+  html.mobile body,
+  html.mobile #root {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+    /* Android navigation bar background color — extend sidebar-bg into safe area */
+    background-color: var(--color-sidebar-bg);
+  }
+
+  /* Ensure the root shell containers also have the correct background for safe area insets */
+  html.mobile .mobile-shell-content,
+  html.mobile .bottom-tab-bar {
+    background-color: var(--color-frost-bg);
+  }
+
+  /* Safe area top wrapper (used for WindowTitleBar on tablet landscape) */
+  html.mobile .safe-area-top {
+    background-color: var(--color-frost-bg);
+  }
+
+  /* Safe area bottom wrapper (used for AppLayout content on tablet landscape) */
+  html.mobile .safe-area-bottom {
+    background-color: var(--color-frost-bg);
+  }
+
+  /* Force all route pages to properly fill the PhoneShell without overflowing */
+  html.mobile .mobile-shell-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  html.mobile .mobile-shell-content > * {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Ensure modals are full-width on phone */
+  html.mobile [data-radix-dialog-content] {
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px;
+  }
+
+  /* Prevent overflow from fixed-width elements in flexible containers */
+  html.mobile .mobile-shell-content select,
+  html.mobile .mobile-shell-content input[type='text'],
+  html.mobile .mobile-shell-content input[type='search'] {
+    max-width: 100%;
+  }
+
+  /* Ensure filter panels don't overflow */
+  html.mobile .mobile-shell-content .filter-panel {
+    flex-wrap: wrap;
+  }
+  html.mobile .mobile-shell-content .filter-panel > * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Truncate long titles/labels automatically */
+  html.mobile .mobile-shell-content h1,
+  html.mobile .mobile-shell-content h2,
+  html.mobile .mobile-shell-content h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Ensure list rows don't overflow */
+  html.mobile .mobile-shell-content .list-row {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  /* Layout: sidebar should overlay instead of pushing content on small screens */
+  html.mobile aside[class*='sidebar'] {
+    position: fixed;
+    z-index: 40;
+    height: 100vh;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+  }
+  html.mobile aside[class*='sidebar'].open {
+    transform: translateX(0);
+  }
+
+  /* -- Touch-friendly refinements ---------------------------------------- */
+
+  /* Increase tap targets on mobile (Apple HIG minimum 44pt) */
+  html.mobile button,
+  html.mobile a,
+  html.mobile [role='button'] {
+    min-height: 44px;
+  }
+
+  /* Better safe area support */
+  html.mobile .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
+  }
+  html.mobile .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  html.mobile .safe-area-left {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  html.mobile .safe-area-right {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Large touch targets for BottomTabBar */
+  html.mobile .bottom-tab-btn {
+    min-height: 48px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  /* Active tab indicator animation */
+  html.mobile .bottom-tab-active {
+    position: relative;
+  }
+  html.mobile .bottom-tab-active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 0 0 2px 2px;
+    animation: tabIndicatorIn 0.2s ease-out forwards;
+  }
+
+  /* Prevent text selection during swipe */
+  html.mobile .swipeable-row {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+
+  /* Keyboard-aware containers: smooth height transition when keyboard opens */
+  html.mobile .mobile-keyboard-aware {
+    transition: height 0.2s ease;
+  }
+
+  /* Composer keyboard handling: prevent overlap with send button */
+  html.mobile .composer-container {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Prevent horizontal scroll on images, tables, and pre blocks */
+  html.mobile img,
+  html.mobile table,
+  html.mobile pre,
+  html.mobile code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Bottom drawer / sheet safe area */
+  html.mobile .bottom-sheet {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+  }
+
+  /* Sidebar nav items need bigger padding for touch */
+  html.mobile nav a,
+  html.mobile nav button:not(.bottom-tab-btn) {
+    min-height: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+/* -- Tab indicator animation ------------------------------------------------ */
+@keyframes tabIndicatorIn {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* -- Pull-to-refresh spinner ------------------------------------------------ */
+html.mobile .pull-to-refresh {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  color: var(--color-text-tertiary);
+}
+
+html.mobile .pull-to-refresh .spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border-primary);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: ptrSpin 0.6s linear infinite;
+}
+
+@keyframes ptrSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* -- Notification toast slide-down animation (unified, no mobile restriction) -- */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-down {
+  animation: slide-down 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ── iOS Spring Animations ────────────────────────────────────────────── */
+
+/* Toast slide in from top (spring) */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Feature card enter — scale + fade (spring) */
+@keyframes cardSpringIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Page content fade + slide up (spring) */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab bar indicator spring bounce */
+@keyframes tabBounceIn {
+  0% {
+    transform: scaleX(0.3) translateX(-50%);
+  }
+  50% {
+    transform: scaleX(1.1) translateX(-50%);
+  }
+  80% {
+    transform: scaleX(0.9) translateX(-50%);
+  }
+  100% {
+    transform: scaleX(1) translateX(-50%);
+  }
+}
+
+/* Staggered card delay helpers */
+.ios-stagger-1 {
+  animation-delay: 0ms;
+}
+.ios-stagger-2 {
+  animation-delay: 60ms;
+}
+.ios-stagger-3 {
+  animation-delay: 120ms;
+}
+.ios-stagger-4 {
+  animation-delay: 180ms;
+}
+.ios-stagger-5 {
+  animation-delay: 240ms;
+}
+.ios-stagger-6 {
+  animation-delay: 300ms;
+}
+
+/* Utility: spring cubic-bezier (iOS system spring) */
+.ios-spring {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tab bar indicator with spring */
+html.mobile .bottom-tab-active::after {
+  animation: tabBounceIn 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Touch feedback scale */
+.ios-tap {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ios-tap:active {
+  transform: scale(0.94);
+}

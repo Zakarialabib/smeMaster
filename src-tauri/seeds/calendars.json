@@ -1,0 +1,7 @@
+{
+  "table": "calendars",
+  "timestamp_fields": ["created_at", "updated_at"],
+  "records": [
+    { "id": "demo-cal-main", "company_id": "demo-company-1", "provider": "local", "remote_id": "local", "display_name": "My Calendar", "color": "#3b82f6", "is_primary": 1, "is_visible": 1, "created_at": -31536000, "updated_at": 0 }
+  ]
+}

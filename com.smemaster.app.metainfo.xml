@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop-application">
+  <id>com.smemaster.app</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <name>SMEMaster</name>
+  <summary>Minimal email, automation, and CRM workspace for SMEs</summary>
+  <description>
+    <p>SMEMaster unifies lead prospection, email operations, automation marketing, and a lightweight CRM for small and medium businesses.</p>
+  </description>
+  <url type="homepage">https://github.com/Zakarialabib/smeMaster</url>
+  <url type="bugtracker">https://github.com/Zakarialabib/smeMaster/issues</url>
+  <launchable type="desktop-id">com.smemaster.app.desktop</launchable>
+  <releases>
+    <release version="0.4.22" date="2026-05-14" />
+  </releases>
+  <developer id="app.smemaster">
+    <name>SMEMaster Team</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <icons>
+    <icon type="cached" width="128" height="128">/app/share/icons/hicolor/128x128/apps/com.smemaster.app.png</icon>
+    <icon type="cached" width="256" height="256">/app/share/icons/hicolor/256x256/apps/com.smemaster.app.png</icon>
+  </icons>
+</component>
+

@@ -1,0 +1,16 @@
+{
+  "table": "engagement_log",
+  "timestamp_fields": ["created_at"],
+  "records": [
+    { "id": "el-1", "contact_id": "demo-contact-1", "event_type": "email_sent", "score_delta": 5, "created_at": -172800 },
+    { "id": "el-2", "contact_id": "demo-contact-1", "event_type": "task_completed", "score_delta": 3, "created_at": -86400 },
+    { "id": "el-3", "contact_id": "demo-contact-2", "event_type": "email_received", "score_delta": 2, "created_at": -86400 },
+    { "id": "el-4", "contact_id": "demo-contact-2", "event_type": "note_added", "score_delta": 1, "created_at": -259200 },
+    { "id": "el-5", "contact_id": "demo-contact-3", "event_type": "email_sent", "score_delta": 10, "created_at": 0 },
+    { "id": "el-6", "contact_id": "demo-contact-3", "event_type": "task_completed", "score_delta": 5, "created_at": -86400 },
+    { "id": "el-7", "contact_id": "demo-contact-4", "event_type": "email_received", "score_delta": 3, "created_at": -345600 },
+    { "id": "el-8", "contact_id": "demo-contact-4", "event_type": "email_sent", "score_delta": 2, "created_at": -432000 },
+    { "id": "el-9", "contact_id": "demo-contact-5", "event_type": "note_added", "score_delta": 1, "created_at": -518400 },
+    { "id": "el-10", "contact_id": "demo-contact-5", "event_type": "email_received", "score_delta": 1, "created_at": -604800 }
+  ]
+}

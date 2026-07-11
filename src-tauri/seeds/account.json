@@ -1,0 +1,37 @@
+{
+  "table": "accounts",
+  "timestamp_fields": ["created_at", "updated_at", "token_expires_at", "last_sync_at"],
+  "records": [
+    {
+      "id": "demo-account-1",
+      "company_id": "demo-company-1",
+      "email": "demo@smemaster.app",
+      "display_name": "Demo User",
+      "avatar_url": null,
+      "access_token": null,
+      "refresh_token": null,
+      "token_expires_at": null,
+      "history_id": null,
+      "last_sync_at": null,
+      "is_active": 1,
+      "provider": "local",
+      "imap_host": null,
+      "imap_port": null,
+      "imap_security": null,
+      "smtp_host": null,
+      "smtp_port": null,
+      "smtp_security": null,
+      "auth_method": "none",
+      "imap_password": null,
+      "imap_username": null,
+      "oauth_provider": null,
+      "oauth_client_id": null,
+      "oauth_client_secret": null,
+      "smtp_username": null,
+      "smtp_password": null,
+      "metadata_json": "{}",
+      "created_at": -31536000,
+      "updated_at": 0
+    }
+  ]
+}

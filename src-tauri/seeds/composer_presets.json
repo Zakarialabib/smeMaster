@@ -1,0 +1,9 @@
+{
+  "table": "composer_presets",
+  "timestamp_fields": ["created_at"],
+  "records": [
+    { "id": "demo-preset-1", "account_id": "demo-account-1", "name": "Quick Reply", "default_reply_mode": "reply", "send_and_archive": 0, "undo_send_delay": 10, "font_family": "sans-serif", "font_size": 14, "is_default": 1, "created_at": -2592000 },
+    { "id": "demo-preset-2", "account_id": "demo-account-1", "name": "Formal Response", "default_reply_mode": "reply", "send_and_archive": 1, "undo_send_delay": 15, "font_family": "serif", "font_size": 14, "is_default": 0, "created_at": -1728000 },
+    { "id": "demo-preset-3", "account_id": "demo-account-1", "name": "Follow Up", "default_reply_mode": "reply_all", "send_and_archive": 0, "undo_send_delay": 20, "font_family": "sans-serif", "font_size": 13, "is_default": 0, "created_at": -864000 }
+  ]
+}

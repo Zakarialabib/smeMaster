@@ -1,0 +1,74 @@
+import { invokeCommand } from './command';
+
+import type { BackupSchedule, Campaign } from '../schema';
+
+export async function listCampaigns(companyId: string): Promise<Campaign[]> {
+  return invokeCommand<Campaign[]>('db_list_campaigns', { companyId });
+}
+
+export async function getCampaign(id: string): Promise<Campaign | null> {
+  return invokeCommand<Campaign | null>('db_get_campaign', { id });
+}
+
+export async function createCampaign(
+  companyId: string,
+  name: string,
+  templateId?: string | null,
+  segmentId?: string | null,
+): Promise<string> {
+  return invokeCommand<string>('db_create_campaign', {
+    companyId,
+    name,
+    templateId: templateId ?? null,
+    segmentId: segmentId ?? null,
+  });
+}
+
+export async function updateCampaignStatus(
+  id: string,
+  status: string,
+  sentAt?: number | null,
+): Promise<void> {
+  return invokeCommand<void>('db_update_campaign_status', { id, status, sentAt: sentAt ?? null });
+}
+
+export async function incrementCampaignSentCount(id: string): Promise<void> {
+  return invokeCommand<void>('db_increment_campaign_sent_count', { id });
+}
+
+export async function deleteCampaign(id: string): Promise<void> {
+  return invokeCommand<void>('db_delete_campaign', { id });
+}
+
+export async function createCampaignWithRecipients(input: {
+  companyId: string;
+  name: string;
+  templateId?: string | null;
+  segmentId?: string | null;
+  abTestConfig?: string | null;
+  contactIds: string[];
+}): Promise<{ campaign: Campaign; recipientCount: number }> {
+  return invokeCommand<{ campaign: Campaign; recipientCount: number }>(
+    'db_create_campaign_with_recipients',
+    {
+      input: {
+        company_id: input.companyId,
+        name: input.name,
+        template_id: input.templateId ?? null,
+        segment_id: input.segmentId ?? null,
+        ab_test_config: input.abTestConfig ?? null,
+        contact_ids: input.contactIds,
+      },
+    },
+  );
+}
+
+export async function sendCampaign(campaignId: string): Promise<number> {
+  return invokeCommand<number>('db_send_campaign', { campaignId });
+}
+
+export async function listBackupSchedules(companyId?: string | null): Promise<BackupSchedule[]> {
+  return invokeCommand<BackupSchedule[]>('db_list_backup_schedules', {
+    companyId: companyId ?? null,
+  });
+}

@@ -1,0 +1,26 @@
+{
+  "table": "companies",
+  "timestamp_fields": ["created_at", "updated_at"],
+  "records": [
+    {
+      "id": "demo-company-1",
+      "name": "SME Master Demo",
+      "legal_name": "SME Master Inc.",
+      "email": "demo@smemaster.app",
+      "phone": "+1-555-0100",
+      "address_line1": "123 Business Ave",
+      "address_line2": "Suite 100",
+      "city": "San Francisco",
+      "state": "CA",
+      "postal_code": "94105",
+      "country": "US",
+      "website": "https://smemaster.app",
+      "industry": "Technology",
+      "timezone": "America/New_York",
+      "logo_url": null,
+      "settings_json": "{}",
+      "created_at": -31536000,
+      "updated_at": 0
+    }
+  ]
+}

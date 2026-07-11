@@ -1,0 +1,13 @@
+{
+  "table": "labels",
+  "timestamp_fields": [],
+  "records": [
+    { "id": "INBOX", "account_id": "demo-account-1", "name": "Inbox", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 0, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "SENT", "account_id": "demo-account-1", "name": "Sent", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 1, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "STARRED", "account_id": "demo-account-1", "name": "Starred", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 2, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "IMPORTANT", "account_id": "demo-account-1", "name": "Important", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 3, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "DRAFTS", "account_id": "demo-account-1", "name": "Drafts", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 4, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "TRASH", "account_id": "demo-account-1", "name": "Trash", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 5, "imap_folder_path": null, "imap_special_use": null },
+    { "id": "SPAM", "account_id": "demo-account-1", "name": "Spam", "type": "system", "color_bg": null, "color_fg": null, "visible": 1, "sort_order": 6, "imap_folder_path": null, "imap_special_use": null }
+  ]
+}

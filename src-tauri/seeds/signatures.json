@@ -1,0 +1,9 @@
+{
+  "table": "signatures",
+  "timestamp_fields": [],
+  "records": [
+    { "id": "demo-sig-professional", "account_id": "demo-account-1", "name": "Professional", "body_html": "<p style=\"font-size:12px;color:#52525b;\">Best regards,<br>{{my_name}}</p>", "is_default": 1, "sort_order": 0 },
+    { "id": "demo-sig-casual", "account_id": "demo-account-1", "name": "Casual", "body_html": "<p style=\"font-size:12px;color:#52525b;\">Thanks,<br>{{my_name}}</p>", "is_default": 0, "sort_order": 1 },
+    { "id": "demo-sig-formal", "account_id": "demo-account-1", "name": "Formal", "body_html": "<p style=\"font-size:12px;color:#52525b;\">Sincerely,<br>{{my_name}}<br>{{my_title}}<br>{{my_email}}</p>", "is_default": 0, "sort_order": 2 }
+  ]
+}

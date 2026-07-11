@@ -1,0 +1,32 @@
+{
+  "table": "thread_labels",
+  "timestamp_fields": [],
+  "records": [
+    { "thread_id": "demo-thread-1", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-1", "account_id": "demo-account-1", "label_id": "STARRED" },
+    { "thread_id": "demo-thread-1", "account_id": "demo-account-1", "label_id": "SENT" },
+    { "thread_id": "demo-thread-2", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-2", "account_id": "demo-account-1", "label_id": "IMPORTANT" },
+    { "thread_id": "demo-thread-2", "account_id": "demo-account-1", "label_id": "SENT" },
+    { "thread_id": "demo-thread-3", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-3", "account_id": "demo-account-1", "label_id": "SENT" },
+    { "thread_id": "demo-thread-4", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-4", "account_id": "demo-account-1", "label_id": "SENT" },
+    { "thread_id": "demo-thread-5", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-6", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-7", "account_id": "demo-account-1", "label_id": "SENT" },
+    { "thread_id": "demo-thread-11", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-11", "account_id": "demo-account-1", "label_id": "IMPORTANT" },
+    { "thread_id": "demo-thread-12", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-13", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-14", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-15", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-17", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-18", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-20", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-21", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-21", "account_id": "demo-account-1", "label_id": "IMPORTANT" },
+    { "thread_id": "demo-thread-22", "account_id": "demo-account-1", "label_id": "INBOX" },
+    { "thread_id": "demo-thread-22", "account_id": "demo-account-1", "label_id": "SENT" }
+  ]
+}

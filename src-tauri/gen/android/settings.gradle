@@ -1,0 +1,21 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/gradle-plugin'; allowInsecureProtocol = true }
+        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/public'; allowInsecureProtocol = true }
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/google'; allowInsecureProtocol = true }
+        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/public'; allowInsecureProtocol = true }
+    }
+}
+include ':app'
+
+apply from: 'tauri.settings.gradle'

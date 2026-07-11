@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMEMaster</title>
+    <link rel="icon" type="image/png" sizes="128x128" href="/src-tauri/icons/128x128.png" />
+    <style>
+      /* Inline splash styles — shown immediately while React bundle loads.
+         Once React mounts, it replaces #root content entirely. */
+      body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafaf9;
+        overflow: hidden;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      }
+      .splash-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 340px;
+        padding: 40px 32px 36px;
+        animation: splashFadeIn 0.35s ease-out forwards;
+      }
+      .splash-wordmark {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #1c1917;
+      }
+      .splash-wordmark-accent {
+        color: #4f46e5;
+      }
+      .splash-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4f46e5;
+        margin-top: 4px;
+      }
+      .splash-tagline {
+        font-size: 13px;
+        font-weight: 400;
+        color: #78716c;
+        margin-top: 6px;
+        letter-spacing: 0.3px;
+      }
+      .splash-spinner {
+        width: 24px;
+        height: 24px;
+        margin-top: 28px;
+        border: 2px solid rgba(79, 70, 229, 0.2);
+        border-top-color: #4f46e5;
+        border-radius: 50%;
+        animation: splashSpin 0.8s linear infinite;
+      }
+      .splash-loading-text {
+        font-size: 11.5px;
+        color: #57534e;
+        margin-top: 12px;
+        letter-spacing: 0.4px;
+        font-weight: 500;
+        animation: splashPulse 2s ease-in-out infinite;
+      }
+      @keyframes splashFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes splashSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes splashPulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Inline splash content — replaced by React once the bundle loads -->
+      <div class="splash-card">
+        <div class="splash-wordmark">
+          <span class="splash-wordmark-accent">SME</span>Master
+          <span class="splash-dot"></span>
+        </div>
+        <div class="splash-tagline">Your Mail &amp; CRM</div>
+        <div class="splash-spinner"></div>
+        <div class="splash-loading-text">Loading your inbox...</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
