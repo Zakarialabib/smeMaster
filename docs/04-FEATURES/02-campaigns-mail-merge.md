@@ -56,6 +56,10 @@ The contacts query in CampaignComposer now includes `display_name` and `company`
 
 Campaign analytics are part of the product surface, but this doc should describe only the analytics that are currently represented in the live UI and service layer. Do not reintroduce undocumented tables or speculative reporting pipelines.
 
+### Feature access (Simplified Core, Iteration 4)
+
+Campaigns are gated behind the **Pro** feature flag (`campaigns`: `basicLimit: 0`, `proLimit: null`). The gate is enforced in the campaigns feature via `useFeatureFlagStore` + the `UpgradeBanner` (the composer/list surface is shown read-only to non-Pro tiers); the generic `<FeatureGate>` component is not used by this feature. The 4-step `CampaignComposer` wizard (audience → template → schedule → review) ships on desktop/tablet, with a mobile view-only card layout (status, recipient counts, retry queued operations). Campaign templates are filtered from the `templates` table by `template_type = 'campaign'`, and the feature reuses the existing `campaigns` / `templates` / `pending_operations` tables — no new backend tables are introduced.
+
 ## Boundaries
 
 Keep these responsibilities separate:

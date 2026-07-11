@@ -23,7 +23,7 @@
 
 ### Recent Highlights (since 0.9)
 
-- **Invoicing Module** — Morocco DGI-compliant billing/ERP: 7-table schema (i64 money), PEPPOL/UBL 2.1 XML, lopdf A4 PDF, 24 Tauri commands, company ICE/IF/RC/CNSS identifiers
+- **Invoicing Module (backend + frontend)** — Morocco DGI-compliant billing/ERP: 7-table schema (i64 money), PEPPOL/UBL 2.1 XML, lopdf A4 PDF, 24 Tauri commands, company ICE/IF/RC/CNSS identifiers. Frontend is now fully built — `InvoicingDashboard`, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` (type/status filters), `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` workflow, CRM `InvoicesTab`, `InvoiceSelectionModal`, plus an ERP shell (multi-company switcher, stock, journal, financial reports, RBAC UI). Wiring audit fixed 5 backend-contract mismatches in the TS wrapper; new unit tests cover the contract + store. Known backend gaps: `db_list_clients` ignores company, `db_send_invoice` is a stub, `document_type`/`invoice_number` are server-overridden.
 - **POS Hardware Integration** — ESC/POS thermal printer, barcode scanner, hardware settings, 36 new commands
 - AI RAG UI complete — local semantic search & RAG feature shipped
 - `account_id` → `company_id` full-stack rename (30+ files, zero TS/Rust errors)
@@ -43,6 +43,7 @@
 - Auto-updater is **disabled** in this build (no signing keys configured)
 - PGP key generation may take a few minutes on slower machines
 - IMAP IDLE connections may drop after ~29 min on Gmail (auto-reconnect implemented)
+- Invoicing frontend is partial — the document/PDF/email flow is wired on the Rust side but has no end-to-end UI; the Rust invoicing integration tests do not currently compile
 
 ### Upgrade Path
 

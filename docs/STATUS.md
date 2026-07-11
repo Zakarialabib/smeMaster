@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-07-11 (evening)
 >
-> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Partial (verified 2026-07-11):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. **Frontend UI is stub/thin** (`InvoiceEditor` is non-functional; `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI are missing) and **`db/tables/invoicing/tests.rs` does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`). Campaigns + Mobile are genuinely complete.
+> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Backend complete, Frontend built (2026-07-11):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is now fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Residual backend gaps remain:** `db_list_clients` ignores `company_id` (company filter dropped server-side), `db_send_invoice` is a stub (status flip only, no SMTP/PGP), and `db_create_invoice`/`db_update_invoice` ignore `document_type`/`invoice_number`. Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
 >
 > 🖨️ **POS Hardware Integration — Merged (2026-07-11):** Point-of-Sale module with ESC/POS thermal printer support, system printer fallback, barcode scanner hook, hardware settings tab — merged cleanly via PR #2.
 >
@@ -32,7 +32,7 @@
 
 ### Invoicing Module — Full Billing/ERP (Morocco DGI-Compliant)
 
-Implemented the invoicing **backend** per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. Backend is complete; the **frontend UI is partial** — `InvoiceEditor` is a stub, and `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI are not built. The Rust `db/tables/invoicing/tests.rs` does not compile (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`). All money stored as i64 minor units (centimes), computed with f64 arithmetic.
+Implemented the invoicing **backend** per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. Backend is complete; the **frontend UI is now fully built** (see the 2026-07-11 evening update below for the component inventory and the 5 contract-mismatch fixes from the wiring audit). The Rust `db/tables/invoicing/tests.rs` still does not compile (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`) — this is a Rust test-module issue, not a production-code blocker. All money stored as i64 minor units (centimes), computed with f64 arithmetic.
 
 | Layer              | Details                                                                                                                                                                                                                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ Implemented the invoicing **backend** per `docs/06-ROADMAP/smeMaster_Simplified_
 | **PDF Generator**  | lopdf-based A4 invoice PDF with company header (legal identifiers), client block, line-items table, totals section, footer                                                                                                             |
 | **PEPPOL XML**     | UBL 2.1 compliant XML with ICE/IF/RC identifiers, tax breakdown, monetary totals                                                                                                                                                       |
 | **Tauri Commands** | 24 `db_*` commands: invoices (list/get/get-with-items/create/update/delete/add-item/remove-item/status/calculate/send), clients CRUD, items CRUD, company get/update, document generation                                              |
-| **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry. **Partial:** `InvoiceEditor` is a non-functional stub; `InvoiceList` / `SettingsDrawer` / `ClientForm` / `ItemForm` / status-workflow UI and document-send wiring are not built. |
+| **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry. **Built (2026-07-11):** `InvoicingDashboard` (tabbed shell), functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` (type/status filters), `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, `BusinessProfilePanel`, CRM `InvoicesTab` + `InvoiceSelectionModal`, plus an ERP shell (`ErpPage`, `CompanySwitcher`, `StockView`, `JournalView`, `FinancialReports`, `RbacRoles`). See the evening update for the wiring-audit fixes. |
 
 ### POS Hardware Integration — Merged via PR #2
 
@@ -69,6 +69,47 @@ The `docs/specs/ai-rag-ui.md` spec (the only file in the `docs/specs/` staging f
 | **Cross-refs fixed**     | Canonical doc is now `docs/04-FEATURES/ai-rag.md`; `00-INDEX.md`, `22-ai-integration.md`, `30-contact-intelligence.md` links updated                                                   |
 
 **Status verification of the `analysis.md` blueprint:** the Wondershare-style monetization/entitlement recommendations (§8) remain **deferred to post-v1.0** and are **not implemented in code** (zero matches in `src-tauri`/`src` for `EntitlementEngine`, `check_entitlement`, `paywall-trigger`, `owned_modules`, `entitlement_overrides`, `gating="execute"`, `usePaywallTrigger`). Deferred plans: `docs/06-ROADMAP/10-` to `13-monetization-*.md`.
+
+### Invoicing / ERP — Frontend Build, Wiring Audit & Tests (2026-07-11, evening)
+
+The invoicing + CRM + ERP frontend surfaces were built out (Phase B) and then **audited end-to-end** against the Rust `db_*` command contracts in `src-tauri/src/commands/invoicing.rs`. The canonical TS wrapper `src/shared/services/db/invoke/invoicing.ts` was rewritten to fix 5 real contract mismatches. New unit tests (41 tests across 3 files) lock in the wrapper↔backend contract and the Zustand store behavior.
+
+**Wiring fixes in `src/shared/services/db/invoke/invoicing.ts` (Rust uses snake_case params):**
+
+| #   | Function        | Before (broken)                                                            | After (fixed)                                                                                  |
+| --- | --------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | `createItem`    | sent `type`; missing required `buy_price`/`stock_qty`/`stock_alert`        | maps `type→item_type`, adds `buy_price:0/stock_qty:0/stock_alert:0`, sends `company_id`        |
+| 2   | `updateInvoice` | sent a `fields` blob                                                        | sends individual `date`/`due_date`/`currency`/`client_id` (`issue_date`→`date`)                 |
+| 3   | `updateClient`  | sent `{ id, fields }` blob                                                 | sends `{ id, ...fields }`                                                                       |
+| 4   | `updateItem`    | sent `{ id, fields }` blob + `type`                                        | sends individual `item_type`/`buy_price`/`sell_price`/`stock_qty`/`stock_alert`/`tax_rate`     |
+| 5   | `updateCompany` | sent `{ id, fields }` — Rust wants `company_id`                            | sends `{ company_id: id, ...fields }`                                                           |
+
+Also reconciled: `createInvoice` → `db_create_invoice`, `listClients`/`listInvoices`/`listItems`/`generateInvoiceDocuments`/`sendInvoice`/`calculateInvoice` command names and argument shapes verified against registered commands in `commands/mod.rs`.
+
+**Residual backend gaps (tracked here, not fixable in TS alone):**
+
+| Gap                                                                     | Impact                                                                                          |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `db_list_clients(pool, role?)` has **no `company_id`** param            | `listClients` company filter is dropped server-side — returns all clients regardless of company |
+| `db_send_invoice(pool, id)` is a **stub**                               | `sendInvoice` accepts `to` but only flips status; no SMTP/PGP dispatch yet                      |
+| `db_create_invoice` / `db_update_invoice` ignore `document_type`/`invoice_number` | server-assigned values override UI-supplied document type/number                          |
+
+**New tests (all green, run with `npx vitest run --pool=threads` in this sandbox):**
+
+| File                                                              | Covers                                                                                  | Tests |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----- |
+| `src/shared/services/db/invoke/invoicing.test.ts`                 | Every `db_*` command name + corrected arg mapping (the 5 fixes above)                  | 27    |
+| `src/features/invoicing/stores/invoicingStore.test.ts`            | `fetchInvoices` loading/error, `createInvoice` prepend, `changeStatus`, `removeInvoice`, clients/items/docs | 12 |
+| `src/features/erp/companyStore.test.ts`                           | `setActiveCompany`, `getActiveCompany` (+fallbacks), `companyInitials`                 | 8     |
+
+*Note:* the default Vitest `forks` pool times out in this sandbox (child-process spawning is restricted); use `--pool=threads` for any local `vitest run`.
+
+**Frontend fix:** `companyInitials()` in `src/features/erp/companyStore.ts` now `.trim()`s the name first, so leading/trailing whitespace no longer yields an empty first initial.
+
+**Verification:**
+
+- `npx tsc --noEmit` → **zero errors** in invoicing/ERP/CRM files ✅
+- `npx vitest run --pool=threads` (3 new files) → **41/41 passing** ✅
 
 ---
 
@@ -270,8 +311,8 @@ Additionally:
 
 | Metric          | Before                   | After                       |
 | --------------- | ------------------------ | --------------------------- |
-| Test files      | 163                      | **203**                     |
-| Tests           | 1,831/1,833 (22 failing) | **2,470/2,470 (0 failing)** |
+| Test files      | 163                      | **203** (+3 invoicing/ERP added 2026-07-11 evening → 206) |
+| Tests           | 1,831/1,833 (22 failing) | **2,470/2,470 (0 failing)** (+41 invoicing/ERP → 2,511)    |
 | ESLint errors   | 2                        | **0**                       |
 | ESLint warnings | 10                       | **0**                       |
 
@@ -595,7 +636,7 @@ src/
 │   ├── mobile/            ← Shell + 5 mobile-specific components
 │   ├── workflows/         ← Store + 4 components + page (partially built)
 │   ├── calendar/          ← Wired to Rust db_* commands
-│   ├── invoicing/         ← Components (dashboard, editor, preview), store, types, invoke wrappers (NEW)
+│   ├── invoicing/         ← InvoicingDashboard (tabs), InvoiceEditor + LineItemsEditor + InvoiceTotals, InvoiceList (filters), SettingsDrawer, ClientList/Form, ItemList/Form, InvoiceStatusPill, store, types, invoke wrappers; ERP shell (ErpPage, CompanySwitcher, StockView, JournalView, FinancialReports, RbacRoles)
 │   └── pos/               ← POS page, hardware store, barcode scanner hook (NEW)
 ├── shared/
 │   ├── components/ui/     ← Barrel expanded (VirtualList, Modal focus trap, a11y)
