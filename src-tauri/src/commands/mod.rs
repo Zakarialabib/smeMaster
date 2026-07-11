@@ -21,6 +21,7 @@ pub mod system;
 pub mod system_android;
 #[cfg(desktop)]
 pub mod system_desktop;
+pub mod pos;
 pub mod tasks;
 pub mod updater_commands;
 pub mod workflows;
@@ -796,6 +797,11 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             updater_commands::needs_rollback,
             updater_commands::mark_successful_launch,
             updater_commands::get_app_version,
+
+            // === pos (3 commands) ===
+            pos::pos_get_hardware_configs,
+            pos::pos_test_printer,
+            pos::pos_print_receipt,
 
             // === commands::workflows (28 commands) ===
             workflows::db_dashboard_workflow_rules_total,
