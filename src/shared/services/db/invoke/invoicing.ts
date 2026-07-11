@@ -28,7 +28,17 @@ export async function createInvoice(req: {
 }
 
 export async function updateInvoice(id: string, fields: Record<string, unknown>): Promise<void> {
-  return invokeCommand<void>('db_update_invoice', { id, fields });
+  // Rust `db_update_invoice` takes individual Option params (no `fields` blob).
+  // `issue_date` maps to Rust `date`; `document_type`/`invoice_number` are not
+  // server-updatable yet (backend gap, tracked in STATUS.md).
+  return invokeCommand<void>('db_update_invoice', {
+    id,
+    notes: (fields.notes ?? null) as string | null | undefined,
+    date: (fields.issue_date ?? null) as number | null | undefined,
+    due_date: (fields.due_date ?? null) as number | null | undefined,
+    currency: fields.currency as string | undefined,
+    client_id: (fields.client_id ?? null) as string | null | undefined,
+  });
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
@@ -48,6 +58,8 @@ export async function updateInvoiceStatus(id: string, status: string): Promise<v
 }
 
 export async function listClients(companyId: string): Promise<Client[]> {
+  // NOTE: Rust `db_list_clients(pool, role?)` has no `company_id` param, so the
+  // company filter is currently ignored server-side (backend gap, tracked in STATUS.md).
   return invokeCommand<Client[]>('db_list_clients', { companyId });
 }
 
@@ -60,7 +72,8 @@ export async function createClient(data: { companyId: string; name: string; emai
 }
 
 export async function updateClient(id: string, fields: Record<string, unknown>): Promise<void> {
-  return invokeCommand<void>('db_update_client', { id, fields });
+  // Rust `db_update_client` takes individual Option params (no `fields` blob).
+  return invokeCommand<void>('db_update_client', { id, ...fields });
 }
 
 export async function deleteClient(id: string): Promise<void> {
@@ -76,11 +89,42 @@ export async function getItem(id: string): Promise<Item> {
 }
 
 export async function createItem(data: { companyId: string; name: string; description?: string | null; type?: string; sku?: string | null; categoryId?: string | null; unit?: string; sellPrice?: number; taxRate?: number; barcode?: string | null }): Promise<Item> {
-  return invokeCommand<Item>('db_create_item', { ...data });
+  // Rust `db_create_item` expects `item_type` (not `type`) and requires
+  // buy_price / stock_qty / stock_alert. The UI only collects sell price,
+  // so stock fields default to 0 here (backend gap, tracked in STATUS.md).
+  return invokeCommand<Item>('db_create_item', {
+    name: data.name,
+    description: data.description ?? null,
+    item_type: data.type ?? "product",
+    sku: data.sku ?? null,
+    unit: data.unit ?? "unit",
+    buy_price: 0,
+    sell_price: data.sellPrice ?? 0,
+    stock_qty: 0,
+    stock_alert: 0,
+    tax_rate: data.taxRate ?? 0,
+    barcode: data.barcode ?? null,
+    company_id: data.companyId,
+  });
 }
 
 export async function updateItem(id: string, fields: Record<string, unknown>): Promise<void> {
-  return invokeCommand<void>('db_update_item', { id, fields });
+  // Rust `db_update_item` takes individual Option params (no `fields` blob).
+  // `type` maps to Rust `item_type`.
+  return invokeCommand<void>('db_update_item', {
+    id,
+    name: fields.name as string | undefined,
+    description: (fields.description ?? null) as string | null | undefined,
+    item_type: fields.type as string | undefined,
+    sku: (fields.sku ?? null) as string | null | undefined,
+    unit: fields.unit as string | undefined,
+    buy_price: fields.buyPrice as number | undefined,
+    sell_price: fields.sellPrice as number | undefined,
+    stock_qty: fields.stockQty as number | undefined,
+    stock_alert: fields.stockAlert as number | undefined,
+    tax_rate: fields.taxRate as number | undefined,
+    barcode: (fields.barcode ?? null) as string | null | undefined,
+  });
 }
 
 export async function deleteItem(id: string): Promise<void> {
@@ -92,7 +136,8 @@ export async function getCompany(companyId: string): Promise<Company> {
 }
 
 export async function updateCompany(id: string, fields: Record<string, unknown>): Promise<void> {
-  return invokeCommand<void>('db_update_company', { id, fields });
+  // Rust `db_update_company` takes `company_id` (not `id`) + individual Option params.
+  return invokeCommand<void>('db_update_company', { company_id: id, ...fields });
 }
 
 export async function generateInvoiceDocuments(invoiceId: string): Promise<[string, string]> {
@@ -100,6 +145,8 @@ export async function generateInvoiceDocuments(invoiceId: string): Promise<[stri
 }
 
 export async function sendInvoice(invoiceId: string, to: string): Promise<void> {
+  // NOTE: Rust `db_send_invoice(pool, id)` is a stub — it ignores `to` and only
+  // flips status. SMTP/PGP delivery is not implemented yet (STATUS.md).
   return invokeCommand<void>('db_send_invoice', { invoiceId, to });
 }
 
