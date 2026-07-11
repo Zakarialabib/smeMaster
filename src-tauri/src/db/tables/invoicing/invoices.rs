@@ -1,9 +1,21 @@
-use sqlx::SqlitePool;
+use sqlx::{SqlitePool, SqliteExecutor};
 use crate::db::error::AppDbError;
 use crate::db::invoicing::schema::Invoice;
 
+pub struct CreateInvoiceInput<'a> {
+    pub company_id: &'a str,
+    pub client_id: &'a str,
+    pub document_type: &'a str,
+    pub invoice_number: &'a str,
+    pub issue_date: i64,
+    pub due_date: Option<i64>,
+    pub currency: &'a str,
+    pub notes: Option<&'a str>,
+    pub created_by: &'a str,
+}
+
 pub async fn list(pool: &SqlitePool, company_id: &str) -> Result<Vec<Invoice>, AppDbError> {
-    sqlx::query_as::<_, Invoice>("SELECT * FROM invoices WHERE company_id = ? ORDER BY issue_date DESC")
+    sqlx::query_as::<_, Invoice>("SELECT * FROM invoices WHERE company_id = ? AND deleted_at IS NULL ORDER BY created_at DESC")
         .bind(company_id)
         .fetch_all(pool)
         .await
@@ -19,16 +31,9 @@ pub async fn get_by_id(pool: &SqlitePool, id: &str) -> Result<Invoice, AppDbErro
         .ok_or_else(|| AppDbError::NotFound(format!("Invoice {id} not found")))
 }
 
-pub async fn create(
-    pool: &SqlitePool,
-    company_id: &str,
-    contact_id: Option<&str>,
-    document_type: &str,
-    invoice_number: &str,
-    issue_date: i64,
-    due_date: Option<i64>,
-    currency: &str,
-    notes: Option<&str>,
+pub async fn create<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    input: CreateInvoiceInput<'_>,
 ) -> Result<Invoice, AppDbError> {
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().timestamp();
@@ -36,91 +41,145 @@ pub async fn create(
     sqlx::query_as::<_, Invoice>(
         r#"
         INSERT INTO invoices (
-            id, company_id, contact_id, document_type, invoice_number, status,
-            issue_date, due_date, currency, subtotal, tax_total, total_amount,
-            notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, 0, 0, 0, ?, ?, ?)
+            id, company_id, client_id, type, document_number, status,
+            date, due_date, currency, subtotal, tax_amount, grand_total,
+            notes, company_id, created_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, 0, 0, 0, ?, ?, ?, ?, ?)
         RETURNING *
         "#,
     )
     .bind(&id)
-    .bind(company_id)
-    .bind(contact_id)
-    .bind(document_type)
-    .bind(invoice_number)
-    .bind(issue_date)
-    .bind(due_date)
-    .bind(currency)
-    .bind(notes)
+    .bind(input.company_id)
+    .bind(input.client_id)
+    .bind(input.document_type)
+    .bind(input.invoice_number)
+    .bind(input.issue_date)
+    .bind(input.due_date)
+    .bind(input.currency)
+    .bind(input.notes)
+    .bind(input.company_id)
+    .bind(input.created_by)
     .bind(now)
     .bind(now)
-    .fetch_one(pool)
+    .fetch_one(executor)
     .await
     .map_err(AppDbError::Database)
 }
 
-pub async fn update_totals(
-    pool: &SqlitePool,
+pub async fn update_totals<'e, E: SqliteExecutor<'e>>(
+    executor: E,
     id: &str,
-    subtotal: f64,
-    tax_total: f64,
-    total_amount: f64,
+    subtotal: i64,
+    tax_amount: i64,
+    grand_total: i64,
 ) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query(
-        "UPDATE invoices SET subtotal = ?, tax_total = ?, total_amount = ?, updated_at = ? WHERE id = ?"
+        "UPDATE invoices SET subtotal = ?, tax_amount = ?, grand_total = ?, updated_at = ? WHERE id = ?"
     )
     .bind(subtotal)
-    .bind(tax_total)
-    .bind(total_amount)
+    .bind(tax_amount)
+    .bind(grand_total)
     .bind(now)
     .bind(id)
-    .execute(pool)
+    .execute(executor)
     .await
     .map_err(AppDbError::Database)?;
     Ok(())
 }
 
-pub async fn update_status(pool: &SqlitePool, id: &str, status: &str) -> Result<(), AppDbError> {
+pub async fn update_status<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    id: &str,
+    status: &str,
+) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query("UPDATE invoices SET status = ?, updated_at = ? WHERE id = ?")
         .bind(status)
         .bind(now)
         .bind(id)
-        .execute(pool)
+        .execute(executor)
         .await
         .map_err(AppDbError::Database)?;
     Ok(())
 }
 
-pub async fn update_xml_path(pool: &SqlitePool, id: &str, path: &str) -> Result<(), AppDbError> {
+pub async fn update_xml_path<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    id: &str,
+    path: &str,
+) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query("UPDATE invoices SET peppol_xml_path = ?, updated_at = ? WHERE id = ?")
         .bind(path)
         .bind(now)
         .bind(id)
-        .execute(pool)
+        .execute(executor)
         .await
         .map_err(AppDbError::Database)?;
     Ok(())
 }
 
-pub async fn update_pdf_path(pool: &SqlitePool, id: &str, path: &str) -> Result<(), AppDbError> {
+pub async fn update_pdf_path<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    id: &str,
+    path: &str,
+) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query("UPDATE invoices SET pdf_path = ?, updated_at = ? WHERE id = ?")
         .bind(path)
         .bind(now)
         .bind(id)
-        .execute(pool)
+        .execute(executor)
         .await
         .map_err(AppDbError::Database)?;
     Ok(())
 }
 
-pub async fn delete(pool: &SqlitePool, id: &str) -> Result<(), AppDbError> {
-    let rows = sqlx::query("DELETE FROM invoices WHERE id = ?")
+pub async fn update_invoice<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    id: &str,
+    status: Option<&str>,
+    notes: Option<&str>,
+    date: Option<i64>,
+    due_date: Option<i64>,
+    currency: Option<&str>,
+    client_id: Option<&str>,
+) -> Result<(), AppDbError> {
+    let now = chrono::Utc::now().timestamp();
+    sqlx::query(
+        "UPDATE invoices SET \
+         status = COALESCE(?, status), \
+         notes = COALESCE(?, notes), \
+         date = COALESCE(?, date), \
+         due_date = COALESCE(?, due_date), \
+         currency = COALESCE(?, currency), \
+         client_id = COALESCE(?, client_id), \
+         updated_at = ? \
+         WHERE id = ?"
+    )
+    .bind(status)
+    .bind(notes)
+    .bind(date)
+    .bind(due_date)
+    .bind(currency)
+    .bind(client_id)
+    .bind(now)
+    .bind(id)
+    .execute(executor)
+    .await
+    .map_err(AppDbError::Database)?;
+    Ok(())
+}
+
+pub async fn delete<'e, E: SqliteExecutor<'e>>(
+    executor: E,
+    id: &str,
+) -> Result<(), AppDbError> {
+    let rows = sqlx::query("UPDATE invoices SET deleted_at = ? WHERE id = ?")
+        .bind(chrono::Utc::now().timestamp())
         .bind(id)
-        .execute(pool)
+        .execute(executor)
         .await
         .map_err(AppDbError::Database)?
         .rows_affected();

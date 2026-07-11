@@ -69,4 +69,40 @@ pub(crate) mod helpers {
         .unwrap();
         id.to_string()
     }
+
+    /// Insert a minimal company row so FK constraints on `company_id` pass.
+    /// Returns the company id.
+    pub(crate) async fn insert_test_company(pool: &SqlitePool, id: &str) -> String {
+        sqlx::query("INSERT INTO companies (id, name) VALUES (?, ?)")
+            .bind(id)
+            .bind("Test Company")
+            .execute(pool)
+            .await
+            .unwrap();
+        id.to_string()
+    }
+
+    /// Insert a minimal client row so FK constraints on `client_id` pass.
+    /// Generates an ID from `name` and links it to `company_id`.
+    /// Returns the generated client id.
+    pub(crate) async fn insert_test_client(
+        pool: &SqlitePool,
+        name: &str,
+        company_id: &str,
+    ) -> String {
+        let id = format!("test-client-{name}");
+        let now = chrono::Utc::now().timestamp();
+        sqlx::query(
+            "INSERT OR IGNORE INTO clients (id, company_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+        )
+        .bind(&id)
+        .bind(company_id)
+        .bind(name)
+        .bind(now)
+        .bind(now)
+        .execute(pool)
+        .await
+        .unwrap();
+        id
+    }
 }

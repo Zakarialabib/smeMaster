@@ -30,6 +30,7 @@ mod pgp;
 mod smtp;
 mod vault;
 pub mod orchestrator;
+mod invoicing;
 mod services;
 mod platform;
 #[cfg(target_os = "android")]
