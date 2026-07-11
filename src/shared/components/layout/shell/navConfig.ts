@@ -34,6 +34,7 @@ import {
   Info,
   FolderLock,
   Megaphone,
+  Cpu,
   LayoutDashboard,
 } from "lucide-react";
 import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/navigate";
@@ -194,6 +195,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
       { id: "__divider__", label: "", icon: undefined },
       // Developer
       { id: "developer", label: "settings.tabGroupDeveloper", icon: Bug },
+      { id: "hardware", label: "Hardware", icon: Cpu },
       // ── divider ──
       { id: "__divider__", label: "", icon: undefined },
       // About
@@ -245,6 +247,7 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/invoicing")) return "dashboard";
   if (pathname.startsWith("/ai-assistant")) return "ai-assistant";
+  if (pathname.startsWith("/pos")) return "mail"; // Or a separate 'pos' group if we add it
   return "mail";
 }
 
@@ -282,6 +285,7 @@ export function getActiveSubItem(pathname: string): string | null {
   if (pathname.startsWith("/tasks")) return null;
   if (pathname.startsWith("/calendar")) return null;
   if (pathname.startsWith("/ai-assistant")) return null;
+  if (pathname.startsWith("/pos")) return null;
 
   return null;
 }
@@ -340,6 +344,9 @@ export function handleNavSelect(id: string): void {
       break;
     case "ai-assistant":
       router.navigate({ to: "/ai-assistant" });
+      break;
+    case "pos":
+      router.navigate({ to: "/pos" });
       break;
     default:
       navigateToLabel(id);

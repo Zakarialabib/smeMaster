@@ -94,6 +94,12 @@ const MergedCRMPage = lazy(() =>
   })),
 );
 
+const POSPage = lazy(() =>
+  import("@features/pos/components/POSPage").then((m) => ({
+    default: m.POSPage,
+  })),
+);
+
 // ── Generic page wrapper helper ──────────────────────────────────────────
 // All pages go through DesktopShell (which owns PremiumSidebar + icon rail),
 // so AppPageWrapper is never needed — it would create double-sidebar chrome.
@@ -399,6 +405,15 @@ export const mobileDashboardRoute = createRoute({
   component: MobileDashboardWrapper,
 });
 
+// ---------- /pos ----------
+const POSPageWrapper = createPageWrapper("POS", POSPage as LazyComponent);
+
+export const posRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "pos",
+  component: POSPageWrapper,
+});
+
 // ---------- /help (redirect to /help/getting-started) ----------
 const helpIndexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -459,6 +474,7 @@ export const routeTree = rootRoute.addChildren([
   dashboardRoute,
   mobileDashboardRoute,
   crmRoute,
+  posRoute,
   helpIndexRoute,
   helpTopicRoute,
   notFoundRoute,
