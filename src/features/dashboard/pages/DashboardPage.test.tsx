@@ -7,13 +7,18 @@ const dashboardState = {
     { id: "tasks", title: "Task Summary", visible: true, order: 1 },
   ],
   loaded: true,
+  rangeDays: 30,
+  density: "comfortable",
   loadPreferences: vi.fn(),
   toggleWidget: vi.fn(),
   reorderWidgets: vi.fn(),
+  setRangeDays: vi.fn(),
+  setDensity: vi.fn(),
 };
 
 vi.mock("@features/dashboard/stores/dashboardStore", () => ({
   useDashboardStore: (sel?: (s: unknown) => unknown) => (sel ? sel(dashboardState) : dashboardState),
+  DASHBOARD_RANGE_OPTIONS: [7, 30, 90],
 }));
 
 vi.mock("@features/accounts/stores/accountStore", () => ({
@@ -28,6 +33,7 @@ vi.mock("@shared/services/db/db-invoke", async (importOriginal) => {
     dashboardContactsTotal: vi.fn().mockResolvedValue(0),
     dashboardContactsActive: vi.fn().mockResolvedValue(0),
     dashboardContactsNewWeek: vi.fn().mockResolvedValue(0),
+    dashboardContactGrowth: vi.fn().mockResolvedValue([]),
     dashboardTasksIncomplete: vi.fn().mockResolvedValue(0),
     dashboardTasksOverdue: vi.fn().mockResolvedValue(0),
     dashboardTasksDueToday: vi.fn().mockResolvedValue(0),
@@ -38,6 +44,10 @@ vi.mock("@shared/services/db/db-invoke", async (importOriginal) => {
     dashboardCampaignsClickRate: vi.fn().mockResolvedValue(0),
     dashboardWorkflowRulesTotal: vi.fn().mockResolvedValue(0),
     dashboardWorkflowRulesActive: vi.fn().mockResolvedValue(0),
+    listComplianceChecks: vi.fn().mockResolvedValue([]),
+    listFollowUpReminders: vi.fn().mockResolvedValue([]),
+    listCampaigns: vi.fn().mockResolvedValue([]),
+    listBackupSchedules: vi.fn().mockResolvedValue([]),
     listContactLabels: vi.fn().mockResolvedValue([]),
     listContactGroups: vi.fn().mockResolvedValue([]),
     listSegments: vi.fn().mockResolvedValue([]),
