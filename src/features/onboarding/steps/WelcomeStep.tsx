@@ -6,7 +6,7 @@ import type { DemoPresetId, ThemeMode, OnboardingData } from "../types";
 
 interface WelcomeStepProps {
   onNext: (data: Partial<OnboardingData>) => void;
-  onExpressMode: () => void;
+  onExpressMode?: () => void;
   onSkipToDemos?: () => void;
 }
 
@@ -23,7 +23,7 @@ const THEME_OPTIONS: { id: ThemeMode; label: string; icon: typeof Sun; descripti
   { id: "system", label: "System", icon: Monitor, description: "Follows your OS" },
 ];
 
-export function WelcomeStep({ onNext, onSkipToDemos }: WelcomeStepProps) {
+export function WelcomeStep({ onNext, onExpressMode, onSkipToDemos }: WelcomeStepProps) {
   const [businessName, setBusinessName] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<DemoPresetId | null>(null);
   const [theme, setTheme] = useState<ThemeMode>("system");
@@ -174,6 +174,15 @@ export function WelcomeStep({ onNext, onSkipToDemos }: WelcomeStepProps) {
           <Rocket className="h-4 w-4" />
           Skip to Demos
         </button>
+        {onExpressMode && (
+          <button
+            onClick={onExpressMode}
+            className="group rounded-xl border border-accent/30 px-6 py-3 text-sm font-medium text-accent hover:bg-accent/5 transition-all duration-200 flex items-center gap-2"
+          >
+            <Zap className="h-4 w-4" />
+            Quick Start
+          </button>
+        )}
         <button
           onClick={handleNext}
           disabled={!selectedPreset}

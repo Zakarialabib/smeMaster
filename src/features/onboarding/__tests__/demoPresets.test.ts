@@ -14,7 +14,7 @@ describe("demoPresets", () => {
     expect(ids).toContain("custom");
   });
 
-  it("solo_freelancer enables mail, crm, calendar but not campaigns, ai, sync", () => {
+  it("solo_freelancer enables mail, crm, calendar but not campaigns, ai", () => {
     const preset = DEMO_PRESETS.find((p) => p.id === "solo_freelancer");
     expect(preset).toBeDefined();
     expect(preset!.tools).toEqual({
@@ -23,11 +23,10 @@ describe("demoPresets", () => {
       campaigns: false,
       calendar: true,
       ai: false,
-      sync: false,
     });
   });
 
-  it("small_team enables all except sync", () => {
+  it("small_team enables all tools", () => {
     const preset = DEMO_PRESETS.find((p) => p.id === "small_team");
     expect(preset).toBeDefined();
     expect(preset!.tools).toEqual({
@@ -36,11 +35,10 @@ describe("demoPresets", () => {
       campaigns: true,
       calendar: true,
       ai: true,
-      sync: false,
     });
   });
 
-  it("sales_focused enables mail, crm, campaigns, ai, sync but not calendar", () => {
+  it("sales_focused enables mail, crm, campaigns, ai but not calendar", () => {
     const preset = DEMO_PRESETS.find((p) => p.id === "sales_focused");
     expect(preset).toBeDefined();
     expect(preset!.tools).toEqual({
@@ -49,7 +47,6 @@ describe("demoPresets", () => {
       campaigns: true,
       calendar: false,
       ai: true,
-      sync: true,
     });
   });
 
@@ -62,7 +59,6 @@ describe("demoPresets", () => {
       campaigns: false,
       calendar: false,
       ai: false,
-      sync: false,
     });
   });
 
@@ -77,7 +73,6 @@ describe("demoPresets", () => {
       expect(typeof preset.tools.campaigns).toBe("boolean");
       expect(typeof preset.tools.calendar).toBe("boolean");
       expect(typeof preset.tools.ai).toBe("boolean");
-      expect(typeof preset.tools.sync).toBe("boolean");
     }
   });
 });
