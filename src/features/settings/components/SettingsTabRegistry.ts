@@ -10,7 +10,7 @@ import {
   Settings, UserCircle, PenLine, Bell, Keyboard,
   Sparkles, Filter, Lock, ShieldCheck, HardDrive, Smartphone,
   BarChart3, ClipboardCheck, Info, HelpCircle, Calendar, Code2,
-  MonitorCheck, Laptop, Activity, Trash2, Building2,
+  MonitorCheck, Laptop, Activity, Trash2, Cpu,Building2,
 } from "lucide-react";
 import {
   GeneralTab, ComposingTab, AccountsTab, ShortcutsTab,
@@ -18,7 +18,7 @@ import {
   MailRulesTab, NotificationsTab, PgpTab,
   PresendTab, CalendarTab, DeveloperTab,
   LicenseTab, DeliverabilityTab, FeatureFlagsTab,
-  QueueTab, AccountCleaningTab, BusinessProfileTab,
+  QueueTab, AccountCleaningTab, HardwareTab,BusinessProfileTab,
 } from "./tabs";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ export type SettingsTabId =
   | "compliance" | "pgp" | "mail-rules" | "presend"
   | "calendar" | "developer"
   | "license" | "feature-flags"
-  | "queue" | "account-cleaning"
+  | "queue" | "account-cleaning" | "hardware";
   | "business-profile";
 
 export type SettingsPlatform = "all" | "desktop" | "mobile";
@@ -211,6 +211,13 @@ export const tabGroups: SettingsGroup[] = [
         platform: "desktop",
       },
       {
+        id: "hardware",
+        label: "Hardware",
+        icon: Cpu,
+        subtitle: "Printers, scanners, scales, and cash drawers",
+        platform: "desktop",
+      },
+      {
         id: "queue",
         label: "Queue",
         icon: Activity,
@@ -257,6 +264,7 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   "feature-flags": FeatureFlagsTab,
   queue: QueueTab,
   "account-cleaning": AccountCleaningTab,
+  hardware: HardwareTab,
   "business-profile": BusinessProfileTab,
 };
 
