@@ -6,6 +6,7 @@ import {
   BarChart3,
   ListChecks,
   CalendarDays,
+  ReceiptText,
   Plus,
   RefreshCw,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const TABS: Tab[] = [
   { id: "campaigns", label: "Campaigns", icon: BarChart3 },
   { id: "tasks", label: "Tasks", icon: ListChecks },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
+  { id: "invoices", label: "Invoices", icon: ReceiptText },
 ];
 
 // ── Lazy-loaded tab content ──────────────────────────────────────────────
@@ -49,11 +51,18 @@ const CalendarContent = lazy(() =>
   })),
 );
 
+const InvoicesContent = lazy(() =>
+  import("@features/crm/components/InvoicesTab").then((m) => ({
+    default: m.default,
+  })),
+);
+
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
   contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   campaigns: CampaignsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
 
 // ── Tab bar ──────────────────────────────────────────────────────────────

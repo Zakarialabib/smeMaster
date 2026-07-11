@@ -1,22 +1,40 @@
-import { useEffect } from "react";
-import { ReceiptText, Plus, Check, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ReceiptText, Plus, Check, FileText, Loader2 } from "lucide-react";
 import { Button } from "@shared/components/ui/Button";
 import { useInvoicingStore } from "../stores/invoicingStore";
+import { generateInvoiceDocuments } from "@shared/services/db/invoke/invoicing";
 import { Invoice } from "../types";
 
 interface InvoiceSelectionModalProps {
-  onSelect: (invoice: Invoice) => void;
+  onSelect: (payload: { invoice: Invoice; docs: { pdf: string | null; xml: string | null }; clientName: string }) => void;
   onQuickCreate: () => void;
   onClose: () => void;
 }
 
 export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: InvoiceSelectionModalProps) {
-  const { invoices, fetchInvoices, isLoading } = useInvoicingStore();
+  const { invoices, clients, fetchInvoices, fetchClients, listLoading } = useInvoicingStore();
   const unpaidInvoices = invoices.filter((i: Invoice) => i.status !== 'paid');
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInvoices("demo-company-1");
+    fetchClients("demo-company-1");
   }, []);
+
+  const handlePick = async (inv: Invoice) => {
+    setGeneratingId(inv.id);
+    const docs: { pdf: string | null; xml: string | null } = { pdf: null, xml: null };
+    try {
+      const [pdf, xml] = await generateInvoiceDocuments(inv.id);
+      docs.pdf = pdf;
+      docs.xml = xml;
+    } catch {
+      // Generation failed — proceed with the snippet using the invoice data only.
+    }
+    const clientName = clients.find((c) => c.id === inv.client_id)?.name ?? 'your client';
+    setGeneratingId(null);
+    onSelect({ invoice: inv, docs, clientName });
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -47,7 +65,7 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
              <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider px-2">Unpaid Invoices</p>
            </div>
 
-           {isLoading ? (
+           {listLoading ? (
              <div className="py-8 text-center text-text-tertiary text-sm italic">Loading...</div>
            ) : unpaidInvoices.length === 0 ? (
              <div className="py-8 text-center text-text-tertiary text-sm italic">No unpaid invoices found</div>
@@ -55,8 +73,9 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
              unpaidInvoices.map((inv: Invoice) => (
                <button
                  key={inv.id}
-                 onClick={() => onSelect(inv)}
-                 className="w-full p-3 rounded-xl border border-border-primary hover:bg-bg-hover transition-colors text-left flex items-center justify-between group"
+                 onClick={() => handlePick(inv)}
+                 disabled={generatingId !== null}
+                 className="w-full p-3 rounded-xl border border-border-primary hover:bg-bg-hover transition-colors text-left flex items-center justify-between group disabled:opacity-60"
                >
                  <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-bg-tertiary flex items-center justify-center text-text-tertiary">
@@ -67,7 +86,11 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
                      <p className="text-[10px] text-text-tertiary">{inv.total_amount.toLocaleString(undefined, { style: 'currency', currency: inv.currency })}</p>
                    </div>
                  </div>
-                 <Check size={16} className="text-accent opacity-0 group-hover:opacity-100" />
+                 {generatingId === inv.id ? (
+                   <Loader2 size={16} className="text-accent animate-spin" />
+                 ) : (
+                   <Check size={16} className="text-accent opacity-0 group-hover:opacity-100" />
+                 )}
                </button>
              ))
            )}

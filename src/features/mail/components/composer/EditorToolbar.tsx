@@ -9,6 +9,7 @@ import { useComposerStore } from "@features/mail/stores/composerStore";
 import { EmojiPicker } from "./EmojiPicker";
 import { InvoiceSelectionModal } from "../../../invoicing/components/InvoiceSelectionModal";
 import { Invoice } from "../../../invoicing/types";
+import { formatMoney, formatDate } from "../../../invoicing/utils/format";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -80,18 +81,46 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
     useComposerStore.getState().setBodyHtml(editor.getHTML());
   }, [editor]);
 
-  const handleInvoiceSelect = (invoice: Invoice) => {
+  const handleInvoiceSelect = ({
+    invoice,
+    docs,
+    clientName,
+  }: {
+    invoice: Invoice;
+    docs: { pdf: string | null; xml: string | null };
+    clientName: string;
+  }) => {
     if (editor) {
-      editor.chain().focus().insertContent(`
-        <div style='border:1px solid #ccc; padding:15px; border-radius:12px; font-family: sans-serif; max-width: 400px;'>
-          <h3 style='margin-top:0;'>Invoice ${invoice.invoice_number}</h3>
-          <p style='font-size: 18px; font-weight: bold; color: #6366f1;'>${invoice.total_amount.toLocaleString(undefined, { style: 'currency', currency: invoice.currency })}</p>
-          <p style='font-size: 12px; color: #666;'>Issue Date: ${new Date(invoice.issue_date * 1000).toLocaleDateString()}</p>
-          <hr style='border:none; border-top:1px solid #eee; margin: 15px 0;' />
-          <p style='font-size: 11px; color: #999;'>This invoice is PEPPOL compliant. Technical XML attachment included.</p>
+      const issueDate = formatDate(invoice.issue_date, "medium");
+      const dueDate = invoice.due_date ? formatDate(invoice.due_date, "medium") : "—";
+      const total = formatMoney(invoice.total_amount, { currency: invoice.currency });
+      // Escape user-controlled values so they can't break the inserted HTML.
+      const esc = (s: string) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const docNote = docs.pdf
+        ? `PDF and PEPPOL XML generated:<br/>&nbsp;&nbsp;• ${esc(docs.pdf)}<br/>&nbsp;&nbsp;• ${esc(docs.xml ?? "")}`
+        : "PDF and PEPPOL XML could not be generated — open the invoice to create them.";
+      editor
+        .chain()
+        .focus()
+        .insertContent(`
+        <div style="border:1px solid #d7e3f4; border-radius:14px; padding:16px; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; max-width:440px; background:#f7faff;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:#0B57D0; color:#fff; font-size:14px;">&#128222;</span>
+            <span style="font-size:13px; font-weight:700; color:#0B57D0; letter-spacing:.3px; text-transform:uppercase;">Invoice ${esc(invoice.invoice_number)}</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; color:#1f2937;">
+            <tr><td style="padding:3px 0; color:#6b7280;">Client</td><td style="padding:3px 0; text-align:right; font-weight:600; color:#111827;">${esc(clientName)}</td></tr>
+            <tr><td style="padding:3px 0; color:#6b7280;">Issue date</td><td style="padding:3px 0; text-align:right; color:#111827;">${esc(issueDate)}</td></tr>
+            <tr><td style="padding:3px 0; color:#6b7280;">Due date</td><td style="padding:3px 0; text-align:right; color:#111827;">${esc(dueDate)}</td></tr>
+            <tr><td style="padding:6px 0 2px; color:#6b7280; border-top:1px solid #e5edf7;">Total</td><td style="padding:6px 0 2px; text-align:right; font-size:16px; font-weight:800; color:#0B57D0; border-top:1px solid #e5edf7;">${esc(total)}</td></tr>
+          </table>
+          <p style="margin:10px 0 0; font-size:11px; line-height:1.5; color:#6b7280;">${docNote}</p>
+          <p style="margin:12px 0 0;"><a href="#/invoicing/edit/${esc(invoice.id)}" style="display:inline-block; background:#0B57D0; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:8px 14px; border-radius:8px;">View invoice</a></p>
         </div>
         <p>&nbsp;</p>
-      `).run();
+      `)
+        .run();
       useComposerStore.getState().setBodyHtml(editor.getHTML());
     }
     setInvoiceModalOpen(false);
