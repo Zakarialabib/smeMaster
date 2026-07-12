@@ -40,7 +40,7 @@ pub enum ServiceHandle {
 
 /// One entry per subsystem.
 pub struct SubsystemEntry {
-    pub name: &'static str,
+    pub name: String,
     pub class: SubsystemClass,
     pub feature_flag: Option<&'static str>,
     pub service_handle: ServiceHandle,
@@ -53,13 +53,13 @@ pub struct SubsystemEntry {
 
 impl SubsystemEntry {
     pub fn new_lazy(
-        name: &'static str,
+        name: impl Into<String>,
         feature_flag: Option<&'static str>,
         service: Arc<dyn Service>,
         idle_grace: Option<Duration>,
     ) -> Self {
         Self {
-            name,
+            name: name.into(),
             class: SubsystemClass::Lazy,
             feature_flag,
             service_handle: ServiceHandle::Lazy(service),
@@ -72,12 +72,12 @@ impl SubsystemEntry {
     }
 
     pub fn new_ondemand(
-        name: &'static str,
+        name: impl Into<String>,
         feature_flag: Option<&'static str>,
         factory: Box<dyn Fn() -> Arc<dyn Service> + Send + Sync>,
     ) -> Self {
         Self {
-            name,
+            name: name.into(),
             class: SubsystemClass::OnDemand,
             feature_flag,
             service_handle: ServiceHandle::OnDemand(factory),
@@ -103,9 +103,11 @@ pub struct SubsystemStatusSnapshot {
 }
 
 pub struct SubsystemRegistry {
-    entries: DashMap<&'static str, Arc<SubsystemEntry>>,
+    entries: DashMap<String, Arc<SubsystemEntry>>,
     #[allow(dead_code)]
     app_handle: Option<AppHandle>,
+    /// Typed handle storage for downcast retrieval of concrete service handles.
+    handles: Arc<DashMap<String, Box<dyn std::any::Any + Send + Sync + 'static>>>,
 }
 
 impl SubsystemRegistry {
@@ -113,6 +115,7 @@ impl SubsystemRegistry {
         Self {
             entries: DashMap::new(),
             app_handle: Some(app_handle),
+            handles: Arc::new(DashMap::new()),
         }
     }
 
@@ -122,25 +125,29 @@ impl SubsystemRegistry {
         Self {
             entries: DashMap::new(),
             app_handle: None,
+            handles: Arc::new(DashMap::new()),
         }
     }
 
     /// Register a Lazy subsystem (pre-built, init at boot, start on demand).
     pub fn register_lazy(&self, entry: SubsystemEntry) {
-        self.entries.insert(entry.name, Arc::new(entry));
+        let name = entry.name.clone();
+        self.entries.insert(name, Arc::new(entry));
     }
 
     /// Register an OnDemand subsystem (built on first use).
     pub fn register_ondemand(&self, entry: SubsystemEntry) {
-        self.entries.insert(entry.name, Arc::new(entry));
+        let name = entry.name.clone();
+        self.entries.insert(name, Arc::new(entry));
     }
 
     /// Register an externally-managed subsystem for observability only.
     /// The service's lifecycle is managed by ServiceRegistry (AlwaysOn).
     /// Status is pre-set to Active, so SubsystemRegistry never calls start/stop.
-    pub fn register_observed(&self, name: &'static str, feature_flag: Option<&'static str>, service: Arc<dyn Service>) {
+    pub fn register_observed(&self, name: impl Into<String>, feature_flag: Option<&'static str>, service: Arc<dyn Service>) {
+        let entry_name: String = name.into();
         let entry = SubsystemEntry {
-            name,
+            name: entry_name.clone(),
             class: SubsystemClass::Lazy,
             feature_flag,
             service_handle: ServiceHandle::Lazy(service),
@@ -150,7 +157,7 @@ impl SubsystemRegistry {
             activation_lock: Arc::new(tokio::sync::Mutex::new(())),
             idle_grace: None,
         };
-        self.entries.insert(entry.name, Arc::new(entry));
+        self.entries.insert(entry_name, Arc::new(entry));
     }
 
     /// CAS-based activation. Returns Ok(()) if Active/Starting/Dormant.
@@ -425,6 +432,18 @@ impl SubsystemRegistry {
         }
     }
 
+    /// Store a concrete typed handle (e.g., `Arc<SentinelService>`) for downcast retrieval.
+    pub fn store_handle<T: Send + Sync + 'static>(&self, name: &str, handle: Arc<T>) {
+        self.handles.insert(name.to_string(), Box::new(handle));
+    }
+
+    /// Retrieve a concrete typed handle previously stored with `store_handle()`.
+    pub fn get_handle<T: Send + Sync + 'static>(&self, name: &str) -> Option<Arc<T>> {
+        self.handles
+            .get(name)
+            .and_then(|b| b.downcast_ref::<Arc<T>>().cloned())
+    }
+
     /// Get all subsystem status snapshots (for IPC).
     pub fn get_all_status(&self) -> Vec<SubsystemStatusSnapshot> {
         self.entries
@@ -441,7 +460,7 @@ impl SubsystemRegistry {
                 let status_snapshot = match entry.status.try_read() {
                     Ok(status) => status.clone(),
                     Err(_) => return SubsystemStatusSnapshot {
-                        name: entry.name.to_string(),
+                        name: entry.name.clone(),
                         class: class.to_string(),
                         status: "unknown".to_string(),
                         reason: "status lock contended".to_string(),
@@ -471,7 +490,7 @@ impl SubsystemRegistry {
                     }
                 };
                 SubsystemStatusSnapshot {
-                    name: entry.name.to_string(),
+                    name: entry.name.clone(),
                     class: class.to_string(),
                     status: status_str.to_string(),
                     reason,

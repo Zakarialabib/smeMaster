@@ -39,6 +39,7 @@ impl Watchdog {
                             log::error!("[watchdog] Service {} failed: {}. Attempting recovery...", service.name(), msg);
                             Self::attempt_restart(service).await;
                         }
+                        HealthStatus::Unknown => continue,
                     }
                 }
 

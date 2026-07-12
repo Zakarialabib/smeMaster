@@ -450,11 +450,9 @@ pub fn run() {
         );
 
         // ── Onboarding completion listener ──
-        // Tauri runs `once` callbacks on the async runtime's worker thread, so:
-        //  • `block_on` here panics ("runtime within a runtime");
-        //  • `spawn` fails to prove the future is `Send` (DashMap<&'static str> key).
-        // Fix: hop to a dedicated OS thread and `block_on` there — a fresh runtime,
-        // no panic, and Send only needs to hold at the type level (which it does).
+        // The DashMap key change to `String` resolved the previous Send issue,
+        // but `block_on` inside a tokio runtime still panics ("runtime within
+        // a runtime"), so we keep the dedicated OS thread approach.
         let sm = state_machine.clone();
         app.handle().once("onboarding:completed", move |_| {
             let sm = sm.clone();

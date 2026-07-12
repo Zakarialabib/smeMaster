@@ -9,20 +9,25 @@ pub enum HealthStatus {
     Healthy,
     Degraded(String),
     Failed(String),
+    Unknown,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum InitializationPhase {
     Awakening,
     Assembly,
     Coronation,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PhaseEvent {
     pub phase: InitializationPhase,
+    #[serde(default)]
+    pub service: Option<String>,
     pub message: String,
-    pub percentage: u8,
+    pub progress: f32,
+    #[serde(default)]
+    pub timestamp: u64,
 }
 
 #[async_trait::async_trait]
@@ -46,6 +51,13 @@ pub trait Service: Send + Sync {
     
     /// Initialization priority (lower = earlier)
     fn priority(&self) -> u32 { 100 }
+
+    /// Optional module manifest describing this service's feature flags,
+    /// dependencies, tables, events, and config fields.
+    /// Default returns `None`. Override to associate a manifest with this service.
+    fn manifest(&self) -> Option<serde_json::Value> {
+        None
+    }
 }
 
 pub struct ServiceRegistry {
@@ -72,8 +84,8 @@ impl ServiceRegistry {
         let total = services.len();
 
         for (index, service) in services.iter().enumerate() {
-            let percentage = ((index as f32 / total as f32) * 50.0) as u8; // 0-50% for init
-            self.emit_progress(InitializationPhase::Awakening, format!("Initializing {}...", service.name()), percentage);
+            let progress = (index as f32 / total as f32) * 50.0; // 0-50% for init
+            self.emit_progress(InitializationPhase::Awakening, format!("Initializing {}...", service.name()), progress);
             
             if let Err(e) = service.init().await {
                 if service.is_critical() {
@@ -92,8 +104,8 @@ impl ServiceRegistry {
         let total = services.len();
 
         for (index, service) in services.iter().enumerate() {
-            let percentage = 50 + ((index as f32 / total as f32) * 45.0) as u8; // 50-95% for start
-            self.emit_progress(InitializationPhase::Assembly, format!("Starting {}...", service.name()), percentage);
+            let progress = 50.0 + ((index as f32 / total as f32) * 45.0); // 50-95% for start
+            self.emit_progress(InitializationPhase::Assembly, format!("Starting {}...", service.name()), progress);
             
             if let Err(e) = service.start().await {
                 if service.is_critical() {
@@ -105,7 +117,7 @@ impl ServiceRegistry {
             }
         }
         
-        self.emit_progress(InitializationPhase::Coronation, "System Ready".to_string(), 100);
+        self.emit_progress(InitializationPhase::Coronation, "System Ready".to_string(), 100.0);
         
         // Notify frontend we are completely ready
         let _ = self.app_handle.emit("init:ready", ());
@@ -117,11 +129,16 @@ impl ServiceRegistry {
         self.services.read().await.clone()
     }
 
-    fn emit_progress(&self, phase: InitializationPhase, message: String, percentage: u8) {
+    fn emit_progress(&self, phase: InitializationPhase, message: String, progress: f32) {
         let event = PhaseEvent {
             phase,
+            service: None,
             message,
-            percentage,
+            progress,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis() as u64,
         };
         let _ = self.app_handle.emit("init:progress", event);
     }
@@ -217,26 +234,40 @@ mod tests {
     fn test_phase_event_serialization() {
         let event = PhaseEvent {
             phase: InitializationPhase::Awakening,
+            service: None,
             message: "Starting database...".to_string(),
-            percentage: 10,
+            progress: 10.0,
+            timestamp: 0,
         };
         let json = serde_json::to_string(&event).unwrap();
         assert!(json.contains("Awakening"));
         assert!(json.contains("Starting database"));
-        assert!(json.contains("10"));
+        assert!(json.contains("10.0"));
     }
 
     #[test]
     fn test_phase_event_clone() {
         let event = PhaseEvent {
             phase: InitializationPhase::Assembly,
+            service: None,
             message: "Loading services".to_string(),
-            percentage: 75,
+            progress: 75.0,
+            timestamp: 0,
         };
         let json1 = serde_json::to_string(&event).unwrap();
         let cloned = event.clone();
         let json2 = serde_json::to_string(&cloned).unwrap();
         assert_eq!(json1, json2);
+    }
+
+    #[test]
+    fn test_phase_event_deserialize_with_defaults() {
+        // Old-format JSON (missing service, timestamp fields) should deserialize
+        let old_json = r#"{"phase":"Awakening","message":"test","progress":42.0}"#;
+        let event: PhaseEvent = serde_json::from_str(old_json).unwrap();
+        assert_eq!(event.service, None);
+        assert_eq!(event.timestamp, 0);
+        assert_eq!(event.progress, 42.0);
     }
 
     // ── Mock Service trait implementation ──────────────────────────
