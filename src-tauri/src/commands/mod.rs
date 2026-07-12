@@ -233,6 +233,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_delete_model,
             ai::ai_get_vector_db_path,
             ai::ai_reset_vector_db,
+            ai::ai_get_email_chunks,
+            ai::ai_insert_provider_vectors,
             ai::db_get_ai_cache,
             ai::db_set_ai_cache,
             ai::db_delete_ai_cache,
@@ -858,11 +860,18 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             updater_commands::mark_successful_launch,
             updater_commands::get_app_version,
 
-            // === pos (4 commands) ===
+            // === pos (11 commands) ===
             pos::pos_get_hardware_configs,
             pos::pos_test_printer,
             pos::pos_print_receipt,
             pos::pos_open_cash_drawer,
+            pos::db_list_products,
+            pos::db_search_products,
+            pos::db_create_product,
+            pos::db_update_product,
+            pos::db_delete_product,
+            pos::db_record_sale,
+            pos::db_list_sales,
 
             // === commands::workflows (28 commands) ===
             workflows::db_dashboard_workflow_rules_total,

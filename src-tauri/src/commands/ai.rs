@@ -201,6 +201,59 @@ pub async fn ai_reset_vector_db(
     Ok(())
 }
 
+/// A single indexed chunk: its stable id and the chunk text.
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChunkRecord {
+    pub id: String,
+    pub text: String,
+}
+
+/// Return every chunked document (id, text) from emails, attachments,
+/// and vault items — without embedding them. The frontend embeds each
+/// chunk with a local provider (LM Studio / Ollama / …) and sends the
+/// vectors back via [`ai_insert_provider_vectors`]. This lets users build
+/// the RAG index from a local provider without downloading BGE-small.
+#[tauri::command]
+pub async fn ai_get_email_chunks(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+) -> CmdResult<Vec<ChunkRecord>> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let chunks = indexer.get_email_chunks().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+    Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderVectorRequest {
+    pub vectors: Vec<Vec<f32>>,
+    pub ids: Vec<String>,
+    pub texts: Vec<String>,
+}
+
+/// Insert pre-computed provider embeddings into the dimension-correct table.
+/// The table dimension is derived from the first vector's length, so LM Studio
+/// / Ollama models of any width (384 / 768 / 1536, …) each get their
+/// own `knowledge_base_{dim}` table and never collide.
+#[tauri::command]
+pub async fn ai_insert_provider_vectors(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+    req: ProviderVectorRequest,
+) -> CmdResult<usize> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    indexer.index_provider_vectors(req.vectors, req.ids, req.texts).await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))
+}
+
 #[tauri::command]
 pub async fn db_get_ai_cache(
     pool: State<'_, SqlitePool>,
