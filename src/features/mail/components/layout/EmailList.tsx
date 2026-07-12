@@ -982,11 +982,10 @@ export function EmailList({
         return;
       }
 
-      // Cmd+K / Ctrl+K: Open command palette (TODO: implement command palette)
+      // Cmd+K / Ctrl+K: open the app-wide command palette
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        // TODO: Open command palette for mail actions
-        console.log("Command palette shortcut triggered (Cmd+K / Ctrl+K)");
+        window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
         return;
       }
     };
