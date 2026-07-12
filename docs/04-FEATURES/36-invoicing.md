@@ -50,6 +50,20 @@ The calc engine (`src-tauri/src/invoicing/calc.rs`) uses integer arithmetic in c
 5. Marks invoice as "sent"
 6. Applies stock/ledger side effects
 
+## Key Flow: Pay / Reverse an Invoice (routes through the Wallet)
+
+Marking an invoice **paid** (or back to **unpaid**) in the Invoicing UI calls
+`db_update_invoice_status`, which routes the cash movement through the **Company
+Wallet** and mirrors it to the ledger:
+
+- **Sale invoice → `paid`** → wallet credited (cash in), ledger `Dr Cash (1000) / Cr AR (1200)`
+- **Sale invoice → `unpaid`** → wallet debited (reverse), ledger `Cr Cash (1000) / Dr AR (1200)`
+- **Purchase order (bill) → `paid`** → wallet debited (cash out), ledger `Dr AP (2000) / Cr Cash (1000)`
+- **Purchase order → `unpaid`** → wallet credited (reverse), ledger `Cr AP (2000) / Dr Cash (1000)`
+
+See the [Company Wallet user guide](../user-guide/wallet.md) for the full money-movement
+matrix and how manual top-ups / withdrawals post to Owner's Equity (3000).
+
 ## Company Settings
 
 Company settings control defaults: currency, tax rate, invoice numbering prefix/suffix, template, logo, bank details, terms. Stored per-company in SQLite.

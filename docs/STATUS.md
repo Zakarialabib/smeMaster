@@ -4,6 +4,8 @@
 >
 > 🧾 **Invoicing Module (Morocco DGI-Compliant) — Production-ready (2026-07-12):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, **33 Tauri commands**, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Calc engine fully wired** — `calculate_document_totals` powers `db_create_invoice` and `db_calculate_invoice`. **`db_send_invoice` confirmed live** with real SMTP dispatch, PGP encryption, stock/ledger side effects. **Residual gap:** `db_list_clients` ignores `company_id` (company filter dropped server-side). Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
 >
+> 💰 **Company Wallet — Cash Hub + Ledger Sync (2026-07-12):** New `wallets` table (migration `023_wallet.sql`), `db/tables/wallet` DAL, and 4 Tauri commands (`db_ensure_wallet`, `db_get_wallet`, `db_credit_wallet`, `db_debit_wallet`). **Every ERP money movement now routes through the wallet:** marking a sale invoice `paid` credits cash; marking a bill `paid` debits cash; reversing unwinds the move. Each movement is mirrored to the ledger (Cash 1000 / AR 1200 / AP 2000) and manual top-ups/withdrawals post to Owner's Equity (3000). Frontend: new responsive `WalletView` (balance hero, top-up/withdraw modal with preset chips, live movements feed derived from the Cash ledger) wired into `ErpPage` as a **Cash** tab; Overview now shows **Cash on hand**. User guide added at `docs/user-guide/wallet.md`.
+
 > 🖨️ **POS Hardware Integration — Merged (2026-07-11):** Point-of-Sale module with ESC/POS thermal printer support, system printer fallback, barcode scanner hook, hardware settings tab — merged cleanly via PR #2.
 >
 > 🔄 **account_id → company_id Rename (2026-07-09):** All company-scoped Tauri command parameters, frontend invoke wrappers, feature-layer wrappers, stores, and components renamed from `account_id`/`accountId` to `company_id`/`companyId`. 30+ files modified across the full stack — Rust commands, SQL queries, db-invoke wrapper (89+ fixes), 15+ feature wrappers, 6 stores, 8+ components. Zero TypeScript errors, zero Rust errors. See "Recently Completed" below.
@@ -46,6 +48,32 @@ The invoicing backend reached production readiness with 9 new commands and 3 enh
 | **Calc engine wired**                | `calculate_document_totals` now powers `db_create_invoice` and `db_calculate_invoice` — line-item totals computed in centimes via the calc engine                                      |
 
 **Total invoicing commands: 33** (was 24) — 8 new + 3 enhanced + 1 POS cash drawer.
+
+### Company Wallet — Cash Hub with Ledger Sync (2026-07-12)
+
+Built the wallet so **all ERP money movement (sales, invoicing, expensing) flows through a single company cash balance** that stays reconciled with the double-entry ledger.
+
+| Layer           | Details                                                                                                                                                                                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Migration**   | `023_wallet.sql` — `wallets` table (id, company_id, currency, balance i64 minor units, timestamps); indexed on `company_id`                                                                                                                                                                                                                                  |
+| **DAL**         | `src-tauri/src/db/tables/wallet/mod.rs` — `ensure` (idempotent), `get`, `get_or_ensure`, `get_balance`, `credit`, `debit`, `apply_payment` (routes an invoice paid/unpaid through the wallet + ledger)                                                                                                                                                      |
+| **Accounting**  | Added `Owner's Equity (3000)` to `DEFAULT_CHART`; made `insert_entry` public; added `post_invoice_payment` and `post_capital_movement` (manual top-up/withdrawal → Dr/Cr Equity). `ensure_defaults` is now idempotent per `code` so existing companies gain new accounts on next ledger op                                              |
+| **Commands**    | `db_ensure_wallet`, `db_get_wallet`, `db_credit_wallet`, `db_debit_wallet` registered in `commands/mod.rs`                                                                                                                                                                                                                                                  |
+| **Routing**     | `db_update_invoice_status` now detects a paid↔unpaid transition and calls `wallet::apply_payment`; a sale `paid` credits cash (Dr Cash / Cr AR), a bill `paid` debits cash (Dr AP / Cr Cash), and reversal unwinds both the wallet and the ledger. Ledger post failures are non-fatal (`log::warn`) so the wallet never blocks |
+| **Frontend type** | `Wallet` interface added to `src/shared/services/db/schema.ts`; `getWallet` / `creditWallet` / `debitWallet` wrappers in `invoke/invoicing.ts`                                                                                                                                                                                                                |
+| **UI**          | New responsive `WalletView.tsx` — balance hero (overdraft-aware), Cash in/out summary, top-up/withdraw modal with preset chips, movements feed derived from the Cash (1000) ledger account. Wired into `ErpPage` as a **Cash** tab; Overview added a **Cash on hand** stat card                                                                              |
+| **Docs**        | `docs/user-guide/wallet.md` (new), `docs/04-FEATURES/36-invoicing.md` wallet-routing note, this STATUS entry                                                                                                                                                                                                                                                 |
+
+**Money-movement matrix (wallet ↔ ledger):**
+
+| Event                              | Wallet        | Ledger                                              |
+| --------------------------------- | ------------- | --------------------------------------------------- |
+| Sale invoice → `paid`             | credit (in)   | Dr Cash (1000) / Cr AR (1200)                       |
+| Sale invoice → `unpaid` (reverse) | debit (out)   | Cr Cash (1000) / Dr AR (1200)                       |
+| Bill (purchase order) → `paid`    | debit (out)   | Dr AP (2000) / Cr Cash (1000)                       |
+| Bill → `unpaid` (reverse)         | credit (in)   | Cr AP (2000) / Dr Cash (1000)                       |
+| Manual top-up                     | credit (in)   | Dr Cash (1000) / Cr Equity (3000)                   |
+| Manual withdrawal                 | debit (out)   | Dr Equity (3000) / Cr Cash (1000)                   |
 
 ### Runtime IPC Errors Fixed
 
@@ -493,6 +521,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | `commands/smtp.rs`           | ~2       | SMTP operations                                                                                                                                                                                                                          |
 | `commands/invoicing.rs`      | ~33      | Invoices CRUD, clients CRUD (soft/hard delete), items CRUD, catalog items CRUD, company settings CRUD, categories CRUD, company update, document generation (PEPPOL/PDF), status lifecycle, send (SMTP/PGP), calculate, low-stock alerts |
 | `commands/pos.rs`            | ~36      | POS sale CRUD, ESC/POS thermal printing, system printer, cash drawer, barcode scanning                                                                                                                                                   |
+| `commands/wallet.rs`         | ~4       | Wallet ensure/get/credit/debit — company cash hub, ledger-synced                                                                                                                                                                        |
 | Subsystem Lifecycle          | ~4       | complete_onboarding, get_subsystem_status, get_tool_state, apply_tool_state                                                                                                                                                              |
 | Non-command modules          | ~20      | OAuth, PGP, Vault, Export, Pairing, Device, DNS, etc.                                                                                                                                                                                    |
 | Vault                        | ~24      | Vault DB ops, folder CRUD, file CRUD, search, categorization, storage stats                                                                                                                                                              |
@@ -501,7 +530,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | Updater                      | ~5       | Update check, download, install, rollback                                                                                                                                                                                                |
 | Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                                                                                                                                           |
 | Assets                       | ~3       | Asset management                                                                                                                                                                                                                         |
-| **Total**                    | **773**  | All registered via `tauri::generate_handler!` — 69 new commands added since last count (+33 invoicing, +36 POS)                                                                                                                          |
+| **Total**                    | **777**  | All registered via `tauri::generate_handler!` — 73 new commands added since last count (+33 invoicing, +36 POS, +4 wallet)                                                                                                |
 
 ---
 
