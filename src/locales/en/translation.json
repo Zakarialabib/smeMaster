@@ -801,9 +801,9 @@
     "markAsVip": "Mark as VIP",
     "addToContacts": "Add to Contacts",
     "added": "Added!",
-    "extractFromEmail": "Extract details from email",
+    "extractFromEmail": "contact.extractFromEmail",
     "extractApplied": "Added from email: {{fields}}",
-    "extractNone": "No new details found in this email",
+    "extractNone": "contact.extractNone",
     "editName": "Edit name",
     "notes": "Notes",
     "addANote": "Add a note...",
@@ -827,9 +827,7 @@
       "createdPrefix": "Created {date}",
       "openedLabel": "Opened {date}",
       "clickedLabel": "Clicked {date}"
-    },
-    "extractNone": "contact.extractNone",
-    "extractFromEmail": "contact.extractFromEmail"
+    }
   },
   "calendar": {
     "day": "Day",
@@ -868,7 +866,8 @@
     "title": "calendar.title",
     "retry": "calendar.retry",
     "noEventsHint": "calendar.noEventsHint",
-    "createEvent": "calendar.createEvent"
+    "createEvent": "calendar.createEvent",
+    "endBeforeStart": "End time must be after start time"
   },
   "tasks": {
     "tasks": "Tasks",

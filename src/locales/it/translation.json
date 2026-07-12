@@ -842,7 +842,8 @@
     "title": "[TODO] calendar.title",
     "retry": "[TODO] calendar.retry",
     "noEventsHint": "[TODO] calendar.noEventsHint",
-    "createEvent": "[TODO] calendar.createEvent"
+    "createEvent": "[TODO] calendar.createEvent",
+    "endBeforeStart": "L'orario di fine deve essere successivo all'orario di inizio"
   },
   "tasks": {
     "tasks": "Attività",

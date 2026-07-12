@@ -745,9 +745,9 @@
     "markAsVip": "تعيين كمهم",
     "addToContacts": "إضافة إلى جهات الاتصال",
     "added": "تمت الإضافة!",
-    "extractFromEmail": "استخراج التفاصيل من البريد",
+    "extractFromEmail": "[TODO] contact.extractFromEmail",
     "extractApplied": "تمت الإضافة من البريد: {{fields}}",
-    "extractNone": "لا توجد تفاصيل جديدة في هذا البريد",
+    "extractNone": "[TODO] contact.extractNone",
     "editName": "تعديل الاسم",
     "notes": "ملاحظات",
     "addANote": "أضف ملاحظة...",
@@ -771,9 +771,7 @@
       "createdPrefix": "[TODO] Created {date}",
       "openedLabel": "[TODO] Opened {date}",
       "clickedLabel": "[TODO] Clicked {date}"
-    },
-    "extractNone": "[TODO] contact.extractNone",
-    "extractFromEmail": "[TODO] contact.extractFromEmail"
+    }
   },
   "calendar": {
     "day": "يوم",
@@ -812,7 +810,8 @@
     "title": "[TODO] calendar.title",
     "retry": "[TODO] calendar.retry",
     "noEventsHint": "[TODO] calendar.noEventsHint",
-    "createEvent": "[TODO] calendar.createEvent"
+    "createEvent": "[TODO] calendar.createEvent",
+    "endBeforeStart": "يجب أن يكون وقت الانتهاء بعد وقت البدء"
   },
   "tasks": {
     "tasks": "المهام",

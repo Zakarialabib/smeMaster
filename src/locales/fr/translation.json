@@ -745,9 +745,9 @@
     "markAsVip": "Marquer comme VIP",
     "addToContacts": "Ajouter aux contacts",
     "added": "Ajouté !",
-    "extractFromEmail": "Extraire les détails de l'e-mail",
+    "extractFromEmail": "[TODO] contact.extractFromEmail",
     "extractApplied": "Ajouté depuis l'e-mail : {{fields}}",
-    "extractNone": "Aucun nouveau détail trouvé dans cet e-mail",
+    "extractNone": "[TODO] contact.extractNone",
     "editName": "Modifier le nom",
     "notes": "Notes",
     "addANote": "Ajouter une note...",
@@ -771,9 +771,7 @@
       "createdPrefix": "[TODO] Created {date}",
       "openedLabel": "[TODO] Opened {date}",
       "clickedLabel": "[TODO] Clicked {date}"
-    },
-    "extractNone": "[TODO] contact.extractNone",
-    "extractFromEmail": "[TODO] contact.extractFromEmail"
+    }
   },
   "calendar": {
     "day": "Jour",
@@ -812,7 +810,8 @@
     "title": "[TODO] calendar.title",
     "retry": "[TODO] calendar.retry",
     "noEventsHint": "[TODO] calendar.noEventsHint",
-    "createEvent": "[TODO] calendar.createEvent"
+    "createEvent": "[TODO] calendar.createEvent",
+    "endBeforeStart": "L'heure de fin doit être après l'heure de début"
   },
   "tasks": {
     "tasks": "Tâches",
