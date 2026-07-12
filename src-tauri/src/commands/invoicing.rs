@@ -433,9 +433,10 @@ pub async fn db_update_invoice_status(
 #[command]
 pub async fn db_list_clients(
     pool: State<'_, SqlitePool>,
+    company_id: String,
     role: Option<String>,
 ) -> Result<Vec<Client>, String> {
-    clients::list(&*pool, role.as_deref())
+    clients::list(&*pool, Some(&company_id), role.as_deref())
         .await
         .map_err(|e| format!("Failed to list clients: {e}"))
 }

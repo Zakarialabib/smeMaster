@@ -11,13 +11,16 @@ use crate::db::invoicing::schema::Client;
 /// `contact_type` ("client" | "supplier"). `None` returns both.
 pub async fn list(
     pool: &SqlitePool,
+    company_id: Option<&str>,
     contact_type: Option<&str>,
 ) -> Result<Vec<Client>, AppDbError> {
     match contact_type {
         Some(t) => {
             sqlx::query_as::<_, Client>(
-                "SELECT * FROM contacts WHERE deleted_at IS NULL AND contact_type = ? ORDER BY display_name ASC"
+                "SELECT * FROM contacts WHERE deleted_at IS NULL AND (? IS NULL OR company_id = ?) AND contact_type = ? ORDER BY display_name ASC"
             )
+            .bind(company_id)
+            .bind(company_id)
             .bind(t)
             .fetch_all(pool)
             .await
@@ -25,8 +28,10 @@ pub async fn list(
         }
         None => {
             sqlx::query_as::<_, Client>(
-                "SELECT * FROM contacts WHERE deleted_at IS NULL AND contact_type IN ('client','supplier') ORDER BY display_name ASC"
+                "SELECT * FROM contacts WHERE deleted_at IS NULL AND (? IS NULL OR company_id = ?) AND contact_type IN ('client','supplier') ORDER BY display_name ASC"
             )
+            .bind(company_id)
+            .bind(company_id)
             .fetch_all(pool)
             .await
             .map_err(AppDbError::Database)

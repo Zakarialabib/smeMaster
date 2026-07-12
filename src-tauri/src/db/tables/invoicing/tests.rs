@@ -63,10 +63,10 @@ mod tests {
         clients::create(&pool, c1).await.unwrap();
         clients::create(&pool, c2).await.unwrap();
 
-        let all = clients::list(&pool, None).await.unwrap();
+        let all = clients::list(&pool, None, None).await.unwrap();
         assert_eq!(all.len(), 2);
 
-        let customers = clients::list(&pool, Some("customer")).await.unwrap();
+        let customers = clients::list(&pool, None, Some("customer")).await.unwrap();
         // "Client A" has role=customer, "Client B" has role=supplier
         // Query matches WHERE role='customer' OR role='both'
         assert_eq!(customers.len(), 1);
@@ -86,7 +86,7 @@ mod tests {
         clients::soft_delete(&pool, &client.id).await.unwrap();
 
         // Should not appear in list (deleted_at IS NULL filter)
-        let all = clients::list(&pool, None).await.unwrap();
+        let all = clients::list(&pool, None, None).await.unwrap();
         assert_eq!(all.len(), 0);
 
         // But can still be fetched directly
