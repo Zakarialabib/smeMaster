@@ -1,9 +1,9 @@
 import { useState, lazy, Suspense, Component, type ReactNode } from "react";
 import { toast } from "@shared/stores/toastStore";
 import { SkeletonPage } from "@shared/components/ui/Skeleton";
+import { CardTabBar, type CardTabItem } from "@shared/components/ui";
 import {
   Users,
-  BarChart3,
   ListChecks,
   CalendarDays,
   ReceiptText,
@@ -54,15 +54,8 @@ class TabErrorBoundary extends Component<
 }
 
 // ── Tab configuration ────────────────────────────────────────────────────
-interface Tab {
-  id: string;
-  label: string;
-  icon: typeof Users;
-}
-
-const TABS: Tab[] = [
+const TABS: CardTabItem[] = [
   { id: "contacts", label: "Contacts", icon: Users },
-  { id: "campaigns", label: "Campaigns", icon: BarChart3 },
   { id: "tasks", label: "Tasks", icon: ListChecks },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "invoices", label: "Invoices", icon: ReceiptText },
@@ -72,12 +65,6 @@ const TABS: Tab[] = [
 const ContactsContent = lazy(() =>
   import("@features/contacts/pages/ContactsPage").then((m) => ({
     default: m.ContactsPage,
-  })),
-);
-
-const CampaignsContent = lazy(() =>
-  import("@features/campaigns/components/CampaignPage").then((m) => ({
-    default: m.CampaignPage,
   })),
 );
 
@@ -101,51 +88,10 @@ const InvoicesContent = lazy(() =>
 
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
   contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
-  campaigns: CampaignsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
-
-// ── Tab bar ──────────────────────────────────────────────────────────────
-function TabBar({
-  tabs,
-  activeTab,
-  onTabChange,
-}: {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (id: string) => void;
-}) {
-  return (
-    <div
-      className="flex gap-1 px-2 py-1.5 mx-3 rounded-2xl bg-bg-secondary/40 backdrop-blur-[12px] border border-border-secondary/40"
-      role="tablist"
-      aria-label="CRM tabs"
-    >
-      {tabs.map((tab) => {
-        const isActive = tab.id === activeTab;
-        return (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={isActive}
-            aria-controls={`crm-tabpanel-${tab.id}`}
-            onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-medium transition-all duration-200 ios-tap ${
-              isActive
-                ? "bg-accent text-white shadow-sm shadow-accent/30"
-                : "text-text-tertiary hover:text-text-secondary"
-            }`}
-          >
-            <tab.icon size={16} />
-            <span>{tab.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 // ── Main Component ───────────────────────────────────────────────────────
 export function CrmPage() {
@@ -189,12 +135,12 @@ export function CrmPage() {
 
       {/* Tab bar */}
       <div className="py-2 shrink-0">
-        <TabBar tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        <CardTabBar tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} ariaLabel="CRM tabs" className="mx-3" />
       </div>
 
       {/* Tab content */}
       <div
-        id={`crm-tabpanel-${activeTab}`}
+        id={`tabpanel-${activeTab}`}
         role="tabpanel"
         className="flex-1 overflow-hidden animate-[pageEnter_350ms_cubic-bezier(0.16,1,0.3,1)]"
       >
