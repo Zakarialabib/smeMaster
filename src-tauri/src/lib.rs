@@ -28,6 +28,7 @@ mod oauth;
 mod pairing;
 mod pgp;
 mod smtp;
+mod state;
 mod vault;
 pub mod orchestrator;
 mod invoicing;
@@ -441,6 +442,20 @@ pub fn run() {
         // ── Phase 3: Subsystem lifecycle state (before spawn so commands can access) ──
         let (subsystem_registry, _tool_registry, state_machine) =
             orchestrator::init::AppLifecycle::wire_subsystem_lifecycle(app);
+
+        // ── AppState: centralized core infrastructure wrapper ──
+        // Created here because EventBus is already managed and
+        // wire_subsystem_lifecycle has just returned the registry + FSM.
+        // The clone is cheap (Arc ref-count bump); subsystem_registry is
+        // moved into spawn_orchestrator on the next line.
+        {
+            let app_state = crate::state::AppState::new(
+                app.state::<events::EventBus>().inner().clone(),
+                subsystem_registry.clone(),
+                state_machine.clone(),
+            );
+            app.manage(app_state);
+        }
 
         // ── Phase 4: Orchestrator — services lifecycle + Watchdog + migration ──
         orchestrator::init::AppLifecycle::spawn_orchestrator(
