@@ -49,6 +49,7 @@ import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
 import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
+import { AiTaskExtractDialog } from "@features/tasks/components/AiTaskExtractDialog";
 import { isAiAvailable } from "@shared/services/ai/providerManager";
 import { getMessagesForThread } from "@shared/services/db/messages";
 import {
@@ -261,6 +262,7 @@ export function EmailList({
   const [showAiSuggestion, setShowAiSuggestion] = useState(true);
   const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
   const [aiAvailable, setAiAvailable] = useState(false);
+  const [showTaskExtract, setShowTaskExtract] = useState(false);
   const aiAvailableRef = useRef(false);
 
   // Check whether an AI provider is actually configured (API key set, server URL, etc.)
@@ -1119,7 +1121,8 @@ export function EmailList({
               type: "task",
             }}
             onReview={() => {
-              // TODO: Open task extraction panel
+              const targetThreadId = selectedThreadId ?? filteredThreads[0]?.id;
+              if (targetThreadId) setShowTaskExtract(true);
               setShowAiSuggestion(false);
             }}
             onDismiss={() => setShowAiSuggestion(false)}
@@ -1648,6 +1651,14 @@ export function EmailList({
           </>
         )}
       </div>
+
+      {showTaskExtract && activeAccountId && (
+        <AiTaskExtractDialog
+          threadId={selectedThreadId ?? filteredThreads[0]?.id ?? undefined}
+          accountId={activeAccountId}
+          onClose={() => setShowTaskExtract(false)}
+        />
+      )}
     </div>
   );
 }
