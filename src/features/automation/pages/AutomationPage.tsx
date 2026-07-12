@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import {
   RefreshCw,
@@ -20,9 +20,22 @@ import { useAutomationStore } from "@features/automation/stores/automationStore"
 import { AutomationRuleCard } from "@features/automation/components/AutomationRuleCard";
 import { AutomationRuleList } from "@features/automation/components/AutomationRuleList";
 import { AutomationRuleEditor } from "@features/automation/components/AutomationRuleEditor";
-import { AutomationBuilder } from "@features/automation/components/AutomationBuilder";
-import { AiWorkflowGenerateModal } from "@features/settings/components/AiWorkflowGenerateModal";
 import { upsertWorkflowRule } from "@features/settings/db/workflowRules";
+
+// Heavy, conditionally-rendered UI: the visual flow builder pulls in xyflow
+// and the AI modal pulls in settings/constants. Both are only mounted on
+// demand, so lazy-load them to keep them out of the initial automation chunk.
+const AutomationBuilder = lazy(() =>
+  import("@features/automation/components/AutomationBuilder").then((m) => ({
+    default: m.AutomationBuilder,
+  })),
+);
+
+const AiWorkflowGenerateModal = lazy(() =>
+  import("@features/settings/components/AiWorkflowGenerateModal").then((m) => ({
+    default: m.AiWorkflowGenerateModal,
+  })),
+);
 import { notify } from "@shared/services/notifications/toastHelper";
 import type { WorkflowPreset } from "@/constants/workflowPresets";
 import type { ViewMode } from "@features/automation/stores/automationStore";
@@ -300,11 +313,13 @@ export function AutomationPage() {
       />
 
       {/* AI Generate Modal */}
-      <AiWorkflowGenerateModal
-        isOpen={showAiModal}
-        onClose={closeAiModal}
-        onCreate={handleAiCreate}
-      />
+      <Suspense fallback={null}>
+        <AiWorkflowGenerateModal
+          isOpen={showAiModal}
+          onClose={closeAiModal}
+          onCreate={handleAiCreate}
+        />
+      </Suspense>
     </PageScaffold>
   );
 }
