@@ -947,14 +947,14 @@ export interface CleanupHistory {
 export interface Client {
   id: string;
   company_id: string;
-  name: string;
+  display_name: string;
   email: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
   country: string;
   tax_id: string | null;
-  role: 'customer' | 'supplier' | 'both';
+  contact_type: 'client' | 'supplier' | 'other' | 'contact';
   credit_limit: number;
   payment_terms: number;
   notes: string | null;

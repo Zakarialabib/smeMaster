@@ -35,6 +35,9 @@ import {
   Loader2,
   Check,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useFormField } from "@shared/hooks/useFormField";
+import { required } from "@shared/utils/validators";
 import { Modal } from "@shared/components/ui/Modal";
 import { Button } from "@shared/components/ui/Button";
 import {
@@ -144,6 +147,7 @@ export function TaskCreateModal({
   accountId,
   prefill,
 }: TaskCreateModalProps) {
+  const { t } = useTranslation();
 
   // ── Source type ──
   const [sourceType, setSourceType] = useState<TaskSourceType>(
@@ -151,7 +155,7 @@ export function TaskCreateModal({
   );
 
   // ── Form fields ──
-  const [title, setTitle] = useState(prefill?.title ?? "");
+  const titleField = useFormField({ validator: required, initialValue: prefill?.title ?? "" });
   const [description, setDescription] = useState(prefill?.description ?? "");
   const [dueDate, setDueDate] = useState(
     prefill?.dueDate ? fromTimestampToLocalISO(prefill.dueDate) : getDefaultDueDate(),
@@ -186,7 +190,7 @@ export function TaskCreateModal({
     if (prefill?.source) {
       setSourceType(prefill.source);
     }
-    if (prefill?.title !== undefined) setTitle(prefill.title);
+    if (prefill?.title !== undefined) titleField.onChange(prefill.title);
     if (prefill?.description !== undefined) setDescription(prefill.description);
     if (prefill?.dueDate) setDueDate(fromTimestampToLocalISO(prefill.dueDate));
     if (prefill?.contactId) setContactId(prefill.contactId);
@@ -268,8 +272,9 @@ export function TaskCreateModal({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!title.trim()) {
-        setSubmitError("Task title is required.");
+      // Surface validation on the title field, then bail if empty.
+      titleField.onBlur();
+      if (!titleField.value.trim()) {
         return;
       }
 
@@ -307,7 +312,7 @@ export function TaskCreateModal({
         () =>
           insertTask({
             accountId,
-            title: title.trim(),
+            title: titleField.value.trim(),
             description: description.trim() || null,
             priority,
             dueDate: dueTimestamp,
@@ -325,7 +330,7 @@ export function TaskCreateModal({
       if (result.success) {
         notify(
           "Task created",
-          `"${title.trim()}" has been added.`,
+          `"${titleField.value.trim()}" has been added.`,
         );
         onCreated(result.data);
         onClose();
@@ -334,7 +339,7 @@ export function TaskCreateModal({
       }
     },
     [
-      title,
+      titleField,
       description,
       dueDate,
       priority,
@@ -431,13 +436,19 @@ export function TaskCreateModal({
           </label>
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={titleField.value}
+            onChange={(e) => titleField.onChange(e.target.value)}
+            onBlur={titleField.onBlur}
             placeholder="What needs to be done?"
             className={INPUT_BASE}
             autoFocus
             aria-required="true"
           />
+          {titleField.error && (
+            <p className="text-xs text-danger mt-1" role="alert">
+              {t(titleField.error)}
+            </p>
+          )}
         </div>
 
         {/* Due date + Priority row */}
@@ -624,7 +635,7 @@ export function TaskCreateModal({
             type="submit"
             variant="primary"
             size="md"
-            disabled={!title.trim() || submitting || !accountId}
+            disabled={!titleField.value.trim() || submitting || !accountId}
           >
             {submitting ? (
               <span className="flex items-center gap-1.5">

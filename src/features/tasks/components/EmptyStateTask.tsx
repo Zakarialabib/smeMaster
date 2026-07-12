@@ -10,6 +10,7 @@
  * @spec Phase 5
  */
 import { Circle, LayoutGrid, Calendar, ClipboardList } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import type { TaskViewMode } from "@features/tasks/stores/taskStore";
 
@@ -52,66 +53,67 @@ export interface EmptyStateTaskProps {
  */
 function getDefaultContent(
   variant: EmptyStateVariant,
-  viewMode?: TaskViewMode,
+  viewMode: TaskViewMode | undefined,
+  t: (key: string) => string,
 ): { title: string; subtitle: string; actionLabel: string; secondaryActionLabel?: string } {
   switch (variant) {
     case "no-tasks":
       return {
-        title: "No tasks yet",
+        title: t("tasks.empty.noTasksTitle"),
         subtitle:
           viewMode === "kanban"
-            ? "Add your first task to get started with Kanban"
+            ? t("tasks.empty.noTasksSubtitleKanban")
             : viewMode === "calendar"
-              ? "Add a task with a due date to see it on the calendar"
+              ? t("tasks.empty.noTasksSubtitleCalendar")
               : viewMode === "agenda"
-                ? "Your agenda is clear. Add a task to get started."
-                : "You're all caught up! Add a task to get started.",
-        actionLabel: "Add your first task",
+                ? t("tasks.empty.noTasksSubtitleAgenda")
+                : t("tasks.empty.noTasksSubtitleList"),
+        actionLabel: t("tasks.empty.addFirstTask"),
       };
 
     case "filtered":
       return {
-        title: "No tasks match your filters",
-        subtitle: "Try adjusting your filter settings to see more tasks.",
-        actionLabel: "Add a task instead",
-        secondaryActionLabel: "Clear filters",
+        title: t("tasks.empty.filteredTitle"),
+        subtitle: t("tasks.empty.filteredSubtitle"),
+        actionLabel: t("tasks.empty.addTaskInstead"),
+        secondaryActionLabel: t("tasks.empty.clearFilters"),
       };
 
     case "no-results":
       return {
-        title: "No tasks found",
-        subtitle: "Try a different search or clear your filters.",
-        actionLabel: "Clear filters",
+        title: t("tasks.empty.noResultsTitle"),
+        subtitle: t("tasks.empty.noResultsSubtitle"),
+        actionLabel: t("tasks.empty.clearFilters"),
       };
 
     case "view-empty":
       return {
         title:
           viewMode === "kanban"
-            ? "No tasks in Kanban view"
+            ? t("tasks.empty.viewEmptyTitleKanban")
             : viewMode === "calendar"
-              ? "No tasks on the calendar"
+              ? t("tasks.empty.viewEmptyTitleCalendar")
               : viewMode === "agenda"
-                ? "Agenda is empty"
-                : "No tasks to display",
-        subtitle: "Add a task or switch to a different view.",
-        actionLabel: "Add a task",
+                ? t("tasks.empty.viewEmptyTitleAgenda")
+                : t("tasks.empty.viewEmptyTitleList"),
+        subtitle: t("tasks.empty.viewEmptySubtitle"),
+        actionLabel: t("tasks.empty.addTask"),
         secondaryActionLabel:
-          viewMode !== "list" ? "Switch to List view" : undefined,
+          viewMode !== "list" ? t("tasks.empty.switchToList") : undefined,
       };
 
     case "search-empty":
       return {
-        title: "No matching tasks",
-        subtitle: "Try different keywords or check your spelling.",
-        actionLabel: "Clear search",
+        title: t("tasks.empty.searchEmptyTitle"),
+        subtitle: t("tasks.empty.searchEmptySubtitle"),
+        actionLabel: t("tasks.empty.clearSearch"),
       };
 
     default:
       return {
-        title: "Nothing here",
-        subtitle: "Add a task to get started.",
-        actionLabel: "Add task",
+        title: t("tasks.empty.defaultTitle"),
+        subtitle: t("tasks.empty.defaultSubtitle"),
+        actionLabel: t("tasks.empty.defaultAction"),
       };
   }
 }
@@ -151,7 +153,8 @@ export function EmptyStateTask({
   secondaryActionLabel: customSecondaryActionLabel,
   className = "",
 }: EmptyStateTaskProps) {
-  const content = getDefaultContent(variant, viewMode);
+  const { t } = useTranslation();
+  const content = getDefaultContent(variant, viewMode, t);
 
   const title = customTitle ?? content.title;
   const subtitle = customSubtitle ?? content.subtitle;
@@ -191,4 +194,3 @@ export function EmptyStateTask({
     </div>
   );
 }
-

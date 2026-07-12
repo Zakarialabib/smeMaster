@@ -1,7 +1,6 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  CheckSquare,
   Search,
   Trash2,
   CheckCircle2,
@@ -422,12 +421,12 @@ export function TasksPage() {
       { operationLabel: completed ? "complete task" : "uncomplete task" },
     );
     if (result.success) {
-      if (completed) notify("Task completed", "Way to go!");
+      if (completed) notify(t('tasks.taskCompleted'), t('tasks.wayToGo'));
       await resetTasks();
     } else {
       // Rollback optimistic update
       useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 0 : 1 });
-      notify("Failed to update task", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
     }
   }, [tasks, resetTasks]);
 
@@ -442,7 +441,7 @@ export function TasksPage() {
       await resetTasks();
     } else {
       // Rollback via full reload
-      notify("Failed to delete task", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
       await resetTasks();
     }
   }, [resetTasks]);
@@ -462,7 +461,7 @@ export function TasksPage() {
     } else {
       // Rollback
       useTaskStore.getState().updateTaskInStore(id, { priority: task.priority });
-      notify("Failed to update priority", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
     }
   }, [tasks, resetTasks]);
 
@@ -486,7 +485,7 @@ export function TasksPage() {
   const getSwipeActions = useCallback((task: DbTask): SwipeActions => ({
     left: {
       primary: {
-        label: task.is_completed ? "Undo" : "Complete",
+        label: task.is_completed ? t('tasks.undo') : t('tasks.markComplete'),
         icon: "check-circle-2",
         color: "bg-emerald-500",
         onAction: () => {
@@ -495,7 +494,7 @@ export function TasksPage() {
         },
       },
       secondary: {
-        label: "Delete",
+        label: t('tasks.delete'),
         icon: "trash-2",
         color: "bg-red-500",
         onAction: () => {
@@ -507,13 +506,13 @@ export function TasksPage() {
     },
     right: {
       primary: {
-        label: task.priority === "high" ? "Unflag" : "Flag",
+        label: task.priority === "high" ? t('tasks.unflag') : t('tasks.flag'),
         icon: "star",
         color: "bg-amber-500",
         onAction: () => handleTogglePriority(task.id),
       },
     },
-  }), [executeAction, handleTogglePriority]);
+  }), [executeAction, handleTogglePriority, t]);
 
   const handleBulkComplete = useCallback(async () => {
     let completedCount = 0;
@@ -549,10 +548,10 @@ export function TasksPage() {
     }
     setSelectedIds(new Set());
     if (deletedCount > 0) {
-      notify("Tasks deleted", `${deletedCount} task(s) removed.`);
+      notify(t('tasks.tasksDeleted'), `${deletedCount} ${t('tasks.tasksDone')}`);
     }
     if (failCount > 0) {
-      notify("Some deletions failed", `${failCount} task(s) could not be deleted.`);
+      notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
   }, [selectedIds, resetTasks]);
@@ -585,7 +584,7 @@ export function TasksPage() {
     if (result.success) {
       await resetTasks();
     } else {
-      notify("Failed to reschedule task", result.error);
+      notify(t('tasks.failedToReschedule'), result.error);
     }
   }, [resetTasks]);
 
@@ -638,7 +637,7 @@ export function TasksPage() {
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggleComplete(task.id, !task.is_completed); }}
                 className="mt-0.5 shrink-0"
-                aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+                aria-label={task.is_completed ? t('tasks.markIncomplete') : t('tasks.markComplete')}
               >
                 {task.is_completed ? (
                   <CheckCircle2 size={20} className="text-success" />
@@ -681,7 +680,7 @@ export function TasksPage() {
                     </span>
                   )}
                   {task.recurrence_rule && (
-                    <span className="text-[0.6rem] text-text-tertiary" aria-label="Recurring">â†»</span>
+                    <span className="text-[0.6rem] text-text-tertiary" aria-label={t('tasks.recurring')}>↻</span>
                   )}
                 </div>
               </div>
@@ -697,7 +696,7 @@ export function TasksPage() {
                 {subtaskCount > 0 && (
                   <div className="space-y-1">
                     <p className="text-[0.6rem] font-semibold uppercase tracking-wider text-text-tertiary">
-                      Subtasks ({completedSubtasks}/{subtaskCount})
+                      {t('tasks.subtasks')} ({completedSubtasks}/{subtaskCount})
                     </p>
                     {subtasks!.map((sub) => (
                       <div key={sub.id} className="flex items-center gap-2 py-1">
@@ -731,7 +730,7 @@ export function TasksPage() {
 
                 {task.thread_id && (
                   <p className="text-[0.55rem] text-accent/60 flex items-center gap-1">
-                    <span>ðŸ”—</span> Linked to email thread
+                    <span>🔗</span> {t('tasks.linkedToEmailThread')}
                   </p>
                 )}
               </div>
@@ -740,12 +739,22 @@ export function TasksPage() {
         </SwipeableRow>
       </div>
     );
-  }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap]);
+  }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap, t]);
 
   return (
     <PageScaffold
-      title={<span className="flex items-center gap-1.5 sm:gap-2"><CheckSquare size={16} className="text-accent shrink-0 sm:size-[18]" />{t('tasks.title')}</span>}
+      title={t('tasks.title')}
       count={filteredTasks.length}
+      actions={
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          aria-label={t('tasks.createWithDetails')}
+        >
+          <ListTodo size={13} />
+          {t('tasks.newTask')}
+        </button>
+      }
       toolbar={
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
@@ -760,17 +769,15 @@ export function TasksPage() {
             />
           </div>
 
-          {/* Desktop: Columns + ViewToggle + filter controls */}
+          {/* Desktop: Columns + ViewToggle */}
           {!isMobile && (
-            <div className="flex items-center gap-2">
-              <ViewToggle
-                viewMode={viewMode}
-                density={density}
-                onViewModeChange={setViewMode}
-                onDensityChange={setDensity}
-                taskCount={filteredTasks.length}
-              />
-            </div>
+            <ViewToggle
+              viewMode={viewMode}
+              density={density}
+              onViewModeChange={setViewMode}
+              onDensityChange={setDensity}
+              taskCount={filteredTasks.length}
+            />
           )}
 
           {/* Mobile filter toggle */}
@@ -787,16 +794,7 @@ export function TasksPage() {
       }
     >
 
-      {/* AI Suggestion Banner â€” only show when AI feature is enabled */}
-      {aiEnabled && (
-        <AiTaskSuggestionBanner
-          suggestionCount={0}
-          onReview={() => {}}
-          onDismiss={() => {}}
-        />
-      )}
-
-      {/* SmartFilterBar (desktop + mobile) â€” replaces raw <select> filters */}
+      {/* SmartFilterBar (desktop + mobile) — kept as first child under the toolbar */}
       <SmartFilterBar
         filterStatus={filterStatus}
         onFilterStatusChange={setFilterStatus}
@@ -814,29 +812,38 @@ export function TasksPage() {
         onDateFilterChange={(f) => setDateFilter(f as any)}
       />
 
+      {/* AI Suggestion Banner — only show when AI feature is enabled */}
+      {aiEnabled && (
+        <AiTaskSuggestionBanner
+          suggestionCount={0}
+          onReview={() => {}}
+          onDismiss={() => {}}
+        />
+      )}
+
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 bg-accent/5 border-b border-accent/20 shrink-0">
-          <span className="text-xs text-text-secondary">{selectedIds.size} selected</span>
+          <span className="text-xs text-text-secondary">{t('tasks.selectedCount', { count: selectedIds.size })}</span>
           <button
             onClick={handleBulkComplete}
             className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover"
           >
             <CheckCircle2 size={13} />
-            Complete
+            {t('tasks.complete')}
           </button>
           <button
             onClick={handleBulkDelete}
             className="flex items-center gap-1 text-xs text-danger hover:opacity-80"
           >
             <Trash2 size={13} />
-            Delete
+            {t('tasks.delete')}
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
             className="text-xs text-text-tertiary hover:text-text-primary ml-auto"
           >
-            Clear selection
+            {t('tasks.clearSelection')}
           </button>
         </div>
       )}
@@ -849,15 +856,15 @@ export function TasksPage() {
               onQuickAdd={handleAddTask}
               onModalCreate={handleModalCreate}
               accountId={accountId}
-              placeholder="Add a task..."
+              placeholder={t('tasks.quickAddPlaceholder')}
             />
             <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 mr-1 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors shrink-0"
-              aria-label="Create task with full details"
+              aria-label={t('tasks.createWithDetails')}
             >
               <ListTodo size={13} />
-              New task
+              {t('tasks.newTask')}
             </button>
           </div>
         </div>
@@ -872,7 +879,7 @@ export function TasksPage() {
             </span>
             <input
               type="text"
-              placeholder="Quick add task..."
+              placeholder={t('tasks.mobileQuickAddPlaceholder')}
               className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
               autoFocus
               onKeyDown={(e) => {
@@ -894,15 +901,15 @@ export function TasksPage() {
             <button
               onClick={() => { setShowCreateModal(true); setShowMobileQuickAdd(false); }}
               className="flex items-center gap-1 px-2 py-1 text-[0.6875rem] font-medium text-accent hover:text-accent-hover bg-accent/10 rounded-md transition-colors shrink-0"
-              aria-label="Open full task form"
+              aria-label={t('tasks.openFullForm')}
             >
-              Details
+              {t('tasks.addDetails')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Task list â€” view mode switching */}
+      {/* Task list — view mode switching */}
       {isMobile ? (
         <>
           {viewMode === "agenda" ? (
@@ -922,7 +929,7 @@ export function TasksPage() {
                 className="h-full overflow-y-auto px-3 py-3 pb-24"
                 aria-busy={loading && filteredTasks.length === 0}
                 aria-live="polite"
-                aria-label="Tasks list"
+                aria-label={t('tasks.tasksList')}
               >
                 {loading && tasks.length === 0 ? (
                   <div className="space-y-3 px-3 pt-3">
@@ -943,7 +950,7 @@ export function TasksPage() {
                     <div className="flex items-start gap-3">
                       <AlertCircle size={18} className="text-danger shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary">Unable to load tasks</p>
+                        <p className="text-sm font-medium text-text-primary">{t('tasks.unableToLoad')}</p>
                         <p className="text-xs text-text-tertiary mt-1 leading-relaxed">{error}</p>
                       </div>
                       <button
@@ -951,7 +958,7 @@ export function TasksPage() {
                         className="shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-full active:scale-95 transition-transform"
                       >
                         <RefreshCw size={12} />
-                        Retry
+                        {t('tasks.retry')}
                       </button>
                     </div>
                   </div>
@@ -985,21 +992,21 @@ export function TasksPage() {
           className="flex-1 overflow-y-auto"
           aria-busy={loading && filteredTasks.length === 0}
           aria-live="polite"
-          aria-label="Tasks list"
+          aria-label={t('tasks.tasksList')}
         >
           {loading ? (
             <SkeletonPage />
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
               <AlertCircle size={40} className="text-danger-text opacity-60" />
-              <p className="text-sm font-medium text-text-primary">Failed to load tasks</p>
+              <p className="text-sm font-medium text-text-primary">{t('tasks.failedToLoad')}</p>
               <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
               <button
                 onClick={resetTasks}
                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
               >
                 <RefreshCw size={13} />
-                Retry
+                {t('tasks.retry')}
               </button>
             </div>
           ) : filteredTasks.length === 0 ? (
@@ -1122,7 +1129,7 @@ export function TasksPage() {
               ? "bg-accent rotate-45"
               : "bg-accent"
           }`}
-          aria-label={showMobileQuickAdd ? "Close quick add" : "Add task"}
+          aria-label={showMobileQuickAdd ? t('tasks.closeQuickAdd') : t('tasks.addTask')}
         >
           <Plus size={24} className="text-white" />
         </button>

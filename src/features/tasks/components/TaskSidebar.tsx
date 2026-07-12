@@ -140,7 +140,15 @@ export function TaskSidebar({ accountId, threadId }: TaskSidebarProps) {
 
       {/* Quick add */}
       <div className="border-t border-border-secondary">
-        <TaskQuickAdd onAdd={handleAddTask} placeholder="Add task to this thread..." />
+        <TaskQuickAdd
+          onQuickAdd={handleAddTask}
+          onModalCreate={async () => {
+            const tasks = await getTasksForThread(accountId, threadId);
+            setThreadTasks(tasks);
+          }}
+          accountId={accountId}
+          placeholder="Add task to this thread..."
+        />
       </div>
     </div>
   );
