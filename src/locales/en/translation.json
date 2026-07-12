@@ -860,7 +860,7 @@
   },
   "tasks": {
     "tasks": "Tasks",
-    "title": "Title",
+    "title": "Tasks",
     "dueDate": "Due date",
     "newTask": "New task",
     "searchPlaceholder": "Search...",
@@ -955,7 +955,21 @@
       "defaultSubtitle": "Add a task to get started.",
       "defaultAction": "Add task"
     },
-    "search": "Search..."
+    "search": "Search...",
+    "taskCreated": "Task created",
+    "hasBeenAdded": "has been added.",
+    "failedToCreate": "Failed to create task",
+    "tasksCompleted": "Tasks completed",
+    "tasksDone": "task(s) marked done.",
+    "someFailed": "Some tasks failed",
+    "couldNotComplete": "task(s) could not be completed.",
+    "tasksDeleted": "Tasks deleted",
+    "someDeletionsFailed": "Some deletions failed",
+    "taskCompleted": "Task completed",
+    "wayToGo": "Way to go!",
+    "failedToUpdateTask": "Failed to update task",
+    "failedToReschedule": "Failed to reschedule task",
+    "complete": "Complete"
   },
   "campaign": {
     "campaigns": "Campaigns",
@@ -1635,5 +1649,50 @@
     "maxLength": "Too long",
     "numeric": "Enter a number",
     "positive": "Enter a value greater than zero"
+  },
+  "invoicing": {
+    "title": "Invoicing",
+    "newDocument": "New Document",
+    "yourCompany": "Your Company",
+    "lowStock": "low stock",
+    "failedToLoad": "Failed to load {{tab}}",
+    "retry": "Retry",
+    "tabs": {
+      "documents": "Documents",
+      "clients": "Clients",
+      "items": "Items",
+      "settings": "Settings"
+    }
+  },
+  "automation": {
+    "title": "Automation",
+    "subtitle": "Manage workflow automation rules",
+    "createRule": "Create Rule",
+    "addRule": "Add Rule",
+    "visualBuilder": "Visual Builder",
+    "generateWithAi": "Generate with AI",
+    "viewModeList": "List view",
+    "viewModeCard": "Card view",
+    "switchToList": "Switch to list view",
+    "switchToCard": "Switch to card view",
+    "retry": "Retry",
+    "errorTitle": "Failed to load automation rules",
+    "emptyTitle": "No automation rules yet",
+    "emptySubtitle": "Automation rules watch your mail and run actions automatically — no manual work required.",
+    "whatYouCanAutomate": "What you can automate",
+    "examples": {
+      "archive": "Auto-archive newsletters and receipts",
+      "starVip": "Star or label VIP senders instantly",
+      "autoReply": "Auto-reply to common requests",
+      "createTasks": "Create tasks from flagged emails",
+      "forwardInvoices": "Forward invoices to your accountant",
+      "snoozeFollowups": "Snooze follow-ups until later"
+    },
+    "deleteTitle": "Delete Rule",
+    "deleteMessage": "Are you sure you want to delete this automation rule? This cannot be undone.",
+    "delete": "Delete",
+    "notifyTitle": "Automation",
+    "notifyCreated": "AI workflow \"{{name}}\" created.",
+    "notifyFailed": "Failed to create workflow rule."
   }
 }

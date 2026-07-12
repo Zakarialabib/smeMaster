@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   RefreshCw,
   Workflow,
@@ -8,12 +9,12 @@ import {
   List,
   GitBranch,
 } from "lucide-react";
-import { usePlatform } from "@shared/hooks/usePlatform";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
 import { Button } from "@shared/components/ui/Button";
 import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
+import { PageScaffold } from "@shared/components/layout";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useAutomationStore } from "@features/automation/stores/automationStore";
 import { AutomationRuleCard } from "@features/automation/components/AutomationRuleCard";
@@ -27,7 +28,7 @@ import type { WorkflowPreset } from "@/constants/workflowPresets";
 import type { ViewMode } from "@features/automation/stores/automationStore";
 
 export function AutomationPage() {
-  const { mobile: isMobileDevice } = usePlatform();
+  const { t } = useTranslation();
 
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
@@ -95,13 +96,13 @@ export function AutomationPage() {
         });
         closeAiModal();
         await loadRules(activeAccountId);
-        notify("Automation", `AI workflow "${preset.name}" created.`);
+        notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
       } catch (err) {
         console.error("Failed to create AI workflow:", err);
-        notify("Automation", "Failed to create workflow rule.");
+        notify(t("automation.notifyTitle"), t("automation.notifyFailed"));
       }
     },
-    [activeAccountId, loadRules, closeAiModal],
+    [activeAccountId, loadRules, closeAiModal, t],
   );
 
   // ── View mode ───────────────────────────────────────────────────────
@@ -115,8 +116,6 @@ export function AutomationPage() {
   }, [viewMode, setViewMode]);
 
   // ── Render ──────────────────────────────────────────────────────────
-
-  const titleClass = isMobileDevice ? "text-xl" : "text-2xl";
 
   // Show builder when active (takes over the entire page area)
   if (showBuilder && activeAccountId) {
@@ -136,18 +135,13 @@ export function AutomationPage() {
 
   if (error && rules.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-        <div className="mb-6 space-y-1">
-          <h1 className={`${titleClass} font-semibold text-text-primary`}>
-            Automation
-          </h1>
-          <p className="text-sm text-text-tertiary">
-            Manage workflow automation rules
-          </p>
-        </div>
+      <PageScaffold
+        title={t("automation.title")}
+        subtitle={t("automation.subtitle")}
+      >
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <p className="text-sm text-danger mb-1">
-            Failed to load automation rules
+            {t("automation.errorTitle")}
           </p>
           <p className="text-xs text-text-tertiary mb-4 max-w-sm">{error}</p>
           <button
@@ -155,57 +149,26 @@ export function AutomationPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-lg transition-colors"
           >
             <RefreshCw size={14} />
-            Retry
+            {t("automation.retry")}
           </button>
         </div>
-      </div>
+      </PageScaffold>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1
-            className={`${titleClass} font-semibold text-text-primary`}
-          >
-            Automation
-          </h1>
-          <p className="text-sm text-text-tertiary mt-1">
-            Manage workflow automation rules
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          <button
-            type="button"
-            onClick={cycleViewMode}
-            className="p-1.5 text-text-tertiary hover:text-text-primary bg-bg-secondary hover:bg-bg-hover rounded-lg border border-border-primary transition-colors"
-            aria-label={
-              viewMode === "cards"
-                ? "Switch to list view"
-                : "Switch to card view"
-            }
-            title={
-              viewMode === "cards" ? "List view" : "Card view"
-            }
-          >
-            {viewMode === "cards" ? (
-              <List size={14} />
-            ) : (
-              <LayoutGrid size={14} />
-            )}
-          </button>
-
-          {/* Visual Builder button */}
+    <PageScaffold
+      title={t("automation.title")}
+      subtitle={t("automation.subtitle")}
+      actions={
+        <>
           <Button
             variant="secondary"
             size="sm"
             icon={<GitBranch size={14} />}
             onClick={openBuilder}
           >
-            Visual Builder
+            {t("automation.visualBuilder")}
           </Button>
 
           <Button
@@ -214,7 +177,7 @@ export function AutomationPage() {
             icon={<Sparkles size={14} />}
             onClick={openAiModal}
           >
-            Generate with AI
+            {t("automation.generateWithAi")}
           </Button>
           <Button
             variant="primary"
@@ -222,11 +185,67 @@ export function AutomationPage() {
             icon={<Plus size={14} />}
             onClick={openEditor}
           >
-            Add Rule
+            {t("automation.addRule")}
           </Button>
+        </>
+      }
+      toolbar={
+        <button
+          type="button"
+          onClick={cycleViewMode}
+          className="p-1.5 text-text-tertiary hover:text-text-primary bg-bg-secondary hover:bg-bg-hover rounded-lg border border-border-primary transition-colors"
+          aria-label={
+            viewMode === "cards"
+              ? t("automation.switchToList")
+              : t("automation.switchToCard")
+          }
+          title={
+            viewMode === "cards"
+              ? t("automation.viewModeList")
+              : t("automation.viewModeCard")
+          }
+        >
+          {viewMode === "cards" ? (
+            <List size={14} />
+          ) : (
+            <LayoutGrid size={14} />
+          )}
+        </button>
+      }
+      isEmpty={rules.length === 0 && !showEditor}
+      emptyState={
+        <div className="space-y-4">
+          <EmptyState
+            icon={Workflow}
+            title={t("automation.emptyTitle")}
+            subtitle={t("automation.emptySubtitle")}
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Plus size={14} />}
+                onClick={openEditor}
+              >
+                {t("automation.createRule")}
+              </Button>
+            }
+          />
+          <GlassPanel variant="card" className="p-4 max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+              {t("automation.whatYouCanAutomate")}
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-text-secondary">
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.archive")}</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.starVip")}</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.autoReply")}</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.createTasks")}</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.forwardInvoices")}</li>
+              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.snoozeFollowups")}</li>
+            </ul>
+          </GlassPanel>
         </div>
-      </div>
-
+      }
+    >
       {/* Inline Add/Edit Form */}
       {showEditor && activeAccountId && (
         <div className="mb-4">
@@ -238,38 +257,7 @@ export function AutomationPage() {
       )}
 
       {/* Rules list or empty state */}
-      {rules.length === 0 && !showEditor ? (
-        <div className="space-y-4">
-          <EmptyState
-            icon={Workflow}
-            title="No automation rules yet"
-            subtitle="Automation rules watch your mail and run actions automatically — no manual work required."
-            action={
-              <Button
-                variant="primary"
-                size="sm"
-                icon={<Plus size={14} />}
-                onClick={openEditor}
-              >
-                Create Rule
-              </Button>
-            }
-          />
-          <GlassPanel variant="card" className="p-4 max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              What you can automate
-            </p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-text-secondary">
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Auto-archive newsletters and receipts</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Star or label VIP senders instantly</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Auto-reply to common requests</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Create tasks from flagged emails</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Forward invoices to your accountant</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> Snooze follow-ups until later</li>
-            </ul>
-          </GlassPanel>
-        </div>
-      ) : viewMode === "cards" ? (
+      {viewMode === "cards" ? (
         <ErrorBoundary name="AutomationRulesList">
           <GlassPanel variant="card" className="p-4">
             <div className="space-y-2">
@@ -304,9 +292,9 @@ export function AutomationPage() {
         isOpen={deleteTargetId !== null}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title="Delete Rule"
-        message="Are you sure you want to delete this automation rule? This cannot be undone."
-        confirmLabel="Delete"
+        title={t("automation.deleteTitle")}
+        message={t("automation.deleteMessage")}
+        confirmLabel={t("automation.delete")}
         variant="danger"
         loading={deleting}
       />
@@ -317,6 +305,6 @@ export function AutomationPage() {
         onClose={closeAiModal}
         onCreate={handleAiCreate}
       />
-    </div>
+    </PageScaffold>
   );
 }
