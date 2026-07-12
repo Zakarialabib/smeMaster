@@ -1694,5 +1694,10 @@
     "notifyTitle": "Automation",
     "notifyCreated": "AI workflow \"{{name}}\" created.",
     "notifyFailed": "Failed to create workflow rule."
+  },
+  "erp": {
+    "title": "ERP Console",
+    "subtitle": "Inventory · Accounting · Platform — for {{company}}",
+    "yourCompany": "your company"
   }
 }

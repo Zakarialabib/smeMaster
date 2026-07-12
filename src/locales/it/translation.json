@@ -1624,5 +1624,10 @@
     "notifyTitle": "Automazione",
     "notifyCreated": "Workflow IA « {{name}} » creato.",
     "notifyFailed": "Creazione della regola di workflow fallita."
+  },
+  "erp": {
+    "title": "Console ERP",
+    "subtitle": "Magazzino · Contabilità · Piattaforma — per {{company}}",
+    "yourCompany": "la tua azienda"
   }
 }

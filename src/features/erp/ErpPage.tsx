@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PageScaffold } from "@shared/components/layout";
 import { Calculator, LayoutDashboard, Package, BookOpen, FileBarChart, ShieldCheck, Wallet } from 'lucide-react';
 import CompanySwitcher from './CompanySwitcher';
 import StockView from './StockView';
@@ -23,6 +25,7 @@ const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
 ];
 
 export default function ErpPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<TabId>('overview');
 
   const companies = useCompanyStore((s) => s.companies);
@@ -30,54 +33,49 @@ export default function ErpPage() {
   const company = getActiveCompany(companies, activeCompanyId);
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 bg-bg-primary">
-      {/* Frosted header */}
-      <header className="sticky top-0 z-20 px-5 sm:px-8 py-4 border-b border-border-primary bg-bg-primary/70 backdrop-blur-[16px]">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
-              <Calculator size={22} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-text-primary leading-tight truncate">ERP Console</h1>
-                <LiveBadge />
-              </div>
-              <p className="text-xs text-text-tertiary truncate">
-                Inventory · Accounting · Platform — for {company.name}
-              </p>
-            </div>
-          </div>
-
+    <PageScaffold
+      title={
+        <span className="flex items-center gap-2">
+          <Calculator size={18} className="text-accent shrink-0" />
+          {t('erp.title')}
+          <LiveBadge />
+        </span>
+      }
+      subtitle={
+        <span className="truncate">
+          {t('erp.subtitle', { company: company?.name ?? t('erp.yourCompany') })}
+        </span>
+      }
+      toolbar={
+        <div className="flex items-center justify-between gap-4 w-full">
           <CompanySwitcher />
+          <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+            {TABS.map((tDef) => {
+              const Icon = tDef.icon;
+              const active = tab === tDef.id;
+              return (
+                <button
+                  key={tDef.id}
+                  type="button"
+                  onClick={() => setTab(tDef.id)}
+                  className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                    active
+                      ? 'bg-accent/10 text-accent'
+                      : 'text-text-secondary hover:bg-bg-hover/60 hover:text-text-primary'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {tDef.label}
+                  {active && (
+                    <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full bg-accent" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </div>
-
-        {/* Tab bar */}
-        <nav className="mt-4 flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            const active = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                  active
-                    ? 'bg-accent/10 text-accent'
-                    : 'text-text-secondary hover:bg-bg-hover/60 hover:text-text-primary'
-                }`}
-              >
-                <Icon size={16} />
-                {t.label}
-                {active && (
-                  <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full bg-accent" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </header>
+      }
+    >
 
       {/* Tab content */}
       <main className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 py-6">
@@ -90,7 +88,7 @@ export default function ErpPage() {
           {tab === 'roles' && <RbacRoles />}
         </div>
       </main>
-    </div>
+    </PageScaffold>
   );
 }
 

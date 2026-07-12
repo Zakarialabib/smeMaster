@@ -1625,5 +1625,10 @@
     "notifyTitle": "Automatisation",
     "notifyCreated": "Workflow IA « {{name}} » créé.",
     "notifyFailed": "Échec de la création de la règle de workflow."
+  },
+  "erp": {
+    "title": "Console ERP",
+    "subtitle": "Inventaire · Comptabilité · Plateforme — pour {{company}}",
+    "yourCompany": "votre entreprise"
   }
 }

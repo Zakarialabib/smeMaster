@@ -1625,5 +1625,10 @@
     "notifyTitle": "الأتحة",
     "notifyCreated": "تم إنشاء مسار عمل الذكاء الاصطناعي « {{name}} ».",
     "notifyFailed": "تعذر إنشاء قاعدة سير العمل."
+  },
+  "erp": {
+    "title": "وحدة التحكم ERP",
+    "subtitle": "المخزون · المحاسبة · المنصة — لـ {{company}}",
+    "yourCompany": "شركتك"
   }
 }
