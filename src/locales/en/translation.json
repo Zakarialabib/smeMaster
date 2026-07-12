@@ -858,7 +858,12 @@
     "showCampaignsDesc": "Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "Show Scheduled Emails",
     "showScheduledEmailsDesc": "Display emails scheduled to be sent in the future.",
-    "noEvents": "No events in this period"
+    "noEvents": "No events in this period",
+    "connectAccountBtn": "calendar.connectAccountBtn",
+    "title": "calendar.title",
+    "retry": "calendar.retry",
+    "noEventsHint": "calendar.noEventsHint",
+    "createEvent": "calendar.createEvent"
   },
   "tasks": {
     "tasks": "Tasks",
@@ -955,7 +960,9 @@
       "clearSearch": "Clear search",
       "defaultTitle": "Nothing here",
       "defaultSubtitle": "Add a task to get started.",
-      "defaultAction": "Add task"
+      "defaultAction": "Add task",
+      "clearFilters": "tasks.empty.clearFilters",
+      "addTask": "tasks.empty.addTask"
     },
     "search": "Search...",
     "taskCreated": "Task created",
@@ -1643,7 +1650,10 @@
       "name": "Name",
       "email": "Email",
       "frequency": "Frequency"
-    }
+    },
+    "hideSearch": "contacts.hideSearch",
+    "showSearch": "contacts.showSearch",
+    "clearSearch": "contacts.clearSearch"
   },
   "validation": {
     "required": "This field is required",

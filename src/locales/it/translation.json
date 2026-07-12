@@ -693,7 +693,14 @@
     "searchPlaceholder": "Cerca impostazioni...",
     "noResults": "Nessun risultato",
     "licenseCurrent": "Licenza corrente",
-    "syncStatusSyncing": "[TODO] Syncing..."
+    "syncStatusSyncing": "[TODO] Syncing...",
+    "providerLmstudioDescription": "[TODO] settings.providerLmstudioDescription",
+    "providerOpenrouterDescription": "[TODO] settings.providerOpenrouterDescription",
+    "lmstudioUrlPlaceholder": "[TODO] settings.lmstudioUrlPlaceholder",
+    "lmstudioModelPlaceholder": "[TODO] settings.lmstudioModelPlaceholder",
+    "lmstudioDetecting": "[TODO] settings.lmstudioDetecting",
+    "lmstudioDetect": "[TODO] settings.lmstudioDetect",
+    "lmstudioConnected": "[TODO] settings.lmstudioConnected"
   },
   "addAccount": {
     "easySetup": "Configurazione facile (IMAP + password app)",
@@ -827,7 +834,12 @@
     "showCampaignsDesc": "Mostra campagne marketing pianificate e inviate.",
     "showScheduledEmails": "Mostra email programmate",
     "showScheduledEmailsDesc": "Mostra email programmate per l'invio futuro.",
-    "noEvents": "Nessun evento in questo periodo"
+    "noEvents": "Nessun evento in questo periodo",
+    "connectAccountBtn": "[TODO] calendar.connectAccountBtn",
+    "title": "[TODO] calendar.title",
+    "retry": "[TODO] calendar.retry",
+    "noEventsHint": "[TODO] calendar.noEventsHint",
+    "createEvent": "[TODO] calendar.createEvent"
   },
   "tasks": {
     "tasks": "Attività",
@@ -939,7 +951,9 @@
       "clearSearch": "Cancella ricerca",
       "defaultTitle": "Qui non c'è nulla",
       "defaultSubtitle": "Aggiungi un'attività per iniziare.",
-      "defaultAction": "Aggiungi attività"
+      "defaultAction": "Aggiungi attività",
+      "clearFilters": "[TODO] tasks.empty.clearFilters",
+      "addTask": "[TODO] tasks.empty.addTask"
     },
     "taskTitle": "Titolo"
   },
@@ -1573,7 +1587,10 @@
       "email": "Email",
       "frequency": "Frequency"
     },
-    "importFromCsv": "Importa da CSV"
+    "importFromCsv": "Importa da CSV",
+    "hideSearch": "[TODO] contacts.hideSearch",
+    "showSearch": "[TODO] contacts.showSearch",
+    "clearSearch": "[TODO] contacts.clearSearch"
   },
   "validation": {
     "required": "Questo campo è obbligatorio",
@@ -1632,5 +1649,33 @@
     "title": "Console ERP",
     "subtitle": "Magazzino · Contabilità · Piattaforma — per {{company}}",
     "yourCompany": "la tua azienda"
+  },
+  "attachments": {
+    "senderUnknown": "[TODO] attachments.senderUnknown",
+    "filenameUnknown": "[TODO] attachments.filenameUnknown",
+    "preview": "[TODO] attachments.preview",
+    "download": "[TODO] attachments.download",
+    "jumpToEmail": "[TODO] attachments.jumpToEmail",
+    "loadError": "[TODO] attachments.loadError",
+    "allFiles": "[TODO] attachments.allFiles",
+    "searchPlaceholder": "[TODO] attachments.searchPlaceholder",
+    "search": "[TODO] attachments.search",
+    "filterByType": "[TODO] attachments.filterByType",
+    "filterBySender": "[TODO] attachments.filterBySender",
+    "allSenders": "[TODO] attachments.allSenders",
+    "filterByDate": "[TODO] attachments.filterByDate",
+    "filterBySize": "[TODO] attachments.filterBySize",
+    "gridView": "[TODO] attachments.gridView",
+    "listView": "[TODO] attachments.listView",
+    "emptyTitle": "[TODO] attachments.emptyTitle",
+    "noMatchesTitle": "[TODO] attachments.noMatchesTitle",
+    "emptySubtitle": "[TODO] attachments.emptySubtitle",
+    "noMatchesSubtitle": "[TODO] attachments.noMatchesSubtitle",
+    "goToMail": "[TODO] attachments.goToMail",
+    "title": "[TODO] attachments.title",
+    "subtitle": "[TODO] attachments.subtitle",
+    "loading": "[TODO] attachments.loading",
+    "loadErrorTitle": "[TODO] attachments.loadErrorTitle",
+    "retry": "[TODO] attachments.retry"
   }
 }

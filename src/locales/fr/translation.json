@@ -694,7 +694,14 @@
     "licenseCurrent": "[TODO] settings.licenseCurrent",
     "highContrast": "[TODO] settings.highContrast",
     "highContrastDescription": "[TODO] settings.highContrastDescription",
-    "syncStatusSyncing": "[TODO] Syncing..."
+    "syncStatusSyncing": "[TODO] Syncing...",
+    "providerLmstudioDescription": "[TODO] settings.providerLmstudioDescription",
+    "providerOpenrouterDescription": "[TODO] settings.providerOpenrouterDescription",
+    "lmstudioUrlPlaceholder": "[TODO] settings.lmstudioUrlPlaceholder",
+    "lmstudioModelPlaceholder": "[TODO] settings.lmstudioModelPlaceholder",
+    "lmstudioDetecting": "[TODO] settings.lmstudioDetecting",
+    "lmstudioDetect": "[TODO] settings.lmstudioDetect",
+    "lmstudioConnected": "[TODO] settings.lmstudioConnected"
   },
   "search": {
     "typeACommand": "Tapez une commande...",
@@ -795,7 +802,12 @@
     "showCampaignsDesc": "[TODO] Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "[TODO] Show Scheduled Emails",
     "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future.",
-    "noEvents": "Aucun événement dans cette période"
+    "noEvents": "Aucun événement dans cette période",
+    "connectAccountBtn": "[TODO] calendar.connectAccountBtn",
+    "title": "[TODO] calendar.title",
+    "retry": "[TODO] calendar.retry",
+    "noEventsHint": "[TODO] calendar.noEventsHint",
+    "createEvent": "[TODO] calendar.createEvent"
   },
   "tasks": {
     "tasks": "Tâches",
@@ -907,7 +919,9 @@
       "clearSearch": "Effacer la recherche",
       "defaultTitle": "Rien ici",
       "defaultSubtitle": "Ajoutez une tâche pour commencer.",
-      "defaultAction": "Ajouter une tâche"
+      "defaultAction": "Ajouter une tâche",
+      "clearFilters": "[TODO] tasks.empty.clearFilters",
+      "addTask": "[TODO] tasks.empty.addTask"
     },
     "taskTitle": "Titre"
   },
@@ -1574,7 +1588,10 @@
       "email": "Email",
       "frequency": "Frequency"
     },
-    "importFromCsv": "Importer depuis CSV"
+    "importFromCsv": "Importer depuis CSV",
+    "hideSearch": "[TODO] contacts.hideSearch",
+    "showSearch": "[TODO] contacts.showSearch",
+    "clearSearch": "[TODO] contacts.clearSearch"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -1633,5 +1650,33 @@
     "title": "Console ERP",
     "subtitle": "Inventaire · Comptabilité · Plateforme — pour {{company}}",
     "yourCompany": "votre entreprise"
+  },
+  "attachments": {
+    "senderUnknown": "[TODO] attachments.senderUnknown",
+    "filenameUnknown": "[TODO] attachments.filenameUnknown",
+    "preview": "[TODO] attachments.preview",
+    "download": "[TODO] attachments.download",
+    "jumpToEmail": "[TODO] attachments.jumpToEmail",
+    "loadError": "[TODO] attachments.loadError",
+    "allFiles": "[TODO] attachments.allFiles",
+    "searchPlaceholder": "[TODO] attachments.searchPlaceholder",
+    "search": "[TODO] attachments.search",
+    "filterByType": "[TODO] attachments.filterByType",
+    "filterBySender": "[TODO] attachments.filterBySender",
+    "allSenders": "[TODO] attachments.allSenders",
+    "filterByDate": "[TODO] attachments.filterByDate",
+    "filterBySize": "[TODO] attachments.filterBySize",
+    "gridView": "[TODO] attachments.gridView",
+    "listView": "[TODO] attachments.listView",
+    "emptyTitle": "[TODO] attachments.emptyTitle",
+    "noMatchesTitle": "[TODO] attachments.noMatchesTitle",
+    "emptySubtitle": "[TODO] attachments.emptySubtitle",
+    "noMatchesSubtitle": "[TODO] attachments.noMatchesSubtitle",
+    "goToMail": "[TODO] attachments.goToMail",
+    "title": "[TODO] attachments.title",
+    "subtitle": "[TODO] attachments.subtitle",
+    "loading": "[TODO] attachments.loading",
+    "loadErrorTitle": "[TODO] attachments.loadErrorTitle",
+    "retry": "[TODO] attachments.retry"
   }
 }
