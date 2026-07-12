@@ -139,7 +139,7 @@ export const SETTING_LABEL = "block text-sm font-medium text-text-primary mb-1.5
 export const SETTING_DESCRIPTION = "text-xs text-text-tertiary mt-1";
 
 /* ─── Settings redesign tokens (Phase 1 / 2026-07-08) ─── */
-export const SETTINGS_PANEL = "max-w-3xl p-5";
+export const SETTINGS_PANEL = "max-w-7xl p-5";
 export const SETTINGS_SIDEBAR_WIDTH = "w-[200px]";
 export const SETTINGS_SIDEBAR_COLLAPSED = "w-[48px]";
 export const SETTINGS_SECTION_GAP = "mb-6";
