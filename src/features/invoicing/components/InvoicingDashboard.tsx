@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown,
+  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../utils/format';
+import { listLowStock } from '@shared/services/db/invoke/invoicing';
 import InvoiceList from './InvoiceList';
 import ClientList from './clients/ClientList';
 import ItemList from './items/ItemList';
@@ -32,9 +33,25 @@ export default function InvoicingDashboard() {
   const fetchItems = useInvoicingStore((s) => s.fetchItems);
   const fetchCompany = useInvoicingStore((s) => s.fetchCompany);
 
+  const [lowStockCount, setLowStockCount] = useState(0);
+
   useEffect(() => {
     fetchCompany(ACTIVE_COMPANY_ID);
   }, [fetchCompany]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listLowStock(ACTIVE_COMPANY_ID)
+      .then((items) => {
+        if (!cancelled) setLowStockCount(items.length);
+      })
+      .catch(() => {
+        /* low-stock indicator is best-effort */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID);
@@ -61,6 +78,11 @@ export default function InvoicingDashboard() {
                 <Building2 size={13} />
                 <span className="truncate max-w-[180px]">{company?.name ?? 'Your Company'}</span>
                 <ChevronDown size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                {lowStockCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-danger/10 text-danger shrink-0">
+                    <AlertTriangle size={11} /> {lowStockCount} low stock
+                  </span>
+                )}
               </button>
             </div>
           </div>

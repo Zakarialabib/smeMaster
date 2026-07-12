@@ -1024,6 +1024,38 @@ export interface Item {
   updated_at: number;
 }
 
+export interface ErpAccount {
+  id: string;
+  company_id: string;
+  code: string;
+  name: string;
+  account_type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+  normal_balance: 'debit' | 'credit';
+  parent_id: string | null;
+  is_active: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface JournalEntry {
+  id: string;
+  company_id: string;
+  entry_date: number;
+  reference: string | null;
+  description: string | null;
+  account_id: string;
+  debit: number;
+  credit: number;
+  currency: string;
+  created_at: number;
+}
+
+export interface PnlResult {
+  revenue: number;
+  expenses: number;
+  net: number;
+}
+
 export interface CompanySetting {
   company_id: string;
   default_currency: string;

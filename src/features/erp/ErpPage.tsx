@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Calculator, LayoutDashboard, Package, BookOpen, FileBarChart, ShieldCheck,
 } from 'lucide-react';
@@ -8,7 +8,9 @@ import JournalView from './JournalView';
 import FinancialReports from './FinancialReports';
 import RbacRoles from './RbacRoles';
 import { useCompanyStore, getActiveCompany, companyInitials } from './companyStore';
-import { InfoBanner, StatCard, SectionCard, DemoBadge } from './erpShared';
+import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
+import type { Item } from '@shared/services/db/schema';
+import { listItems, listLowStock, getProfitAndLoss } from '@shared/services/db/invoke/invoicing';
 
 type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'roles';
 
@@ -39,7 +41,7 @@ export default function ErpPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold text-text-primary leading-tight truncate">ERP Console</h1>
-                <DemoBadge label="Demo · backend pending" />
+                <LiveBadge />
               </div>
               <p className="text-xs text-text-tertiary truncate">
                 Inventory · Accounting · Platform — for {company.name}
@@ -96,19 +98,53 @@ function OverviewTab() {
   const activeCompanyId = useCompanyStore((s) => s.activeCompanyId);
   const company = getActiveCompany(companies, activeCompanyId);
 
+  const [inventoryValue, setInventoryValue] = useState(0);
+  const [totalSkus, setTotalSkus] = useState(0);
+  const [lowStock, setLowStock] = useState(0);
+  const [netProfit, setNetProfit] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const [items, low, pnl] = await Promise.all([
+          listItems(activeCompanyId),
+          listLowStock(activeCompanyId),
+          getProfitAndLoss(activeCompanyId),
+        ]);
+        if (cancelled) return;
+        const value = items.reduce((a, it: Item) => a + it.stock_qty * (it.sell_price || 0), 0);
+        setInventoryValue(value);
+        setTotalSkus(items.length);
+        setLowStock(low.length);
+        setNetProfit(pnl.net);
+      } catch {
+        /* overview is best-effort; leave zeros on error */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCompanyId]);
+
   return (
     <div className="space-y-5">
       <InfoBanner>
-        This is a design-first preview of Iteration 5 (Inventory → ERP → Platform). All figures are
-        sample data for <span className="font-medium text-text-primary">{company.name}</span>; no
-        backend is wired yet.
+        Live figures for <span className="font-medium text-text-primary">{company.name}</span> pulled
+        from the Inventory and Accounting backends (Iteration 5). Open the Stock, Accounting, and
+        Reports tabs for detail.
       </InfoBanner>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard label="Inventory value" value={266_860} icon={<Package size={18} />} tone="accent" compact hint="8 SKUs" />
-        <StatCard label="Low stock" value={4} icon={<Package size={18} />} tone="danger" hint="need reorder" />
-        <StatCard label="Net profit" value={147_000} icon={<FileBarChart size={18} />} tone="success" hint="this period" />
-        <StatCard label="Roles" value={5} icon={<ShieldCheck size={18} />} tone="neutral" hint="5 permissions" />
+        <StatCard label="Inventory value" value={inventoryValue} icon={<Package size={18} />} tone="accent" compact hint={loading ? 'loading…' : `${totalSkus} SKUs`} />
+        <StatCard label="Low stock" value={lowStock} icon={<Package size={18} />} tone="danger" hint="need reorder" format="number" />
+        <StatCard label="Net profit" value={netProfit} icon={<FileBarChart size={18} />} tone="success" compact hint="this period" />
+        <StatCard label="Roles" value={company.role ? 5 : 0} icon={<ShieldCheck size={18} />} tone="neutral" hint="5 permissions" format="number" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

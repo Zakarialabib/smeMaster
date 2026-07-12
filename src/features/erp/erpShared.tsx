@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Info, Sparkles } from 'lucide-react';
+import { Info, Sparkles, CircleCheck } from 'lucide-react';
 import { formatMoney } from '@features/invoicing/utils/format';
 
 /** Small "Demo / backend pending" badge — marks every ERP shell as non-live. */
@@ -8,6 +8,16 @@ export function DemoBadge({ label = 'Demo' }: { label?: string }) {
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-accent/10 text-accent border border-accent/20">
       <Sparkles size={11} />
       {label}
+    </span>
+  );
+}
+
+/** Marks a view that is wired to live backend data. */
+export function LiveBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-success/10 text-success border border-success/20">
+      <CircleCheck size={11} />
+      Live
     </span>
   );
 }
@@ -54,6 +64,7 @@ export function StatCard({
   tone = 'accent',
   hint,
   compact,
+  format = 'money',
 }: {
   label: string;
   value: number;
@@ -62,7 +73,15 @@ export function StatCard({
   hint?: string;
   /** Use compact money formatting (e.g. "12.4K DH"). */
   compact?: boolean;
+  /** How to render `value`. "money" (default) or "number" for plain counts. */
+  format?: 'money' | 'number';
 }) {
+  const display =
+    format === 'number'
+      ? value.toLocaleString('en-US')
+      : compact
+        ? compactMoney(value)
+        : formatMoney(value);
   return (
     <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
       <div
@@ -77,7 +96,7 @@ export function StatCard({
           {label}
         </p>
         <p className="text-lg sm:text-xl font-bold text-text-primary mt-0.5 tabular-nums">
-          {compact ? compactMoney(value) : formatMoney(value)}
+          {display}
         </p>
         {hint && <p className="text-[11px] text-text-tertiary mt-0.5">{hint}</p>}
       </div>

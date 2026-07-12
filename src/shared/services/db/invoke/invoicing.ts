@@ -1,5 +1,5 @@
 import { invokeCommand } from './command';
-import type { Invoice, InvoiceWithItems, Client, Item, Company } from '../schema';
+import type { Invoice, InvoiceWithItems, Client, Item, Company, CompanySetting, Category, ErpAccount, JournalEntry, PnlResult } from '../schema';
 
 export async function listInvoices(companyId: string, typeFilter?: string, statusFilter?: string): Promise<Invoice[]> {
   return invokeCommand<Invoice[]>('db_list_invoices', { companyId, typeFilter: typeFilter ?? null, statusFilter: statusFilter ?? null });
@@ -80,6 +80,42 @@ export async function deleteClient(id: string): Promise<void> {
   return invokeCommand<void>('db_delete_client', { id });
 }
 
+// ── Company Settings ──────────────────────────────────────────────────
+
+export async function getCompanySettings(companyId: string): Promise<CompanySetting | null> {
+  return invokeCommand<CompanySetting | null>('db_get_company_settings', { companyId });
+}
+
+export async function upsertCompanySettings(companyId: string, fields: Record<string, unknown>): Promise<CompanySetting> {
+  return invokeCommand<CompanySetting>('db_upsert_company_settings', { companyId, ...fields });
+}
+
+export async function deleteCompanySettings(companyId: string): Promise<void> {
+  return invokeCommand<void>('db_delete_company_settings', { companyId });
+}
+
+// ── Categories ────────────────────────────────────────────────────────
+
+export async function listCategories(companyId: string): Promise<Category[]> {
+  return invokeCommand<Category[]>('db_list_categories', { companyId });
+}
+
+export async function getCategory(id: string): Promise<Category> {
+  return invokeCommand<Category>('db_get_category', { id });
+}
+
+export async function createCategory(name: string, companyId: string): Promise<Category> {
+  return invokeCommand<Category>('db_create_category', { name, companyId });
+}
+
+export async function updateCategory(id: string, name: string): Promise<Category> {
+  return invokeCommand<Category>('db_update_category', { id, name });
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  return invokeCommand<void>('db_delete_category', { id });
+}
+
 export async function listItems(companyId: string): Promise<Item[]> {
   return invokeCommand<Item[]>('db_list_items', { companyId });
 }
@@ -145,11 +181,44 @@ export async function generateInvoiceDocuments(invoiceId: string): Promise<[stri
 }
 
 export async function sendInvoice(invoiceId: string, to: string): Promise<void> {
-  // NOTE: Rust `db_send_invoice(pool, id)` is a stub — it ignores `to` and only
-  // flips status. SMTP/PGP delivery is not implemented yet (STATUS.md).
+  // Real delivery: builds the Peppol XML + PDF, dispatches over SMTP (with
+  // optional PGP encryption when a key exists for the recipient), then marks
+  // the invoice `sent` and posts it to the ledger + adjusts stock.
   return invokeCommand<void>('db_send_invoice', { invoiceId, to });
 }
 
 export async function calculateInvoice(invoiceId: string): Promise<Invoice> {
   return invokeCommand<Invoice>('db_calculate_invoice', { invoiceId });
+}
+
+// ── ERP · Accounting (double-entry ledger) ──────────────────────────────
+
+/** Seed the standard chart of accounts for a company (idempotent). */
+export async function ensureChartOfAccounts(companyId: string): Promise<void> {
+  return invokeCommand<void>('db_ensure_chart_of_accounts', { companyId });
+}
+
+/** List a company's chart of accounts. */
+export async function listChartOfAccounts(companyId: string): Promise<ErpAccount[]> {
+  return invokeCommand<ErpAccount[]>('db_list_chart_of_accounts', { companyId });
+}
+
+/** List a company's journal entries (chronological). */
+export async function listJournalEntries(companyId: string): Promise<JournalEntry[]> {
+  return invokeCommand<JournalEntry[]>('db_list_journal_entries', { companyId });
+}
+
+/** Manually post an invoice to the ledger (usually done automatically on send). */
+export async function postInvoiceJournal(invoiceId: string): Promise<void> {
+  return invokeCommand<void>('db_post_invoice_journal', { invoiceId });
+}
+
+/** Compute profit & loss for a company. */
+export async function getProfitAndLoss(companyId: string): Promise<PnlResult> {
+  return invokeCommand<PnlResult>('db_get_profit_and_loss', { companyId });
+}
+
+/** List items at or below their reorder alert level. */
+export async function listLowStock(companyId: string): Promise<Item[]> {
+  return invokeCommand<Item[]>('db_list_low_stock', { companyId });
 }
