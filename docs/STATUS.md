@@ -162,9 +162,9 @@ Also reconciled: `createInvoice` → `db_create_invoice`, `listClients`/`listInv
 
 | Gap                                                                               | Impact                                                                                          |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `db_list_clients(pool, role?)` has **no `company_id`** param                      | `listClients` company filter is dropped server-side — returns all clients regardless of company |
+| `db_list_clients` — **RESOLVED** (commit `41e0f85`): now `(pool, company_id, role?)` and filters `contacts` by `company_id` | `listClients` company filter is now applied server-side                                        |
 | `db_send_invoice(pool, id)` is **fully wired**                                    | Generates PDF + PEPPOL XML, PGP-encrypts, dispatches via SMTP pool with TLS/timeout/retry       |
-| `db_create_invoice` / `db_update_invoice` ignore `document_type`/`invoice_number` | server-assigned values override UI-supplied document type/number                                |
+| `db_create_invoice` **already passes** `document_type`/`invoice_number` (verified `invoices::create` binds them); `db_update_invoice` intentionally leaves them immutable (DGI compliance) | no server-assigned override on create                                                          |
 
 **New tests (all green, run with `npx vitest run --pool=threads` in this sandbox):**
 
