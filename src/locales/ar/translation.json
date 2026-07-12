@@ -1374,5 +1374,13 @@
         "": "[TODO] Search contacts..."
       }
     }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "أدخل عنوان بريد إلكتروني صالحًا",
+    "minLength": "قصير جدًا",
+    "maxLength": "طويل جدًا",
+    "numeric": "أدخل رقمًا",
+    "positive": "أدخل قيمة أكبر من صفر"
   }
 }

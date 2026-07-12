@@ -22,7 +22,7 @@ const SchedulePage = lazy(() =>
   })),
 );
 const AttachmentLibrary = lazy(() =>
-  import("@features/mail/components/attachments/AttachmentLibrary").then(
+  import("@features/attachments/AttachmentLibrary").then(
     (m) => ({ default: m.AttachmentLibrary }),
   ),
 );

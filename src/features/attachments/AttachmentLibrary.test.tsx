@@ -110,7 +110,7 @@ describe("AttachmentLibrary", () => {
     render(<AttachmentLibrary />);
     await screen.findByText("report.pdf");
 
-    fireEvent.click(screen.getByTitle("List view"));
+    fireEvent.click(screen.getByRole("button", { name: "List view" }));
 
     expect(screen.getByText("report.pdf")).toBeInTheDocument();
   });
@@ -152,7 +152,7 @@ describe("AttachmentLibrary", () => {
     render(<AttachmentLibrary />);
     await screen.findByText("report.pdf");
 
-    expect(screen.getByText("(2)")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
   });
 
   it("renders header with title", async () => {

@@ -1373,5 +1373,13 @@
         "": "[TODO] Search contacts..."
       }
     }
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "email": "Inserisci un indirizzo email valido",
+    "minLength": "Troppo corto",
+    "maxLength": "Troppo lungo",
+    "numeric": "Inserisci un numero",
+    "positive": "Inserisci un valore maggiore di zero"
   }
 }
