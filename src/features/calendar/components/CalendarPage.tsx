@@ -22,7 +22,7 @@ import { CalendarList } from "./CalendarList";
 import { CalendarReauthBanner } from "./CalendarReauthBanner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, CalendarDays } from "lucide-react";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
 
 export function CalendarPage() {
@@ -470,6 +470,22 @@ export function CalendarPage() {
 
       {loading && events.length === 0 && (
         <SkeletonPage />
+      )}
+
+      {!loading && events.length === 0 && integratedItems.length === 0 && !needsReauth && !calendarError && (
+        <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center p-8">
+          <CalendarDays size={36} className="text-text-tertiary/40" />
+          <div>
+            <p className="text-sm font-medium text-text-primary">{t('calendar.noEvents')}</p>
+            <p className="text-xs text-text-tertiary mt-1">Create an event or connect a calendar provider</p>
+          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          >
+            Create Event
+          </button>
+        </div>
       )}
 
       <div className="flex flex-1 min-h-0">
