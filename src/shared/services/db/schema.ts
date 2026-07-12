@@ -1056,6 +1056,15 @@ export interface PnlResult {
   net: number;
 }
 
+export interface Wallet {
+  id: string;
+  company_id: string;
+  currency: string;
+  balance: number;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface CompanySetting {
   company_id: string;
   default_currency: string;

@@ -1,5 +1,5 @@
 import { invokeCommand } from './command';
-import type { Invoice, InvoiceWithItems, Client, Item, Company, CompanySetting, Category, ErpAccount, JournalEntry, PnlResult } from '../schema';
+import type { Invoice, InvoiceWithItems, Client, Item, Company, CompanySetting, Category, ErpAccount, JournalEntry, PnlResult, Wallet } from '../schema';
 
 export async function listInvoices(companyId: string, typeFilter?: string, statusFilter?: string): Promise<Invoice[]> {
   return invokeCommand<Invoice[]>('db_list_invoices', { companyId, typeFilter: typeFilter ?? null, statusFilter: statusFilter ?? null });
@@ -221,4 +221,46 @@ export async function getProfitAndLoss(companyId: string): Promise<PnlResult> {
 /** List items at or below their reorder alert level. */
 export async function listLowStock(companyId: string): Promise<Item[]> {
   return invokeCommand<Item[]>('db_list_low_stock', { companyId });
+}
+
+// ── ERP · Wallet (company cash hub) ────────────────────────────────────
+
+/** Ensure a wallet exists for a company (creates one if missing). */
+export async function ensureWallet(companyId: string): Promise<Wallet> {
+  return invokeCommand<Wallet>('db_ensure_wallet', { companyId });
+}
+
+/** Fetch the company wallet, creating it on demand if it does not exist. */
+export async function getWallet(companyId: string): Promise<Wallet> {
+  return invokeCommand<Wallet>('db_get_wallet', { companyId });
+}
+
+/** Top up the wallet (cash in). Books a Dr Cash / Cr Equity journal entry. */
+export async function creditWallet(
+  companyId: string,
+  amount: number,
+  reference?: string | null,
+  description?: string | null,
+): Promise<Wallet> {
+  return invokeCommand<Wallet>('db_credit_wallet', {
+    companyId,
+    amount,
+    reference: reference ?? null,
+    description: description ?? null,
+  });
+}
+
+/** Withdraw from the wallet (cash out). Books a Dr Equity / Cr Cash entry. */
+export async function debitWallet(
+  companyId: string,
+  amount: number,
+  reference?: string | null,
+  description?: string | null,
+): Promise<Wallet> {
+  return invokeCommand<Wallet>('db_debit_wallet', {
+    companyId,
+    amount,
+    reference: reference ?? null,
+    description: description ?? null,
+  });
 }

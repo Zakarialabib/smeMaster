@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
-import {
-  Calculator, LayoutDashboard, Package, BookOpen, FileBarChart, ShieldCheck,
-} from 'lucide-react';
+import { Calculator, LayoutDashboard, Package, BookOpen, FileBarChart, ShieldCheck, Wallet } from 'lucide-react';
 import CompanySwitcher from './CompanySwitcher';
 import StockView from './StockView';
 import JournalView from './JournalView';
 import FinancialReports from './FinancialReports';
+import WalletView from './WalletView';
 import RbacRoles from './RbacRoles';
 import { useCompanyStore, getActiveCompany, companyInitials } from './companyStore';
 import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
 import type { Item } from '@shared/services/db/schema';
-import { listItems, listLowStock, getProfitAndLoss } from '@shared/services/db/invoke/invoicing';
+import { listItems, listLowStock, getProfitAndLoss, getWallet } from '@shared/services/db/invoke/invoicing';
 
-type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'roles';
+type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'wallet' | 'roles';
 
 const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'stock', label: 'Stock', icon: Package },
   { id: 'accounting', label: 'Accounting', icon: BookOpen },
   { id: 'reports', label: 'Reports', icon: FileBarChart },
+  { id: 'wallet', label: 'Cash', icon: Wallet },
   { id: 'roles', label: 'Roles', icon: ShieldCheck },
 ];
 
@@ -86,6 +86,7 @@ export default function ErpPage() {
           {tab === 'stock' && <StockView />}
           {tab === 'accounting' && <JournalView />}
           {tab === 'reports' && <FinancialReports />}
+          {tab === 'wallet' && <WalletView />}
           {tab === 'roles' && <RbacRoles />}
         </div>
       </main>
@@ -102,6 +103,7 @@ function OverviewTab() {
   const [totalSkus, setTotalSkus] = useState(0);
   const [lowStock, setLowStock] = useState(0);
   const [netProfit, setNetProfit] = useState(0);
+  const [cashOnHand, setCashOnHand] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,17 +111,19 @@ function OverviewTab() {
     setLoading(true);
     (async () => {
       try {
-        const [items, low, pnl] = await Promise.all([
+        const [items, low, pnl, wallet] = await Promise.all([
           listItems(activeCompanyId),
           listLowStock(activeCompanyId),
           getProfitAndLoss(activeCompanyId),
+          getWallet(activeCompanyId),
         ]);
         if (cancelled) return;
-        const value = items.reduce((a, it: Item) => a + it.stock_qty * (it.sell_price || 0), 0);
+        const value = items.reduce((a: number, it: Item) => a + it.stock_qty * (it.sell_price || 0), 0);
         setInventoryValue(value);
         setTotalSkus(items.length);
         setLowStock(low.length);
         setNetProfit(pnl.net);
+        setCashOnHand(wallet.balance);
       } catch {
         /* overview is best-effort; leave zeros on error */
       } finally {
@@ -144,7 +148,7 @@ function OverviewTab() {
         <StatCard label="Inventory value" value={inventoryValue} icon={<Package size={18} />} tone="accent" compact hint={loading ? 'loading…' : `${totalSkus} SKUs`} />
         <StatCard label="Low stock" value={lowStock} icon={<Package size={18} />} tone="danger" hint="need reorder" format="number" />
         <StatCard label="Net profit" value={netProfit} icon={<FileBarChart size={18} />} tone="success" compact hint="this period" />
-        <StatCard label="Roles" value={company.role ? 5 : 0} icon={<ShieldCheck size={18} />} tone="neutral" hint="5 permissions" format="number" />
+        <StatCard label="Cash on hand" value={cashOnHand} icon={<Wallet size={18} />} tone="neutral" compact hint="via wallet" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
