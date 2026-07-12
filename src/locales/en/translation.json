@@ -232,7 +232,9 @@
       "helpCenter": "Help Center",
       "pairing": "Pairing",
       "calendar": "Calendar",
-      "license": "License"
+      "license": "License",
+      "developer": "Developer",
+      "accountCleaning": "Account Cleaning"
     },
     "appearance": "Appearance",
     "theme": "Theme",
@@ -969,7 +971,8 @@
     "wayToGo": "Way to go!",
     "failedToUpdateTask": "Failed to update task",
     "failedToReschedule": "Failed to reschedule task",
-    "complete": "Complete"
+    "complete": "Complete",
+    "taskTitle": "Title"
   },
   "campaign": {
     "campaigns": "Campaigns",

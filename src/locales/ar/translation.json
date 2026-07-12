@@ -224,7 +224,9 @@
       "deliverabilityDashboard": "[TODO] settings.tabs.deliverabilityDashboard",
       "presend": "[TODO] settings.tabs.presend",
       "bounce": "[TODO] settings.tabs.bounce",
-      "license": "[TODO] settings.tabs.license"
+      "license": "[TODO] settings.tabs.license",
+      "developer": "المطور",
+      "accountCleaning": "تنظيف الحساب"
     },
     "appearance": "المظهر",
     "theme": "السمة",
@@ -906,7 +908,8 @@
       "defaultTitle": "لا شيء هنا",
       "defaultSubtitle": "أضف مهمة للبدء.",
       "defaultAction": "أضف مهمة"
-    }
+    },
+    "taskTitle": "العنوان"
   },
   "campaign": {
     "campaigns": "الحملات",

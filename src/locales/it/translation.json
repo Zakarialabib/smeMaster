@@ -224,7 +224,9 @@
       "deliverabilityDashboard": "Dashboard consegnabilità",
       "presend": "Pre-invio",
       "bounce": "Rimbalzi",
-      "license": "Licenza"
+      "license": "Licenza",
+      "developer": "Sviluppatore",
+      "accountCleaning": "Pulizia account"
     },
     "appearance": "Aspetto",
     "theme": "Tema",
@@ -938,7 +940,8 @@
       "defaultTitle": "Qui non c'è nulla",
       "defaultSubtitle": "Aggiungi un'attività per iniziare.",
       "defaultAction": "Aggiungi attività"
-    }
+    },
+    "taskTitle": "Titolo"
   },
   "campaign": {
     "campaigns": "Campagne",

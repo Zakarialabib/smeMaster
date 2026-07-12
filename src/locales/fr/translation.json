@@ -224,7 +224,9 @@
       "deliverabilityDashboard": "[TODO] settings.tabs.deliverabilityDashboard",
       "presend": "[TODO] settings.tabs.presend",
       "bounce": "[TODO] settings.tabs.bounce",
-      "license": "[TODO] settings.tabs.license"
+      "license": "[TODO] settings.tabs.license",
+      "developer": "Développeur",
+      "accountCleaning": "Nettoyage du compte"
     },
     "appearance": "Apparence",
     "theme": "Thème",
@@ -906,7 +908,8 @@
       "defaultTitle": "Rien ici",
       "defaultSubtitle": "Ajoutez une tâche pour commencer.",
       "defaultAction": "Ajouter une tâche"
-    }
+    },
+    "taskTitle": "Titre"
   },
   "campaign": {
     "campaigns": "Campagnes",
