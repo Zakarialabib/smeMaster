@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown, AlertTriangle,
+  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown, AlertTriangle, RefreshCw, AlertCircle,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
 import { useInvoicingStore } from '../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../utils/format';
 import { listLowStock } from '@shared/services/db/invoke/invoicing';
@@ -26,8 +27,10 @@ export default function InvoicingDashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>('invoices');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const company = useInvoicingStore((s) => s.company);
+  const listLoading = useInvoicingStore((s) => s.listLoading);
   const fetchInvoices = useInvoicingStore((s) => s.fetchInvoices);
   const fetchClients = useInvoicingStore((s) => s.fetchClients);
   const fetchItems = useInvoicingStore((s) => s.fetchItems);
@@ -36,7 +39,9 @@ export default function InvoicingDashboard() {
   const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
-    fetchCompany(ACTIVE_COMPANY_ID);
+    fetchCompany(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load company');
+    });
   }, [fetchCompany]);
 
   useEffect(() => {
@@ -54,10 +59,26 @@ export default function InvoicingDashboard() {
   }, []);
 
   useEffect(() => {
-    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID);
-    if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID);
-    if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID);
+    setLoadError(null);
+    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load invoices');
+    });
+    if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load clients');
+    });
+    if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load items');
+    });
   }, [tab, fetchInvoices, fetchClients, fetchItems]);
+
+  const handleRetry = () => {
+    setLoadError(null);
+    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID);
+    else if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID);
+    else if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID);
+  };
+
+  const isLoading = listLoading && !loadError;
 
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-bg-primary">
@@ -134,9 +155,24 @@ export default function InvoicingDashboard() {
       {/* Tab content */}
       <main className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 py-6">
         <div className="max-w-7xl mx-auto">
-          {tab === 'invoices' && <InvoiceList />}
-          {tab === 'clients' && <ClientList />}
-          {tab === 'items' && <ItemList />}
+          {isLoading && <SkeletonPage />}
+
+          {!isLoading && loadError && (
+            <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
+              <div className="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center">
+                <AlertCircle size={28} />
+              </div>
+              <p className="text-text-primary font-semibold">Failed to load {tab}</p>
+              <p className="text-sm text-text-tertiary max-w-md text-center">{loadError}</p>
+              <Button icon={<RefreshCw size={16} />} onClick={handleRetry}>
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && !loadError && tab === 'invoices' && <InvoiceList />}
+          {!isLoading && !loadError && tab === 'clients' && <ClientList />}
+          {!isLoading && !loadError && tab === 'items' && <ItemList />}
           {tab === 'settings' && <BusinessProfilePanel />}
         </div>
       </main>

@@ -13,30 +13,11 @@
     "nameExample": "e.g. Unread from boss",
     "addSmartFolder": "Add smart folder",
     "addLabel": "Add label",
-    "addYourFirstLabel": "Add your first label"
-  ,
-    "business": "Business",
+    "addYourFirstLabel": "Add your first label",
     "mail": "Mail",
-    "people": "People",
-    "automation": "Automation",
-    "vault": "Vault",
     "settings": "Settings",
-    "inbox": "Inbox",
-    "starred": "Starred",
-    "snoozed": "Snoozed",
-    "sent": "Sent",
-    "drafts": "Drafts",
-    "trash": "Trash",
-    "spam": "Spam",
-    "allMail": "All Mail",
-    "attachments": "Attachments",
-    "about": "About & License",
-    "dashboard": "Dashboard",
-    "crm": "CRM",
     "label": "Label",
-    "noItems": "No items",
-    "aiAssistant": "AI Assistant",
-    "erp": "ERP"
+    "noItems": "No items"
   },
   "onboarding": {
     "step1_title": "Welcome to SMEMaster",
@@ -81,7 +62,6 @@
   },
   "email": {
     "selectAll": "Select all",
-    "nAttachments": "{{n}} attachment",
     "otherEmails": "Other emails",
     "loadingMore": "Loading more...",
     "allConversationsLoaded": "All conversations loaded",
@@ -731,7 +711,8 @@
     "pushNotifications": "Push notifications",
     "searchPlaceholder": "Search...",
     "noResults": "No results",
-    "licenseCurrent": "Current license"
+    "licenseCurrent": "Current license",
+    "syncStatusSyncing": "Syncing..."
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -1163,17 +1144,8 @@
     "title": "Dashboard",
     "description": "Track your business metrics, monitor compliance, and stay on top of upcoming work.",
     "compliancePending": "Compliance checks pending",
-    "recentVaultActivity": "Recent vault activity",
     "upcomingCampaigns": "Upcoming campaigns",
     "followUpReminders": "Follow-up reminders",
-    "nextBackup": "Next scheduled backup",
-    "noComplianceIssues": "No pending compliance issues",
-    "noRecentVaultActivity": "No recent vault activity",
-    "noUpcomingCampaigns": "No upcoming campaigns",
-    "noFollowUps": "No follow-up reminders",
-    "noBackupScheduled": "No backup scheduled",
-    "emptyTitle": "Welcome to Your Dashboard",
-    "emptySubtitle": "As you use the app, your key metrics, upcoming campaigns, and follow-up reminders will appear here.",
     "customize": "Customize",
     "customizeWidgets": "Customize widgets",
     "heroTotalContacts": "Total Contacts",
@@ -1185,15 +1157,7 @@
     "range": "Range",
     "density": "Density",
     "autoRefresh": "Auto-refresh",
-    "refresh": "Refresh",
-    "updatedSeconds": "Updated {{n}}s ago",
-    "updatedMinutes": "Updated {{n}}m ago",
-    "updatedHours": "Updated {{n}}h ago",
-    "businessHealth": {
-      "title": "Business Health",
-      "nextBackup": "Next backup",
-      "notScheduled": "Not scheduled"
-    }
+    "refresh": "Refresh"
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
@@ -1255,16 +1219,6 @@
     },
     "aiTemplate": {
       "title": "Generate Email Template",
-      "announcement": "Announcement",
-      "newsletter": "Newsletter",
-      "promotion": "Promotion",
-      "followUp": "Follow-up",
-      "event": "Event",
-      "welcome": "Welcome",
-      "feedback": "Feedback",
-      "invoice": "Invoice",
-      "meeting": "Meeting",
-      "holiday": "Holiday",
       "describePlaceholder": "e.g. A modern newsletter for tech startups with a clean two-column layout...",
       "categoryOptional": "Category (optional)",
       "generateTemplate": "Generate Template",
@@ -1282,14 +1236,6 @@
     "aiSignature": {
       "title": "Generate Email Signature",
       "style": "Style",
-      "modern": "Modern",
-      "modernDesc": "Clean and contemporary",
-      "classic": "Classic",
-      "classicDesc": "Timeless and professional",
-      "minimal": "Minimal",
-      "minimalDesc": "Simple and understated",
-      "branded": "Branded",
-      "brandedDesc": "Bold with your brand colors",
       "generateSignature": "Generate Signature",
       "generatingSignature": "Generating signature...",
       "designingSignature": "Designing professional email signature",
@@ -1306,14 +1252,10 @@
       "loading": "Loading message source...",
       "copyToClipboard": "Copy to clipboard",
       "copied": "Copied",
-      "copy": "Copy",
-      "failedToLoad": "Failed to load message source: {{error}}"
+      "copy": "Copy"
     },
     "export": {
       "title": "Export Emails",
-      "formatMbox": "Mbox",
-      "formatEml": "EML",
-      "formatZip": "ZIP",
       "chooseFormat": "Choose export format",
       "filterMessages": "Filter messages (optional)",
       "fromDate": "From date",
@@ -1360,7 +1302,9 @@
       "downloaded": "Ready to install",
       "available": "Update available",
       "upToDate": "Up to date",
-      "error": "Error"
+      "error": "Error",
+      "downloading": "Downloading...",
+      "idle": "Idle"
     },
     "version": {
       "new": "New Version"
@@ -1378,21 +1322,76 @@
   "mail": {
     "subject": "Subject"
   },
-  "placeholders": {
-    "loading": "Loading...",
-    "addDescription": "Add a description...",
-    "selectTemplate": "Select a template...",
-    "notificationText": "Notification text...",
-    "taskTitlePreset": "Task title preset...",
-    "saving": "Saving...",
-    "deleting": "Deleting...",
-    "searchContacts": "Search contacts...",
-    "noActionsConfigured": "No actions configured. Add an action to run when this trigger fires."
-  },
   "lock": {
     "appLocked": "App Locked",
     "unlockToAccess": "Unlock to access",
     "unlocking": "Unlocking...",
     "unlockWithBiometric": "Unlock with biometric"
+  },
+  "businessHealth": {
+    "notScheduled": "businessHealth.notScheduled",
+    "nextBackup": "businessHealth.nextBackup",
+    "title": "businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "Search contacts..."
+      }
+    }
   }
 }

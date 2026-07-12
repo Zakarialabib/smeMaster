@@ -2,7 +2,7 @@
  * RAG (Retrieval-Augmented Generation) Tauri command wrappers.
  *
  * These bridge the local embedding + vector search backend to the frontend.
- * See AI_RAG_TECHNICAL_DOC.md for the full architecture.
+ * See docs/04-FEATURES/ai-rag.md for the full architecture.
  *
  * @module
  */

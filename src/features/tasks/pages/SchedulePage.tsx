@@ -1,25 +1,25 @@
 import { useState } from "react";
-import { Workflow, Megaphone } from "lucide-react";
+import { CheckSquare, Calendar } from "lucide-react";
 import { cn } from "@shared/utils/cn";
-import { AutomationPage } from "@features/automation/pages/AutomationPage";
-import { CampaignPage } from "@features/campaigns/components/CampaignPage";
+import { TasksPage } from "@features/tasks/components/TasksPage";
+import { CalendarPage } from "@features/calendar/components/CalendarPage";
 
-type AutomationCampaignsTab = "automation" | "campaigns";
+type ScheduleTab = "tasks" | "calendar";
 
-const TABS: { id: AutomationCampaignsTab; label: string; icon: typeof Workflow }[] = [
-  { id: "automation", label: "Automation", icon: Workflow },
-  { id: "campaigns", label: "Campaigns", icon: Megaphone },
+const TABS: { id: ScheduleTab; label: string; icon: typeof CheckSquare }[] = [
+  { id: "tasks", label: "Tasks", icon: CheckSquare },
+  { id: "calendar", label: "Calendar", icon: Calendar },
 ];
 
 /**
- * Automation & Campaigns surface.
+ * Schedule — Tasks + Calendar.
  *
- * Both capabilities share an account-scoped context behind a single nav
- * item with an in-page tab strip. Each tab reuses the existing
- * self-contained page component (load effect, empty states, editors).
+ * Both share account-scoped context behind a single nav item with an
+ * in-page tab strip. Each tab reuses the existing self-contained page
+ * component (load effects, empty states, views).
  */
-export function AutomationCampaignsPage() {
-  const [tab, setTab] = useState<AutomationCampaignsTab>("automation");
+export function SchedulePage() {
+  const [tab, setTab] = useState<ScheduleTab>("tasks");
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -48,7 +48,7 @@ export function AutomationCampaignsPage() {
 
       {/* Active section */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        {tab === "automation" ? <AutomationPage /> : <CampaignPage />}
+        {tab === "tasks" ? <TasksPage /> : <CalendarPage />}
       </div>
     </div>
   );

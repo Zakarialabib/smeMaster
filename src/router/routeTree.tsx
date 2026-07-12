@@ -16,14 +16,9 @@ const HelpPage = lazy(() =>
     default: m.HelpPage,
   })),
 );
-const CalendarPage = lazy(() =>
-  import("@features/calendar/components/CalendarPage").then((m) => ({
-    default: m.CalendarPage,
-  })),
-);
-const TasksPage = lazy(() =>
-  import("@features/tasks/components/TasksPage").then((m) => ({
-    default: m.TasksPage,
+const SchedulePage = lazy(() =>
+  import("@features/tasks/pages/SchedulePage").then((m) => ({
+    default: m.SchedulePage,
   })),
 );
 const AttachmentLibrary = lazy(() =>
@@ -78,9 +73,9 @@ const MobileDashboardPage = lazy(() =>
     default: m.MobileDashboardPage,
   })),
 );
-const MergedCRMPage = lazy(() =>
-  import("@features/crm/pages/MergedCRMPage").then((m) => ({
-    default: m.MergedCRMPage,
+const CrmPage = lazy(() =>
+  import("@features/crm/pages/CrmPage").then((m) => ({
+    default: m.CrmPage,
   })),
 );
 
@@ -244,7 +239,7 @@ export const smartFolderThreadRoute = createRoute({
   path: "thread/$threadId",
 });
 
-// ---------- /people (merged CRM with Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
+// ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
 const ContactDetailPageWrapper = createPageWrapper("ContactDetail", ContactDetailPage as LazyComponent);
 
 export const contactDetailRoute = createRoute({
@@ -262,22 +257,22 @@ export const attachmentsRoute = createRoute({
   component: AttachmentLibraryWrapper,
 });
 
-// ---------- /tasks ----------
-const TasksPageWrapper = createPageWrapper("Tasks", TasksPage as LazyComponent);
+// ---------- /tasks (Schedule: Tasks + Calendar) ----------
+const SchedulePageWrapper = createPageWrapper("Schedule", SchedulePage as LazyComponent);
 
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "tasks",
-  component: TasksPageWrapper,
+  component: SchedulePageWrapper,
 });
 
-// ---------- /calendar ----------
-const CalendarPageWrapper = createPageWrapper("Calendar", CalendarPage as LazyComponent);
-
+// ---------- /calendar → redirect to /tasks ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "calendar",
-  component: CalendarPageWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/tasks" });
+  },
 });
 
 // ---------- /automation ----------
@@ -376,8 +371,8 @@ export const devicePairingRoute = createRoute({
   component: DevicePairingPageWrapper,
 });
 
-// ---------- /people (merged CRM with Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
-const CRMPageWrapper = createPageWrapper("CRM", MergedCRMPage as LazyComponent);
+// ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
+const CRMPageWrapper = createPageWrapper("CRM", CrmPage as LazyComponent);
 
 export const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
