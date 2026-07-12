@@ -1,4 +1,5 @@
 pub mod ai;
+pub mod accounting;
 pub mod account_import;
 pub mod calendar;
 pub mod comms;
@@ -718,7 +719,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             imap::imap_batch_mark_read,
             imap::imap_mark_read,
 
-            // === commands::invoicing (24 commands) ===
+            // === commands::invoicing (33 commands) ===
             invoicing::db_list_invoices,
             invoicing::db_get_invoice,
             invoicing::db_get_invoice_with_items,
@@ -733,6 +734,14 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             invoicing::db_create_client,
             invoicing::db_update_client,
             invoicing::db_delete_client,
+            invoicing::db_get_company_settings,
+            invoicing::db_upsert_company_settings,
+            invoicing::db_delete_company_settings,
+            invoicing::db_list_categories,
+            invoicing::db_get_category,
+            invoicing::db_create_category,
+            invoicing::db_update_category,
+            invoicing::db_delete_category,
             invoicing::db_list_items,
             invoicing::db_get_item,
             invoicing::db_create_item,
@@ -743,6 +752,14 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             invoicing::db_generate_invoice_documents,
             invoicing::db_send_invoice,
             invoicing::db_calculate_invoice,
+            invoicing::db_list_low_stock,
+
+            // === commands::accounting (5 commands) ===
+            accounting::db_ensure_chart_of_accounts,
+            accounting::db_list_chart_of_accounts,
+            accounting::db_list_journal_entries,
+            accounting::db_post_invoice_journal,
+            accounting::db_get_profit_and_loss,
 
             // === commands::logging (4 commands) ===
             logging::get_logs,

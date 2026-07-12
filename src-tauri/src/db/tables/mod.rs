@@ -1,5 +1,6 @@
 // ── Domain table modules ────────────────────────────────────────────────────
 pub mod ai;
+pub mod accounting;
 pub mod calendar;
 pub mod campaigns;
 pub mod comms;

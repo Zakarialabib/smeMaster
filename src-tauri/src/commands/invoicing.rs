@@ -1,7 +1,7 @@
 //! Invoicing domain Tauri command handlers.
 //!
-//! All 24 commands for managing clients, catalog items, invoices, invoice items,
-//! company info, document generation, and invoice lifecycle.
+//! All 33 commands for managing clients, catalog items, invoices, invoice items,
+//! company settings, categories, company info, document generation, and invoice lifecycle.
 
 use serde::Deserialize;
 use tauri::{command, State, AppHandle};
@@ -10,12 +10,19 @@ use sqlx::SqlitePool;
 use std::fs;
 
 use crate::db::invoicing::schema::{
-    Invoice, InvoiceItem, InvoiceWithItems, Client, CatalogItem,
+    Invoice, InvoiceItem, InvoiceWithItems, Client, CatalogItem, CompanySetting, Category,
 };
 use crate::db::core::schema::Company;
-use crate::db::tables::invoicing::{invoices, items, clients, catalog_items};
+use crate::db::tables::invoicing::{invoices, items, clients, catalog_items, company_settings, categories};
 use crate::services::invoicing::pdf::generate_invoice_pdf;
 use crate::services::invoicing::peppol::generate_peppol_xml;
+use crate::invoicing::calc::{Money, LineOutput, calculate_document_totals, TaxMode};
+use crate::db::tables::core::accounts;
+use crate::db::tables::security::pgp_keys;
+use crate::pgp::crypto as pgp_crypto;
+use crate::smtp::client as smtp_client;
+use lettre::message::{header::ContentType, Attachment, Mailbox, MultiPart, SinglePart};
+use lettre::{Address, Message};
 
 // ── Shared request types ───────────────────────────────────────────────────
 
@@ -150,9 +157,8 @@ pub async fn db_create_invoice(
         .await
         .map_err(|e| format!("Failed to create invoice: {e}"))?;
 
-    // 2. Insert items and calculate totals
-    let mut subtotal: i64 = 0;
-    let mut tax_total: i64 = 0;
+    // 2. Insert items and compute line outputs
+    let mut line_outputs: Vec<LineOutput> = Vec::with_capacity(items_req.len());
 
     for item in items_req {
         let create_input = items::CreateItemInput {
@@ -168,14 +174,21 @@ pub async fn db_create_invoice(
         let created_item = items::create(&mut *tx, create_input)
             .await
             .map_err(|e| format!("Failed to create invoice item: {e}"))?;
-        subtotal += created_item.line_total - created_item.tax_amount;
-        tax_total += created_item.tax_amount;
+        let subtotal = created_item.line_total - created_item.tax_amount;
+        line_outputs.push(LineOutput {
+            subtotal: Money(subtotal),
+            discount: Money(0),
+            taxable: Money(subtotal),
+            tax_amount: Money(created_item.tax_amount),
+            total: Money(created_item.line_total),
+        });
     }
 
-    let total_amount = subtotal + tax_total;
+    // 3. Compute document totals using the calc engine
+    let totals = calculate_document_totals(&line_outputs, Money(0), 0.0, TaxMode::Excluded, Money(0));
 
-    // 3. Update invoice totals
-    invoices::update_totals(&mut *tx, &invoice.id, subtotal, tax_total, total_amount)
+    // 4. Update invoice totals in the database
+    invoices::update_totals(&mut *tx, &invoice.id, totals.net.0, totals.tax_amount.0, totals.grand_total.0)
         .await
         .map_err(|e| format!("Failed to update totals: {e}"))?;
 
@@ -201,9 +214,12 @@ pub async fn db_update_invoice(
     due_date: Option<i64>,
     currency: Option<String>,
     client_id: Option<String>,
-) -> Result<(), String> {
+    items: Option<Vec<CreateInvoiceItemRequest>>,
+) -> Result<Invoice, String> {
+    let mut tx = pool.begin().await.map_err(|e| format!("DB begin failed: {e}"))?;
+
     invoices::update_invoice(
-        &*pool, &id,
+        &mut *tx, &id,
         status.as_deref(),
         notes.as_deref(),
         date,
@@ -212,7 +228,68 @@ pub async fn db_update_invoice(
         client_id.as_deref(),
     )
     .await
-    .map_err(|e| format!("Failed to update invoice: {e}"))
+    .map_err(|e| format!("Failed to update invoice: {e}"))?;
+
+    if let Some(items_list) = items {
+        // Delete existing items for this invoice
+        items::delete_by_invoice(&mut *tx, &id)
+            .await
+            .map_err(|e| format!("Failed to delete invoice items: {e}"))?;
+
+        // Insert new items and compute line outputs
+        let mut line_outputs: Vec<LineOutput> = Vec::with_capacity(items_list.len());
+
+        for item in items_list {
+            let create_input = items::CreateItemInput {
+                invoice_id: &id,
+                item_id: None,
+                description: &item.description,
+                qty: item.qty,
+                unit: item.unit.as_deref().unwrap_or("pc"),
+                unit_price: item.unit_price,
+                tax_rate: item.tax_rate,
+                sort_order: item.sort_order,
+            };
+            let created_item = items::create(&mut *tx, create_input)
+                .await
+                .map_err(|e| format!("Failed to create invoice item: {e}"))?;
+            let subtotal = created_item.line_total - created_item.tax_amount;
+            line_outputs.push(LineOutput {
+                subtotal: Money(subtotal),
+                discount: Money(0),
+                taxable: Money(subtotal),
+                tax_amount: Money(created_item.tax_amount),
+                total: Money(created_item.line_total),
+            });
+        }
+
+        // Compute document totals using the calc engine
+        let totals = calculate_document_totals(
+            &line_outputs,
+            Money(0),
+            0.0,
+            TaxMode::Excluded,
+            Money(0),
+        );
+
+        // Update invoice totals in the database
+        invoices::update_totals(
+            &mut *tx,
+            &id,
+            totals.net.0,
+            totals.tax_amount.0,
+            totals.grand_total.0,
+        )
+        .await
+        .map_err(|e| format!("Failed to update totals: {e}"))?;
+    }
+
+    tx.commit().await.map_err(|e| format!("DB commit failed: {e}"))?;
+
+    // Return the updated invoice
+    invoices::get_by_id(&*pool, &id)
+        .await
+        .map_err(|e| format!("Invoice not found after update: {e}"))
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -449,14 +526,165 @@ pub async fn db_update_client(
 pub async fn db_delete_client(
     pool: State<'_, SqlitePool>,
     id: String,
+    hard: Option<bool>,
 ) -> Result<(), String> {
-    clients::soft_delete(&*pool, &id)
-        .await
-        .map_err(|e| format!("Failed to delete client: {e}"))
+    if hard.unwrap_or(false) {
+        clients::hard_delete(&*pool, &id)
+            .await
+            .map_err(|e| format!("Failed to permanently delete client: {e}"))
+    } else {
+        clients::soft_delete(&*pool, &id)
+            .await
+            .map_err(|e| format!("Failed to delete client: {e}"))
+    }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 15. db_list_items — list catalog items for a company
+// 15. db_get_company_settings — get company settings by company ID
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_get_company_settings(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> Result<Option<CompanySetting>, String> {
+    company_settings::get_by_company(&*pool, &company_id)
+        .await
+        .map_err(|e| format!("Failed to get company settings: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 16. db_upsert_company_settings — create or update company settings
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_upsert_company_settings(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+    default_currency: Option<String>,
+    default_tax_rate: Option<f64>,
+    invoice_prefix: Option<String>,
+    invoice_suffix: Option<String>,
+    quote_prefix: Option<String>,
+    default_template_id: Option<String>,
+    logo_url: Option<String>,
+    signature_text: Option<String>,
+    bank_details: Option<String>,
+    terms_default: Option<String>,
+    theme_color: Option<String>,
+    units_enabled: Option<String>,
+    tax_position: Option<String>,
+    decimal_places: Option<i64>,
+) -> Result<CompanySetting, String> {
+    let input = company_settings::UpsertCompanySettingInput {
+        default_currency: default_currency.as_deref(),
+        default_tax_rate,
+        invoice_prefix: invoice_prefix.as_deref(),
+        invoice_suffix: invoice_suffix.as_deref(),
+        quote_prefix: quote_prefix.as_deref(),
+        default_template_id: default_template_id.as_deref(),
+        logo_url: logo_url.as_deref(),
+        signature_text: signature_text.as_deref(),
+        bank_details: bank_details.as_deref(),
+        terms_default: terms_default.as_deref(),
+        theme_color: theme_color.as_deref(),
+        units_enabled: units_enabled.as_deref(),
+        tax_position: tax_position.as_deref(),
+        decimal_places,
+    };
+    company_settings::upsert(&*pool, &company_id, input)
+        .await
+        .map_err(|e| format!("Failed to upsert company settings: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 17. db_delete_company_settings — delete company settings for a company
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_delete_company_settings(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> Result<(), String> {
+    company_settings::delete(&*pool, &company_id)
+        .await
+        .map_err(|e| format!("Failed to delete company settings: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 18. db_list_categories — list categories for a company
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_list_categories(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> Result<Vec<Category>, String> {
+    categories::list(&*pool, &company_id)
+        .await
+        .map_err(|e| format!("Failed to list categories: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 19. db_get_category — get a single category by ID
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_get_category(
+    pool: State<'_, SqlitePool>,
+    id: String,
+) -> Result<Category, String> {
+    categories::get_by_id(&*pool, &id)
+        .await
+        .map_err(|e| format!("Failed to get category: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 20. db_create_category — create a new category
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_create_category(
+    pool: State<'_, SqlitePool>,
+    name: String,
+    company_id: String,
+) -> Result<Category, String> {
+    categories::create(&*pool, &name, &company_id)
+        .await
+        .map_err(|e| format!("Failed to create category: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 21. db_update_category — update a category name
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_update_category(
+    pool: State<'_, SqlitePool>,
+    id: String,
+    name: String,
+) -> Result<Category, String> {
+    categories::update(&*pool, &id, &name)
+        .await
+        .map_err(|e| format!("Failed to update category: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 22. db_delete_category — delete a category
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_delete_category(
+    pool: State<'_, SqlitePool>,
+    id: String,
+) -> Result<(), String> {
+    categories::delete(&*pool, &id)
+        .await
+        .map_err(|e| format!("Failed to delete category: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 23. db_list_items — list catalog items for a company
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -470,7 +698,7 @@ pub async fn db_list_items(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 16. db_get_item — get a single catalog item
+// 24. db_get_item — get a single catalog item
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -484,7 +712,7 @@ pub async fn db_get_item(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 17. db_create_item — create a catalog item
+// 25. db_create_item — create a catalog item
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -525,7 +753,7 @@ pub async fn db_create_item(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 18. db_update_item — update a catalog item
+// 26. db_update_item — update a catalog item
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -546,54 +774,28 @@ pub async fn db_update_item(
     image_url: Option<String>,
     active: Option<i64>,
 ) -> Result<CatalogItem, String> {
-    let now = chrono::Utc::now().timestamp();
-    sqlx::query(
-        r#"UPDATE items SET
-            name = COALESCE(?, name),
-            description = COALESCE(?, description),
-            type = COALESCE(?, type),
-            sku = COALESCE(?, sku),
-            unit = COALESCE(?, unit),
-            buy_price = COALESCE(?, buy_price),
-            sell_price = COALESCE(?, sell_price),
-            stock_qty = COALESCE(?, stock_qty),
-            stock_alert = COALESCE(?, stock_alert),
-            tax_rate = COALESCE(?, tax_rate),
-            barcode = COALESCE(?, barcode),
-            image_url = COALESCE(?, image_url),
-            active = COALESCE(?, active),
-            updated_at = ?
-        WHERE id = ?"#,
-    )
-    .bind(name)
-    .bind(description)
-    .bind(item_type)
-    .bind(sku)
-    .bind(unit)
-    .bind(buy_price)
-    .bind(sell_price)
-    .bind(stock_qty)
-    .bind(stock_alert)
-    .bind(tax_rate)
-    .bind(barcode)
-    .bind(image_url)
-    .bind(active)
-    .bind(now)
-    .bind(&id)
-    .execute(&*pool)
-    .await
-    .map_err(|e| format!("Failed to update item: {e}"))?;
-
-    sqlx::query_as::<_, CatalogItem>("SELECT * FROM items WHERE id = ?")
-        .bind(&id)
-        .fetch_optional(&*pool)
+    let input = catalog_items::UpdateCatalogItemInput {
+        name: name.as_deref(),
+        description: description.as_ref().map(|s| Some(s.as_str())),
+        item_type: item_type.as_deref(),
+        sku: sku.as_ref().map(|s| Some(s.as_str())),
+        unit: unit.as_deref(),
+        buy_price,
+        sell_price,
+        stock_qty,
+        stock_alert,
+        tax_rate,
+        barcode: barcode.as_ref().map(|s| Some(s.as_str())),
+        image_url: image_url.as_ref().map(|s| Some(s.as_str())),
+        active,
+    };
+    catalog_items::update(&*pool, &id, input)
         .await
-        .map_err(|e| format!("DB error: {e}"))?
-        .ok_or_else(|| format!("Item {id} not found after update"))
+        .map_err(|e| format!("Failed to update item: {e}"))
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 19. db_delete_item — soft delete (set active=0)
+// 27. db_delete_item — soft delete (set active=0)
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -607,7 +809,7 @@ pub async fn db_delete_item(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 20. db_get_company
+// 28. db_get_company
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -624,7 +826,7 @@ pub async fn db_get_company(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 21. db_update_company — update company fields incl. ICE/IF/RC/CNSS
+// 29. db_update_company — update company fields incl. ICE/IF/RC/CNSS
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -705,7 +907,7 @@ pub async fn db_update_company(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 22. db_generate_invoice_documents — generate PEPPOL XML + PDF, save to vault
+// 30. db_generate_invoice_documents — generate PEPPOL XML + PDF, save to vault
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -773,15 +975,16 @@ pub async fn db_generate_invoice_documents(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 23. db_send_invoice — stub: mark invoice as sent and return status
+// 31. db_send_invoice — stub: mark invoice as sent and return status
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
 pub async fn db_send_invoice(
     pool: State<'_, SqlitePool>,
     id: String,
+    to: Option<String>,
 ) -> Result<String, String> {
-    // Verify invoice exists
+    // 1. Verify invoice exists and is not cancelled
     let invoice = invoices::get_by_id(&*pool, &id)
         .await
         .map_err(|e| format!("Invoice not found: {e}"))?;
@@ -790,16 +993,144 @@ pub async fn db_send_invoice(
         return Err("Cannot send a cancelled invoice".to_string());
     }
 
-    // Update status to 'sent'
+    // Track whether the invoice was already sent, so stock + ledger side
+    // effects are applied exactly once (on the first dispatch).
+    let was_sent = invoice.status == "sent";
+
+    // Capture invoice fields before `invoice` is moved into InvoiceWithItems
+    let company_id = invoice.company_id.clone();
+    let client_id = invoice.client_id.clone();
+    let invoice_number = invoice.invoice_number.clone();
+    let total_amount = invoice.total_amount;
+    let currency = invoice.currency.clone();
+
+    // 2. Load items + assemble the document model
+    let invoice_items = items::list_by_invoice(&*pool, &id)
+        .await
+        .map_err(|e| format!("Failed to load invoice items: {e}"))?;
+    let invoice_with_items = InvoiceWithItems {
+        invoice,
+        items: invoice_items,
+    };
+
+    // 3. Load company + client
+    let company: Company = sqlx::query_as::<_, Company>("SELECT * FROM companies WHERE id = ?")
+        .bind(&company_id)
+        .fetch_optional(&*pool)
+        .await
+        .map_err(|e| format!("DB error: {e}"))?
+        .ok_or_else(|| format!("Company {company_id} not found"))?;
+
+    let client: Option<Client> = sqlx::query_as::<_, Client>("SELECT * FROM clients WHERE id = ?")
+        .bind(&client_id)
+        .fetch_optional(&*pool)
+        .await
+        .map_err(|e| format!("DB error: {e}"))?;
+
+    // 4. Resolve sender + recipient addresses
+    let from_email = company
+        .email
+        .clone()
+        .ok_or_else(|| "Cannot send invoice: the company has no email address".to_string())?;
+    let client_email = to
+        .clone()
+        .or_else(|| client.as_ref().and_then(|c| c.email.clone()))
+        .ok_or_else(|| {
+            "Cannot send invoice: provide a recipient email or a client with an email address".to_string()
+        })?;
+
+    // 5. Resolve the sending SMTP account for this company
+    let account = accounts::get_by_company(&*pool, &company.id)
+        .await
+        .map_err(|e| format!("Failed to load mail account: {e}"))?
+        .into_iter()
+        .next()
+        .ok_or_else(|| {
+            "Cannot send invoice: no SMTP account is configured for this company".to_string()
+        })?;
+    let smtp_config = accounts::to_smtp_config(&account)
+        .map_err(|e| format!("SMTP configuration incomplete: {e}"))?;
+
+    // 6. Generate the invoice documents (PDF + PEPPOL XML)
+    let xml = generate_peppol_xml(&company, client.as_ref(), &invoice_with_items);
+    let pdf_bytes = generate_invoice_pdf(&company, client.as_ref(), &invoice_with_items);
+
+    // 7. Build attachments (optionally PGP-encrypt the PDF for the recipient)
+    let pdf_filename = format!("invoice_{invoice_number}.pdf");
+    let pdf_attachment: SinglePart = match pgp_keys::get_by_user_id(&*pool, &account.id, &client_email).await {
+        Ok(Some(key)) => match pgp_crypto::encrypt_bytes(&pdf_bytes, &key.public_key) {
+            Ok(encrypted) => Attachment::new(format!("{pdf_filename}.pgp"))
+                .body(encrypted, ContentType::parse("application/pgp-encrypted").unwrap_or(ContentType::TEXT_PLAIN)),
+            Err(_) => build_pdf_attachment(&pdf_bytes, &pdf_filename),
+        },
+        _ => build_pdf_attachment(&pdf_bytes, &pdf_filename),
+    };
+
+    let xml_attachment: SinglePart = Attachment::new(format!("invoice_{invoice_number}.xml"))
+        .body(xml.into_bytes(), ContentType::parse("application/xml").unwrap_or(ContentType::TEXT_PLAIN));
+
+    let body = SinglePart::plain(format!(
+        "Dear {},\n\nPlease find attached invoice {} for {:.2} {}.\n\nBest regards,\n{}",
+        client.as_ref().map(|c| c.name.as_str()).unwrap_or("Client"),
+        invoice_number,
+        total_amount as f64 / 100.0,
+        currency,
+        company.name,
+    ));
+
+    // 8. Build and validate the MIME message
+    let from_addr: Address = from_email
+        .parse()
+        .map_err(|_| format!("Invalid sender email address: {from_email}"))?;
+    let to_addr: Address = client_email
+        .parse()
+        .map_err(|_| format!("Invalid recipient email address: {client_email}"))?;
+
+    let message = Message::builder()
+        .from(Mailbox::new(None, from_addr))
+        .to(Mailbox::new(None, to_addr))
+        .subject(format!("Invoice {invoice_number} from {}", company.name))
+        .multipart(
+            MultiPart::mixed()
+                .singlepart(body)
+                .singlepart(pdf_attachment)
+                .singlepart(xml_attachment),
+        )
+        .map_err(|e| format!("Failed to build email: {e}"))?;
+
+    // 9. Dispatch over SMTP
+    smtp_client::send_message(&smtp_config, message)
+        .await
+        .map_err(|e| e.message)?;
+
+    // 10. Mark as sent
     invoices::update_status(&*pool, &id, "sent")
         .await
         .map_err(|e| format!("Failed to update invoice status: {e}"))?;
 
-    Ok(format!("Invoice {} marked as sent", invoice.invoice_number))
+    // 11. Inventory + ledger side effects (applied once, on first dispatch)
+    if !was_sent {
+        if let Err(e) = invoices::apply_stock_effect(&*pool, &id).await {
+            log::warn!("[invoicing] stock update failed for {id}: {e}");
+        }
+        if let Err(e) = crate::db::tables::accounting::post_invoice_journal(&*pool, &id).await {
+            log::warn!("[invoicing] journal posting failed for {id}: {e}");
+        }
+    }
+
+    Ok(format!("Invoice {invoice_number} sent to {client_email}"))
+}
+
+/// Build a plaintext PDF [`SinglePart`] attachment from raw bytes.
+fn build_pdf_attachment(pdf_bytes: &[u8], filename: &str) -> SinglePart {
+    Attachment::new(filename.to_string()).body(
+        pdf_bytes.to_vec(),
+        ContentType::parse("application/pdf").unwrap_or(ContentType::TEXT_PLAIN),
+    )
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 24. db_calculate_invoice — recalculate totals from existing items
+// 32. db_calculate_invoice — recalculate totals from existing items
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
@@ -811,15 +1142,38 @@ pub async fn db_calculate_invoice(
         .await
         .map_err(|e| format!("Failed to load invoice items: {e}"))?;
 
-    let subtotal: i64 = items_list.iter().map(|i| i.line_total - i.tax_amount).sum();
-    let tax_total: i64 = items_list.iter().map(|i| i.tax_amount).sum();
-    let total_amount = subtotal + tax_total;
+    let line_outputs: Vec<LineOutput> = items_list.iter().map(|i| {
+        let subtotal = i.line_total - i.tax_amount;
+        LineOutput {
+            subtotal: Money(subtotal),
+            discount: Money(0),
+            taxable: Money(subtotal),
+            tax_amount: Money(i.tax_amount),
+            total: Money(i.line_total),
+        }
+    }).collect();
 
-    invoices::update_totals(&*pool, &invoice_id, subtotal, tax_total, total_amount)
+    let totals = calculate_document_totals(&line_outputs, Money(0), 0.0, TaxMode::Excluded, Money(0));
+
+    invoices::update_totals(&*pool, &invoice_id, totals.net.0, totals.tax_amount.0, totals.grand_total.0)
         .await
         .map_err(|e| format!("Failed to update totals: {e}"))?;
 
     invoices::get_by_id(&*pool, &invoice_id)
         .await
         .map_err(|e| format!("Invoice not found after recalculation: {e}"))
+}
+
+// ═════════════════════════════════════════════════
+// 33. db_list_low_stock — catalog items at/below alert threshold
+// ═════════════════════════════════════════════════
+
+#[command]
+pub async fn db_list_low_stock(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> Result<Vec<CatalogItem>, String> {
+    catalog_items::list_low_stock(&*pool, &company_id)
+        .await
+        .map_err(|e| e.to_string())
 }
