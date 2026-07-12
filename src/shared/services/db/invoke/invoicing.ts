@@ -58,8 +58,6 @@ export async function updateInvoiceStatus(id: string, status: string): Promise<v
 }
 
 export async function listClients(companyId: string): Promise<Client[]> {
-  // NOTE: Rust `db_list_clients(pool, role?)` has no `company_id` param, so the
-  // company filter is currently ignored server-side (backend gap, tracked in STATUS.md).
   return invokeCommand<Client[]>('db_list_clients', { companyId });
 }
 

@@ -130,7 +130,7 @@ describe("invoicing IPC wrapper — command names", () => {
 });
 
 describe("invoicing IPC wrapper — clients", () => {
-  it("listClients -> db_list_clients (company filter ignored server-side, tracked in STATUS.md)", async () => {
+  it("listClients -> db_list_clients (company_id passed, filtered server-side)", async () => {
     mockInvoke.mockResolvedValueOnce([]);
     await api.listClients("company-1");
     expect(mockInvoke).toHaveBeenCalledWith("db_list_clients", { companyId: "company-1" });
