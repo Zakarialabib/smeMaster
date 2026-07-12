@@ -276,7 +276,7 @@ export default function InvoiceEditor() {
                   className="w-full glass-input rounded-xl px-3.5 py-2.5 flex items-center justify-between text-left"
                 >
                   <span className={selectedClient ? 'text-text-primary' : 'text-text-tertiary'}>
-                    {selectedClient ? selectedClient.name : 'Select a client'}
+                    {selectedClient ? selectedClient.display_name : 'Select a client'}
                   </span>
                   <Users size={15} className="text-text-tertiary" />
                 </button>
@@ -430,13 +430,13 @@ function DocTypeCard({ active, onClick, icon, title, desc }: { active: boolean; 
   );
 }
 
-function ClientPicker({ clients, selectedId, onPick, onNew }: { clients: { id: string; name: string; email: string | null }[]; selectedId: string; onPick: (id: string) => void; onNew: () => void }) {
+function ClientPicker({ clients, selectedId, onPick, onNew }: { clients: { id: string; display_name: string; email: string | null }[]; selectedId: string; onPick: (id: string) => void; onNew: () => void }) {
   return (
     <div className="absolute z-30 mt-1.5 w-full rounded-xl border border-border-primary bg-bg-elevated backdrop-blur-2xl shadow-xl p-1.5 max-h-64 overflow-auto">
       {clients.length === 0 && <p className="text-xs text-text-tertiary px-3 py-3">No clients yet.</p>}
       {clients.map((c) => (
         <button key={c.id} type="button" onClick={() => onPick(c.id)} className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 ${c.id === selectedId ? 'bg-accent/10 text-accent' : 'hover:bg-bg-hover/60 text-text-primary'}`}>
-          <span className="text-sm truncate">{c.name}</span>
+          <span className="text-sm truncate">{c.display_name}</span>
           {c.id === selectedId && <Check size={14} />}
         </button>
       ))}

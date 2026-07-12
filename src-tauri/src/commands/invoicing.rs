@@ -461,6 +461,7 @@ pub async fn db_get_client(
 #[command]
 pub async fn db_create_client(
     pool: State<'_, SqlitePool>,
+    company_id: String,
     name: String,
     email: Option<String>,
     phone: Option<String>,
@@ -473,15 +474,20 @@ pub async fn db_create_client(
     payment_terms: Option<i64>,
     notes: Option<String>,
 ) -> Result<Client, String> {
+    let contact_type = match role.as_deref() {
+        Some("supplier") => "supplier",
+        _ => "client",
+    };
     let input = clients::CreateClientInput {
-        name: &name,
+        company_id: &company_id,
+        display_name: &name,
         email: email.as_deref(),
         phone: phone.as_deref(),
         address: address.as_deref(),
         city: city.as_deref(),
         country: country.as_deref(),
         tax_id: tax_id.as_deref(),
-        role: role.as_deref(),
+        contact_type,
         credit_limit,
         payment_terms,
         notes: notes.as_deref(),
@@ -523,15 +529,17 @@ pub async fn db_update_client(
     let tax_id = tax_id.as_ref().and_then(|o| o.as_deref());
     let notes = notes.as_ref().and_then(|o| o.as_deref());
 
+    let contact_type = role.as_deref();
+
     let input = clients::UpdateClientInput {
-        name: name.as_deref(),
+        display_name: name.as_deref(),
         email,
         phone,
         address,
         city,
         country,
         tax_id,
-        role: role.as_deref(),
+        contact_type,
         credit_limit,
         payment_terms,
         notes,
@@ -1094,7 +1102,7 @@ pub async fn db_send_invoice(
 
     let body = SinglePart::plain(format!(
         "Dear {},\n\nPlease find attached invoice {} for {:.2} {}.\n\nBest regards,\n{}",
-        client.as_ref().map(|c| c.name.as_str()).unwrap_or("Client"),
+        client.as_ref().map(|c| c.display_name.as_str()).unwrap_or("Client"),
         invoice_number,
         total_amount as f64 / 100.0,
         currency,

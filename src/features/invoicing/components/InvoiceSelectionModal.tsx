@@ -31,7 +31,7 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
     } catch {
       // Generation failed — proceed with the snippet using the invoice data only.
     }
-    const clientName = clients.find((c) => c.id === inv.client_id)?.name ?? 'your client';
+    const clientName = clients.find((c) => c.id === inv.client_id)?.display_name ?? 'your client';
     setGeneratingId(null);
     onSelect({ invoice: inv, docs, clientName });
   };

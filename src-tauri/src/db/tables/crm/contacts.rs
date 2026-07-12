@@ -127,10 +127,10 @@ pub async fn upsert(pool: &SqlitePool, req: UpsertContactRequest) -> Result<Cont
     sqlx::query_as::<_, Contact>(
         r#"
         INSERT INTO contacts (
-            id, email, display_name, avatar_url, frequency,
+            id, company_id, email, display_name, avatar_url, frequency,
             last_contacted_at, first_contacted_at, notes,
             engagement_score, health_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0.0, 'cold', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.0, 'cold', ?, ?)
         ON CONFLICT(email) DO UPDATE SET
             display_name   = COALESCE(EXCLUDED.display_name, contacts.display_name),
             avatar_url     = COALESCE(EXCLUDED.avatar_url, contacts.avatar_url),
@@ -144,6 +144,7 @@ pub async fn upsert(pool: &SqlitePool, req: UpsertContactRequest) -> Result<Cont
         "#,
     )
     .bind(&id)
+    .bind(&req.company_id)
     .bind(&req.email)
     .bind(&req.display_name)
     .bind(&req.avatar_url)

@@ -22,6 +22,7 @@ type CmdResult<T> = Result<T, SerializedError>;
 #[serde(rename_all = "camelCase")]
 pub struct UpsertContactRequest {
     pub id: Option<String>,
+    pub company_id: String,
     pub email: String,
     pub display_name: Option<String>,
     pub avatar_url: Option<String>,

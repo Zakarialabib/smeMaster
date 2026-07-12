@@ -49,7 +49,7 @@ export default function InvoiceList() {
   }, [fetchInvoices, fetchClients]);
 
   const clientName = (id: string) =>
-    clients.find((c) => c.id === id)?.name ?? 'Unassigned client';
+    clients.find((c) => c.id === id)?.display_name ?? 'Unassigned client';
 
   const stats = useMemo(() => {
     const total = invoices.reduce((a, i) => a + i.total_amount, 0);

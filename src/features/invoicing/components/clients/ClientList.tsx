@@ -8,10 +8,11 @@ import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import type { Client } from '../../types';
 import ClientForm from './ClientForm';
 
-const ROLE_META: Record<Client['role'], { label: string; cls: string }> = {
-  customer: { label: 'Customer', cls: 'bg-accent/10 text-accent' },
+const ROLE_META: Record<Client['contact_type'], { label: string; cls: string }> = {
+  client: { label: 'Client', cls: 'bg-accent/10 text-accent' },
   supplier: { label: 'Supplier', cls: 'bg-warning/10 text-warning' },
-  both: { label: 'Both', cls: 'bg-success/10 text-success' },
+  other: { label: 'Other', cls: 'bg-text-tertiary/10 text-text-tertiary' },
+  contact: { label: 'Contact', cls: 'bg-text-tertiary/10 text-text-tertiary' },
 };
 
 export default function ClientList() {
@@ -34,14 +35,14 @@ export default function ClientList() {
     if (!q) return clients;
     return clients.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
+        c.display_name.toLowerCase().includes(q) ||
         (c.email ?? '').toLowerCase().includes(q),
     );
   }, [clients, search]);
 
   const stats = useMemo(() => {
-    const customers = clients.filter((c) => c.role === 'customer' || c.role === 'both').length;
-    const suppliers = clients.filter((c) => c.role === 'supplier' || c.role === 'both').length;
+    const customers = clients.filter((c) => c.contact_type === 'client' || c.contact_type === 'other').length;
+    const suppliers = clients.filter((c) => c.contact_type === 'supplier').length;
     return { total: clients.length, customers, suppliers };
   }, [clients]);
 
@@ -115,15 +116,15 @@ export default function ClientList() {
                         <div className="w-9 h-9 rounded-xl bg-bg-tertiary flex items-center justify-center text-text-secondary shrink-0">
                           <Users size={16} />
                         </div>
-                        <span className="font-semibold text-text-primary truncate">{c.name}</span>
+                        <span className="font-semibold text-text-primary truncate">{c.display_name}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-text-secondary truncate max-w-[220px]">
                       {c.email ?? <span className="text-text-tertiary">—</span>}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.role].cls}`}>
-                        {ROLE_META[c.role].label}
+                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}>
+                        {ROLE_META[c.contact_type].label}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-text-tertiary font-mono text-xs hidden lg:table-cell">
@@ -172,7 +173,7 @@ export default function ClientList() {
                     <Users size={16} />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-text-primary truncate">{c.name}</p>
+                    <p className="font-semibold text-text-primary truncate">{c.display_name}</p>
                     <p className="text-xs text-text-tertiary truncate">{c.email ?? 'No email'}</p>
                   </div>
                 </div>
@@ -188,8 +189,8 @@ export default function ClientList() {
                 </IconBtn>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.role].cls}`}>
-                  {ROLE_META[c.role].label}
+                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}>
+                  {ROLE_META[c.contact_type].label}
                 </span>
                 {c.tax_id && (
                   <span className="inline-flex items-center gap-1 text-[11px] text-text-tertiary font-mono">
@@ -211,7 +212,7 @@ export default function ClientList() {
 
       {pendingDelete && (
         <ConfirmDelete
-          name={clients.find((c) => c.id === pendingDelete)?.name ?? ''}
+          name={clients.find((c) => c.id === pendingDelete)?.display_name ?? ''}
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
         />

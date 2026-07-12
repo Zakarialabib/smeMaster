@@ -38,24 +38,7 @@ export interface InvoiceWithItems {
   items: InvoiceItem[];
 }
 
-export interface Client {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  country: string;
-  tax_id: string | null;
-  role: 'customer' | 'supplier' | 'both';
-  credit_limit: number;
-  payment_terms: number;
-  notes: string | null;
-  created_at: number;
-  updated_at: number;
-  deleted_at: number | null;
-}
-
+export type { Client } from '@shared/services/db/schema';
 export interface Item {
   id: string;
   name: string;

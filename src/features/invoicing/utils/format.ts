@@ -5,7 +5,7 @@
  * The Rust layer stores i64 minor units; the `db_*` wrappers return major-unit numbers.
  */
 
-export const ACTIVE_COMPANY_ID = 'demo-company-1';
+export { ACTIVE_COMPANY_ID } from "@shared/constants/company";
 
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   MAD: 'DH',

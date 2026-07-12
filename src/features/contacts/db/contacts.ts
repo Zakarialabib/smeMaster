@@ -23,15 +23,25 @@
   countContacts as dbCountContacts,
 } from "@shared/services/db/db-invoke";
 import { normalizeEmail } from "@shared/utils/emailUtils";
+import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
 
 export interface DbContact {
   id: string;
+  company_id: string;
   email: string;
   display_name: string | null;
   avatar_url: string | null;
   frequency: number;
   last_contacted_at: number | null;
   notes: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  tax_id: string | null;
+  contact_type: 'contact' | 'client' | 'supplier' | 'other';
+  credit_limit: number;
+  payment_terms: number;
 }
 
 export interface ContactAttachment {
@@ -65,7 +75,7 @@ export async function getAllContacts(
   limit = 500,
   offset = 0,
 ): Promise<DbContact[]> {
-  return dbListContacts(limit, offset, null, null) as Promise<DbContact[]>;
+  return dbListContacts(limit, offset, null, null) as unknown as Promise<DbContact[]>;
 }
 
 /**
@@ -94,6 +104,21 @@ export async function updateContact(
 }
 
 /**
+ * Update arbitrary contact fields (phone, address, tax_id, etc.).
+ * Used by the email → contact extraction flow. The keys must match columns
+ * on the `contacts` table (post migration 021).
+ */
+export async function updateContactFields(
+  id: string,
+  fields: Record<string, unknown>,
+): Promise<void> {
+  await dbUpdateContact(id, {
+    set: { ...fields, updated_at: Math.floor(Date.now() / 1000) },
+    unset: [],
+  });
+}
+
+/**
  * Delete a contact by ID.
  */
 export async function deleteContact(id: string): Promise<void> {
@@ -106,8 +131,10 @@ export async function deleteContact(id: string): Promise<void> {
 export async function upsertContact(
   email: string,
   displayName: string | null,
+  companyId?: string,
 ): Promise<void> {
   await dbUpsertContact({
+    companyId: companyId ?? ACTIVE_COMPANY_ID,
     email: normalizeEmail(email),
     displayName,
     lastContactedAt: Math.floor(Date.now() / 1000),

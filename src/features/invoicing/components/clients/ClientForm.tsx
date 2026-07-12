@@ -3,9 +3,10 @@ import { X, Save, Loader2, Users } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
+import { useTranslation } from 'react-i18next';
 import type { Client } from '../../types';
 
-type ClientRole = Client['role'];
+type ClientRole = Client['contact_type'];
 
 interface ClientFormState {
   name: string;
@@ -29,16 +30,16 @@ const EMPTY: ClientFormState = {
   address: '',
   city: '',
   country: '',
-  role: 'customer',
+  role: 'client',
   credit_limit: '',
   payment_terms: '',
   notes: '',
 };
 
 const ROLES: { value: ClientRole; label: string }[] = [
-  { value: 'customer', label: 'Customer' },
+  { value: 'client', label: 'Client' },
   { value: 'supplier', label: 'Supplier' },
-  { value: 'both', label: 'Both' },
+  { value: 'other', label: 'Other' },
 ];
 
 export default function ClientForm({
@@ -50,24 +51,27 @@ export default function ClientForm({
   onClose: () => void;
   client?: Client | null;
 }) {
+  const { t } = useTranslation();
   const createClient = useInvoicingStore((s) => s.createClient);
   const updateClient = useInvoicingStore((s) => s.updateClient);
 
   const [form, setForm] = useState<ClientFormState>(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [numericError, setNumericError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     if (client) {
       setForm({
-        name: client.name ?? '',
+        name: client.display_name ?? '',
         email: client.email ?? '',
         phone: client.phone ?? '',
         tax_id: client.tax_id ?? '',
         address: client.address ?? '',
         city: client.city ?? '',
         country: client.country ?? '',
-        role: client.role,
+        role: client.contact_type,
         credit_limit: client.credit_limit != null ? String(client.credit_limit) : '',
         payment_terms: client.payment_terms != null ? String(client.payment_terms) : '',
         notes: client.notes ?? '',
@@ -85,6 +89,21 @@ export default function ClientForm({
 
   const save = async () => {
     if (!canSave || saving) return;
+    // Validate email format (empty allowed).
+    const eTrim = form.email.trim();
+    if (eTrim && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(eTrim)) {
+      setEmailError('validation.email');
+      return;
+    }
+    setEmailError(null);
+    // Validate numeric fields.
+    const cl = form.credit_limit.trim();
+    const pt = form.payment_terms.trim();
+    if ((cl !== '' && Number.isNaN(Number(cl))) || (pt !== '' && Number.isNaN(Number(pt)))) {
+      setNumericError('validation.numeric');
+      return;
+    }
+    setNumericError(null);
     setSaving(true);
     try {
       const fields: Record<string, unknown> = {
@@ -173,10 +192,18 @@ export default function ClientForm({
             <input
               type="email"
               value={form.email}
-              onChange={(e) => set('email', e.target.value)}
+              onChange={(e) => {
+                set('email', e.target.value);
+                if (emailError) setEmailError(null);
+              }}
               placeholder="contact@acme.ma"
               className="w-full glass-input rounded-xl px-3.5 py-2.5 text-text-primary placeholder:text-text-tertiary"
             />
+            {emailError && (
+              <p className="text-xs text-error mt-1" role="alert">
+                {t(emailError)}
+              </p>
+            )}
           </Field>
           <Field label="Phone">
             <input
@@ -240,10 +267,18 @@ export default function ClientForm({
               type="number"
               min={0}
               value={form.payment_terms}
-              onChange={(e) => set('payment_terms', e.target.value)}
+              onChange={(e) => {
+                set('payment_terms', e.target.value);
+                if (numericError) setNumericError(null);
+              }}
               placeholder="30"
               className="w-full glass-input rounded-xl px-3.5 py-2.5 text-text-primary placeholder:text-text-tertiary"
             />
+            {numericError && (
+              <p className="text-xs text-error mt-1" role="alert">
+                {t(numericError)}
+              </p>
+            )}
           </Field>
 
           <Field label="Notes" className="sm:col-span-2">
