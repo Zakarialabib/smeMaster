@@ -207,7 +207,7 @@ export function AiAssistantPage() {
             disabled={isSearching || showModelWarning}
           />
           <p className={cn(TEXT_HINT, "mt-1.5 text-center")}>
-            Powered by local embedding engine (BGE-small) + LanceDB vector search
+            Powered by on-device embeddings (LM Studio / BGE-small) + LanceDB semantic search
           </p>
         </div>
       </div>

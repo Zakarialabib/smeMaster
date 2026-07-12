@@ -479,6 +479,16 @@
     "providerGemini": "Gemini (Google)",
     "providerOllama": "Local AI (Ollama / LMStudio)",
     "providerCopilot": "GitHub Copilot",
+    "providerLmstudio": "Local AI (LM Studio)",
+    "providerOpenrouter": "OpenRouter",
+    "providerLmstudioDescription": "Connect to a local LM Studio server (OpenAI-compatible, no API key). Supports chat + embeddings for RAG.",
+    "providerOpenrouterDescription": "Route through OpenRouter for access to hundreds of models from one API key.",
+    "lmstudioUrlPlaceholder": "http://localhost:1234",
+    "lmstudioModelPlaceholder": "e.g. llama-3.2-3b-instruct",
+    "lmstudioDetect": "Auto-Detect Models",
+    "lmstudioDetecting": "Detecting…",
+    "lmstudioNoModels": "No models found. Start a model in LM Studio first.",
+    "lmstudioConnected": "LM Studio connected",
     "usesModel": "Uses {{model}}.",
     "usesModelCopilot": "Uses {{model}}. Requires a GitHub PAT with models:read permission.",
     "providerOllamaDescription": "Connect to a local Ollama or LMStudio server. No API key required.",
@@ -845,7 +855,8 @@
     "showCampaigns": "Show Campaigns",
     "showCampaignsDesc": "Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "Show Scheduled Emails",
-    "showScheduledEmailsDesc": "Display emails scheduled to be sent in the future."
+    "showScheduledEmailsDesc": "Display emails scheduled to be sent in the future.",
+    "noEvents": "No events in this period"
   },
   "tasks": {
     "tasks": "Tasks",

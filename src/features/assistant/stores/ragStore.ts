@@ -18,10 +18,13 @@ import {
   aiSearchByVector,
   aiGetModelsDir,
   aiDeleteModel,
+  aiGetEmailChunks,
+  aiInsertProviderVectors,
 } from "@shared/services/db/invoke/rag";
 import {
   getProviderEmbedding,
 } from "@shared/services/ai/embeddingService";
+import { RAG_ANSWER_SYSTEM_PROMPT } from "@shared/services/ai/prompts";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -44,7 +47,10 @@ export type EmbeddingSource = "rust_bge" | "provider" | null;
 export interface RagConversationEntry {
   id: string;
   query: string;
+  /** The retrieved RAG context chunks (shown as collapsible sources) */
   response: string;
+  /** Optional LLM-generated natural-language answer (primary content) */
+  answer?: string;
   timestamp: number;
 }
 
@@ -215,8 +221,47 @@ export const useRagStore = create<RagState>((set, get) => ({
   indexAll: async () => {
     set({ indexingStatus: "indexing", indexingError: null });
     try {
-      await aiIndexEmails();
-      // Status will be updated by the event listener, but set a fallback
+      const source = get().embeddingSource;
+
+      if (source === "rust_bge") {
+        // Explicit local engine (BGE-small). Rust embeds + indexes.
+        await aiIndexEmails();
+        set({ indexingStatus: "completed" });
+        return;
+      }
+
+      // Provider embeddings (LM Studio / Ollama / OpenAI-compatible):
+      // fetch chunked docs from Rust, embed each with the active provider,
+      // and send the vectors back. No BGE-small download required.
+      const { isAiAvailable } = await import("@shared/services/ai/providerManager");
+      if (!(await isAiAvailable())) {
+        throw new Error(
+          "No AI provider is configured for embeddings. Add a Local AI provider (LM Studio / Ollama) with an embeddings endpoint, or switch the embedding source to Local BGE-small.",
+        );
+      }
+
+      const chunks = await aiGetEmailChunks();
+      if (chunks.length === 0) {
+        set({ indexingStatus: "completed" });
+        return;
+      }
+
+      const vectors: number[][] = [];
+      for (const chunk of chunks) {
+        const emb = await getProviderEmbedding(chunk.text);
+        if (emb) vectors.push(emb.vector);
+        else vectors.push([]);
+      }
+      const valid = vectors.filter((v) => v.length > 0);
+      if (valid.length === 0) {
+        throw new Error("The active provider did not return any embeddings.");
+      }
+
+      await aiInsertProviderVectors(
+        vectors,
+        chunks.map((c) => c.id),
+        chunks.map((c) => c.text),
+      );
       set({ indexingStatus: "completed" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -261,10 +306,25 @@ export const useRagStore = create<RagState>((set, get) => ({
         }
       }
 
+      // Generate a natural-language answer with the active AI provider
+      // (LM Studio, Ollama, OpenAI, etc.), falling back to the
+      // raw retrieved context when no provider is configured.
+      let answer: string | undefined;
+      try {
+        const { isAiAvailable } = await import("@shared/services/ai/providerManager");
+        const { callAi } = await import("@shared/services/ai/aiService");
+        if (await isAiAvailable()) {
+          answer = await callAi(RAG_ANSWER_SYSTEM_PROMPT, response);
+        }
+      } catch {
+        answer = undefined;
+      }
+
       const entry: RagConversationEntry = {
         id: nextEntryId(),
         query: query.trim(),
         response,
+        answer,
         timestamp: Date.now(),
       };
 

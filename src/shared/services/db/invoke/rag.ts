@@ -115,3 +115,33 @@ export async function aiResetVectorDb(): Promise<void> {
   return invokeCommand<void>('ai_reset_vector_db');
 }
 
+/**
+ * Fetch every chunked document (id + text) from emails, attachments,
+ * and vault items — without embedding them. The frontend embeds each
+ * chunk with a local provider (LM Studio / Ollama / …) and sends the
+ * vectors back via `aiInsertProviderVectors`. This lets users build the
+ * RAG index from a local provider without downloading BGE-small.
+ */
+export async function aiGetEmailChunks(): Promise<{ id: string; text: string }[]> {
+  return invokeCommand<{ id: string; text: string }[]>('ai_get_email_chunks');
+}
+
+/**
+ * Insert pre-computed provider embeddings into the dimension-correct
+ * `knowledge_base_{dim}` table. `vectors[i]` must match `ids[i]` /
+ * `texts[i]`. The dimension is taken from `vectors[0].length`, so LM
+ * Studio / Ollama models of any width (384 / 768 / 1536, …) each
+ * get their own table.
+ */
+export async function aiInsertProviderVectors(
+  vectors: number[][],
+  ids: string[],
+  texts: string[],
+): Promise<number> {
+  return invokeCommand<number>('ai_insert_provider_vectors', {
+    vectors,
+    ids,
+    texts,
+  });
+}
+

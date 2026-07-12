@@ -8,18 +8,21 @@
  * @module
  */
 
-import { User, Bot } from "lucide-react";
+import { useState } from "react";
+import { User, Bot, ChevronDown } from "lucide-react";
 import { cn } from "@shared/utils/cn";
 
-// ── Props ────────────────────────────────────────────────────────────────────
+// ── Props ───────────────────────────────────────────────────────────
 
 export interface RagBubbleEntry {
   /** Unique entry id */
   id: string;
   /** The user's query */
   query: string;
-  /** The AI response / augmented prompt */
+  /** The retrieved RAG context chunks (shown as collapsible sources) */
   response: string;
+  /** Optional LLM-generated natural-language answer (primary content) */
+  answer?: string;
   /** Unix ms timestamp */
   timestamp: number;
 }
@@ -41,6 +44,10 @@ function formatTime(ts: number): string {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function RagResultBubble({ entry }: RagResultBubbleProps) {
+  const [showSources, setShowSources] = useState(false);
+  const primary = entry.answer ?? entry.response;
+  const hasSources = !!entry.answer && !!entry.response;
+
   return (
     <div className="space-y-3 animate-[fadeIn_200ms_ease-out]">
       {/* User query bubble */}
@@ -85,12 +92,27 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
             <Bot className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap break-words">
-                {entry.response}
+                {primary}
               </p>
             </div>
           </div>
+          {hasSources && (
+            <button
+              type="button"
+              onClick={() => setShowSources((v) => !v)}
+              className="mt-2 flex items-center gap-1 text-[10px] text-text-tertiary hover:text-text-secondary"
+            >
+              <ChevronDown className={cn("w-3 h-3 transition-transform", showSources && "rotate-180")} />
+              {showSources ? "Hide sources" : "Show sources"}
+            </button>
+          )}
+          {hasSources && showSources && (
+            <div className="mt-2 p-2 rounded-md bg-bg-tertiary/40 border border-border-primary text-[11px] text-text-tertiary whitespace-pre-wrap break-words">
+              {entry.response}
+            </div>
+          )}
           <p className="text-[10px] text-text-tertiary mt-1.5">
-            {formatTime(entry.timestamp)} · Augmented prompt
+            {formatTime(entry.timestamp)} · {entry.answer ? "AI answer" : "Augmented prompt"}
           </p>
         </div>
       </div>

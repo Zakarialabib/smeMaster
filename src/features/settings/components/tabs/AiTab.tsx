@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { getSetting, setSetting, getSecureSetting, setSecureSetting } from "@features/settings/db/settings";
-import { PROVIDER_MODELS } from "@shared/services/ai/types";
+import { PROVIDER_MODELS, type AiProvider } from "@shared/services/ai/types";
 import { TextField } from "@shared/components/ui/TextField";
 import { Button } from "@shared/components/ui/Button";
 import { HelpCard } from "@features/settings/components/HelpCard";
@@ -14,7 +14,13 @@ import VoiceSettings from "../VoiceSettings";
 export default function AiTab() {
   const { t } = useTranslation();
   const accounts = useAccountStore((s) => s.accounts);
-  const [aiProvider, setAiProvider] = useState<"claude" | "openai" | "gemini" | "ollama" | "copilot" | "custom">("claude");
+  const [aiProvider, setAiProvider] = useState<AiProvider>("claude");
+  const [lmstudioServerUrl, setLmstudioServerUrl] = useState("http://localhost:1234");
+  const [lmstudioModel, setLmstudioModel] = useState("");
+  const [lmstudioModels, setLmstudioModels] = useState<{ id: string; name: string }[]>([]);
+  const [lmstudioDetecting, setLmstudioDetecting] = useState(false);
+  const [openrouterApiKey, setOpenrouterApiKey] = useState("");
+  const [openrouterModel, setOpenrouterModel] = useState("openai/gpt-4o-mini");
   const [claudeApiKey, setClaudeApiKey] = useState("");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
@@ -142,6 +148,8 @@ export default function AiTab() {
           {aiProvider === "ollama" && t('settings.providerOllamaDescription')}
           {aiProvider === "copilot" && t('settings.usesModelCopilot', { model: PROVIDER_MODELS.copilot.find((m) => m.id === copilotModel)?.label ?? copilotModel })}
           {aiProvider === "custom" && t('settings.providerCustomDescription')}
+          {aiProvider === "lmstudio" && t('settings.providerLmstudioDescription')}
+          {aiProvider === "openrouter" && t('settings.providerOpenrouterDescription')}
         </p>
       </SettingGroup>
 
@@ -154,7 +162,201 @@ export default function AiTab() {
         ]}
       />
 
-      {aiProvider === "ollama" ? (
+      {aiProvider === "lmstudio" ? (
+        <SettingGroup title={t('settings.localServer')}>
+          <div className="space-y-3">
+            <TextField
+              label={t('settings.serverUrl')}
+              size="md"
+              value={lmstudioServerUrl}
+              onChange={(e) => setLmstudioServerUrl(e.target.value)}
+              placeholder={t('settings.lmstudioUrlPlaceholder')}
+            />
+            <TextField
+              label={t('settings.modelName')}
+              size="md"
+              value={lmstudioModel}
+              onChange={(e) => setLmstudioModel(e.target.value)}
+              placeholder={t('settings.lmstudioModelPlaceholder')}
+            />
+            {lmstudioModels.length > 0 && (
+              <select
+                value={lmstudioModel}
+                onChange={(e) => setLmstudioModel(e.target.value)}
+                className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
+              >
+                {lmstudioModels.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={async () => {
+                  const trimmedUrl = lmstudioServerUrl.trim();
+                  if (!isValidUrl(trimmedUrl)) {
+                    setAiTestResult("fail");
+                    return;
+                  }
+                  setLmstudioDetecting(true);
+                  setLmstudioModels([]);
+                  try {
+                    const { detectLMStudio, listLMStudioModels } = await import("@shared/services/ai/providers/lmstudioProvider");
+                    const reachable = await detectLMStudio(trimmedUrl);
+                    if (!reachable) {
+                      setAiTestResult("fail");
+                      return;
+                    }
+                    const models = await listLMStudioModels(trimmedUrl);
+                    setLmstudioModels(models);
+                    if (models.length > 0 && !lmstudioModel) {
+                      const first = models[0];
+                      if (first) setLmstudioModel(first.id);
+                    }
+                  } catch {
+                    setLmstudioModels([]);
+                  } finally {
+                    setLmstudioDetecting(false);
+                  }
+                }}
+                disabled={!lmstudioServerUrl.trim() || lmstudioDetecting}
+                className="bg-bg-tertiary text-text-primary border border-border-primary"
+              >
+                {lmstudioDetecting ? t('settings.lmstudioDetecting') : t('settings.lmstudioDetect')}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={async () => {
+                  const trimmedUrl = lmstudioServerUrl.trim();
+                  if (!isValidUrl(trimmedUrl) || !lmstudioModel.trim()) return;
+                  await setSetting("lmstudio_server_url", trimmedUrl);
+                  await setSetting("lmstudio_model", lmstudioModel.trim());
+                  const { clearProviderClients } = await import("@shared/services/ai/providerManager");
+                  clearProviderClients();
+                  setAiKeySaved(true);
+                  setTimeout(() => setAiKeySaved(false), 2000);
+                }}
+                disabled={!lmstudioServerUrl.trim() || !lmstudioModel.trim() || !!(lmstudioServerUrl.trim() && !isValidUrl(lmstudioServerUrl.trim()))}
+              >
+                {aiKeySaved ? t('common.saved') : t("common.save")}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={async () => {
+                  const trimmedUrl = lmstudioServerUrl.trim();
+                  if (!isValidUrl(trimmedUrl) || !lmstudioModel.trim()) {
+                    setAiTestResult("fail");
+                    return;
+                  }
+                  setAiTesting(true);
+                  setAiTestResult(null);
+                  try {
+                    const { testConnection } = await import("@shared/services/ai/aiService");
+                    const ok = await testConnection();
+                    setAiTestResult(ok ? "success" : "fail");
+                  } catch {
+                    setAiTestResult("fail");
+                  } finally {
+                    setAiTesting(false);
+                  }
+                }}
+                disabled={!lmstudioServerUrl.trim() || !lmstudioModel.trim() || aiTesting}
+                className="bg-bg-tertiary text-text-primary border border-border-primary"
+              >
+                {aiTesting ? t('settings.testing') : t("account.testConnection")}
+              </Button>
+              {aiTestResult === "success" && (
+                <span className="text-xs text-success">{t('settings.lmstudioConnected')}</span>
+              )}
+              {aiTestResult === "fail" && (
+                <span className="text-xs text-danger">{t('settings.connectionFailed')}</span>
+              )}
+            </div>
+          </div>
+        </SettingGroup>
+      ) : aiProvider === "openrouter" ? (
+        <SettingGroup title={t('settings.apiKey')}>
+          <div className="space-y-3">
+            <TextField
+              label={t('settings.apiKey')}
+              size="md"
+              type="password"
+              value={openrouterApiKey}
+              onChange={(e) => setOpenrouterApiKey(e.target.value)}
+              placeholder={t('settings.customApiKeyPlaceholder')}
+            />
+            <SettingRow label={t('settings.model')}>
+              <select
+                value={openrouterModel}
+                onChange={async (e) => {
+                  setOpenrouterModel(e.target.value);
+                  await setSetting("openrouter_model", e.target.value);
+                  const { clearProviderClients } = await import("@shared/services/ai/providerManager");
+                  clearProviderClients();
+                }}
+                className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
+              >
+                {PROVIDER_MODELS.openrouter.map((m) => (
+                  <option key={m.id} value={m.id}>{m.label}</option>
+                ))}
+              </select>
+            </SettingRow>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={async () => {
+                  if (!openrouterApiKey.trim() || !openrouterModel.trim()) return;
+                  await setSecureSetting("openrouter_api_key", openrouterApiKey.trim());
+                  await setSetting("openrouter_model", openrouterModel.trim());
+                  const { clearProviderClients } = await import("@shared/services/ai/providerManager");
+                  clearProviderClients();
+                  setAiKeySaved(true);
+                  setTimeout(() => setAiKeySaved(false), 2000);
+                }}
+                disabled={!openrouterApiKey.trim() || !openrouterModel.trim()}
+              >
+                {aiKeySaved ? t('common.saved') : t('settings.saveKey')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={async () => {
+                  if (!openrouterApiKey.trim() || !openrouterModel.trim()) {
+                    setAiTestResult("fail");
+                    return;
+                  }
+                  setAiTesting(true);
+                  setAiTestResult(null);
+                  try {
+                    const { testConnection } = await import("@shared/services/ai/aiService");
+                    const ok = await testConnection();
+                    setAiTestResult(ok ? "success" : "fail");
+                  } catch {
+                    setAiTestResult("fail");
+                  } finally {
+                    setAiTesting(false);
+                  }
+                }}
+                disabled={!openrouterApiKey.trim() || !openrouterModel.trim() || aiTesting}
+                className="bg-bg-tertiary text-text-primary border border-border-primary"
+              >
+                {aiTesting ? t('settings.testing') : t("account.testConnection")}
+              </Button>
+              {aiTestResult === "success" && (
+                <span className="text-xs text-success">{t('settings.connected')}</span>
+              )}
+              {aiTestResult === "fail" && (
+                <span className="text-xs text-danger">{t('settings.connectionFailed')}</span>
+              )}
+            </div>
+          </div>
+        </SettingGroup>
+      ) : aiProvider === "ollama" ? (
         <SettingGroup title={t('settings.localServer')}>
           <div className="space-y-3">
             <TextField
@@ -366,7 +568,7 @@ export default function AiTab() {
                 }}
                 className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
               >
-                {PROVIDER_MODELS[aiProvider].map((m) => (
+                {PROVIDER_MODELS[aiProvider as "claude" | "openai" | "gemini" | "copilot"].map((m) => (
                   <option key={m.id} value={m.id}>{m.label}</option>
                 ))}
               </select>
@@ -388,7 +590,7 @@ export default function AiTab() {
                     : aiProvider === "copilot" ? copilotApiKey.trim()
                     : geminiApiKey.trim();
                   if (keyValue) {
-                    await setSecureSetting(keySettingMap[aiProvider], keyValue);
+                    await setSecureSetting(keySettingMap[aiProvider as "claude" | "openai" | "gemini" | "copilot"], keyValue);
                     const { clearProviderClients } = await import("@shared/services/ai/providerManager");
                     clearProviderClients();
                   }
