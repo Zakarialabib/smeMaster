@@ -15,8 +15,6 @@ pub enum AppEvent {
     // ── Init lifecycle ───────────────────────────────────────────
     #[serde(rename = "init:complete")]
     InitComplete,
-    #[serde(rename = "init:ready")]
-    Ready,
     #[serde(rename = "init:progress")]
     InitProgress {
         phase: String,
@@ -27,12 +25,6 @@ pub enum AppEvent {
     // ── Sync lifecycle ───────────────────────────────────────────
     #[serde(rename = "sync:started")]
     SyncStarted { account_id: String },
-    #[serde(rename = "sync:progress")]
-    SyncProgress {
-        account_id: String,
-        synced: usize,
-        total: usize,
-    },
     #[serde(rename = "sync:complete")]
     SyncComplete {
         account_id: String,
@@ -105,14 +97,8 @@ pub enum AppEvent {
     },
 
     // ── CRDT Sync Engine events ──────────────────────────────────
-    #[serde(rename = "sync:device-started")]
-    DeviceSyncStarted { device_id: String },
-    #[serde(rename = "sync:device-progress")]
-    DeviceSyncProgress { device_id: String, doc_id: String, progress: u8 },
     #[serde(rename = "sync:device-complete")]
     DeviceSyncComplete { device_id: String, docs_synced: usize },
-    #[serde(rename = "sync:device-error")]
-    DeviceSyncError { device_id: String, error: String },
     #[serde(rename = "sync:document-conflict")]
     SyncDocumentConflict { doc_id: String, resolution: String },
     #[serde(rename = "cache:invalidate")]
@@ -122,16 +108,6 @@ pub enum AppEvent {
     #[serde(rename = "heartbeat")]
     Heartbeat { timestamp: u64 },
 
-    // ── Phase progress (mirrors PhaseEvent from orchestrator) ────
-    #[serde(rename = "phase:progress")]
-    PhaseProgress {
-        phase: String,
-        service: Option<String>,
-        status: String,
-        message: String,
-        progress: f32,
-        timestamp: u64,
-    },
 
     // ── Service health status change ────────────────────────────
     #[serde(rename = "service:health-changed")]
@@ -142,14 +118,6 @@ pub enum AppEvent {
         at_ms: i64,
     },
 
-    // ── Subsystem lifecycle transition ──────────────────────────
-    #[serde(rename = "subsystem:status-changed")]
-    SubsystemStatusChanged {
-        name: String,
-        old_status: String,
-        new_status: String,
-        at_ms: i64,
-    },
 
     // ── State machine transition ────────────────────────────────
     #[serde(rename = "system:state-changed")]
@@ -247,5 +215,77 @@ impl EventBus {
     #[allow(dead_code)]
     pub fn sender(&self) -> broadcast::Sender<AppEvent> {
         self.sender.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn emit_reaches_subscriber() {
+        let (bus, _rx) = EventBus::new(16);
+        let mut sub = bus.subscribe();
+        bus.emit(AppEvent::SystemReady);
+        assert!(matches!(sub.try_recv(), Ok(AppEvent::SystemReady)));
+    }
+
+    #[test]
+    fn late_subscriber_misses_prior_event() {
+        let (bus, _rx) = EventBus::new(16);
+        bus.emit(AppEvent::InitComplete);
+        let mut sub = bus.subscribe();
+        assert!(matches!(
+            sub.try_recv(),
+            Err(broadcast::error::TryRecvError::Empty)
+        ));
+    }
+
+    #[test]
+    fn system_state_changed_carries_transition() {
+        let (bus, _rx) = EventBus::new(16);
+        let mut sub = bus.subscribe();
+        bus.emit(AppEvent::SystemStateChanged {
+            from: "Booting".into(),
+            to: "Ready".into(),
+            reason: "init-complete".into(),
+            at_ms: 42,
+        });
+        match sub.try_recv() {
+            Ok(AppEvent::SystemStateChanged { from, to, reason, at_ms }) => {
+                assert_eq!(from, "Booting");
+                assert_eq!(to, "Ready");
+                assert_eq!(reason, "init-complete");
+                assert_eq!(at_ms, 42);
+            }
+            other => panic!("unexpected event: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn app_event_roundtrips_through_serde_kind() {
+        // The frontend decodes `core-event` payloads by `kind`, so the tag
+        // form must survive (de)serialization.
+        let json = r#"{"kind":"system:state-changed","from":"A","to":"B","reason":"r","at_ms":7}"#;
+        let evt: AppEvent = serde_json::from_str(json).expect("deserialize");
+        assert!(matches!(
+            evt,
+            AppEvent::SystemStateChanged { ref from, ref to, .. }
+                if from == "A" && to == "B"
+        ));
+
+        let back = serde_json::to_string(&evt).expect("serialize");
+        assert!(back.contains("\"kind\":\"system:state-changed\""));
+    }
+
+    #[test]
+    fn heartbeat_carries_timestamp() {
+        let (bus, _rx) = EventBus::new(16);
+        let mut sub = bus.subscribe();
+        bus.emit(AppEvent::Heartbeat { timestamp: 123_456 });
+        match sub.try_recv() {
+            Ok(AppEvent::Heartbeat { timestamp }) => assert_eq!(timestamp, 123_456),
+            other => panic!("unexpected event: {other:?}"),
+        }
     }
 }

@@ -20,6 +20,7 @@
     "tauri:build": "tauri build",
     "translate:sync": "node scripts/sync-translations.js",
     "translate:clean": "node scripts/clean-unused-translations.js",
+    "check:event-contract": "node scripts/check-event-contract.mjs",
     "android": "cargo tauri android dev",
     "android:build": "cargo tauri android build",
     "android:build:aab": "cargo tauri android build --aab",

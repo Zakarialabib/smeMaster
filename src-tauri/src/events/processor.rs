@@ -8,9 +8,38 @@ pub fn spawn_domain_event_processor(app: &AppHandle) {
 
     tauri::async_runtime::spawn(async move {
         let mut rx = rx;
+        // Track the previous system state for transition-aware side-effects
+        // (mirrors Simple-Signage's EventBus processor pattern).
+        let mut prev_state: Option<String> = None;
 
         loop {
             match rx.recv().await {
+                Ok(crate::events::AppEvent::SystemStateChanged { from, to, reason, at_ms }) => {
+                    log::info!(
+                        "[domain-event-processor] system state changed: {from} → {to} ({reason}) @ {at_ms}"
+                    );
+
+                    // Ready → Degraded: surface a warning (possible fault).
+                    if prev_state.as_deref() == Some("Ready") && to == "Degraded" {
+                        log::warn!(
+                            "[domain-event-processor] SYSTEM DEGRADED: {from} → {to}: {reason}"
+                        );
+                    }
+
+                    // Degraded/Offline/Recovering → Ready: log recovery.
+                    if to == "Ready"
+                        && matches!(
+                            prev_state.as_deref(),
+                            Some("Degraded") | Some("Offline") | Some("Recovering")
+                        )
+                    {
+                        log::info!(
+                            "[domain-event-processor] SYSTEM RECOVERED: {from} → {to} ({reason})"
+                        );
+                    }
+
+                    prev_state = Some(to.clone());
+                }
                 Ok(crate::events::AppEvent::EmailReceived { account_id, message_id, from_address, date }) => {
                     log::info!("[domain-event-processor] Updating last contacted for {}", from_address);
                     if let Err(e) = crate::db::tables::crm::contacts::update_last_contacted_by_email(&pool, &from_address, date).await {
