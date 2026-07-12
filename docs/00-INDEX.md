@@ -139,6 +139,7 @@ What the app does, grouped by functional area.
 | Doc                                      | Covers                                         |
 | ---------------------------------------- | ---------------------------------------------- |
 | [Invoicing](04-FEATURES/36-invoicing.md) | Calc engine, 33 IPC commands, PDF/PEPPOL, SMTP |
+| [Company & ERP](04-FEATURES/Invoicing-ERP/01-company-tenant.md) | Tenant model, company switcher, where `company_id` is used |
 
 ### Feature Specs & Plans
 
@@ -205,3 +206,5 @@ End-user guides.
 | [Backup & Restore](user-guide/backup-restore.md) | Auto + manual backup, integrity check |
 | [FAQ](user-guide/faq.md)                         | Common issues and solutions           |
 | [Release Notes](user-guide/release-notes.md)     | v1.0.0 changelog                      |
+| [Automation (User)](user-guide/automation.md) | Create rules, visual builder, AI generation |
+| [Company & ERP (User)](user-guide/company.md) | Switch companies, ERP overview |

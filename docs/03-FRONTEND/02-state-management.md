@@ -77,3 +77,16 @@ Before creating a new store, ask:
 - `03-service-layer.md`
 - `11-typed-ipc.md`
 - `../01-ARCHITECTURE/03-data-model.md`
+
+
+## Company & Automation stores
+
+| Store | File | Owns |
+| ----- | ---- | ---- |
+| `useCompanyStore` | `src/features/erp/companyStore.ts` | Active company + company list (`MOCK_COMPANIES`), `setActiveCompany`, `getActiveCompany`, `companyInitials`. Tenant key for business data. |
+| `useAutomationStore` | `src/features/automation/stores/automationStore.ts` | Workflow rules: list/load, editor draft (`simple`/`steps`/`builder` modes), AI modal, delete confirmation. Persists via `workflowRules.ts` → `db_*_workflow_rule` commands. |
+
+> Company is currently demo/mock-scoped (Platform-tier multi-company is future);
+> `company_id` is already threaded through the data layer. See
+> [Company & ERP](../04-FEATURES/Invoicing-ERP/01-company-tenant.md) and
+> [Automation](../04-FEATURES/Core/05-automation.md).
