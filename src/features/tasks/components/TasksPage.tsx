@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CheckSquare,
   Search,
@@ -53,6 +54,7 @@ import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
 import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
 import { useNavigate } from "@tanstack/react-router";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
+import { PageScaffold } from "@shared/components/layout";
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   urgent: 0,
@@ -104,6 +106,7 @@ function getDueDateStyle(timestamp: number): string {
 }
 
 export function TasksPage() {
+  const { t } = useTranslation();
   const isMobile = useMobile();
   const [showFilters, setShowFilters] = useState(false);
   const accounts = useAccountStore((s) => s.accounts);
@@ -159,7 +162,7 @@ export function TasksPage() {
     customActions: [
       {
         id: 'complete',
-        label: 'Complete',
+        label: t('tasks.markComplete'),
         icon: null,
         direction: 'left',
         color: 'bg-emerald-500',
@@ -170,7 +173,7 @@ export function TasksPage() {
       },
       {
         id: 'delete',
-        label: 'Delete',
+        label: t('tasks.delete'),
         icon: null,
         direction: 'long-left',
         destructive: true,
@@ -388,10 +391,10 @@ export function TasksPage() {
       { operationLabel: "create task" },
     );
     if (result.success) {
-      notify("Task created", `"${title}" has been added.`);
+      notify(t('tasks.taskCreated'), `"${title}" ${t('tasks.hasBeenAdded')}`);
       await resetTasks();
     } else {
-      notify("Failed to create task", result.error);
+      notify(t('tasks.failedToCreate'), result.error);
     }
   }, [accountId, resetTasks]);
 
@@ -525,10 +528,10 @@ export function TasksPage() {
     }
     setSelectedIds(new Set());
     if (completedCount > 0) {
-      notify("Tasks completed", `${completedCount} task(s) marked done.`);
+      notify(t('tasks.tasksCompleted'), `${completedCount} ${t('tasks.tasksDone')}`);
     }
     if (failCount > 0) {
-      notify("Some tasks failed", `${failCount} task(s) could not be completed.`);
+      notify(t('tasks.someFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
   }, [selectedIds, resetTasks]);
@@ -740,19 +743,10 @@ export function TasksPage() {
   }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap]);
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-bg-primary/50">
-      {/* Header â€” compact for mobile, spacious for desktop */}
-      <div className="flex items-center justify-between px-3 sm:px-5 py-2 sm:py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm">
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <CheckSquare size={16} className="text-accent shrink-0 sm:size-[18]" />
-          <h1 className="text-sm sm:text-base font-semibold text-text-primary whitespace-nowrap">Tasks</h1>
-          {filteredTasks.length > 0 && (
-            <span className="text-[0.625rem] sm:text-xs text-text-tertiary bg-bg-tertiary px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
-              {filteredTasks.length}
-            </span>
-          )}
-        </div>
-
+    <PageScaffold
+      title={<span className="flex items-center gap-1.5 sm:gap-2"><CheckSquare size={16} className="text-accent shrink-0 sm:size-[18]" />{t('tasks.title')}</span>}
+      count={filteredTasks.length}
+      toolbar={
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
           <div className="relative">
@@ -761,7 +755,7 @@ export function TasksPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
+              placeholder={t('tasks.search')}
               className="w-24 sm:w-48 pl-7 pr-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
             />
           </div>
@@ -784,13 +778,14 @@ export function TasksPage() {
             <button
               onClick={() => setShowFilters((v) => !v)}
               className={`p-1.5 rounded-lg border ${showFilters ? "bg-accent/10 border-accent text-accent" : "border-border-primary text-text-tertiary"}`}
-              aria-label="Toggle filters"
+              aria-label={t('tasks.toggleFilters')}
             >
               <SlidersHorizontal size={14} />
             </button>
           )}
         </div>
-      </div>
+      }
+    >
 
       {/* AI Suggestion Banner â€” only show when AI feature is enabled */}
       {aiEnabled && (
@@ -1132,6 +1127,6 @@ export function TasksPage() {
           <Plus size={24} className="text-white" />
         </button>
       )}
-    </div>
+    </PageScaffold>
   );
 }

@@ -830,7 +830,9 @@
   "tasks": {
     "tasks": "Attività",
     "dueDate": "Data scadenza",
-    "title": "Attività"
+    "title": "Attività",
+    "search": "Cerca...",
+    "toggleFilters": "Mostra filtri"
   },
   "campaign": {
     "campaigns": "Campagne",
@@ -1373,6 +1375,96 @@
         "": "[TODO] Search contacts..."
       }
     }
+  },
+  "contacts": {
+    "title": "Contatti",
+    "subtitle": "People you've emailed and received mail from.",
+    "newContact": "Nuovo contatto",
+    "importCsv": "Importa da CSV",
+    "findDuplicates": "Trova duplicati",
+    "searchPlaceholder": "Cerca contatti...",
+    "stats": {
+      "total": "Total:",
+      "active30": "Active (30d):"
+    },
+    "tabs": {
+      "contacts": "Contatti",
+      "tags": "Etichette",
+      "groups": "Gruppi",
+      "segments": "Segmenti",
+      "imports": "Importazioni"
+    },
+    "empty": {
+      "title": "Nessun contatto ancora",
+      "subtitle": "I contatti compaiono quando invii e ricevi e-mail. Oppure importali ora.",
+      "searchTitle": "Nessun contatto corrispondente",
+      "searchSubtitle": "Prova un termine di ricerca diverso",
+      "noMatchingTitle": "Nessun contatto corrispondente",
+      "noMatchingSubtitle": "Prova un termine di ricerca diverso",
+      "noContactsTitle": "Nessun contatto ancora",
+      "noContactsSubtitle": "I contatti compaiono quando invii e ricevi e-mail. Oppure importali ora."
+    },
+    "grid": {
+      "title": "No contacts to display",
+      "subtitle": "Adjust your search or filters to see contacts."
+    },
+    "tagsEmpty": {
+      "title": "No tags yet",
+      "subtitle": "Create your first tag to start organizing contacts by topic or relationship.",
+      "createFirst": "Create your first tag"
+    },
+    "segmentsEmpty": {
+      "title": "No segments yet",
+      "subtitle": "Build dynamic audiences with a query — e.g. active:30d, tag:client, or name:smith.",
+      "createFirst": "Create your first segment"
+    },
+    "newTag": "New Tag",
+    "newSegment": "New Segment",
+    "newImport": "New import",
+    "tagsHint": "Click a tag to filter contacts. Manage tag colors and naming here.",
+    "groupsHint": "Click a group to view its members.",
+    "segmentsHint": "Dynamic segments evaluate a query against your contacts.",
+    "importsHint": "History of CSV imports and their results.",
+    "contactSingular": "contact",
+    "contactPlural": "contacts",
+    "never": "Never",
+    "columns": {
+      "contact": "Contact",
+      "email": "Email",
+      "freq": "Freq.",
+      "lastContact": "Last Contact"
+    },
+    "filters": {
+      "by": "Filtered by:",
+      "clearAll": "Clear all"
+    },
+    "toolbar": {
+      "selectAll": "Select all contacts",
+      "sort": "Sort contacts",
+      "exportAll": "Export all data",
+      "merge": "Merge",
+      "import": "Import",
+      "selectedCount": "{{count}} selected",
+      "tag": "Tag",
+      "group": "Group",
+      "export": "Export",
+      "delete": "Delete",
+      "clear": "Clear"
+    },
+    "viewMode": {
+      "list": "List",
+      "grid": "Grid",
+      "compact": "Compact",
+      "normal": "Normal",
+      "comfortable": "Comfortable"
+    },
+    "sortOptions": {
+      "lastContact": "Last contact",
+      "name": "Name",
+      "email": "Email",
+      "frequency": "Frequency"
+    },
+    "importFromCsv": "Importa da CSV"
   },
   "validation": {
     "required": "Questo campo è obbligatorio",
