@@ -1,54 +1,61 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Workflow, Megaphone } from "lucide-react";
-import { cn } from "@shared/utils/cn";
-import { AutomationPage } from "@features/automation/pages/AutomationPage";
-import { CampaignPage } from "@features/campaigns/components/CampaignPage";
+import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
+import { SkeletonPage } from "@shared/components/ui/Skeleton";
+import { CardTabBar, type CardTabItem } from "@shared/components/ui/CardTabBar";
 
 type AutomationCampaignsTab = "automation" | "campaigns";
 
-const TABS: { id: AutomationCampaignsTab; label: string; icon: typeof Workflow }[] = [
+const TABS: CardTabItem<AutomationCampaignsTab>[] = [
   { id: "automation", label: "Automation", icon: Workflow },
   { id: "campaigns", label: "Campaigns", icon: Megaphone },
 ];
+
+// Each surface owns its load effect, empty states and editors. Lazy-load so
+// only the active surface's bundle is pulled (xyflow in Automation, recharts
+// in Campaigns) instead of eagerly bundling both.
+const AutomationPage = lazy(() =>
+  import("@features/automation/pages/AutomationPage").then((m) => ({
+    default: m.AutomationPage,
+  })),
+);
+
+const CampaignPage = lazy(() =>
+  import("@features/campaigns/components/CampaignPage").then((m) => ({
+    default: m.CampaignPage,
+  })),
+);
 
 /**
  * Automation & Campaigns surface.
  *
  * Both capabilities share an account-scoped context behind a single nav
- * item with an in-page tab strip. Each tab reuses the existing
+ * item with an in-page card-tab strip. Each tab reuses the existing
  * self-contained page component (load effect, empty states, editors).
  */
 export function AutomationCampaignsPage() {
   const [tab, setTab] = useState<AutomationCampaignsTab>("automation");
+  const ActivePage = tab === "automation" ? AutomationPage : CampaignPage;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Segmented control */}
-      <div className="flex items-center gap-1 px-3 sm:px-6 pt-3 border-b border-border/50">
-        {TABS.map((t) => {
-          const active = t.id === tab;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
-                active
-                  ? "border-accent text-text-primary"
-                  : "border-transparent text-text-tertiary hover:text-text-secondary",
-              )}
-            >
-              <t.icon size={15} />
-              {t.label}
-            </button>
-          );
-        })}
+      {/* Card-tab strip */}
+      <div className="py-2 px-3 sm:px-6 shrink-0">
+        <CardTabBar
+          tabs={TABS}
+          activeTab={tab}
+          onTabChange={setTab}
+          ariaLabel="Automation and Campaigns"
+        />
       </div>
 
       {/* Active section */}
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        {tab === "automation" ? <AutomationPage /> : <CampaignPage />}
+      <div className="flex-1 overflow-hidden">
+        <ErrorBoundary name="AutomationCampaignsTab">
+          <Suspense fallback={<SkeletonPage />}>
+            <ActivePage />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </div>
   );
