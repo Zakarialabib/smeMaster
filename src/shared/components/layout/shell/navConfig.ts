@@ -121,16 +121,13 @@ export const NAV_GROUPS: NavRailGroup[] = [
     ],
   },
   {
-    id: "calendar",
-    icon: Calendar,
-    label: "calendar.calendar",
-    items: [],
-  },
-  {
-    id: "tasks",
+    id: "productivity",
     icon: CheckSquare,
-    label: "tasks.tasks",
-    items: [],
+    label: "nav.productivity",
+    items: [
+      { id: "tasks", label: "tasks.tasks", icon: CheckSquare, path: "/tasks" },
+      { id: "calendar", label: "calendar.calendar", icon: Calendar, path: "/tasks" },
+    ],
   },
   {
     id: "automation",
@@ -231,13 +228,13 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/smart-folder")) return "mail";
   if (pathname.startsWith("/people")) return "crm";
   if (pathname.startsWith("/crm")) return "crm";
-  if (pathname.startsWith("/calendar")) return "calendar";
+  if (pathname.startsWith("/calendar")) return "productivity";
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/workflows")) return "automation";
   if (pathname.startsWith("/vault")) return "vault";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/help")) return "help";
-  if (pathname.startsWith("/tasks")) return "tasks";
+  if (pathname.startsWith("/tasks")) return "productivity";
   if (pathname.startsWith("/attachments")) return "mail";
   if (pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/invoicing")) return "dashboard";
@@ -278,9 +275,9 @@ export function getActiveSubItem(pathname: string): string | null {
   if (helpMatch) return helpMatch[1]!;
   if (pathname.startsWith("/help")) return "help-center";
 
-  // Page routes with no sub-item
-  if (pathname.startsWith("/tasks")) return null;
-  if (pathname.startsWith("/calendar")) return null;
+  // Productivity sub-items (merged Tasks + Calendar)
+  if (pathname.startsWith("/tasks")) return "tasks";
+  if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/ai-assistant")) return null;
   if (pathname.startsWith("/pos")) return null;
 
@@ -315,11 +312,8 @@ export function handleNavSelect(id: string): void {
     case "help":
       navigateToHelp();
       break;
-    case "calendar":
-      navigateToLabel("calendar");
-      break;
-    case "tasks":
-      navigateToLabel("tasks");
+    case "productivity":
+      router.navigate({ to: "/tasks" });
       break;
     case "automation":
       navigateToLabel("automation");
@@ -363,6 +357,9 @@ export function handleSubItemSelect(groupId: string, subItemId: string): void {
     case "crm":
     case "people":
       navigateToLabel(subItemId);
+      break;
+    case "productivity":
+      router.navigate({ to: "/tasks" });
       break;
     case "help":
       if (subItemId === "about") {

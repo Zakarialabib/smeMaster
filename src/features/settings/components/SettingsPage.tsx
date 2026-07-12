@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "@tanstack/react-router";
 import {
@@ -9,7 +9,8 @@ import {
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { useSettingsUiStore } from "@shared/stores/settingsUiStore";
 import { useRecentSettingsStore } from "@features/settings/stores/recentSettingsStore";
-import { ArrowLeft, BookOpen, Search, Settings } from "lucide-react";
+import { ArrowLeft, BookOpen, Search, Settings, AlertCircle, RefreshCw } from "lucide-react";
+import { SkeletonPage } from "@shared/components/ui/Skeleton";
 import type { SettingsTabId } from "./SettingsTabRegistry";
 import {
   tabGroups,
@@ -22,6 +23,45 @@ import { HelpCenterSidebar } from "./HelpCenterSidebar";
 import { SettingsPanel } from "@shared/components/settings/SettingsPanel";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { cn } from "@shared/utils/cn";
+
+// ── Error Boundary for section content ─────────────────────────────────────
+class SectionErrorBoundary extends Component<
+  { children: ReactNode; sectionName: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode; sectionName: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <AlertCircle size={32} className="text-danger mb-3" />
+          <p className="text-sm font-semibold text-text-primary mb-1">
+            Failed to load {this.props.sectionName}
+          </p>
+          <p className="text-xs text-text-tertiary mb-4 max-w-md">
+            {this.state.error?.message ?? "An unexpected error occurred"}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          >
+            <RefreshCw size={13} />
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ── Search Results Grid ───────────────────────────────────────────────────
 
@@ -82,6 +122,22 @@ export function SettingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [helpSidebarOpen, setHelpSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  // Simulate initialization loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        useSettingsUiStore.getState().init();
+        setPageLoading(false);
+      } catch (err) {
+        setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+        setPageLoading(false);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Cmd+K: focus search
   useEffect(() => {
@@ -108,10 +164,6 @@ export function SettingsPage() {
     };
     window.addEventListener("smemaster-navigate-help", handler);
     return () => window.removeEventListener("smemaster-navigate-help", handler);
-  }, []);
-
-  useEffect(() => {
-    useSettingsUiStore.getState().init();
   }, []);
 
   const labelFor = useCallback((id: string) => getTabLabel(id, t), [t]);
@@ -175,6 +227,43 @@ export function SettingsPage() {
 
   const showSearchResults = searchQuery.trim().length > 0;
 
+  // Loading state
+  if (pageLoading) {
+    return <SkeletonPage />;
+  }
+
+  // Error state
+  if (pageError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+        <AlertCircle size={36} className="text-danger" />
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Failed to load settings</p>
+          <p className="text-xs text-text-tertiary mt-1">{pageError}</p>
+        </div>
+        <button
+          onClick={() => {
+            setPageLoading(true);
+            setPageError(null);
+            setTimeout(() => {
+              try {
+                useSettingsUiStore.getState().init();
+                setPageLoading(false);
+              } catch (err) {
+                setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+                setPageLoading(false);
+              }
+            }, 100);
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+        >
+          <RefreshCw size={13} />
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full overflow-hidden text-text-primary flex flex-col">
       {/* ── Header ──────────────────────────────────────────────────── */}
@@ -222,6 +311,7 @@ export function SettingsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search settings… ⌘K"
+            aria-label="Search settings"
             className="settings-search-input w-full pl-8 pr-8 py-2 text-xs rounded-md border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
           />
           {searchQuery && (
@@ -311,7 +401,9 @@ export function SettingsPage() {
                   })()}
                 </div>
               )}
-              <ActiveSection />
+              <SectionErrorBoundary sectionName={labelFor(activeTab)}>
+                <ActiveSection />
+              </SectionErrorBoundary>
             </SettingsPanel>
           )}
         </div>

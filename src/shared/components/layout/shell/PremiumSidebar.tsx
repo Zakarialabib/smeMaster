@@ -880,7 +880,7 @@ export function PremiumSidebar({
                         {threadUnreadCounts["INBOX"]}
                       </span>
                     )}
-                    {item.id === "tasks" && taskIncompleteCount > 0 && (
+                    {item.id === "productivity" && taskIncompleteCount > 0 && (
                       <span className="text-[0.625rem] bg-accent/15 text-accent px-1.5 rounded-full leading-normal">
                         {taskIncompleteCount}
                       </span>
