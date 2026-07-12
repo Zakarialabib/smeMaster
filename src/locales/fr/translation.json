@@ -745,6 +745,9 @@
     "markAsVip": "Marquer comme VIP",
     "addToContacts": "Ajouter aux contacts",
     "added": "Ajouté !",
+    "extractFromEmail": "Extraire les détails de l'e-mail",
+    "extractApplied": "Ajouté depuis l'e-mail : {{fields}}",
+    "extractNone": "Aucun nouveau détail trouvé dans cet e-mail",
     "editName": "Modifier le nom",
     "notes": "Notes",
     "addANote": "Ajouter une note...",
@@ -768,7 +771,9 @@
       "createdPrefix": "[TODO] Created {date}",
       "openedLabel": "[TODO] Opened {date}",
       "clickedLabel": "[TODO] Clicked {date}"
-    }
+    },
+    "extractNone": "[TODO] contact.extractNone",
+    "extractFromEmail": "[TODO] contact.extractFromEmail"
   },
   "calendar": {
     "day": "Jour",

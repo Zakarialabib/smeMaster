@@ -745,6 +745,9 @@
     "markAsVip": "تعيين كمهم",
     "addToContacts": "إضافة إلى جهات الاتصال",
     "added": "تمت الإضافة!",
+    "extractFromEmail": "استخراج التفاصيل من البريد",
+    "extractApplied": "تمت الإضافة من البريد: {{fields}}",
+    "extractNone": "لا توجد تفاصيل جديدة في هذا البريد",
     "editName": "تعديل الاسم",
     "notes": "ملاحظات",
     "addANote": "أضف ملاحظة...",
@@ -768,7 +771,9 @@
       "createdPrefix": "[TODO] Created {date}",
       "openedLabel": "[TODO] Opened {date}",
       "clickedLabel": "[TODO] Clicked {date}"
-    }
+    },
+    "extractNone": "[TODO] contact.extractNone",
+    "extractFromEmail": "[TODO] contact.extractFromEmail"
   },
   "calendar": {
     "day": "يوم",

@@ -190,10 +190,7 @@ export default function LocalRagSettings() {
     } catch (err) {
       console.warn("[LocalRagSettings] failed to open models folder", err);
     }
-  }, [modelsDir]);
-
-  // Don't render if RAG is disabled
-  if (!enabled) return null;
+  }, []);
 
   return (
     <>
@@ -208,6 +205,12 @@ export default function LocalRagSettings() {
           onToggle={() => setEnabled(!enabled)}
         />
       </SettingGroup>
+
+      {!enabled && (
+        <p className="text-xs text-text-tertiary">
+          Enable Local RAG above to configure the embedding model, knowledge-base indexing, and vector storage.
+        </p>
+      )}
 
       {/* ── Model Management ── */}
       <SettingGroup

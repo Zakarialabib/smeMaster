@@ -5,6 +5,9 @@ import { UserPlus, X } from "lucide-react";
 import { upsertContact } from "@features/contacts/db/contacts";
 import { normalizeEmail } from "@shared/utils/emailUtils";
 import { notify } from "@shared/services/notifications/toastHelper";
+import { useTranslation } from "react-i18next";
+import { useFormField } from "@shared/hooks/useFormField";
+import { required, email as emailValidator } from "@shared/utils/validators";
 
 interface CreateContactModalProps {
   isOpen: boolean;
@@ -12,10 +15,8 @@ interface CreateContactModalProps {
   onCreated?: () => void;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /**
- * CreateContactModal — minimal new-contact form.
+ * CreateContactModal — minimal new-contact form with i18n validation.
  *
  * Persists via `upsertContact` (email + display name). If the contact already
  * exists, `upsertContact` bumps its frequency rather than throwing, so this
@@ -26,16 +27,15 @@ export function CreateContactModal({
   onClose,
   onCreated,
 }: CreateContactModalProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const emailField = useFormField({ validator: emailValidator });
+  const nameField = useFormField({ validator: required });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName("");
-      setEmail("");
-      setError(null);
+      emailField.reset();
+      nameField.reset();
       setSaving(false);
     }
   }, [isOpen]);
@@ -50,20 +50,19 @@ export function CreateContactModal({
   }, [isOpen, onClose]);
 
   const handleSave = useCallback(async () => {
-    const trimmedEmail = email.trim();
+    // Touch both fields so validation messages surface.
+    emailField.onBlur();
+    nameField.onBlur();
+    const trimmedEmail = emailField.value.trim();
     if (!trimmedEmail) {
-      setError("Email is required");
+      emailField.onChange(""); // forces required message via touched
       return;
     }
-    if (!EMAIL_RE.test(trimmedEmail)) {
-      setError("Please enter a valid email address");
-      return;
-    }
+    if (emailValidator(trimmedEmail)) return;
 
     setSaving(true);
-    setError(null);
     try {
-      const trimmedName = name.trim() || null;
+      const trimmedName = nameField.value.trim() || null;
       const normalized = normalizeEmail(trimmedEmail);
       await upsertContact(normalized, trimmedName);
       notify("Contact created", `${normalized} has been added.`);
@@ -71,12 +70,11 @@ export function CreateContactModal({
       onClose();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to create contact";
-      setError(msg);
       notify("Failed to create contact", msg);
     } finally {
       setSaving(false);
     }
-  }, [name, email, onCreated, onClose]);
+  }, [emailField, nameField, onCreated, onClose]);
 
   return (
     <Modal
@@ -112,18 +110,21 @@ export function CreateContactModal({
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError(null);
-              }}
+              value={emailField.value}
+              onChange={(e) => emailField.onChange(e.target.value)}
+              onBlur={emailField.onBlur}
               placeholder="alice@example.com"
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === "Enter" && email.trim()) handleSave();
+                if (e.key === "Enter" && emailField.value.trim()) handleSave();
               }}
               className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
             />
+            {emailField.error && (
+              <p className="text-xs text-error mt-1" role="alert">
+                {t(emailField.error)}
+              </p>
+            )}
           </div>
 
           <div>
@@ -132,8 +133,9 @@ export function CreateContactModal({
             </label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={nameField.value}
+              onChange={(e) => nameField.onChange(e.target.value)}
+              onBlur={nameField.onBlur}
               placeholder="Alice Johnson"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
@@ -147,13 +149,6 @@ export function CreateContactModal({
           </p>
         </div>
 
-        {error && (
-          <p className="text-xs text-error" role="alert">
-            {error}
-          </p>
-        )}
-
-        {/* Footer */}
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-primary">
           <Button variant="secondary" size="sm" onClick={onClose} disabled={saving}>
             Cancel
@@ -163,7 +158,7 @@ export function CreateContactModal({
             size="sm"
             icon={<UserPlus size={14} />}
             onClick={handleSave}
-            disabled={saving || !email.trim()}
+            disabled={saving || !emailField.value.trim()}
           >
             {saving ? "Creating…" : "Create"}
           </Button>

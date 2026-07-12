@@ -7,7 +7,7 @@ import {
 import { getContactFilesBySender, type ContactFile } from "@features/contacts/db/contactFiles";
 import {
   getContactByEmail, getContactStats, getRecentThreadsWithContact,
-  upsertContact, updateContact,
+  upsertContact, updateContact, updateContactFields,
   getAttachmentsFromContact, getContactsFromSameDomain, getLatestAuthResult,
   getContactEngagementData,
   type ContactStats, type DbContact, type ContactAttachment, type SameDomainContact, type ContactEngagementRow,
@@ -15,6 +15,7 @@ import {
 import { isVipSender, addVipSender, removeVipSender } from "@features/settings/db/notificationVips";
 import { fetchAndCacheGravatarUrl } from "@features/contacts/services/gravatar";
 import { getContactActivity, type ActivityEvent } from "@features/contacts/services/activity";
+import { extractContactFromEmail, diffExtracted } from "@features/contacts/services/emailContactExtractor";
 import { useThreadStore } from "@features/mail/stores/threadStore";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { getThreadById, getThreadLabelIds } from "@shared/services/db/threads";
@@ -36,10 +37,11 @@ interface ContactSidebarProps {
   email: string;
   name: string | null;
   accountId: string;
+  bodyText?: string | null;
   onClose: () => void;
 }
 
-export function ContactSidebar({ email, name, accountId, onClose }: ContactSidebarProps) {
+export function ContactSidebar({ email, name, accountId, bodyText, onClose }: ContactSidebarProps) {
   const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [stats, setStats] = useState<ContactStats | null>(null);
@@ -55,6 +57,7 @@ export function ContactSidebar({ email, name, accountId, onClose }: ContactSideb
   const [activityLoading, setActivityLoading] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
+  const [extractFeedback, setExtractFeedback] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
 
@@ -199,6 +202,30 @@ export function ContactSidebar({ email, name, accountId, onClose }: ContactSideb
     if (addedTimerRef.current) clearTimeout(addedTimerRef.current);
     addedTimerRef.current = setTimeout(() => setAddedFeedback(false), 1500);
   }, [email, name]);
+
+  // Extract phone / tax id / address / company from the latest email body and
+  // apply any fields the contact doesn't already have.
+  const handleExtractFromEmail = useCallback(async () => {
+    if (!contact || !bodyText) return;
+    const extracted = extractContactFromEmail(bodyText, { existingPhone: contact.phone });
+    const applied = diffExtracted(extracted, {
+      phone: contact.phone,
+      tax_id: contact.tax_id,
+      address: contact.address,
+    });
+    const keys = Object.keys(applied);
+    if (keys.length === 0) {
+      setExtractFeedback(t("contact.extractNone"));
+    } else {
+      await updateContactFields(contact.id, applied as Record<string, unknown>);
+      setExtractFeedback(
+        t("contact.extractApplied", { fields: keys.join(", ") }),
+      );
+      const refreshed = await getContactByEmail(email);
+      setContact(refreshed);
+    }
+    setTimeout(() => setExtractFeedback(null), 2500);
+  }, [contact, bodyText, email]);
 
   const handleStartEditName = useCallback(() => {
     setEditNameValue(contact?.display_name ?? name ?? "");
@@ -350,6 +377,20 @@ export function ContactSidebar({ email, name, accountId, onClose }: ContactSideb
             <span>{t('contact.editName')}</span>
           </button>
         ) : null}
+
+        {/* Extract details from email */}
+        {contact && bodyText && (
+          <button
+            onClick={handleExtractFromEmail}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent border border-accent/30 rounded-md hover:bg-accent/10 transition-colors mb-4"
+          >
+            <Building2 size={12} />
+            <span>{t('contact.extractFromEmail')}</span>
+          </button>
+        )}
+        {extractFeedback && (
+          <p className="text-[0.625rem] text-success mb-4 text-center">{extractFeedback}</p>
+        )}
 
         {/* Tab Bar */}
         <div className="flex border-b border-border-primary mb-3">

@@ -801,6 +801,9 @@
     "markAsVip": "Mark as VIP",
     "addToContacts": "Add to Contacts",
     "added": "Added!",
+    "extractFromEmail": "Extract details from email",
+    "extractApplied": "Added from email: {{fields}}",
+    "extractNone": "No new details found in this email",
     "editName": "Edit name",
     "notes": "Notes",
     "addANote": "Add a note...",
@@ -824,7 +827,9 @@
       "createdPrefix": "Created {date}",
       "openedLabel": "Opened {date}",
       "clickedLabel": "Clicked {date}"
-    }
+    },
+    "extractNone": "contact.extractNone",
+    "extractFromEmail": "contact.extractFromEmail"
   },
   "calendar": {
     "day": "Day",
