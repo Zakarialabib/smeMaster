@@ -13,30 +13,11 @@
     "nameExample": "ex: Non lus du patron",
     "addSmartFolder": "Ajouter un dossier intelligent",
     "addLabel": "Ajouter une étiquette",
-    "addYourFirstLabel": "[TODO] nav.addYourFirstLabel"
-  ,
-    "business": "Entreprise",
+    "addYourFirstLabel": "[TODO] nav.addYourFirstLabel",
     "mail": "Messagerie",
-    "people": "Personnes",
-    "automation": "Automatisation",
-    "vault": "Coffre",
     "settings": "Paramètres",
-    "inbox": "Boîte de réception",
-    "starred": "Étoilés",
-    "snoozed": "Reportés",
-    "sent": "Envoyés",
-    "drafts": "Brouillons",
-    "trash": "Corbeille",
-    "spam": "Spam",
-    "allMail": "Tous les messages",
-    "attachments": "Pièces jointes",
-    "about": "À propos et licence",
-    "dashboard": "Tableau de bord",
-    "crm": "CRM",
     "label": "Étiquette",
-    "noItems": "Aucun élément",
-    "aiAssistant": "Assistant IA",
-    "erp": "ERP"
+    "noItems": "Aucun élément"
   },
   "onboarding": {
     "step1_title": "Bienvenue sur SMEMaster",
@@ -710,7 +691,8 @@
     "noResults": "[TODO] settings.noResults",
     "licenseCurrent": "[TODO] settings.licenseCurrent",
     "highContrast": "[TODO] settings.highContrast",
-    "highContrastDescription": "[TODO] settings.highContrastDescription"
+    "highContrastDescription": "[TODO] settings.highContrastDescription",
+    "syncStatusSyncing": "[TODO] Syncing..."
   },
   "search": {
     "typeACommand": "Tapez une commande...",
@@ -810,7 +792,8 @@
     "showCampaigns": "[TODO] Show Campaigns",
     "showCampaignsDesc": "[TODO] Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "[TODO] Show Scheduled Emails",
-    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future."
+    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future.",
+    "noEvents": "Aucun événement dans cette période"
   },
   "tasks": {
     "tasks": "Tâches",
@@ -1085,22 +1068,21 @@
   "dashboard": {
     "title": "Business",
     "compliancePending": "Contrôles de conformité en attente",
-    "recentVaultActivity": "Activité récente du coffre",
     "upcomingCampaigns": "Campagnes à venir",
     "followUpReminders": "Rappels de suivi",
-    "nextBackup": "Prochaine sauvegarde planifiée",
-    "noComplianceIssues": "Aucun problème de conformité",
-    "noRecentVaultActivity": "Aucune activité récente",
-    "noUpcomingCampaigns": "Aucune campagne à venir",
-    "noFollowUps": "Aucun rappel de suivi",
-    "noBackupScheduled": "Aucune sauvegarde planifiée",
     "description": "[TODO] dashboard.description",
-    "emptyTitle": "Bienvenue sur votre tableau de bord",
-    "emptySubtitle": "Au fur et à mesure de votre utilisation, vos indicateurs clés, campagnes à venir et rappels de suivi apparaîtront ici.",
     "customize": "[TODO] dashboard.customize",
     "heroTotalContacts": "[TODO] Total Contacts",
     "heroTrendLabel": "[TODO] vs last 12 weeks",
-    "customizeWidgets": "[TODO] dashboard.customizeWidgets"
+    "customizeWidgets": "[TODO] dashboard.customizeWidgets",
+    "heroNewContacts": "[TODO] dashboard.heroNewContacts",
+    "heroTasksDue": "[TODO] dashboard.heroTasksDue",
+    "heroOverdue": "[TODO] dashboard.heroOverdue",
+    "heroCampaigns": "[TODO] dashboard.heroCampaigns",
+    "range": "[TODO] dashboard.range",
+    "density": "[TODO] dashboard.density",
+    "autoRefresh": "[TODO] dashboard.autoRefresh",
+    "refresh": "[TODO] dashboard.refresh"
   },
   "addAccount": {
     "easySetup": "Configuration facile (IMAP + Mot de passe d'application)",
@@ -1301,7 +1283,9 @@
       "downloaded": "[TODO] Ready to install",
       "available": "[TODO] Update available",
       "upToDate": "[TODO] Up to date",
-      "error": "[TODO] Error"
+      "error": "[TODO] Error",
+      "downloading": "[TODO] Downloading...",
+      "idle": "[TODO] Idle"
     },
     "version": {
       "new": "[TODO] New Version"
@@ -1319,21 +1303,76 @@
   "mail": {
     "subject": "[TODO] mail.subject"
   },
-  "placeholders": {
-    "loading": "[TODO] Loading...",
-    "addDescription": "[TODO] Add a description...",
-    "selectTemplate": "[TODO] Select a template...",
-    "notificationText": "[TODO] Notification text...",
-    "taskTitlePreset": "[TODO] Task title preset...",
-    "saving": "[TODO] Saving...",
-    "deleting": "[TODO] Deleting...",
-    "searchContacts": "[TODO] Search contacts...",
-    "noActionsConfigured": "[TODO] No actions configured. Add an action to run when this trigger fires."
-  },
   "lock": {
     "appLocked": "[TODO] appLocked",
     "unlockToAccess": "[TODO] unlockToAccess",
     "unlocking": "[TODO] unlocking",
     "unlockWithBiometric": "[TODO] unlockWithBiometric"
+  },
+  "businessHealth": {
+    "notScheduled": "[TODO] businessHealth.notScheduled",
+    "nextBackup": "[TODO] businessHealth.nextBackup",
+    "title": "[TODO] businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "[TODO] Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "[TODO] Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "[TODO] Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "[TODO] Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "[TODO] Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "[TODO] Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "[TODO] Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "[TODO] Search contacts..."
+      }
+    }
   }
 }

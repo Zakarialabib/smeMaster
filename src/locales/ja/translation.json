@@ -13,30 +13,11 @@
     "nameExample": "例: 上司からの未読",
     "addSmartFolder": "スマートフォルダを追加",
     "addLabel": "ラベルを追加",
-    "addYourFirstLabel": "[TODO] nav.addYourFirstLabel"
-  ,
-    "business": "ビジネス",
+    "addYourFirstLabel": "[TODO] nav.addYourFirstLabel",
     "mail": "メール",
-    "people": "メンバー",
-    "automation": "自動化",
-    "vault": "金庫",
     "settings": "設定",
-    "inbox": "受信箱",
-    "starred": "スター付き",
-    "snoozed": "保留中",
-    "sent": "送信済み",
-    "drafts": "下書き",
-    "trash": "ゴミ箱",
-    "spam": "スパム",
-    "allMail": "すべてのメール",
-    "attachments": "添付ファイル",
-    "about": "バージョン情報とライセンス",
-    "dashboard": "ダッシュボード",
-    "crm": "CRM",
     "label": "ラベル",
-    "noItems": "項目なし",
-    "aiAssistant": "AIアシスタント",
-    "erp": "ERP"
+    "noItems": "項目なし"
   },
   "onboarding": {
     "step1_title": "SMEMasterへようこそ",
@@ -709,7 +690,8 @@
     "pushNotifications": "[TODO] settings.pushNotifications",
     "searchPlaceholder": "[TODO] settings.searchPlaceholder",
     "noResults": "[TODO] settings.noResults",
-    "licenseCurrent": "[TODO] settings.licenseCurrent"
+    "licenseCurrent": "[TODO] settings.licenseCurrent",
+    "syncStatusSyncing": "[TODO] Syncing..."
   },
   "addAccount": {
     "easySetup": "簡単セットアップ IMAP + アプリパスワード ",
@@ -842,7 +824,8 @@
     "showCampaigns": "[TODO] Show Campaigns",
     "showCampaignsDesc": "[TODO] Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "[TODO] Show Scheduled Emails",
-    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future."
+    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future.",
+    "noEvents": "この期間にイベントはありません"
   },
   "tasks": {
     "tasks": "タスク",
@@ -1140,22 +1123,21 @@
   "dashboard": {
     "title": "ビジネス",
     "compliancePending": "保留中のコンプライアンスチェック",
-    "recentVaultActivity": "最近の保管庫アクティビティ",
     "upcomingCampaigns": "予定のキャンペーン",
     "followUpReminders": "フォローアップリマインダー",
-    "nextBackup": "次回のバックアップ予定",
-    "noComplianceIssues": "保留中のコンプライアンス問題はありません",
-    "noRecentVaultActivity": "最近の保管庫アクティビティはありません",
-    "noUpcomingCampaigns": "予定のキャンペーンはありません",
-    "noFollowUps": "フォローアップリマインダーはありません",
-    "noBackupScheduled": "バックアップが予定されていません",
     "description": "[TODO] dashboard.description",
-    "emptyTitle": "ダッシュボードへようこそ",
-    "emptySubtitle": "アプリを使用するにつれて、主要な指標、今後のキャンペーン、フォローアップのリマインダーがここに表示されます。",
     "customize": "[TODO] dashboard.customize",
     "heroTotalContacts": "[TODO] Total Contacts",
     "heroTrendLabel": "[TODO] vs last 12 weeks",
-    "customizeWidgets": "[TODO] dashboard.customizeWidgets"
+    "customizeWidgets": "[TODO] dashboard.customizeWidgets",
+    "heroNewContacts": "[TODO] dashboard.heroNewContacts",
+    "heroTasksDue": "[TODO] dashboard.heroTasksDue",
+    "heroOverdue": "[TODO] dashboard.heroOverdue",
+    "heroCampaigns": "[TODO] dashboard.heroCampaigns",
+    "range": "[TODO] dashboard.range",
+    "density": "[TODO] dashboard.density",
+    "autoRefresh": "[TODO] dashboard.autoRefresh",
+    "refresh": "[TODO] dashboard.refresh"
   },
   "dialog": {
     "snoozeTitle": "KEY"
@@ -1303,7 +1285,9 @@
       "downloaded": "[TODO] Ready to install",
       "available": "[TODO] Update available",
       "upToDate": "[TODO] Up to date",
-      "error": "[TODO] Error"
+      "error": "[TODO] Error",
+      "downloading": "[TODO] Downloading...",
+      "idle": "[TODO] Idle"
     },
     "version": {
       "new": "[TODO] New Version"
@@ -1318,21 +1302,76 @@
     "installRestart": "[TODO] Install & Restart",
     "skip": "[TODO] Skip"
   },
-  "placeholders": {
-    "loading": "[TODO] Loading...",
-    "addDescription": "[TODO] Add a description...",
-    "selectTemplate": "[TODO] Select a template...",
-    "notificationText": "[TODO] Notification text...",
-    "taskTitlePreset": "[TODO] Task title preset...",
-    "saving": "[TODO] Saving...",
-    "deleting": "[TODO] Deleting...",
-    "searchContacts": "[TODO] Search contacts...",
-    "noActionsConfigured": "[TODO] No actions configured. Add an action to run when this trigger fires."
-  },
   "lock": {
     "appLocked": "[TODO] appLocked",
     "unlockToAccess": "[TODO] unlockToAccess",
     "unlocking": "[TODO] unlocking",
     "unlockWithBiometric": "[TODO] unlockWithBiometric"
+  },
+  "businessHealth": {
+    "notScheduled": "[TODO] businessHealth.notScheduled",
+    "nextBackup": "[TODO] businessHealth.nextBackup",
+    "title": "[TODO] businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "[TODO] Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "[TODO] Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "[TODO] Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "[TODO] Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "[TODO] Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "[TODO] Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "[TODO] Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "[TODO] Search contacts..."
+      }
+    }
   }
 }

@@ -13,30 +13,11 @@
     "nameExample": "es. Non letti dal capo",
     "addSmartFolder": "Aggiungi cartella intelligente",
     "addLabel": "Aggiungi etichetta",
-    "addYourFirstLabel": "Aggiungi la tua prima etichetta"
-  ,
-    "business": "Azienda",
+    "addYourFirstLabel": "Aggiungi la tua prima etichetta",
     "mail": "Posta",
-    "people": "Persone",
-    "automation": "Automazione",
-    "vault": "Caveau",
     "settings": "Impostazioni",
-    "inbox": "Posta in arrivo",
-    "starred": "Con stella",
-    "snoozed": "Posticipate",
-    "sent": "Inviati",
-    "drafts": "Bozze",
-    "trash": "Cestino",
-    "spam": "Spam",
-    "allMail": "Tutti i messaggi",
-    "attachments": "Allegati",
-    "about": "Informazioni e licenza",
-    "dashboard": "Pannello",
-    "crm": "CRM",
     "label": "Etichetta",
-    "noItems": "Nessun elemento",
-    "aiAssistant": "Assistente AI",
-    "erp": "ERP"
+    "noItems": "Nessun elemento"
   },
   "onboarding": {
     "step1_title": "Benvenuto in SMEMaster",
@@ -709,7 +690,8 @@
     "pushNotifications": "Notifiche push",
     "searchPlaceholder": "Cerca impostazioni...",
     "noResults": "Nessun risultato",
-    "licenseCurrent": "Licenza corrente"
+    "licenseCurrent": "Licenza corrente",
+    "syncStatusSyncing": "[TODO] Syncing..."
   },
   "addAccount": {
     "easySetup": "Configurazione facile (IMAP + password app)",
@@ -842,7 +824,8 @@
     "showCampaigns": "Mostra campagne",
     "showCampaignsDesc": "Mostra campagne marketing pianificate e inviate.",
     "showScheduledEmails": "Mostra email programmate",
-    "showScheduledEmailsDesc": "Mostra email programmate per l'invio futuro."
+    "showScheduledEmailsDesc": "Mostra email programmate per l'invio futuro.",
+    "noEvents": "Nessun evento in questo periodo"
   },
   "tasks": {
     "tasks": "Attività",
@@ -1140,22 +1123,21 @@
   "dashboard": {
     "title": "Business",
     "compliancePending": "Controlli conformità in sospeso",
-    "recentVaultActivity": "Attività recente archivio",
     "upcomingCampaigns": "Campagne imminenti",
     "followUpReminders": "Promemoria follow-up",
-    "nextBackup": "Prossimo backup programmato",
-    "noComplianceIssues": "Nessun problema conformità in sospeso",
-    "noRecentVaultActivity": "Nessuna attività recente archivio",
-    "noUpcomingCampaigns": "Nessuna campagna imminente",
-    "noFollowUps": "Nessun promemoria follow-up",
-    "noBackupScheduled": "Nessun backup programmato",
     "description": "Panoramica delle tue attività",
-    "emptyTitle": "Benvenuto nella tua dashboard",
-    "emptySubtitle": "Man mano che utilizzi l'app, le tue metriche chiave, le campagne imminenti e i promemoria di follow-up appariranno qui.",
     "customize": "[TODO] dashboard.customize",
     "heroTotalContacts": "[TODO] Total Contacts",
     "heroTrendLabel": "[TODO] vs last 12 weeks",
-    "customizeWidgets": "[TODO] dashboard.customizeWidgets"
+    "customizeWidgets": "[TODO] dashboard.customizeWidgets",
+    "heroNewContacts": "[TODO] dashboard.heroNewContacts",
+    "heroTasksDue": "[TODO] dashboard.heroTasksDue",
+    "heroOverdue": "[TODO] dashboard.heroOverdue",
+    "heroCampaigns": "[TODO] dashboard.heroCampaigns",
+    "range": "[TODO] dashboard.range",
+    "density": "[TODO] dashboard.density",
+    "autoRefresh": "[TODO] dashboard.autoRefresh",
+    "refresh": "[TODO] dashboard.refresh"
   },
   "dialog": {
     "snoozeTitle": "Posticipa fino a"
@@ -1303,7 +1285,9 @@
       "downloaded": "Pronto per installare",
       "available": "Aggiornamento disponibile",
       "upToDate": "Aggiornato",
-      "error": "Errore"
+      "error": "Errore",
+      "downloading": "[TODO] Downloading...",
+      "idle": "[TODO] Idle"
     },
     "version": {
       "new": "Nuova versione"
@@ -1318,21 +1302,76 @@
     "installRestart": "Installa e riavvia",
     "skip": "Salta"
   },
-  "placeholders": {
-    "loading": "Caricamento in corso...",
-    "addDescription": "Aggiungi una descrizione...",
-    "selectTemplate": "Seleziona un template...",
-    "notificationText": "Testo notifica...",
-    "taskTitlePreset": "Titolo preimpostato...",
-    "saving": "Salvataggio in corso...",
-    "deleting": "Eliminazione in corso...",
-    "searchContacts": "Cerca contatti...",
-    "noActionsConfigured": "Nessuna azione configurata. Aggiungi un'azione da eseguire quando questo trigger si attiva."
-  },
   "lock": {
     "appLocked": "App bloccata",
     "unlockToAccess": "Sblocca per accedere",
     "unlocking": "Sblocco in corso...",
     "unlockWithBiometric": "Sblocca con impronta/Face ID"
+  },
+  "businessHealth": {
+    "notScheduled": "[TODO] businessHealth.notScheduled",
+    "nextBackup": "[TODO] businessHealth.nextBackup",
+    "title": "[TODO] businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "[TODO] Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "[TODO] Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "[TODO] Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "[TODO] Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "[TODO] Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "[TODO] Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "[TODO] Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "[TODO] Search contacts..."
+      }
+    }
   }
 }

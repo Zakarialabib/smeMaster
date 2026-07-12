@@ -13,30 +13,11 @@
     "nameExample": "مثال: غير مقروء من المدير",
     "addSmartFolder": "إضافة مجلد ذكي",
     "addLabel": "إضافة تصنيف",
-    "addYourFirstLabel": "أضف تصنيفك الأول"
-  ,
-    "business": "الأعمال",
+    "addYourFirstLabel": "أضف تصنيفك الأول",
     "mail": "البريد",
-    "people": "الأشخاص",
-    "automation": "الأتمتة",
-    "vault": "الخزنة",
     "settings": "الإعدادات",
-    "inbox": "صندوق الوارد",
-    "starred": "مميزة بنجمة",
-    "snoozed": "مؤجلة",
-    "sent": "المرسلة",
-    "drafts": "المسودات",
-    "trash": "سلة المهملات",
-    "spam": "البريد المزعج",
-    "allMail": "كل الرسائل",
-    "attachments": "المرفقات",
-    "about": "حول والترخيص",
-    "dashboard": "لوحة المعلومات",
-    "crm": "إدارة العملاء",
     "label": "تسمية",
-    "noItems": "لا توجد عناصر",
-    "aiAssistant": "المساعد الذكي",
-    "erp": "ERP"
+    "noItems": "لا توجد عناصر"
   },
   "onboarding": {
     "step1_title": "مرحباً بك في SMEMaster",
@@ -710,7 +691,8 @@
     "noResults": "[TODO] settings.noResults",
     "licenseCurrent": "[TODO] settings.licenseCurrent",
     "highContrast": "[TODO] settings.highContrast",
-    "highContrastDescription": "[TODO] settings.highContrastDescription"
+    "highContrastDescription": "[TODO] settings.highContrastDescription",
+    "syncStatusSyncing": "[TODO] Syncing..."
   },
   "search": {
     "typeACommand": "اكتب أمراً...",
@@ -810,7 +792,8 @@
     "showCampaigns": "[TODO] Show Campaigns",
     "showCampaignsDesc": "[TODO] Display scheduled and sent marketing campaigns.",
     "showScheduledEmails": "[TODO] Show Scheduled Emails",
-    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future."
+    "showScheduledEmailsDesc": "[TODO] Display emails scheduled to be sent in the future.",
+    "noEvents": "لا توجد أحداث في هذه الفترة"
   },
   "tasks": {
     "tasks": "المهام",
@@ -1085,22 +1068,21 @@
   "dashboard": {
     "title": "الأعمال",
     "compliancePending": "فحوصات الامتثال معلقة",
-    "recentVaultActivity": "نشاط الخزانة الأخير",
     "upcomingCampaigns": "الحملات القادمة",
     "followUpReminders": "تذكيرات المتابعة",
-    "nextBackup": "النسخ الاحتياطي المجدول التالي",
-    "noComplianceIssues": "لا توجد مشكلات امتثال معلقة",
-    "noRecentVaultActivity": "لا نشاط حديث للخزانة",
-    "noUpcomingCampaigns": "لا توجد حملات قادمة",
-    "noFollowUps": "لا توجد تذكيرات متابعة",
-    "noBackupScheduled": "لم يتم جدولة نسخ احتياطي",
     "description": "[TODO] dashboard.description",
-    "emptyTitle": "مرحباً بك في لوحة التحكم",
-    "emptySubtitle": "عند استخدامك للتطبيق، ستظهر هنا مؤشراتك الرئيسية والحملات القادمة وتذكيرات المتابعة.",
     "customize": "[TODO] dashboard.customize",
     "heroTotalContacts": "[TODO] Total Contacts",
     "heroTrendLabel": "[TODO] vs last 12 weeks",
-    "customizeWidgets": "[TODO] dashboard.customizeWidgets"
+    "customizeWidgets": "[TODO] dashboard.customizeWidgets",
+    "heroNewContacts": "[TODO] dashboard.heroNewContacts",
+    "heroTasksDue": "[TODO] dashboard.heroTasksDue",
+    "heroOverdue": "[TODO] dashboard.heroOverdue",
+    "heroCampaigns": "[TODO] dashboard.heroCampaigns",
+    "range": "[TODO] dashboard.range",
+    "density": "[TODO] dashboard.density",
+    "autoRefresh": "[TODO] dashboard.autoRefresh",
+    "refresh": "[TODO] dashboard.refresh"
   },
   "addAccount": {
     "easySetup": "إعداد سهل (IMAP + كلمة مرور التطبيق)",
@@ -1301,7 +1283,9 @@
       "downloaded": "[TODO] Ready to install",
       "available": "[TODO] Update available",
       "upToDate": "[TODO] Up to date",
-      "error": "[TODO] Error"
+      "error": "[TODO] Error",
+      "downloading": "[TODO] Downloading...",
+      "idle": "[TODO] Idle"
     },
     "version": {
       "new": "[TODO] New Version"
@@ -1319,21 +1303,76 @@
   "mail": {
     "subject": "[TODO] mail.subject"
   },
-  "placeholders": {
-    "loading": "[TODO] Loading...",
-    "addDescription": "[TODO] Add a description...",
-    "selectTemplate": "[TODO] Select a template...",
-    "notificationText": "[TODO] Notification text...",
-    "taskTitlePreset": "[TODO] Task title preset...",
-    "saving": "[TODO] Saving...",
-    "deleting": "[TODO] Deleting...",
-    "searchContacts": "[TODO] Search contacts...",
-    "noActionsConfigured": "[TODO] No actions configured. Add an action to run when this trigger fires."
-  },
   "lock": {
     "appLocked": "[TODO] appLocked",
     "unlockToAccess": "[TODO] unlockToAccess",
     "unlocking": "[TODO] unlocking",
     "unlockWithBiometric": "[TODO] unlockWithBiometric"
+  },
+  "businessHealth": {
+    "notScheduled": "[TODO] businessHealth.notScheduled",
+    "nextBackup": "[TODO] businessHealth.nextBackup",
+    "title": "[TODO] businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "[TODO] Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "[TODO] Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "[TODO] Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "[TODO] Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "[TODO] Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "[TODO] Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "[TODO] Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "[TODO] Search contacts..."
+      }
+    }
   }
 }
