@@ -7,6 +7,7 @@ import {
   companyInitials,
 } from './companyStore';
 import { DemoBadge } from './erpShared';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 export default function CompanySwitcher() {
   const companies = useCompanyStore((s) => s.companies);
@@ -100,6 +101,7 @@ export default function CompanySwitcher() {
                       onClick={() => {
                         setActiveCompany(c.id);
                         setOpen(false);
+                        notify('Company switched', `Now viewing ${c.name}`);
                       }}
                     >
                       Switch

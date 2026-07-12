@@ -23,7 +23,7 @@ import { AutomationTriggerPicker } from "@features/automation/components/Automat
 import { AutomationActionPicker } from "@features/automation/components/AutomationActionPicker";
 import { TriggerNode } from "./flow/TriggerNode";
 import { ConditionNode } from "./flow/ConditionNode";
-import { ActionNode } from "./flow/ActionNode";
+import { ActionNode, actionRequiresParam } from "./flow/ActionNode";
 import type { AutomationAction } from "@features/automation/stores/automationStore";
 
 // ── Node type registry ───────────────────────────────────────────────────────
@@ -53,6 +53,8 @@ const ACTION_NODE_DEFAULTS = {
 
 const DEFAULT_SPACING = 175;
 
+// Local mirror of ActionNode's action metadata so the builder can compute
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface AutomationBuilderProps {
@@ -75,6 +77,7 @@ function buildInitialNodes(
   nodes.push({
     id: "trigger-1",
     ...TRIGGER_NODE_DEFAULTS,
+    deletable: false,
     data: { event: triggerEvent, conditions: triggerConditions },
   } as Node);
 
@@ -97,13 +100,15 @@ function buildInitialNodes(
 
   // Action nodes
   actions.forEach((action, index) => {
+    const paramKey = actionRequiresParam(action.type);
+    const invalid = !!paramKey && !(action[paramKey] as string);
     nodes.push({
       id: `action-${index}`,
       position: {
         x: 250,
         y: hasConditions ? ACTION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING : CONDITION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING,
       },
-      data: { index, action, onUpdate: onActionUpdate, onDelete: onActionDelete },
+      data: { index, action, invalid, onUpdate: onActionUpdate, onDelete: onActionDelete },
     } as Node);
   });
 
@@ -435,6 +440,38 @@ export function AutomationBuilder({
     [setEdges],
   );
 
+  // ── Canvas → store write-back ──────────────────────────────────────────
+  // Deleting a node removes the matching action (or clears conditions for the
+  // condition node). The trigger is marked non-deletable, so it's skipped.
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      for (const node of deleted) {
+        if (node.type === "action") {
+          const idx = Number(node.id.replace("action-", ""));
+          if (!Number.isNaN(idx)) handleActionDelete(idx);
+        } else if (node.type === "condition") {
+          setEditorField("triggerConditions", "");
+        }
+      }
+    },
+    [handleActionDelete, setEditorField],
+  );
+
+  // Dragging action nodes reorders them by vertical position in the store.
+  const onNodeDragStop = useCallback(
+    (_: unknown, dragged: Node) => {
+      if (dragged.type !== "action") return;
+      const order = nodes
+        .filter((n) => n.type === "action")
+        .sort((a, b) => a.position.y - b.position.y)
+        .map((n) => Number(n.id.replace("action-", "")));
+      if (order.length !== editor.actions.length) return;
+      const reordered = order.map((i) => editor.actions[i]!);
+      setEditorField("actions", reordered);
+    },
+    [nodes, editor.actions, setEditorField],
+  );
+
   const handleSave = useCallback(async () => {
     const success = await saveRule(accountId);
     if (success && onSaveSuccess) {
@@ -588,6 +625,8 @@ export function AutomationBuilder({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodesDelete={onNodesDelete}
+          onNodeDragStop={onNodeDragStop}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"
