@@ -81,7 +81,7 @@ impl From<UpsertContactRequest> for Contact {
         let now = chrono::Utc::now().timestamp();
         Contact {
             id: r.id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
-            company_id: String::new(), // TODO: set from context
+            company_id: r.company_id, // from UpsertContactRequest (set by caller)
             email: r.email,
             display_name: r.display_name,
             avatar_url: r.avatar_url,
