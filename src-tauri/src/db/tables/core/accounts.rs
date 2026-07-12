@@ -10,6 +10,7 @@
 use sqlx::SqlitePool;
 use crate::db::error::AppDbError;
 use crate::db::core::schema::Account;
+use crate::smtp::types::SmtpConfig;
 use crate::commands::core::CreateAccountRequest;
 use crate::db::commands::UpdateFields;
 use crate::db::common::{delete_or_not_found, fetch_or_not_found};
@@ -77,6 +78,53 @@ pub async fn get_all(pool: &SqlitePool) -> Result<Vec<Account>, AppDbError> {
         .fetch_all(pool)
         .await
         .map_err(AppDbError::Database)
+}
+
+/// List all mail accounts that belong to a given company (oldest first).
+pub async fn get_by_company(pool: &SqlitePool, company_id: &str) -> Result<Vec<Account>, AppDbError> {
+    sqlx::query_as::<_, Account>("SELECT * FROM accounts WHERE company_id = ? ORDER BY created_at ASC")
+        .bind(company_id)
+        .fetch_all(pool)
+        .await
+        .map_err(AppDbError::Database)
+}
+
+/// Build an [`SmtpConfig`] from an account's stored SMTP settings.
+///
+/// Returns an error string if any required field (host, port, credentials) is missing.
+pub fn to_smtp_config(account: &Account) -> Result<SmtpConfig, String> {
+    let host = account
+        .smtp_host
+        .clone()
+        .ok_or_else(|| "Account is missing an SMTP host".to_string())?;
+    let port = account
+        .smtp_port
+        .map(|p| p as u16)
+        .ok_or_else(|| "Account is missing an SMTP port".to_string())?;
+    let security = account
+        .smtp_security
+        .clone()
+        .unwrap_or_else(|| "starttls".to_string());
+    let username = account
+        .smtp_username
+        .clone()
+        .or_else(|| Some(account.email.clone()))
+        .ok_or_else(|| "Account is missing an SMTP username".to_string())?;
+    let password = account
+        .smtp_password
+        .clone()
+        .ok_or_else(|| "Account is missing an SMTP password".to_string())?;
+
+    Ok(SmtpConfig {
+        host,
+        port,
+        security,
+        username,
+        password,
+        auth_method: account.auth_method.clone(),
+        accept_invalid_certs: false,
+        timeout_secs: None,
+    })
 }
 
 /// Create a new account and return the full row.

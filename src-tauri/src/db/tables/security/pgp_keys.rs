@@ -48,6 +48,25 @@ pub async fn get_by_key_id(
     .map_err(AppDbError::Database)
 }
 
+/// Look up a PGP key by its associated user id (typically an email address).
+///
+/// Returns `Ok(None)` when no key matches — callers should treat that as
+/// "send unencrypted" rather than failing.
+pub async fn get_by_user_id(
+    pool: &SqlitePool,
+    account_id: &str,
+    user_id: &str,
+) -> Result<Option<PgpKey>, AppDbError> {
+    sqlx::query_as::<_, PgpKey>(
+        "SELECT * FROM pgp_keys WHERE account_id = ? AND user_id = ?",
+    )
+    .bind(account_id)
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(AppDbError::Database)
+}
+
 /// Import a new PGP key and return the full row.
 pub async fn create(
     pool: &SqlitePool,

@@ -1,6 +1,7 @@
 use sqlx::{SqlitePool, SqliteExecutor};
 use crate::db::error::AppDbError;
-use crate::db::invoicing::schema::Invoice;
+use crate::db::invoicing::schema::{Invoice, CatalogItem};
+use crate::db::tables::invoicing::{items, catalog_items};
 
 pub struct CreateInvoiceInput<'a> {
     pub company_id: &'a str,
@@ -187,4 +188,20 @@ pub async fn delete<'e, E: SqliteExecutor<'e>>(
         return Err(AppDbError::NotFound(format!("Invoice {id} not found")));
     }
     Ok(())
+}
+
+/// Apply the inventory effect of an invoice: reduce stock for outbound
+/// documents (sale / delivery) and increase it for inbound ones
+/// (`purchase_order`). Returns the catalog items now at/below their
+/// low-stock alert threshold so the caller can raise alerts.
+pub async fn apply_stock_effect(pool: &SqlitePool, invoice_id: &str) -> Result<Vec<CatalogItem>, AppDbError> {
+    let invoice = get_by_id(pool, invoice_id).await?;
+    let lines = items::list_by_invoice(pool, invoice_id).await?;
+    let sign: f64 = if invoice.document_type == "purchase_order" { 1.0 } else { -1.0 };
+    for line in lines {
+        if let Some(item_id) = &line.item_id {
+            catalog_items::adjust_stock_qty(pool, item_id, sign * line.qty).await?;
+        }
+    }
+    catalog_items::list_low_stock(pool, &invoice.company_id).await
 }

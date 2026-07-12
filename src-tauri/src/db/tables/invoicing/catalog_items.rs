@@ -178,6 +178,37 @@ where
     .ok_or_else(|| AppDbError::NotFound(format!("CatalogItem {id} not found")))
 }
 
+/// Adjust a catalog item's stock by a signed `delta` (negative reduces stock).
+pub async fn adjust_stock_qty<'e, E: sqlx::Executor<'e, Database = sqlx::Sqlite>>(
+    executor: E,
+    id: &str,
+    delta: f64,
+) -> Result<(), AppDbError> {
+    let now = chrono::Utc::now().timestamp();
+    sqlx::query("UPDATE items SET stock_qty = stock_qty + ?, updated_at = ? WHERE id = ?")
+        .bind(delta)
+        .bind(now)
+        .bind(id)
+        .execute(executor)
+        .await
+        .map_err(AppDbError::Database)?;
+    Ok(())
+}
+
+/// List catalog items at or below their low-stock alert threshold (active only).
+pub async fn list_low_stock<'e, E: sqlx::Executor<'e, Database = sqlx::Sqlite>>(
+    executor: E,
+    company_id: &str,
+) -> Result<Vec<CatalogItem>, AppDbError> {
+    sqlx::query_as::<_, CatalogItem>(
+        "SELECT * FROM items WHERE company_id = ? AND active = 1 AND stock_qty <= stock_alert ORDER BY stock_qty ASC",
+    )
+    .bind(company_id)
+    .fetch_all(executor)
+    .await
+    .map_err(AppDbError::Database)
+}
+
 /// Soft-delete a catalog item by setting active = 0.
 pub async fn soft_delete<'e, E>(executor: E, id: &str) -> Result<(), AppDbError>
 where

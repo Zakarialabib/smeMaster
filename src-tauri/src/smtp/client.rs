@@ -4,7 +4,7 @@ use lettre::{
         authentication::{Credentials, Mechanism},
         client::{Tls, TlsParametersBuilder},
     },
-    AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
+    AsyncSmtpTransport, AsyncTransport, Tokio1Executor, Message,
 };
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -298,6 +298,21 @@ pub async fn test_connection(config: &SmtpConfig) -> Result<SmtpSendResult, Seri
             },
         })
         .map_err(|e| SerializedError::new(ERR_INTERNAL, format!("SMTP test error: {}", e)))
+}
+
+/// Serialize an already-built [`lettre::Message`] to raw bytes and dispatch it
+/// through the same pooled SMTP transport used by [`send_raw_email`] (sharing
+/// the connection pool, TLS handling, timeout, and retry logic).
+///
+/// This is the preferred entry point when the caller builds the MIME message
+/// in Rust (for example, an invoice with PDF/XML attachments).
+pub async fn send_message(
+    config: &SmtpConfig,
+    message: Message,
+) -> Result<SmtpSendResult, SerializedError> {
+    let raw = message.formatted();
+    let encoded = URL_SAFE_NO_PAD.encode(&raw);
+    send_raw_email(config, &encoded).await
 }
 
 // ── Unit tests – all unchanged and still pass ──
