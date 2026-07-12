@@ -107,6 +107,14 @@ impl StateMachine {
             cb(from, transition.to);
         }
 
+        // Emit SystemStateChanged event for all transitions
+        self.event_bus.emit(AppEvent::SystemStateChanged {
+            from: from.to_string(),
+            to: transition.to.to_string(),
+            reason: reason.to_string(),
+            at_ms,
+        });
+
         // Handle side effects for specific transitions
         if transition.to == SystemState::Ready {
             log::info!("[state-machine] Transitioning to Ready — enabling subsystems");

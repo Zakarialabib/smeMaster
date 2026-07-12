@@ -1,4 +1,5 @@
 pub mod emit;
+pub mod heartbeat;
 pub mod processor;
 
 use serde::{Deserialize, Serialize};
@@ -120,6 +121,44 @@ pub enum AppEvent {
     // ── Health monitoring ────────────────────────────────────────
     #[serde(rename = "heartbeat")]
     Heartbeat { timestamp: u64 },
+
+    // ── Phase progress (mirrors PhaseEvent from orchestrator) ────
+    #[serde(rename = "phase:progress")]
+    PhaseProgress {
+        phase: String,
+        service: Option<String>,
+        status: String,
+        message: String,
+        progress: f32,
+        timestamp: u64,
+    },
+
+    // ── Service health status change ────────────────────────────
+    #[serde(rename = "service:health-changed")]
+    HealthStatusChanged {
+        service: String,
+        status: String,
+        message: String,
+        at_ms: i64,
+    },
+
+    // ── Subsystem lifecycle transition ──────────────────────────
+    #[serde(rename = "subsystem:status-changed")]
+    SubsystemStatusChanged {
+        name: String,
+        old_status: String,
+        new_status: String,
+        at_ms: i64,
+    },
+
+    // ── State machine transition ────────────────────────────────
+    #[serde(rename = "system:state-changed")]
+    SystemStateChanged {
+        from: String,
+        to: String,
+        reason: String,
+        at_ms: i64,
+    },
 }
 
 /// Events that should be forwarded to the native Kotlin `EventRelayBridge`

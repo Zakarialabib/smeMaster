@@ -5,6 +5,7 @@ pub mod subsystem_lifecycle;
 pub mod state_machine;
 pub mod tool_registry;
 pub mod gating;
+pub mod health_monitor;
 pub mod init;
 pub mod onboarding;
 

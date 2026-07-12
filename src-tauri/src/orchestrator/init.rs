@@ -43,22 +43,14 @@ impl AppLifecycle {
     }
 
     /// Phase 2 (Async): Heartbeat every 30s for frontend health monitoring.
+    /// Delegates to the standalone `crate::events::heartbeat::spawn_heartbeat`.
     pub fn spawn_heartbeat(app: &AppHandle) {
-        let handle = app.clone();
-        tauri::async_runtime::spawn(async move {
-            let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
-            interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
-            loop {
-                interval.tick().await;
-                let ts = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs();
-                if let Some(bus) = handle.try_state::<EventBus>() {
-                    bus.emit(AppEvent::Heartbeat { timestamp: ts });
-                }
-            }
-        });
+        if let Some(bus) = app.try_state::<EventBus>() {
+            crate::events::heartbeat::spawn_heartbeat(bus.inner().clone(), 30);
+            log::info!("[init] Heartbeat emitter started (30s interval, standalone module)");
+        } else {
+            log::warn!("[init] EventBus not available — heartbeat not started");
+        }
     }
 
     /// Phase 3: Wire SubsystemRegistry, ToolRegistry, StateMachine.
@@ -172,6 +164,10 @@ impl AppLifecycle {
     ) {
         let handle = app.clone();
         tauri::async_runtime::spawn(async move {
+            let bus = handle.state::<EventBus>();
+
+            emit_init_progress(&bus, "Database", "Running migrations...", 5);
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 1: DB Migrations — MUST succeed before anything else
             // ═══════════════════════════════════════════════════════════════
@@ -187,6 +183,8 @@ impl AppLifecycle {
             if let Err(e) = crate::db::health_check(&pool).await {
                 log::warn!("[orchestrator] Post-migration health check failed: {e}");
             }
+
+            emit_init_progress(&bus, "Database", "Migrations complete", 10);
 
             // ═══════════════════════════════════════════════════════════════
             // STEP 2: Determine DB lifecycle state & seed demo data
@@ -228,6 +226,8 @@ impl AppLifecycle {
                 }
             }
 
+            emit_init_progress(&bus, "Data", "Demo data ready", 25);
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 3: OAuth token monitor — needs tables to exist
             // ═══════════════════════════════════════════════════════════════
@@ -241,6 +241,8 @@ impl AppLifecycle {
                 handle.manage(oauth_monitor);
                 log::info!("[oauth-monitor] Proactive token refresh monitor started");
             }
+
+            emit_init_progress(&bus, "Auth", "OAuth monitor started", 35);
 
             // ═══════════════════════════════════════════════════════════════
             // STEP 4: Background services — now safe with tables present
@@ -258,7 +260,7 @@ impl AppLifecycle {
                 }
             }
 
-            let bus = handle.state::<EventBus>();
+            emit_init_progress(&bus, "Services", "Background services started", 45);
 
             // ── ServiceRegistry: AlwaysOn services ──────────────────────
             let service_registry = Arc::new(orchestrator::ServiceRegistry::new(handle.clone()));
@@ -303,12 +305,34 @@ impl AppLifecycle {
             subsystem_registry.register_observed("sync", Some("ai"), sync_service);
             subsystem_registry.register_observed("backup_scheduler", Some("backup"), backup_scheduler);
 
+            emit_init_progress(&bus, "Services", "Initializing services...", 60);
             let _ = handle.emit("rust:init:sync", Some("Initializing accounts..."));
             let _ = service_registry.init_all().await;
+
+            emit_init_progress(&bus, "Services", "Starting services...", 75);
             let _ = service_registry.start_all().await;
 
+            emit_init_progress(&bus, "Services", "All services running", 90);
+
             bus.emit(AppEvent::InitComplete);
+            emit_init_progress(&bus, "System", "Initialization complete", 100);
             let _ = handle.emit("rust:init:complete", ());
+
+            // ── Health Monitor — periodic checks + auto-recovery ──────────
+            {
+                let hm_bus = bus.inner().clone();
+                let sm = handle.state::<Arc<StateMachine>>().inner().clone();
+                let reg = service_registry.clone();
+                // Clone service_registry into an Arc<ServiceRegistry>
+                crate::orchestrator::health_monitor::spawn_health_monitor(
+                    hm_bus,
+                    sm,
+                    reg,
+                    15,  // health check interval (seconds)
+                    30,  // network check interval (seconds)
+                );
+                log::info!("[init] Health monitor started (health=15s, network=30s)");
+            }
 
             // Emit close-splashscreen so the native Android splash can be dismissed
             #[cfg(target_os = "android")]
@@ -367,6 +391,17 @@ impl AppLifecycle {
 //
 // The function is safe to call on any DB — it checks for existing data first
 // via the `demo_full_seeded` settings flag.
+
+// ── Helper: emit InitProgress via EventBus ──────────────────────────────
+
+fn emit_init_progress(bus: &tauri::State<'_, EventBus>, phase: &str, message: &str, percentage: u8) {
+    bus.emit(AppEvent::InitProgress {
+        phase: phase.to_string(),
+        message: message.to_string(),
+        percentage,
+    });
+    log::info!("[init] [{phase}] {percentage}% — {message}");
+}
 
 /// Seed demo data for first-run experience.
 /// Runs inside `spawn_orchestrator` after migrations succeed.
