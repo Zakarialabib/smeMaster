@@ -58,25 +58,31 @@ const DEFAULT_CHART: &[(&str, &str, &str, &str)] = &[
     ("1300", "Inventory", "asset", "debit"),
     ("2000", "Accounts Payable", "liability", "credit"),
     ("2200", "Tax Payable", "liability", "credit"),
+    ("3000", "Owner's Equity", "equity", "credit"),
     ("4000", "Sales Revenue", "revenue", "credit"),
     ("5000", "Cost of Goods Sold", "expense", "debit"),
     ("6000", "Operating Expenses", "expense", "debit"),
 ];
 
-/// Ensure the company has a chart of accounts; seed the default template if empty.
+/// Ensure the company has a chart of accounts; seed any missing default accounts.
+///
+/// Each default account is seeded only if its `code` is absent, so companies
+/// that were already seeded pick up newly-added accounts (e.g. Owner's Equity)
+/// on the next ledger operation.
 pub async fn ensure_defaults(pool: &SqlitePool, company_id: &str) -> Result<(), AppDbError> {
-    let count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM chart_of_accounts WHERE company_id = ?",
-    )
-    .bind(company_id)
-    .fetch_one(pool)
-    .await
-    .map_err(AppDbError::Database)?;
-    if count > 0 {
-        return Ok(());
-    }
     let now = chrono::Utc::now().timestamp();
     for (code, name, account_type, normal_balance) in DEFAULT_CHART {
+        let exists: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM chart_of_accounts WHERE company_id = ? AND code = ?",
+        )
+        .bind(company_id)
+        .bind(code)
+        .fetch_one(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+        if exists > 0 {
+            continue;
+        }
         let id = uuid::Uuid::new_v4().to_string();
         sqlx::query(
             "INSERT INTO chart_of_accounts \
@@ -151,7 +157,7 @@ pub async fn post_invoice_journal(pool: &SqlitePool, invoice_id: &str) -> Result
 }
 
 /// Insert a single journal line.
-async fn insert_entry(
+pub async fn insert_entry(
     pool: &SqlitePool,
     company_id: &str,
     reference: &str,
@@ -219,4 +225,73 @@ pub async fn profit_and_loss(pool: &SqlitePool, company_id: &str) -> Result<PnlR
         }
     }
     Ok(PnlResult { revenue, expenses, net: revenue - expenses })
+}
+
+/// Post (or reverse) the cash movement for an invoice payment, keeping the
+/// company wallet in sync with the ledger's Cash account.
+///
+/// Sale paid     -> Dr Cash (1000) / Cr AR (1200)
+/// Sale reversed -> Cr Cash (1000) / Dr AR (1200)
+/// Bill paid     -> Dr AP (2000) / Cr Cash (1000)
+/// Bill reversed -> Cr AP (2000) / Dr Cash (1000)
+pub async fn post_invoice_payment(
+    pool: &SqlitePool,
+    invoice_id: &str,
+    is_payment: bool,
+) -> Result<(), AppDbError> {
+    let invoice = invoices::get_by_id(pool, invoice_id).await?;
+    let company_id = &invoice.company_id;
+    let now = chrono::Utc::now().timestamp();
+    let total = invoice.total_amount;
+    let currency = &invoice.currency;
+    let ref_no = invoice.invoice_number.clone();
+
+    if invoice.document_type == "purchase_order" {
+        let ap = get_by_code(pool, company_id, "2000").await?;
+        let cash = get_by_code(pool, company_id, "1000").await?;
+        if is_payment {
+            insert_entry(pool, company_id, invoice_id, &format!("Pay bill {ref_no}"), &ap.id, total, 0, currency, now).await?;
+            insert_entry(pool, company_id, invoice_id, &format!("Cash out {ref_no}"), &cash.id, 0, total, currency, now).await?;
+        } else {
+            insert_entry(pool, company_id, invoice_id, &format!("Reverse pay bill {ref_no}"), &ap.id, 0, total, currency, now).await?;
+            insert_entry(pool, company_id, invoice_id, &format!("Reverse cash out {ref_no}"), &cash.id, total, 0, currency, now).await?;
+        }
+    } else {
+        let ar = get_by_code(pool, company_id, "1200").await?;
+        let cash = get_by_code(pool, company_id, "1000").await?;
+        if is_payment {
+            insert_entry(pool, company_id, invoice_id, &format!("Cash in {ref_no}"), &cash.id, total, 0, currency, now).await?;
+            insert_entry(pool, company_id, invoice_id, &format!("Clear AR {ref_no}"), &ar.id, 0, total, currency, now).await?;
+        } else {
+            insert_entry(pool, company_id, invoice_id, &format!("Reverse cash in {ref_no}"), &cash.id, 0, total, currency, now).await?;
+            insert_entry(pool, company_id, invoice_id, &format!("Reverse clear AR {ref_no}"), &ar.id, total, 0, currency, now).await?;
+        }
+    }
+    Ok(())
+}
+
+/// Book a manual wallet movement (owner deposit / withdrawal) against Owner's
+/// Equity so the ledger stays balanced. `is_inflow` true = top-up (Dr Cash /
+/// Cr Equity), false = withdrawal (Dr Equity / Cr Cash).
+pub async fn post_capital_movement(
+    pool: &SqlitePool,
+    company_id: &str,
+    amount: i64,
+    is_inflow: bool,
+    reference: &str,
+    description: &str,
+    currency: &str,
+) -> Result<(), AppDbError> {
+    ensure_defaults(pool, company_id).await?;
+    let now = chrono::Utc::now().timestamp();
+    let cash = get_by_code(pool, company_id, "1000").await?;
+    let equity = get_by_code(pool, company_id, "3000").await?;
+    if is_inflow {
+        insert_entry(pool, company_id, reference, description, &cash.id, amount, 0, currency, now).await?;
+        insert_entry(pool, company_id, reference, description, &equity.id, 0, amount, currency, now).await?;
+    } else {
+        insert_entry(pool, company_id, reference, description, &equity.id, amount, 0, currency, now).await?;
+        insert_entry(pool, company_id, reference, description, &cash.id, 0, amount, currency, now).await?;
+    }
+    Ok(())
 }

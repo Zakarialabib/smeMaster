@@ -40,6 +40,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("020_invoicing", include_str!("020_invoicing.sql")),
     ("021_engagement_log_fix", include_str!("021_engagement_log_fix.sql")),
     ("022_accounting", include_str!("022_accounting.sql")),
+    ("023_wallet", include_str!("023_wallet.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────

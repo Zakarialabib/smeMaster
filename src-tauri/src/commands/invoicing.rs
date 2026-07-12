@@ -14,6 +14,7 @@ use crate::db::invoicing::schema::{
 };
 use crate::db::core::schema::Company;
 use crate::db::tables::invoicing::{invoices, items, clients, catalog_items, company_settings, categories};
+use crate::db::tables::wallet;
 use crate::services::invoicing::pdf::generate_invoice_pdf;
 use crate::services::invoicing::peppol::generate_peppol_xml;
 use crate::invoicing::calc::{Money, LineOutput, calculate_document_totals, TaxMode};
@@ -398,9 +399,31 @@ pub async fn db_update_invoice_status(
     id: String,
     status: String,
 ) -> Result<(), String> {
+    // Capture the previous status so we can detect a paid/unpaid transition
+    // and route the cash movement through the company wallet.
+    let prev = invoices::get_by_id(&*pool, &id)
+        .await
+        .map_err(|e| format!("Invoice not found: {e}"))?;
+    let prev_paid = prev.status == "paid";
+    let now_paid = status == "paid";
+
     invoices::update_status(&*pool, &id, &status)
         .await
-        .map_err(|e| format!("Failed to update invoice status: {e}"))
+        .map_err(|e| format!("Failed to update invoice status: {e}"))?;
+
+    // Only act on a change of paid-state: paying an invoice moves cash through
+    // the wallet (sale -> credit, bill -> debit); reversing it unwinds the move.
+    if now_paid && !prev_paid {
+        if let Err(e) = wallet::apply_payment(&*pool, &prev, true).await {
+            log::warn!("[invoicing] wallet payment failed for {id}: {e}");
+        }
+    } else if !now_paid && prev_paid {
+        if let Err(e) = wallet::apply_payment(&*pool, &prev, false).await {
+            log::warn!("[invoicing] wallet reversal failed for {id}: {e}");
+        }
+    }
+
+    Ok(())
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

@@ -1,6 +1,7 @@
 pub mod ai;
 pub mod accounting;
 pub mod account_import;
+pub mod wallet;
 pub mod calendar;
 pub mod comms;
 pub mod compliance;
@@ -760,6 +761,12 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             accounting::db_list_journal_entries,
             accounting::db_post_invoice_journal,
             accounting::db_get_profit_and_loss,
+
+            // === commands::wallet (4 commands) ===
+            wallet::db_ensure_wallet,
+            wallet::db_get_wallet,
+            wallet::db_credit_wallet,
+            wallet::db_debit_wallet,
 
             // === commands::logging (4 commands) ===
             logging::get_logs,
