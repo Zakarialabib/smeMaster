@@ -37,19 +37,19 @@
   --space-item: var(--space-2);
 
   /* ─── Colors — Frosted Glass Light Theme ─── */
-  --color-bg-primary: rgba(255, 255, 255, 0.7);
-  --color-bg-secondary: rgba(255, 255, 255, 0.55);
-  --color-bg-tertiary: rgba(255, 255, 255, 0.4);
-  --color-bg-hover: rgba(255, 255, 255, 0.35);
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f8fa;
+  --color-bg-tertiary: #f0f1f3;
+  --color-bg-hover: #eef0f3;
   --color-bg-selected: rgba(11, 87, 208, 0.12);
-  --color-bg-elevated: rgba(255, 255, 255, 0.82);
+  --color-bg-elevated: #ffffff;
 
   --color-text-primary: #1c1b1f;
   --color-text-secondary: #49454f;
   --color-text-tertiary: #7a7680;
 
-  --color-border-primary: rgba(255, 255, 255, 0.3);
-  --color-border-secondary: rgba(255, 255, 255, 0.18);
+  --color-border-primary: #e4e6ea;
+  --color-border-secondary: #eceef1;
 
   --color-accent: #0b57d0;
   --color-accent-hover: #0842a0;
@@ -68,15 +68,15 @@
   --color-info-light: #e0f2fe;
 
   /* Frosted Glass surface tokens */
-  --color-frost-bg: rgba(255, 255, 255, 0.25);
-  --color-frost-bg-strong: rgba(255, 255, 255, 0.45);
-  --color-frost-border: rgba(255, 255, 255, 0.35);
-  --color-frost-border-strong: rgba(255, 255, 255, 0.55);
-  --color-frost-highlight: rgba(255, 255, 255, 0.5);
+  --color-frost-bg: #ffffff;
+  --color-frost-bg-strong: #ffffff;
+  --color-frost-border: #e4e6ea;
+  --color-frost-border-strong: #d5d8dd;
+  --color-frost-highlight: transparent;
 
-  --color-sidebar-bg: rgba(255, 255, 255, 0.78);
+  --color-sidebar-bg: #ffffff;
   --color-sidebar-text: #1c1b1f;
-  --color-sidebar-hover: rgba(255, 255, 255, 0.45);
+  --color-sidebar-hover: #f0f1f3;
   --color-sidebar-active: #0b57d0;
 
   /* ─── Icon Sizing System ─── */
@@ -87,13 +87,13 @@
   --icon-xl: 32px;
 
   /* ─── Frosted Glass / Border-based Depth ─── */
-  --glass-blur: 24px;
-  --glass-blur-heavy: 32px;
-  --glass-blur-light: 12px;
-  --frost-border: 1px solid rgba(255, 255, 255, 0.35);
-  --frost-border-strong: 1.5px solid rgba(255, 255, 255, 0.55);
-  --frost-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.55);
-  --frost-highlight-strong: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.7);
+  --glass-blur: 0px;
+  --glass-blur-heavy: 0px;
+  --glass-blur-light: 0px;
+  --frost-border: 1px solid #e4e6ea;
+  --frost-border-strong: 1px solid #d5d8dd;
+  --frost-highlight: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --frost-highlight-strong: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
   --frost-radius: 24px;
   --frost-radius-sm: 16px;
   --frost-radius-lg: 32px;
@@ -138,19 +138,19 @@
  * Dark mode overrides
  */
 .dark {
-  --color-bg-primary: rgba(15, 23, 42, 0.72);
-  --color-bg-secondary: rgba(30, 41, 59, 0.65);
-  --color-bg-tertiary: rgba(51, 65, 85, 0.58);
-  --color-bg-hover: rgba(51, 65, 85, 0.45);
+  --color-bg-primary: #1a1d23;
+  --color-bg-secondary: #15171c;
+  --color-bg-tertiary: #22262e;
+  --color-bg-hover: #22262e;
   --color-bg-selected: rgba(99, 133, 243, 0.18);
-  --color-bg-elevated: rgba(30, 41, 59, 0.82);
+  --color-bg-elevated: #1a1d23;
 
   --color-text-primary: #e6e1e5;
   --color-text-secondary: #c4c0c8;
   --color-text-tertiary: #9e9ba3;
 
-  --color-border-primary: rgba(255, 255, 255, 0.1);
-  --color-border-secondary: rgba(255, 255, 255, 0.06);
+  --color-border-primary: #2c313a;
+  --color-border-secondary: #242932;
 
   --color-accent: #8ab4f8;
   --color-accent-hover: #aecbfa;
@@ -167,21 +167,21 @@
   --color-info: #78c4f8;
   --color-info-light: rgba(120, 196, 248, 0.15);
 
-  --color-frost-bg: rgba(255, 255, 255, 0.06);
-  --color-frost-bg-strong: rgba(255, 255, 255, 0.14);
-  --color-frost-border: rgba(255, 255, 255, 0.1);
-  --color-frost-border-strong: rgba(255, 255, 255, 0.2);
-  --color-frost-highlight: rgba(255, 255, 255, 0.08);
+  --color-frost-bg: #1a1d23;
+  --color-frost-bg-strong: #1e2128;
+  --color-frost-border: #2c313a;
+  --color-frost-border-strong: #363c46;
+  --color-frost-highlight: transparent;
 
-  --color-sidebar-bg: rgba(15, 23, 42, 0.82);
+  --color-sidebar-bg: #15171c;
   --color-sidebar-text: #e6e1e5;
-  --color-sidebar-hover: rgba(30, 41, 59, 0.6);
+  --color-sidebar-hover: #22262e;
   --color-sidebar-active: #8ab4f8;
 
-  --frost-border: 1px solid rgba(255, 255, 255, 0.1);
-  --frost-border-strong: 1.5px solid rgba(255, 255, 255, 0.2);
-  --frost-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-  --frost-highlight-strong: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.14);
+  --frost-border: 1px solid #2c313a;
+  --frost-border-strong: 1px solid #363c46;
+  --frost-highlight: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --frost-highlight-strong: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* (Base styles, blob animations, glass utilities, scrollbar, keyframes,
@@ -221,14 +221,7 @@ html.mobile body {
 
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(
-    135deg,
-    #e8f0fe 0%,
-    #f0e6ff 25%,
-    #fce4ec 50%,
-    #fff3e0 75%,
-    #e3f2fd 100%
-  );
+  background: #f7f8fa;
   background-attachment: fixed;
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
@@ -237,7 +230,7 @@ body {
 }
 
 .dark body {
-  background-image: linear-gradient(135deg, #0f1923 0%, #1a1220 35%, #1e0a26 65%, #0d1b2a 100%);
+  background-image: none; background: #0f1115;
 }
 
 html[dir='rtl'] body {
@@ -1981,3 +1974,11 @@ html:not(.mobile) .sidebar-nav-item {
 html:not(.mobile) .sidebar-nav-item:hover {
   box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
+
+/* --- Flat theme overrides (2026-07 refactor: bohemi/glass -> flat) --- */
+.animated-bg { display: none !important; }
+.liquid-glass::before,
+.liquid-glass:hover::before,
+.liquid-glass-elevated::before { opacity: 0 !important; animation: none !important; }
+.liquid-glow { animation: none !important; }
+.liquid-sheen-burst::after { display: none !important; }
