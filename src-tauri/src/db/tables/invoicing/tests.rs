@@ -21,25 +21,26 @@ mod tests {
     #[tokio::test]
     async fn test_create_client() {
         let pool = create_memory_pool().await;
+        let company_id = insert_test_company(&pool, "client-co").await;
 
         let input = clients::CreateClientInput {
-            name: "Acme Corp",
+            company_id: &company_id,
+            display_name: "Acme Corp",
             email: Some("billing@acme.com"),
-            phone: Some("+212600000000"),
+            phone: Some("+212****0000"),
             address: Some("123 Main St"),
             city: Some("Casablanca"),
             country: Some("MA"),
             tax_id: Some("MA123456"),
-            role: Some("customer"),
+            contact_type: "client",
             credit_limit: Some(50000), // 500.00 MAD
             payment_terms: Some(30),
             notes: Some("Preferred customer"),
         };
 
         let client = clients::create(&pool, input).await.unwrap();
-        assert_eq!(client.name, "Acme Corp");
+        assert_eq!(client.display_name, "Acme Corp");
         assert_eq!(client.email.unwrap(), "billing@acme.com");
-        assert_eq!(client.role, "customer");
         assert_eq!(client.credit_limit, 50000);
         assert_eq!(client.payment_terms, 30);
         assert!(client.deleted_at.is_none());
@@ -48,15 +49,18 @@ mod tests {
     #[tokio::test]
     async fn test_list_clients() {
         let pool = create_memory_pool().await;
+        let company_id = insert_test_company(&pool, "list-co").await;
 
         let c1 = clients::CreateClientInput {
-            name: "Client A", email: None, phone: None, address: None,
-            city: None, country: None, tax_id: None, role: Some("customer"),
+            company_id: &company_id,
+            display_name: "Client A", email: None, phone: None, address: None,
+            city: None, country: None, tax_id: None, contact_type: "client",
             credit_limit: None, payment_terms: None, notes: None,
         };
         let c2 = clients::CreateClientInput {
-            name: "Client B", email: None, phone: None, address: None,
-            city: None, country: None, tax_id: None, role: Some("supplier"),
+            company_id: &company_id,
+            display_name: "Client B", email: None, phone: None, address: None,
+            city: None, country: None, tax_id: None, contact_type: "supplier",
             credit_limit: None, payment_terms: None, notes: None,
         };
 
@@ -66,19 +70,20 @@ mod tests {
         let all = clients::list(&pool, None, None).await.unwrap();
         assert_eq!(all.len(), 2);
 
-        let customers = clients::list(&pool, None, Some("customer")).await.unwrap();
-        // "Client A" has role=customer, "Client B" has role=supplier
-        // Query matches WHERE role='customer' OR role='both'
-        assert_eq!(customers.len(), 1);
+        let clients = clients::list(&pool, None, Some("client")).await.unwrap();
+        // "Client A" has contact_type=client, "Client B" has contact_type=supplier
+        assert_eq!(clients.len(), 1);
     }
 
     #[tokio::test]
     async fn test_soft_delete_client() {
         let pool = create_memory_pool().await;
+        let company_id = insert_test_company(&pool, "del-client-co").await;
 
         let input = clients::CreateClientInput {
-            name: "Delete Me", email: None, phone: None, address: None,
-            city: None, country: None, tax_id: None, role: None,
+            company_id: &company_id,
+            display_name: "Delete Me", email: None, phone: None, address: None,
+            city: None, country: None, tax_id: None, contact_type: "client",
             credit_limit: None, payment_terms: None, notes: None,
         };
         let client = clients::create(&pool, input).await.unwrap();
@@ -97,23 +102,25 @@ mod tests {
     #[tokio::test]
     async fn test_update_client() {
         let pool = create_memory_pool().await;
+        let company_id = insert_test_company(&pool, "upd-client-co").await;
 
         let input = clients::CreateClientInput {
-            name: "Old Name", email: Some("old@test.com"), phone: None,
+            company_id: &company_id,
+            display_name: "Old Name", email: Some("old@test.com"), phone: None,
             address: None, city: None, country: None, tax_id: None,
-            role: None, credit_limit: None, payment_terms: None, notes: None,
+            contact_type: "client", credit_limit: None, payment_terms: None, notes: None,
         };
         let client = clients::create(&pool, input).await.unwrap();
 
         let update = clients::UpdateClientInput {
-            name: Some("New Name"),
+            display_name: Some("New Name"),
             email: Some("new@test.com"),
             phone: None, address: None, city: None, country: None,
-            tax_id: None, role: None, credit_limit: None,
+            tax_id: None, contact_type: None, credit_limit: None,
             payment_terms: Some(60), notes: None,
         };
         let updated = clients::update(&pool, &client.id, update).await.unwrap();
-        assert_eq!(updated.name, "New Name");
+        assert_eq!(updated.display_name, "New Name");
         assert_eq!(updated.email.unwrap(), "new@test.com");
         assert_eq!(updated.payment_terms, 60);
     }

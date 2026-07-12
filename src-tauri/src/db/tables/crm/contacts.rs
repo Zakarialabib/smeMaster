@@ -617,20 +617,23 @@ pub async fn count_with_search(
 mod tests {
     use super::*;
     use sqlx::SqlitePool;
-    
+    use crate::db::tables::test_helpers::helpers::*;
 
-    async fn create_test_pool() -> SqlitePool {
+
+    async fn create_test_pool() -> (SqlitePool, String) {
         let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
         crate::db::migrations::run_migrations(&pool).await.unwrap();
-        pool
+        let company_id = insert_test_company(&pool, "crm-test-co").await;
+        (pool, company_id)
     }
 
     #[tokio::test]
     async fn test_list_contacts() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
 
         // Insert test contacts
         let req1 = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: None,
             email: "alice@example.com".to_string(),
             display_name: Some("Alice".to_string()),
@@ -640,6 +643,7 @@ mod tests {
             last_contacted_at: None,
         };
         let req2 = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: None,
             email: "bob@example.com".to_string(),
             display_name: Some("Bob".to_string()),
@@ -666,8 +670,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_by_id_contact() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: Some("contact-1".to_string()),
             email: "findme@example.com".to_string(),
             display_name: Some("Find Me".to_string()),
@@ -689,8 +694,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_by_email_contact() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: None,
             email: "byemail@example.com".to_string(),
             display_name: Some("By Email".to_string()),
@@ -712,10 +718,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_upsert_contact_create_and_update() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
 
         // Create
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: None,
             email: "upsert@example.com".to_string(),
             display_name: Some("Original".to_string()),
@@ -730,6 +737,7 @@ mod tests {
 
         // Update same email
         let update_req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: None,
             email: "upsert@example.com".to_string(),
             display_name: Some("Updated".to_string()),
@@ -748,8 +756,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_update_fields_contact() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: Some("field-update-test".to_string()),
             email: "fields@example.com".to_string(),
             display_name: Some("Before".to_string()),
@@ -783,8 +792,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_delete_contact() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: Some("delete-me".to_string()),
             email: "delete@example.com".to_string(),
             display_name: Some("Delete Me".to_string()),
@@ -807,11 +817,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_stats_contact() {
-        let pool = create_test_pool().await;
+        let (pool, company_id) = create_test_pool().await;
 
         // Insert a contact
         let contact_id = "stats-contact".to_string();
         let req = UpsertContactRequest {
+            company_id: company_id.clone(),
             id: Some(contact_id.clone()),
             email: "stats@example.com".to_string(),
             display_name: Some("Stats".to_string()),
