@@ -37,7 +37,7 @@ const ROUTE_KEYS: Record<string, string> = {
   "/dashboard": "nav.dashboard",
   "/mail/inbox": "nav.inbox",
   "/mail": "nav.mail",
-  "/people": "nav.people",
+  "/people": "nav.crm",
   "/crm": "nav.crm",
   "/campaigns": "campaign.campaigns",
   "/calendar": "calendar.calendar",

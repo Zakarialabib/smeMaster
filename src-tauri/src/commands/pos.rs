@@ -34,3 +34,11 @@ pub async fn pos_print_receipt(
 
     manager.print_receipt(config, plain_text).await
 }
+
+#[command]
+pub async fn pos_open_cash_drawer(
+    config: HardwareConfig,
+) -> Result<(), String> {
+    let manager = HardwareManager::new();
+    manager.open_cash_drawer(config).await
+}

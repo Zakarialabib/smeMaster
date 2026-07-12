@@ -87,4 +87,17 @@ impl HardwareManager {
             _ => Err("Device is not a printer".into()),
         }
     }
+
+    pub async fn open_cash_drawer(&self, config: HardwareConfig) -> Result<(), String> {
+        match config.device_type {
+            DeviceType::Printer => {
+                let driver = self.get_printer_driver(&config)?;
+                driver.open_cash_drawer()
+            }
+            DeviceType::CashDrawer => {
+                Err("Standalone cash drawer not supported yet. Connect the drawer to a printer and use the printer config.".into())
+            }
+            _ => Err("Device does not support cash drawer".into()),
+        }
+    }
 }

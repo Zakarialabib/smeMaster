@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Package, Search, Trash2, CreditCard, Banknote } from 'lucide-react';
+import { ShoppingCart, Package, Search, Trash2, CreditCard, Banknote, Printer } from 'lucide-react';
 import { usePosStore, Product } from '../stores/posStore';
 import { useHardwareStore } from '../stores/hardwareStore';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
@@ -30,6 +30,19 @@ export const POSPage: React.FC = () => {
   });
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleOpenCashDrawer = async () => {
+    try {
+      const { configs } = useHardwareStore.getState();
+      const printer = configs.find(c => c.deviceType === 'printer' && c.isDefault)
+        || configs.find(c => c.deviceType === 'printer');
+      if (!printer) { alert('No printer configured'); return; }
+      await invoke('pos_open_cash_drawer', { config: printer });
+      alert('Cash drawer opened!');
+    } catch (err) {
+      alert(`Failed to open cash drawer: ${err}`);
+    }
+  };
 
   const handlePayment = async (method: string) => {
     if (cart.length === 0) return;
@@ -62,15 +75,24 @@ export const POSPage: React.FC = () => {
       <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Point of Sale</h1>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg bg-card"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="w-full pl-10 pr-4 py-2 border rounded-lg bg-card"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={handleOpenCashDrawer}
+              title="Open Cash Drawer"
+              className="p-2 border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Printer size={18} />
+            </button>
           </div>
         </div>
 

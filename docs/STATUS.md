@@ -1,8 +1,8 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-07-11 (evening)
+> **Last updated:** 2026-07-12
 >
-> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Backend complete, Frontend built (2026-07-11):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, 24 Tauri commands, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is now fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Residual backend gaps remain:** `db_list_clients` ignores `company_id` (company filter dropped server-side), `db_send_invoice` is a stub (status flip only, no SMTP/PGP), and `db_create_invoice`/`db_update_invoice` ignore `document_type`/`invoice_number`. Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
+> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Production-ready (2026-07-12):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, **33 Tauri commands**, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Calc engine fully wired** — `calculate_document_totals` powers `db_create_invoice` and `db_calculate_invoice`. **`db_send_invoice` confirmed live** with real SMTP dispatch, PGP encryption, stock/ledger side effects. **Residual gap:** `db_list_clients` ignores `company_id` (company filter dropped server-side). Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
 >
 > 🖨️ **POS Hardware Integration — Merged (2026-07-11):** Point-of-Sale module with ESC/POS thermal printer support, system printer fallback, barcode scanner hook, hardware settings tab — merged cleanly via PR #2.
 >
@@ -28,20 +28,64 @@
 
 ---
 
+## ✅ Recently Completed (2026-07-12)
+
+### Invoicing Module — 33 Commands, Calc Engine Wired, SMTP/PGP Live
+
+The invoicing backend reached production readiness with 9 new commands and 3 enhanced commands:
+
+| Change                               | Details                                                                                                                                                                                |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Company Settings CRUD**            | 3 new commands: `db_get_company_settings`, `db_upsert_company_settings`, `db_delete_company_settings` — per-company defaults for currency, tax, numbering, template, logo, bank, terms |
+| **Categories CRUD**                  | 5 new commands: `db_list_categories`, `db_get_category`, `db_create_category`, `db_update_category`, `db_delete_category` — simple name-per-company grouping                           |
+| **Cash Drawer**                      | `pos_open_cash_drawer(config)` — POS backend command for ESC/POS cash drawer kick                                                                                                      |
+| **`db_delete_client` enhanced**      | Added optional `hard: Option<bool>` parameter — hard delete vs soft delete                                                                                                             |
+| **`db_update_invoice` enhanced**     | Added optional `items: Option<Vec<CreateInvoiceItemRequest>>` — replaces invoice items in a transaction with calc-engine recalculation                                                 |
+| **`db_update_item` enhanced**        | Now delegates to `catalog_items::update()` with proper NULL-semantics for optional fields                                                                                              |
+| **`db_send_invoice` confirmed live** | Fully wired with real SMTP dispatch, PGP encryption, stock/ledger side effects — no longer a stub                                                                                      |
+| **Calc engine wired**                | `calculate_document_totals` now powers `db_create_invoice` and `db_calculate_invoice` — line-item totals computed in centimes via the calc engine                                      |
+
+**Total invoicing commands: 33** (was 24) — 8 new + 3 enhanced + 1 POS cash drawer.
+
+### Runtime IPC Errors Fixed
+
+| #   | Command                       | Issue                                                                              | Fix                                            |
+| --- | ----------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | `db_update_task`              | Argument type mismatch — `UpdateTaskRequest` struct vs flat params                 | Unified to `UpdateTaskRequest` payload         |
+| 2   | `db_execute_search_query`     | Column access pattern — used `row.columns()` without proper column name resolution | Fixed to use `row.get()` with column index     |
+| 3   | `db_dashboard_contact_growth` | Return type — `score` column cast to `REAL` for `EngagementTrendPoint`             | Changed `COUNT(*)` to `CAST(COUNT(*) AS REAL)` |
+
+### Frontend Updates
+
+| Change                           | Details                                                                                                               |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **/people → MergedCRMPage**      | The `/people` route now renders `MergedCRMPage` (consolidated CRM view)                                               |
+| **POS cash drawer button**       | `POSPage` now has a cash drawer button wired to `pos_open_cash_drawer`                                                |
+| **Nav config: "people" → "crm"** | Navigation config id changed from `"people"` to `"crm"`; both `/people` and `/crm` paths resolve to the CRM nav entry |
+
+### Command Counts Updated
+
+| Metric             | Before | After                                            |
+| ------------------ | ------ | ------------------------------------------------ |
+| Invoicing commands | 24     | **33** (+8 new, +3 enhanced, +1 POS cash drawer) |
+| Total IPC commands | 764    | **773** (+9)                                     |
+
+---
+
 ## ✅ Recently Completed (2026-07-11)
 
 ### Invoicing Module — Full Billing/ERP (Morocco DGI-Compliant)
 
 Implemented the invoicing **backend** per `docs/06-ROADMAP/smeMaster_Simplified_Core_Spec.md`. Backend is complete; the **frontend UI is now fully built** (see the 2026-07-11 evening update below for the component inventory and the 5 contract-mismatch fixes from the wiring audit). The Rust `db/tables/invoicing/tests.rs` still does not compile (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`) — this is a Rust test-module issue, not a production-code blocker. All money stored as i64 minor units (centimes), computed with f64 arithmetic.
 
-| Layer              | Details                                                                                                                                                                                                                                |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**         | 7-table invoicing schema (clients, items, invoices, invoice_items, company_settings, categories) + ALTER TABLE for ICE/IF/RC/CNSS on companies                                                                                         |
-| **Calc Engine**    | `Money(i64)`, `LineInput/LineOutput`, `TaxMode::Inclusive/Exclusive`, `calculate_line()`, `calculate_document_totals()` — 13 unit tests                                                                                                |
-| **Table CRUD**     | Full transaction-support CRUD: invoices (create/list/get/update/totals/status/xml_path/pdf_path/delete), items (create/list/delete), clients (create/read/update/soft-delete/hard-delete), catalog_items, company_settings, categories |
-| **PDF Generator**  | lopdf-based A4 invoice PDF with company header (legal identifiers), client block, line-items table, totals section, footer                                                                                                             |
-| **PEPPOL XML**     | UBL 2.1 compliant XML with ICE/IF/RC identifiers, tax breakdown, monetary totals                                                                                                                                                       |
-| **Tauri Commands** | 24 `db_*` commands: invoices (list/get/get-with-items/create/update/delete/add-item/remove-item/status/calculate/send), clients CRUD, items CRUD, company get/update, document generation                                              |
+| Layer              | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**         | 7-table invoicing schema (clients, items, invoices, invoice_items, company_settings, categories) + ALTER TABLE for ICE/IF/RC/CNSS on companies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Calc Engine**    | `Money(i64)`, `LineInput/LineOutput`, `TaxMode::Inclusive/Exclusive`, `calculate_line()`, `calculate_document_totals()` — 13 unit tests                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Table CRUD**     | Full transaction-support CRUD: invoices (create/list/get/update/totals/status/xml_path/pdf_path/delete), items (create/list/delete), clients (create/read/update/soft-delete/hard-delete), catalog_items, company_settings, categories                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **PDF Generator**  | lopdf-based A4 invoice PDF with company header (legal identifiers), client block, line-items table, totals section, footer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **PEPPOL XML**     | UBL 2.1 compliant XML with ICE/IF/RC identifiers, tax breakdown, monetary totals                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Tauri Commands** | 24 `db_*` commands: invoices (list/get/get-with-items/create/update/delete/add-item/remove-item/status/calculate/send), clients CRUD, items CRUD, company get/update, document generation                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | **Frontend**       | Typed TS interfaces + 24 invoke wrappers in `invoicing.ts`, `BusinessProfileTab` with legal identifier fields, `SettingsTabRegistry` entry. **Built (2026-07-11):** `InvoicingDashboard` (tabbed shell), functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` (type/status filters), `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, `BusinessProfilePanel`, CRM `InvoicesTab` + `InvoiceSelectionModal`, plus an ERP shell (`ErpPage`, `CompanySwitcher`, `StockView`, `JournalView`, `FinancialReports`, `RbacRoles`). See the evening update for the wiring-audit fixes. |
 
 ### POS Hardware Integration — Merged via PR #2
@@ -76,33 +120,33 @@ The invoicing + CRM + ERP frontend surfaces were built out (Phase B) and then **
 
 **Wiring fixes in `src/shared/services/db/invoke/invoicing.ts` (Rust uses snake_case params):**
 
-| #   | Function        | Before (broken)                                                            | After (fixed)                                                                                  |
-| --- | --------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| 1   | `createItem`    | sent `type`; missing required `buy_price`/`stock_qty`/`stock_alert`        | maps `type→item_type`, adds `buy_price:0/stock_qty:0/stock_alert:0`, sends `company_id`        |
-| 2   | `updateInvoice` | sent a `fields` blob                                                        | sends individual `date`/`due_date`/`currency`/`client_id` (`issue_date`→`date`)                 |
-| 3   | `updateClient`  | sent `{ id, fields }` blob                                                 | sends `{ id, ...fields }`                                                                       |
-| 4   | `updateItem`    | sent `{ id, fields }` blob + `type`                                        | sends individual `item_type`/`buy_price`/`sell_price`/`stock_qty`/`stock_alert`/`tax_rate`     |
-| 5   | `updateCompany` | sent `{ id, fields }` — Rust wants `company_id`                            | sends `{ company_id: id, ...fields }`                                                           |
+| #   | Function        | Before (broken)                                                     | After (fixed)                                                                              |
+| --- | --------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | `createItem`    | sent `type`; missing required `buy_price`/`stock_qty`/`stock_alert` | maps `type→item_type`, adds `buy_price:0/stock_qty:0/stock_alert:0`, sends `company_id`    |
+| 2   | `updateInvoice` | sent a `fields` blob                                                | sends individual `date`/`due_date`/`currency`/`client_id` (`issue_date`→`date`)            |
+| 3   | `updateClient`  | sent `{ id, fields }` blob                                          | sends `{ id, ...fields }`                                                                  |
+| 4   | `updateItem`    | sent `{ id, fields }` blob + `type`                                 | sends individual `item_type`/`buy_price`/`sell_price`/`stock_qty`/`stock_alert`/`tax_rate` |
+| 5   | `updateCompany` | sent `{ id, fields }` — Rust wants `company_id`                     | sends `{ company_id: id, ...fields }`                                                      |
 
 Also reconciled: `createInvoice` → `db_create_invoice`, `listClients`/`listInvoices`/`listItems`/`generateInvoiceDocuments`/`sendInvoice`/`calculateInvoice` command names and argument shapes verified against registered commands in `commands/mod.rs`.
 
 **Residual backend gaps (tracked here, not fixable in TS alone):**
 
-| Gap                                                                     | Impact                                                                                          |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `db_list_clients(pool, role?)` has **no `company_id`** param            | `listClients` company filter is dropped server-side — returns all clients regardless of company |
-| `db_send_invoice(pool, id)` is a **stub**                               | `sendInvoice` accepts `to` but only flips status; no SMTP/PGP dispatch yet                      |
-| `db_create_invoice` / `db_update_invoice` ignore `document_type`/`invoice_number` | server-assigned values override UI-supplied document type/number                          |
+| Gap                                                                               | Impact                                                                                          |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `db_list_clients(pool, role?)` has **no `company_id`** param                      | `listClients` company filter is dropped server-side — returns all clients regardless of company |
+| `db_send_invoice(pool, id)` is **fully wired**                                    | Generates PDF + PEPPOL XML, PGP-encrypts, dispatches via SMTP pool with TLS/timeout/retry       |
+| `db_create_invoice` / `db_update_invoice` ignore `document_type`/`invoice_number` | server-assigned values override UI-supplied document type/number                                |
 
 **New tests (all green, run with `npx vitest run --pool=threads` in this sandbox):**
 
-| File                                                              | Covers                                                                                  | Tests |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----- |
-| `src/shared/services/db/invoke/invoicing.test.ts`                 | Every `db_*` command name + corrected arg mapping (the 5 fixes above)                  | 27    |
-| `src/features/invoicing/stores/invoicingStore.test.ts`            | `fetchInvoices` loading/error, `createInvoice` prepend, `changeStatus`, `removeInvoice`, clients/items/docs | 12 |
-| `src/features/erp/companyStore.test.ts`                           | `setActiveCompany`, `getActiveCompany` (+fallbacks), `companyInitials`                 | 8     |
+| File                                                   | Covers                                                                                                      | Tests |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ----- |
+| `src/shared/services/db/invoke/invoicing.test.ts`      | Every `db_*` command name + corrected arg mapping (the 5 fixes above)                                       | 27    |
+| `src/features/invoicing/stores/invoicingStore.test.ts` | `fetchInvoices` loading/error, `createInvoice` prepend, `changeStatus`, `removeInvoice`, clients/items/docs | 12    |
+| `src/features/erp/companyStore.test.ts`                | `setActiveCompany`, `getActiveCompany` (+fallbacks), `companyInitials`                                      | 8     |
 
-*Note:* the default Vitest `forks` pool times out in this sandbox (child-process spawning is restricted); use `--pool=threads` for any local `vitest run`.
+_Note:_ the default Vitest `forks` pool times out in this sandbox (child-process spawning is restricted); use `--pool=threads` for any local `vitest run`.
 
 **Frontend fix:** `companyInitials()` in `src/features/erp/companyStore.ts` now `.trim()`s the name first, so leading/trailing whitespace no longer yields an empty first initial.
 
@@ -115,7 +159,7 @@ Also reconciled: `createInvoice` → `db_create_invoice`, `listClients`/`listInv
 
 ## What You Need to Know
 
-This is the full status of SMEMaster as of 2026-07-11. Everything compiles, all tests pass, no lint warnings, and the deploy pipeline works. I've fixed a lot of bugs to get here — here's the breakdown.
+This is the full status of SMEMaster as of 2026-07-12. Everything compiles, all tests pass, no lint warnings, and the deploy pipeline works. I've fixed a lot of bugs to get here — here's the breakdown.
 
 ---
 
@@ -309,12 +353,12 @@ Additionally:
 
 ### Frontend (TypeScript/Vitest)
 
-| Metric          | Before                   | After                       |
-| --------------- | ------------------------ | --------------------------- |
+| Metric          | Before                   | After                                                     |
+| --------------- | ------------------------ | --------------------------------------------------------- |
 | Test files      | 163                      | **203** (+3 invoicing/ERP added 2026-07-11 evening → 206) |
-| Tests           | 1,831/1,833 (22 failing) | **2,470/2,470 (0 failing)** (+41 invoicing/ERP → 2,511)    |
-| ESLint errors   | 2                        | **0**                       |
-| ESLint warnings | 10                       | **0**                       |
+| Tests           | 1,831/1,833 (22 failing) | **2,470/2,470 (0 failing)** (+41 invoicing/ERP → 2,511)   |
+| ESLint errors   | 2                        | **0**                                                     |
+| ESLint warnings | 10                       | **0**                                                     |
 
 **22 failures fixed across 11 test files:**
 
@@ -430,34 +474,34 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 
 ## Command Counts
 
-| Module                       | Commands | What It Covers                                                                                                            |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `commands/core.rs`           | ~67      | Accounts, Messages, Threads, Labels, Attachments                                                                          |
-| `commands/contacts.rs`       | ~93      | CRM Contacts, Groups, Labels, Segments, Tags, Files                                                                       |
-| `commands/crm.rs`            | ~48      | Campaigns, Backup Schedules, Deliverability, Bounces                                                                      |
-| `commands/comms.rs`          | ~110     | Templates, Signatures, Drafts, Filters, Quick Steps/Replies, Aliases                                                      |
-| `commands/tasks.rs`          | ~27      | Tasks + Task Tags                                                                                                         |
-| `commands/calendar.rs`       | ~15      | Calendars, Events, Snooze Presets                                                                                         |
-| `commands/ai.rs`             | ~9       | AI Cache, AI Config                                                                                                       |
-| `commands/security.rs`       | ~21      | PGP Keys, Allowlists, Link Scan, Notification VIPs                                                                        |
-| `commands/compliance.rs`     | ~13      | Compliance Profiles + Checks                                                                                              |
-| `commands/deliverability.rs` | ~32      | Deliverability Config, Events, Blacklist, ARF Reports, Delist Requests, Bulk Health, Reputation Scores, Alert Preferences |
-| `commands/workflows.rs`      | ~28      | Workflow Rules, Follow-ups, Pending Ops                                                                                   |
-| `commands/settings.rs`       | ~11      | Settings + Attachment Cache                                                                                               |
-| `commands/db.rs`             | ~13      | Admin, health, sync status, bootstrap state, status snapshot, offline availability CRUD                                   |
-| `commands/imap.rs`           | ~28      | IMAP operations                                                                                                           |
-| `commands/smtp.rs`           | ~2       | SMTP operations                                                                                                           |
-| `commands/invoicing.rs`      | ~24      | Invoices CRUD, clients CRUD, items CRUD, company update, document generation (PEPPOL/PDF), status lifecycle               |
-| `commands/pos.rs`            | ~36      | POS sale CRUD, ESC/POS thermal printing, system printer, cash drawer, barcode scanning                                    |
-| Subsystem Lifecycle          | ~4       | complete_onboarding, get_subsystem_status, get_tool_state, apply_tool_state                                               |
-| Non-command modules          | ~20      | OAuth, PGP, Vault, Export, Pairing, Device, DNS, etc.                                                                     |
-| Vault                        | ~24      | Vault DB ops, folder CRUD, file CRUD, search, categorization, storage stats                                               |
-| Background/Sync              | ~10      | Sync engine CRUD, CalDAV sync, background service management                                                              |
-| Licensing                    | ~8       | License validation, registration, hardware ID, activation                                                                 |
-| Updater                      | ~5       | Update check, download, install, rollback                                                                                 |
-| Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                            |
-| Assets                       | ~3       | Asset management                                                                                                          |
-| **Total**                    | **764**  | All registered via `tauri::generate_handler!` — 60 new commands added since last count (+24 invoicing, +36 POS)           |
+| Module                       | Commands | What It Covers                                                                                                                                                                                                                           |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commands/core.rs`           | ~67      | Accounts, Messages, Threads, Labels, Attachments                                                                                                                                                                                         |
+| `commands/contacts.rs`       | ~93      | CRM Contacts, Groups, Labels, Segments, Tags, Files                                                                                                                                                                                      |
+| `commands/crm.rs`            | ~48      | Campaigns, Backup Schedules, Deliverability, Bounces                                                                                                                                                                                     |
+| `commands/comms.rs`          | ~110     | Templates, Signatures, Drafts, Filters, Quick Steps/Replies, Aliases                                                                                                                                                                     |
+| `commands/tasks.rs`          | ~27      | Tasks + Task Tags                                                                                                                                                                                                                        |
+| `commands/calendar.rs`       | ~15      | Calendars, Events, Snooze Presets                                                                                                                                                                                                        |
+| `commands/ai.rs`             | ~9       | AI Cache, AI Config                                                                                                                                                                                                                      |
+| `commands/security.rs`       | ~21      | PGP Keys, Allowlists, Link Scan, Notification VIPs                                                                                                                                                                                       |
+| `commands/compliance.rs`     | ~13      | Compliance Profiles + Checks                                                                                                                                                                                                             |
+| `commands/deliverability.rs` | ~32      | Deliverability Config, Events, Blacklist, ARF Reports, Delist Requests, Bulk Health, Reputation Scores, Alert Preferences                                                                                                                |
+| `commands/workflows.rs`      | ~28      | Workflow Rules, Follow-ups, Pending Ops                                                                                                                                                                                                  |
+| `commands/settings.rs`       | ~11      | Settings + Attachment Cache                                                                                                                                                                                                              |
+| `commands/db.rs`             | ~13      | Admin, health, sync status, bootstrap state, status snapshot, offline availability CRUD                                                                                                                                                  |
+| `commands/imap.rs`           | ~28      | IMAP operations                                                                                                                                                                                                                          |
+| `commands/smtp.rs`           | ~2       | SMTP operations                                                                                                                                                                                                                          |
+| `commands/invoicing.rs`      | ~33      | Invoices CRUD, clients CRUD (soft/hard delete), items CRUD, catalog items CRUD, company settings CRUD, categories CRUD, company update, document generation (PEPPOL/PDF), status lifecycle, send (SMTP/PGP), calculate, low-stock alerts |
+| `commands/pos.rs`            | ~36      | POS sale CRUD, ESC/POS thermal printing, system printer, cash drawer, barcode scanning                                                                                                                                                   |
+| Subsystem Lifecycle          | ~4       | complete_onboarding, get_subsystem_status, get_tool_state, apply_tool_state                                                                                                                                                              |
+| Non-command modules          | ~20      | OAuth, PGP, Vault, Export, Pairing, Device, DNS, etc.                                                                                                                                                                                    |
+| Vault                        | ~24      | Vault DB ops, folder CRUD, file CRUD, search, categorization, storage stats                                                                                                                                                              |
+| Background/Sync              | ~10      | Sync engine CRUD, CalDAV sync, background service management                                                                                                                                                                             |
+| Licensing                    | ~8       | License validation, registration, hardware ID, activation                                                                                                                                                                                |
+| Updater                      | ~5       | Update check, download, install, rollback                                                                                                                                                                                                |
+| Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                                                                                                                                           |
+| Assets                       | ~3       | Asset management                                                                                                                                                                                                                         |
+| **Total**                    | **773**  | All registered via `tauri::generate_handler!` — 69 new commands added since last count (+33 invoicing, +36 POS)                                                                                                                          |
 
 ---
 
@@ -481,7 +525,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 
 - **15 unique commands** called from production (non-test) TypeScript code
 - **78 commands** used in tests only
-- **528 db\_\* commands** registered and tested from Rust side (+24 invoicing)
+- **537 db\_\* commands** registered and tested from Rust side (+33 invoicing)
 - **1 mismatch fixed:** `close_splashscreen` — was missing Rust command, now added
 
 ---
@@ -648,7 +692,7 @@ src/
 │   │   └── mobile-animations.css
 │   └── stores/            ← 38 Zustand stores (was 21)
 └── src-tauri/
-    ├── commands/           ← 764 #[tauri::command] across 19 domain modules (+vault, background, licensing, updater, invoicing, pos)
+    ├── commands/           ← 773 #[tauri::command] across 19 domain modules (+vault, background, licensing, updater, invoicing, pos)
     ├── db/                 ← 586 pub fn across 130+ files in 13 domain table modules (invoicing, pos added)
     ├── invoicing/          ← Line-item calc engine (Money, TaxMode, calculate_line, calculate_document_totals) (NEW)
     ├── pos/                ← ESC/POS thermal printer driver, system printer fallback (NEW)

@@ -113,11 +113,11 @@ export const NAV_GROUPS: NavRailGroup[] = [
     ],
   },
   {
-    id: "people",
+    id: "crm",
     icon: Users,
-    label: "nav.people",
+    label: "nav.crm",
     items: [
-      { id: "contacts", label: "settings.contacts", icon: Users },
+      { id: "contacts", label: "nav.crm", icon: Users },
     ],
   },
   {
@@ -229,7 +229,8 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/mail")) return "mail";
   if (pathname.startsWith("/label")) return "mail";
   if (pathname.startsWith("/smart-folder")) return "mail";
-  if (pathname.startsWith("/people")) return "people";
+  if (pathname.startsWith("/people")) return "crm";
+  if (pathname.startsWith("/crm")) return "crm";
   if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/workflows")) return "automation";
@@ -265,6 +266,7 @@ export function getActiveSubItem(pathname: string): string | null {
   if (settingsMatch) return settingsMatch[1]!;
 
   if (pathname.startsWith("/people")) return "contacts";
+  if (pathname.startsWith("/crm")) return "contacts";
   if (pathname.startsWith("/attachments")) return "attachments";
 
   // Analytics sub-items
@@ -328,6 +330,7 @@ export function handleNavSelect(id: string): void {
     case "vault":
       router.navigate({ to: "/vault" });
       break;
+    case "crm":
     case "people":
       router.navigate({ to: "/people" });
       break;
@@ -357,6 +360,7 @@ export function handleSubItemSelect(groupId: string, subItemId: string): void {
     case "settings":
       navigateToSettings(subItemId);
       break;
+    case "crm":
     case "people":
       navigateToLabel(subItemId);
       break;

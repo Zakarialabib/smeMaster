@@ -1,3 +1,8 @@
+// Architecture note: Several items below are part of the public calc engine API
+// but are only used indirectly via calculate_document_totals(). The #[allow(dead_code)]
+// annotations are intentional — these are building blocks for future direct use.
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 
 /// Represents an amount of money in the smallest currency unit (e.g., centimes).

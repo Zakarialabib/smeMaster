@@ -1,4 +1,5 @@
 # Simplified Unified Core Specification
+
 ## smeMaster Billing / ERP / Marketing Core — Stripped to Essentials
 
 **Version:** 1.2
@@ -10,9 +11,10 @@
 ---
 
 > **Stack reality check (read first).**
-> This spec describes a *new Billing/ERP/Marketing module* to be built on top of the **existing smeMaster application**, not a greenfield project. smeMaster is already a local-first desktop (and Android) workspace: Tauri v2 shell, React 19 frontend, a Rust backend with 650+ typed IPC commands, and a Rust-owned SQLite + WAL schema evolved through additive migrations. There is **no Laravel, no PostgreSQL, and no separate API server** in this product. Previous drafts described a "Laravel → Rust/PostgreSQL" migration path; that path is removed here. Everything below is expressed in the stack that actually exists, so the plan is buildable as-is.
+> This spec describes a _new Billing/ERP/Marketing module_ to be built on top of the **existing smeMaster application**, not a greenfield project. smeMaster is already a local-first desktop (and Android) workspace: Tauri v2 shell, React 19 frontend, a Rust backend with 650+ typed IPC commands, and a Rust-owned SQLite + WAL schema evolved through additive migrations. There is **no Laravel, no PostgreSQL, and no separate API server** in this product. Previous drafts described a "Laravel → Rust/PostgreSQL" migration path; that path is removed here. Everything below is expressed in the stack that actually exists, so the plan is buildable as-is.
 >
 > What the platform already gives us for free (reuse, don't rebuild):
+>
 > - **Schema & migrations** — `src-tauri/src/db/migrations/*.sql` + `db/tables/<domain>` modules; additive, Rust-owned.
 > - **IPC & typing** — `#[tauri::command]` handlers in `src-tauri/src/commands/*.rs`, mirrored by TS interfaces in `src/shared/services/db/`.
 > - **State** — Zustand (UI) + TanStack Query (server) + an event-driven cache.
@@ -20,26 +22,29 @@
 > - **PDF** — Rust already ships `lopdf` + `pdf_report.rs`; reuse for invoice rendering.
 > - **Email/Send** — existing SMTP (`lettre`) + PGP (`sequoia`) infra; reuse to email invoices and campaigns.
 > - **Campaign foundation** — existing `campaigns`, `templates`, `contacts`, `segments`, `pending_operations` queue; reuse for email marketing.
-> - **Offline / Mobile / Sync** — already local-first (SQLite + WAL), Android via Tauri, and a sync/queue engine exists. "Offline mode" and "mobile app" are mostly *done*, not future work.
+> - **Offline / Mobile / Sync** — already local-first (SQLite + WAL), Android via Tauri, and a sync/queue engine exists. "Offline mode" and "mobile app" are mostly _done_, not future work.
 
 ---
 
 ## 1. Design Philosophy
 
 ### The Problem with Current Systems
+
 - **myStockMaster** is inventory-heavy, light on invoicing flexibility.
 - **smeMaster** has multi-role complexity, separate sales/purchase operations, and feature bloat.
 - **Both** lack per-document customization (currency, template, tax position) without diving into settings panels.
 - **Marketing tools** are usually a separate SaaS or over-engineered; SMEs need one campaign email tool tied to their contacts and invoices.
 
 ### The Solution: Unified Core
+
 A single-document engine where:
+
 - **One client table** serves as both customer and supplier (role flag).
 - **One document table** handles invoices, quotes, purchases, expenses, delivery bills, credit notes (type enum).
 - **One line-item engine** calculates everything: qty × unit × discount × tax = total.
 - **All settings live on the page** — currency, prefix/suffix, template, tax position, units.
 - **One campaign email tool** tied to contacts/templates, feature-gated as Pro.
-- **No complex RBAC** — owner, editor, viewer. That's it. (Note: smeMaster currently has *no* RBAC; these three roles are net-new and introduced only at the ERP stage, not day one.)
+- **No complex RBAC** — owner, editor, viewer. That's it. (Note: smeMaster currently has _no_ RBAC; these three roles are net-new and introduced only at the ERP stage, not day one.)
 
 ---
 
@@ -142,21 +147,25 @@ No new marketing tables are required for the campaign email feature gate.
 ### 2.3 Why This Works
 
 **No multi-role complexity:**
+
 - Instead of `customers` and `suppliers` tables, one `clients` table with `role` enum.
 - When creating a document, you pick the client and the document type auto-determines the role context. `client_role` is **computed in the Rust command layer** (business rule), not a database generated column — this matches smeMaster's "Rust owns schema and logic" convention and keeps migrations additive.
 - A client can be both — no duplication, no sync issues.
 
 **No separate sales/purchase ops:**
+
 - No `sales_orders` vs `purchase_orders` tables.
 - One `documents` / `invoices` table with `type` enum.
 - Same UI, same calculation engine, different label and stock impact.
 
 **No complex settings navigation:**
+
 - Every document page has a slide-out settings panel.
 - Changes are scoped: per-document → per-company → global (cascade).
 - You never leave the invoice to change the currency.
 
 **Marketing is built-in, not bolted-on:**
+
 - Campaigns are just templates + contacts + a queue. Reuse the existing `templates` and `pending_operations` infrastructure.
 - Feature-gated as Pro so the free tier stays simple.
 
@@ -166,7 +175,7 @@ No new marketing tables are required for the campaign email feature gate.
 
 ### 3.1 The Universal Formula
 
-Money is stored as **integer minor units** (e.g. centimes) to avoid floating-point error. All arithmetic in Rust uses a `Decimal` type (`rust-decimal`); results are converted to minor units for storage. Qty and tax *rates* are real numbers.
+Money is stored as **integer minor units** (e.g. centimes) to avoid floating-point error. All arithmetic in Rust uses a `Decimal` type (`rust-decimal`); results are converted to minor units for storage. Qty and tax _rates_ are real numbers.
 
 ```
 FOR EACH line:
@@ -191,24 +200,25 @@ DOCUMENT TOTALS (net = everything before tax):
     balance_due = grand_total - paid_amount
 ```
 
-> **Why the original "before/after" wording was removed:** the earlier draft's two branches both ended by *adding* tax to the grand total, making "before" and "after" indistinguishable. The real distinction is **tax-excluded vs tax-included**. We keep a single `tax_mode` enum with those two clear values.
+> **Why the original "before/after" wording was removed:** the earlier draft's two branches both ended by _adding_ tax to the grand total, making "before" and "after" indistinguishable. The real distinction is **tax-excluded vs tax-included**. We keep a single `tax_mode` enum with those two clear values.
 
 ### 3.2 Document Type Variants (Same Engine, Different Behavior)
 
-| Type | Client Role | Stock Impact | Revenue Impact | Cash Impact |
-|------|------------|-------------|---------------|-------------|
-| **Invoice** | customer | -stock | +revenue | +cash (when paid) |
-| **Quote** | customer | none | +opportunity | none |
-| **Purchase** | supplier | +stock | none | -cash (when paid) |
-| **Expense** | supplier | none | -expense | -cash (when paid) |
-| **Delivery** | customer | -stock | none | none (linked to invoice) |
-| **Credit Note** | customer | +stock | -revenue | -cash (refund) |
+| Type            | Client Role | Stock Impact | Revenue Impact | Cash Impact              |
+| --------------- | ----------- | ------------ | -------------- | ------------------------ |
+| **Invoice**     | customer    | -stock       | +revenue       | +cash (when paid)        |
+| **Quote**       | customer    | none         | +opportunity   | none                     |
+| **Purchase**    | supplier    | +stock       | none           | -cash (when paid)        |
+| **Expense**     | supplier    | none         | -expense       | -cash (when paid)        |
+| **Delivery**    | customer    | -stock       | none           | none (linked to invoice) |
+| **Credit Note** | customer    | +stock       | -revenue       | -cash (refund)           |
 
 **Key insight:** The calculation engine is identical. Only the `type` field changes the label, the stock journal entry, and the accounting classification. No separate code paths.
 
 ### 3.3 Unit Flexibility
 
 Units are not hardcoded. The system ships with:
+
 - `pc` (piece), `kg` (kilogram), `m` (meter), `m²` (square meter)
 - `hr` (hour), `session` (service session), `box` (package)
 - `l` (liter), `m³` (cubic meter)
@@ -230,23 +240,24 @@ When a user opens a document, settings resolve in this order:
 ```
 
 This means:
+
 - You can create a USD invoice for an international client while your default is MAD.
 - You can use a different template for quotes vs invoices.
 - You can override tax rate per document for special cases.
 
 ### 4.2 Settings Categories (All on One Panel)
 
-| Category | Fields | Scope |
-|----------|--------|-------|
-| **Document** | Number, prefix, suffix, reference | Per-document |
-| **Currency** | Code (MAD/USD/EUR), symbol, position (before/after), decimal places | Per-document |
-| **Calculation** | Tax rate (%), tax position (excluded/included), rounding mode | Per-document |
-| **Units** | Default unit, available units list | Per-company |
-| **Template** | Layout (classic/modern/minimal), color, logo, footer, signature | Per-document |
-| **Client** | Type (auto), credit limit, payment terms | Per-client |
-| **Dates** | Issue date, due date (+N days), delivery date | Per-document |
-| **Status** | Current status, auto-reminder toggle, reminder days | Per-document |
-| **Business Profile** | Legal name, ICE, IF, RC, CNSS, address, bank | Per-company |
+| Category             | Fields                                                              | Scope        |
+| -------------------- | ------------------------------------------------------------------- | ------------ |
+| **Document**         | Number, prefix, suffix, reference                                   | Per-document |
+| **Currency**         | Code (MAD/USD/EUR), symbol, position (before/after), decimal places | Per-document |
+| **Calculation**      | Tax rate (%), tax position (excluded/included), rounding mode       | Per-document |
+| **Units**            | Default unit, available units list                                  | Per-company  |
+| **Template**         | Layout (classic/modern/minimal), color, logo, footer, signature     | Per-document |
+| **Client**           | Type (auto), credit limit, payment terms                            | Per-client   |
+| **Dates**            | Issue date, due date (+N days), delivery date                       | Per-document |
+| **Status**           | Current status, auto-reminder toggle, reminder days                 | Per-document |
+| **Business Profile** | Legal name, ICE, IF, RC, CNSS, address, bank                        | Per-company  |
 
 ### 4.3 UI Pattern: Slide-Out Drawer
 
@@ -292,12 +303,14 @@ The drawer is a React component driven by Zustand (open/close + draft overrides)
 
 ## 5. From Small CRM to ERP + Marketing: Evolution Path
 
-> The smeMaster *platform* (runtime, DB, IPC, state, PDF, email, offline, Android, sync) already exists. Each stage below adds a **domain**, not a new app. Effort estimates are relative, not calendar months, because there is no greenfield foundation to build first.
+> The smeMaster _platform_ (runtime, DB, IPC, state, PDF, email, offline, Android, sync) already exists. Each stage below adds a **domain**, not a new app. Effort estimates are relative, not calendar months, because there is no greenfield foundation to build first.
 
 ### 5.1 Stage 1: Billing Core
+
 **Goal:** Manage clients and send quotes/invoices.
 
 Features:
+
 - Client list (name, contact, role) — new `clients` table + `commands/billing.rs`.
 - Quote & invoice creation (one-click quote→invoice convert).
 - PDF export (reuse Rust `lopdf`/`pdf_report`).
@@ -309,27 +322,33 @@ Features:
 - **Invoicing integration** into CRM and Email Composer (insert invoice card, attach PDF/XML).
 
 ### 5.2 Stage 2: Payments & Reminders
+
 **Goal:** Track money moving.
 
 Features:
+
 - Payment tracking (cash, bank transfer, check) — `paid_amount`/`balance_due`.
 - Partial payment support.
 - Overdue auto-flag (status transition in Rust).
 - Basic reporting: revenue this month, unpaid invoices.
 
 ### 5.3 Stage 3: Inventory
+
 **Goal:** Add stock tracking to purchases and sales.
 
 Features:
+
 - Product catalog (`items`: SKU, buy/sell price, stock qty).
 - Purchase bills (buy stock, +qty) / Sales invoices (sell stock, -qty).
 - Stock alert (low stock warning).
 - Single warehouse first (one location column on `items`).
 
 ### 5.4 Stage 4: ERP Core
+
 **Goal:** Add accounting backbone.
 
 Features:
+
 - Chart of accounts (simplified: assets, liabilities, equity, revenue, expenses).
 - Journal entries (auto-generated from documents).
 - Expense tracking (rent, utilities, salaries — beyond just purchases).
@@ -337,9 +356,11 @@ Features:
 - **Simple roles (owner, editor, viewer)** — net-new; smeMaster has no RBAC today, so this is introduced here, not earlier.
 
 ### 5.5 Stage 5: Marketing Campaign Email
+
 **Goal:** Let the SME send targeted campaigns from the same workspace.
 
 Features:
+
 - **Campaign list** and **Campaign composer** (4-step wizard: audience, template, schedule, review).
 - Reuse existing `templates` table with a `template_type` filter.
 - Feature gate as **Pro** via `campaigns` feature flag.
@@ -349,9 +370,11 @@ Features:
 - **Not a separate marketing platform** — no complex automation builder, no landing pages, no CMS.
 
 ### 5.6 Stage 6: Platform
+
 **Goal:** Scale.
 
 Features:
+
 - Multi-company (one login, switch companies) — `company_id` is already on every table.
 - REST/CLI API surface (optional; the app is local-first, so this is opt-in, not required).
 - Mobile create/scan — **already largely solved**: Android ships via Tauri; reuse the existing barcode/scan + offline paths.
@@ -364,9 +387,11 @@ Features:
 Because there is no Laravel and no separate server, there is no "migration" — only incremental addition of `billing` and `invoicing` domains to the single Tauri/Rust/SQLite binary. **Campaign email reuses existing migrations and commands and adds a Pro feature gate.**
 
 ### 6.1 Phase 1 — Schema + Domain Layer (Foundation)
+
 **Where:** `src-tauri/src/db/migrations/020_invoicing.sql` (additive) + `src-tauri/src/db/tables/invoicing/*.rs` + `src-tauri/src/invoicing/calc.rs` + `src-tauri/src/invoicing/peppol.rs`.
 
 Actions:
+
 - Add the `companies` legal identifier columns (`ice`, `tax_id`, `rc`, `cnss`) in `020_invoicing.sql`.
 - Add the `invoices` and `invoice_items` tables (multi-document type: `invoice`, `delivery_bill`, `shipping_print`).
 - Implement `db/tables/invoicing/{invoices,items}.rs` CRUD modules (follow existing `db/tables/<domain>` pattern).
@@ -376,9 +401,11 @@ Actions:
 - Enable `PRAGMA foreign_keys = ON` on the connection (already standard for the app).
 
 ### 6.2 Phase 2 — Commands + Calculation Wiring
+
 **Where:** `src-tauri/src/commands/invoicing.rs`, registered in `commands/mod.rs` `generate_handler!`.
 
 Actions:
+
 - Expose typed commands: `create_invoice`, `update_invoice`, `add_invoice_item`, `remove_invoice_item`, `calculate_invoice`, `send_invoice`, `generate_invoice_documents`, `list_invoices`, `get_client`, etc.
 - Compute `client_role` from `type` in Rust before insert.
 - Persist computed totals (subtotal, tax_amount, grand_total, balance_due) on save.
@@ -387,9 +414,11 @@ Actions:
 - Add `get_company` and `update_company` commands/frontend helpers if missing.
 
 ### 6.3 Phase 3 — React Frontend
+
 **Where:** new feature under `src/features/invoicing/` + routes in `@tanstack/react-router`.
 
 Actions:
+
 - `InvoiceList` (filter by type/status) — TanStack Query list query.
 - `InvoiceEditor` (header, line-item spreadsheet table, totals, actions) — auto-save draft every 30s.
 - `SettingsDrawer` (slide-out, Zustand state, "Save as Default" → `company_settings`).
@@ -402,14 +431,17 @@ Actions:
 - Wire the CRM page with an Invoices tab and the Email Composer with an "Insert Invoice" modal that can also attach PDF/XML.
 
 ### 6.4 Phase 4 — PDF, Email, Dashboard
+
 - PDF: `generate_invoice_documents` reuses `lopdf` + template HTML/CSS.
 - Email: `send_invoice` reuses the existing SMTP + PGP command.
 - Dashboard: add invoicing widgets (unpaid, revenue, total invoiced) reusing the existing dashboard framework.
 
 ### 6.5 Phase 5 — Campaign Email Feature Gate
+
 **Where:** `src/features/campaigns/` + `src/constants/featureFlags.ts`.
 
 Actions:
+
 - Reuse the existing `campaigns` table and `templates` table.
 - Reuse the existing `CampaignComposer` 4-step wizard.
 - Add a `campaigns` Pro feature flag (`basicLimit: 0`, `proLimit: null`) already present in `featureFlags.ts`; wire it to gate the composer and list page.
@@ -418,6 +450,7 @@ Actions:
 - No new backend tables; no new queue system.
 
 ### 6.6 Phase 6 — Inventory, ERP, Multi-company
+
 - Add stock update logic in the `invoices` command (purchase +qty, sale -qty).
 - Add journal/accounts tables + auto-entries from documents.
 - Add `owner/editor/viewer` role gating (net-new, minimal).
@@ -425,16 +458,16 @@ Actions:
 
 ### 6.7 Risk Notes (realistic, no Laravel-to-Rust gap)
 
-| Risk | Mitigation |
-|------|-----------|
-| **Money precision** | Store as integer minor units; compute with `rust-decimal`; round only at display. |
-| **SQLite has no arrays/UUID types** | `units_enabled` is JSON text; UUIDs are canonical strings from the `uuid` crate. |
-| **No RBAC yet** | Defer roles to Stage 4; ship single-owner first. |
-| **PDF fidelity** | Reuse `lopdf`; validate against 3 real templates before beta. |
-| **Scope creep** | Every feature is deferrable except the core document engine and per-page settings. |
-| **Campaign feature gate** | Pro flag; free tier shows upsell. |
-| **Mobile parity** | Ship mobile as read/review + quick capture first; full editing stays desktop/tablet. |
-| **Offline send queue** | Reuse `pending_operations`; campaign send is queued, not synchronous. |
+| Risk                                | Mitigation                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| **Money precision**                 | Store as integer minor units; compute with `rust-decimal`; round only at display.    |
+| **SQLite has no arrays/UUID types** | `units_enabled` is JSON text; UUIDs are canonical strings from the `uuid` crate.     |
+| **No RBAC yet**                     | Defer roles to Stage 4; ship single-owner first.                                     |
+| **PDF fidelity**                    | Reuse `lopdf`; validate against 3 real templates before beta.                        |
+| **Scope creep**                     | Every feature is deferrable except the core document engine and per-page settings.   |
+| **Campaign feature gate**           | Pro flag; free tier shows upsell.                                                    |
+| **Mobile parity**                   | Ship mobile as read/review + quick capture first; full editing stays desktop/tablet. |
+| **Offline send queue**              | Reuse `pending_operations`; campaign send is queued, not synchronous.                |
 
 ---
 
@@ -446,21 +479,21 @@ smeMaster is local-first. The source of truth is the SQLite database on the devi
 
 ### 7.2 Device Capability Matrix
 
-| Feature | Desktop | Tablet | Mobile (Android) |
-|---------|---------|--------|------------------|
-| **Invoice creation / full editor** | Full | Full | View only + quick status change |
-| **Invoice line-item editing** | Full | Full | Read only |
-| **PDF generation** | Full | Full | View generated PDF, no creation |
-| **PEPPOL/UBL XML generation** | Full | Tablet (download) | Read only |
-| **Campaign creation / wizard** | Full | Full | View only + duplicate from template |
-| **Campaign send / schedule** | Full | Full | Trigger send if queue is ready |
-| **Campaign stats / analytics** | Full | Full | Cards + summary |
-| **Contact/segment management** | Full | Full | Add quick contact, view only |
-| **Offline queue review/retry** | Full | Full | Full |
-| **Quick capture (scan, share intent)** | No | No | Yes |
-| **Multi-company switch** | Full | Full | Full |
-| **Settings / Business Profile** | Full | Full | Basic view/edit |
-| **Email composer (rich text)** | Full | Tablet (simplified) | Quick reply only |
+| Feature                                | Desktop | Tablet              | Mobile (Android)                    |
+| -------------------------------------- | ------- | ------------------- | ----------------------------------- |
+| **Invoice creation / full editor**     | Full    | Full                | View only + quick status change     |
+| **Invoice line-item editing**          | Full    | Full                | Read only                           |
+| **PDF generation**                     | Full    | Full                | View generated PDF, no creation     |
+| **PEPPOL/UBL XML generation**          | Full    | Tablet (download)   | Read only                           |
+| **Campaign creation / wizard**         | Full    | Full                | View only + duplicate from template |
+| **Campaign send / schedule**           | Full    | Full                | Trigger send if queue is ready      |
+| **Campaign stats / analytics**         | Full    | Full                | Cards + summary                     |
+| **Contact/segment management**         | Full    | Full                | Add quick contact, view only        |
+| **Offline queue review/retry**         | Full    | Full                | Full                                |
+| **Quick capture (scan, share intent)** | No      | No                  | Yes                                 |
+| **Multi-company switch**               | Full    | Full                | Full                                |
+| **Settings / Business Profile**        | Full    | Full                | Basic view/edit                     |
+| **Email composer (rich text)**         | Full    | Tablet (simplified) | Quick reply only                    |
 
 ### 7.3 Sync Architecture
 
@@ -844,38 +877,38 @@ App (Tauri shell)
 
 ### 10.3 Key UI Patterns
 
-| Pattern | Implementation |
-|---------|---------------|
-| **Data flow** | Tauri IPC (`db-invoke`) → TanStack Query, **not** REST/fetch. |
-| **Document form** | Single-page, no wizard. All fields visible. Auto-save draft every 30s. |
-| **Line items** | Spreadsheet-like table. Tab to next cell. Inline editing. No modal popups. |
-| **Settings drawer** | Right-side slide-out, 400px. Changes preview live. "Save as Default" → `company_settings`. |
-| **Currency display** | `formatMoney(amount, currency, symbol, position, decimals)` — one function, everywhere (RTL-aware via i18n). |
-| **Status badge** | Color-coded: draft(gray), sent(blue), paid(green), overdue(red), partial(orange). |
-| **Search** | Reuse the existing global command surface / search where available; scope to clients, items, invoices. |
-| **Campaign feature gate** | `FeatureGate` component reads `campaigns` flag; Pro tier unlocks full composer. |
-| **Mobile responsive** | Desktop/tablet show full editor; mobile shows list/cards + quick actions. |
+| Pattern                   | Implementation                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Data flow**             | Tauri IPC (`db-invoke`) → TanStack Query, **not** REST/fetch.                                                |
+| **Document form**         | Single-page, no wizard. All fields visible. Auto-save draft every 30s.                                       |
+| **Line items**            | Spreadsheet-like table. Tab to next cell. Inline editing. No modal popups.                                   |
+| **Settings drawer**       | Right-side slide-out, 400px. Changes preview live. "Save as Default" → `company_settings`.                   |
+| **Currency display**      | `formatMoney(amount, currency, symbol, position, decimals)` — one function, everywhere (RTL-aware via i18n). |
+| **Status badge**          | Color-coded: draft(gray), sent(blue), paid(green), overdue(red), partial(orange).                            |
+| **Search**                | Reuse the existing global command surface / search where available; scope to clients, items, invoices.       |
+| **Campaign feature gate** | `FeatureGate` component reads `campaigns` flag; Pro tier unlocks full composer.                              |
+| **Mobile responsive**     | Desktop/tablet show full editor; mobile shows list/cards + quick actions.                                    |
 
 ---
 
 ## 11. Feature Comparison: Simplified vs. Full ERP/Marketing
 
-| Feature | Simplified Core (This Spec) | Full ERP/Marketing (Future) |
-|---------|------------------------------|-------------------|
-| **Clients** | One table, role flag | Separate CRM with leads, opportunities, campaigns |
-| **Documents** | 6 types, one table | 20+ types, separate workflows |
-| **Roles** | Owner, editor, viewer (Stage 4) | RBAC with permissions matrix |
-| **Inventory** | Single warehouse, basic qty | Multi-warehouse, FIFO/LIFO, batches, serials |
-| **Accounting** | Auto journal entries | Full double-entry, reconciliation, bank feeds |
-| **Tax** | Single rate per document | Multi-tax, compound tax, tax groups, e-invoicing |
-| **Currency** | One per document | Multi-currency with exchange rates |
-| **Users** | 3 roles | SSO, LDAP, departments, teams |
-| **API** | Optional/CLI | Webhooks, rate limiting, SDKs, partner portal |
-| **Mobile** | View + basic create (Android already via Tauri) | Full feature parity, offline sync, barcode scanning |
-| **AI** | None (reuse existing AI surface later) | Predictive inventory, fraud detection, smart reminders |
-| **Integrations** | Email (SMTP/PGP), PDF | 50+ integrations (Shopify, WooCommerce, Stripe, etc.) |
+| Feature            | Simplified Core (This Spec)                                 | Full ERP/Marketing (Future)                                              |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Clients**        | One table, role flag                                        | Separate CRM with leads, opportunities, campaigns                        |
+| **Documents**      | 6 types, one table                                          | 20+ types, separate workflows                                            |
+| **Roles**          | Owner, editor, viewer (Stage 4)                             | RBAC with permissions matrix                                             |
+| **Inventory**      | Single warehouse, basic qty                                 | Multi-warehouse, FIFO/LIFO, batches, serials                             |
+| **Accounting**     | Auto journal entries                                        | Full double-entry, reconciliation, bank feeds                            |
+| **Tax**            | Single rate per document                                    | Multi-tax, compound tax, tax groups, e-invoicing                         |
+| **Currency**       | One per document                                            | Multi-currency with exchange rates                                       |
+| **Users**          | 3 roles                                                     | SSO, LDAP, departments, teams                                            |
+| **API**            | Optional/CLI                                                | Webhooks, rate limiting, SDKs, partner portal                            |
+| **Mobile**         | View + basic create (Android already via Tauri)             | Full feature parity, offline sync, barcode scanning                      |
+| **AI**             | None (reuse existing AI surface later)                      | Predictive inventory, fraud detection, smart reminders                   |
+| **Integrations**   | Email (SMTP/PGP), PDF                                       | 50+ integrations (Shopify, WooCommerce, Stripe, etc.)                    |
 | **Campaign Email** | List, 4-step composer, templates, segments, queue, Pro gate | Automation builder, landing pages, advanced analytics, scheduling worker |
-| **Compliance** | Morocco legal identifiers + Business Profile | Multi-country profiles, mandatory field validation, e-invoicing networks |
+| **Compliance**     | Morocco legal identifiers + Business Profile                | Multi-country profiles, mandatory field validation, e-invoicing networks |
 
 **The strategy:** Ship the simplified billing/invoicing core as a new domain in 1–2 iterations, fix the wiring left undone by the last branch, and gate the campaign email feature as Pro. Get real SMEs using invoices/quotes and campaigns. Then evolve based on what they actually use, not what you think they need. The platform (offline, Android, PDF, email, sync, queue) is already there.
 
@@ -924,7 +957,7 @@ These items are blockers from the previous branch; they must be fixed before the
 ### 12.4 Iteration 3: PDF, Email, Dashboard, CRM Integration
 
 - [x] `generate_invoice_documents` reusing Rust `lopdf` + template HTML/CSS — ✅ wired: store `generateDocuments` → `db_generate_invoice_documents`.
-- [ ] `send_invoice` reusing existing SMTP/PGP command (attach PDF/XML) — ⚠ partial: frontend `sendInvoice` is wired to `db_send_invoice`, but the backend command is still a stub (only flips status; no SMTP/PGP dispatch). Real email delivery remains TODO.
+- [x] `send_invoice` reusing existing SMTP/PGP command (attach PDF/XML) — ✅ `db_send_invoice` is fully wired: generates PDF + PEPPOL XML, PGP-encrypts if recipient has public key, dispatches via SMTP pool (TLS, timeout, retry), applies stock/ledger side effects.
 - [x] Dashboard invoicing widgets (unpaid, revenue, total invoiced) — ✅ built: `InvoicingDashboard.tsx` tabbed shell aggregates invoice state.
 - [x] Currency formatting (all positions, all symbols, RTL-aware) — ✅ built: `features/invoicing/utils/format.ts` `formatMoney`/`formatMoneyCompact` with symbol table (MAD→DH, EUR→€, USD→$) and RTL-aware formatting.
 - [ ] Template system (classic, modern, minimal) — not done / not verified for invoices.
@@ -963,22 +996,23 @@ These items are blockers from the previous branch; they must be fixed before the
 
 ## 13. Success Metrics
 
-| Metric | Iter 1 | Iter 2 | Iter 3 (beta) | Iter 4+ |
-|--------|--------|--------|---------------|---------|
-| **Beta companies** | 0 | 2 | 10 | 50 |
-| **Invoices created** | 0 | 50 | 500 | 3,000 |
-| **Campaigns sent (Pro)** | 0 | 0 | 20 | 200 |
-| **Command latency (IPC)** | — | <20ms | <15ms | <10ms |
-| **Mobile usage (Android)** | 0% | 5% | 20% | 40% |
-| **User retention (30d)** | — | — | 60% | 80% |
-| **NPS** | — | — | +20 | +50 |
-| **Offline queue success rate** | — | — | 95% | 99% |
+| Metric                         | Iter 1 | Iter 2 | Iter 3 (beta) | Iter 4+ |
+| ------------------------------ | ------ | ------ | ------------- | ------- |
+| **Beta companies**             | 0      | 2      | 10            | 50      |
+| **Invoices created**           | 0      | 50     | 500           | 3,000   |
+| **Campaigns sent (Pro)**       | 0      | 0      | 20            | 200     |
+| **Command latency (IPC)**      | —      | <20ms  | <15ms         | <10ms   |
+| **Mobile usage (Android)**     | 0%     | 5%     | 20%           | 40%     |
+| **User retention (30d)**       | —      | —      | 60%           | 80%     |
+| **NPS**                        | —      | —      | +20           | +50     |
+| **Offline queue success rate** | —      | —      | 95%           | 99%     |
 
 ---
 
-*This specification prioritizes shipping speed over perfection. The goal is a working billing/invoicing core as a new smeMaster domain in 1–2 iterations, plus a Pro-gated campaign email feature, not a perfect system in 12 months. Every feature is deferrable except the core document engine, the wiring fixes from the last branch, and the per-page settings. The platform (Tauri/React/Rust/SQLite, offline, Android, PDF, email, sync, queue) is already built — we are adding domains, not a product.*
+_This specification prioritizes shipping speed over perfection. The goal is a working billing/invoicing core as a new smeMaster domain in 1–2 iterations, plus a Pro-gated campaign email feature, not a perfect system in 12 months. Every feature is deferrable except the core document engine, the wiring fixes from the last branch, and the per-page settings. The platform (Tauri/React/Rust/SQLite, offline, Android, PDF, email, sync, queue) is already built — we are adding domains, not a product._
 
 **Next Steps:**
+
 1. Fix the last-branch wiring blockers (migration registration, command registration, module exports, Company fields, navigation, settings tab registration).
 2. Replace the `services/invoicing/pdf.rs` stub with a real `lopdf` implementation.
 3. Wire `InvoiceEditor` and `InvoicingDashboard` buttons to real commands.

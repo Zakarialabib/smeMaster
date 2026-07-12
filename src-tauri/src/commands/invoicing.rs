@@ -975,7 +975,7 @@ pub async fn db_generate_invoice_documents(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 31. db_send_invoice — stub: mark invoice as sent and return status
+// 31. db_send_invoice — generate PDF + PEPPOL XML, dispatch over SMTP (with optional PGP encryption), then mark as sent
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]

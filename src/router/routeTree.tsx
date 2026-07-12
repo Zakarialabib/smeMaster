@@ -58,11 +58,6 @@ const DevicePairingPage = lazy(() =>
     default: m.DevicePairingPage,
   })),
 );
-const ContactsPage = lazy(() =>
-  import("@features/contacts/pages/ContactsPage").then((m) => ({
-    default: m.ContactsPage,
-  })),
-);
 const ContactDetailPage = lazy(() =>
   import("@features/contacts/pages/ContactDetailPage").then((m) => ({
     default: m.ContactDetailPage,
@@ -249,8 +244,7 @@ export const smartFolderThreadRoute = createRoute({
   path: "thread/$threadId",
 });
 
-// ---------- /people (contacts list) ----------
-const ContactsPageWrapper = createPageWrapper("Contacts", ContactsPage as LazyComponent);
+// ---------- /people (merged CRM with Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
 const ContactDetailPageWrapper = createPageWrapper("ContactDetail", ContactDetailPage as LazyComponent);
 
 export const contactDetailRoute = createRoute({
@@ -382,20 +376,22 @@ export const devicePairingRoute = createRoute({
   component: DevicePairingPageWrapper,
 });
 
-// ---------- /people ----------
+// ---------- /people (merged CRM with Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
+const CRMPageWrapper = createPageWrapper("CRM", MergedCRMPage as LazyComponent);
+
 export const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "people",
-  component: ContactsPageWrapper,
+  component: CRMPageWrapper,
 });
 
-// ---------- /crm (merged mobile CRM with tabs) ----------
-const MobileCRMWrapper = createPageWrapper("CRM", MergedCRMPage as LazyComponent);
-
+// ---------- /crm (alias redirects to /people) ----------
 export const crmRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "crm",
-  component: MobileCRMWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/people" });
+  },
 });
 
 // ---------- /dashboard (desktop) ----------

@@ -1,10 +1,11 @@
 # SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 0.9 → 1.0.0-rc · **DB:** 60 migrations · **Tests:** 2,470 TS + 735 Rust ✅
-> **Locales:** en, fr, ar, ja, it · **Commands:** 764 · **Stores:** 38 Zustand
+> **Version:** 1.0.0-rc · **DB:** 60 migrations · **Tests:** 2,470 TS + 735 Rust ✅
+> **Locales:** en, fr, ar, ja, it · **Commands:** 773 · **Stores:** 38 Zustand
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **UI/UX Phases Complete:** 5/8 (Shell, Gestures, Adaptive, Focus, Polish) ✅
+> **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — 9 phases of remaining work (~191h)
 
 ---
@@ -50,7 +51,7 @@ Rust & Tauri — the native layer.
 | [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                 | PGP key gen, encrypt/decrypt                  |
 | [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                 | PKCE OAuth, localhost server, token refresh   |
 | [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 8 Tauri plugins + mobile                      |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 652 IPC commands                              |
+| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 773 IPC commands (33 invoicing + POS)         |
 | [07-key-management](02-BACKEND/07-key-management.md)         | AES-256-GCM, PGP, security model              |
 | [08-mobile-build](02-BACKEND/08-mobile-build.md)             | APK generation, platform targets              |
 | [10-error-system](02-BACKEND/10-error-system.md)             | SerializedError type system                   |
@@ -132,6 +133,12 @@ What the app does, grouped by functional area.
 | [Pairing](04-FEATURES/33-device-pairing.md)               | Device pairing flow                           |
 | [Mobile Native](04-FEATURES/35-mobile-native-features.md) | Native bridge and mobile-only surface         |
 | [Workflows](04-FEATURES/27-workflow-engine.md)            | Legacy note; current rules live in Automation |
+
+### Invoicing & ERP
+
+| Doc                                      | Covers                                         |
+| ---------------------------------------- | ---------------------------------------------- |
+| [Invoicing](04-FEATURES/36-invoicing.md) | Calc engine, 33 IPC commands, PDF/PEPPOL, SMTP |
 
 ### Feature Specs & Plans
 

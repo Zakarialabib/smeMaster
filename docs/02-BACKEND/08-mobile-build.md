@@ -86,10 +86,11 @@ npm run tauri android init
 
 Both desktop and Android NDK cross-compilation pass clean.
 
-| Target                                | Command                 | Status                  |
-| ------------------------------------- | ----------------------- | ----------------------- |
-| Desktop (x86_64-pc-windows-msvc)      | `cargo check`           | ✅ 0 errors, 0 warnings |
-| Android ARM64 (aarch64-linux-android) | `. .\build-android.ps1` | ✅                      |
+| Target                                | Command                 | Status                               |
+| ------------------------------------- | ----------------------- | ------------------------------------ |
+| Desktop (x86_64-pc-windows-msvc)      | `cargo check`           | ✅ 0 errors, 6 pre-existing warnings |
+| Android ARM64 (aarch64-linux-android) | `. .\build-android.ps1` | ✅                                   |
+| Linux (x86_64-unknown-linux-gnu)      | `cargo check`           | ✅ (cross-compile not tested)        |
 
 **Current limitation:** Running `npm run android` (`cargo tauri android dev`) needs an Android Emulator or physical device:
 
@@ -146,6 +147,35 @@ I still need to do this. Here's what I'll run:
 2. Android SDK Build-Tools 34
 3. Android NDK
    Then run `cargo tauri android init --ci --skip-targets-install`.
+
+## Linux Build
+
+Linux builds use `tauri.linux.conf.json` and support three formats:
+
+```bash
+# Build for Linux
+cd src-tauri
+cargo tauri build --target x86_64-unknown-linux-gnu
+
+# Outputs:
+#   target/release/bundle/deb/   — .deb (Debian/Ubuntu)
+#   target/release/bundle/appimage/ — .AppImage (universal)
+#   target/release/bundle/rpm/   — .rpm (Fedora/RHEL)
+```
+
+**Prerequisites:**
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libappindicator3-dev librsvg2-dev
+```
+
+## macOS Build
+
+macOS builds require a Mac with Xcode. No platform-specific config is needed — the base `tauri.conf.json` applies.
+
+```bash
+cargo tauri build --target aarch64-apple-darwin
+```
 
 ## Windows build issues I've hit
 
