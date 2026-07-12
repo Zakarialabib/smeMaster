@@ -1,32 +1,58 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Package, Search, Trash2, CreditCard, Banknote, Printer } from 'lucide-react';
-import { usePosStore, Product } from '../stores/posStore';
+import React, { useState, useEffect } from 'react';
+import {
+  ShoppingCart, Package, Search, Trash2, CreditCard, Banknote,
+  Printer, AlertCircle, RefreshCw,
+} from 'lucide-react';
+import { usePosStore, type Product } from '../stores/posStore';
 import { useHardwareStore } from '../stores/hardwareStore';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
-import { invoke } from '@tauri-apps/api/core';
 import { useToastStore } from '@shared/stores/toastStore';
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: '1', companyId: 'default', name: 'Coffee beans', price: 15.00, stockQuantity: 50, barcode: '123456' },
-  { id: '2', companyId: 'default', name: 'Milk 1L', price: 3.50, stockQuantity: 20, barcode: '789012' },
-  { id: '3', companyId: 'default', name: 'Croissant', price: 4.20, stockQuantity: 15, barcode: '345678' },
-];
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
+import {
+  listProducts, searchProducts, recordSale, openCashDrawer, printReceipt,
+} from '@shared/services/db/invoke/pos';
 
 export const POSPage: React.FC = () => {
   const { cart, products, setProducts, addToCart, updateQuantity, clearCart } = usePosStore();
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    // If store is empty, seed it with mock data
-    if (products.length === 0) {
-      setProducts(MOCK_PRODUCTS);
-    }
-  }, [products, setProducts]);
+  const activeAccountId = useAccountStore((s) => s.activeAccountId) ?? 'default';
 
-  useBarcodeScanner((barcode) => {
-    const product = MOCK_PRODUCTS.find(p => p.barcode === barcode);
-    if (product) {
-      addToCart(product);
+  // Load products from backend
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await listProducts(activeAccountId);
+        if (!cancelled) {
+          setProducts(result as unknown as Product[]);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load products');
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [activeAccountId, setProducts]);
+
+  // Barcode scanner — search via backend
+  useBarcodeScanner(async (barcode) => {
+    try {
+      const results = await searchProducts(activeAccountId, barcode);
+      if (results.length > 0) {
+        addToCart(results[0] as unknown as Product);
+      }
+    } catch {
+      // silent fail for scanner
     }
   });
 
@@ -40,7 +66,7 @@ export const POSPage: React.FC = () => {
       const printer = configs.find(c => c.deviceType === 'printer' && c.isDefault)
         || configs.find(c => c.deviceType === 'printer');
       if (!printer) { toast({ message: 'No printer configured', type: 'error', duration: 4000 }); return; }
-      await invoke('pos_open_cash_drawer', { config: printer });
+      await openCashDrawer(printer);
       toast({ message: 'Cash drawer opened!', type: 'success', duration: 3000 });
     } catch (err) {
       toast({ message: `Failed to open cash drawer: ${err}`, type: 'error', duration: 5000 });
@@ -53,14 +79,27 @@ export const POSPage: React.FC = () => {
       return;
     }
     try {
+      // Record the sale in the backend
+      await recordSale(
+        activeAccountId,
+        cart.map(item => ({
+          productId: item.id,
+          productName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          taxRate: 0,
+        })),
+        total,
+        method,
+      );
+
+      // Print receipt if printer is configured
       const { configs } = useHardwareStore.getState();
-      const defaultPrinter = configs.find(c => c.deviceType === 'printer' && c.isDefault) || configs.find(c => c.deviceType === 'printer');
+      const defaultPrinter = configs.find(c => c.deviceType === 'printer' && c.isDefault)
+        || configs.find(c => c.deviceType === 'printer');
 
       if (defaultPrinter) {
-        await invoke('pos_print_receipt', {
-          config: defaultPrinter,
-          htmlContent: `<h1>Receipt</h1><p>Total: $${total.toFixed(2)}</p><p>Method: ${method}</p>`
-        });
+        await printReceipt(defaultPrinter, `<h1>Receipt</h1><p>Total: $${total.toFixed(2)}</p><p>Method: ${method}</p>`);
       }
 
       toast({ message: `Payment successful via ${method}!`, type: 'success', duration: 4000 });
@@ -70,10 +109,48 @@ export const POSPage: React.FC = () => {
     }
   };
 
+  // Filter products locally by search
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.barcode?.includes(search)
+    (p.barcode && p.barcode.includes(search))
   );
+
+  // Loading state
+  if (loading) {
+    return <SkeletonPage />;
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+        <AlertCircle size={36} className="text-danger" />
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Failed to load POS products</p>
+          <p className="text-xs text-text-tertiary mt-1">{error}</p>
+        </div>
+        <button
+          onClick={() => {
+            setLoading(true);
+            setError(null);
+            listProducts(activeAccountId)
+              .then((result) => {
+                setProducts(result as unknown as Product[]);
+                setLoading(false);
+              })
+              .catch((err) => {
+                setError(err instanceof Error ? err.message : 'Failed to load products');
+                setLoading(false);
+              });
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+        >
+          <RefreshCw size={13} />
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-bg-primary overflow-hidden">
@@ -87,6 +164,7 @@ export const POSPage: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search products..."
+                aria-label="Search products"
                 className="w-full pl-10 pr-4 py-2 border border-border-primary rounded-xl bg-bg-secondary/60 text-text-primary placeholder:text-text-tertiary glass-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -103,13 +181,18 @@ export const POSPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto pr-2">
-          {filteredProducts.map((product) => (
+        <div
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto pr-2"
+          role="list"
+          aria-label="Products"
+        >
+          {filteredProducts.length > 0 ? filteredProducts.map((product) => (
             <button
               key={product.id}
+              role="listitem"
               onClick={() => addToCart(product)}
               aria-label={`Add ${product.name} to cart`}
-              className="p-4 border border-border-primary rounded-xl bg-bg-secondary/60 hover:border-accent transition-colors text-left space-y-2"
+              className="p-4 border border-border-primary rounded-xl bg-bg-secondary/60 hover:border-accent hover:bg-bg-hover/60 transition-colors text-left space-y-2"
             >
               <div className="w-full aspect-square bg-accent/10 rounded-xl flex items-center justify-center">
                 <Package className="text-text-tertiary" size={32} />
@@ -118,12 +201,17 @@ export const POSPage: React.FC = () => {
               <p className="text-accent font-bold">${product.price.toFixed(2)}</p>
               <p className="text-xs text-text-tertiary">Stock: {product.stockQuantity}</p>
             </button>
-          ))}
+          )) : (
+            <div className="col-span-full flex flex-col items-center justify-center py-16 text-center text-text-tertiary">
+              <Package size={32} className="mx-auto mb-2 opacity-40" />
+              <p className="text-sm">{search ? 'No products match your search' : 'No products available'}</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Cart Section */}
-      <div className="w-96 border-l border-border-primary bg-bg-secondary/60 flex flex-col">
+      <div className="w-96 border-l border-border-primary bg-bg-secondary/60 flex flex-col" role="region" aria-label="Shopping cart">
         <div className="p-6 border-b border-border-primary flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ShoppingCart size={20} className="text-text-primary" />
