@@ -54,7 +54,7 @@ pub fn generate_invoice_pdf(
 ) -> Vec<u8> {
     let invoice = &invoice_data.invoice;
     let items = &invoice_data.items;
-    let client_name = client.map(|c| c.name.as_str()).unwrap_or("Client");
+    let client_name = client.map(|c| c.display_name.as_str()).unwrap_or("Client");
 
     // ── Document setup ──────────────────────────────────────────────────
     let mut doc = Document::with_version("1.5");

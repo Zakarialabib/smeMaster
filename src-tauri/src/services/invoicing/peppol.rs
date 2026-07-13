@@ -24,7 +24,7 @@ pub fn generate_peppol_xml(
         .and_then(|d| chrono::DateTime::from_timestamp(d, 0))
         .map(|dt| dt.format("%Y-%m-%d").to_string());
 
-    let buyer_name = client.map(|c| c.name.as_str()).unwrap_or("Customer");
+    let buyer_name = client.map(|c| c.display_name.as_str()).unwrap_or("Customer");
     let buyer_email = client
         .and_then(|c| c.email.as_deref())
         .unwrap_or("unknown@example.com");
