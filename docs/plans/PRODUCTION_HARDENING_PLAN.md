@@ -104,3 +104,39 @@ New file `024_hardening.sql` (register in `migrations/mod.rs` MIGRATIONS array):
   reminder management, timezone display, reauth flow.
 
 Phases are independent per area but always DB→Rust→React within each. Begin PHASE 1 now.
+
+---
+
+# Refined findings (subagent recon, 2026-07-13)
+
+## A. TEMPLATES + EDITOR + DnD (more detail)
+- `TemplateGallery` reorder is NOT persisted (no `reorder` fn in Rust) — DnD is
+  cosmetic only. FIXED: added `reorder()` (024 schema has `sort_order`).
+- `update_fields` built SET clause by `format!`-interpolating caller keys into the
+  column position (only VALUES were bound) — column-identifier injection. Mitigated
+  with `AssertSqlSafe` before, which does NOT validate identifiers. FIXED: allowlist
+  `ALLOWED_TEMPLATE_FIELDS` + reject unknown keys with `AppDbError::Validation`.
+- `DndProvider` (`components/dnd/DndProvider.tsx`) is threads-only — template gallery
+  uses a different/simpler DnD path; unify in Phase 3.
+
+## B. SHOWS / SCHEDULE (spans 4 domains, not one)
+- `scheduled_emails`: still no backend dispatcher (orphaned). #1 gap.
+- **`campaigns` has NO `scheduled_at` column** — schedule mode (immediate/scheduled/
+  recurring) is captured in the UI but NEVER persisted (`crm.rs` ignores it). NEEDS
+  DB column + Rust persist (add to a follow-up migration).
+- `backup_schedules`: `next_run_at` set to `now` on update, never computed from
+  `cron_expression` — cron never evaluated.
+- `calendar_events` publish uses rrule/timezone cols added in 024.
+
+## C. CALENDAR
+- CalDAV sync "won't run" (hand-rolled iCal parser issues; RRULE dropped, TZID
+  mis-parsed at `operations.rs:73,115-117`).
+- `EventCreateModal` has no repeat field; `CalendarPage:276` placeholder `toAddresses`.
+- Recurrence/reminders/attendees editing absent end-to-end (DB now has the tables).
+
+# Progress
+- Phase 1 DB: DONE (migration 024, committed `90129df`).
+- Phase 2 Rust (in progress): templates `update_fields` allowlist + `updated_at`
+  maintenance in `update`/`create`, category-ownership validation in `create`,
+  `reorder()` fn + tests. Next: scheduled_emails dispatcher, campaigns.scheduled_at,
+  calendar recurrence/attendees/reminders CRUD.
