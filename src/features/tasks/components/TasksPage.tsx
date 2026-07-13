@@ -10,6 +10,9 @@ import {
   Plus,
   Calendar,
   ListTodo,
+  Bell,
+  BellOff,
+  Archive,
 } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useTaskStore } from "@features/tasks/stores/taskStore";
@@ -36,7 +39,6 @@ import { PaginationControls } from "@shared/components/ui/PaginationControls";
 import { useGestureActions } from "@shared/hooks/useGestureActions";
 import { TaskItem } from "./TaskItem";
 import { TaskDetailPanel } from "./TaskDetailPanel";
-import { TaskQuickAdd } from "./TaskQuickAdd";
 import { TaskCreateModal } from "./TaskCreateModal";
 import { SmartFilterBar } from "./SmartFilterBar";
 import { ViewToggle } from "./ViewToggle";
@@ -118,6 +120,8 @@ export function TasksPage() {
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
   const searchQuery = useTaskStore((s) => s.searchQuery);
   const setSearchQuery = useTaskStore((s) => s.setSearchQuery);
+  const remindersEnabled = useTaskStore((s) => s.remindersEnabled);
+  const setRemindersEnabled = useTaskStore((s) => s.setRemindersEnabled);
 
   // View preferences (localStorage persisted)
   const viewMode = useTaskViewPrefs((s) => s.viewMode);
@@ -240,6 +244,12 @@ export function TasksPage() {
       setError(friendly);
     }
   }, [paginationError]);
+
+  // Count completed tasks for archive button visibility
+  const completedCount = useMemo(
+    () => tasks.filter((t) => t.is_completed).length,
+    [tasks],
+  );
 
   // Refresh incomplete count whenever paginated tasks change
   useEffect(() => {
@@ -445,6 +455,35 @@ export function TasksPage() {
       await resetTasks();
     }
   }, [resetTasks]);
+
+  const handleArchiveCompleted = useCallback(async () => {
+    const completedTasks = tasks.filter((t) => t.is_completed);
+    if (completedTasks.length === 0) return;
+
+    // Optimistic UI — remove completed tasks from store immediately
+    useTaskStore.getState().archiveCompletedTasks();
+
+    // Delete all completed tasks from DB
+    let deletedCount = 0;
+    let failCount = 0;
+    for (const task of completedTasks) {
+      try {
+        await dbDeleteTask(task.id);
+        deletedCount++;
+      } catch {
+        failCount++;
+      }
+    }
+
+    if (deletedCount > 0) {
+      notify(t('tasks.tasksArchived'), `${deletedCount} ${t('tasks.tasksDone')}`);
+    }
+    if (failCount > 0) {
+      notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
+    }
+
+    await resetTasks();
+  }, [tasks, resetTasks]);
 
   const handleTogglePriority = useCallback(async (id: string) => {
     const task = tasks.find((t) => t.id === id);
@@ -769,6 +808,34 @@ export function TasksPage() {
             />
           </div>
 
+          {/* Reminders toggle */}
+          <button
+            onClick={() => setRemindersEnabled(!remindersEnabled)}
+            className={`p-1.5 rounded-lg border transition-colors ${
+              remindersEnabled
+                ? "border-border-primary text-text-tertiary hover:text-text-primary"
+                : "border-danger/30 text-danger/70 hover:text-danger bg-danger/5"
+            }`}
+            aria-label={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
+            title={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
+          >
+            {remindersEnabled ? <Bell size={14} /> : <BellOff size={14} />}
+          </button>
+
+          {/* Archive completed tasks */}
+          {completedCount > 0 && (
+            <button
+              onClick={handleArchiveCompleted}
+              className="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border border-border-primary text-text-tertiary hover:text-text-primary hover:border-border-primary/60 transition-colors"
+              aria-label={t('tasks.archiveCompleted')}
+              title={t('tasks.archiveCompleted')}
+            >
+              <Archive size={12} />
+              <span className="hidden sm:inline">{t('tasks.archiveCompleted')}</span>
+              <span className="text-text-tertiary/60">({completedCount})</span>
+            </button>
+          )}
+
           {/* Desktop: Columns + ViewToggle */}
           {!isMobile && (
             <ViewToggle
@@ -845,28 +912,6 @@ export function TasksPage() {
           >
             {t('tasks.clearSelection')}
           </button>
-        </div>
-      )}
-
-      {/* Desktop: Quick add (always visible) + Create button */}
-      {!isMobile && (
-        <div className="border-b border-border-primary px-2 shrink-0">
-          <div className="flex items-center gap-1">
-            <TaskQuickAdd
-              onQuickAdd={handleAddTask}
-              onModalCreate={handleModalCreate}
-              accountId={accountId}
-              placeholder={t('tasks.quickAddPlaceholder')}
-            />
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 mr-1 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors shrink-0"
-              aria-label={t('tasks.createWithDetails')}
-            >
-              <ListTodo size={13} />
-              {t('tasks.newTask')}
-            </button>
-          </div>
         </div>
       )}
 
@@ -1013,7 +1058,7 @@ export function TasksPage() {
             <EmptyStateTask
               variant={searchQuery ? "search-empty" : viewMode === "kanban" ? "view-empty" : "no-tasks"}
               viewMode={viewMode}
-              onAction={() => {}}
+              onAction={() => setShowCreateModal(true)}
             />
           ) : viewMode === "kanban" ? (
             <TaskKanbanView

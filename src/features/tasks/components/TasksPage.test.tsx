@@ -122,14 +122,6 @@ vi.mock("@features/tasks/components/TaskDetailPanel", () => ({
   TaskDetailPanel: () => <div data-testid="task-detail-panel" />,
 }));
 
-vi.mock("@features/tasks/components/TaskQuickAdd", () => ({
-  TaskQuickAdd: ({ onQuickAdd }: { onQuickAdd: (title: string) => void }) => (
-    <div data-testid="task-quick-add">
-      <button onClick={() => onQuickAdd("Quick task")}>Quick add</button>
-    </div>
-  ),
-}));
-
 vi.mock("@features/tasks/components/TaskCreateModal", () => ({
   TaskCreateModal: ({ isOpen, onClose, onCreated }: { isOpen: boolean; onClose: () => void; onCreated: (id: string) => void }) =>
     isOpen ? (
