@@ -2146,6 +2146,6 @@ pub async fn db_create_campaign_template(
     .bind(now)
     .fetch_one(&*pool)
     .await
-    .map_err(crate::db::AppDbError::from)?;
+    .map_err(AppDbError::Database)?;
     Ok(tmpl)
 }
