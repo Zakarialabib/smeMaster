@@ -148,6 +148,91 @@ impl MicrosoftGraphDriver {
         self.fetch_delta_pages(token, &url).await
     }
 
+    /// Create a draft email via Microsoft Graph.
+    ///
+    /// Parses the raw RFC 2822 message, extracts headers and body, then
+    /// builds a Graph API JSON payload. The draft is created via
+    /// `POST /me/messages` with `isDraft: true` and the draft ID is returned.
+    pub async fn create_draft(
+        &self,
+        account_id: &str,
+        raw_message: &str,
+    ) -> Result<String, DriverError> {
+        let token = self.get_access_token(account_id).await?;
+
+        // Parse RFC 2822 message
+        let parsed = mailparse::parse_mail(raw_message.as_bytes())
+            .map_err(|e| DriverError::new("PARSE_ERROR", &format!("Failed to parse message: {e}")))?;
+
+        let subject = parsed.headers.iter()
+            .find(|h| h.get_key() == "Subject")
+            .map(|h| h.get_value())
+            .unwrap_or_default();
+
+        let to = parsed.headers.iter()
+            .find(|h| h.get_key() == "To")
+            .map(|h| h.get_value())
+            .unwrap_or_default();
+
+        let cc = parsed.headers.iter()
+            .find(|h| h.get_key() == "Cc")
+            .map(|h| h.get_value());
+
+        let to_recipients: Vec<serde_json::Value> = to.split(',')
+            .map(|addr| serde_json::json!({
+                "emailAddress": { "address": addr.trim() }
+            }))
+            .collect();
+
+        let cc_recipients: Vec<serde_json::Value> = cc.map(|c| {
+            c.split(',').map(|addr| serde_json::json!({
+                "emailAddress": { "address": addr.trim() }
+            })).collect()
+        }).unwrap_or_default();
+
+        let (body_content, body_type) = extract_body_from_parsed(&parsed);
+
+        // Build the Graph API create draft payload
+        let url = "https://graph.microsoft.com/v1.0/me/messages";
+        let payload = serde_json::json!({
+            "subject": subject,
+            "body": {
+                "contentType": body_type,
+                "content": body_content
+            },
+            "toRecipients": to_recipients,
+            "ccRecipients": cc_recipients,
+            "isDraft": true
+        });
+
+        let resp = self
+            .client
+            .post(url)
+            .bearer_auth(&token)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| DriverError::new("HTTP_ERROR", &format!("Graph API create draft failed: {e}")))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let body = resp.text().await.unwrap_or_default();
+            return Err(DriverError::new("GRAPH_ERROR",
+                &format!("Graph API returned {status} when creating draft: {body}")));
+        }
+
+        // Parse the response to extract the draft message ID
+        #[derive(serde::Deserialize)]
+        struct DraftResponse {
+            id: String,
+        }
+
+        let draft: DraftResponse = resp.json().await
+            .map_err(|e| DriverError::new("PARSE_ERROR", &format!("Failed to parse draft response: {e}")))?;
+
+        Ok(draft.id)
+    }
+
     /// Convert a GraphMessage to our unified SyncMessage format.
     fn to_sync_message(msg: GraphMessage) -> SyncMessage {
         let date_ts = msg
@@ -387,18 +472,84 @@ impl ProtocolDriver for MicrosoftGraphDriver {
 
     /// Send an email via Microsoft Graph.
     ///
-    /// NOTE: Microsoft Graph sendMail requires a specific JSON payload,
-    /// not raw RFC 2822. This is not yet implemented.
+    /// Parses the raw RFC 2822 message, extracts headers and body, then
+    /// builds a Graph API sendMail JSON payload. The message is sent via
+    /// `POST /me/sendMail` and saved to the Sent Items folder automatically.
     async fn send(
         &self,
-        _account_id: &str,
-        _raw_message: &str,
+        account_id: &str,
+        raw_message: &str,
         _thread_id: Option<&str>,
     ) -> Result<String, DriverError> {
-        Err(DriverError::new(
-            "NOT_IMPLEMENTED",
-            "Microsoft Graph sendMail not yet implemented. Use IMAP/SMTP for sending.",
-        ))
+        let token = self.get_access_token(account_id).await?;
+
+        // Parse RFC 2822 message to extract headers and body
+        let parsed = mailparse::parse_mail(raw_message.as_bytes())
+            .map_err(|e| DriverError::new("PARSE_ERROR", &format!("Failed to parse message: {e}")))?;
+
+        let subject = parsed.headers.iter()
+            .find(|h| h.get_key() == "Subject")
+            .map(|h| h.get_value())
+            .unwrap_or_default();
+
+        let to = parsed.headers.iter()
+            .find(|h| h.get_key() == "To")
+            .map(|h| h.get_value())
+            .unwrap_or_default();
+
+        let cc = parsed.headers.iter()
+            .find(|h| h.get_key() == "Cc")
+            .map(|h| h.get_value());
+
+        // Parse To recipients
+        let to_recipients: Vec<serde_json::Value> = to.split(',')
+            .map(|addr| serde_json::json!({
+                "emailAddress": { "address": addr.trim() }
+            }))
+            .collect();
+
+        // Parse CC recipients if present
+        let cc_recipients: Vec<serde_json::Value> = cc.map(|c| {
+            c.split(',').map(|addr| serde_json::json!({
+                "emailAddress": { "address": addr.trim() }
+            })).collect()
+        }).unwrap_or_default();
+
+        // Extract body (prefer HTML, fall back to plain text wrapped in <pre>)
+        let (body_content, body_type) = extract_body_from_parsed(&parsed);
+
+        // Build the Graph API sendMail payload
+        let url = "https://graph.microsoft.com/v1.0/me/sendMail";
+        let payload = serde_json::json!({
+            "message": {
+                "subject": subject,
+                "body": {
+                    "contentType": body_type,
+                    "content": body_content
+                },
+                "toRecipients": to_recipients,
+                "ccRecipients": cc_recipients,
+                "saveToSentItems": true
+            }
+        });
+
+        let resp = self
+            .client
+            .post(url)
+            .bearer_auth(&token)
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| DriverError::new("HTTP_ERROR", &format!("Graph API request failed: {e}")))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let body = resp.text().await.unwrap_or_default();
+            return Err(DriverError::new("GRAPH_ERROR",
+                &format!("Graph API returned {status}: {body}")));
+        }
+
+        Ok("sent".to_string())
     }
 
     /// Test connection — not implemented at the trait level.
@@ -415,6 +566,61 @@ impl ProtocolDriver for MicrosoftGraphDriver {
 
     fn provider_type(&self) -> &'static str {
         "microsoft_graph"
+    }
+}
+
+// ── Helper: extract body from parsed email ─────────────────────────
+
+/// Recursively walk the MIME tree of a `ParsedMail` and extract the content.
+///
+/// Returns a tuple of `(content, content_type)` where `content_type` is
+/// either `"html"` or `"text"`. Prefers text/html over text/plain.
+fn extract_body_from_parsed(parsed: &mailparse::ParsedMail) -> (String, String) {
+    let mimetype = &parsed.ctype.mimetype;
+
+    // Single-part message
+    if mimetype == "text/html" {
+        if let Ok(body) = parsed.get_body() {
+            return (body, "html".to_string());
+        }
+    }
+
+    if mimetype == "text/plain" {
+        if let Ok(body) = parsed.get_body() {
+            // Wrap plain text in <pre> so Graph renders it as readable HTML
+            return (format!("<pre>{body}</pre>"), "html".to_string());
+        }
+    }
+
+    // Multipart: search subparts for HTML first, then plain text
+    let mut html_result: Option<String> = None;
+    let mut text_result: Option<String> = None;
+
+    for subpart in &parsed.subparts {
+        let (content, ctype) = extract_body_from_parsed(subpart);
+        if !content.is_empty() {
+            match ctype.as_str() {
+                "html" => {
+                    html_result = Some(content);
+                    // HTML is preferred — stop searching
+                    break;
+                }
+                "text" => {
+                    if text_result.is_none() {
+                        text_result = Some(content);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    if let Some(html) = html_result {
+        (html, "html".to_string())
+    } else if let Some(text) = text_result {
+        (text, "text".to_string())
+    } else {
+        (String::new(), "text".to_string())
     }
 }
 

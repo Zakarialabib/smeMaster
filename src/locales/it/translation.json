@@ -1385,7 +1385,8 @@
     "noContactsFound": "Nessun contatto trovato",
     "taskDetails": "Dettagli attività",
     "connections": "Connessioni",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "skipToContent": "Salta al contenuto principale"
   },
   "quickReply": {
     "title": "Risposte rapide",

@@ -64,6 +64,8 @@ export { FocusInbox, type FocusItem, type FocusItemType, type FocusItemMetadata,
 export { HoverPreview, type HoverContent } from './HoverPreview';
 export { PaginationControls, type PaginationControlsProps } from './PaginationControls';
 export { InfiniteScrollSentinel, type InfiniteScrollSentinelProps } from './InfiniteScrollSentinel';
+export { SkipLink } from './SkipLink';
+export { FocusRegion, FocusOrderManager } from './FocusOrderManager';
 
 /* ─── Illustrations ─── */
 export { GenericEmptyIllustration, InboxClearIllustration, NoAccountIllustration, NoSearchResultsIllustration, ReadingPaneIllustration } from "./illustrations";

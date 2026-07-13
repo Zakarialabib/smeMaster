@@ -165,6 +165,23 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       else if (store.audienceMode === "group") groupId = store.selectedGroupId;
       else if (store.audienceMode === "segment") segmentId = store.selectedSegmentId;
 
+      let scheduledAt: number | undefined;
+      let status: string | undefined;
+
+      if (store.scheduleMode === "scheduled") {
+        const dateStr = store.scheduledDate; // "2026-07-20"
+        const timeStr = store.scheduledTime; // "14:30"
+        const timestamp = new Date(`${dateStr}T${timeStr}:00`).getTime();
+        if (!isNaN(timestamp)) {
+          scheduledAt = Math.floor(timestamp / 1000);
+          status = "scheduled";
+        }
+      }
+
+      if (!status) {
+        status = "sent";
+      }
+
       await svcCreateCampaign({
         companyId: accountId,
         name: store.name.trim(),
@@ -172,6 +189,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         recipientContactIds,
         groupId,
         segmentId,
+        scheduledAt,
         abTestConfig: store.abEnabled && store.variantA.subject && store.variantB.subject
           ? {
               variantA: { subject: store.variantA.subject, body: store.variantA.body },
@@ -181,7 +199,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
             }
           : undefined,
         bodyHtml: store.getBodyHtml(),
-        status: "sent",
+        status,
       });
       loadCampaigns(accountId);
     } catch (err) {

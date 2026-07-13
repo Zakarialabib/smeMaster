@@ -35,6 +35,8 @@ interface EmptyStateWithVariant {
   size?: EmptyStateSize;
   className?: string;
   iconClassName?: string;
+  /** When true, adds aria-live="polite" so screen readers announce this empty state after loading completes. */
+  announce?: boolean;
 }
 
 interface EmptyStateCustom {
@@ -46,6 +48,8 @@ interface EmptyStateCustom {
   iconClassName?: string;
   icon?: LucideIcon;
   illustration?: ComponentType<{ size?: number; className?: string }>;
+  /** When true, adds aria-live="polite" so screen readers announce this empty state after loading completes. */
+  announce?: boolean;
 }
 
 export type EmptyStateProps = EmptyStateWithVariant | EmptyStateCustom;
@@ -114,6 +118,7 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
   let size: EmptyStateSize;
   let className: string;
   let iconClassName: string;
+  let announce: boolean;
 
   if (isVariant) {
     const v = VARIANT_MAP[props.variant];
@@ -125,6 +130,7 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
     size = props.size ?? "md";
     className = props.className ?? "";
     iconClassName = props.iconClassName ?? "";
+    announce = props.announce ?? false;
   } else {
     resolvedTitle = props.title;
     resolvedSubtitle = props.subtitle;
@@ -132,6 +138,7 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
     size = props.size ?? "md";
     className = props.className ?? "";
     iconClassName = props.iconClassName ?? "";
+    announce = props.announce ?? false;
     if ("illustration" in props && props.illustration) {
       resolvedIllustration = props.illustration;
     } else if ("icon" in props && props.icon) {
@@ -140,7 +147,10 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
   }
 
   return (
-    <div className={`${EMPTY_STATE} ${className}`}>
+    <div
+      className={`${EMPTY_STATE} ${className}`}
+      {...(announce ? { role: "status" as const, "aria-live": "polite" as const } : {})}
+    >
       {resolvedIllustration
         ? createElement(resolvedIllustration, {
             size: illustrationSizes[size],

@@ -436,6 +436,7 @@ export interface Campaign {
   status: string;
   sent_count: number;
   sent_at: number | null;
+  scheduled_at: number | null;
   ab_test_config: string | null;
   analytics_json: string | null;
   created_at: number;

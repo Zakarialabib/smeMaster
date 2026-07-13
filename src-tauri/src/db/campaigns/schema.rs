@@ -15,6 +15,17 @@ pub struct Campaign {
     pub sent_at: Option<i64>,
     pub ab_test_config: Option<String>,
     pub analytics_json: Option<String>,
+    pub scheduled_at: Option<i64>,
+    pub recurring_cron: Option<String>,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct CampaignSchedule {
+    pub id: String,
+    pub campaign_id: String,
+    pub scheduled_at: i64,
+    pub status: String,
     pub created_at: i64,
 }
 

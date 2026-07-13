@@ -24,7 +24,7 @@
 
 **Just browsing?** The [STATUS.md](STATUS.md) gives you the full picture of where things stand.
 
-**Shipping a release?** See [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) for all 9 gate status, then [release/checklist.md](release/checklist.md) for the v1.0.0 pre-release checklist.
+**Shipping a release?** See [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) for all 9 gate status, then [release/checklist.md](release/checklist.md) for the pre-release checklist. The automated pipeline is documented in [06-release-pipeline.md](05-DEVELOPMENT/06-release-pipeline.md).
 
 ---
 
@@ -81,17 +81,17 @@ What the app does, grouped by functional area.
 
 ### Core Workflows
 
-| Doc                                                         | Covers                              |
-| ----------------------------------------------------------- | ----------------------------------- |
-| [Email](04-FEATURES/Core/01-email-management.md)            | Inbox, threads, sync, triage        |
-| [Accounts](04-FEATURES/Core/04-accounts.md)                 | Account setup, auth, providers      |
-| [CRM](04-FEATURES/Core/03-crm-contacts.md)                  | Contacts, groups, segments          |
+| Doc                                                         | Covers                                     |
+| ----------------------------------------------------------- | ------------------------------------------ |
+| [Email](04-FEATURES/Core/01-email-management.md)            | Inbox, threads, sync, triage               |
+| [Accounts](04-FEATURES/Core/04-accounts.md)                 | Account setup, auth, providers             |
+| [CRM](04-FEATURES/Core/03-crm-contacts.md)                  | Contacts, groups, segments                 |
 | [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)         | Campaign builder, block editor, mail merge |
-| [Calendar](04-FEATURES/Core/07-calendar.md)                 | Calendars, events, views            |
-| [Tasks](04-FEATURES/Core/08-tasks.md)                       | Priorities, recurrence, linked work |
-| [Automation](04-FEATURES/Core/05-automation.md)             | Trigger/action rules                |
-| [Account Cleaning](04-FEATURES/Core/06-account-cleaning.md) | Retention and cleanup workflows     |
-| [Dashboard](04-FEATURES/Core/09-dashboard.md)               | Cross-feature overview widgets      |
+| [Calendar](04-FEATURES/Core/07-calendar.md)                 | Calendars, events, views                   |
+| [Tasks](04-FEATURES/Core/08-tasks.md)                       | Priorities, recurrence, linked work        |
+| [Automation](04-FEATURES/Core/05-automation.md)             | Trigger/action rules                       |
+| [Account Cleaning](04-FEATURES/Core/06-account-cleaning.md) | Retention and cleanup workflows            |
+| [Dashboard](04-FEATURES/Core/09-dashboard.md)               | Cross-feature overview widgets             |
 
 ### Messaging Layer
 
@@ -136,9 +136,9 @@ What the app does, grouped by functional area.
 
 ### Invoicing & ERP
 
-| Doc                                      | Covers                                         |
-| ---------------------------------------- | ---------------------------------------------- |
-| [Invoicing](04-FEATURES/36-invoicing.md) | Calc engine, 33 IPC commands, PDF/PEPPOL, SMTP |
+| Doc                                                             | Covers                                                     |
+| --------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Invoicing](04-FEATURES/36-invoicing.md)                        | Calc engine, 33 IPC commands, PDF/PEPPOL, SMTP             |
 | [Company & ERP](04-FEATURES/Invoicing-ERP/01-company-tenant.md) | Tenant model, company switcher, where `company_id` is used |
 
 ### Feature Specs & Plans
@@ -160,13 +160,15 @@ Deep-dive guides for complex subsystems.
 
 For contributors and AI agents.
 
-| Doc                                                          | Covers                       |
-| ------------------------------------------------------------ | ---------------------------- |
-| [Quickstart](05-DEVELOPMENT/01-quickstart.md)                | Setup, commands, Mailtrap    |
-| [Testing](05-DEVELOPMENT/02-testing.md)                      | Vitest patterns, Rust tests  |
-| [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)        | Component/hook/service reuse |
-| [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)        | Logcat, WebView, Kotlin      |
-| [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | Tokens, components, patterns |
+| Doc                                                          | Covers                            |
+| ------------------------------------------------------------ | --------------------------------- |
+| [Quickstart](05-DEVELOPMENT/01-quickstart.md)                | Setup, commands, Mailtrap         |
+| [Testing](05-DEVELOPMENT/02-testing.md)                      | Vitest patterns, Rust tests       |
+| [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)        | Component/hook/service reuse      |
+| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)    | Daily PR → Release Please → Build |
+| [Manual Tests](05-DEVELOPMENT/07-manual-tests.md)            | Panic, WAL, watchdog, dev verify  |
+| [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)        | Logcat, WebView, Kotlin           |
+| [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | Tokens, components, patterns      |
 
 ## Roadmap
 
@@ -198,13 +200,13 @@ For shipping v1.0.0.
 
 End-user guides.
 
-| Doc                                              | Covers                                |
-| ------------------------------------------------ | ------------------------------------- |
-| [Getting Started](user-guide/getting-started.md) | Install + first email in 5 minutes    |
-| [Account Setup](user-guide/account-setup.md)     | Gmail, Outlook, manual IMAP/SMTP      |
-| [PGP Setup](user-guide/pgp-setup.md)             | Generate, import, export, encrypt     |
-| [Backup & Restore](user-guide/backup-restore.md) | Auto + manual backup, integrity check |
-| [FAQ](user-guide/faq.md)                         | Common issues and solutions           |
-| [Release Notes](user-guide/release-notes.md)     | v1.0.0 changelog                      |
-| [Automation (User)](user-guide/automation.md) | Create rules, visual builder, AI generation |
-| [Company & ERP (User)](user-guide/company.md) | Switch companies, ERP overview |
+| Doc                                              | Covers                                      |
+| ------------------------------------------------ | ------------------------------------------- |
+| [Getting Started](user-guide/getting-started.md) | Install + first email in 5 minutes          |
+| [Account Setup](user-guide/account-setup.md)     | Gmail, Outlook, manual IMAP/SMTP            |
+| [PGP Setup](user-guide/pgp-setup.md)             | Generate, import, export, encrypt           |
+| [Backup & Restore](user-guide/backup-restore.md) | Auto + manual backup, integrity check       |
+| [FAQ](user-guide/faq.md)                         | Common issues and solutions                 |
+| [Release Notes](user-guide/release-notes.md)     | v1.0.0 changelog                            |
+| [Automation (User)](user-guide/automation.md)    | Create rules, visual builder, AI generation |
+| [Company & ERP (User)](user-guide/company.md)    | Switch companies, ERP overview              |

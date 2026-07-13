@@ -23,6 +23,10 @@ use sqlx::SqlitePool;
 /// - `ab_test_config`: optional A/B-test configuration JSON string.
 /// - `contact_ids`: slice of contact ids to add as recipients. Each is inserted
 ///   with status `'pending'`; an empty slice is allowed.
+/// - `scheduled_at`: optional epoch-second timestamp for scheduled sending.
+///   When set, the campaign status is `'scheduled'` and a `CampaignSchedule`
+///   row + pending_operation are created.
+/// - `recurring_cron`: optional cron expression for recurring campaigns.
 ///
 /// # Returns
 /// The created `Campaign` row (with full row data) once the transaction
@@ -40,6 +44,8 @@ pub async fn create_with_recipients(
     segment_id: Option<&str>,
     ab_test_config: Option<&str>,
     contact_ids: &[String],
+    scheduled_at: Option<i64>,
+    recurring_cron: Option<&str>,
 ) -> Result<Campaign, AppDbError> {
     let mut tx = pool.begin().await.map_err(AppDbError::Database)?;
 
@@ -47,12 +53,16 @@ pub async fn create_with_recipients(
     let now = chrono::Utc::now().timestamp();
     let id = uuid::Uuid::new_v4().to_string();
 
+    let status = if scheduled_at.is_some() { "scheduled" } else { "draft" };
+
     let campaign = sqlx::query_as::<_, Campaign>(
         r#"
         INSERT INTO campaigns (
             id, company_id, name, template_id, segment_id,
-            status, sent_count, ab_test_config, analytics_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, 'draft', 0, ?, NULL, ?)
+            status, sent_count, ab_test_config, analytics_json,
+            scheduled_at, recurring_cron, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, NULL,
+                  ?, ?, ?)
         RETURNING *
         "#,
     )
@@ -61,7 +71,10 @@ pub async fn create_with_recipients(
     .bind(name)
     .bind(template_id)
     .bind(segment_id)
+    .bind(status)
     .bind(ab_test_config)
+    .bind(scheduled_at)
+    .bind(recurring_cron)
     .bind(now)
     .fetch_one(&mut *tx)
     .await
@@ -74,6 +87,53 @@ pub async fn create_with_recipients(
         )
         .bind(&id)
         .bind(contact_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(AppDbError::Database)?;
+    }
+
+    // Step 3: If scheduled, create a CampaignSchedule row and a pending_operation
+    if let Some(sched_at) = scheduled_at {
+        let schedule_id = uuid::Uuid::new_v4().to_string();
+        sqlx::query(
+            r#"
+            INSERT INTO campaign_schedules (id, campaign_id, scheduled_at, status, created_at)
+            VALUES (?, ?, ?, 'pending', ?)
+            "#,
+        )
+        .bind(&schedule_id)
+        .bind(&id)
+        .bind(sched_at)
+        .bind(now)
+        .execute(&mut *tx)
+        .await
+        .map_err(AppDbError::Database)?;
+
+        // Create a pending_operation that the queue service will pick up
+        let op_id = uuid::Uuid::new_v4().to_string();
+        let params = serde_json::json!({
+            "campaignId": id,
+            "scheduleId": schedule_id,
+        });
+        let params_str = serde_json::to_string(&params)
+            .map_err(|e| AppDbError::Internal(format!("JSON serialization error: {e}")))?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO pending_operations (
+                id, company_id, operation_type, resource_id, params,
+                status, retry_count, max_retries, next_retry_at, error_message,
+                campaign_id, created_at
+            ) VALUES (?, ?, 'send_campaign', ?, ?, 'pending', 0, 3, ?, NULL, ?, ?)
+            "#,
+        )
+        .bind(&op_id)
+        .bind(company_id)
+        .bind(&format!("campaign:{id}"))
+        .bind(&params_str)
+        .bind(sched_at)
+        .bind(&id)
+        .bind(now)
         .execute(&mut *tx)
         .await
         .map_err(AppDbError::Database)?;
@@ -187,15 +247,28 @@ pub async fn send_campaign(
         .map_err(AppDbError::Database)?;
     }
 
-    // Step 4: Update campaign status to "sent" with sent_at timestamp
-    sqlx::query(
-        "UPDATE campaigns SET status = 'sent', sent_at = ?, sent_count = sent_count + 1 WHERE id = ?",
-    )
-    .bind(now)
-    .bind(campaign_id)
-    .execute(&mut *tx)
-    .await
-    .map_err(AppDbError::Database)?;
+    // Step 4: Update campaign status to "sent" with sent_at timestamp.
+    // If the campaign is already 'scheduled', the queue service will handle
+    // the status transition — we only update sent_count here.
+    if campaign.status != "scheduled" {
+        sqlx::query(
+            "UPDATE campaigns SET status = 'sent', sent_at = ?, sent_count = sent_count + 1 WHERE id = ?",
+        )
+        .bind(now)
+        .bind(campaign_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(AppDbError::Database)?;
+    } else {
+        // For scheduled campaigns, just increment sent_count without changing status
+        sqlx::query(
+            "UPDATE campaigns SET sent_count = sent_count + 1 WHERE id = ?",
+        )
+        .bind(campaign_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(AppDbError::Database)?;
+    }
 
     tx.commit().await.map_err(AppDbError::Database)?;
 
@@ -256,6 +329,8 @@ mod tests {
             None,
             None,
             &contact_ids,
+            None,
+            None,
         )
         .await
         .unwrap();
@@ -287,6 +362,8 @@ mod tests {
             None,
             None,
             &[],
+            None,
+            None,
         )
         .await
         .unwrap();
@@ -312,6 +389,8 @@ mod tests {
             None,
             None,
             &[],
+            None,
+            None,
         )
         .await
         .unwrap();

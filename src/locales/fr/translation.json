@@ -1337,7 +1337,8 @@
     "noContactsFound": "No contacts found",
     "taskDetails": "Task details",
     "connections": "Connections",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "skipToContent": "Passer au contenu principal"
   },
   "snooze": {
     "addPreset": "Ajouter un préréglage",

@@ -50,11 +50,11 @@ Gate items from PRODUCTION-READINESS.md that are in progress or remaining.
 | ---- | ------------------------------------------ | ------ | ---------- | ------ | ---------------------------------------------------------------------------------- |
 | 1.1  | **CI pipeline (cargo check + pnpm test)**  | 30min  | —          | ✅     | `ci.yml` + `release.yml` + `release-please.yml` + `packaging.yml` already exist    |
 | 1.2  | Keyboard shortcuts system                  | 2h     | —          | ✅     | `useKeyboardShortcuts.ts` (25 shortcuts) + `shortcutStore.ts` + `ShortcutsTab.tsx` |
-| 1.3  | Panic injection manual test                | 30min  | —          | 🔲     | Verify dialog appears on panic                                                     |
-| 1.4  | WAL recovery manual test                   | 30min  | —          | 🔲     | Kill during write → verify replay                                                  |
+| 1.3  | Panic injection manual test                | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
+| 1.4  | WAL recovery manual test                   | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
 | 1.5  | WAL deletion doc                           | 15min  | —          | ✅     | `docs/05-DEVELOPMENT/04-wal-deletion.md`                                           |
-| 1.6  | Watchdog restart manual tests              | 30min  | —          | 🔲     | Panic in sync_engine → verify restart                                              |
-| 1.7  | `npm run tauri dev` runtime verification   | 5min   | —          | 🔲     | Manual check                                                                       |
+| 1.6  | Watchdog restart manual tests              | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
+| 1.7  | `npm run tauri dev` runtime verification   | 5min   | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
 | 1.8  | React.memo / lazy loading (P9 items)       | 2h     | —          | ✅     | `memo` on Skeleton/Badge/EmptyState/ContactAvatar; routes already use `lazy`       |
 | 1.9  | Certificates + public key for distribution | varies | —          | 🔲     | Code signing setup                                                                 |
 | 1.10 | Dogfooding + beta testing                  | 1-2w   | 1.1-1.9    | 🔲     | 7-day dogfood, then beta                                                           |
@@ -67,8 +67,8 @@ From UI/UX roadmap P1 + P6 gaps.
 
 | #    | Task                                     | Effort | Depends On | Status | Notes                                                                                        |
 | ---- | ---------------------------------------- | ------ | ---------- | ------ | -------------------------------------------------------------------------------------------- |
-| 2.1  | **Full keyboard navigation (tab order)** | 3h     | 1.2        | 🔲     | Tab order, focus indicators, skip-links                                                      |
-| 2.2  | **Screen reader support (WCAG AA)**      | 4h     | —          | 🔲     | ARIA labels, live regions, roles                                                             |
+| 2.1  | **Full keyboard navigation (tab order)** | 3h     | 1.2        | ✅     | SkipLink component, FocusOrderManager, `role="search"` on SearchBar                          |
+| 2.2  | **Screen reader support (WCAG AA)**      | 4h     | —          | ✅     | ARIA labels on PremiumSidebar, live regions on Toast/EmptyState, landmark roles              |
 | 2.3  | Rich context menus (right-click)         | 2h     | —          | ✅     | `useContextMenu.ts` + `ContextMenu.tsx` (334 lines)                                          |
 | 2.4  | Drag-and-drop (email→folder/task)        | 4h     | —          | ✅     | Email→folder/label already worked; email→task now wired (sidebar drop target + `insertTask`) |
 | 2.5  | Split-pane resizing                      | 2h     | —          | ✅     | `MailLayout.tsx` draggable divider (240‑800 px)                                              |
@@ -140,15 +140,15 @@ From UI/UX roadmap P1 + P6 gaps.
 
 Items identified from codebase audit where features exist but have gaps.
 
-| #   | Task                                        | Effort | Depends On | Status | Notes                                                  |
-| --- | ------------------------------------------- | ------ | ---------- | ------ | ------------------------------------------------------ |
-| 7.1 | **Microsoft Graph send/draft provider**     | 6h     | —          | 🔲     | Currently throws unsupported error for send/draft      |
-| 7.2 | Campaign scheduling (fully wired)           | 4h     | —          | 🔲     | Scheduling not yet end-to-end                          |
-| 7.3 | Calendar provider expansion (beyond Google) | 4h     | —          | 🔲     | Additional CalDAV providers                            |
-| 7.4 | Template engine unification (3 systems → 1) | 8h     | —          | 🔲     | Email + Campaign + Warmup → single catalog             |
-| 7.5 | Mail composer feature gaps (25 gaps)        | varies | —          | 🔲     | See `docs/superpowers/composer-architecture.md`        |
-| 7.6 | Campaign analytics end-to-end               | 3h     | —          | 🔲     | Reports/analytics from live data                       |
-| 7.7 | Mobile push notification completeness       | 3h     | —          | 🔲     | Full notification product coverage (currently partial) |
+| #   | Task                                        | Effort | Depends On | Status | Notes                                                                                |
+| --- | ------------------------------------------- | ------ | ---------- | ------ | ------------------------------------------------------------------------------------ |
+| 7.1 | **Microsoft Graph send/draft provider**     | 6h     | —          | ✅     | Rust send() + create_draft() implemented; TS MicrosoftGraphEmailProvider class wired |
+| 7.2 | Campaign scheduling (fully wired)           | 4h     | —          | ✅     | Migration 029 + Rust DAL + frontend ScheduleStep → scheduled_at pipeline             |
+| 7.3 | Calendar provider expansion (beyond Google) | 4h     | —          | 🔲     | Additional CalDAV providers                                                          |
+| 7.4 | Template engine unification (3 systems → 1) | 8h     | —          | 🔲     | Email + Campaign + Warmup → single catalog                                           |
+| 7.5 | Mail composer feature gaps (25 gaps)        | varies | —          | 🔲     | See `docs/superpowers/composer-architecture.md`                                      |
+| 7.6 | Campaign analytics end-to-end               | 3h     | —          | 🔲     | Reports/analytics from live data                                                     |
+| 7.7 | Mobile push notification completeness       | 3h     | —          | 🔲     | Full notification product coverage (currently partial)                               |
 
 ---
 
@@ -243,16 +243,16 @@ Phase 9 (Backend Hardening)
 | Phase     | Effort (est.) | Remaining | Status                          |
 | --------- | ------------- | --------- | ------------------------------- |
 | Phase 0   | —             | —         | ✅ Complete                     |
-| Phase 1   | ~20h          | ~3h       | 🎯 Sprint (6 of 9 items ✅)     |
+| Phase 1   | ~20h          | ~3h       | 🎯 Sprint (6 done, 4 manual)    |
 | Phase 2   | ~20h          | —         | ✅ Complete (15 of 15 items ✅) |
-| Phase 3   | ~9h           | ~2h       | 📋 Planned (4 of 5 items ✅)    |
+| Phase 3   | ~9h           | —         | ✅ Complete (5 of 5 items ✅)   |
 | Phase 4   | ~22h          | —         | ✅ Complete (8 of 8 items ✅)   |
 | Phase 5   | ~25h          | —         | ✅ Complete (5 of 5 items ✅)   |
 | Phase 6   | ~30h          | ~30h      | 💤 Deferred                     |
-| Phase 7   | ~28h          | ~28h      | 💤 Deferred                     |
+| Phase 7   | ~28h          | ~21h      | 📋 Planned (3 of 7 items ✅)    |
 | Phase 8   | ~12h          | —         | ✅ Complete (5 of 5 items ✅)   |
 | Phase 9   | ~15h          | —         | ✅ Complete (6 of 6 items ✅)   |
-| **Total** | **~187h**     | **~63h**  | (58h deferred in Ph6+Ph7)       |
+| **Total** | **~187h**     | **~54h**  | (30h deferred in Ph6)           |
 
 ---
 

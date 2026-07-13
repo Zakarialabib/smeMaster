@@ -52,6 +52,7 @@ export async function createCampaignWithRecipients(input: {
   abTestConfig?: string | null;
   bodyHtml?: string | null;
   contactIds: string[];
+  scheduledAt?: number | null;
 }): Promise<{ campaign: Campaign; recipientCount: number }> {
   return invokeCommand<{ campaign: Campaign; recipientCount: number }>(
     'db_create_campaign_with_recipients',
@@ -64,6 +65,7 @@ export async function createCampaignWithRecipients(input: {
         ab_test_config: input.abTestConfig ?? null,
         body_html: input.bodyHtml ?? null,
         contact_ids: input.contactIds,
+        scheduled_at: input.scheduledAt ?? null,
       },
     },
   );

@@ -57,7 +57,7 @@ export function SearchBar() {
   };
 
   return (
-    <div className="relative">
+    <div role="search" className="relative">
       <Search
         size={14}
         className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"

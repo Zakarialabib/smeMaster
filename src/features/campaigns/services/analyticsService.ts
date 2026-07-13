@@ -1,5 +1,6 @@
 import { getEngagementTimeSeries } from "@features/campaigns/db/campaignRecipients";
-import { executeSearchQuery, insertAnalyticsSnapshot } from "@shared/services/db/db-invoke";
+import { executeSearchQuery } from "@shared/services/db/db-invoke";
+import { insertAnalyticsSnapshot } from "@shared/services/db/invoke/core";
 
 export interface DailyStat {
   date: string;
@@ -34,7 +35,20 @@ export interface OverviewStats {
   averageClickRate: number;
 }
 
+/**
+ * Get live campaign analytics from campaign_recipients and utm_links tables.
+ * Saves a snapshot after computation for future use.
+ */
 export async function getCampaignAnalytics(
+  campaignId: string,
+): Promise<CampaignAnalytics> {
+  return computeLiveAnalytics(campaignId);
+}
+
+/**
+ * Compute analytics live from campaign_recipients and utm_links tables.
+ */
+async function computeLiveAnalytics(
   campaignId: string,
 ): Promise<CampaignAnalytics> {
   const [statsRow, dailyStats, linkRows] = await Promise.all([
@@ -67,7 +81,8 @@ export async function getCampaignAnalytics(
   ]);
 
   const total = statsRow.total || 1;
-  return {
+
+  const analytics: CampaignAnalytics = {
     totalSent: statsRow.sent,
     uniqueOpens: statsRow.opened,
     totalClicks: statsRow.clicked,
@@ -78,8 +93,20 @@ export async function getCampaignAnalytics(
     dailyStats,
     topLinks: linkRows.map((r) => ({ url: r.url, clicks: r.click_count })),
   };
+
+  // Fire-and-forget snapshot save for future dashboard caching
+  try {
+    await insertAnalyticsSnapshot(crypto.randomUUID(), campaignId, JSON.stringify(analytics));
+  } catch {
+    // Snapshot failure is non-critical
+  }
+
+  return analytics;
 }
 
+/**
+ * Get aggregate campaign stats across all campaigns for an account.
+ */
 export async function getOverview(
   accountId: string,
 ): Promise<OverviewStats> {
@@ -117,9 +144,13 @@ export async function getOverview(
   };
 }
 
+/**
+ * Compute and persist an analytics snapshot for a campaign.
+ * Useful as a manual "refresh snapshot" action.
+ */
 export async function takeAnalyticsSnapshot(
   campaignId: string,
 ): Promise<void> {
-  const analytics = await getCampaignAnalytics(campaignId);
+  const analytics = await computeLiveAnalytics(campaignId);
   await insertAnalyticsSnapshot(crypto.randomUUID(), campaignId, JSON.stringify(analytics));
 }

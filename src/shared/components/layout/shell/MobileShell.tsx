@@ -20,6 +20,7 @@ import {
   handleSubItemSelect,
 } from "./navConfig";
 import type { ReactNode } from "react";
+import { SkipLink } from "@shared/components/ui/SkipLink";
 
 /**
  * Uses the EventBus to drive shell-level UI reactivity:
@@ -112,9 +113,7 @@ function TabletLandscapeShell({
     <div className="flex flex-col h-screen overflow-hidden text-text-primary">
       <FrostedBackground intensity={0.4} />
       <div className="relative z-10 flex flex-col h-screen overflow-hidden">
-        <a href="#main-content" className="skip-to-content">
-          Skip to content
-        </a>
+        <SkipLink />
         <OfflineBanner />
         {licenseBanner}
         <SyncIndicator visible={syncing} />

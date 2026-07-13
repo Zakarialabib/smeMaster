@@ -1186,8 +1186,12 @@ export function PremiumSidebar({
         <nav
           role="navigation"
           aria-label="Main navigation"
+          aria-describedby="nav-rail-desc"
           className="hidden md:flex flex-col h-full w-16 glass-nav-rail shrink-0 overflow-hidden"
         >
+          <span id="nav-rail-desc" className="sr-only">
+            {t("nav.keyboardNavHint")}
+          </span>
           {/* Main groups — top-aligned */}
           <div className={`flex-1 flex flex-col items-center ${gapClass} py-3`}>
             {mainGroups.map(renderIconItem)}

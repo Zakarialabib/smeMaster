@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, lazy, Suspense } from "react";
-import { Send, Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { Send, Plus, Trash2, ChevronDown, ChevronRight, Calendar, Ban } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useCampaignStore, type Campaign } from "@features/campaigns/stores/campaignStore";
 import { CAMPAIGN_STATUS_COLORS } from "@/constants/campaignDefaults";
@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { safeDbOperation } from "@features/campaigns/services/errorHandler";
 import { notify } from "@shared/services/notifications/toastHelper";
-import { deleteCampaign as dbDeleteCampaign } from "@features/campaigns/db/campaigns";
+import { deleteCampaign as dbDeleteCampaign, updateCampaignStatus as dbUpdateCampaignStatus } from "@features/campaigns/db/campaigns";
 
 interface CampaignListProps {
   accountId: string;
@@ -75,6 +75,19 @@ export function CampaignList({ accountId }: CampaignListProps) {
       loadCampaigns(accountId);
     } else {
       notify("Failed to delete campaign", result.error);
+    }
+  }, [accountId, loadCampaigns]);
+
+  const handleCancelSchedule = useCallback(async (campaignId: string, campaignName: string) => {
+    const result = await safeDbOperation(
+      async () => { await dbUpdateCampaignStatus(campaignId, "draft"); },
+      { operationLabel: "cancel schedule" },
+    );
+    if (result.success) {
+      notify("Schedule cancelled", `"${campaignName}" has been moved to drafts.`);
+      loadCampaigns(accountId);
+    } else {
+      notify("Failed to cancel schedule", result.error);
     }
   }, [accountId, loadCampaigns]);
 
@@ -196,6 +209,21 @@ export function CampaignList({ accountId }: CampaignListProps) {
                             <span>{openRate}% {t('campaign.opened')}</span>
                           </>
                         )}
+                        {c.status === "scheduled" && c.scheduled_at && (
+                          <>
+                            <span className="w-1 h-1 rounded-full bg-text-tertiary/30 shrink-0" />
+                            <Calendar size={12} className="text-accent shrink-0" />
+                            <span className="text-accent">{new Date(c.scheduled_at * 1000).toLocaleDateString()}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleCancelSchedule(c.id, c.name); }}
+                              className="p-0.5 text-text-tertiary hover:text-danger transition-colors shrink-0"
+                              title={t('common.cancel')}
+                              aria-label={t('common.cancel')}
+                            >
+                              <Ban size={12} />
+                            </button>
+                          </>
+                        )}
                         <span className="ml-auto">{new Date(c.created_at * 1000).toLocaleDateString()}</span>
                       </div>
                     </button>
@@ -244,8 +272,24 @@ export function CampaignList({ accountId }: CampaignListProps) {
                         <span className="text-sm font-medium text-text-primary truncate block">{c.name}</span>
                       </div>
                       <span className={`text-xs font-medium ${colorClass} shrink-0`}>{c.status}</span>
+                      {c.status === "scheduled" && c.scheduled_at && !isMobileDevice && (
+                        <span className="flex items-center gap-1 text-xs text-accent shrink-0">
+                          <Calendar size={12} />
+                          <span>{new Date(c.scheduled_at * 1000).toLocaleDateString()}</span>
+                        </span>
+                      )}
                       {!isMobileDevice && <span className="text-xs text-text-tertiary shrink-0">{t('campaign.nSent', { n: c.sent_count })}</span>}
                       {!isMobileDevice && <span className="text-xs text-text-tertiary shrink-0">{new Date(c.created_at * 1000).toLocaleDateString()}</span>}
+                      {c.status === "scheduled" && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleCancelSchedule(c.id, c.name); }}
+                          className="p-1 text-text-tertiary hover:text-danger transition-colors shrink-0"
+                          title={t('common.cancel')}
+                          aria-label={t('common.cancel')}
+                        >
+                          <Ban size={14} />
+                        </button>
+                      )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.name); }}
                         className="p-1 text-text-tertiary hover:text-danger transition-colors shrink-0"

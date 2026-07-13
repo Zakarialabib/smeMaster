@@ -6,6 +6,34 @@ export interface MicrosoftGraphClientConfig {
   expiresAt: number;
 }
 
+export interface GraphUser {
+  id: string;
+  displayName?: string;
+  mail?: string;
+  userPrincipalName?: string;
+  givenName?: string;
+  surname?: string;
+  jobTitle?: string;
+  mobilePhone?: string;
+  officeLocation?: string;
+  preferredLanguage?: string;
+}
+
+export interface GraphMailFolder {
+  id: string;
+  displayName: string;
+  parentFolderId?: string;
+  childFolderCount?: number;
+  unreadItemCount?: number;
+  totalItemCount?: number;
+  isHidden?: boolean;
+  wellKnownName?: string;
+}
+
+export interface GraphMailFolderResponse {
+  value: GraphMailFolder[];
+}
+
 export class MicrosoftGraphClient {
   private accountId: string;
   private clientId: string;
@@ -90,8 +118,8 @@ export class MicrosoftGraphClient {
   /**
    * Get user profile.
    */
-  async getMe() {
-    return this.request("/me");
+  async getMe(): Promise<GraphUser> {
+    return this.request<GraphUser>("/me");
   }
 
   /**
@@ -144,10 +172,163 @@ export class MicrosoftGraphClient {
   }
 
   /**
+   * Send a raw MIME message (base64url-encoded RFC822).
+   * Creates a draft, uploads the MIME content, then sends it.
+   */
+  async sendRawMime(rawBase64Url: string): Promise<{ id: string }> {
+    const token = await this.getAccessToken();
+    const mimeContent = this.decodeBase64Url(rawBase64Url);
+
+    const draftId = await this.createEmptyDraft(token);
+
+    try {
+      await this.uploadMimeContent(token, draftId, mimeContent);
+      await this.sendDraft(token, draftId);
+    } catch (err) {
+      // Clean up the draft on failure
+      await this.cleanupDraft(token, draftId);
+      throw err;
+    }
+
+    return { id: draftId };
+  }
+
+  /**
+   * Create a draft from raw MIME (base64url-encoded RFC822).
+   */
+  async createDraftFromMime(rawBase64Url: string): Promise<{ id: string }> {
+    const token = await this.getAccessToken();
+    const mimeContent = this.decodeBase64Url(rawBase64Url);
+
+    const draftId = await this.createEmptyDraft(token);
+
+    try {
+      await this.uploadMimeContent(token, draftId, mimeContent);
+    } catch (err) {
+      await this.cleanupDraft(token, draftId);
+      throw err;
+    }
+
+    return { id: draftId };
+  }
+
+  /**
+   * Update an existing draft with new MIME content.
+   */
+  async updateDraftMime(draftId: string, rawBase64Url: string): Promise<void> {
+    const token = await this.getAccessToken();
+    const mimeContent = this.decodeBase64Url(rawBase64Url);
+
+    const response = await fetch(
+      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "message/rfc822",
+        },
+        body: mimeContent,
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Microsoft Graph API error: ${response.status} - ${error}`);
+    }
+  }
+
+  /**
+   * Delete a draft message.
+   */
+  async deleteDraft(draftId: string): Promise<void> {
+    await this.request(`/me/messages/${draftId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ── Private helpers for raw MIME operations ─────────────────────────────
+
+  private decodeBase64Url(data: string): string {
+    const base64 = data.replace(/-/g, "+").replace(/_/g, "/");
+    return atob(base64);
+  }
+
+  private async createEmptyDraft(token: string): Promise<string> {
+    const response = await fetch(
+      "https://graph.microsoft.com/v1.0/me/messages",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isDraft: true }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Microsoft Graph API error: ${response.status} - ${error}`);
+    }
+
+    const draft = await response.json();
+    return draft.id as string;
+  }
+
+  private async uploadMimeContent(
+    token: string,
+    draftId: string,
+    mimeContent: string,
+  ): Promise<void> {
+    const response = await fetch(
+      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "message/rfc822",
+        },
+        body: mimeContent,
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Microsoft Graph API error: ${response.status} - ${error}`);
+    }
+  }
+
+  private async sendDraft(token: string, draftId: string): Promise<void> {
+    const response = await fetch(
+      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/send`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Microsoft Graph API error: ${response.status} - ${error}`);
+    }
+  }
+
+  private async cleanupDraft(token: string, draftId: string): Promise<void> {
+    try {
+      await fetch(`https://graph.microsoft.com/v1.0/me/messages/${draftId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // Ignore cleanup failures
+    }
+  }
+
+  /**
    * Get mail folders.
    */
-  async getMailFolders() {
-    return this.request("/me/mailFolders");
+  async getMailFolders(): Promise<GraphMailFolderResponse> {
+    return this.request<GraphMailFolderResponse>("/me/mailFolders");
   }
 
   /**

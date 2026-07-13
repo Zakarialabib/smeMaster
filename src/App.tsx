@@ -24,6 +24,7 @@ import { NotificationToast } from "@shared/components/ui/NotificationToast";
 import { TemplateDemo } from "./features/mail/components/templates/TemplateDemo";
 import { DEMO_FOLLOW_UP } from "./features/mail/constants/templateDemos";
 import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
+import { SkipLink } from "@shared/components/ui/SkipLink";
 import { OnboardingScreen } from "@features/onboarding/OnboardingScreen";
 import { useLicenseStore } from "@shared/stores/licenseStore";
 import { SinglePageLayout } from "@shared/components/layout";
@@ -399,12 +400,7 @@ export default function App() {
       ) : (
         <ErrorBoundary name="App">
           <Suspense fallback={<div className="flex h-screen items-center justify-center bg-bg-primary"><span className="text-xs text-text-tertiary">Loading...</span></div>}>
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded focus:outline-none focus:ring-2 focus:ring-accent-hover"
-            >
-              Skip to main content
-            </a>
+            <SkipLink />
             <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" id="status-announcer" />
             {biometric.isLocked && biometric.isAvailable && (
               <BiometricLockScreen

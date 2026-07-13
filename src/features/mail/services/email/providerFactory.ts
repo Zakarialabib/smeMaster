@@ -40,12 +40,13 @@ export async function getEmailProvider(
       provider = new ImapSmtpProvider(accountId);
       break;
 
-    case "microsoft_graph":
-      throw new Error(
-        `Microsoft Graph provider is not yet supported for ${account.email || accountId}. ` +
-        `Actions like creating drafts, sending, and label management are only available ` +
-        `for IMAP and Gmail accounts at this time.`,
-      );
+    case "microsoft_graph": {
+      const { MicrosoftGraphEmailProvider } = await import("./microsoftGraphProvider");
+      const { getMicrosoftGraphClient } = await import("../microsoft/tokenManager");
+      const client = await getMicrosoftGraphClient(accountId);
+      provider = new MicrosoftGraphEmailProvider(accountId, client);
+      break;
+    }
 
     case "gmail_api":
     default: {

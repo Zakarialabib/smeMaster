@@ -280,7 +280,7 @@ pub async fn db_update_campaign_ab_test_config(
     config: String,
 ) -> CmdResult<()> {
     crate::db::tables::campaigns::campaigns::update(
-        &pool, &campaign_id, None, None, None, Some(&config), None,
+        &pool, &campaign_id, None, None, None, Some(&config), None, None,
     )
     .await?;
     Ok(())
@@ -667,6 +667,8 @@ pub async fn db_create_campaign(
         segment_id.as_deref(),
         ab_test_config.as_deref(),
         analytics_json.as_deref(),
+        None, // scheduled_at
+        None, // recurring_cron
     )
     .await
     .map_err(Into::into)
@@ -793,6 +795,12 @@ pub struct CreateCampaignWithRecipientsInput {
     pub ab_test_config: Option<String>,
     /// Contact ids to add as recipients.
     pub contact_ids: Vec<String>,
+    /// Optional epoch-second timestamp for scheduled sending.
+    /// When set, the campaign is created in 'scheduled' status and a
+    /// pending_operation is enqueued for the queue service.
+    pub scheduled_at: Option<i64>,
+    /// Optional cron expression for recurring campaigns (e.g. "0 9 * * 1").
+    pub recurring_cron: Option<String>,
 }
 
 /// Result of creating a campaign with recipients.
@@ -831,6 +839,8 @@ pub async fn db_create_campaign_with_recipients(
         input.segment_id.as_deref(),
         input.ab_test_config.as_deref(),
         &input.contact_ids,
+        input.scheduled_at,
+        input.recurring_cron.as_deref(),
     )
     .await?;
 

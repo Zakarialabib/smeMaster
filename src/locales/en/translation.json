@@ -1407,7 +1407,8 @@
     "noContactsFound": "No contacts found",
     "taskDetails": "Task details",
     "connections": "Connections",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "skipToContent": "Skip to main content"
   },
   "quickReply": {
     "title": "Quick Replies",

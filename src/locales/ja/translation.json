@@ -1385,7 +1385,8 @@
     "noContactsFound": "No contacts found",
     "taskDetails": "Task details",
     "connections": "Connections",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "skipToContent": "メインコンテンツにスキップ"
   },
   "quickReply": {
     "title": "クイック返信",

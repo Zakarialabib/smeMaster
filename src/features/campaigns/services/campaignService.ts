@@ -23,6 +23,7 @@ export interface CampaignCreateInput {
   groupId?: string;
   status?: string;
   bodyHtml?: string;
+  scheduledAt?: number;
   abTestConfig?: {
     variantA: { subject: string; body: string };
     variantB: { subject: string; body: string };
@@ -82,6 +83,7 @@ export async function createCampaign(
     abTestConfig,
     bodyHtml: input.bodyHtml,
     contactIds,
+    scheduledAt: input.scheduledAt,
   });
 
   return result.campaign.id;

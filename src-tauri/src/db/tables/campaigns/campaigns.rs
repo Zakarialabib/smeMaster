@@ -51,6 +51,8 @@ pub async fn get_by_id(pool: &SqlitePool, id: &str) -> Result<Campaign, AppDbErr
 /// - `segment_id`: optional contact segment id.
 /// - `ab_test_config`: optional A/B-test configuration JSON string.
 /// - `analytics_json`: optional analytics payload JSON string.
+/// - `scheduled_at`: optional epoch-second timestamp for scheduled sending.
+/// - `recurring_cron`: optional cron expression for recurring campaigns.
 ///
 /// A new UUID primary key and `created_at` timestamp are generated; `status`
 /// is seeded to `'draft'` and `sent_count` to `0`.
@@ -69,6 +71,8 @@ pub async fn create(
     segment_id: Option<&str>,
     ab_test_config: Option<&str>,
     analytics_json: Option<&str>,
+    scheduled_at: Option<i64>,
+    recurring_cron: Option<&str>,
 ) -> Result<Campaign, AppDbError> {
     let now = chrono::Utc::now().timestamp();
     let id = uuid::Uuid::new_v4().to_string();
@@ -77,8 +81,10 @@ pub async fn create(
         r#"
         INSERT INTO campaigns (
             id, company_id, name, template_id, segment_id,
-            status, sent_count, ab_test_config, analytics_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, 'draft', 0, ?, ?, ?)
+            status, sent_count, ab_test_config, analytics_json,
+            scheduled_at, recurring_cron, created_at
+        ) VALUES (?, ?, ?, ?, ?, 'draft', 0, ?, ?,
+                  ?, ?, ?)
         RETURNING *
         "#,
     )
@@ -89,6 +95,8 @@ pub async fn create(
     .bind(segment_id)
     .bind(ab_test_config)
     .bind(analytics_json)
+    .bind(scheduled_at)
+    .bind(recurring_cron)
     .bind(now)
     .fetch_one(pool)
     .await
@@ -103,6 +111,7 @@ pub async fn create(
 /// - `id`: primary key of the campaign to update.
 /// - `name`, `template_id`, `segment_id`, `ab_test_config`, `analytics_json`:
 ///   optional new values; `None` keeps the current persisted value.
+/// - `scheduled_at`: optional epoch-second timestamp; `None` keeps current.
 ///
 /// # Returns
 /// The updated `Campaign` row after the write.
@@ -119,6 +128,7 @@ pub async fn update(
     segment_id: Option<&str>,
     ab_test_config: Option<&str>,
     analytics_json: Option<&str>,
+    scheduled_at: Option<i64>,
 ) -> Result<Campaign, AppDbError> {
     // Always update all mutable columns, carrying forward existing
     // values when not provided.
@@ -129,6 +139,7 @@ pub async fn update(
     let new_segment_id = segment_id.or(existing.segment_id.as_deref()).map(String::from);
     let new_ab_test = ab_test_config.or(existing.ab_test_config.as_deref()).map(String::from);
     let new_analytics = analytics_json.or(existing.analytics_json.as_deref()).map(String::from);
+    let new_scheduled_at = scheduled_at.or(existing.scheduled_at);
 
     sqlx::query_as::<_, Campaign>(
         r#"
@@ -137,7 +148,8 @@ pub async fn update(
             template_id = ?,
             segment_id = ?,
             ab_test_config = ?,
-            analytics_json = ?
+            analytics_json = ?,
+            scheduled_at = ?
         WHERE id = ?
         RETURNING *
         "#,
@@ -147,6 +159,7 @@ pub async fn update(
     .bind(&new_segment_id)
     .bind(&new_ab_test)
     .bind(&new_analytics)
+    .bind(new_scheduled_at)
     .bind(id)
     .fetch_one(pool)
     .await
@@ -256,6 +269,8 @@ mod tests {
             None,
             None,
             None,
+            None,
+            None,
         )
         .await
         .unwrap();
@@ -282,6 +297,8 @@ mod tests {
             None,
             None,
             None,
+            None,
+            None,
         )
         .await
         .unwrap();
@@ -304,10 +321,10 @@ mod tests {
         let company_id = "acct_campaign_list";
         helpers::insert_test_account(&pool, company_id).await;
 
-        create(&pool, company_id, "Campaign A", None, None, None, None)
+        create(&pool, company_id, "Campaign A", None, None, None, None, None, None)
             .await
             .unwrap();
-        create(&pool, company_id, "Campaign B", None, None, None, None)
+        create(&pool, company_id, "Campaign B", None, None, None, None, None, None)
             .await
             .unwrap();
 
@@ -323,7 +340,7 @@ mod tests {
         let company_id = "acct_campaign_update";
         helpers::insert_test_account(&pool, company_id).await;
 
-        let created = create(&pool, company_id, "Original", None, None, None, None)
+        let created = create(&pool, company_id, "Original", None, None, None, None, None, None)
             .await
             .unwrap();
 
@@ -331,6 +348,7 @@ mod tests {
             &pool,
             &created.id,
             Some("Updated Name"),
+            None,
             None,
             None,
             None,
@@ -351,7 +369,7 @@ mod tests {
         let company_id = "acct_campaign_status";
         helpers::insert_test_account(&pool, company_id).await;
 
-        let created = create(&pool, company_id, "Status Test", None, None, None, None)
+        let created = create(&pool, company_id, "Status Test", None, None, None, None, None, None)
             .await
             .unwrap();
 
@@ -374,7 +392,7 @@ mod tests {
         let company_id = "acct_campaign_delete";
         helpers::insert_test_account(&pool, company_id).await;
 
-        let created = create(&pool, company_id, "Delete Me", None, None, None, None)
+        let created = create(&pool, company_id, "Delete Me", None, None, None, None, None, None)
             .await
             .unwrap();
 
