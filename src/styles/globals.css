@@ -129,13 +129,16 @@
   --desktop-density-relaxed: 48px;
   /* Global UI density, driven by [data-density] on <html> (set in Appearance). */
   --ui-row-height: 40px;
-[data-density="compact"] { --ui-row-height: 32px; }
-[data-density="normal"] { --ui-row-height: 40px; }
-[data-density="relaxed"] { --ui-row-height: 48px; }
   --desktop-nav-item-height: 36px;
   --desktop-toolbar-height: 44px;
   --desktop-statusbar-height: 28px;
 }
+
+/* UI density overrides — must live OUTSIDE @theme (Tailwind v4: @theme only
+   allows custom properties / @keyframes, not nested selectors). */
+[data-density="compact"] { --ui-row-height: 32px; }
+[data-density="normal"] { --ui-row-height: 40px; }
+[data-density="relaxed"] { --ui-row-height: 48px; }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
