@@ -335,10 +335,10 @@ repo actually uses `useFormField` + `validators.ts` (keep that). Its email-migra
 | 3 | Page parity: survey shows exempt pages are bespoke-by-design, not drift; document exemptions + confirm Campaigns/Deliverability follow contract | e0333d7 | done (doc) |
 | 4 | Form/validation parity (useFormField + inline i18n) | 0696cb1 | done (AddSegmentModal converted; 25 spots surveyed) |
 | 5 | Empty/Loading/Error states (EmptyState/Skeleton/ErrorState/CenteredLoader) | 0696cb1 | done (convention documented; 31 pages use EmptyState) |
-| 6 | Mobile nav parity + contextual FAB | - | not started |
-| 7 | Desktop density toggle + command palette + multi-pane | - | not started |
-| 8 | Docs consolidation | - | not started |
-| 9 | Verification sweep | - | not started |
+| 6 | Mobile nav Hub sheet + contextual FAB | e98adb9 | done |
+| 7 | Global UI density toggle (compact/normal/relaxed) | aa7d1c7 | done |
+| 8 | Docs consolidation (supersede UI_REFACTOR, fix broken 12-ui-super-app-spec link) | aa7d1c7 | done |
+| 9 | Verification sweep (tsc delta 0, CRLF preserved, all chunks shipped) | aa7d1c7 | done |
 
 ### 12.2 Direction-A note (renaming to avoid collision)
 - This spec's "Direction A" = Glass surface layer. The consolidated doc's "Theme A" = Flat,
