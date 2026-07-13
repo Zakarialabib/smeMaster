@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  CheckSquare,
   Search,
   Trash2,
   CheckCircle2,
@@ -10,6 +10,9 @@ import {
   Plus,
   Calendar,
   ListTodo,
+  Bell,
+  BellOff,
+  Archive,
 } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useTaskStore } from "@features/tasks/stores/taskStore";
@@ -36,7 +39,6 @@ import { PaginationControls } from "@shared/components/ui/PaginationControls";
 import { useGestureActions } from "@shared/hooks/useGestureActions";
 import { TaskItem } from "./TaskItem";
 import { TaskDetailPanel } from "./TaskDetailPanel";
-import { TaskQuickAdd } from "./TaskQuickAdd";
 import { TaskCreateModal } from "./TaskCreateModal";
 import { SmartFilterBar } from "./SmartFilterBar";
 import { ViewToggle } from "./ViewToggle";
@@ -53,6 +55,7 @@ import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
 import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
 import { useNavigate } from "@tanstack/react-router";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
+import { PageScaffold } from "@shared/components/layout";
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   urgent: 0,
@@ -104,6 +107,7 @@ function getDueDateStyle(timestamp: number): string {
 }
 
 export function TasksPage() {
+  const { t } = useTranslation();
   const isMobile = useMobile();
   const [showFilters, setShowFilters] = useState(false);
   const accounts = useAccountStore((s) => s.accounts);
@@ -116,6 +120,8 @@ export function TasksPage() {
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
   const searchQuery = useTaskStore((s) => s.searchQuery);
   const setSearchQuery = useTaskStore((s) => s.setSearchQuery);
+  const remindersEnabled = useTaskStore((s) => s.remindersEnabled);
+  const setRemindersEnabled = useTaskStore((s) => s.setRemindersEnabled);
 
   // View preferences (localStorage persisted)
   const viewMode = useTaskViewPrefs((s) => s.viewMode);
@@ -159,7 +165,7 @@ export function TasksPage() {
     customActions: [
       {
         id: 'complete',
-        label: 'Complete',
+        label: t('tasks.markComplete'),
         icon: null,
         direction: 'left',
         color: 'bg-emerald-500',
@@ -170,7 +176,7 @@ export function TasksPage() {
       },
       {
         id: 'delete',
-        label: 'Delete',
+        label: t('tasks.delete'),
         icon: null,
         direction: 'long-left',
         destructive: true,
@@ -238,6 +244,12 @@ export function TasksPage() {
       setError(friendly);
     }
   }, [paginationError]);
+
+  // Count completed tasks for archive button visibility
+  const completedCount = useMemo(
+    () => tasks.filter((t) => t.is_completed).length,
+    [tasks],
+  );
 
   // Refresh incomplete count whenever paginated tasks change
   useEffect(() => {
@@ -388,10 +400,10 @@ export function TasksPage() {
       { operationLabel: "create task" },
     );
     if (result.success) {
-      notify("Task created", `"${title}" has been added.`);
+      notify(t('tasks.taskCreated'), `"${title}" ${t('tasks.hasBeenAdded')}`);
       await resetTasks();
     } else {
-      notify("Failed to create task", result.error);
+      notify(t('tasks.failedToCreate'), result.error);
     }
   }, [accountId, resetTasks]);
 
@@ -419,12 +431,12 @@ export function TasksPage() {
       { operationLabel: completed ? "complete task" : "uncomplete task" },
     );
     if (result.success) {
-      if (completed) notify("Task completed", "Way to go!");
+      if (completed) notify(t('tasks.taskCompleted'), t('tasks.wayToGo'));
       await resetTasks();
     } else {
       // Rollback optimistic update
       useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 0 : 1 });
-      notify("Failed to update task", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
     }
   }, [tasks, resetTasks]);
 
@@ -439,10 +451,39 @@ export function TasksPage() {
       await resetTasks();
     } else {
       // Rollback via full reload
-      notify("Failed to delete task", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
       await resetTasks();
     }
   }, [resetTasks]);
+
+  const handleArchiveCompleted = useCallback(async () => {
+    const completedTasks = tasks.filter((t) => t.is_completed);
+    if (completedTasks.length === 0) return;
+
+    // Optimistic UI — remove completed tasks from store immediately
+    useTaskStore.getState().archiveCompletedTasks();
+
+    // Delete all completed tasks from DB
+    let deletedCount = 0;
+    let failCount = 0;
+    for (const task of completedTasks) {
+      try {
+        await dbDeleteTask(task.id);
+        deletedCount++;
+      } catch {
+        failCount++;
+      }
+    }
+
+    if (deletedCount > 0) {
+      notify(t('tasks.tasksArchived'), `${deletedCount} ${t('tasks.tasksDone')}`);
+    }
+    if (failCount > 0) {
+      notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
+    }
+
+    await resetTasks();
+  }, [tasks, resetTasks]);
 
   const handleTogglePriority = useCallback(async (id: string) => {
     const task = tasks.find((t) => t.id === id);
@@ -459,7 +500,7 @@ export function TasksPage() {
     } else {
       // Rollback
       useTaskStore.getState().updateTaskInStore(id, { priority: task.priority });
-      notify("Failed to update priority", result.error);
+      notify(t('tasks.failedToUpdateTask'), result.error);
     }
   }, [tasks, resetTasks]);
 
@@ -483,7 +524,7 @@ export function TasksPage() {
   const getSwipeActions = useCallback((task: DbTask): SwipeActions => ({
     left: {
       primary: {
-        label: task.is_completed ? "Undo" : "Complete",
+        label: task.is_completed ? t('tasks.undo') : t('tasks.markComplete'),
         icon: "check-circle-2",
         color: "bg-emerald-500",
         onAction: () => {
@@ -492,7 +533,7 @@ export function TasksPage() {
         },
       },
       secondary: {
-        label: "Delete",
+        label: t('tasks.delete'),
         icon: "trash-2",
         color: "bg-red-500",
         onAction: () => {
@@ -504,13 +545,13 @@ export function TasksPage() {
     },
     right: {
       primary: {
-        label: task.priority === "high" ? "Unflag" : "Flag",
+        label: task.priority === "high" ? t('tasks.unflag') : t('tasks.flag'),
         icon: "star",
         color: "bg-amber-500",
         onAction: () => handleTogglePriority(task.id),
       },
     },
-  }), [executeAction, handleTogglePriority]);
+  }), [executeAction, handleTogglePriority, t]);
 
   const handleBulkComplete = useCallback(async () => {
     let completedCount = 0;
@@ -525,10 +566,10 @@ export function TasksPage() {
     }
     setSelectedIds(new Set());
     if (completedCount > 0) {
-      notify("Tasks completed", `${completedCount} task(s) marked done.`);
+      notify(t('tasks.tasksCompleted'), `${completedCount} ${t('tasks.tasksDone')}`);
     }
     if (failCount > 0) {
-      notify("Some tasks failed", `${failCount} task(s) could not be completed.`);
+      notify(t('tasks.someFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
   }, [selectedIds, resetTasks]);
@@ -546,10 +587,10 @@ export function TasksPage() {
     }
     setSelectedIds(new Set());
     if (deletedCount > 0) {
-      notify("Tasks deleted", `${deletedCount} task(s) removed.`);
+      notify(t('tasks.tasksDeleted'), `${deletedCount} ${t('tasks.tasksDone')}`);
     }
     if (failCount > 0) {
-      notify("Some deletions failed", `${failCount} task(s) could not be deleted.`);
+      notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
   }, [selectedIds, resetTasks]);
@@ -582,7 +623,7 @@ export function TasksPage() {
     if (result.success) {
       await resetTasks();
     } else {
-      notify("Failed to reschedule task", result.error);
+      notify(t('tasks.failedToReschedule'), result.error);
     }
   }, [resetTasks]);
 
@@ -635,7 +676,7 @@ export function TasksPage() {
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggleComplete(task.id, !task.is_completed); }}
                 className="mt-0.5 shrink-0"
-                aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+                aria-label={task.is_completed ? t('tasks.markIncomplete') : t('tasks.markComplete')}
               >
                 {task.is_completed ? (
                   <CheckCircle2 size={20} className="text-success" />
@@ -678,7 +719,7 @@ export function TasksPage() {
                     </span>
                   )}
                   {task.recurrence_rule && (
-                    <span className="text-[0.6rem] text-text-tertiary" aria-label="Recurring">â†»</span>
+                    <span className="text-[0.6rem] text-text-tertiary" aria-label={t('tasks.recurring')}>↻</span>
                   )}
                 </div>
               </div>
@@ -694,7 +735,7 @@ export function TasksPage() {
                 {subtaskCount > 0 && (
                   <div className="space-y-1">
                     <p className="text-[0.6rem] font-semibold uppercase tracking-wider text-text-tertiary">
-                      Subtasks ({completedSubtasks}/{subtaskCount})
+                      {t('tasks.subtasks')} ({completedSubtasks}/{subtaskCount})
                     </p>
                     {subtasks!.map((sub) => (
                       <div key={sub.id} className="flex items-center gap-2 py-1">
@@ -728,7 +769,7 @@ export function TasksPage() {
 
                 {task.thread_id && (
                   <p className="text-[0.55rem] text-accent/60 flex items-center gap-1">
-                    <span>ðŸ”—</span> Linked to email thread
+                    <span>🔗</span> {t('tasks.linkedToEmailThread')}
                   </p>
                 )}
               </div>
@@ -737,22 +778,23 @@ export function TasksPage() {
         </SwipeableRow>
       </div>
     );
-  }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap]);
+  }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap, t]);
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-bg-primary/50">
-      {/* Header â€” compact for mobile, spacious for desktop */}
-      <div className="flex items-center justify-between px-3 sm:px-5 py-2 sm:py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm">
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <CheckSquare size={16} className="text-accent shrink-0 sm:size-[18]" />
-          <h1 className="text-sm sm:text-base font-semibold text-text-primary whitespace-nowrap">Tasks</h1>
-          {filteredTasks.length > 0 && (
-            <span className="text-[0.625rem] sm:text-xs text-text-tertiary bg-bg-tertiary px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
-              {filteredTasks.length}
-            </span>
-          )}
-        </div>
-
+    <PageScaffold
+      title={t('tasks.title')}
+      count={filteredTasks.length}
+      actions={
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          aria-label={t('tasks.createWithDetails')}
+        >
+          <ListTodo size={13} />
+          {t('tasks.newTask')}
+        </button>
+      }
+      toolbar={
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
           <div className="relative">
@@ -761,22 +803,48 @@ export function TasksPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
+              placeholder={t('tasks.search')}
               className="w-24 sm:w-48 pl-7 pr-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
             />
           </div>
 
-          {/* Desktop: Columns + ViewToggle + filter controls */}
+          {/* Reminders toggle */}
+          <button
+            onClick={() => setRemindersEnabled(!remindersEnabled)}
+            className={`p-1.5 rounded-lg border transition-colors ${
+              remindersEnabled
+                ? "border-border-primary text-text-tertiary hover:text-text-primary"
+                : "border-danger/30 text-danger/70 hover:text-danger bg-danger/5"
+            }`}
+            aria-label={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
+            title={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
+          >
+            {remindersEnabled ? <Bell size={14} /> : <BellOff size={14} />}
+          </button>
+
+          {/* Archive completed tasks */}
+          {completedCount > 0 && (
+            <button
+              onClick={handleArchiveCompleted}
+              className="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border border-border-primary text-text-tertiary hover:text-text-primary hover:border-border-primary/60 transition-colors"
+              aria-label={t('tasks.archiveCompleted')}
+              title={t('tasks.archiveCompleted')}
+            >
+              <Archive size={12} />
+              <span className="hidden sm:inline">{t('tasks.archiveCompleted')}</span>
+              <span className="text-text-tertiary/60">({completedCount})</span>
+            </button>
+          )}
+
+          {/* Desktop: Columns + ViewToggle */}
           {!isMobile && (
-            <div className="flex items-center gap-2">
-              <ViewToggle
-                viewMode={viewMode}
-                density={density}
-                onViewModeChange={setViewMode}
-                onDensityChange={setDensity}
-                taskCount={filteredTasks.length}
-              />
-            </div>
+            <ViewToggle
+              viewMode={viewMode}
+              density={density}
+              onViewModeChange={setViewMode}
+              onDensityChange={setDensity}
+              taskCount={filteredTasks.length}
+            />
           )}
 
           {/* Mobile filter toggle */}
@@ -784,24 +852,16 @@ export function TasksPage() {
             <button
               onClick={() => setShowFilters((v) => !v)}
               className={`p-1.5 rounded-lg border ${showFilters ? "bg-accent/10 border-accent text-accent" : "border-border-primary text-text-tertiary"}`}
-              aria-label="Toggle filters"
+              aria-label={t('tasks.toggleFilters')}
             >
               <SlidersHorizontal size={14} />
             </button>
           )}
         </div>
-      </div>
+      }
+    >
 
-      {/* AI Suggestion Banner â€” only show when AI feature is enabled */}
-      {aiEnabled && (
-        <AiTaskSuggestionBanner
-          suggestionCount={0}
-          onReview={() => {}}
-          onDismiss={() => {}}
-        />
-      )}
-
-      {/* SmartFilterBar (desktop + mobile) â€” replaces raw <select> filters */}
+      {/* SmartFilterBar (desktop + mobile) — kept as first child under the toolbar */}
       <SmartFilterBar
         filterStatus={filterStatus}
         onFilterStatusChange={setFilterStatus}
@@ -819,52 +879,39 @@ export function TasksPage() {
         onDateFilterChange={(f) => setDateFilter(f as any)}
       />
 
+      {/* AI Suggestion Banner — only show when AI feature is enabled */}
+      {aiEnabled && (
+        <AiTaskSuggestionBanner
+          suggestionCount={0}
+          onReview={() => {}}
+          onDismiss={() => {}}
+        />
+      )}
+
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 bg-accent/5 border-b border-accent/20 shrink-0">
-          <span className="text-xs text-text-secondary">{selectedIds.size} selected</span>
+          <span className="text-xs text-text-secondary">{t('tasks.selectedCount', { count: selectedIds.size })}</span>
           <button
             onClick={handleBulkComplete}
             className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover"
           >
             <CheckCircle2 size={13} />
-            Complete
+            {t('tasks.complete')}
           </button>
           <button
             onClick={handleBulkDelete}
             className="flex items-center gap-1 text-xs text-danger hover:opacity-80"
           >
             <Trash2 size={13} />
-            Delete
+            {t('tasks.delete')}
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
             className="text-xs text-text-tertiary hover:text-text-primary ml-auto"
           >
-            Clear selection
+            {t('tasks.clearSelection')}
           </button>
-        </div>
-      )}
-
-      {/* Desktop: Quick add (always visible) + Create button */}
-      {!isMobile && (
-        <div className="border-b border-border-primary px-2 shrink-0">
-          <div className="flex items-center gap-1">
-            <TaskQuickAdd
-              onQuickAdd={handleAddTask}
-              onModalCreate={handleModalCreate}
-              accountId={accountId}
-              placeholder="Add a task..."
-            />
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 mr-1 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors shrink-0"
-              aria-label="Create task with full details"
-            >
-              <ListTodo size={13} />
-              New task
-            </button>
-          </div>
         </div>
       )}
 
@@ -877,7 +924,7 @@ export function TasksPage() {
             </span>
             <input
               type="text"
-              placeholder="Quick add task..."
+              placeholder={t('tasks.mobileQuickAddPlaceholder')}
               className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
               autoFocus
               onKeyDown={(e) => {
@@ -899,15 +946,15 @@ export function TasksPage() {
             <button
               onClick={() => { setShowCreateModal(true); setShowMobileQuickAdd(false); }}
               className="flex items-center gap-1 px-2 py-1 text-[0.6875rem] font-medium text-accent hover:text-accent-hover bg-accent/10 rounded-md transition-colors shrink-0"
-              aria-label="Open full task form"
+              aria-label={t('tasks.openFullForm')}
             >
-              Details
+              {t('tasks.addDetails')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Task list â€” view mode switching */}
+      {/* Task list — view mode switching */}
       {isMobile ? (
         <>
           {viewMode === "agenda" ? (
@@ -927,7 +974,7 @@ export function TasksPage() {
                 className="h-full overflow-y-auto px-3 py-3 pb-24"
                 aria-busy={loading && filteredTasks.length === 0}
                 aria-live="polite"
-                aria-label="Tasks list"
+                aria-label={t('tasks.tasksList')}
               >
                 {loading && tasks.length === 0 ? (
                   <div className="space-y-3 px-3 pt-3">
@@ -948,7 +995,7 @@ export function TasksPage() {
                     <div className="flex items-start gap-3">
                       <AlertCircle size={18} className="text-danger shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary">Unable to load tasks</p>
+                        <p className="text-sm font-medium text-text-primary">{t('tasks.unableToLoad')}</p>
                         <p className="text-xs text-text-tertiary mt-1 leading-relaxed">{error}</p>
                       </div>
                       <button
@@ -956,7 +1003,7 @@ export function TasksPage() {
                         className="shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-full active:scale-95 transition-transform"
                       >
                         <RefreshCw size={12} />
-                        Retry
+                        {t('tasks.retry')}
                       </button>
                     </div>
                   </div>
@@ -990,28 +1037,28 @@ export function TasksPage() {
           className="flex-1 overflow-y-auto"
           aria-busy={loading && filteredTasks.length === 0}
           aria-live="polite"
-          aria-label="Tasks list"
+          aria-label={t('tasks.tasksList')}
         >
           {loading ? (
             <SkeletonPage />
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
               <AlertCircle size={40} className="text-danger-text opacity-60" />
-              <p className="text-sm font-medium text-text-primary">Failed to load tasks</p>
+              <p className="text-sm font-medium text-text-primary">{t('tasks.failedToLoad')}</p>
               <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
               <button
                 onClick={resetTasks}
                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
               >
                 <RefreshCw size={13} />
-                Retry
+                {t('tasks.retry')}
               </button>
             </div>
           ) : filteredTasks.length === 0 ? (
             <EmptyStateTask
               variant={searchQuery ? "search-empty" : viewMode === "kanban" ? "view-empty" : "no-tasks"}
               viewMode={viewMode}
-              onAction={() => {}}
+              onAction={() => setShowCreateModal(true)}
             />
           ) : viewMode === "kanban" ? (
             <TaskKanbanView
@@ -1127,11 +1174,11 @@ export function TasksPage() {
               ? "bg-accent rotate-45"
               : "bg-accent"
           }`}
-          aria-label={showMobileQuickAdd ? "Close quick add" : "Add task"}
+          aria-label={showMobileQuickAdd ? t('tasks.closeQuickAdd') : t('tasks.addTask')}
         >
           <Plus size={24} className="text-white" />
         </button>
       )}
-    </div>
+    </PageScaffold>
   );
 }

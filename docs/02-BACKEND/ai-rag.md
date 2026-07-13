@@ -9,15 +9,15 @@ The RAG backend is **100% offline Rust** (no server, no external calls) using `c
 
 `src-tauri/src/ai/`:
 
-| File | Responsibility |
-| --- | --- |
-| `mod.rs` | Module wiring |
-| `models.rs` | `ModelId`, `BGE_SMALL_EN_V1_5`, `EmbeddingModel`, `RagChunk`, `IndexEmailsResponse`, `QueryRagResponse`, `SearchByVectorResponse` |
-| `local_engine.rs` | Candle `BertModel` + tokenizer loading from local `.safetensors`; `get_embedding(text)` |
-| `vector_db.rs` | LanceDB connection + `EmailChunk` schema; `search(query_vec, top_k)` |
-| `parser.rs` | Extract subject/from/date/body text from `Vec<u8>` RFC822; lightweight MIME parse |
-| `indexer.rs` | Load inbox from SQLite, chunk (512/80), embed, write to LanceDB; emit events |
-| `rag.rs` | `query_rag()` → embed + search + format augmented prompt; `search_by_vector()` |
+| File              | Responsibility                                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `mod.rs`          | Module wiring                                                                                                                     |
+| `models.rs`       | `ModelId`, `BGE_SMALL_EN_V1_5`, `EmbeddingModel`, `RagChunk`, `IndexEmailsResponse`, `QueryRagResponse`, `SearchByVectorResponse` |
+| `local_engine.rs` | Candle `BertModel` + tokenizer loading from local `.safetensors`; `get_embedding(text)`                                           |
+| `vector_db.rs`    | LanceDB connection + `EmailChunk` schema; `search(query_vec, top_k)`                                                              |
+| `parser.rs`       | Extract subject/from/date/body text from `Vec<u8>` RFC822; lightweight MIME parse                                                 |
+| `indexer.rs`      | Load inbox from SQLite, chunk (512/80), embed, write to LanceDB; emit events                                                      |
+| `rag.rs`          | `query_rag()` → embed + search + format augmented prompt; `search_by_vector()`                                                    |
 
 Plus `src-tauri/src/commands/ai.rs` (command surface) and `src-tauri/src/events.rs` (AppEvent + `EmitEvent`).
 
@@ -48,17 +48,17 @@ static EMBEDDING_MODEL: OnceLock<EmbeddingModel> = OnceLock::new();
 
 LanceDB table `email_chunks` with schema:
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `id` | `String` | `{message_id}:{index}` |
-| `message_id` | `String` | FK to mail row |
-| `folder` | `String` | e.g. `inbox` |
-| `subject` | `String` | |
-| `from_addr` | `String` | |
-| `date` | `String` | RFC3339 |
-| `chunk_index` | `Int32` | |
-| `content` | `String` | chunk text |
-| `vector` | `Float32[384]` | normalized embedding |
+| Column        | Type           | Notes                  |
+| ------------- | -------------- | ---------------------- |
+| `id`          | `String`       | `{message_id}:{index}` |
+| `message_id`  | `String`       | FK to mail row         |
+| `folder`      | `String`       | e.g. `inbox`           |
+| `subject`     | `String`       |                        |
+| `from_addr`   | `String`       |                        |
+| `date`        | `String`       | RFC3339                |
+| `chunk_index` | `Int32`        |                        |
+| `content`     | `String`       | chunk text             |
+| `vector`      | `Float32[384]` | normalized embedding   |
 
 `search(query_vec, top_k)` returns top-k by cosine, sorted by score desc.
 
@@ -80,24 +80,24 @@ emit ai:indexing_completed (after, with count)
 
 ## RAG logic (`rag.rs`)
 
-- `query_rag(query, top_k, include_draft) -> QueryRagResponse`:
-  1. embed query, 2. `vector_db::search`, 3. format `context` blocks (subject/from/date/snippet), 4. return `{ context, query }` (the augmented prompt).
-- `search_by_vector(query, top_k) -> Vec<SearchByVectorResponse>`:
-  - embed + search, return ranked chunks (no LLM call).
+- `query_rag(query) -> String`:
+  1. embed query, 2. `vector_db::search`, 3. format `context` blocks (subject/from/date/snippet), 4. return augmented prompt string.
+- `search_by_vector(embedding, query) -> String`:
+  - use pre-computed embedding + search, return augmented prompt string (no LLM call).
 
 ## Tauri commands (`commands/ai.rs`)
 
 All live-registered in `lib.rs` alongside the 652 existing commands (no breaking changes).
 
-| Command | Params | Returns | Notes |
-| --- | --- | --- | --- |
-| `ai_download_model` | `{ repo_id, filename }` | model path string | Downloads from HF Hub into `<app_data_dir>/models` (used as the HF `cache_dir`). |
-| `ai_load_embedding_model` | `{ model_path, tokenizer_path }` | `()` | Loads the local `.safetensors` + `tokenizer.json` into the candle engine. |
-| `ai_get_models_dir` | — | models folder path | Returns (and creates) `<app_data_dir>/models`; surfaced in Settings → "Local Models Folder". |
-| `ai_delete_model` | `{ repo_id }` | `()` | Removes the HF cache subfolder (`models--ORG--NAME`) for the given repo id. |
-| `ai_index_emails` | — | `{ indexed_count }` | Emits `ai:indexing_started` / `ai:indexing_completed`. |
-| `ai_query_rag` | `{ query, top_k?, include_draft? }` | `{ context, query }` | Augmented prompt only (no LLM in Rust). |
-| `ai_search_by_vector` | `{ query, top_k? }` | `[{ id, score, subject, from, date, snippet }]` | Local vector search path. |
+| Command                   | Params                           | Returns                     | Notes                                                                                        |
+| ------------------------- | -------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| `ai_download_model`       | `{ repo_id, filename }`          | model path string           | Downloads from HF Hub into `<app_data_dir>/models` (used as the HF `cache_dir`).             |
+| `ai_load_embedding_model` | `{ model_path, tokenizer_path }` | `()`                        | Loads the local `.safetensors` + `tokenizer.json` into the candle engine.                    |
+| `ai_get_models_dir`       | —                                | models folder path          | Returns (and creates) `<app_data_dir>/models`; surfaced in Settings → "Local Models Folder". |
+| `ai_delete_model`         | `{ repo_id }`                    | `()`                        | Removes the HF cache subfolder (`models--ORG--NAME`) for the given repo id.                  |
+| `ai_index_emails`         | —                                | `()`                        | Emits `ai:indexing_started` / `ai:indexing_completed`.                                       |
+| `ai_query_rag`            | `{ query }`                      | `String` (augmented prompt) | Augmented prompt only (no LLM in Rust).                                                      |
+| `ai_search_by_vector`     | `{ embedding, query }`           | `String` (augmented prompt) | Local vector search path.                                                                    |
 
 ### Command signatures (reference)
 
@@ -115,13 +115,13 @@ pub async fn ai_get_models_dir(app_handle: AppHandle) -> Result<String, Serializ
 pub async fn ai_delete_model(app_handle: AppHandle, repo_id: String) -> Result<(), SerializedError>
 
 #[tauri::command]
-pub async fn ai_index_emails(state: State<'_, DbState>, window: Window) -> Result<IndexEmailsResponse, String>
+pub async fn ai_index_emails(state: State<'_, DbState>, window: Window) -> Result<(), String>
 
 #[tauri::command]
-pub async fn ai_query_rag(query: String, top_k: Option<usize>, include_draft: Option<bool>) -> Result<QueryRagResponse, String>
+pub async fn ai_query_rag(query: String) -> Result<String, String>
 
 #[tauri::command]
-pub async fn ai_search_by_vector(query: String, top_k: Option<usize>) -> Result<Vec<SearchByVectorResponse>, String>
+pub async fn ai_search_by_vector(embedding: Vec<f32>, query: String) -> Result<String, String>
 ```
 
 ## Events (`events.rs`)
@@ -144,24 +144,24 @@ Frontend listens in `ragStore.ts` (see [Frontend doc](../03-FRONTEND/ai-rag.md))
 
 - **No network egress in Rust.** Only `ai_download_model` (explicit user action, with mirror option) touches the network.
 - **Local-only data.** All embeddings + chunks live in `app_data_dir`; mail never leaves the device on the local path.
-- **Cloud path is opt-in** and handled by the frontend provider layer (`src/shared/services/ai/providers/`), which only ever receives the *retrieved context + query*, not raw mail.
+- **Cloud path is opt-in** and handled by the frontend provider layer (`src/shared/services/ai/providers/`), which only ever receives the _retrieved context + query_, not raw mail.
 - Models are user-deletable via the `ai_delete_model` command (Settings → Local Models Folder → "Remove model"), which removes the HF cache subfolder; the folder is browsable via "Open folder".
 
 ## Challenges & solutions
 
-| Challenge | Solution |
-| --- | --- |
+| Challenge                | Solution                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------- |
 | Binary size from ML deps | Use `candle-core` (not full `candle`), `hf-hub` minimal, lightweight parser. |
-| CPU embedding speed | `bge-small` (384-dim) + int8 quantization; ~ms per chunk. |
-| Memory | Stream indexer; 512-token chunks; top-k=3. |
-| LLM cost/privacy | Local embeddings + local vector store; cloud LLM optional and context-only. |
+| CPU embedding speed      | `bge-small` (384-dim) + int8 quantization; ~ms per chunk.                    |
+| Memory                   | Stream indexer; 512-token chunks; top-k=3.                                   |
+| LLM cost/privacy         | Local embeddings + local vector store; cloud LLM optional and context-only.  |
 
 ## Key files
 
-| Concern | Path |
-| --- | --- |
-| AI module | `src-tauri/src/ai/` (`models.rs`, `local_engine.rs`, `vector_db.rs`, `parser.rs`, `indexer.rs`, `rag.rs`) |
-| Commands | `src-tauri/src/commands/ai.rs` |
-| Events | `src-tauri/src/events.rs` |
-| Registration | `src-tauri/src/lib.rs` |
-| Cargo deps | `src-tauri/Cargo.toml` (`candle*, `lancedb`, `hf-hub`, `tokenizers`) |
+| Concern      | Path                                                                                                      |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| AI module    | `src-tauri/src/ai/` (`models.rs`, `local_engine.rs`, `vector_db.rs`, `parser.rs`, `indexer.rs`, `rag.rs`) |
+| Commands     | `src-tauri/src/commands/ai.rs`                                                                            |
+| Events       | `src-tauri/src/events.rs`                                                                                 |
+| Registration | `src-tauri/src/lib.rs`                                                                                    |
+| Cargo deps   | `src-tauri/Cargo.toml` (`candle*, `lancedb`, `hf-hub`, `tokenizers`)                                      |

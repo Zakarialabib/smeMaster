@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Trash2, Pencil, Plus, GripVertical, ChevronDown } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { getLabelsForAccount, type DbLabel } from "@shared/services/db/labels";
@@ -198,7 +198,7 @@ export function QuickStepEditor() {
               title={qs.is_enabled === 1 ? "Disable" : "Enable"}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow ${
+                className={`absolute top-0.5 start-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow ${
                   qs.is_enabled === 1 ? "translate-x-4" : ""
                 }`}
               />
@@ -269,7 +269,7 @@ export function QuickStepEditor() {
 
                 return (
                   <div key={index} className="flex items-start gap-2">
-                    <span className="text-xs text-text-tertiary mt-1.5 w-5 text-right shrink-0">
+                    <span className="text-xs text-text-tertiary mt-1.5 w-5 text-end shrink-0">
                       {index + 1}.
                     </span>
                     <div className="flex-1 space-y-1">
@@ -277,7 +277,7 @@ export function QuickStepEditor() {
                         <select
                           value={action.type}
                           onChange={(e) => updateAction(index, e.target.value as QuickStepActionType)}
-                          className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary appearance-none pr-6"
+                          className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary appearance-none pe-6"
                         >
                           {ACTION_TYPE_METADATA.map((m) => (
                             <option key={m.type} value={m.type}>
@@ -285,7 +285,7 @@ export function QuickStepEditor() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+                        <ChevronDown size={10} className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
                       </div>
                       {needsLabelParam && labels.length > 0 && (
                         <select

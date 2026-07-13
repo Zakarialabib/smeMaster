@@ -880,7 +880,7 @@ export function PremiumSidebar({
                         {threadUnreadCounts["INBOX"]}
                       </span>
                     )}
-                    {item.id === "tasks" && taskIncompleteCount > 0 && (
+                    {item.id === "productivity" && taskIncompleteCount > 0 && (
                       <span className="text-[0.625rem] bg-accent/15 text-accent px-1.5 rounded-full leading-normal">
                         {taskIncompleteCount}
                       </span>
@@ -1180,13 +1180,13 @@ export function PremiumSidebar({
     <>
       <div
         ref={navRef}
-        className={`flex h-full shrink-0 transition-[width] duration-300 ease-out ${activeGroupId === "mail" && !collapsed ? "w-[344px]" : "w-16"}`}
+        className={`flex h-full shrink-0 ${activeGroupId === "mail" && !collapsed ? "w-[344px]" : "w-16"}`}
       >
         {/* Icon rail — always visible on every page */}
         <nav
           role="navigation"
           aria-label="Main navigation"
-          className="hidden md:flex flex-col h-full w-16 hover:w-[72px] glass-nav-rail transition-all duration-150 shrink-0 overflow-hidden"
+          className="hidden md:flex flex-col h-full w-16 glass-nav-rail shrink-0 overflow-hidden"
         >
           {/* Main groups — top-aligned */}
           <div className={`flex-1 flex flex-col items-center ${gapClass} py-3`}>

@@ -1,6 +1,9 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, FileText, BookOpen, Download, Plus } from "lucide-react";
+import {
+  Sparkles, FileText, BookOpen, Download, Plus, Layers, Zap, Library,
+} from "lucide-react";
+import { cn } from "@shared/utils/cn";
 import { TemplateManager } from "@features/settings/components/TemplateManager";
 import { AiTemplateGenerateModal } from "@features/settings/components/AiTemplateGenerateModal";
 import { HelpCard } from "@features/settings/components/HelpCard";
@@ -16,6 +19,51 @@ import {
 import { notify } from "@shared/services/notifications/toastHelper";
 import { navigateToSettings } from "@/router/navigate";
 import type { GeneratedTemplate } from "@shared/services/ai/templateGenerator";
+
+/* ─── Stats Card ─── */
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  sublabel,
+  tone = "neutral",
+}: {
+  icon: typeof FileText;
+  label: string;
+  value: string;
+  sublabel?: string;
+  tone?: "accent" | "success" | "warning" | "neutral";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
+        tone === "accent" && "bg-accent/5 border-accent/20",
+        tone === "success" && "bg-success/5 border-success/20",
+        tone === "warning" && "bg-warning/5 border-warning/20",
+        tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+      )}
+    >
+      <div className="p-2 rounded-lg bg-white/50">
+        <Icon
+          className={cn(
+            "w-4 h-4",
+            tone === "accent" && "text-accent",
+            tone === "success" && "text-success",
+            tone === "warning" && "text-warning",
+            tone === "neutral" && "text-text-tertiary",
+          )}
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
+        <p className="text-sm font-bold truncate">{value}</p>
+        {sublabel && <p className="text-[10px] text-text-tertiary truncate">{sublabel}</p>}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Demo preset previews ─── */
 
@@ -48,14 +96,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 function DemoTemplateCard({ preset }: { preset: DemoPreset }) {
   const catColor = CATEGORY_COLORS[preset.category] ?? "bg-bg-tertiary text-text-tertiary border-border-primary";
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border border-border-primary bg-bg-primary/50 hover:bg-bg-hover/30 transition-colors">
-      <div className="w-8 h-8 rounded-md bg-accent/10 flex items-center justify-center text-sm shrink-0">
+    <div className="flex items-start gap-3 p-4 rounded-xl border border-border-primary bg-bg-primary/50 hover:bg-bg-hover/30 hover:border-accent/20 hover:shadow-sm transition-all">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-lg shrink-0">
         {preset.icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-text-primary">{preset.name}</div>
+        <div className="text-sm font-semibold text-text-primary">{preset.name}</div>
         <div className="text-xs text-text-tertiary truncate mt-0.5">{preset.subject}</div>
-        <span className={`inline-block mt-1.5 text-[0.5rem] px-1.5 py-0.5 rounded-full border ${catColor}`}>
+        <span className={`inline-block mt-2 text-[0.5rem] px-2 py-0.5 rounded-full border font-medium ${catColor}`}>
           {preset.category.replace(/_/g, " ")}
         </span>
       </div>
@@ -131,21 +179,42 @@ export default function TemplatesTab() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 max-w-3xl">
-      {/* ── Header: stats + actions ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-text-secondary">
-          <FileText size={16} className="text-text-tertiary" />
-          {loadingCount ? (
-            <span className="text-xs text-text-tertiary">Loading...</span>
-          ) : (
-            <span>
-              <strong className="text-text-primary">{templateCount}</strong>{" "}
-              {templateCount === 1 ? "template" : "templates"} in library
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isEmpty && hasAccount && (
+      {/* ── Header Stats Row ───────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard
+          icon={Library}
+          label="Template Library"
+          value={loadingCount ? "..." : `${templateCount ?? 0}`}
+          sublabel={templateCount === 1 ? "1 template" : `${templateCount ?? 0} templates`}
+          tone="accent"
+        />
+        <StatCard
+          icon={Layers}
+          label="Categories"
+          value={`${Object.keys(CATEGORY_COLORS).length}`}
+          sublabel="Available categories"
+          tone="success"
+        />
+        <StatCard
+          icon={Zap}
+          label="AI Ready"
+          value={hasAccount ? "Active" : "No Account"}
+          sublabel={hasAccount ? "Generate with AI" : "Add account first"}
+          tone={hasAccount ? "warning" : "neutral"}
+        />
+        <StatCard
+          icon={BookOpen}
+          label="Demo Presets"
+          value={`${DEMO_PRESETS.length}+`}
+          sublabel="Ready to seed"
+          tone="neutral"
+        />
+      </div>
+
+      {/* ── Quick Actions Bar ── */}
+      {hasAccount && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {isEmpty && (
             <Button
               variant="secondary"
               size="sm"
@@ -166,7 +235,7 @@ export default function TemplatesTab() {
             Generate with AI
           </button>
         </div>
-      </div>
+      )}
 
       {/* ── No account state ── */}
       {!hasAccount && (
@@ -190,7 +259,7 @@ export default function TemplatesTab() {
           title="Getting Started"
           description="Your template library is empty. Load ready-made demo templates to see examples, or create your own from scratch below."
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             {DEMO_PRESETS.map((preset) => (
               <DemoTemplateCard key={preset.name} preset={preset} />
             ))}

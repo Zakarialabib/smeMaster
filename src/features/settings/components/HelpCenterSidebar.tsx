@@ -243,7 +243,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
 
                         <button
                           onClick={() => handleDismiss(entry.key)}
-                          className="inline-flex items-center gap-1 text-xs text-text-tertiary hover:text-text-primary transition-colors ml-auto"
+                          className="inline-flex items-center gap-1 text-xs text-text-tertiary hover:text-text-primary transition-colors ms-auto"
                           aria-label={`Dismiss ${entry.key}`}
                         >
                           <EyeOff size={12} />

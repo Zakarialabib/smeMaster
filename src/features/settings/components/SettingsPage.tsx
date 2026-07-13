@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "@tanstack/react-router";
 import {
@@ -9,7 +9,8 @@ import {
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { useSettingsUiStore } from "@shared/stores/settingsUiStore";
 import { useRecentSettingsStore } from "@features/settings/stores/recentSettingsStore";
-import { ArrowLeft, BookOpen, Search, Settings } from "lucide-react";
+import { ArrowLeft, BookOpen, Search, Settings, AlertCircle, RefreshCw } from "lucide-react";
+import { SkeletonPage } from "@shared/components/ui/Skeleton";
 import type { SettingsTabId } from "./SettingsTabRegistry";
 import {
   tabGroups,
@@ -22,6 +23,45 @@ import { HelpCenterSidebar } from "./HelpCenterSidebar";
 import { SettingsPanel } from "@shared/components/settings/SettingsPanel";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { cn } from "@shared/utils/cn";
+
+// ── Error Boundary for section content ─────────────────────────────────────
+class SectionErrorBoundary extends Component<
+  { children: ReactNode; sectionName: string },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode; sectionName: string }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <AlertCircle size={32} className="text-danger mb-3" />
+          <p className="text-sm font-semibold text-text-primary mb-1">
+            Failed to load {this.props.sectionName}
+          </p>
+          <p className="text-xs text-text-tertiary mb-4 max-w-md">
+            {this.state.error?.message ?? "An unexpected error occurred"}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          >
+            <RefreshCw size={13} />
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ── Search Results Grid ───────────────────────────────────────────────────
 
@@ -44,7 +84,7 @@ function SearchResultsGrid({
             <button
               key={tab.id}
               onClick={() => onSelectTab(tab.id as SettingsTabId)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-secondary border border-border-primary hover:border-accent/30 hover:bg-bg-hover/50 transition-all text-left active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-secondary border border-border-primary hover:border-accent/30 hover:bg-bg-hover/50 transition-all text-start active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
                 <Icon size={15} className="text-accent" />
@@ -82,6 +122,22 @@ export function SettingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [helpSidebarOpen, setHelpSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  // Simulate initialization loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        useSettingsUiStore.getState().init();
+        setPageLoading(false);
+      } catch (err) {
+        setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+        setPageLoading(false);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Cmd+K: focus search
   useEffect(() => {
@@ -108,10 +164,6 @@ export function SettingsPage() {
     };
     window.addEventListener("smemaster-navigate-help", handler);
     return () => window.removeEventListener("smemaster-navigate-help", handler);
-  }, []);
-
-  useEffect(() => {
-    useSettingsUiStore.getState().init();
   }, []);
 
   const labelFor = useCallback((id: string) => getTabLabel(id, t), [t]);
@@ -175,6 +227,43 @@ export function SettingsPage() {
 
   const showSearchResults = searchQuery.trim().length > 0;
 
+  // Loading state
+  if (pageLoading) {
+    return <SkeletonPage />;
+  }
+
+  // Error state
+  if (pageError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+        <AlertCircle size={36} className="text-danger" />
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Failed to load settings</p>
+          <p className="text-xs text-text-tertiary mt-1">{pageError}</p>
+        </div>
+        <button
+          onClick={() => {
+            setPageLoading(true);
+            setPageError(null);
+            setTimeout(() => {
+              try {
+                useSettingsUiStore.getState().init();
+                setPageLoading(false);
+              } catch (err) {
+                setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+                setPageLoading(false);
+              }
+            }, 100);
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+        >
+          <RefreshCw size={13} />
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full overflow-hidden text-text-primary flex flex-col">
       {/* ── Header ──────────────────────────────────────────────────── */}
@@ -183,7 +272,7 @@ export function SettingsPage() {
           <>
             <button
               onClick={() => navigateToLabel("inbox")}
-              className="p-1.5 -ml-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
+              className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
               title={t("settings.backToInbox")}
               aria-label={t("settings.backToInbox")}
             >
@@ -199,7 +288,7 @@ export function SettingsPage() {
           <>
             <button
               onClick={goToHome}
-              className="p-1.5 -ml-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
+              className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
               title="Back to settings overview"
               aria-label="Back to settings overview"
             >
@@ -212,22 +301,23 @@ export function SettingsPage() {
         )}
 
         {/* Search */}
-        <div className="relative flex-1 min-w-0 ml-auto max-w-xs">
+        <div className="relative flex-1 min-w-0 ms-auto max-w-xs">
           <Search
             size={14}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
+            className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
           />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search settings… ⌘K"
-            className="settings-search-input w-full pl-8 pr-8 py-2 text-xs rounded-md border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
+            aria-label="Search settings"
+            className="settings-search-input w-full ps-8 pe-8 py-2 text-xs rounded-md border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
               aria-label="Clear search"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -311,7 +401,9 @@ export function SettingsPage() {
                   })()}
                 </div>
               )}
-              <ActiveSection />
+              <SectionErrorBoundary sectionName={labelFor(activeTab)}>
+                <ActiveSection />
+              </SectionErrorBoundary>
             </SettingsPanel>
           )}
         </div>

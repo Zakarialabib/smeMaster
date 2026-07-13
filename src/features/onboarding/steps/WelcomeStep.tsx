@@ -1,12 +1,13 @@
 // src/features/onboarding/steps/WelcomeStep.tsx
 import { useState, useCallback } from "react";
-import { User, Users, Target, SlidersHorizontal, Zap, ArrowRight } from "lucide-react";
+import { Sun, Moon, Monitor, User, Users, Target, SlidersHorizontal, Zap, ArrowRight, Rocket } from "lucide-react";
 import { DEMO_PRESETS } from "./demoPresets";
-import type { DemoPresetId, OnboardingData } from "../types";
+import type { DemoPresetId, ThemeMode, OnboardingData } from "../types";
 
 interface WelcomeStepProps {
   onNext: (data: Partial<OnboardingData>) => void;
-  onExpressMode: () => void;
+  onExpressMode?: () => void;
+  onSkipToDemos?: () => void;
 }
 
 const ICON_MAP: Record<string, typeof User> = {
@@ -16,21 +17,41 @@ const ICON_MAP: Record<string, typeof User> = {
   SlidersHorizontal,
 };
 
-export function WelcomeStep({ onNext, onExpressMode }: WelcomeStepProps) {
+const THEME_OPTIONS: { id: ThemeMode; label: string; icon: typeof Sun; description: string }[] = [
+  { id: "light", label: "Light", icon: Sun, description: "Bright and airy" },
+  { id: "dark", label: "Dark", icon: Moon, description: "Easy on the eyes" },
+  { id: "system", label: "System", icon: Monitor, description: "Follows your OS" },
+];
+
+export function WelcomeStep({ onNext, onExpressMode, onSkipToDemos }: WelcomeStepProps) {
   const [businessName, setBusinessName] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<DemoPresetId | null>(null);
-  const [businessType] = useState<string>("solo");
+  const [theme, setTheme] = useState<ThemeMode>("system");
 
   const preset = selectedPreset ? DEMO_PRESETS.find((p) => p.id === selectedPreset) : null;
 
   const handleNext = useCallback(() => {
     onNext({
       businessName: businessName || "My Business",
-      businessType: businessType as OnboardingData["businessType"],
-      demoPreset: selectedPreset,
-      tools: preset?.tools ?? { mail: true, crm: true, campaigns: false, calendar: false, ai: false, sync: false },
+      theme,
+      demoPreset: selectedPreset ?? "custom",
+      tools: preset?.tools ?? { mail: true, crm: true, campaigns: false, calendar: false, ai: false },
     });
-  }, [businessName, businessType, selectedPreset, preset, onNext]);
+  }, [businessName, theme, selectedPreset, preset, onNext]);
+
+  const handleSkipToDemos = useCallback(() => {
+    if (onSkipToDemos) {
+      onSkipToDemos();
+    } else {
+      // Fallback: use onNext directly
+      onNext({
+        businessName: businessName || "My Business",
+        theme,
+        demoPreset: "skip",
+        tools: { mail: true, crm: true, campaigns: false, calendar: false, ai: false },
+      });
+    }
+  }, [businessName, theme, onNext, onSkipToDemos]);
 
   return (
     <div
@@ -62,6 +83,47 @@ export function WelcomeStep({ onNext, onExpressMode }: WelcomeStepProps) {
         />
       </div>
 
+      {/* Theme Selector */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-foreground/80">Theme Preference</label>
+        <div className="grid grid-cols-3 gap-3">
+          {THEME_OPTIONS.map((opt, idx) => {
+            const Icon = opt.icon;
+            const isSelected = theme === opt.id;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setTheme(opt.id)}
+                className={`group relative rounded-xl border p-4 text-center transition-all duration-300 ${
+                  isSelected
+                    ? "border-accent ring-2 ring-accent/30 bg-accent/[0.04]"
+                    : "border-border hover:border-accent/40 hover:bg-accent/[0.02]"
+                }`}
+                style={{
+                  animation: `scalePop 350ms cubic-bezier(0.16, 1, 0.3, 1) both`,
+                  animationDelay: `${idx * 60}ms`,
+                }}
+              >
+                {isSelected && (
+                  <div className="absolute top-2 end-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                    <span className="text-accent-foreground text-xs font-bold">✓</span>
+                  </div>
+                )}
+                <div className={`rounded-lg p-2.5 w-fit mx-auto mb-2 transition-all duration-300 ${
+                  isSelected ? "bg-accent/15" : "bg-muted group-hover:bg-accent/8"
+                }`}>
+                  <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                    isSelected ? "text-accent" : "text-muted-foreground group-hover:text-accent/70"
+                  }`} />
+                </div>
+                <p className="font-semibold text-sm">{opt.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Demo Presets */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-foreground/80">Choose your profile</label>
@@ -73,7 +135,7 @@ export function WelcomeStep({ onNext, onExpressMode }: WelcomeStepProps) {
               <button
                 key={p.id}
                 onClick={() => setSelectedPreset(p.id)}
-                className={`group relative rounded-xl border p-4 text-left transition-all duration-300 ${
+                className={`group relative rounded-xl border p-4 text-start transition-all duration-300 ${
                   isSelected
                     ? "border-accent ring-2 ring-accent/30 bg-accent/[0.04]"
                     : "border-border hover:border-accent/40 hover:bg-accent/[0.02]"
@@ -84,7 +146,7 @@ export function WelcomeStep({ onNext, onExpressMode }: WelcomeStepProps) {
                 }}
               >
                 {isSelected && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                  <div className="absolute top-3 end-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
                     <span className="text-accent-foreground text-xs font-bold">✓</span>
                   </div>
                 )}
@@ -106,11 +168,21 @@ export function WelcomeStep({ onNext, onExpressMode }: WelcomeStepProps) {
       {/* Actions */}
       <div className="flex gap-3 pt-4">
         <button
-          onClick={onExpressMode}
-          className="group rounded-xl border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:bg-accent/5 hover:text-foreground transition-all duration-200"
+          onClick={handleSkipToDemos}
+          className="group rounded-xl border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:bg-accent/5 hover:text-foreground transition-all duration-200 flex items-center gap-2"
         >
-          Quick Start
+          <Rocket className="h-4 w-4" />
+          Skip to Demos
         </button>
+        {onExpressMode && (
+          <button
+            onClick={onExpressMode}
+            className="group rounded-xl border border-accent/30 px-6 py-3 text-sm font-medium text-accent hover:bg-accent/5 transition-all duration-200 flex items-center gap-2"
+          >
+            <Zap className="h-4 w-4" />
+            Quick Start
+          </button>
+        )}
         <button
           onClick={handleNext}
           disabled={!selectedPreset}

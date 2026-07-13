@@ -1,0 +1,20 @@
+{
+  "id": "workflows",
+  "name": "Automation Workflows",
+  "description": "Trigger/action rules engine and automation builder flows. Enables no-code automation of business processes. Backed by db::workflows data access.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["automation"],
+  "dependencies": [
+    { "module": "db", "reason": "Workflows data access", "required": true },
+    { "module": "events", "reason": "Listens for trigger events", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "automation:*", "description": "Automation workflow events", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

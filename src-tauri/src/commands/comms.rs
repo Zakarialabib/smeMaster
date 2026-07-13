@@ -331,11 +331,11 @@ pub async fn db_list_template_categories(
 pub async fn db_upsert_template_category(
     pool: State<'_, SqlitePool>,
     id: String,
-    company_id: Option<String>,
+    company_id: String,
     name: String,
     icon: Option<String>,
 ) -> CmdResult<()> {
-    crate::db::tables::comms::template_categories::upsert(&pool, &id, company_id.as_deref(), &name, icon.as_deref()).await.map_err(Into::into)
+    crate::db::tables::comms::template_categories::upsert(&pool, &id, &company_id, &name, icon.as_deref()).await.map_err(Into::into)
 }
 
 /// Delete a template category by id.
@@ -403,13 +403,13 @@ pub async fn db_count_template_categories(
 pub async fn db_insert_template_category_ignore(
     pool: State<'_, SqlitePool>,
     id: String,
-    company_id: Option<String>,
+    company_id: String,
     name: String,
     icon: Option<String>,
     sort_order: Option<i64>,
 ) -> CmdResult<()> {
     crate::db::tables::comms::template_categories::insert_ignore(
-        &pool, &id, company_id.as_deref(), &name, icon.as_deref(), sort_order.unwrap_or(0),
+        &pool, &id, &company_id, &name, icon.as_deref(), sort_order.unwrap_or(0),
     ).await.map_err(Into::into)
 }
 
@@ -683,6 +683,14 @@ pub async fn db_reorder_quick_steps(
     ordered_ids: Vec<String>,
 ) -> CmdResult<()> {
     crate::db::tables::comms::quick_steps::reorder(&pool, &account_id, &ordered_ids).await.map_err(Into::into)
+}
+
+#[tauri::command]
+pub async fn db_reorder_templates(
+    pool: State<'_, SqlitePool>,
+    ordered_ids: Vec<String>,
+) -> CmdResult<()> {
+    crate::db::tables::comms::templates::reorder(&pool, &ordered_ids).await.map_err(Into::into)
 }
 
 // ── Quick Replies ──
@@ -2110,4 +2118,42 @@ pub async fn db_get_template_full(
     crate::db::tables::comms::templates::get_by_id(&pool, &id)
         .await
         .map_err(Into::into)
+}
+
+
+/// Persist a campaign email built in the block editor as a reusable template.
+///
+/// Stores the rendered `body_html` plus an optional subject under the
+/// `templates` table (`template_type = "campaign"`) so it shows up in the
+/// existing campaign template picker.
+#[tauri::command]
+pub async fn db_create_campaign_template(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+    name: String,
+    subject: Option<String>,
+    body_html: String,
+) -> CmdResult<Template> {
+    let now = chrono::Utc::now().timestamp();
+    let id = uuid::Uuid::new_v4().to_string();
+    let tmpl = sqlx::query_as::<_, Template>(
+        r#"INSERT INTO templates (
+            id, company_id, name, subject, body_html, shortcut, sort_order,
+            category_id, is_favorite, usage_count, last_used_at,
+            conditional_blocks_json, template_type, origin,
+            delivery_config_json, ai_config_json, voice_config_json,
+            compliance_profile_id, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, NULL, 0, NULL, 0, 0, NULL, NULL, 'campaign', 'user', NULL, NULL, NULL, NULL, ?, ?) RETURNING *"#,
+    )
+    .bind(&id)
+    .bind(&company_id)
+    .bind(&name)
+    .bind(&subject)
+    .bind(&body_html)
+    .bind(now)
+    .bind(now)
+    .fetch_one(&*pool)
+    .await
+    .map_err(AppDbError::Database)?;
+    Ok(tmpl)
 }

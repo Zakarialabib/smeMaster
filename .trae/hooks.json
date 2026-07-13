@@ -1,0 +1,95 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/session-start",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/prompt-submit",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "Edit|Write|SearchReplace",
+      "loop_limit": 5,
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/pre-edit",
+          "timeout": 30
+        }
+      ]
+    },
+    {
+      "matcher": "Bash|RunCommand",
+      "loop_limit": 5,
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/pre-bash",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Edit|Write|SearchReplace",
+      "loop_limit": 5,
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/post-edit",
+          "timeout": 30
+        }
+      ]
+    },
+    {
+      "matcher": "Bash|RunCommand",
+      "loop_limit": 5,
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/post-bash",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "loop_limit": 5,
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/stop",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "Notification": [
+    {
+      "hooks": [
+        {
+          "type": "http",
+          "url": "http://127.0.0.1:4500/hooks/notification",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}

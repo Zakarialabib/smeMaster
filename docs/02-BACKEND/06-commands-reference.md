@@ -35,6 +35,8 @@ The active domain split is roughly:
 - `tasks` for task operations
 - `calendar` for calendar operations
 - `workflows` for automation and related workflow operations
+- `invoicing` for billing/ERP (invoices, clients, catalog, categories, company settings, document generation, send)
+- `pos` for point-of-sale (sales, thermal printing, cash drawer, barcode scanning)
 - `db` for generic database/admin helpers
 - other specialized modules for IMAP, SMTP, compliance, deliverability, security, and supporting services
 
@@ -42,7 +44,7 @@ The exact command count changes over time, so this doc should describe ownership
 
 ### Backend module layout
 
-- `src-tauri/src/commands/<domain>.rs` — `#[tauri::command]` handlers (the IPC boundary), all registered in the single `generate_handler!` in `commands/mod.rs`. Main DB-domain modules: `core`, `crm`, `comms`, `campaigns`, `calendar`, `tasks`, `workflows`, `deliverability`, `security`, `ai`, `compliance`, `mail`, `vault` (plus `db` for admin helpers).
+- `src-tauri/src/commands/<domain>.rs` — `#[tauri::command]` handlers (the IPC boundary), all registered in the single `generate_handler!` in `commands/mod.rs`. Main DB-domain modules: `core`, `crm`, `comms`, `campaigns`, `calendar`, `tasks`, `workflows`, `deliverability`, `security`, `ai`, `compliance`, `mail`, `vault`, `invoicing` (33 commands), `pos` (36 commands) (plus `db` for admin helpers).
 - `src-tauri/src/db/tables/<domain>/<table>.rs` — per-table CRUD/query ops; every `pub fn`/`pub struct` carries `///` docs.
 - `src-tauri/src/db/common.rs` — shared CRUD helpers (`fetch_or_not_found`, `delete_or_not_found`, `count_rows`, `build_sort_clause`, `apply_field_updates`, `like_pattern`).
 - `src-tauri/src/db/error.rs` — `AppDbError` (incl. `NotFound`); converted to `SerializedError` at the boundary.
@@ -92,6 +94,26 @@ Use this checklist:
 3. add or update the frontend wrapper in the established subsystem
 4. keep request/response naming consistent across the boundary
 5. update relevant feature docs if behavior changes user-facing workflows
+
+## Invoicing Domain (33 Commands)
+
+The invoicing module (`src-tauri/src/commands/invoicing.rs`) exposes 33 Tauri IPC commands across 7 entity groups:
+
+| Group                | Commands                                                                                                                                                                                                                                                                                  | Description                                                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Invoices**         | `db_list_invoices`, `db_get_invoice`, `db_get_invoice_with_items`, `db_create_invoice`, `db_update_invoice`, `db_delete_invoice`, `db_add_invoice_item`, `db_remove_invoice_item`, `db_update_invoice_status`, `db_calculate_invoice`, `db_generate_invoice_documents`, `db_send_invoice` | Full lifecycle: create with items in a transaction, update with optional item replacement, soft-delete, status workflow, PDF/PEPPOL generation, SMTP+PGP dispatch |
+| **Clients**          | `db_list_clients`, `db_get_client`, `db_create_client`, `db_update_client`, `db_delete_client`                                                                                                                                                                                            | CRUD with soft/hard delete support                                                                                                                                |
+| **Catalog Items**    | `db_list_items`, `db_get_item`, `db_create_item`, `db_update_item`, `db_delete_item`, `db_list_low_stock`                                                                                                                                                                                 | Product/service catalog with stock alerts                                                                                                                         |
+| **Company Settings** | `db_get_company_settings`, `db_upsert_company_settings`, `db_delete_company_settings`                                                                                                                                                                                                     | Per-company defaults (currency, tax, numbering, template, logo, bank, terms)                                                                                      |
+| **Categories**       | `db_list_categories`, `db_get_category`, `db_create_category`, `db_update_category`, `db_delete_category`                                                                                                                                                                                 | Invoice category grouping                                                                                                                                         |
+| **Company**          | `db_get_company`, `db_update_company`                                                                                                                                                                                                                                                     | Company profile incl. ICE/IF/RC/CNSS legal identifiers                                                                                                            |
+| **Workflows**        | `db_list_workflow_rules`, `db_list_workflow_rules_paginated`, `db_count_workflow_rules`, `db_list_active_workflow_rules`, `db_get_workflow_rule`, `db_upsert_workflow_rule`, `db_update_workflow_rule_active`, `db_delete_workflow_rule` | Automation rules: CRUD + active-only lookup used by the runtime engine; plus follow-up reminders and pending-operation retry machinery |
+
+> See [Automation feature doc](../04-FEATURES/Core/05-automation.md).
+
+## POS Domain (36 Commands)
+
+The POS module (`src-tauri/src/commands/pos.rs`) covers point-of-sale operations: sale CRUD, ESC/POS thermal printing, system printer fallback, cash drawer control (`pos_open_cash_drawer`), and barcode scanning.
 
 ## Related Docs
 

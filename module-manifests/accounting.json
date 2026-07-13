@@ -1,0 +1,17 @@
+{
+  "id": "accounting",
+  "name": "Accounting",
+  "description": "Financial accounting features: ledgers, transactions, reports. Commands in commands::accounting.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["business"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists accounting records", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

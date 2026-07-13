@@ -289,20 +289,20 @@ export function PgpKeyManager() {
         <div className="flex items-start gap-2 rounded-md bg-danger/10 px-3 py-2 text-xs text-danger">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-          <button className="ml-auto text-danger/60 hover:text-danger" onClick={() => setError(null)}>×</button>
+          <button className="ms-auto text-danger/60 hover:text-danger" onClick={() => setError(null)}>×</button>
         </div>
       )}
 
       {/* Search */}
       {keys.length > 0 && (
         <div className="relative">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search size={14} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("pgp.searchKeys")}
-            className="w-full rounded-md border border-border-primary bg-bg-tertiary py-1.5 pl-8 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
+            className="w-full rounded-md border border-border-primary bg-bg-tertiary py-1.5 ps-8 pe-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
           />
         </div>
       )}

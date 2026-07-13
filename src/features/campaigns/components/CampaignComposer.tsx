@@ -3,9 +3,11 @@ import { Users, FileText, Clock, Eye, ChevronLeft, Send, Save } from "lucide-rea
 import { Modal } from "@shared/components/ui/Modal";
 import { Button } from "@shared/components/ui/Button";
 import { useCampaignComposerStore } from "@features/campaigns/stores/campaignComposerStore";
+import { CampaignBuilder } from "@features/campaigns/components/editor/CampaignBuilder";
+import { createCampaignTemplate } from "@shared/services/db/invoke/mail";
+import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useCampaignStore } from "@features/campaigns/stores/campaignStore";
 import { AudienceStep } from "@features/campaigns/components/AudienceStep";
-import { TemplateStep } from "@features/campaigns/components/TemplateStep";
 import { ScheduleStep } from "@features/campaigns/components/ScheduleStep";
 import { ReviewStep } from "@features/campaigns/components/ReviewStep";
 import { getCampaignTemplateList } from "@features/campaigns/services/campaignTemplateCatalog";
@@ -14,6 +16,7 @@ import { getContactSegments } from "@features/contacts/db/contactSegments";
 import { getContactGroups } from "@features/contacts/db/contactGroups";
 import { createCampaign as svcCreateCampaign } from "@features/campaigns/services/campaignService";
 import { executeSearchQuery } from "@/shared/services/db/db-invoke";
+import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
 import { useTranslation } from "react-i18next";
 import {
   getUserFriendlyErrorMessage,
@@ -49,6 +52,15 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
   const { t } = useTranslation();
 
   const store = useCampaignComposerStore();
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+  const handleSaveTemplate = (name: string) => {
+    void createCampaignTemplate({
+      companyId: activeAccountId ?? "",
+      name,
+      subject: store.subject,
+      bodyHtml: store.getBodyHtml(),
+    });
+  };
   const loadCampaigns = useCampaignStore((s) => s.loadCampaigns);
 
   const [creating, setCreating] = useState(false);
@@ -77,11 +89,13 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       try {
         const [contactsRows, groupsRows, segmentsRows, templateList] = await Promise.all([
           executeSearchQuery(
-            "SELECT id, name, email, display_name, company FROM contacts WHERE account_id = $1 ORDER BY name ASC",
-            [accountId],
+            "SELECT id, display_name AS name, email, display_name, company_id AS company " +
+            "FROM contacts WHERE company_id = $1 AND contact_type IN ('contact','client','supplier','other') " +
+            "ORDER BY display_name ASC",
+            [ACTIVE_COMPANY_ID],
           ) as unknown as Promise<Contact[]>,
-          getContactGroups(accountId),
-          getContactSegments(accountId),
+          getContactGroups(ACTIVE_COMPANY_ID),
+          getContactSegments(ACTIVE_COMPANY_ID),
           getCampaignTemplateList(accountId),
         ]);
         if (!cancelled) {
@@ -166,6 +180,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
               testDurationHours: store.testDuration,
             }
           : undefined,
+        bodyHtml: store.getBodyHtml(),
         status: "sent",
       });
       loadCampaigns(accountId);
@@ -206,6 +221,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
               testDurationHours: store.testDuration,
             }
           : undefined,
+        bodyHtml: store.getBodyHtml(),
         status: "draft",
       });
       loadCampaigns(accountId);
@@ -320,21 +336,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
 
         {/* Step 2: Template */}
         {store.step === "template" && (
-          <TemplateStep
-            templateId={store.templateId}
-            onTemplateSelect={store.setTemplateId}
-            abEnabled={store.abEnabled}
-            onToggleAb={() => store.setAbEnabled(!store.abEnabled)}
-            variantA={store.variantA}
-            onVariantAChange={store.setVariantA}
-            variantB={store.variantB}
-            onVariantBChange={store.setVariantB}
-            splitRatio={store.splitRatio}
-            onSplitRatioChange={store.setSplitRatio}
-            testDuration={store.testDuration}
-            onTestDurationChange={store.setTestDuration}
-            t={t}
-          />
+          <CampaignBuilder onSaveTemplate={handleSaveTemplate} />
         )}
 
         {/* Step 3: Schedule */}

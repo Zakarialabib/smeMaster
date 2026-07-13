@@ -49,6 +49,7 @@ import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
 import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
+import { AiTaskExtractDialog } from "@features/tasks/components/AiTaskExtractDialog";
 import { isAiAvailable } from "@shared/services/ai/providerManager";
 import { getMessagesForThread } from "@shared/services/db/messages";
 import {
@@ -72,6 +73,7 @@ import {
   Filter,
   Package,
   FolderSearch,
+  AlertCircle,
 } from "lucide-react";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import { AddAccount } from "@features/accounts/components/AddAccount";
@@ -87,6 +89,7 @@ import { optimisticStore } from "@shared/stores/optimisticStore";
 import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
 import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
 import "@features/mail/styles/threadAnimations.css";
+import { toast } from "@shared/stores/toastStore";
 import {
   InboxClearIllustration,
   NoSearchResultsIllustration,
@@ -198,6 +201,7 @@ export function EmailList({
 
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const listWrapperRef = useRef<HTMLDivElement>(null);
   const [categoryMap, setCategoryMap] = useState<Map<string, string>>(
     () => new Map(),
@@ -258,6 +262,7 @@ export function EmailList({
   const [showAiSuggestion, setShowAiSuggestion] = useState(true);
   const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
   const [aiAvailable, setAiAvailable] = useState(false);
+  const [showTaskExtract, setShowTaskExtract] = useState(false);
   const aiAvailableRef = useRef(false);
 
   // Check whether an AI provider is actually configured (API key set, server URL, etc.)
@@ -326,6 +331,7 @@ export function EmailList({
         });
       } catch (err) {
         console.error("Failed to open draft:", err);
+        toast.error("Failed to open draft");
       }
     },
     [activeAccountId, openComposer],
@@ -387,6 +393,7 @@ export function EmailList({
       );
     } catch (err) {
       console.error("Bulk spam failed:", err);
+      toast.error("Failed to update spam status");
     }
   };
 
@@ -395,7 +402,7 @@ export function EmailList({
     (threadId: string) => {
       if (!activeAccountId) return;
       archiveMutation.mutateAsync({ accountId: activeAccountId, threadId })
-        .catch((err) => console.error("Archive failed:", err));
+        .catch((err) => { console.error("Archive failed:", err); toast.error("Failed to archive"); });
     },
     [activeAccountId, archiveMutation],
   );
@@ -404,7 +411,7 @@ export function EmailList({
     (threadId: string) => {
       if (!activeAccountId) return;
       deleteMutation.mutateAsync({ accountId: activeAccountId, threadId, permanent: activeLabel === "trash" })
-        .catch((err) => console.error("Delete failed:", err));
+        .catch((err) => { console.error("Delete failed:", err); toast.error("Failed to delete"); });
     },
     [activeAccountId, deleteMutation, activeLabel],
   );
@@ -413,7 +420,7 @@ export function EmailList({
     (threadId: string) => {
       if (!activeAccountId) return;
       markReadMutation.mutateAsync({ accountId: activeAccountId, threadId })
-        .catch((err) => console.error("Mark read failed:", err));
+        .catch((err) => { console.error("Mark read failed:", err); toast.error("Failed to mark as read"); });
     },
     [activeAccountId, markReadMutation],
   );
@@ -422,7 +429,7 @@ export function EmailList({
     (threadId: string) => {
       if (!activeAccountId) return;
       markUnreadMutation.mutateAsync({ accountId: activeAccountId, threadId })
-        .catch((err) => console.error("Mark unread failed:", err));
+        .catch((err) => { console.error("Mark unread failed:", err); toast.error("Failed to mark as unread"); });
     },
     [activeAccountId, markUnreadMutation],
   );
@@ -431,7 +438,7 @@ export function EmailList({
     (threadId: string, starred: boolean) => {
       if (!activeAccountId) return;
       starMutation.mutateAsync({ accountId: activeAccountId, threadId, starred })
-        .catch((err) => console.error("Star failed:", err));
+        .catch((err) => { console.error("Star failed:", err); toast.error("Failed to update star"); });
     },
     [activeAccountId, starMutation],
   );
@@ -585,6 +592,7 @@ export function EmailList({
       }
     } catch (err) {
       console.error("Failed to load threads:", err);
+      setLoadError("Failed to load emails. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -631,6 +639,7 @@ export function EmailList({
       setHasMore(dbThreads.length === PAGE_SIZE);
     } catch (err) {
       console.error("Failed to load more threads:", err);
+      toast.error("Failed to load more emails");
     } finally {
       setLoadingMore(false);
     }
@@ -644,6 +653,11 @@ export function EmailList({
     setThreads,
     mapDbThreads,
   ]);
+
+  const handleRetry = useCallback(() => {
+    setLoadError(null);
+    loadThreads();
+  }, [loadThreads]);
 
   type CustomRowProps = {
     threads: Thread[];
@@ -892,6 +906,7 @@ export function EmailList({
         await Promise.all(promises);
       } catch (err) {
         console.error("Failed to load thread metadata:", err);
+        toast.error("Failed to load thread metadata");
       }
     };
 
@@ -969,11 +984,10 @@ export function EmailList({
         return;
       }
 
-      // Cmd+K / Ctrl+K: Open command palette (TODO: implement command palette)
+      // Cmd+K / Ctrl+K: open the app-wide command palette
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        // TODO: Open command palette for mail actions
-        console.log("Command palette shortcut triggered (Cmd+K / Ctrl+K)");
+        window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
         return;
       }
     };
@@ -1107,12 +1121,39 @@ export function EmailList({
               type: "task",
             }}
             onReview={() => {
-              // TODO: Open task extraction panel
+              const targetThreadId = selectedThreadId ?? filteredThreads[0]?.id;
+              if (targetThreadId) setShowTaskExtract(true);
               setShowAiSuggestion(false);
             }}
             onDismiss={() => setShowAiSuggestion(false)}
             variant="info"
           />
+        </div>
+      )}
+
+      {/* Error banner */}
+      {loadError && (
+        <div
+          role="alert"
+          className="mx-2 mt-2 px-3 py-2 rounded-lg bg-danger/10 border border-danger/20 flex items-start gap-2"
+        >
+          <AlertCircle size={16} className="text-danger shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-danger font-medium">{loadError}</p>
+          </div>
+          <button
+            onClick={handleRetry}
+            className="shrink-0 text-xs font-medium text-danger hover:text-danger-hover underline transition-colors"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => setLoadError(null)}
+            className="shrink-0 p-0.5 rounded text-text-tertiary hover:text-text-secondary hover:bg-danger/10 transition-colors"
+            aria-label="Dismiss error"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -1346,7 +1387,7 @@ export function EmailList({
                                                 );
                                           },
                                         })
-                                        .catch((err) => console.error("Archive swipe failed:", err));
+                                        .catch((err) => { console.error("Archive swipe failed:", err); toast.error("Failed to archive"); });
                                     }
                                   },
                                 };
@@ -1390,7 +1431,7 @@ export function EmailList({
                                                 );
                                           },
                                         })
-                                        .catch((err) => console.error("Delete swipe failed:", err));
+                                        .catch((err) => { console.error("Delete swipe failed:", err); toast.error("Failed to delete"); });
                                     }
                                   },
                                   destructive: true,
@@ -1610,6 +1651,14 @@ export function EmailList({
           </>
         )}
       </div>
+
+      {showTaskExtract && activeAccountId && (
+        <AiTaskExtractDialog
+          threadId={selectedThreadId ?? filteredThreads[0]?.id ?? undefined}
+          accountId={activeAccountId}
+          onClose={() => setShowTaskExtract(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,10 @@
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
+import type {
+  AiProviderClient,
+  AiCompletionRequest,
+  AiEmbeddingRequest,
+  LMStudioProviderOptions,
+  TestEmbeddingResult,
+} from "../types";
 import { buildSystemPrompt } from "../utils";
 import { validateUrl } from "./openAiCompatibleProvider";
 
@@ -61,16 +67,22 @@ async function chatCompletion(
 
 export function createLMStudioProvider(
   serverUrl: string,
-  model: string,
+  options: LMStudioProviderOptions,
   aiLanguage = "auto",
 ): AiProviderClient {
   const safeUrl = validateUrl(serverUrl);
-  const cacheKey = `${safeUrl}|${model}`;
+  const { chatModel, embeddingModel } = options;
+  const cacheKey = `${safeUrl}|${chatModel}|${embeddingModel ?? ""}`;
 
   if (cachedUrl !== safeUrl || cachedKey !== cacheKey) {
     cachedUrl = safeUrl;
     cachedKey = cacheKey;
   }
+
+  const resolveEmbeddingModel = (requested?: string): string => {
+    const requestedModel = (requested ?? embeddingModel ?? "").trim();
+    return requestedModel || "default";
+  };
 
   return {
     async complete(req: AiCompletionRequest): Promise<string> {
@@ -82,7 +94,7 @@ export function createLMStudioProvider(
       }
       messages.push({ role: "user", content: req.userContent });
 
-      const response = await chatCompletion(safeUrl, model, {
+      const response = await chatCompletion(safeUrl, chatModel, {
         messages,
         max_tokens: req.maxTokens ?? 1024,
       });
@@ -92,7 +104,7 @@ export function createLMStudioProvider(
 
     async testConnection(): Promise<boolean> {
       try {
-        const response = await chatCompletion(safeUrl, model, {
+        const response = await chatCompletion(safeUrl, chatModel, {
           messages: [{ role: "user", content: "Say hi" }],
           max_tokens: 10,
         });
@@ -104,6 +116,7 @@ export function createLMStudioProvider(
 
     async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
       try {
+        const model = resolveEmbeddingModel(req.model);
         const response = await embeddingsRequest(safeUrl, model, req.input);
         return response.data.map((d) => d.embedding);
       } catch {
@@ -112,6 +125,49 @@ export function createLMStudioProvider(
       }
     },
   };
+}
+
+/**
+ * Lightweight health check for the LM Studio embeddings endpoint. Embeds a short
+ * test string and reports the vector dimension so the UI can validate that the
+ * configured embedding model actually returns vectors before indexing.
+ */
+export async function testEmbedding(
+  serverUrl: string,
+  embeddingModel?: string,
+): Promise<TestEmbeddingResult> {
+  const normalizedUrl = serverUrl.replace(/\/+$/, "");
+  const model = (embeddingModel ?? "").trim() || "default";
+
+  try {
+    const response = await fetch(`${normalizedUrl}/v1/embeddings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, input: "test" }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return {
+        ok: false,
+        error: `LM Studio embeddings error (${response.status}): ${errorText}`,
+      };
+    }
+
+    const data: EmbeddingResponse = await response.json();
+    const dims = data.data?.[0]?.embedding?.length;
+
+    if (!dims) {
+      return { ok: false, error: "Embedding response contained no vector." };
+    }
+
+    return { ok: true, dims };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 export async function listLMStudioModels(

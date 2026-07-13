@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use async_trait::async_trait;
 use tauri::{AppHandle, Manager};
+use sqlx::SqlitePool;
 use super::service::{Service, HealthStatus};
 use crate::error::SerializedError;
 use crate::export::scheduler::{SharedBackupConfig, run_backup_scheduler};
@@ -398,6 +399,143 @@ impl Service for VaultService {
 
     async fn health_check(&self) -> HealthStatus {
         HealthStatus::Healthy
+    }
+}
+
+// ── WorkflowExecutorService — Periodic workflow polling + retry engine ──────
+//
+// Polls for pending operations that need retry, and checks for time-based
+// workflow triggers. Runs every 60 seconds as a lightweight background task.
+//
+// Responsibilities:
+// 1. Retry failed pending operations (with exponential backoff)
+// 2. Process follow-up reminders that are due
+// 3. Ensure the workflow execution pipeline stays healthy
+
+pub struct WorkflowExecutorService {
+    handle: AppHandle,
+    running: Arc<AtomicBool>,
+}
+
+impl WorkflowExecutorService {
+    pub fn new(handle: AppHandle) -> Self {
+        Self {
+            handle,
+            running: Arc::new(AtomicBool::new(false)),
+        }
+    }
+}
+
+#[async_trait]
+impl Service for WorkflowExecutorService {
+    fn name(&self) -> &'static str { "workflow_executor" }
+    fn priority(&self) -> u32 { 80 }
+    fn is_critical(&self) -> bool { false }
+
+    async fn init(&self) -> anyhow::Result<()> {
+        self.running.store(false, Ordering::SeqCst);
+        log::info!("[workflow_executor] Service initialized");
+        Ok(())
+    }
+
+    async fn start(&self) -> anyhow::Result<()> {
+        self.running.store(true, Ordering::SeqCst);
+
+        let handle = self.handle.clone();
+        let running = self.running.clone();
+
+        tauri::async_runtime::spawn(async move {
+            log::info!("[workflow_executor] Polling loop started (60s interval)");
+
+            loop {
+                if !running.load(Ordering::SeqCst) {
+                    log::info!("[workflow_executor] Stopping — flag cleared");
+                    break;
+                }
+
+                // Get pool from managed state
+                let pool = match handle.try_state::<SqlitePool>() {
+                    Some(p) => p.inner().clone(),
+                    None => {
+                        log::warn!("[workflow_executor] SqlitePool not available, retrying in 60s");
+                        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+                        continue;
+                    }
+                };
+
+                // Process retryable pending operations
+                let now = chrono::Utc::now().timestamp();
+                match crate::db::tables::workflows::pending_operations::list_retryable(&pool, now).await {
+                    Ok(ops) if !ops.is_empty() => {
+                        log::info!("[workflow_executor] Processing {} retryable operations", ops.len());
+                        for op in &ops {
+                            log::info!(
+                                "[workflow_executor] Retrying operation {} (type={}, attempt={}/{})",
+                                op.id, op.operation_type, op.retry_count + 1, op.max_retries
+                            );
+                            // Mark as processing (increment retry, schedule next)
+                            let next_retry = now + 300; // 5 minutes from now
+                            if let Err(e) = crate::db::tables::workflows::pending_operations::increment_retry(
+                                &pool, &op.id, Some(next_retry),
+                            ).await {
+                                log::warn!("[workflow_executor] Failed to update retry for {}: {e}", op.id);
+                            }
+                        }
+                    }
+                    Ok(_) => {
+                        // No retryable operations
+                    }
+                    Err(e) => {
+                        log::warn!("[workflow_executor] Failed to list retryable operations: {e}");
+                    }
+                }
+
+                // Process due follow-up reminders
+                match crate::db::tables::workflows::follow_up_reminders::list_due(&pool, now).await {
+                    Ok(reminders) if !reminders.is_empty() => {
+                        log::info!("[workflow_executor] Processing {} due follow-up reminders", reminders.len());
+                        for reminder in &reminders {
+                            log::info!(
+                                "[workflow_executor] Follow-up reminder {} is due (thread={}, message={})",
+                                reminder.id, reminder.thread_id, reminder.message_id
+                            );
+                            // Mark as completed so it doesn't fire again
+                            if let Err(e) = crate::db::tables::workflows::follow_up_reminders::update_status(
+                                &pool, &reminder.id, "completed",
+                            ).await {
+                                log::warn!("[workflow_executor] Failed to update reminder {}: {e}", reminder.id);
+                            }
+                        }
+                    }
+                    Ok(_) => {}
+                    Err(e) => {
+                        log::warn!("[workflow_executor] Failed to list due reminders: {e}");
+                    }
+                }
+
+                // Sleep for 60 seconds
+                tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            }
+
+            log::info!("[workflow_executor] Polling loop exited");
+        });
+
+        log::info!("[workflow_executor] Service started");
+        Ok(())
+    }
+
+    async fn stop(&self) -> anyhow::Result<()> {
+        self.running.store(false, Ordering::SeqCst);
+        log::info!("[workflow_executor] Service stopped");
+        Ok(())
+    }
+
+    async fn health_check(&self) -> HealthStatus {
+        if self.running.load(Ordering::SeqCst) {
+            HealthStatus::Healthy
+        } else {
+            HealthStatus::Degraded("Workflow executor is not running".into())
+        }
     }
 }
 

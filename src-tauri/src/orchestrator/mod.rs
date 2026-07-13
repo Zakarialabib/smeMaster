@@ -5,11 +5,12 @@ pub mod subsystem_lifecycle;
 pub mod state_machine;
 pub mod tool_registry;
 pub mod gating;
+pub mod health_monitor;
 pub mod init;
 pub mod onboarding;
 
 pub use service::{Service, ServiceRegistry, HealthStatus, InitializationPhase, PhaseEvent};
-pub use services::{DatabaseService, PgpService, SyncService, BackupSchedulerService, SyncMonitorService, VaultService, StubService, get_sync_health_summary};
+pub use services::{DatabaseService, PgpService, SyncService, BackupSchedulerService, SyncMonitorService, VaultService, WorkflowExecutorService, StubService, get_sync_health_summary};
 pub use watchdog::Watchdog;
 pub use subsystem_lifecycle::{SubsystemRegistry, SubsystemStatus, SubsystemEntry, SubsystemClass, ServiceHandle, SubsystemStatusSnapshot};
 pub use state_machine::{StateMachine, SystemState};

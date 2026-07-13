@@ -4,6 +4,8 @@ import { Button } from "@shared/components/ui/Button";
 import { Modal } from "@shared/components/ui/Modal";
 import { TextField } from "@shared/components/ui/TextField";
 import { Toggle } from "@shared/components/ui/Toggle";
+import { useFormField } from "@shared/hooks/useFormField";
+import { required as requiredValidator } from "@shared/utils/validators";
 import type { DbCalendar } from "@features/calendar/db/calendars";
 import { Calendar, ListTodo, Mail } from "lucide-react";
 import { type IntegratedItemType } from "./EventCard";
@@ -26,7 +28,7 @@ interface EventCreateModalProps {
 export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateModalProps) {
   const { t } = useTranslation();
   const [type, setType] = useState<IntegratedItemType>("event");
-  const [summary, setSummary] = useState("");
+  const summaryField = useFormField({ validator: requiredValidator, initialValue: "" });
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [isAllDay, setIsAllDay] = useState(false);
@@ -36,11 +38,18 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
     calendars?.find((c) => c.is_primary)?.id ?? calendars?.[0]?.id ?? "",
   );
 
+  // End must not be before start (only meaningful for timed events).
+  const timeError =
+    type === "event" && !isAllDay && endTime < startTime
+      ? "calendar.endBeforeStart"
+      : undefined;
+
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!summary.trim()) return;
+    summaryField.onBlur();
+    if (!summaryField.value.trim() || timeError) return;
     onCreate({
-      summary: summary.trim(),
+      summary: summaryField.value.trim(),
       description,
       location,
       startTime,
@@ -49,7 +58,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
       isAllDay: isAllDay || undefined,
       type,
     });
-  }, [summary, description, location, startTime, endTime, calendarId, isAllDay, type, onCreate]);
+  }, [summaryField, description, location, startTime, endTime, calendarId, isAllDay, type, onCreate, timeError]);
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t("common.create")} size="md">
@@ -89,11 +98,16 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
         <TextField
           label={type === 'event' ? t("calendar.eventTitle") : type === 'task' ? t("tasks.title") : t("mail.subject")}
           type="text"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
+          value={summaryField.value}
+          onChange={(e) => summaryField.onChange(e.target.value)}
+          onBlur={summaryField.onBlur}
+          error={summaryField.error}
           placeholder={t("calendar.eventTitle")}
           autoFocus
         />
+        {summaryField.error && (
+          <p className="text-xs text-danger -mt-2 mb-1" role="alert">{t(summaryField.error)}</p>
+        )}
 
         {type === 'event' && calendars && calendars.length > 0 && (
           <div>
@@ -158,9 +172,13 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
                 const val = e.target.value;
                 setEndTime(isAllDay ? val + "T23:59" : val);
               }}
+              error={timeError}
             />
           )}
         </div>
+        {timeError && (
+          <p className="text-xs text-danger -mt-2 mb-1" role="alert">{t(timeError)}</p>
+        )}
 
         {type === 'event' && (
           <TextField
@@ -196,7 +214,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
             type="submit"
             variant="primary"
             size="md"
-            disabled={!summary.trim()}
+            disabled={!summaryField.value.trim() || !!timeError}
           >
             {t("common.create")}
           </Button>

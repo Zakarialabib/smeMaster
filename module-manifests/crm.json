@@ -1,0 +1,18 @@
+{
+  "id": "crm",
+  "name": "CRM Features",
+  "description": "CRM frontend state: full sales pipeline, lead management, deal tracking, customer activity history, dynamic contact segments, and scoring models. Commands in commands::crm.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["crm"],
+  "dependencies": [
+    { "module": "db", "reason": "CRM data access via db::contacts", "required": true },
+    { "module": "contacts", "reason": "Contact management foundation", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

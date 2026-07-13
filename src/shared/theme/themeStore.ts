@@ -19,7 +19,17 @@ export interface ThemePreference {
   fontScale: FontScale;
   reduceMotion: boolean;
   highContrast: boolean;
+  /** Surface style: "flat" (default, calm) or "glass" (Frosted Glass orbs + blur). */
+  surface: SurfaceStyle;
+  /** UI density: "compact" | "normal" | "relaxed" (desktop row height). */
+  density: UiDensity;
 }
+
+/** UI density. */
+export type UiDensity = "compact" | "normal" | "relaxed";
+
+/** Visual surface style. */
+export type SurfaceStyle = "flat" | "glass";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type FontScale = "small" | "default" | "large" | "xlarge";
@@ -27,6 +37,8 @@ export type FontScale = "small" | "default" | "large" | "xlarge";
 const DEFAULT_MODE: ThemeMode = "system";
 const DEFAULT_COLOR: ColorThemeId = "indigo";
 const DEFAULT_SCALE: FontScale = "default";
+const DEFAULT_SURFACE: SurfaceStyle = "flat";
+const DEFAULT_DENSITY: UiDensity = "normal";
 
 interface ThemeState {
   mode: ThemeMode;
@@ -44,6 +56,10 @@ interface ThemeState {
   setFontScale: (scale: FontScale) => void;
   setReduceMotion: (reduce: boolean) => void;
   setHighContrast: (highContrast: boolean) => void;
+  surface: SurfaceStyle;
+  setSurface: (surface: SurfaceStyle) => void;
+  density: UiDensity;
+  setDensity: (density: UiDensity) => void;
   syncFromBackend: () => Promise<void>;
   persistToBackend: () => Promise<void>;
   /** @internal Syncs current theme state to useConfigStore for ThemeManager */
@@ -69,6 +85,8 @@ const sanitize = (
       : DEFAULT_SCALE,
   reduceMotion: typeof raw?.reduceMotion === "boolean" ? raw!.reduceMotion : false,
   highContrast: typeof raw?.highContrast === "boolean" ? raw!.highContrast : false,
+  surface: raw?.surface === "glass" || raw?.surface === "flat" ? raw!.surface : DEFAULT_SURFACE,
+  density: raw?.density === "compact" || raw?.density === "normal" || raw?.density === "relaxed" ? raw!.density : DEFAULT_DENSITY,
 });
 
 export const useThemeStore = create<ThemeState>()(
@@ -79,6 +97,8 @@ export const useThemeStore = create<ThemeState>()(
       fontScale: DEFAULT_SCALE,
       reduceMotion: false,
       highContrast: false,
+      surface: DEFAULT_SURFACE,
+      density: DEFAULT_DENSITY,
       isSynced: false,
       theme: DEFAULT_MODE,
 
@@ -123,6 +143,22 @@ export const useThemeStore = create<ThemeState>()(
         void get().persistToBackend();
       },
 
+      setSurface: (surface) => {
+        set({ surface });
+        if (typeof document !== "undefined") {
+          document.documentElement.setAttribute("data-surface", surface);
+        }
+        void get().persistToBackend();
+      },
+
+      setDensity: (density) => {
+        set({ density });
+        if (typeof document !== "undefined") {
+          document.documentElement.setAttribute("data-density", density);
+        }
+        void get().persistToBackend();
+      },
+
       syncFromBackend: async () => {
         try {
           const raw = (await invoke("db_get_theme_preference")) as unknown as
@@ -147,10 +183,10 @@ export const useThemeStore = create<ThemeState>()(
       },
 
       persistToBackend: async () => {
-        const { mode, colorTheme, fontScale, reduceMotion } = get();
+        const { mode, colorTheme, fontScale, reduceMotion, surface, density } = get();
         try {
           await invoke("db_set_theme_preference", {
-            preference: { mode, colorTheme, fontScale, reduceMotion },
+            preference: { mode, colorTheme, fontScale, reduceMotion, surface, density },
           });
         } catch {
           // fire-and-forget
@@ -159,13 +195,15 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: "smemaster.theme.preference",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => tauriStoreStorage),
       partialize: (s) => ({
         mode: s.mode,
         colorTheme: s.colorTheme,
         fontScale: s.fontScale,
         reduceMotion: s.reduceMotion,
+        surface: s.surface,
+        density: s.density,
       }),
       merge: (persisted: unknown, current) => {
         const incoming = sanitize(persisted as Partial<ThemePreference>);

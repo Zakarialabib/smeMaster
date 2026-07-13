@@ -28,10 +28,13 @@ mod oauth;
 mod pairing;
 mod pgp;
 mod smtp;
+mod state;
 mod vault;
 pub mod orchestrator;
+mod invoicing;
 mod services;
 mod platform;
+mod pos;
 #[cfg(target_os = "android")]
 mod android;
 mod assets;
@@ -41,10 +44,12 @@ mod microsoft_graph;
 mod error;
 mod errors;
 
+use std::sync::Arc;
 use tauri::Manager;
 #[cfg(desktop)]
 use tauri::Emitter;
 use tauri::Listener;
+use crate::data_cache::DataCacheService;
 use crate::orchestrator::SystemState;
 
 // NOTE: All #[tauri::command] functions have been moved into the
@@ -287,6 +292,7 @@ pub fn run() {
                             let _ = window.emit("tray:before-quit", ());
                         }
                         std::thread::sleep(std::time::Duration::from_millis(500));
+                        crate::events::heartbeat::signal_stop();
                         app.exit(0);
                     }
                     _ => {}
@@ -338,6 +344,14 @@ pub fn run() {
 
         // ── Post-migration health check runs inside spawn_orchestrator ──
         app.manage(pool.clone());
+
+        // ── DataCacheService: in-memory cache layer ──
+        // Registered here (early, before spawn_orchestrator) so IPC commands
+        // can access it immediately — they don't need to wait for the async
+        // orchestrator pipeline (migrations, seeding, service start) to finish.
+        // The orchestrator will retrieve this same instance later for
+        // ServiceRegistry lifecycle management (pre-warming, health checks).
+        app.manage(Arc::new(DataCacheService::new(app.handle().clone(), pool.clone())));
 
         // ── Protocol Driver Registry — maps provider_type to driver impls
         app.manage(drivers::DriverRegistry::new(pool.clone()));
@@ -440,6 +454,20 @@ pub fn run() {
         let (subsystem_registry, _tool_registry, state_machine) =
             orchestrator::init::AppLifecycle::wire_subsystem_lifecycle(app);
 
+        // ── AppState: centralized core infrastructure wrapper ──
+        // Created here because EventBus is already managed and
+        // wire_subsystem_lifecycle has just returned the registry + FSM.
+        // The clone is cheap (Arc ref-count bump); subsystem_registry is
+        // moved into spawn_orchestrator on the next line.
+        {
+            let app_state = crate::state::AppState::new(
+                app.state::<events::EventBus>().inner().clone(),
+                subsystem_registry.clone(),
+                state_machine.clone(),
+            );
+            app.manage(app_state);
+        }
+
         // ── Phase 4: Orchestrator — services lifecycle + Watchdog + migration ──
         orchestrator::init::AppLifecycle::spawn_orchestrator(
             app.handle(),
@@ -447,13 +475,18 @@ pub fn run() {
             subsystem_registry,
         );
 
-        // ── Onboarding completion listener (block_on avoids dashmap Send bounds) ──
+        // ── Onboarding completion listener ──
+        // The DashMap key change to `String` resolved the previous Send issue,
+        // but `block_on` inside a tokio runtime still panics ("runtime within
+        // a runtime"), so we keep the dedicated OS thread approach.
         let sm = state_machine.clone();
         app.handle().once("onboarding:completed", move |_| {
             let sm = sm.clone();
-            tauri::async_runtime::block_on(async move {
-                sm.transition(SystemState::Ready).await;
-                log::info!("[orchestrator] Onboarding completed → Ready (via listener)");
+            std::thread::spawn(move || {
+                tauri::async_runtime::block_on(async move {
+                    sm.transition(SystemState::Ready).await;
+                    log::info!("[orchestrator] Onboarding completed → Ready (via listener)");
+                });
             });
         });
 

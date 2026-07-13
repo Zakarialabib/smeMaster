@@ -14,3 +14,5 @@ export * from './invoke/ai';
 export * from './invoke/compliance';
 export * from './invoke/vault';
 export * from './invoke/rag';
+export * from './invoke/invoicing';
+export * from './invoke/onboarding';

@@ -1,6 +1,7 @@
 export { AiSuggestionBanner, type AiSuggestion, type AiSuggestionBannerProps } from "./AiSuggestionBanner";
 export { Badge, type BadgeProps, type BadgeVariant, type BadgeSize } from "./Badge";
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
+export { CardTabBar, type CardTabItem, type CardTabBarProps } from "./CardTabBar";
 export { CenteredLoader, type CenteredLoaderProps, type CenteredLoaderSize } from "./CenteredLoader";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { ContextMenu, type ContextMenuItem } from "./ContextMenu";

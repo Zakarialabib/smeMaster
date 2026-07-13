@@ -4,7 +4,7 @@ import { getSetting } from "@features/settings/db/settings";
 import { AiError } from "./errors";
 import type { DbMessage } from "@shared/services/db/messages";
 import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
-import { fetchRagContext } from "./ragContext";
+import { fetchRagContext, buildFusedContext } from "./ragContext";
 import {
   SUMMARIZE_PROMPT,
   COMPOSE_PROMPT,
@@ -320,7 +320,11 @@ export async function askInbox(
   const askInboxEnabled = await getSetting("ai_ask_inbox_enabled");
   if (askInboxEnabled === "false") throw new Error("Ask Inbox is disabled in settings");
 
-  const userContent = `<email_content>${context}</email_content>\n\nQuestion: ${question}`;
+  const ftsContext = `<email_content>${context}</email_content>`;
+  // Fuse FTS results with RAG vector-search context. Gracefully
+  // falls back to FTS-only when RAG is unavailable.
+  const fusedContext = await buildFusedContext(ftsContext, question);
+  const userContent = `${fusedContext}\n\nQuestion: ${question}`;
   return callAi(ASK_INBOX_PROMPT, userContent);
 }
 

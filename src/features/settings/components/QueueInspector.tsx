@@ -234,7 +234,7 @@ export function QueueInspector() {
             }
           >
             {key.charAt(0).toUpperCase() + key.slice(1)}
-            <span className="ml-1 text-[0.625rem] opacity-60">({counts[key]})</span>
+            <span className="ms-1 text-[0.625rem] opacity-60">({counts[key]})</span>
           </Button>
         ))}
       </div>
@@ -242,7 +242,7 @@ export function QueueInspector() {
       {/* Queue table */}
       {loading ? (
         <div className="flex items-center justify-center py-12 text-sm text-text-tertiary">
-          <Loader size={16} className="animate-spin mr-2" />
+          <Loader size={16} className="animate-spin me-2" />
           Loading queue...
         </div>
       ) : filteredOps.length === 0 ? (
@@ -252,13 +252,13 @@ export function QueueInspector() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-text-tertiary border-b border-border-primary">
-                <th className="text-left py-2 px-2 font-medium">Type</th>
-                <th className="text-left py-2 px-2 font-medium">Status</th>
-                <th className="text-left py-2 px-2 font-medium">Resource</th>
-                <th className="text-left py-2 px-2 font-medium">Campaign</th>
-                <th className="text-left py-2 px-2 font-medium">Created</th>
-                <th className="text-left py-2 px-2 font-medium">Retries</th>
-                <th className="text-left py-2 px-2 font-medium">Error</th>
+                <th className="text-start py-2 px-2 font-medium">Type</th>
+                <th className="text-start py-2 px-2 font-medium">Status</th>
+                <th className="text-start py-2 px-2 font-medium">Resource</th>
+                <th className="text-start py-2 px-2 font-medium">Campaign</th>
+                <th className="text-start py-2 px-2 font-medium">Created</th>
+                <th className="text-start py-2 px-2 font-medium">Retries</th>
+                <th className="text-start py-2 px-2 font-medium">Error</th>
                 <th className="w-8" />
               </tr>
             </thead>

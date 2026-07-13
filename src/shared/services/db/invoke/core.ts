@@ -253,6 +253,7 @@ export interface UpsertLabelRequest {
 
 export interface UpsertContactRequest {
   id?: string | null;
+  companyId: string;
   email: string;
   displayName?: string | null;
   avatarUrl?: string | null;

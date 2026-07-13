@@ -31,6 +31,7 @@ pub mod mail;
 pub mod contacts;
 pub mod campaigns;
 pub mod ai;
+pub mod invoicing;
 pub mod vault;
 pub mod calendar;
 pub mod tasks;

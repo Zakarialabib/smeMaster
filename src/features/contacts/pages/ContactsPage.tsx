@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   Users,
@@ -22,6 +23,7 @@ import { CsvImportWizard } from "@features/contacts/components/CsvImportWizard";
 import { ContactMergeDialog } from "@features/contacts/components/ContactMergeDialog";
 import { Button } from "@shared/components/ui/Button";
 import { EmptyState } from "@shared/components/ui/EmptyState";
+import { PageScaffold } from "@shared/components/layout";
 import { findMergeCandidates, mergeContacts, type MergeCandidate } from "@features/contacts/services/merge";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { AddTagModal } from "@features/contacts/components/AddTagModal";
@@ -52,6 +54,7 @@ import { PaginationControls } from "@shared/components/ui/PaginationControls";
 type ContactsTab = "contacts" | "tags" | "groups" | "segments" | "imports";
 
 export function ContactsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { screen } = usePlatform();
   const isMobile = screen.isMobile;
@@ -60,6 +63,7 @@ export function ContactsPage() {
   );
 
   const [search, setSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<ContactsTab>("contacts");
   const [showCsvImport, setShowCsvImport] = useState(false);
@@ -374,67 +378,55 @@ export function ContactsPage() {
   );
 
   const DESKTOP_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: "contacts", label: "Contacts", icon: Users },
-    { id: "tags", label: "Tags", icon: TagIcon },
-    { id: "groups", label: "Groups", icon: Users },
-    { id: "segments", label: "Segments", icon: Filter },
-    { id: "imports", label: "Imports", icon: History },
+    { id: "contacts", label: t('contacts.tabs.contacts'), icon: Users },
+    { id: "tags", label: t('contacts.tabs.tags'), icon: TagIcon },
+    { id: "groups", label: t('contacts.tabs.groups'), icon: Users },
+    { id: "segments", label: t('contacts.tabs.segments'), icon: Filter },
+    { id: "imports", label: t('contacts.tabs.imports'), icon: History },
   ];
 
   const MOBILE_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: "contacts", label: "Contacts", icon: Users },
-    { id: "tags", label: "Tags", icon: TagIcon },
+    { id: "contacts", label: t('contacts.tabs.contacts'), icon: Users },
+    { id: "tags", label: t('contacts.tabs.tags'), icon: TagIcon },
   ];
 
   const tabs = isMobile ? MOBILE_TABS : DESKTOP_TABS;
 
-  // Mobile search state
-  const [showSearch, setShowSearch] = useState(false);
-
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-bg-primary/50">
-      {/* Mobile Header - compact with expandable search */}
-      {isMobile && (
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm safe-area-top">
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-accent" />
-            <h1 className="text-base font-semibold text-text-primary">Contacts</h1>
-            {!loading && (
-              <span className="text-xs text-text-tertiary bg-bg-tertiary px-2 py-0.5 rounded-full">
-                {contacts.length}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
+    <PageScaffold
+      title={<span className="flex items-center gap-2"><Users size={18} className="text-accent" />{t('contacts.title')}</span>}
+      count={contacts.length}
+      actions={
+        <>
+          {isMobile && (
             <button
               onClick={() => setShowSearch(!showSearch)}
               className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label={showSearch ? "Hide search" : "Show search"}
+              aria-label={showSearch ? t('contacts.hideSearch') : t('contacts.showSearch')}
               aria-expanded={showSearch}
             >
               <Search size={20} />
             </button>
-            <button
-              onClick={() => setShowCreateContact(true)}
-              className="p-2 rounded-lg bg-accent text-white hover:bg-accent/90 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="New contact"
-            >
-              <UserPlus size={20} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile expandable search bar */}
-      {isMobile && showSearch && (
-        <div className="px-4 py-2 border-b border-border-primary bg-bg-primary/30 shrink-0 animate-slide-down">
-          <div className="relative">
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<UserPlus size={14} />}
+            onClick={() => setShowCreateContact(true)}
+          >
+            {t('contacts.newContact')}
+          </Button>
+        </>
+      }
+      toolbar={
+        isMobile && showSearch ? (
+          <div className="relative w-full">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search contacts..."
+              placeholder={t('contacts.searchPlaceholder')}
               autoFocus
               className="w-full pl-10 pr-10 py-2.5 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
             />
@@ -442,39 +434,15 @@ export function ContactsPage() {
               <button
                 onClick={() => setSearch("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
-                aria-label="Clear search"
+                aria-label={t('contacts.clearSearch')}
               >
                 <X size={14} />
               </button>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Desktop Header */}
-      {!isMobile && (
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-accent" />
-            <h1 className="text-base font-semibold text-text-primary">Contacts</h1>
-            {!loading && (
-              <span className="text-xs text-text-tertiary bg-bg-tertiary px-2 py-0.5 rounded-full">
-                {contacts.length}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<UserPlus size={14} />}
-              onClick={() => setShowCreateContact(true)}
-            >
-              New contact
-            </Button>
-          </div>
-        </div>
-      )}
+        ) : undefined
+      }
+    >
 
       {/* Tabs */}
       <div className="flex items-center border-b border-border-primary bg-bg-primary/30 shrink-0 overflow-x-auto">
@@ -509,7 +477,7 @@ export function ContactsPage() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search contacts..."
+                  placeholder={t('contacts.searchPlaceholder')}
                   className="w-full pl-10 pr-10 py-2 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
                 />
                 {search && (
@@ -531,12 +499,12 @@ export function ContactsPage() {
               {/* Stats bar */}
               <div className="flex items-center gap-4 px-5 py-2 border-b border-border-primary bg-bg-primary/20">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-text-tertiary">Total:</span>
+                  <span className="text-xs text-text-tertiary">{t('contacts.stats.total')}</span>
                   <span className="text-sm font-semibold text-text-primary">{stats.total}</span>
                 </div>
                 <div className="w-px h-4 bg-border-primary" />
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-text-tertiary">Active (30d):</span>
+                  <span className="text-xs text-text-tertiary">{t('contacts.stats.active30')}</span>
                   <span className="text-sm font-semibold text-text-primary">{stats.engaged}</span>
                 </div>
                 <div className="flex-1" />
@@ -546,7 +514,7 @@ export function ContactsPage() {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search contacts..."
+                    placeholder={t('contacts.searchPlaceholder')}
                     className="w-full pl-8 pr-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
                   />
                 </div>
@@ -985,6 +953,6 @@ export function ContactsPage() {
         onClose={() => setShowCreateContact(false)}
         onCreated={resetContacts}
       />
-    </div>
+    </PageScaffold>
   );
 }

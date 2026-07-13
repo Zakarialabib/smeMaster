@@ -1,0 +1,18 @@
+{
+  "id": "microsoft_graph",
+  "name": "Microsoft Graph",
+  "description": "Microsoft Graph API integration for email, calendar, and contacts via the Microsoft 365 ecosystem. OAuth-based authentication and REST API client.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "oauth", "reason": "OAuth token management for Graph API", "required": true },
+    { "module": "db", "reason": "Persists sync state", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

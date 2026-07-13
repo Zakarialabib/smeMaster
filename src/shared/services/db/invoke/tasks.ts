@@ -48,8 +48,8 @@ export async function createTask(task: CreateTaskRequest): Promise<Task> {
   });
 }
 
-export async function updateTask(id: string, updates: UpdateTaskRequest): Promise<void> {
-  return invokeCommand<void>('db_update_task', { id, updates });
+export async function updateTask(id: string, request: UpdateTaskRequest): Promise<void> {
+  return invokeCommand<void>('db_update_task', { id, request });
 }
 
 export async function createScheduledEmail(

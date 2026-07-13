@@ -34,6 +34,9 @@ interface TaskState {
 
   aiSuggestions: AiTaskSuggestion[];
 
+  /** Global toggle for task reminders / notifications */
+  remindersEnabled: boolean;
+
   setTasks: (tasks: DbTask[]) => void;
   setThreadTasks: (tasks: DbTask[]) => void;
   addTask: (task: DbTask) => void;
@@ -42,6 +45,11 @@ interface TaskState {
   setSelectedTaskId: (id: string | null) => void;
   setIncompleteCount: (count: number) => void;
   setSearchQuery: (query: string) => void;
+
+  /** Enable or disable the task reminder / workflow polling loop */
+  setRemindersEnabled: (enabled: boolean) => void;
+  /** Remove all completed tasks from the local store */
+  archiveCompletedTasks: () => void;
 
   setAiSuggestions: (suggestions: AiTaskSuggestion[]) => void;
   dismissAiSuggestions: () => void;
@@ -54,6 +62,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   incompleteCount: 0,
   searchQuery: "",
   aiSuggestions: [],
+  remindersEnabled: true,
   ...initialAsyncState,
 
   setTasks: (tasks) => set({ tasks }),
@@ -95,6 +104,23 @@ export const useTaskStore = create<TaskState>((set) => ({
   setSelectedTaskId: (selectedTaskId) => set({ selectedTaskId }),
   setIncompleteCount: (incompleteCount) => set({ incompleteCount }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
+  setRemindersEnabled: (remindersEnabled) => set({ remindersEnabled }),
+  archiveCompletedTasks: () =>
+    set((state) => {
+      const completedIds = new Set(
+        state.tasks
+          .concat(state.threadTasks)
+          .filter((t) => t.is_completed)
+          .map((t) => t.id),
+      );
+      return {
+        tasks: state.tasks.filter((t) => !t.is_completed),
+        threadTasks: state.threadTasks.filter((t) => !t.is_completed),
+        selectedTaskId:
+          state.selectedTaskId && completedIds.has(state.selectedTaskId) ? null : state.selectedTaskId,
+        incompleteCount: state.tasks.filter((t) => !t.is_completed).length,
+      };
+    }),
   setAiSuggestions: (aiSuggestions) => set({ aiSuggestions }),
   dismissAiSuggestions: () => set({ aiSuggestions: [] }),
 }));

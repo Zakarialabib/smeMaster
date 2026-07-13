@@ -1,0 +1,47 @@
+{
+  "bundle": {
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-dev", "libgtk-3-dev", "libappindicator3-dev"]
+      }
+    },
+    "targets": ["deb", "appimage", "rpm"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/Square30x30Logo.png",
+      "icons/Square44x44Logo.png",
+      "icons/Square71x71Logo.png",
+      "icons/Square89x89Logo.png",
+      "icons/Square107x107Logo.png",
+      "icons/Square142x142Logo.png",
+      "icons/Square150x150Logo.png",
+      "icons/Square284x284Logo.png",
+      "icons/Square310x310Logo.png",
+      "icons/StoreLogo.png"
+    ]
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "SMEMaster",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 320,
+        "minHeight": 480,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "titleBarStyle": "Visible",
+        "hiddenTitle": false,
+        "visible": true,
+        "center": true,
+        "dragDropEnabled": false
+      }
+    ]
+  }
+}

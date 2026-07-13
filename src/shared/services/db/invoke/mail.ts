@@ -21,6 +21,20 @@ export async function deleteWritingStyleProfile(id: string): Promise<void> {
   return invokeCommand<void>('db_delete_writing_style_profile', { id });
 }
 
+export async function createCampaignTemplate(input: {
+  companyId: string;
+  name: string;
+  subject?: string | null;
+  bodyHtml: string;
+}): Promise<void> {
+  await invokeCommand<void>('db_create_campaign_template', {
+    company_id: input.companyId,
+    name: input.name,
+    subject: input.subject ?? null,
+    body_html: input.bodyHtml,
+  });
+}
+
 export async function listThreadCategories(companyId: string): Promise<ThreadCategoryRow[]> {
   return invokeCommand<ThreadCategoryRow[]>('db_list_thread_categories', { companyId });
 }

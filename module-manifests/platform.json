@@ -1,0 +1,15 @@
+{
+  "id": "platform",
+  "name": "Platform Detection",
+  "description": "Platform info command: mobile/desktop detection, OS type, architecture, tablet/phone classification. IPC command accessible from frontend.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

@@ -57,16 +57,23 @@ export const Section = SettingGroup;
  */
 export function SettingRow({
   label,
+  description,
   children,
 }: {
   label: string;
+  description?: string;
   children: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between py-3.5 first:pt-1 gap-4 min-h-[44px] rounded-lg px-3 -mx-3 transition-colors hover:bg-bg-hover/50 border-b border-border-primary/15 last:border-b-0">
-      <label className="text-sm font-medium text-text-primary shrink-0">
-        {label}
-      </label>
+      <div className="shrink-0">
+        <label className="text-sm font-medium text-text-primary">
+          {label}
+        </label>
+        {description && (
+          <p className="text-xs text-text-tertiary mt-0.5 max-w-[42ch]">{description}</p>
+        )}
+      </div>
       {children}
     </div>
   );
@@ -138,7 +145,7 @@ export function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between py-3 first:pt-0 gap-4 min-h-[44px] rounded-lg px-3 -mx-3 transition-colors hover:bg-bg-hover/50 border-b border-border-primary/15 last:border-b-0 cursor-pointer">
-      <div className="min-w-0 flex-1 pr-2">
+      <div className="min-w-0 flex-1 pe-2">
         <span className="text-sm font-medium text-text-primary">{label}</span>
         {description && (
           <p className="text-xs text-text-tertiary mt-0.5 leading-relaxed">
@@ -228,7 +235,7 @@ export function ChoiceCards<T extends string>({
   onChange,
 }: ChoiceCardsProps<T>) {
   return (
-    <div className="grid grid-cols-3 gap-3 min-w-[200px]">
+    <div className="grid grid-cols-4 gap-3 min-w-[300px] mb-10">
       {options.map((opt) => {
         const isActive = value === opt.value;
         const Icon = opt.icon;

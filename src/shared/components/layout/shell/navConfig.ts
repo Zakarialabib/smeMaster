@@ -14,7 +14,7 @@ import {
   Bug,
   Paperclip,
   BarChart3,
-  CheckSquare,
+  ReceiptText,
   FolderSearch,
   Tag,
   UserCircle,
@@ -32,12 +32,15 @@ import {
   HelpCircle,
   Info,
   FolderLock,
-  Megaphone,
+  Cpu,
+  LayoutDashboard,
+  Calculator,
 } from "lucide-react";
 import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/navigate";
 import { router } from "@/router";
 import type { NavRailItem } from "./NavRail";
 import type { LucideIcon } from "lucide-react";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface NavRailSubItem {
@@ -81,10 +84,13 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
 
 export const NAV_GROUPS: NavRailGroup[] = [
   {
-    id: "business",
-    label: "nav.business",
-    icon: BarChart3,
-    items: []
+    id: "dashboard",
+    label: "nav.dashboard",
+    icon: LayoutDashboard,
+    items: [
+      { id: "invoicing", label: "nav.invoicing", icon: ReceiptText, path: "/invoicing" },
+      { id: "erp", label: "nav.erp", icon: Calculator, path: "/erp" },
+    ]
   },
   {
     id: "mail",
@@ -107,24 +113,12 @@ export const NAV_GROUPS: NavRailGroup[] = [
     ],
   },
   {
-    id: "people",
+    id: "crm",
     icon: Users,
-    label: "nav.people",
+    label: "nav.crm",
     items: [
-      { id: "contacts", label: "settings.contacts", icon: Users },
+      { id: "contacts", label: "nav.crm", icon: Users },
     ],
-  },
-  {
-    id: "calendar",
-    icon: Calendar,
-    label: "calendar.calendar",
-    items: [],
-  },
-  {
-    id: "tasks",
-    icon: CheckSquare,
-    label: "tasks.tasks",
-    items: [],
   },
   {
     id: "automation",
@@ -142,12 +136,6 @@ export const NAV_GROUPS: NavRailGroup[] = [
     id: "ai-assistant",
     icon: Bot,
     label: "nav.aiAssistant",
-    items: [],
-  },
-  {
-    id: "campaigns",
-    icon: Megaphone,
-    label: "campaign.campaigns",
     items: [],
   },
   {
@@ -190,6 +178,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
       { id: "__divider__", label: "", icon: undefined },
       // Developer
       { id: "developer", label: "settings.tabGroupDeveloper", icon: Bug },
+      { id: "hardware", label: "settings.tabs.hardware", icon: Cpu },
       // ── divider ──
       { id: "__divider__", label: "", icon: undefined },
       // About
@@ -228,18 +217,19 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/mail")) return "mail";
   if (pathname.startsWith("/label")) return "mail";
   if (pathname.startsWith("/smart-folder")) return "mail";
-  if (pathname.startsWith("/people")) return "people";
-  if (pathname.startsWith("/calendar")) return "calendar";
+  if (pathname.startsWith("/people")) return "crm";
+  if (pathname.startsWith("/crm")) return "crm";
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/workflows")) return "automation";
   if (pathname.startsWith("/vault")) return "vault";
-  if (pathname.startsWith("/campaigns")) return "campaigns";
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/help")) return "help";
-  if (pathname.startsWith("/tasks")) return "tasks";
   if (pathname.startsWith("/attachments")) return "mail";
-  if (pathname.startsWith("/business")) return "business";
+  if (pathname.startsWith("/dashboard")) return "dashboard";
+  if (pathname.startsWith("/invoicing")) return "dashboard";
+  if (pathname.startsWith("/erp")) return "dashboard";
   if (pathname.startsWith("/ai-assistant")) return "ai-assistant";
+  if (pathname.startsWith("/pos")) return "mail"; // Or a separate 'pos' group if we add it
   return "mail";
 }
 
@@ -262,20 +252,22 @@ export function getActiveSubItem(pathname: string): string | null {
   if (settingsMatch) return settingsMatch[1]!;
 
   if (pathname.startsWith("/people")) return "contacts";
+  if (pathname.startsWith("/crm")) return "contacts";
   if (pathname.startsWith("/attachments")) return "attachments";
 
   // Analytics sub-items
-  if (pathname.startsWith("/campaigns")) return "campaigns";
-  if (pathname.startsWith("/business")) return "business";
+  if (pathname.startsWith("/dashboard")) return null;
+  if (pathname.startsWith("/invoicing")) return "invoicing";
+  if (pathname.startsWith("/erp")) return "erp";
 
   const helpMatch = pathname.match(/^\/help\/([^/]+)/);
   if (helpMatch) return helpMatch[1]!;
   if (pathname.startsWith("/help")) return "help-center";
 
-  // Page routes with no sub-item
-  if (pathname.startsWith("/tasks")) return null;
-  if (pathname.startsWith("/calendar")) return null;
+  if (pathname.startsWith("/tasks")) return "tasks";
+  if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/ai-assistant")) return null;
+  if (pathname.startsWith("/pos")) return null;
 
   return null;
 }
@@ -308,12 +300,6 @@ export function handleNavSelect(id: string): void {
     case "help":
       navigateToHelp();
       break;
-    case "calendar":
-      navigateToLabel("calendar");
-      break;
-    case "tasks":
-      navigateToLabel("tasks");
-      break;
     case "automation":
       navigateToLabel("automation");
       break;
@@ -323,17 +309,18 @@ export function handleNavSelect(id: string): void {
     case "vault":
       router.navigate({ to: "/vault" });
       break;
-    case "campaigns":
-      navigateToLabel("campaigns");
-      break;
+    case "crm":
     case "people":
       router.navigate({ to: "/people" });
       break;
-    case "business":
-      navigateToLabel("business");
+    case "dashboard":
+      router.navigate({ to: "/dashboard" });
       break;
     case "ai-assistant":
       router.navigate({ to: "/ai-assistant" });
+      break;
+    case "pos":
+      router.navigate({ to: "/pos" });
       break;
     default:
       navigateToLabel(id);
@@ -352,6 +339,7 @@ export function handleSubItemSelect(groupId: string, subItemId: string): void {
     case "settings":
       navigateToSettings(subItemId);
       break;
+    case "crm":
     case "people":
       navigateToLabel(subItemId);
       break;

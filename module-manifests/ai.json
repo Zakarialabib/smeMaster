@@ -1,0 +1,19 @@
+{
+  "id": "ai",
+  "name": "AI Services",
+  "description": "AI engine with LanceDB vector store for RAG, ONNX local inference (Candle), tokenizers, document parsing (PDF, DOCX, XLSX). Provider-based assistants for categorization, writing, summaries, and inbox queries. Uses rig-core for LLM orchestration.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["ai"],
+  "dependencies": [
+    { "module": "db", "reason": "Stores AI config and RAG index metadata", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [
+    { "key": "ai_default_provider", "label": "Default AI Provider", "type": "string", "required": false, "secret": false, "hint": "Default AI provider (openai, anthropic, etc.)" }
+  ],
+  "always_active": false
+}

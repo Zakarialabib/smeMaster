@@ -9,7 +9,6 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import { Trash2, Settings, AlertCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useRagStore } from "@features/assistant/stores/ragStore";
@@ -25,7 +24,6 @@ import { TEXT_HINT } from "@shared/styles/ui-tokens";
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function AiAssistantPage() {
-  const { t: _t } = useTranslation();
   const navigate = useNavigate();
   const {
     enabled,
@@ -209,7 +207,7 @@ export function AiAssistantPage() {
             disabled={isSearching || showModelWarning}
           />
           <p className={cn(TEXT_HINT, "mt-1.5 text-center")}>
-            Powered by local embedding engine (BGE-small) + LanceDB vector search
+            Powered by on-device embeddings (LM Studio / BGE-small) + LanceDB semantic search
           </p>
         </div>
       </div>

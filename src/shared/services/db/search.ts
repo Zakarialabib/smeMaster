@@ -168,7 +168,7 @@ export async function unifiedSearch(
         json_object('category', cf.category, 'size', cf.size, 'mime_type', cf.mime_type, 'starred', cf.starred) as metadata
        FROM contact_files_fts fts
        JOIN contact_files cf ON cf.rowid = fts.rowid
-       WHERE fts MATCH $1 AND cf.account_id = $2
+       WHERE fts MATCH $1 AND cf.company_id = $2
        ORDER BY cf.created_at DESC
        LIMIT $3`,
       [ftsQuery, accountId, Math.ceil(limit * 0.25)],
@@ -206,10 +206,10 @@ export async function unifiedSearch(
         t.description as snippet,
         COALESCE(t.due_date, t.created_at) as date,
         0 as rank,
-        t.account_id,
+        t.company_id as account_id,
         json_object('is_completed', t.is_completed, 'priority', t.priority, 'due_date', t.due_date) as metadata
-       FROM tasks t
-       WHERE (t.title LIKE $1 OR t.description LIKE $1) AND t.account_id = $2
+        FROM tasks t
+        WHERE (t.title LIKE $1 OR t.description LIKE $1) AND t.company_id = $2
        ORDER BY date DESC
        LIMIT $3`,
       [taskPattern, accountId, Math.ceil(limit * 0.15)],
@@ -224,7 +224,7 @@ export async function unifiedSearch(
         t.description as snippet,
         COALESCE(t.due_date, t.created_at) as date,
         0 as rank,
-        t.account_id,
+        t.company_id as account_id,
         json_object('is_completed', t.is_completed, 'priority', t.priority, 'due_date', t.due_date) as metadata
        FROM tasks t
        WHERE t.title LIKE $1 OR t.description LIKE $1

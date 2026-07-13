@@ -81,7 +81,7 @@ export default function SidebarNavEditor() {
               >
                 <ChevronDown size={14} />
               </Button>
-              <Icon size={16} className="shrink-0 ml-1" />
+              <Icon size={16} className="shrink-0 ms-1" />
               <span className="flex-1 truncate">{t(nav.label)}</span>
               <button
                 onClick={() => toggleItem(index)}
@@ -96,7 +96,7 @@ export default function SidebarNavEditor() {
                 title={isInbox ? t('settings.inboxAlwaysVisible') : item.visible ? t('settings.hide') : t('settings.show')}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                  className={`absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
                     item.visible ? "translate-x-5" : ""
                   }`}
                 />

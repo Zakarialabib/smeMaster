@@ -78,6 +78,10 @@ Keep these responsibilities separate:
 - campaign authoring belongs to `02-campaigns-mail-merge.md`
 - general email/thread handling belongs to `01-email-management.md`
 
+## Contact sidebar (Relations)
+
+The email `ContactSidebar` (`src/features/mail/components/ContactSidebar.tsx`) exposes a **Relations** tab that surfaces a contact's cross-feature context: the linked **company**, that company's **invoices** (`listInvoices` from the invoicing domain, keyed by the contact's `company_id`), and the **campaigns** the contact is a recipient of (`db_list_campaigns_by_contact` → `CampaignRecipientWithCampaign`, joining `campaign_recipients` to `campaigns`). This makes the sidebar a launch point for company send / invoice / campaign workflows directly from an email thread. See `02-campaigns-mail-merge.md` for the campaign side and `36-invoicing.md` for invoices.
+
 ## Key Files
 
 | Area                  | Files                                                                            |

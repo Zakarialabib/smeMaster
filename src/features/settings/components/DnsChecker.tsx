@@ -152,12 +152,12 @@ const ResultCard = ({ result }: { result: DnsCheckResult }) => {
       <div className="mt-3 rounded-xl bg-black/80 border border-white/5 p-3 relative group/value">
         <button
           onClick={handleCopy}
-          className="absolute top-2 right-2 opacity-0 group-hover/value:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-medium text-text-secondary backdrop-blur-sm border border-white/10"
+          className="absolute top-2 end-2 opacity-0 group-hover/value:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-medium text-text-secondary backdrop-blur-sm border border-white/10"
         >
           {copied ? <Check size={10} /> : <Copy size={10} />}
           {copied ? "Copied" : "Copy"}
         </button>
-        <p className="text-xs text-success font-mono break-all pr-16">{result.value}</p>
+        <p className="text-xs text-success font-mono break-all pe-16">{result.value}</p>
       </div>
 
       {result.detail && (
@@ -199,10 +199,10 @@ export function DnsChecker() {
       {/* ── Input ─── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+          <Globe className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
           <input
             type="text"
-            className="w-full pl-10 pr-4 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+            className="w-full ps-10 pe-4 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
             placeholder="example.com"
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
@@ -242,7 +242,7 @@ export function DnsChecker() {
               setCheckedDomain(null);
               setDomain("");
             }}
-            className="text-[10px] text-text-tertiary hover:text-text-secondary transition-colors ml-2"
+            className="text-[10px] text-text-tertiary hover:text-text-secondary transition-colors ms-2"
           >
             Clear
           </button>

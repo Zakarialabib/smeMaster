@@ -35,32 +35,54 @@ impl VectorDb {
         Ok(Self { conn })
     }
 
-    pub async fn ensure_table(&self) -> Result<Table> {
-        let table_name = "knowledge_base";
+    /// Table name for a given embedding dimension.
+    ///
+    /// Each embedding model gets its own table so different providers
+    /// (BGE-small = 384, LM Studio / Ollama = 768 / 1536, …)
+    /// never collide on vector width.
+    pub fn table_name(dim: usize) -> String {
+        format!("knowledge_base_{dim}")
+    }
+
+    /// Get or create the table for the given embedding dimension.
+    pub async fn ensure_table(&self, dim: usize) -> Result<Table> {
+        let table_name = Self::table_name(dim);
         let schema = Arc::new(Schema::new(vec![
             Field::new("id", DataType::Utf8, false),
             Field::new("text", DataType::Utf8, false),
             Field::new("vector", DataType::FixedSizeList(
                 Arc::new(Field::new("item", DataType::Float32, true)),
-                384 // BGE-Small dimension
+                dim as i32
             ), false),
         ]));
 
-        match self.conn.open_table(table_name).execute().await {
+        match self.conn.open_table(&table_name).execute().await {
             Ok(table) => Ok(table),
             Err(_) => {
-                let table = self.conn.create_empty_table(table_name, schema).execute().await?;
+                let table = self.conn.create_empty_table(&table_name, schema).execute().await?;
                 Ok(table)
             }
         }
     }
 
-    /// Drop and recreate the knowledge base table, clearing all indexed vectors.
-    /// Safe to call when the table does not yet exist.
+    /// Backwards-compatible helper: the default local knowledge base is BGE-small (384).
+    pub async fn ensure_default_table(&self) -> Result<Table> {
+        self.ensure_table(384).await
+    }
+
+    /// Drop every knowledge-base table (all dimensions) and clear all indexed vectors.
     pub async fn reset(&self) -> Result<()> {
-        match self.conn.drop_table("knowledge_base").await {
-            Ok(_) => log::info!("[vector_db] knowledge base table dropped"),
-            Err(e) => log::warn!("[vector_db] reset (drop_table) returned: {e}"),
+        match self.conn.table_names().execute().await {
+            Ok(names) => {
+                for name in names {
+                    if name.starts_with("knowledge_base_") {
+                        if let Err(e) = self.conn.drop_table(&name).await {
+                            log::warn!("[vector_db] failed to drop {}: {e}", name);
+                        }
+                    }
+                }
+            }
+            Err(e) => log::warn!("[vector_db] reset (table_names) returned: {e}"),
         }
         Ok(())
     }

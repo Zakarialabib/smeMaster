@@ -62,28 +62,26 @@ export function ComposerFooter({
         >
           {t('common.discard')}
         </Button>
-        <div className="flex items-center">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onSend}
-            disabled={to.length === 0}
-            className="rounded-r-none border-r border-white/20"
-          >
-            {t('composer.send')}
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            iconOnly
-            onClick={onSchedule}
-            disabled={to.length === 0}
-            title={t('composer.scheduleSend')}
-            className="rounded-l-none"
-          >
-            <Clock size={12} />
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={onSend}
+          disabled={to.length === 0}
+          className="rounded-r-none border-r border-white/20"
+        >
+          {t('composer.send')}
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          iconOnly
+          onClick={onSchedule}
+          disabled={to.length === 0}
+          title={t('composer.scheduleSend')}
+          className="rounded-l-none py-2"
+        >
+          <Clock size={12} />
+        </Button>
       </div>
     </div>
   );

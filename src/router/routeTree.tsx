@@ -16,29 +16,19 @@ const HelpPage = lazy(() =>
     default: m.HelpPage,
   })),
 );
-const CalendarPage = lazy(() =>
-  import("@features/calendar/components/CalendarPage").then((m) => ({
-    default: m.CalendarPage,
-  })),
-);
-const TasksPage = lazy(() =>
-  import("@features/tasks/components/TasksPage").then((m) => ({
-    default: m.TasksPage,
+const SchedulePage = lazy(() =>
+  import("@features/tasks/pages/SchedulePage").then((m) => ({
+    default: m.SchedulePage,
   })),
 );
 const AttachmentLibrary = lazy(() =>
-  import("@features/mail/components/attachments/AttachmentLibrary").then(
+  import("@features/attachments/AttachmentLibrary").then(
     (m) => ({ default: m.AttachmentLibrary }),
   ),
 );
-const CampaignPage = lazy(() =>
-  import("@features/campaigns/components/CampaignPage").then((m) => ({
-    default: m.CampaignPage,
-  })),
-);
-const BusinessDashboard = lazy(() =>
-  import("@features/mail/components/layout/BusinessDashboard").then((m) => ({
-    default: m.BusinessDashboard,
+const AutomationCampaignsPage = lazy(() =>
+  import("@features/automation/pages/AutomationCampaignsPage").then((m) => ({
+    default: m.AutomationCampaignsPage,
   })),
 );
 const VaultPage = lazy(() =>
@@ -46,24 +36,26 @@ const VaultPage = lazy(() =>
     default: m.VaultPage,
   })),
 );
+
+const InvoicingDashboard = lazy(() =>
+  import("@features/invoicing/components/InvoicingDashboard").then((m) => ({
+    default: m.default,
+  })),
+);
+
+const InvoiceEditor = lazy(() =>
+  import("@features/invoicing/components/InvoiceEditor").then((m) => ({
+    default: m.default,
+  })),
+);
 const DevicePairingPage = lazy(() =>
   import("@features/settings/pages/DevicePairingPage").then((m) => ({
     default: m.DevicePairingPage,
   })),
 );
-const ContactsPage = lazy(() =>
-  import("@features/contacts/pages/ContactsPage").then((m) => ({
-    default: m.ContactsPage,
-  })),
-);
 const ContactDetailPage = lazy(() =>
   import("@features/contacts/pages/ContactDetailPage").then((m) => ({
     default: m.ContactDetailPage,
-  })),
-);
-const AutomationPage = lazy(() =>
-  import("@features/automation/pages/AutomationPage").then((m) => ({
-    default: m.AutomationPage,
   })),
 );
 const DashboardPage = lazy(() =>
@@ -81,9 +73,21 @@ const MobileDashboardPage = lazy(() =>
     default: m.MobileDashboardPage,
   })),
 );
-const MergedCRMPage = lazy(() =>
-  import("@features/crm/pages/MergedCRMPage").then((m) => ({
-    default: m.MergedCRMPage,
+const CrmPage = lazy(() =>
+  import("@features/crm/pages/CrmPage").then((m) => ({
+    default: m.CrmPage,
+  })),
+);
+
+const POSPage = lazy(() =>
+  import("@features/pos/components/POSPage").then((m) => ({
+    default: m.POSPage,
+  })),
+);
+
+const ErpPage = lazy(() =>
+  import("@features/erp/ErpPage").then((m) => ({
+    default: m.default,
   })),
 );
 
@@ -143,7 +147,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/mail/$label", params: { label: "inbox" } });
+    throw redirect({ to: "/dashboard" });
   },
 });
 
@@ -235,8 +239,7 @@ export const smartFolderThreadRoute = createRoute({
   path: "thread/$threadId",
 });
 
-// ---------- /people (contacts list) ----------
-const ContactsPageWrapper = createPageWrapper("Contacts", ContactsPage as LazyComponent);
+// ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
 const ContactDetailPageWrapper = createPageWrapper("ContactDetail", ContactDetailPage as LazyComponent);
 
 export const contactDetailRoute = createRoute({
@@ -254,26 +257,26 @@ export const attachmentsRoute = createRoute({
   component: AttachmentLibraryWrapper,
 });
 
-// ---------- /tasks ----------
-const TasksPageWrapper = createPageWrapper("Tasks", TasksPage as LazyComponent);
+// ---------- /tasks (Schedule: Tasks + Calendar) ----------
+const SchedulePageWrapper = createPageWrapper("Schedule", SchedulePage as LazyComponent);
 
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "tasks",
-  component: TasksPageWrapper,
+  component: SchedulePageWrapper,
 });
 
-// ---------- /calendar ----------
-const CalendarPageWrapper = createPageWrapper("Calendar", CalendarPage as LazyComponent);
-
+// ---------- /calendar → redirect to /tasks ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "calendar",
-  component: CalendarPageWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/tasks" });
+  },
 });
 
 // ---------- /automation ----------
-const AutomationPageWrapper = createPageWrapper("Automation", AutomationPage as LazyComponent);
+const AutomationPageWrapper = createPageWrapper("Automation & Campaigns", AutomationCampaignsPage as LazyComponent);
 
 export const automationRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -281,13 +284,43 @@ export const automationRoute = createRoute({
   component: AutomationPageWrapper,
 });
 
-// ---------- /business ----------
-const BusinessDashboardWrapper = createPageWrapper("BusinessDashboard", BusinessDashboard as LazyComponent);
-
+// ---------- /business (legacy) → redirect to the real dashboard ----------
 export const businessRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "business",
-  component: BusinessDashboardWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard" });
+  },
+});
+
+const InvoicingDashboardWrapper = createPageWrapper("Invoicing", InvoicingDashboard as LazyComponent);
+
+export const invoicingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "invoicing",
+  component: InvoicingDashboardWrapper,
+});
+
+const InvoiceEditorWrapper = createPageWrapper("InvoiceEditor", InvoiceEditor as LazyComponent);
+
+export const invoiceEditorRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "edit/$invoiceId",
+  component: InvoiceEditorWrapper,
+});
+
+export const invoiceCreateRoute = createRoute({
+  getParentRoute: () => invoicingRoute,
+  path: "new",
+  component: InvoiceEditorWrapper,
+});
+
+const ErpPageWrapper = createPageWrapper("Erp", ErpPage as LazyComponent);
+
+export const erpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "erp",
+  component: ErpPageWrapper,
 });
 
 // ---------- /vault ----------
@@ -299,13 +332,13 @@ export const vaultRoute = createRoute({
   component: VaultPageWrapper,
 });
 
-// ---------- /campaigns ----------
-const CampaignPageWrapper = createPageWrapper("Campaigns", CampaignPage as LazyComponent);
-
+// ---------- /campaigns (legacy) → redirect to the merged automation page ----------
 export const campaignsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "campaigns",
-  component: CampaignPageWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/automation" });
+  },
 });
 
 // ---------- /workflows (redirect to /automation) ----------
@@ -338,20 +371,22 @@ export const devicePairingRoute = createRoute({
   component: DevicePairingPageWrapper,
 });
 
-// ---------- /people ----------
+// ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
+const CRMPageWrapper = createPageWrapper("CRM", CrmPage as LazyComponent);
+
 export const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "people",
-  component: ContactsPageWrapper,
+  component: CRMPageWrapper,
 });
 
-// ---------- /crm (merged mobile CRM with tabs) ----------
-const MobileCRMWrapper = createPageWrapper("CRM", MergedCRMPage as LazyComponent);
-
+// ---------- /crm (alias redirects to /people) ----------
 export const crmRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "crm",
-  component: MobileCRMWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: "/people" });
+  },
 });
 
 // ---------- /dashboard (desktop) ----------
@@ -368,6 +403,15 @@ export const mobileDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "dashboard/mobile",
   component: MobileDashboardWrapper,
+});
+
+// ---------- /pos ----------
+const POSPageWrapper = createPageWrapper("POS", POSPage as LazyComponent);
+
+export const posRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "pos",
+  component: POSPageWrapper,
 });
 
 // ---------- /help (redirect to /help/getting-started) ----------
@@ -398,10 +442,10 @@ export const notFoundRoute = createRoute({
       <h1 className="text-2xl font-bold text-text-primary">Page Not Found</h1>
       <p className="text-text-secondary">The page you're looking for doesn't exist.</p>
       <a
-        href="#/mail/inbox"
+        href="#/dashboard"
         className="text-accent hover:underline text-sm font-medium"
       >
-        Back to Inbox
+        Back to Dashboard
       </a>
     </div>
   ),
@@ -425,10 +469,13 @@ export const routeTree = rootRoute.addChildren([
   workflowsRoute,
   campaignsRoute,
   businessRoute,
+  invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
+  erpRoute,
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,
   crmRoute,
+  posRoute,
   helpIndexRoute,
   helpTopicRoute,
   notFoundRoute,

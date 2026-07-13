@@ -282,19 +282,47 @@ export default function App() {
   // ── Onboarding: persist & restore progress ─────────────────────────────────
   const [onboardingDone, setOnboardingDone] = useLocalStorage("smemaster.onboarding.done", false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [hasData, setHasData] = useState<boolean | null>(null); // null = loading, true = accounts/demo exist
+
+  // Check if email accounts or demo data already exist — skip onboarding if they do
+  useEffect(() => {
+    if (!initialized) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { invokeCommand } = await import("@shared/services/db/invoke/command");
+        const hasAccounts = await invokeCommand<boolean>("db_has_email_accounts", {});
+        if (!cancelled) {
+          if (hasAccounts) {
+            setHasData(true);
+            setOnboardingDone(true);
+          } else {
+            // No accounts — check if system was initialized (e.g. demo data seeded)
+            const sysInit = await invokeCommand<boolean>("is_system_initialized", {}).catch(() => false);
+            if (!cancelled) {
+              setHasData(sysInit);
+              if (sysInit) setOnboardingDone(true);
+            }
+          }
+        }
+      } catch {
+        if (!cancelled) setHasData(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [initialized, setOnboardingDone]);
 
   // Restore onboarding progress from sessionStorage on tab crash / close
   useEffect(() => {
-    if (!onboardingDone && !onboardingDismissed) {
+    if (!onboardingDone && !onboardingDismissed && hasData === false) {
       const savedStep = sessionStorage.getItem("smemaster.onboarding.step");
       if (savedStep) {
-        // The OnboardingScreen reads this via window event / prop
         window.dispatchEvent(
           new CustomEvent("smemaster-restore-onboarding", { detail: { step: Number(savedStep) } }),
         );
       }
     }
-  }, [onboardingDone, onboardingDismissed]);
+  }, [onboardingDone, onboardingDismissed, hasData]);
 
   const handleOnboardingComplete = useCallback(() => {
     setOnboardingDone(true);
@@ -306,20 +334,13 @@ export default function App() {
     sessionStorage.setItem("smemaster.onboarding.step", String(step));
   }, []);
 
-  const showOnboarding = !onboardingDone && !onboardingDismissed && initialized;
-
-  // Backend fallback: if localStorage says not-done but backend says initialized, sync
-  useEffect(() => {
-    if (!onboardingDone && initialized && !onboardingDismissed) {
-      invokeCommand<boolean>("is_system_initialized", {})
-        .then((backendDone) => {
-          if (backendDone) {
-            setOnboardingDone(true);
-          }
-        })
-        .catch(() => { /* backend not ready yet, ignore */ });
-    }
-  }, [initialized, onboardingDone, onboardingDismissed, setOnboardingDone]);
+  // Show onboarding only when truly fresh: no accounts, no demo data, not completed prior
+  const showOnboarding =
+    !onboardingDone &&
+    !onboardingDismissed &&
+    initialized &&
+    hasData === false &&
+    hasData !== null;
 
   // Listen for command palette / shortcuts help / ask inbox toggle events
   useEffect(() => {

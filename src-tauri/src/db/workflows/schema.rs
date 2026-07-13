@@ -39,6 +39,7 @@ pub struct PendingOperation {
     pub next_retry_at: Option<i64>,
     pub error_message: Option<String>,
     pub campaign_id: Option<String>,
+    pub hold_until: Option<i64>,
     pub created_at: i64,
 }
 
@@ -56,6 +57,7 @@ pub struct CleanupRule {
     pub retention_days: Option<i64>,
     pub is_scheduled: i64,
     pub schedule_cron: Option<String>,
+    pub last_run_at: Option<i64>,
     pub next_run_at: Option<i64>,
     pub created_at: i64,
     pub updated_at: i64,
@@ -69,6 +71,21 @@ pub struct CleanupHistory {
     pub action: String,
     pub thread_count: i64,
     pub message_count: i64,
+    pub status: String,
+    pub error_message: Option<String>,
+    pub executed_at: i64,
+}
+
+// ─── Workflow Execution Logs ────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct WorkflowExecutionLog {
+    pub id: String,
+    pub company_id: String,
+    pub rule_id: String,
+    pub rule_name: Option<String>,
+    pub trigger_event: String,
+    pub actions_executed: Option<String>,
     pub status: String,
     pub error_message: Option<String>,
     pub executed_at: i64,

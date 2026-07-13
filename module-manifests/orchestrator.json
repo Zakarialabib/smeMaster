@@ -1,0 +1,21 @@
+{
+  "id": "orchestrator",
+  "name": "Orchestrator Engine",
+  "description": "System orchestration: Service trait and ServiceRegistry, StateMachine (Booting?Onboarding?Ready), SubsystemRegistry (Inactive?Dormant?Starting?Active?Failed), ToolRegistry gating, Watchdog (30s health monitor with restart), gating guards, init lifecycle, and onboarding flow.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Reads onboarding/tool state, persists subsystem state", "required": true },
+    { "module": "events", "reason": "Emits lifecycle events via EventBus", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "init:*", "description": "Init lifecycle events (progress, ready)", "direction": "publishes" },
+    { "name": "system:ready", "description": "System ready event", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": true
+}

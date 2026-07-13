@@ -19,8 +19,9 @@ import {
 } from "lucide-react";
 import { useFeatureFlagStore, type FeatureUsage } from "@features/settings/stores/featureFlagStore";
 import {
-  FEATURE_FLAGS, type FeatureFlag, type Tier,
+  FEATURE_FLAGS, type FeatureFlag, type Tier, setDevProMode, isDevProMode,
 } from "@/constants/featureFlags";
+import { HelpCard } from "@features/settings/components/HelpCard";
 import { SettingGroup } from "@features/settings/components/SettingsHelpers";
 import { Toggle } from "@shared/components/ui/Toggle";
 
@@ -176,6 +177,7 @@ export default function FeatureFlagsTab() {
   const { t } = useTranslation();
   const store = useFeatureFlagStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [devPro, setDevPro] = useState(() => isDevProMode());
 
   // Load store on mount
   useEffect(() => { store.init(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -267,6 +269,24 @@ export default function FeatureFlagsTab() {
           />
         </div>
 
+        {/* Dev Pro Mode — force-unlock every feature regardless of tier */}
+        <div className="flex items-center justify-between gap-4 py-2">
+          <div className="min-w-0">
+            <span className="text-sm font-medium text-[var(--text-primary)]">Developer Pro Mode</span>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Unlock every feature (incl. RAG &amp; Invoicing) regardless of tier or usage limits.
+            </p>
+          </div>
+          <Toggle
+            checked={devPro}
+            onChange={() => {
+              const next = !devPro;
+              setDevPro(next);
+              setDevProMode(next);
+            }}
+          />
+        </div>
+
         {/* Reset */}
         {store.overrideEnabled && (
           <div className="flex items-center gap-3 pt-2 pb-1">
@@ -300,20 +320,31 @@ export default function FeatureFlagsTab() {
         </div>
       </SettingGroup>
 
+      {/* ─── Education: Feature Flags ─────────────────────────────── */}
+      <HelpCard
+        collapsible
+        items={[
+          { type: "why", text: "Feature flags let you test and preview Pro-tier capabilities while on a Basic plan. Use override controls to simulate different usage scenarios without affecting real data." },
+          { type: "how", text: "Toggle subscription tier between Basic and Pro to see which features unlock. Enable Testing Overrides to simulate usage counts and verify progressive disclosure behavior." },
+          { type: "when", text: "Use during development to test tier gating. Use overrides to preview Pro features before upgrading. Developer Pro Mode unlocks everything for testing." },
+          { type: "tip", text: "Developer Pro Mode bypasses all tier checks — ideal for testing features without toggling individual overrides. Disable it to return to real tier restrictions." },
+        ]}
+      />
+
       {/* ─── Search ─── */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+        <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('settings.searchFeatures', 'Search features by name, id, or description...')}
-          className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
+          className="w-full ps-9 pe-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+            className="absolute end-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />

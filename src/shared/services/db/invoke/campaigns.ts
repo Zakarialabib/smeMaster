@@ -1,9 +1,13 @@
 import { invokeCommand } from './command';
 
-import type { BackupSchedule, Campaign } from '../schema';
+import type { BackupSchedule, Campaign, CampaignRecipientWithCampaign } from '../schema';
 
 export async function listCampaigns(companyId: string): Promise<Campaign[]> {
   return invokeCommand<Campaign[]>('db_list_campaigns', { companyId });
+}
+
+export async function listCampaignsByContact(contactId: string): Promise<CampaignRecipientWithCampaign[]> {
+  return invokeCommand<CampaignRecipientWithCampaign[]>('db_list_campaigns_by_contact', { contactId });
 }
 
 export async function getCampaign(id: string): Promise<Campaign | null> {
@@ -46,6 +50,7 @@ export async function createCampaignWithRecipients(input: {
   templateId?: string | null;
   segmentId?: string | null;
   abTestConfig?: string | null;
+  bodyHtml?: string | null;
   contactIds: string[];
 }): Promise<{ campaign: Campaign; recipientCount: number }> {
   return invokeCommand<{ campaign: Campaign; recipientCount: number }>(
@@ -57,6 +62,7 @@ export async function createCampaignWithRecipients(input: {
         template_id: input.templateId ?? null,
         segment_id: input.segmentId ?? null,
         ab_test_config: input.abTestConfig ?? null,
+        body_html: input.bodyHtml ?? null,
         contact_ids: input.contactIds,
       },
     },

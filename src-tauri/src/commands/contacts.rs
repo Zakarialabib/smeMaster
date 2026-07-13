@@ -22,6 +22,7 @@ type CmdResult<T> = Result<T, SerializedError>;
 #[serde(rename_all = "camelCase")]
 pub struct UpsertContactRequest {
     pub id: Option<String>,
+    pub company_id: String,
     pub email: String,
     pub display_name: Option<String>,
     pub avatar_url: Option<String>,
@@ -80,7 +81,7 @@ impl From<UpsertContactRequest> for Contact {
         let now = chrono::Utc::now().timestamp();
         Contact {
             id: r.id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
-            company_id: String::new(), // TODO: set from context
+            company_id: r.company_id, // from UpsertContactRequest (set by caller)
             email: r.email,
             display_name: r.display_name,
             avatar_url: r.avatar_url,
@@ -176,7 +177,7 @@ pub async fn db_dashboard_email_volume(
 ) -> CmdResult<Vec<EngagementTrendPoint>> {
     let cutoff = chrono::Utc::now().timestamp() - 30 * 86400;
     let rows = sqlx::query_as::<_, EngagementTrendPoint>(
-        "SELECT date(created_at, 'unixepoch') as date, COUNT(*) as score \
+        "SELECT date(created_at, 'unixepoch') as date, CAST(COUNT(*) AS REAL) as score \
          FROM engagement_log \
          WHERE event_type IN ('email_sent', 'email_received') AND created_at >= ? \
          GROUP BY date(created_at, 'unixepoch') \
@@ -196,7 +197,7 @@ pub async fn db_dashboard_contact_growth(
 ) -> CmdResult<Vec<EngagementTrendPoint>> {
     let cutoff = chrono::Utc::now().timestamp() - 84 * 86400;
     let rows = sqlx::query_as::<_, EngagementTrendPoint>(
-        "SELECT strftime('%Y-W%W', created_at, 'unixepoch') as date, COUNT(*) as score \
+        "SELECT strftime('%Y-W%W', created_at, 'unixepoch') as date, CAST(COUNT(*) AS REAL) as score \
          FROM contacts \
          WHERE created_at >= ? \
          GROUP BY strftime('%Y-W%W', created_at, 'unixepoch') \
@@ -1110,10 +1111,13 @@ pub async fn db_get_attachments_from_contact(
     limit: Option<i64>,
 ) -> CmdResult<Vec<ContactAttachment>> {
     let limit = limit.unwrap_or(20);
-    let rows = sqlx::query_as::<_, (String, String, Option<String>, Option<i64>, i64)>(
-        "SELECT a.id, a.filename, a.mime_type, a.size, a.created_at FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.from_address = ?1 ORDER BY a.created_at DESC LIMIT ?2"
+    // NOTE: `attachments` has no `created_at` column — its timestamp is
+    // `cached_at`. We surface that as `ContactAttachment.created_at` (the
+    // field the frontend consumers) so the contract is preserved.
+    let rows = sqlx::query_as::<_, (String, String, Option<String>, Option<i64>, Option<i64>)>(
+        "SELECT a.id, a.filename, a.mime_type, a.size, a.cached_at FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.from_address = ?1 ORDER BY a.cached_at DESC LIMIT ?2"
     ).bind(&email).bind(limit).fetch_all(&*pool).await.map_err(|e| AppDbError::Database(e))?;
-    Ok(rows.into_iter().map(|(id, filename, mime, size, created)| ContactAttachment { id, filename, mime_type: mime, size, created_at: created }).collect())
+    Ok(rows.into_iter().map(|(id, filename, mime, size, created)| ContactAttachment { id, filename, mime_type: mime, size, created_at: created.unwrap_or(0) }).collect())
 }
 
 #[tauri::command]
@@ -1150,7 +1154,7 @@ pub async fn db_get_recent_threads_with_contact(
 ) -> CmdResult<Vec<RecentThreadResult>> {
     let limit = limit.unwrap_or(10);
     let rows = sqlx::query_as::<_, (String, Option<String>, i64)>(
-        "SELECT t.id, t.subject, MAX(m.internal_date) as last_msg FROM threads t JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id WHERE (m.from_address = ?1 OR m.to_address LIKE ?2) GROUP BY t.id ORDER BY last_msg DESC LIMIT ?3"
+        "SELECT t.id, t.subject, MAX(m.internal_date) as last_msg FROM threads t JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id WHERE (m.from_address = ?1 OR m.to_addresses LIKE ?2) GROUP BY t.id ORDER BY last_msg DESC LIMIT ?3"
     ).bind(&email).bind(format!("%{}%", email)).bind(limit)
     .fetch_all(&*pool).await.map_err(|e| AppDbError::Database(e))?;
     Ok(rows.into_iter().map(|(tid, sub, ts)| RecentThreadResult { thread_id: tid, subject: sub, last_message_at: ts }).collect())
@@ -1347,4 +1351,36 @@ pub async fn db_get_engagement_data_for_contact(
         replies_sent: replies_sent.0,
         emails_received: emails_received.0,
     })
+}
+
+// ── Import History ──────────────────────────────────────────────────────
+
+#[derive(Clone, Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ImportHistoryRecord {
+    pub id: String,
+    pub account_id: String,
+    pub file_name: String,
+    pub row_count: i64,
+    pub imported_count: i64,
+    pub failed_count: i64,
+    pub status: String,
+    pub error_log: Option<String>,
+    pub created_at: i64,
+    pub completed_at: Option<i64>,
+}
+
+#[tauri::command]
+pub async fn db_list_import_history(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+) -> CmdResult<Vec<ImportHistoryRecord>> {
+    let rows = sqlx::query_as::<_, ImportHistoryRecord>(
+        "SELECT id, account_id, file_name, row_count, imported_count, failed_count, status, error_log, created_at, completed_at \
+         FROM import_history WHERE account_id = ? ORDER BY created_at DESC",
+    )
+    .bind(&account_id)
+    .fetch_all(&*pool)
+    .await
+    .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
+    Ok(rows)
 }

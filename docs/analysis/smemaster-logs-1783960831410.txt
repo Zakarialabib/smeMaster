@@ -1,0 +1,705 @@
+SMEMaster Log Export
+Exported at: 2026-07-13 16:40:38 UTC
+Total entries: 100
+────────────────────────────────────────────────────────────────────────────────
+
+[2026-07-13 15:52:00.163] [ERROR] [frontend] IPC ✗ db_execute_search_query (379ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:00.156Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:20.463] [ERROR] [frontend] IPC ✗ db_execute_search_query (139ms): Database error: error returned from database: (code: 1) no such column: contact_type
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:20.443Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:43.790] [ERROR] [frontend] IPC ✗ db_list_clients (45ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:43.784Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:50.919] [ERROR] [frontend] IPC ✗ db_list_clients (181ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:50.904Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:51.689] [ERROR] [frontend] IPC ✗ db_list_clients (638ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:51.684Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:52.753] [ERROR] [frontend] IPC ✗ db_list_clients (1005ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:52.744Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:52:55.363] [ERROR] [frontend] IPC ✗ db_list_clients (2566ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:52:55.356Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:01.160] [ERROR] [frontend] IPC ✗ db_list_clients (5723ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:01.150Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:05.638] [ERROR] [frontend] IPC ✗ db_list_clients (4431ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:05.631Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:56.740] [ERROR] [frontend] IPC ✗ db_list_clients (213ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:56.732Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:57.505] [ERROR] [frontend] IPC ✗ db_list_clients (692ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:57.500Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:58.455] [ERROR] [frontend] IPC ✗ db_list_clients (882ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:58.448Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:53:59.026] [ERROR] [frontend] IPC ✗ db_execute_search_query (247ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:53:59.021Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:54:01.206] [ERROR] [frontend] IPC ✗ db_execute_search_query (226ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:54:01.203Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:55:13.224] [ERROR] [frontend] IPC ✗ db_execute_search_query (325ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:55:13.212Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:55:13.825] [ERROR] [frontend] IPC ✗ db_execute_search_query (405ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:55:13.805Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:55:37.568] [ERROR] [frontend] IPC ✗ db_execute_search_query (1962ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:55:37.562Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:55:38.811] [ERROR] [frontend] IPC ✗ db_execute_search_query (747ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:55:38.779Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:06.302] [ERROR] [frontend] IPC ✗ db_execute_search_query (1078ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:06.286Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:07.050] [ERROR] [frontend] IPC ✗ db_execute_search_query (440ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:07.045Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:17.403] [ERROR] [frontend] IPC ✗ db_execute_search_query (810ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:17.367Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:19.324] [ERROR] [frontend] IPC ✗ db_execute_search_query (976ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:18.818Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:35.076] [ERROR] [frontend] IPC ✗ db_execute_search_query (529ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:35.052Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:35.946] [ERROR] [frontend] IPC ✗ db_execute_search_query (507ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:35.906Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:40.258] [ERROR] [frontend] IPC ✗ db_execute_search_query (459ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:40.237Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:56:40.840] [ERROR] [frontend] IPC ✗ db_execute_search_query (372ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:56:40.815Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:58:05.916] [ERROR] [frontend] IPC ✗ db_execute_search_query (426ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:58:05.895Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:58:06.576] [ERROR] [frontend] IPC ✗ db_execute_search_query (439ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:58:06.565Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:58:24.276] [ERROR] [frontend] IPC ✗ db_execute_search_query (529ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:58:24.255Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:58:25.119] [ERROR] [frontend] IPC ✗ db_execute_search_query (555ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:58:25.099Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:37.181] [ERROR] [frontend] IPC ✗ db_execute_search_query (375ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:37.162Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:37.742] [ERROR] [frontend] IPC ✗ db_execute_search_query (374ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:37.717Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:52.266] [ERROR] [frontend] IPC ✗ db_execute_search_query (852ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:52.202Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:53.463] [ERROR] [frontend] IPC ✗ db_execute_search_query (571ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:53.449Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:58.806] [ERROR] [frontend] IPC ✗ db_execute_search_query (568ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:58.781Z",
+    "stack": ""
+  }
+
+[2026-07-13 15:59:59.495] [ERROR] [frontend] IPC ✗ db_execute_search_query (443ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T15:59:59.491Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:00:21.401] [ERROR] [frontend] IPC ✗ db_execute_search_query (2282ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:00:21.383Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:00:26.513] [ERROR] [frontend] IPC ✗ db_execute_search_query (4704ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:00:26.488Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:00:47.981] [ERROR] [frontend] IPC ✗ db_execute_search_query (462ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:00:47.971Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:00:48.578] [ERROR] [frontend] IPC ✗ db_execute_search_query (401ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:00:48.559Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:12.377] [ERROR] [frontend] IPC ✗ db_execute_search_query (493ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:12.352Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:13.138] [ERROR] [frontend] IPC ✗ db_execute_search_query (451ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:13.104Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:33.534] [ERROR] [frontend] IPC ✗ db_execute_search_query (581ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:33.452Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:34.494] [ERROR] [frontend] IPC ✗ db_execute_search_query (614ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:34.457Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:37.608] [ERROR] [frontend] IPC ✗ db_execute_search_query (509ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:37.602Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:01:38.498] [ERROR] [frontend] IPC ✗ db_execute_search_query (513ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:01:38.401Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:15.171] [ERROR] [frontend] IPC ✗ db_execute_search_query (746ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:15.159Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:15.483] [ERROR] [frontend] IPC ✗ db_execute_search_query (182ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:15.472Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:16.115] [ERROR] [frontend] IPC ✗ db_upsert_pending_operation (534ms): Database error: error returned from database: (code: 1) table pending_operations has no column named account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:16.107Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:18.261] [ERROR] [frontend] IPC ✗ db_execute_search_query (700ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:18.256Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:18.556] [ERROR] [frontend] IPC ✗ db_execute_search_query (157ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:18.551Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:02:19.119] [ERROR] [frontend] IPC ✗ db_upsert_pending_operation (486ms): Database error: error returned from database: (code: 1) table pending_operations has no column named account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:02:19.111Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:04:44.270] [ERROR] [frontend] IPC ✗ db_execute_search_query (3125ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:04:44.253Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:04:46.276] [ERROR] [frontend] IPC ✗ db_execute_search_query (1456ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:04:46.264Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:04:49.682] [ERROR] [frontend] IPC ✗ db_upsert_pending_operation (1195ms): Database error: error returned from database: (code: 1) table pending_operations has no column named account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:04:49.669Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:02.503] [ERROR] [frontend] IPC ✗ db_execute_search_query (1144ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:02.499Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:03.341] [ERROR] [frontend] IPC ✗ db_execute_search_query (614ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:03.333Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:31.639] [ERROR] [frontend] IPC ✗ db_execute_search_query (3869ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:31.398Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:33.733] [ERROR] [frontend] IPC ✗ db_execute_search_query (1662ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:33.713Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:40.999] [ERROR] [frontend] IPC ✗ db_execute_search_query (2574ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:40.875Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:41.981] [ERROR] [frontend] IPC ✗ db_execute_search_query (759ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:41.965Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:47.075] [ERROR] [frontend] IPC ✗ db_execute_search_query (993ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:47.054Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:05:48.022] [ERROR] [frontend] IPC ✗ db_execute_search_query (736ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:05:48.012Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:06:07.875] [ERROR] [frontend] IPC ✗ db_execute_search_query (1769ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:06:07.861Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:06:08.885] [ERROR] [frontend] IPC ✗ db_execute_search_query (727ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:06:08.872Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:06:31.991] [ERROR] [frontend] IPC ✗ db_get_recent_threads_with_contact (155ms): Database error: error returned from database: (code: 1) no such column: m.to_address
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:06:31.980Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:07:02.195] [ERROR] [frontend] IPC ✗ db_execute_search_query (622ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:07:02.180Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:07:05.381] [ERROR] [frontend] IPC ✗ db_execute_search_query (334ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:07:05.376Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:07:18.080] [ERROR] [frontend] IPC ✗ db_get_recent_threads_with_contact (165ms): Database error: error returned from database: (code: 1) no such column: m.to_address
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:07:18.065Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:13:26.433] [ERROR] [frontend] IPC ✗ db_execute_search_query (651ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:13:26.416Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:13:27.995] [ERROR] [frontend] IPC ✗ db_execute_search_query (1202ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:13:27.990Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:13:38.690] [ERROR] [frontend] IPC ✗ db_execute_search_query (760ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:13:38.683Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:13:39.586] [ERROR] [frontend] IPC ✗ db_execute_search_query (462ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:13:39.575Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:14:32.220] [ERROR] [frontend] IPC ✗ db_create_task (350ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:14:32.167Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:18:33.079] [ERROR] [frontend] IPC ✗ db_create_task (53ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:18:33.071Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:18:52.926] [ERROR] [frontend] IPC ✗ db_create_task (43ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:18:52.916Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:19:35.237] [ERROR] [frontend] IPC ✗ db_list_clients (91ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:19:35.226Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:19:44.199] [ERROR] [frontend] IPC ✗ db_list_clients (324ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:19:44.186Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:19:45.541] [ERROR] [frontend] IPC ✗ db_list_clients (1141ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:19:45.532Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:19:47.473] [ERROR] [frontend] IPC ✗ db_list_clients (1863ms): Failed to list clients: Database error: error returned from database: (code: 1) no such column: deleted_at
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:19:47.464Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:23:49.914] [ERROR] [frontend] IPC ✗ ai_query_rag (86ms): Model not loaded
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:23:49.906Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:31:34.716] [ERROR] [frontend] IPC ✗ db_list_import_history (21ms): Command db_list_import_history not found
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:31:34.707Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:31:56.592] [ERROR] [frontend] IPC ✗ db_execute_search_query (74ms): Database error: error returned from database: (code: 1) no such column: contact_type
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:31:56.579Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:32:35.916] [ERROR] [frontend] IPC ✗ db_upsert_workflow_rule (40ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:32:35.899Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:32:42.772] [ERROR] [frontend] IPC ✗ db_upsert_workflow_rule (38ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:32:42.760Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:32:49.924] [ERROR] [frontend] IPC ✗ db_upsert_workflow_rule (37ms): Database error: error returned from database: (code: 787) FOREIGN KEY constraint failed
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:32:49.909Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:35:42.216] [ERROR] [frontend] IPC ✗ ai_query_rag (100ms): Model not loaded
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:35:42.207Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:37:07.549] [ERROR] [frontend] IPC ✗ db_dashboard_campaigns_open_rate (312ms): Database error: error returned from database: (code: 1) no such column: sent_count
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:37:07.522Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:37:29.091] [ERROR] [frontend] IPC ✗ db_dashboard_campaigns_open_rate (316ms): Database error: error returned from database: (code: 1) no such column: sent_count
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:37:29.030Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:37:43.089] [ERROR] [frontend] IPC ✗ db_execute_search_query (521ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:37:42.969Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:38:00.888] [ERROR] [frontend] IPC ✗ db_execute_search_query (79ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:38:00.793Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:38:01.365] [ERROR] [frontend] IPC ✗ db_upsert_pending_operation (254ms): Database error: error returned from database: (code: 1) table pending_operations has no column named account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:38:01.299Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:38:03.013] [ERROR] [frontend] IPC ✗ db_execute_search_query (415ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:38:02.977Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:38:03.371] [ERROR] [frontend] IPC ✗ ai_query_rag (146ms): Model not loaded
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:38:03.361Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:38:03.414] [ERROR] [frontend] IPC ✗ ai_query_rag (18ms): Model not loaded
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:38:03.397Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:39:22.566] [ERROR] [frontend] IPC ✗ db_execute_search_query (1837ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:39:22.436Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:39:23.212] [ERROR] [frontend] IPC ✗ db_execute_search_query (559ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:39:23.185Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:39:24.388] [ERROR] [frontend] IPC ✗ db_execute_search_query (686ms): Database error: error returned from database: (code: 1) no such column: account_id
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:39:24.348Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:40:00.446] [ERROR] [frontend] IPC ✗ ai_query_rag (33ms): Model not loaded
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:40:00.408Z",
+    "stack": ""
+  }
+
+[2026-07-13 16:40:21.327] [ERROR] [frontend] IPC ✗ db_health_stats (1563ms): state not managed for field `dataCache` on command `db_health_stats`. You must call `.manage()` before using this command
+  {
+    "component": "ipc",
+    "original_timestamp": "2026-07-13T16:40:21.304Z",
+    "stack": ""
+  }
+

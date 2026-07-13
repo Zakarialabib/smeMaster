@@ -1,11 +1,24 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, lazy, Suspense } from "react";
 import { Send, Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useCampaignStore, type Campaign } from "@features/campaigns/stores/campaignStore";
 import { CAMPAIGN_STATUS_COLORS } from "@/constants/campaignDefaults";
-import { CampaignAnalytics } from "@features/campaigns/components/CampaignAnalytics";
-import { CampaignComposer } from "@features/campaigns/components/CampaignComposer";
 import { EmptyState } from "@shared/components/ui/EmptyState";
+
+// Heavy, conditionally-rendered UI: analytics pulls in recharts and the
+// composer wizard pulls in its step components. Both are only mounted on
+// demand, so lazy-load them to keep them out of the campaigns list chunk.
+const CampaignAnalytics = lazy(() =>
+  import("@features/campaigns/components/CampaignAnalytics").then((m) => ({
+    default: m.CampaignAnalytics,
+  })),
+);
+
+const CampaignComposer = lazy(() =>
+  import("@features/campaigns/components/CampaignComposer").then((m) => ({
+    default: m.CampaignComposer,
+  })),
+);
 import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
 import { useTranslation } from "react-i18next";
 import { usePlatform } from "@shared/hooks/usePlatform";
@@ -78,6 +91,26 @@ export function CampaignList({ accountId }: CampaignListProps) {
     </div>
   );
 
+  // ── Virtualizers (declared before the early return per Rules of Hooks) ──
+  const mobileScrollRef = useRef<HTMLDivElement | null>(null);
+  const mobileVirtualizer = useVirtualizer({
+    count: campaigns.length,
+    getScrollElement: () => mobileScrollRef.current,
+    estimateSize: () => MOBILE_CARD_ESTIMATE,
+    overscan: 4,
+    getItemKey: (idx) => campaigns[idx]?.id ?? idx,
+  });
+
+  const desktopScrollRef = useRef<HTMLDivElement | null>(null);
+  const desktopVirtualizer = useVirtualizer({
+    count: campaigns.length,
+    getScrollElement: () => desktopScrollRef.current,
+    estimateSize: () => DESKTOP_ROW_ESTIMATE,
+    overscan: 4,
+    getItemKey: (idx) => campaigns[idx]?.id ?? idx,
+    measureElement: (el) => el.getBoundingClientRect().height,
+  });
+
   if (!isLoading && campaigns.length === 0) {
     return (
       <div className="flex flex-col h-full">
@@ -98,32 +131,14 @@ export function CampaignList({ accountId }: CampaignListProps) {
             }
           />
         </div>
-        <CampaignComposer isOpen={showComposer} onClose={() => setShowComposer(false)} accountId={accountId} />
+        <Suspense fallback={null}>
+          <CampaignComposer isOpen={showComposer} onClose={() => setShowComposer(false)} accountId={accountId} />
+        </Suspense>
       </div>
     );
   }
 
   // ── Mobile virtualized list (cards) ───────────────────────────────────────
-  const mobileScrollRef = useRef<HTMLDivElement | null>(null);
-  const mobileVirtualizer = useVirtualizer({
-    count: campaigns.length,
-    getScrollElement: () => mobileScrollRef.current,
-    estimateSize: () => MOBILE_CARD_ESTIMATE,
-    overscan: 4,
-    getItemKey: (idx) => campaigns[idx]?.id ?? idx,
-  });
-
-  // ── Desktop virtualized list (expandable rows) ────────────────────────────
-  const desktopScrollRef = useRef<HTMLDivElement | null>(null);
-  const desktopVirtualizer = useVirtualizer({
-    count: campaigns.length,
-    getScrollElement: () => desktopScrollRef.current,
-    estimateSize: () => DESKTOP_ROW_ESTIMATE,
-    overscan: 4,
-    getItemKey: (idx) => campaigns[idx]?.id ?? idx,
-    measureElement: (el) => el.getBoundingClientRect().height,
-  });
-
   return (
     <div className="flex flex-col h-full">
       {header}
@@ -241,7 +256,19 @@ export function CampaignList({ accountId }: CampaignListProps) {
                     </button>
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-2 border-t border-border-primary">
-                        <CampaignAnalytics stats={stats[c.id] ?? { total: 0, sent: 0, opened: 0, clicked: 0, bounced: 0 }} campaignId={c.id} campaignName={c.name} />
+                        <Suspense
+                          fallback={
+                            <div className="px-4 py-6 text-xs text-text-tertiary">
+                              {t("common.loading")}
+                            </div>
+                          }
+                        >
+                          <CampaignAnalytics
+                            stats={stats[c.id] ?? { total: 0, sent: 0, opened: 0, clicked: 0, bounced: 0 }}
+                            campaignId={c.id}
+                            campaignName={c.name}
+                          />
+                        </Suspense>
                       </div>
                     )}
                   </div>
@@ -252,7 +279,9 @@ export function CampaignList({ accountId }: CampaignListProps) {
         </div>
       )}
 
+    <Suspense fallback={null}>
       <CampaignComposer isOpen={showComposer} onClose={() => setShowComposer(false)} accountId={accountId} />
-    </div>
-  );
+    </Suspense>
+  </div>
+);
 }

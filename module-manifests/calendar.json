@@ -1,0 +1,18 @@
+{
+  "id": "calendar",
+  "name": "Calendar & Events",
+  "description": "Calendar views, event CRUD, Caldav sync (via background service), iCal parsing, event reminders. Backed by db::calendar data access layer.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["calendar"],
+  "dependencies": [
+    { "module": "db", "reason": "Calendar data access", "required": true },
+    { "module": "background", "reason": "Caldav background sync", "required": false }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

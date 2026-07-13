@@ -1,0 +1,19 @@
+{
+  "id": "smtp",
+  "name": "SMTP Client",
+  "description": "Async SMTP client using lettre with tokio1-rustls-tls. Handles email sending via SMTP with STARTTLS, OAuth2 (XOAUTH2), and PLAIN/LOGIN authentication. Queue-based sending with retry support.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Reads SMTP server config", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [
+    { "key": "smtp_timeout_seconds", "label": "SMTP Timeout", "type": "number", "required": false, "secret": false, "hint": "SMTP connection timeout in seconds" }
+  ],
+  "always_active": false
+}

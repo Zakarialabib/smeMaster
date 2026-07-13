@@ -131,7 +131,7 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
                 min={0}
                 className="w-20 bg-bg-primary text-text-primary text-sm px-3 py-2 rounded-xl border border-border outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all text-center font-mono"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary font-medium">
+              <span className="absolute end-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary font-medium">
                 h
               </span>
             </div>
@@ -147,7 +147,7 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
                 max={59}
                 className="w-20 bg-bg-primary text-text-primary text-sm px-3 py-2 rounded-xl border border-border outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all text-center font-mono"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary font-medium">
+              <span className="absolute end-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary font-medium">
                 m
               </span>
             </div>
@@ -337,18 +337,18 @@ export function SnoozePresetsEditor() {
       {/* ── Toolbar ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
           <input
             type="text"
             placeholder="Search presets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-9 h-9 w-full bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+            className="ps-10 pe-9 h-9 w-full bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary transition-colors"
+              className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>

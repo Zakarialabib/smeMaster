@@ -1,6 +1,6 @@
 // src/features/onboarding/steps/ToolsStep.tsx
 import { useState, useCallback } from "react";
-import { Mail, Users, Send, Calendar, Brain, RefreshCw, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { Mail, Users, Send, Calendar, Brain, ArrowRight, ArrowLeft, Check, Crown } from "lucide-react";
 import type { ToolSelections } from "../types";
 
 interface ToolsStepProps {
@@ -9,20 +9,33 @@ interface ToolsStepProps {
   onBack: () => void;
 }
 
-const TOOL_OPTIONS: { key: keyof ToolSelections; label: string; description: string; sub: string; icon: typeof Mail }[] = [
-  { key: "mail", label: "Email", description: "Multi-account inbox with smart threading", sub: "Gmail, IMAP, Exchange", icon: Mail },
-  { key: "crm", label: "CRM", description: "Contact management with engagement scoring", sub: "Tags, segments, pipeline", icon: Users },
-  { key: "campaigns", label: "Campaigns", description: "Email campaigns with templates and tracking", sub: "Templates, analytics, A/B test", icon: Send },
-  { key: "calendar", label: "Calendar", description: "Calendar sync and event management", sub: "Sync, invites, scheduling", icon: Calendar },
-  { key: "ai", label: "AI Features", description: "Smart replies, auto-labeling, task extraction", sub: "Compose, search, extract", icon: Brain },
-  { key: "sync", label: "Device Sync", description: "Sync across devices with offline support", sub: "Offline queue, P2P sync", icon: RefreshCw },
+interface ToolOption {
+  key: keyof ToolSelections;
+  label: string;
+  description: string;
+  sub: string;
+  icon: typeof Mail;
+  pro: boolean;
+}
+
+const TOOL_OPTIONS: ToolOption[] = [
+  { key: "mail", label: "Mail", description: "Multi-account inbox with smart threading", sub: "Gmail, IMAP, Exchange · Email setup in next step", icon: Mail, pro: true },
+  { key: "crm", label: "CRM", description: "Contact management with engagement scoring", sub: "Tags, segments, pipeline", icon: Users, pro: false },
+  { key: "campaigns", label: "Campaigns", description: "Email campaigns with templates and tracking", sub: "Templates, analytics, A/B test", icon: Send, pro: true },
+  { key: "calendar", label: "Calendar", description: "Calendar sync and event management", sub: "Sync, invites, scheduling", icon: Calendar, pro: false },
+  { key: "ai", label: "AI Features", description: "Smart replies, auto-labeling, task extraction", sub: "Compose, search, extract", icon: Brain, pro: false },
 ];
 
 export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
   const [tools, setTools] = useState<ToolSelections>(initial);
 
   const toggle = useCallback((key: keyof ToolSelections) => {
-    setTools((prev) => ({ ...prev, [key]: !prev[key] }));
+    setTools((prev) => {
+      // Prevent disabling the last enabled tool
+      const count = Object.values(prev).filter(Boolean).length;
+      if (prev[key] && count <= 1) return prev;
+      return { ...prev, [key]: !prev[key] };
+    });
   }, []);
 
   const enabledCount = Object.values(tools).filter(Boolean).length;
@@ -43,6 +56,14 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
         </p>
       </div>
 
+      {/* Pro info banner */}
+      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-center gap-2.5">
+        <Crown className="h-4 w-4 text-amber-500 shrink-0" />
+        <p className="text-xs text-muted-foreground">
+          <span className="font-medium text-amber-500">PRO</span> features marked with a crown — Mail and Campaigns include advanced capabilities
+        </p>
+      </div>
+
       {/* Tool Cards */}
       <div className="grid gap-3">
         {TOOL_OPTIONS.map((opt, idx) => {
@@ -52,7 +73,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
             <button
               key={opt.key}
               onClick={() => toggle(opt.key)}
-              className="group relative w-full text-left"
+              className="group relative w-full text-start"
               style={{
                 animation: `slideUp 350ms cubic-bezier(0.16, 1, 0.3, 1) both`,
                 animationDelay: `${idx * 50}ms`,
@@ -66,12 +87,21 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
                 }`}
               >
                 {/* Icon */}
-                <div className={`rounded-lg p-2.5 transition-all duration-300 ${
-                  enabled ? "bg-accent/12" : "bg-muted group-hover:bg-accent/6"
-                }`}>
-                  <Icon className={`h-5 w-5 transition-colors duration-300 ${
-                    enabled ? "text-accent" : "text-muted-foreground group-hover:text-accent/70"
-                  }`} />
+                <div className="relative">
+                  <div className={`rounded-lg p-2.5 transition-all duration-300 ${
+                    enabled ? "bg-accent/12" : "bg-muted group-hover:bg-accent/6"
+                  }`}>
+                    <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                      enabled ? "text-accent" : "text-muted-foreground group-hover:text-accent/70"
+                    }`} />
+                  </div>
+                  {/* PRO badge */}
+                  {opt.pro && (
+                    <div className="absolute -top-1.5 -end-1.5 flex items-center gap-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 shadow-sm">
+                      <Crown className="h-2.5 w-2.5 text-amber-500" />
+                      <span className="text-[9px] font-bold text-amber-500 leading-none">PRO</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Text */}
@@ -92,7 +122,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
 
                 {/* Bottom accent line on hover */}
                 {enabled && (
-                  <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 start-4 end-4 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
               </div>
             </button>

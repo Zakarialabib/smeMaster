@@ -93,7 +93,7 @@ export default function ShortcutsTab() {
         <span>⌥ = Alt</span>
         <span>⇧ = Shift</span>
         <span>⌃ = Ctrl</span>
-        <span className="ml-auto text-text-tertiary/60">{platform.os === "macos" ? "macOS" : platform.os === "windows" ? "Windows" : "Linux"}</span>
+        <span className="ms-auto text-text-tertiary/60">{platform.os === "macos" ? "macOS" : platform.os === "windows" ? "Windows" : "Linux"}</span>
       </div>
 
       <SettingGroup title={t('settings.globalShortcut')}>
@@ -131,7 +131,7 @@ export default function ShortcutsTab() {
             variant="ghost"
             size="xs"
             onClick={resetAll}
-            className="shrink-0 ml-4"
+            className="shrink-0 ms-4"
           >
             {t('settings.resetAll')}
           </Button>
@@ -153,7 +153,7 @@ export default function ShortcutsTab() {
                   <span className="text-sm text-text-secondary">
                     {item.desc}
                   </span>
-                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                  <div className="flex items-center gap-2 ms-4 shrink-0">
                     <Button
                       variant={isRecording ? "primary" : "secondary"}
                       size="xs"

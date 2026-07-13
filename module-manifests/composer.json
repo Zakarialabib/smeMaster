@@ -1,0 +1,23 @@
+{
+  "id": "composer",
+  "name": "Email Composer",
+  "description": "Email composition engine: draft management, signatures, attachments, aliases, undo-send, scheduled send. Registered as a Tauri plugin with IPC commands.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists drafts and scheduled sends", "required": true },
+    { "module": "smtp", "reason": "Sends composed emails", "required": false },
+    { "module": "vault", "reason": "Manages attachments", "required": false }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "composer:open", "description": "Composer opened (from tray/widget)", "direction": "subscribes" }
+  ],
+  "config_fields": [
+    { "key": "composer_undo_seconds", "label": "Undo Send Window", "type": "number", "required": false, "secret": false, "hint": "Seconds to allow undoing a send" }
+  ],
+  "always_active": false
+}

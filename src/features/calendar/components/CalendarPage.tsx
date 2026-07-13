@@ -22,8 +22,9 @@ import { CalendarList } from "./CalendarList";
 import { CalendarReauthBanner } from "./CalendarReauthBanner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, CalendarDays } from "lucide-react";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
+import { PageScaffold } from "@shared/components/layout";
 
 export function CalendarPage() {
   const { t } = useTranslation();
@@ -403,14 +404,35 @@ export function CalendarPage() {
           onClick={() => navigate({ to: "/settings/$tab", params: { tab: "accounts" } })}
           className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
         >
-          Connect Account
+          {t('calendar.connectAccountBtn')}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="calendar-page flex flex-col flex-1 min-w-0 overflow-hidden bg-bg-primary">
+    <PageScaffold
+      title={t('calendar.title')}
+      toolbar={
+        <CalendarToolbar
+          currentDate={currentDate}
+          view={view}
+          calendarType={calendarType}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          onToday={handleToday}
+          onViewChange={setView}
+          onCalendarTypeChange={handleCalendarTypeChange}
+          onCreateEvent={() => setShowCreate(true)}
+          onToggleCalendarList={() => setShowCalendarList((v) => !v)}
+          onRefresh={loadEvents}
+          showCalendarListButton={calendars.length > 1}
+          isMobile={isMobileDevice}
+        />
+      }
+      className="calendar-page"
+      contentClassName="!p-0 flex flex-col"
+    >
       {/* Banner when no CalDAV is configured â€” still show full calendar with local events */}
       {!hasCalendar && (
         <div className="mx-4 mt-3 mb-0 px-3 py-2 rounded-lg bg-accent/5 border border-accent/15 flex items-center gap-2">
@@ -422,22 +444,6 @@ export function CalendarPage() {
           </span>
         </div>
       )}
-
-      <CalendarToolbar
-        currentDate={currentDate}
-        view={view}
-        calendarType={calendarType}
-        onPrev={handlePrev}
-        onNext={handleNext}
-        onToday={handleToday}
-        onViewChange={setView}
-        onCalendarTypeChange={handleCalendarTypeChange}
-        onCreateEvent={() => setShowCreate(true)}
-        onToggleCalendarList={() => setShowCalendarList((v) => !v)}
-        onRefresh={loadEvents}
-        showCalendarListButton={calendars.length > 1}
-        isMobile={isMobileDevice}
-      />
 
       {needsReauth && activeAccount && (
         <CalendarReauthBanner
@@ -463,13 +469,29 @@ export function CalendarPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors shrink-0 mt-0.5"
           >
             <RefreshCw size={13} />
-            Retry
+            {t('calendar.retry')}
           </button>
         </div>
       )}
 
       {loading && events.length === 0 && (
         <SkeletonPage />
+      )}
+
+      {!loading && events.length === 0 && integratedItems.length === 0 && !needsReauth && !calendarError && (
+        <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center p-8">
+          <CalendarDays size={36} className="text-text-tertiary/40" />
+          <div>
+            <p className="text-sm font-medium text-text-primary">{t('calendar.noEvents')}</p>
+            <p className="text-xs text-text-tertiary mt-1">{t('calendar.noEventsHint')}</p>
+          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+          >
+            {t('calendar.createEvent')}
+          </button>
+        </div>
       )}
 
       <div className="flex flex-1 min-h-0">
@@ -584,7 +606,7 @@ export function CalendarPage() {
           onUpdated={handleEventUpdated}
         />
       ))}
-    </div>
+    </PageScaffold>
   );
 }
 

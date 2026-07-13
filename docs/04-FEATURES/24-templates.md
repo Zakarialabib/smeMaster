@@ -43,6 +43,13 @@ Templates support variable-style content insertion so a template can adapt to re
 
 ### Insertion workflows
 
+> **Campaign block editor (2026-07-13):** the campaign block editor (`CampaignBuilder`)
+> can save the current design as a reusable template via `db_create_campaign_template`
+> (Rust), which inserts a `templates` row with `template_type = 'campaign'`. Saved
+> campaign templates appear in the `CampaignTemplatePicker` gallery and are listed by
+> the campaign feature with the same `template_type` filter.
+
+
 Templates are consumed in places such as:
 
 - the composer
@@ -72,6 +79,7 @@ This page owns reusable long-form template behavior and management.
 | Template settings tab         | `src/features/settings/components/tabs/TemplatesTab.tsx`                     |
 | Template insertion UI         | `src/features/mail/components/templates/`                                    |
 | AI-related generation helpers | `src/shared/services/ai/templateGenerator.ts`                                |
+| Campaign save-as-template      | `db_create_campaign_template` (Rust, `src-tauri/src/commands/comms.rs`) + `CampaignBuilder` |
 
 ## Documentation Rule
 

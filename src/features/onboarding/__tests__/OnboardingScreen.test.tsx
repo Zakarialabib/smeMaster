@@ -7,8 +7,13 @@ vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn().mockResolvedValue(undefined),
 }));
 
-// Mock lucide-react with the real module so every icon export resolves
-// (the onboarding subtree renders several icons not worth stubbing individually).
+// Mock the onboarding invoke wrappers
+vi.mock("@shared/services/db/invoke/onboarding", () => ({
+  seedDemoPreset: vi.fn().mockResolvedValue(undefined),
+  finalizeOnboarding: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock lucide-react icons
 vi.mock("lucide-react", async (importOriginal) => {
   return (await importOriginal()) as any;
 });
@@ -18,16 +23,15 @@ describe("OnboardingScreen", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // OnboardingScreen persists the active step in sessionStorage; clear it
-    // so every test starts on the welcome step (step 0).
     sessionStorage.clear();
   });
 
   it("renders the welcome step by default", () => {
     render(<OnboardingScreen onComplete={onComplete} />);
     expect(screen.getByText("Welcome to SMEMaster")).toBeInTheDocument();
-    expect(screen.getByText("Quick Start")).toBeInTheDocument();
     expect(screen.getByText("Continue")).toBeInTheDocument();
+    expect(screen.getByText("Skip to Demos")).toBeInTheDocument();
+    expect(screen.getByText("Quick Start")).toBeInTheDocument();
   });
 
   it("shows all 4 demo preset options", () => {
@@ -58,16 +62,15 @@ describe("OnboardingScreen", () => {
     expect(screen.getByText("Choose Your Features")).toBeInTheDocument();
   });
 
-  it("shows 6 tool toggle options", () => {
+  it("shows 5 tool toggle options", () => {
     render(<OnboardingScreen onComplete={onComplete} />);
     fireEvent.click(screen.getByText("Solo Freelancer"));
     fireEvent.click(screen.getByText("Continue"));
-    expect(screen.getByText("Email")).toBeInTheDocument();
+    expect(screen.getByText("Mail")).toBeInTheDocument();
     expect(screen.getByText("CRM")).toBeInTheDocument();
     expect(screen.getByText("Campaigns")).toBeInTheDocument();
     expect(screen.getByText("Calendar")).toBeInTheDocument();
     expect(screen.getByText("AI Features")).toBeInTheDocument();
-    expect(screen.getByText("Device Sync")).toBeInTheDocument();
   });
 
   it("navigates to account setup step", () => {
@@ -87,19 +90,20 @@ describe("OnboardingScreen", () => {
     fireEvent.click(screen.getByText("Skip for now"));
     expect(screen.getByText("You're All Set!")).toBeInTheDocument();
     expect(screen.getByText("Start Using SMEMaster")).toBeInTheDocument();
-    expect(screen.getByText("Pro Tips")).toBeInTheDocument();
+    expect(screen.getByText("Pro Benefits")).toBeInTheDocument();
   });
 
-  it("shows 4 pro tips on completion step", () => {
+  it("shows 5 pro benefits on completion step", () => {
     render(<OnboardingScreen onComplete={onComplete} />);
     fireEvent.click(screen.getByText("Solo Freelancer"));
     fireEvent.click(screen.getByText("Continue"));
     fireEvent.click(screen.getByText("Continue"));
     fireEvent.click(screen.getByText("Skip for now"));
-    expect(screen.getByText(/Use ` to open the command palette/)).toBeInTheDocument();
-    expect(screen.getByText(/Tag your contacts/)).toBeInTheDocument();
-    expect(screen.getByText(/Configure auto-labeling rules/)).toBeInTheDocument();
-    expect(screen.getByText(/AI features can draft replies/)).toBeInTheDocument();
+    expect(screen.getByText(/Smart inbox with priority sorting/)).toBeInTheDocument();
+    expect(screen.getByText(/AI writing assistant for composing/)).toBeInTheDocument();
+    expect(screen.getByText(/Campaign analytics with open\/click tracking/)).toBeInTheDocument();
+    expect(screen.getByText(/GDPR\/CCPA compliance tools/)).toBeInTheDocument();
+    expect(screen.getByText(/Priority support with dedicated onboarding/)).toBeInTheDocument();
   });
 
   it("calls onComplete when clicking Start Using SMEMaster", async () => {
@@ -118,6 +122,14 @@ describe("OnboardingScreen", () => {
     render(<OnboardingScreen onComplete={onComplete} />);
     await waitFor(() => {
       fireEvent.click(screen.getByText("Quick Start"));
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("skip to demos bypasses all steps and calls onComplete", async () => {
+    render(<OnboardingScreen onComplete={onComplete} />);
+    await waitFor(() => {
+      fireEvent.click(screen.getByText("Skip to Demos"));
     });
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
@@ -148,10 +160,23 @@ describe("OnboardingScreen", () => {
     // Account step - skip
     fireEvent.click(screen.getByText("Skip for now"));
     // Completion step should show sales_focused features as chips
-    expect(screen.getByText("Email")).toBeInTheDocument();
+    expect(screen.getByText("Mail")).toBeInTheDocument();
     expect(screen.getByText("CRM")).toBeInTheDocument();
     expect(screen.getByText("Campaigns")).toBeInTheDocument();
+    expect(screen.queryByText("Calendar")).not.toBeInTheDocument(); // sales_focused has calendar: false
     expect(screen.getByText("AI Features")).toBeInTheDocument();
-    expect(screen.getByText("Device Sync")).toBeInTheDocument();
+  });
+
+  it("theme selector appears on welcome step", () => {
+    render(<OnboardingScreen onComplete={onComplete} />);
+    expect(screen.getByText("Theme Preference")).toBeInTheDocument();
+    expect(screen.getByText("Light")).toBeInTheDocument();
+    expect(screen.getByText("Dark")).toBeInTheDocument();
+    expect(screen.getByText("System")).toBeInTheDocument();
+  });
+
+  it("shows business name input on welcome step", () => {
+    render(<OnboardingScreen onComplete={onComplete} />);
+    expect(screen.getByPlaceholderText("My Business")).toBeInTheDocument();
   });
 });

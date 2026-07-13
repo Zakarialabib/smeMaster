@@ -17,6 +17,11 @@ export interface Company {
   timezone: string;
   logo_url: string | null;
   settings_json: string;
+  // Morocco legal identifiers
+  ice: string | null;
+  tax_id: string | null;
+  rc: string | null;
+  cnss: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -121,6 +126,7 @@ export interface Message {
   message_id_header: string | null;
   references_header: string | null;
   in_reply_to_header: string | null;
+  unsubscribe_status: string | null;
   imap_uid: number | null;
   imap_folder: string | null;
 }
@@ -148,6 +154,10 @@ export interface FolderSyncState {
   last_uid: number;
   modseq: number | null;
   last_sync_at: number | null;
+  sync_phase: string | null;
+  last_error: string | null;
+  retry_count: number | null;
+  is_paused: boolean | null;
 }
 
 export interface Setting {
@@ -585,7 +595,7 @@ export interface FollowUpReminder {
 
 export interface PendingOperation {
   id: string;
-  account_id: string;
+  company_id: string;
   operation_type: string;
   resource_id: string;
   params: string;
@@ -593,6 +603,7 @@ export interface PendingOperation {
   retry_count: number;
   max_retries: number;
   next_retry_at: number | null;
+  hold_until: number | null;
   error_message: string | null;
   campaign_id: string | null;
   created_at: number;
@@ -744,6 +755,7 @@ export interface TemplateCategory {
   icon: string | null;
   sort_order: number;
   is_system: number;
+  created_at: number;
 }
 
 // ─── AI (continued) ─────────────────────────────────────────────────────────
@@ -913,6 +925,7 @@ export interface CleanupRule {
   is_scheduled: number;
   schedule_cron: string | null;
   next_run_at: number | null;
+  last_run_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -927,4 +940,177 @@ export interface CleanupHistory {
   status: string;
   error_message: string | null;
   executed_at: number;
+}
+
+// ─── Invoicing ──────────────────────────────────────────────────────────────
+
+export interface Client {
+  id: string;
+  company_id: string;
+  display_name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  tax_id: string | null;
+  contact_type: 'client' | 'supplier' | 'other' | 'contact';
+  credit_limit: number;
+  payment_terms: number;
+  notes: string | null;
+  created_at: number;
+  updated_at: number;
+  deleted_at: number | null;
+}
+
+export interface Invoice {
+  id: string;
+  company_id: string;
+  client_id: string;
+  document_type: 'invoice' | 'delivery_bill' | 'shipping_print';
+  invoice_number: string;
+  status: 'draft' | 'sent' | 'paid' | 'partial' | 'cancelled';
+  issue_date: number;
+  due_date: number | null;
+  currency: string;
+  subtotal: number;
+  tax_total: number;
+  total_amount: number;
+  notes: string | null;
+  peppol_xml_path: string | null;
+  pdf_path: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  item_id: string | null;
+  description: string;
+  qty: number;
+  unit: string;
+  unit_price: number;
+  tax_rate: number;
+  tax_amount: number;
+  line_total: number;
+  sort_order: number;
+  created_at: number;
+}
+
+export interface InvoiceWithItems {
+  invoice: Invoice;
+  items: InvoiceItem[];
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'product' | 'service';
+  sku: string | null;
+  category_id: string | null;
+  unit: string;
+  buy_price: number;
+  sell_price: number;
+  stock_qty: number;
+  stock_alert: number;
+  tax_rate: number;
+  barcode: string | null;
+  image_url: string | null;
+  active: number;
+  company_id: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface ErpAccount {
+  id: string;
+  company_id: string;
+  code: string;
+  name: string;
+  account_type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+  normal_balance: 'debit' | 'credit';
+  parent_id: string | null;
+  is_active: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface JournalEntry {
+  id: string;
+  company_id: string;
+  entry_date: number;
+  reference: string | null;
+  description: string | null;
+  account_id: string;
+  debit: number;
+  credit: number;
+  currency: string;
+  created_at: number;
+}
+
+export interface PnlResult {
+  revenue: number;
+  expenses: number;
+  net: number;
+}
+
+export interface Wallet {
+  id: string;
+  company_id: string;
+  currency: string;
+  balance: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CompanySetting {
+  company_id: string;
+  default_currency: string;
+  default_tax_rate: number;
+  invoice_prefix: string;
+  invoice_suffix: string;
+  quote_prefix: string;
+  default_template_id: string | null;
+  logo_url: string | null;
+  signature_text: string | null;
+  bank_details: string | null;
+  terms_default: string | null;
+  theme_color: string;
+  units_enabled: string;
+  tax_position: string;
+  decimal_places: number;
+  updated_at: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  company_id: string | null;
+  created_at: number;
+}
+
+export interface SyncJob {
+  id: string;
+  account_id: string;
+  sync_type: string;
+  status: string;
+  started_at: number | null;
+  completed_at: number | null;
+  error_message: string | null;
+  items_processed: number;
+  items_total: number;
+  created_at: number;
+}
+
+export interface SyncConflict {
+  id: string;
+  account_id: string;
+  conflict_type: string;
+  local_data: string;
+  remote_data: string;
+  resolution: string | null;
+  resolved_at: number | null;
+  created_at: number;
 }

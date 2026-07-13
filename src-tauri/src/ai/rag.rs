@@ -17,13 +17,14 @@ impl RagSystem {
         Self { vector_db, engine }
     }
 
-    pub async fn search(&self, query: &str, limit: usize) -> Result<Vec<String>> {
+    pub async fn search(&self, query: &str, dim: usize, limit: usize) -> Result<Vec<String>> {
         let vector = {
             let engine = self.engine.lock().await;
             engine.get_embeddings(query).await?
         };
 
-        let table = self.vector_db.ensure_table().await?;
+        // The local engine emits `dim`-wide vectors (BGE-small = 384).
+        let table = self.vector_db.ensure_table(dim).await?;
 
         let mut results = table.vector_search(vector)?
             .limit(limit)
@@ -47,7 +48,7 @@ impl RagSystem {
     }
 
     pub async fn generate_augmented_prompt(&self, query: &str) -> Result<String> {
-        let contexts = self.search(query, 3).await?;
+        let contexts = self.search(query, 384, 3).await?;
         let context_str = contexts.join("\n---\n");
 
         let prompt = format!(
@@ -61,7 +62,8 @@ impl RagSystem {
     /// Search LanceDB using a pre-computed embedding vector (from a provider like LM Studio).
     /// Skips the local embedding step and goes straight to vector search.
     pub async fn search_by_vector(&self, embedding: Vec<f32>, _query: &str, limit: usize) -> Result<Vec<String>> {
-        let table = self.vector_db.ensure_table().await?;
+        let dim = embedding.len();
+        let table = self.vector_db.ensure_table(dim).await?;
 
         let mut results = table.vector_search(embedding)?
             .limit(limit)

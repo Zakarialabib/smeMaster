@@ -1,0 +1,18 @@
+{
+  "id": "commands",
+  "name": "IPC Command Registry",
+  "description": "Centralized Tauri command handler registration. 30 command modules covering system, db, imap, smtp, contacts, crm, calendar, tasks, ai, accounting, invoicing, pos, compliance, security, settings, sync, discovery, onboarding, updater, logging, wallet, workflows, idle, comms, account_import, system_desktop, system_android.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Most commands access database", "required": true },
+    { "module": "orchestrator", "reason": "Subsystem gating for tool-enabled commands", "required": false }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshCw, Plus } from "lucide-react";
+import { RefreshCw, Plus, UserCircle, Settings } from "lucide-react";
+import { cn } from "@shared/utils/cn";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { notify } from "@shared/services/notifications/toastHelper";
 import { getSetting, setSetting, getSecureSetting, setSecureSetting } from "@features/settings/db/settings";
@@ -16,6 +17,20 @@ import SendAsAliasesSection from "../SendAsAliasesSection";
 import SyncOfflineSection from "../SyncOfflineSection";
 import ImapCalDavSection from "@features/calendar/components/settings/ImapCalDavSection";
 
+// ── Sub-tab definitions ──────────────────────────────────────────────────
+
+interface SubTab {
+  id: "accounts" | "sync" | "advanced";
+  labelKey: string;
+  icon: typeof UserCircle;
+}
+
+const SUB_TABS: SubTab[] = [
+  { id: "accounts", labelKey: "settings.tabs.accounts", icon: UserCircle },
+  { id: "sync", labelKey: "Sync", icon: RefreshCw },
+  { id: "advanced", labelKey: "Advanced", icon: Settings },
+];
+
 export default function AccountsTab() {
   const { t } = useTranslation();
   const accounts = useAccountStore((s) => s.accounts);
@@ -30,6 +45,7 @@ export default function AccountsTab() {
   const [reauthStatus, setReauthStatus] = useState<Record<string, "idle" | "authorizing" | "done" | "error">>({});
   const [resyncStatus, setResyncStatus] = useState<Record<string, "idle" | "syncing" | "done" | "error">>({});
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState<"accounts" | "sync" | "advanced">("accounts");
 
   useEffect(() => {
     async function load() {
@@ -147,258 +163,297 @@ export default function AccountsTab() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-semibold text-text-primary leading-snug">
-          {t('settings.mailAccounts')}
-        </h2>
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus size={14} />}
-          onClick={() => setShowAddAccount(true)}
-        >
-          {t('settings.addMailAccount')}
-        </Button>
+      {/* ── Sub-navigation ─────────────────────────────────────────── */}
+      <div className="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none">
+        {SUB_TABS.map((sub) => {
+          const Icon = sub.icon;
+          const isActive = activeSubTab === sub.id;
+          return (
+            <button
+              key={sub.id}
+              onClick={() => setActiveSubTab(sub.id)}
+              className={cn(
+                "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all shrink-0 border",
+                isActive
+                  ? "bg-accent text-white shadow-sm border-accent scale-[1.02]"
+                  : "bg-bg-secondary text-text-secondary hover:text-text-primary hover:bg-bg-hover border-border-primary/50",
+              )}
+            >
+              <Icon size={14} />
+              <span>{t(sub.labelKey)}</span>
+            </button>
+          );
+        })}
       </div>
-      {accounts.filter((a) => a.provider !== "caldav").length === 0 ? (
-        <div className="text-sm text-text-tertiary py-6 text-center bg-bg-secondary rounded-lg">
-          {t('settings.noAccountsConnected')}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {accounts.filter((a) => a.provider !== "caldav").map((account) => {
-            const providerLabel = account.provider === "imap" ? t('settings.imap') : account.provider === "local" ? "Demo" : t('settings.gmail');
-            return (
-              <div
-                key={account.id}
-                className="flex items-center justify-between py-2.5 px-4 bg-bg-secondary rounded-lg"
-              >
-                <div>
-                  <div className="text-sm font-medium text-text-primary flex items-center gap-2">
-                    {account.displayName ?? account.email}
-                    <span className="text-[0.6rem] font-medium px-1.5 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary">
-                      {providerLabel}
-                    </span>
-                  </div>
-                  <div className="text-xs text-text-tertiary">
-                    {account.email}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => handleReauthorizeAccount(account.id, account.email)}
-                    disabled={reauthStatus[account.id] === "authorizing"}
-                    className="text-accent hover:text-accent-hover"
-                  >
-                    {reauthStatus[account.id] === "authorizing" && t('settings.waiting')}
-                    {reauthStatus[account.id] === "done" && t('settings.done')}
-                    {reauthStatus[account.id] === "error" && t('settings.failed')}
-                    {(!reauthStatus[account.id] || reauthStatus[account.id] === "idle") && t('settings.reauthorize')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => handleResyncAccount(account.id)}
-                    disabled={resyncStatus[account.id] === "syncing"}
-                    className="text-accent hover:text-accent-hover"
-                  >
-                    {resyncStatus[account.id] === "syncing" && t('settings.resyncing')}
-                    {resyncStatus[account.id] === "done" && t('settings.done')}
-                    {resyncStatus[account.id] === "error" && t('settings.failed')}
-                    {(!resyncStatus[account.id] || resyncStatus[account.id] === "idle") && t('settings.resync')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => handleRemoveAccount(account.id)}
-                    className="text-danger hover:text-danger/80"
-                  >
-                    {t('common.remove')}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {accounts.some((a) => a.provider === "caldav") && (
-        <SettingGroup title={t('settings.calendarAccounts')}>
-          <div className="space-y-2">
-            {accounts.filter((a) => a.provider === "caldav").map((account) => (
-              <div
-                key={account.id}
-                className="flex items-center justify-between py-2.5 px-4 bg-bg-secondary rounded-lg"
-              >
-                <div>
-                  <div className="text-sm font-medium text-text-primary flex items-center gap-2">
-                    {account.displayName ?? account.email}
-                    <span className="text-[0.6rem] font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent">
-                      {t('settings.caldav')}
-                    </span>
-                  </div>
-                  <div className="text-xs text-text-tertiary">
-                    {account.email}
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => handleRemoveAccount(account.id)}
-                  className="text-danger hover:text-danger/80"
-                >
-                  {t('common.remove')}
-                </Button>
-              </div>
-            ))}
+      {/* ── Sub-tab: Accounts ──────────────────────────────────────── */}
+      {activeSubTab === "accounts" && (
+        <>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-text-primary leading-snug">
+              {t('settings.mailAccounts')}
+            </h2>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} />}
+              onClick={() => setShowAddAccount(true)}
+            >
+              {t('settings.addMailAccount')}
+            </Button>
           </div>
-        </SettingGroup>
+          {accounts.filter((a) => a.provider !== "caldav").length === 0 ? (
+            <div className="text-sm text-text-tertiary py-6 text-center bg-bg-secondary rounded-lg">
+              {t('settings.noAccountsConnected')}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {accounts.filter((a) => a.provider !== "caldav").map((account) => {
+                const providerLabel = account.provider === "imap" ? t('settings.imap') : account.provider === "local" ? "Demo" : t('settings.gmail');
+                return (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between py-2.5 px-4 bg-bg-secondary rounded-lg"
+                  >
+                    <div>
+                      <div className="text-sm font-medium text-text-primary flex items-center gap-2">
+                        {account.displayName ?? account.email}
+                        <span className="text-[0.6rem] font-medium px-1.5 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary">
+                          {providerLabel}
+                        </span>
+                      </div>
+                      <div className="text-xs text-text-tertiary">
+                        {account.email}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleReauthorizeAccount(account.id, account.email)}
+                        disabled={reauthStatus[account.id] === "authorizing"}
+                        className="text-accent hover:text-accent-hover"
+                      >
+                        {reauthStatus[account.id] === "authorizing" && t('settings.waiting')}
+                        {reauthStatus[account.id] === "done" && t('settings.done')}
+                        {reauthStatus[account.id] === "error" && t('settings.failed')}
+                        {(!reauthStatus[account.id] || reauthStatus[account.id] === "idle") && t('settings.reauthorize')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleResyncAccount(account.id)}
+                        disabled={resyncStatus[account.id] === "syncing"}
+                        className="text-accent hover:text-accent-hover"
+                      >
+                        {resyncStatus[account.id] === "syncing" && t('settings.resyncing')}
+                        {resyncStatus[account.id] === "done" && t('settings.done')}
+                        {resyncStatus[account.id] === "error" && t('settings.failed')}
+                        {(!resyncStatus[account.id] || resyncStatus[account.id] === "idle") && t('settings.resync')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleRemoveAccount(account.id)}
+                        className="text-danger hover:text-danger/80"
+                      >
+                        {t('common.remove')}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {accounts.some((a) => a.provider === "caldav") && (
+            <SettingGroup title={t('settings.calendarAccounts')}>
+              <div className="space-y-2">
+                {accounts.filter((a) => a.provider === "caldav").map((account) => (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between py-2.5 px-4 bg-bg-secondary rounded-lg"
+                  >
+                    <div>
+                      <div className="text-sm font-medium text-text-primary flex items-center gap-2">
+                        {account.displayName ?? account.email}
+                        <span className="text-[0.6rem] font-medium px-1.5 py-0.5 rounded-full bg-accent/10 text-accent">
+                          {t('settings.caldav')}
+                        </span>
+                      </div>
+                      <div className="text-xs text-text-tertiary">
+                        {account.email}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => handleRemoveAccount(account.id)}
+                      className="text-danger hover:text-danger/80"
+                    >
+                      {t('common.remove')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </SettingGroup>
+          )}
+
+          <SettingGroup title={t('settings.googleApi')}>
+            <div className="space-y-3">
+              <TextField
+                label={t('settings.clientId')}
+                size="md"
+                type="text"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                placeholder={t('settings.clientIdPlaceholder')}
+              />
+              <TextField
+                label={t('settings.clientSecret')}
+                size="md"
+                type="password"
+                value={clientSecret}
+                onChange={(e) => setClientSecret(e.target.value)}
+                placeholder={t('settings.clientSecretPlaceholder')}
+              />
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSaveApiSettings}
+                disabled={!clientId.trim() && !microsoftClientId.trim()}
+              >
+                {apiSettingsSaved ? t('common.saved') : t("common.save")}
+              </Button>
+            </div>
+            <HelpCard
+              items={[
+                { type: "why", text: "Custom API credentials allow SME Master to connect directly to your Google account without third-party rate limits." },
+                { type: "how", text: "These credentials are stored securely using the Tauri encrypted storage API and are used for OAuth2 authentication." },
+                { type: "when", text: "Required for Gmail/Google Workspace accounts. Obtain credentials from the Google Cloud Console." },
+              ]}
+            />
+          </SettingGroup>
+
+          <SettingGroup title={t('settings.microsoftApi')}>
+            <div className="space-y-3">
+              <TextField
+                label={t('settings.clientId')}
+                size="md"
+                type="text"
+                value={microsoftClientId}
+                onChange={(e) => setMicrosoftClientId(e.target.value)}
+                placeholder={t('settings.clientIdPlaceholder')}
+              />
+              <TextField
+                label={t('settings.clientSecret')}
+                size="md"
+                type="password"
+                value={microsoftClientSecret}
+                onChange={(e) => setMicrosoftClientSecret(e.target.value)}
+                placeholder={t('settings.clientSecretPlaceholder')}
+              />
+            </div>
+            <HelpCard
+              items={[
+                { type: "why", text: "Custom API credentials allow SME Master to connect directly to your Microsoft/Outlook account via Microsoft Graph API." },
+                { type: "how", text: "These credentials are stored securely using the Tauri encrypted storage API and are used for OAuth2 authentication." },
+                { type: "when", text: "Required for Outlook/Hotmail/Live accounts. Obtain credentials from the Azure Portal (App Registrations)." },
+              ]}
+            />
+          </SettingGroup>
+        </>
       )}
 
-      <SendAsAliasesSection />
+      {/* ── Sub-tab: Sync ──────────────────────────────────────────── */}
+      {activeSubTab === "sync" && (
+        <>
+          <SettingGroup title={t('settings.sync')}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">
+                {t('settings.checkForNewMail')}
+              </span>
+              <Button
+                variant="primary"
+                size="md"
+                icon={<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />}
+                onClick={handleManualSync}
+                disabled={isSyncing || accounts.length === 0}
+              >
+                {isSyncing ? t('common.syncing') : t('settings.syncNow')}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm text-text-secondary">
+                  {t('settings.fullResync')}
+                </span>
+                <p className="text-xs text-text-tertiary mt-0.5">
+                  {t('settings.fullResyncDescription')}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="md"
+                icon={<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />}
+                onClick={handleForceFullSync}
+                disabled={isSyncing || accounts.length === 0}
+                className="bg-bg-tertiary text-text-primary border border-border-primary"
+              >
+                {isSyncing ? t('common.syncing') : t('settings.fullResync')}
+              </Button>
+            </div>
+            <HelpCard
+              items={[
+                { type: "why", text: "Synchronization keeps your local database up-to-date with the server, ensuring you see the latest emails and folder changes." },
+                { type: "how", text: "Sync runs in the background at configured intervals. Full resync re-downloads all email metadata from the server." },
+                { type: "when", text: "Use manual sync when you need immediately fresh data. Use full resync if you suspect data corruption or missing messages." },
+              ]}
+            />
+          </SettingGroup>
 
-      <ImapCalDavSection />
-
-      <SettingGroup title={t('settings.googleApi')}>
-        <div className="space-y-3">
-          <TextField
-            label={t('settings.clientId')}
-            size="md"
-            type="text"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            placeholder={t('settings.clientIdPlaceholder')}
-          />
-          <TextField
-            label={t('settings.clientSecret')}
-            size="md"
-            type="password"
-            value={clientSecret}
-            onChange={(e) => setClientSecret(e.target.value)}
-            placeholder={t('settings.clientSecretPlaceholder')}
-          />
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleSaveApiSettings}
-            disabled={!clientId.trim() && !microsoftClientId.trim()}
-          >
-            {apiSettingsSaved ? t('common.saved') : t("common.save")}
-          </Button>
-        </div>
-        <HelpCard
-          items={[
-            { type: "why", text: "Custom API credentials allow SME Master to connect directly to your Google account without third-party rate limits." },
-            { type: "how", text: "These credentials are stored securely using the Tauri encrypted storage API and are used for OAuth2 authentication." },
-            { type: "when", text: "Required for Gmail/Google Workspace accounts. Obtain credentials from the Google Cloud Console." },
-          ]}
-        />
-      </SettingGroup>
-
-      <SettingGroup title={t('settings.microsoftApi')}>
-        <div className="space-y-3">
-          <TextField
-            label={t('settings.clientId')}
-            size="md"
-            type="text"
-            value={microsoftClientId}
-            onChange={(e) => setMicrosoftClientId(e.target.value)}
-            placeholder={t('settings.clientIdPlaceholder')}
-          />
-          <TextField
-            label={t('settings.clientSecret')}
-            size="md"
-            type="password"
-            value={microsoftClientSecret}
-            onChange={(e) => setMicrosoftClientSecret(e.target.value)}
-            placeholder={t('settings.clientSecretPlaceholder')}
-          />
-        </div>
-        <HelpCard
-          items={[
-            { type: "why", text: "Custom API credentials allow SME Master to connect directly to your Microsoft/Outlook account via Microsoft Graph API." },
-            { type: "how", text: "These credentials are stored securely using the Tauri encrypted storage API and are used for OAuth2 authentication." },
-            { type: "when", text: "Required for Outlook/Hotmail/Live accounts. Obtain credentials from the Azure Portal (App Registrations)." },
-          ]}
-        />
-      </SettingGroup>
-
-      <SettingGroup title={t('settings.sync')}>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-text-secondary">
-            {t('settings.checkForNewMail')}
-          </span>
-          <Button
-            variant="primary"
-            size="md"
-            icon={<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />}
-            onClick={handleManualSync}
-            disabled={isSyncing || accounts.length === 0}
-          >
-            {isSyncing ? t('common.syncing') : t('settings.syncNow')}
-          </Button>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm text-text-secondary">
-              {t('settings.fullResync')}
-            </span>
-            <p className="text-xs text-text-tertiary mt-0.5">
-              {t('settings.fullResyncDescription')}
+          <SettingGroup title={t('settings.syncPeriod')}>
+            <SettingRow label={t('settings.syncEmailsFrom')}>
+              <ButtonGroup
+                value={syncPeriodDays}
+                onChange={async (val) => {
+                  setSyncPeriodDays(val);
+                  await setSetting("sync_period_days", val);
+                }}
+                options={[
+                  { value: "30", label: t('settings.last30Days') },
+                  { value: "90", label: t('settings.last90Days') },
+                  { value: "180", label: t('settings.last180Days') },
+                  { value: "365", label: t('settings.last1Year') },
+                ]}
+              />
+            </SettingRow>
+            <p className="text-xs text-text-tertiary">
+              {t('settings.syncChangesOnResync')}
             </p>
-          </div>
-          <Button
-            variant="secondary"
-            size="md"
-            icon={<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />}
-            onClick={handleForceFullSync}
-            disabled={isSyncing || accounts.length === 0}
-            className="bg-bg-tertiary text-text-primary border border-border-primary"
-          >
-            {isSyncing ? t('common.syncing') : t('settings.fullResync')}
-          </Button>
-        </div>
-        <HelpCard
-          items={[
-            { type: "why", text: "Synchronization keeps your local database up-to-date with the server, ensuring you see the latest emails and folder changes." },
-            { type: "how", text: "Sync runs in the background at configured intervals. Full resync re-downloads all email metadata from the server." },
-            { type: "when", text: "Use manual sync when you need immediately fresh data. Use full resync if you suspect data corruption or missing messages." },
-          ]}
-        />
-      </SettingGroup>
+            <HelpCard
+              items={[
+                { type: "why", text: "Limiting sync scope reduces local storage usage and speeds up initial synchronization, especially for accounts with years of history." },
+                { type: "how", text: "Only emails within the selected period are downloaded. Older emails remain accessible on the server but aren't cached locally." },
+                { type: "when", text: "Choose a shorter period for low-storage devices. Use 1 year for full historical search capability." },
+              ]}
+            />
+          </SettingGroup>
 
-      <SettingGroup title={t('settings.syncPeriod')}>
-        <SettingRow label={t('settings.syncEmailsFrom')}>
-          <ButtonGroup
-            value={syncPeriodDays}
-            onChange={async (val) => {
-              setSyncPeriodDays(val);
-              await setSetting("sync_period_days", val);
-            }}
-            options={[
-              { value: "30", label: t('settings.last30Days') },
-              { value: "90", label: t('settings.last90Days') },
-              { value: "180", label: t('settings.last180Days') },
-              { value: "365", label: t('settings.last1Year') },
-            ]}
-          />
-        </SettingRow>
-        <p className="text-xs text-text-tertiary">
-          {t('settings.syncChangesOnResync')}
-        </p>
-        <HelpCard
-          items={[
-            { type: "why", text: "Limiting sync scope reduces local storage usage and speeds up initial synchronization, especially for accounts with years of history." },
-            { type: "how", text: "Only emails within the selected period are downloaded. Older emails remain accessible on the server but aren't cached locally." },
-            { type: "when", text: "Choose a shorter period for low-storage devices. Use 1 year for full historical search capability." },
-          ]}
-        />
-      </SettingGroup>
+          <SyncOfflineSection />
+        </>
+      )}
 
-      <SyncOfflineSection />
+      {/* ── Sub-tab: Advanced ──────────────────────────────────────── */}
+      {activeSubTab === "advanced" && (
+        <>
+          <SendAsAliasesSection />
 
+          <ImapCalDavSection />
+        </>
+      )}
+
+      {/* ── AddAccount Modal (always available) ────────────────────── */}
       {showAddAccount && (
         <AddAccount
           onClose={() => setShowAddAccount(false)}

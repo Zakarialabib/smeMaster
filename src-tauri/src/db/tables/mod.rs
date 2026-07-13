@@ -1,5 +1,7 @@
 // ── Domain table modules ────────────────────────────────────────────────────
 pub mod ai;
+pub mod accounting;
+pub mod wallet;
 pub mod calendar;
 pub mod campaigns;
 pub mod comms;
@@ -7,6 +9,7 @@ pub mod compliance;
 pub mod core;
 pub mod crm;
 pub mod deliverability;
+pub mod invoicing;
 pub mod security;
 pub mod tasks;
 pub mod workflows;

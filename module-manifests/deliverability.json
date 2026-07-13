@@ -1,0 +1,18 @@
+{
+  "id": "deliverability",
+  "name": "Email Deliverability",
+  "description": "DNS record checking (SPF, DKIM, DMARC, MX), blacklist monitoring, bounce detection, sender-health scoring, and SentinelService for continuous deliverability monitoring.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Stores deliverability check results", "required": true },
+    { "module": "dns", "reason": "DNS lookups for SPF/DKIM/DMARC", "required": false }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

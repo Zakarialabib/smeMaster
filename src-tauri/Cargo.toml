@@ -66,6 +66,7 @@ tauri-plugin-store = "2.4.2"
 tauri-plugin-global-shortcut = "2.2.1"
 auto-launch = "0.6.0"
 sha2 = "0.10"
+argon2 = { version = "0.5", features = ["password-hash", "rand"] }
 uuid = { version = "1", features = ["v4"] }
 glob = "0.3"
 smallvec = "1"
@@ -87,6 +88,7 @@ docx-rs = "0.4"
 calamine = "0.26"
 tokenizers = "0.21"
 ring = "0.17.14"
+rust_decimal = { version = "1", features = ["macros"] }
 
 [dev-dependencies]
 tempfile = "3"

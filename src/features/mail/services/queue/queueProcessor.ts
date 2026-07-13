@@ -104,9 +104,9 @@ async function processQueue(): Promise<void> {
       const params = JSON.parse(op.params) as Record<string, unknown>;
 
       if (op.operation_type === "send_campaign_email") {
-        await processSendCampaignEmail(op.id, op.account_id, params);
+        await processSendCampaignEmail(op.id, op.company_id, params);
       } else {
-        await executeQueuedAction(op.account_id, op.operation_type, params);
+        await executeQueuedAction(op.company_id, op.operation_type, params);
       }
 
       // Success — delete from queue

@@ -525,6 +525,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
               email={primarySender}
               name={primarySenderName}
               accountId={activeAccountId}
+              bodyText={lastMessage?.body_text ?? null}
               onClose={toggleContactSidebar}
             />
           </div>

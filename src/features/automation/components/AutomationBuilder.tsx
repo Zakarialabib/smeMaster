@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -15,7 +15,7 @@ import {
   MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Save, X, Plus, LayoutTemplate } from "lucide-react";
+import { Save, X, Plus, LayoutTemplate, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@shared/components/ui/Button";
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { useAutomationStore } from "@features/automation/stores/automationStore";
@@ -23,7 +23,7 @@ import { AutomationTriggerPicker } from "@features/automation/components/Automat
 import { AutomationActionPicker } from "@features/automation/components/AutomationActionPicker";
 import { TriggerNode } from "./flow/TriggerNode";
 import { ConditionNode } from "./flow/ConditionNode";
-import { ActionNode } from "./flow/ActionNode";
+import { ActionNode, actionRequiresParam } from "./flow/ActionNode";
 import type { AutomationAction } from "@features/automation/stores/automationStore";
 
 // ── Node type registry ───────────────────────────────────────────────────────
@@ -53,6 +53,8 @@ const ACTION_NODE_DEFAULTS = {
 
 const DEFAULT_SPACING = 175;
 
+// Local mirror of ActionNode's action metadata so the builder can compute
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface AutomationBuilderProps {
@@ -75,6 +77,7 @@ function buildInitialNodes(
   nodes.push({
     id: "trigger-1",
     ...TRIGGER_NODE_DEFAULTS,
+    deletable: false,
     data: { event: triggerEvent, conditions: triggerConditions },
   } as Node);
 
@@ -97,13 +100,15 @@ function buildInitialNodes(
 
   // Action nodes
   actions.forEach((action, index) => {
+    const paramKey = actionRequiresParam(action.type);
+    const invalid = !!paramKey && !(action[paramKey] as string);
     nodes.push({
       id: `action-${index}`,
       position: {
         x: 250,
         y: hasConditions ? ACTION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING : CONDITION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING,
       },
-      data: { index, action, onUpdate: onActionUpdate, onDelete: onActionDelete },
+      data: { index, action, invalid, onUpdate: onActionUpdate, onDelete: onActionDelete },
     } as Node);
   });
 
@@ -337,45 +342,75 @@ export function AutomationBuilder({
   const closeBuilder = useAutomationStore((s) => s.closeBuilder);
   const saveRule = useAutomationStore((s) => s.saveRule);
   const loading = useAutomationStore((s) => s.isLoading);
+  const pushEditorHistory = useAutomationStore((s) => s.pushEditorHistory);
+  const undo = useAutomationStore((s) => s.undo);
+  const redo = useAutomationStore((s) => s.redo);
+  const canUndo = useAutomationStore((s) => s.canUndo);
+  const canRedo = useAutomationStore((s) => s.canRedo);
+
+  const builderRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Wrap any editor mutation so that the current state is saved to the
+   * undo stack before the mutation runs.  Call this at the point where a
+   * user action (button click, drag end, etc.) is about to change the editor.
+   */
+  const withHistory = useCallback(
+    (mutation: () => void): void => {
+      pushEditorHistory();
+      mutation();
+    },
+    [pushEditorHistory],
+  );
 
   // ── Action handlers that sync to the store ────────────────────────────
 
   const handleActionUpdate = useCallback(
     (index: number, action: AutomationAction) => {
-      const next = editor.actions.map((a, i) =>
-        i === index ? action : a,
-      );
-      setEditorField("actions", next);
+      withHistory(() => {
+        const next = editor.actions.map((a, i) =>
+          i === index ? action : a,
+        );
+        setEditorField("actions", next);
+      });
     },
-    [editor.actions, setEditorField],
+    [editor.actions, setEditorField, withHistory],
   );
 
   const handleActionDelete = useCallback(
     (index: number) => {
-      const next = editor.actions.filter((_, i) => i !== index);
-      setEditorField("actions", next);
+      withHistory(() => {
+        const next = editor.actions.filter((_, i) => i !== index);
+        setEditorField("actions", next);
+      });
     },
-    [editor.actions, setEditorField],
+    [editor.actions, setEditorField, withHistory],
   );
 
   const handleActionAdd = useCallback(() => {
-    const newAction: AutomationAction = { type: "apply_label", labelId: "" };
-    setEditorField("actions", [...editor.actions, newAction]);
-  }, [editor.actions, setEditorField]);
+    withHistory(() => {
+      const newAction: AutomationAction = { type: "apply_label", labelId: "" };
+      setEditorField("actions", [...editor.actions, newAction]);
+    });
+  }, [editor.actions, setEditorField, withHistory]);
 
   const handleTriggerChange = useCallback(
     (event: string, conditions: string) => {
-      setEditorField("triggerEvent", event);
-      setEditorField("triggerConditions", conditions);
+      withHistory(() => {
+        setEditorField("triggerEvent", event);
+        setEditorField("triggerConditions", conditions);
+      });
     },
-    [setEditorField],
+    [setEditorField, withHistory],
   );
 
   const handleActionsChange = useCallback(
     (actions: AutomationAction[]) => {
-      setEditorField("actions", actions);
+      withHistory(() => {
+        setEditorField("actions", actions);
+      });
     },
-    [setEditorField],
+    [setEditorField, withHistory],
   );
 
   // ── Flow nodes/edges derived from store state ─────────────────────────
@@ -435,12 +470,76 @@ export function AutomationBuilder({
     [setEdges],
   );
 
+  // ── Canvas → store write-back ──────────────────────────────────────────
+  // Deleting a node removes the matching action (or clears conditions for the
+  // condition node). The trigger is marked non-deletable, so it's skipped.
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      if (deleted.length === 0) return;
+      withHistory(() => {
+        for (const node of deleted) {
+          if (node.type === "action") {
+            const idx = Number(node.id.replace("action-", ""));
+            if (!Number.isNaN(idx)) {
+              const next = editor.actions.filter((_, i) => i !== idx);
+              setEditorField("actions", next);
+            }
+          } else if (node.type === "condition") {
+            setEditorField("triggerConditions", "");
+          }
+        }
+      });
+    },
+    [editor.actions, setEditorField, withHistory],
+  );
+
+  // Dragging action nodes reorders them by vertical position in the store.
+  const onNodeDragStop = useCallback(
+    (_: unknown, dragged: Node) => {
+      if (dragged.type !== "action") return;
+      withHistory(() => {
+        const order = nodes
+          .filter((n) => n.type === "action")
+          .sort((a, b) => a.position.y - b.position.y)
+          .map((n) => Number(n.id.replace("action-", "")));
+        if (order.length !== editor.actions.length) return;
+        const reordered = order.map((i) => editor.actions[i]!);
+        setEditorField("actions", reordered);
+      });
+    },
+    [nodes, editor.actions, setEditorField, withHistory],
+  );
+
   const handleSave = useCallback(async () => {
     const success = await saveRule(accountId);
     if (success && onSaveSuccess) {
       onSaveSuccess();
     }
   }, [saveRule, accountId, onSaveSuccess]);
+
+  // ── Keyboard shortcuts (desktop only) ─────────────────────────────────
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only respond when the builder container (or a child) has focus
+      if (!builderRef.current?.contains(document.activeElement)) return;
+
+      const isMod = e.ctrlKey || e.metaKey;
+      if (!isMod) return;
+
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDesktop, undo, redo]);
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -469,7 +568,7 @@ export function AutomationBuilder({
           onTriggerChange={handleTriggerChange}
           onActionsChange={handleActionsChange}
           ruleName={editor.name}
-          onNameChange={(name) => setEditorField("name", name)}
+          onNameChange={(name) => withHistory(() => setEditorField("name", name))}
         />
 
         <div className="flex items-center gap-2 pt-2">
@@ -540,19 +639,43 @@ export function AutomationBuilder({
 
   // Desktop: full ReactFlow canvas
   return (
-    <div className="flex flex-col h-full">
+    <div ref={builderRef} className="flex flex-col h-full">
       {/* Builder header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border-primary bg-bg-secondary/80 backdrop-blur-sm">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <input
             type="text"
             value={editor.name}
-            onChange={(e) => setEditorField("name", e.target.value)}
+            onChange={(e) => {
+              withHistory(() => setEditorField("name", e.target.value));
+            }}
             placeholder="Rule name (e.g. Auto-archive newsletters)"
             className="flex-1 bg-bg-tertiary text-text-primary text-sm px-3 py-1.5 rounded-lg border border-border-primary outline-none focus:border-accent max-w-sm"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Undo / Redo */}
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            icon={<Undo2 size={14} />}
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label="Undo (Ctrl+Z)"
+            title="Undo (Ctrl+Z)"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            icon={<Redo2 size={14} />}
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label="Redo (Ctrl+Y)"
+            title="Redo (Ctrl+Y)"
+          />
+          <div className="w-px h-5 bg-border-primary mx-0.5" role="separator" />
           {/* Add action node */}
           {editor.actions.length < 8 && (
             <Button
@@ -588,6 +711,8 @@ export function AutomationBuilder({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodesDelete={onNodesDelete}
+          onNodeDragStop={onNodeDragStop}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"

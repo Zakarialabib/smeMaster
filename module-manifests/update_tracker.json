@@ -1,0 +1,15 @@
+{
+  "id": "update_tracker",
+  "name": "Update Tracker",
+  "description": "Crash counting, version tracking, rollback detection. Reads/writes last_version.txt, crash_count.txt, last_successful_version.txt in app data directory.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

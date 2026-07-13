@@ -257,20 +257,20 @@ export default function UpdateNotification({ updater, onDismiss }: UpdateNotific
           disabled={state.checking || state.downloading}
           className="bg-bg-tertiary text-text-primary border border-border-primary"
         >
-          <RefreshCw className="h-4 w-4 mr-1.5" />
+          <RefreshCw className="h-4 w-4 me-1.5" />
           {t("updater.checkNow", "Check Now")}
         </Button>
 
         {hasUpdate && !state.downloading && !state.readyToInstall && (
           <Button variant="primary" onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-1.5" />
+            <Download className="h-4 w-4 me-1.5" />
             {t("updater.download", "Update Now")}
           </Button>
         )}
 
         {state.readyToInstall && (
           <Button variant="primary" onClick={handleInstall}>
-            <Download className="h-4 w-4 mr-1.5" />
+            <Download className="h-4 w-4 me-1.5" />
             {t("updater.installRestart", "Install & Restart")}
           </Button>
         )}

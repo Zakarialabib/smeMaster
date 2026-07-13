@@ -23,7 +23,6 @@ describe("Onboarding types — constants", () => {
       campaigns: false,
       calendar: false,
       ai: false,
-      sync: false,
     });
   });
 

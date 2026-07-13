@@ -9,6 +9,8 @@ export type ActionNodeData = Node<
     action: AutomationAction;
     onUpdate: (index: number, action: AutomationAction) => void;
     onDelete: (index: number) => void;
+    /** True when the action is missing a required parameter (validation). */
+    invalid?: boolean;
   },
   "action"
 >;
@@ -28,10 +30,15 @@ function getActionMeta(type: string) {
   return ACTION_OPTIONS.find((o) => o.value === type) ?? ACTION_OPTIONS[0]!;
 }
 
+/** Actions that require a non-empty parameter to be valid. */
+export function actionRequiresParam(type: string): string | null {
+  return getActionMeta(type).paramKey;
+}
+
 export const ActionNode = memo(function ActionNode({
   data,
 }: NodeProps<ActionNodeData>) {
-  const { index, action, onUpdate, onDelete } = data;
+  const { index, action, onUpdate, onDelete, invalid } = data;
   const meta = getActionMeta(action.type);
 
   const handleTypeChange = useCallback(
@@ -57,13 +64,13 @@ export const ActionNode = memo(function ActionNode({
   }, [index, onDelete]);
 
   return (
-    <div className="rounded-xl border-2 border-success/60 bg-bg-secondary shadow-lg min-w-[220px]">
+    <div className={`rounded-xl border-2 ${invalid ? "border-danger" : "border-success/60"} bg-bg-secondary shadow-lg min-w-[220px]`}>
       <Handle type="target" position={Position.Top} className="!bg-success" />
       <Handle type="source" position={Position.Bottom} className="!bg-success" />
       <div className="flex items-center justify-between p-3 border-b border-border-primary">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-success/15 flex items-center justify-center">
-            <span className="text-[10px] font-bold text-success">{index + 1}</span>
+          <div className={`w-6 h-6 rounded-lg ${invalid ? "bg-danger/15" : "bg-success/15"} flex items-center justify-center`}>
+            <span className={`text-[10px] font-bold ${invalid ? "text-danger" : "text-success"}`}>{index + 1}</span>
           </div>
           <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">
             Action
@@ -82,7 +89,7 @@ export const ActionNode = memo(function ActionNode({
         <select
           value={action.type}
           onChange={handleTypeChange}
-          className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-success"
+          className={`w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border outline-none ${invalid ? "border-danger focus:border-danger" : "border-border-primary focus:border-success"}`}
         >
           {ACTION_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -98,8 +105,14 @@ export const ActionNode = memo(function ActionNode({
             value={(action[meta.paramKey] as string) ?? ""}
             onChange={handleParamChange}
             placeholder={meta.paramLabel ?? ""}
-            className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-success"
+            className={`w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border outline-none ${invalid ? "border-danger focus:border-danger" : "border-border-primary focus:border-success"}`}
           />
+        )}
+
+        {invalid && (
+          <p className="text-[0.625rem] text-danger" role="alert">
+            Required field missing
+          </p>
         )}
       </div>
     </div>

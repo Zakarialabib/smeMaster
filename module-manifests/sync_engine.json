@@ -1,0 +1,21 @@
+{
+  "id": "sync_engine",
+  "name": "CRDT Sync Engine",
+  "description": "Automerge CRDT-based multi-device synchronization. Document management (create, load, save, merge), peer discovery, protocol encoding/decoding, transport layer, and storage backend. Enables offline-first collaborative data sync.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Persists sync document state", "required": true },
+    { "module": "device", "reason": "Peer device management", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "sync:device-*", "description": "Device sync lifecycle", "direction": "publishes" },
+    { "name": "sync:document-conflict", "description": "Document merge conflict", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

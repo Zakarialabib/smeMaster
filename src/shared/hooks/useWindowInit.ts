@@ -128,5 +128,17 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
     }
   }, [colorTheme, theme]);
 
+  // Sync surface layer (flat | glass) to <html> for CSS gating
+  const surface = useThemeStore((s) => s.surface);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-surface", surface);
+  }, [surface]);
+
+  // Sync UI density (compact | normal | relaxed) to <html>
+  const density = useThemeStore((s) => s.density);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-density", density);
+  }, [density]);
+
   return { loading, error };
 }

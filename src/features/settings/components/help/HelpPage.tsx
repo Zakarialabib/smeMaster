@@ -66,7 +66,7 @@ export function HelpPage() {
       <div className="flex items-center gap-3 px-5 py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm">
         <button
           onClick={() => navigateToLabel("inbox")}
-          className="p-1.5 -ml-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+          className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
           title="Back to Inbox"
         >
           <ArrowLeft size={18} />

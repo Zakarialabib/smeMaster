@@ -10,7 +10,7 @@ import {
   Settings, UserCircle, PenLine, Bell, Keyboard,
   Sparkles, Filter, Lock, ShieldCheck, HardDrive, Smartphone,
   BarChart3, ClipboardCheck, Info, HelpCircle, Calendar, Code2,
-  MonitorCheck, Laptop, Activity, Trash2,
+  MonitorCheck, Laptop, Activity, Trash2, Cpu,Building2, Flag,
 } from "lucide-react";
 import {
   GeneralTab, ComposingTab, AccountsTab, ShortcutsTab,
@@ -18,7 +18,7 @@ import {
   MailRulesTab, NotificationsTab, PgpTab,
   PresendTab, CalendarTab, DeveloperTab,
   LicenseTab, DeliverabilityTab, FeatureFlagsTab,
-  QueueTab, AccountCleaningTab,
+  QueueTab, AccountCleaningTab, HardwareTab,BusinessProfileTab,
 } from "./tabs";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -30,7 +30,8 @@ export type SettingsTabId =
   | "compliance" | "pgp" | "mail-rules" | "presend"
   | "calendar" | "developer"
   | "license" | "feature-flags"
-  | "queue" | "account-cleaning";
+  | "queue" | "account-cleaning" | "hardware"
+  | "business-profile";
 
 export type SettingsPlatform = "all" | "desktop" | "mobile";
 
@@ -189,6 +190,12 @@ export const tabGroups: SettingsGroup[] = [
         subtitle: "GDPR, CAN-SPAM, disclaimers",
         platform: "desktop",
       },
+      {
+        id: "business-profile",
+        label: "Business Profile",
+        icon: Building2,
+        subtitle: "Company info, ICE, IF, RC, CNSS (Morocco DGI)",
+      },
     ],
   },
   {
@@ -204,10 +211,24 @@ export const tabGroups: SettingsGroup[] = [
         platform: "desktop",
       },
       {
+        id: "hardware",
+        label: "Hardware",
+        icon: Cpu,
+        subtitle: "Printers, scanners, scales, and cash drawers",
+        platform: "desktop",
+      },
+      {
         id: "queue",
         label: "Queue",
         icon: Activity,
         subtitle: "Sync queue, pending operations, retry inspector",
+        platform: "desktop",
+      },
+      {
+        id: "feature-flags",
+        label: "Feature Flags",
+        icon: Flag,
+        subtitle: "Basic vs Pro tiers, usage overrides, progressive disclosure",
         platform: "desktop",
       },
     ],
@@ -250,6 +271,8 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   "feature-flags": FeatureFlagsTab,
   queue: QueueTab,
   "account-cleaning": AccountCleaningTab,
+  hardware: HardwareTab,
+  "business-profile": BusinessProfileTab,
 };
 
 // ── Search Keywords ────────────────────────────────────────────────────────
@@ -274,6 +297,8 @@ export const TAB_KEYWORDS: Record<string, string[]> = {
   queue: ["sync", "pending", "operation", "queue", "retry", "inspector", "fail", "background", "outbox", "send"],
   "account-cleaning": ["clean", "cleanup", "retention", "purge", "archive", "delete", "maintenance", "rule", "schedule", "storage", "old email"],
   license: ["license", "key", "activation", "tier", "trial", "pro", "basic", "upgrade", "subscription", "premium"],
+  "business-profile": ["company", "business", "ice", "tax", "rc", "cnss", "legal", "morocco", "dgi"],
+    "feature-flags": ["feature", "flag", "flags", "tier", "pro", "basic", "override", "beta", "experimental", "rag", "progressive", "disclosure"],
 };
 
 // ── Tab Label (i18n-aware) ─────────────────────────────────────────────────
@@ -282,24 +307,27 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
     general: t("settings.tabs.general"),
     shortcuts: t("settings.tabs.shortcuts"),
-    about: "About & License",
+    about: t("settings.tabs.about"),
     accounts: t("settings.tabs.accounts"),
     composing: t("settings.tabs.composing"),
     "deliverability-dashboard": t("settings.tabs.deliverabilityDashboard"),
-    pairing: "Pairing",
-    backup: "Backup",
-    "help-center": "Help Center",
+    pairing: t("settings.tabs.pairing"),
+    backup: t("settings.tabs.backup"),
+    "help-center": t("settings.tabs.helpCenter"),
     ai: t("search.ai"),
     notifications: t("settings.tabs.notifications"),
     compliance: t("settings.tabs.compliance"),
     pgp: t("settings.tabs.pgp"),
     "mail-rules": t("settings.tabs.mailRules"),
     presend: t("settings.tabs.presend"),
-    calendar: "Calendar",
-    developer: "Developer",
-    queue: "Queue",
-    "account-cleaning": "Account Cleaning",
+    calendar: t("settings.tabs.calendar"),
+    developer: t("settings.tabs.developer"),
+    queue: t("settings.tabs.queue"),
+    "account-cleaning": t("settings.tabs.accountCleaning"),
     license: t("settings.tabs.license"),
+    hardware: t("settings.tabs.hardware"),
+    "business-profile": t("settings.tabs.businessProfile"),
+    "feature-flags": t("settings.tabs.featureFlags"),
   };
   return labels[id] ?? id;
 }
@@ -327,6 +355,7 @@ export function getSectionSubtitle(id: string): string | undefined {
     queue: "Outgoing send queue, background sync operations, retry inspector, and pause/resume controls",
     "account-cleaning": "Mailbox cleanup rules, retention policies, scheduled maintenance, and cleanup history",
     license: "Manage your license tier, activate a Pro key, or start a free trial",
+    "feature-flags": "Toggle Basic vs Pro tiers, override usage counts, and preview progressive disclosure of locked features",
   };
   return subtitles[id];
 }

@@ -1,0 +1,24 @@
+{
+  "id": "events",
+  "name": "EventBus & AppEvents",
+  "description": "Central broadcast::channel EventBus (10k capacity), typed AppEvent enum with 20+ variants covering init lifecycle, sync lifecycle, push notifications, widgets, composer, share, Kotlin native events, email/contact/task domain events, CRDT sync engine events, heartbeat, and cache invalidation. Includes native-forwarded event registry.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [
+    { "name": "init:complete", "description": "Init complete", "direction": "publishes" },
+    { "name": "init:ready", "description": "System ready", "direction": "publishes" },
+    { "name": "sync:*", "description": "Sync lifecycle events", "direction": "publishes" },
+    { "name": "push:*", "description": "Push notification events", "direction": "publishes" },
+    { "name": "email:received", "description": "New email received", "direction": "publishes" },
+    { "name": "contact:updated", "description": "Contact updated", "direction": "publishes" },
+    { "name": "task:completed", "description": "Task completed", "direction": "publishes" },
+    { "name": "core-event", "description": "Bridge to WebView", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": true
+}

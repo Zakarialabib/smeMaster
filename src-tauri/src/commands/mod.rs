@@ -1,5 +1,7 @@
 pub mod ai;
+pub mod accounting;
 pub mod account_import;
+pub mod wallet;
 pub mod calendar;
 pub mod comms;
 pub mod compliance;
@@ -11,6 +13,7 @@ pub mod deliverability;
 pub mod discovery;
 pub mod idle;
 pub mod imap;
+pub mod invoicing;
 pub mod logging;
 pub mod security;
 pub mod settings;
@@ -21,8 +24,10 @@ pub mod system;
 pub mod system_android;
 #[cfg(desktop)]
 pub mod system_desktop;
+pub mod pos;
 pub mod tasks;
 pub mod updater_commands;
+pub mod onboarding_cmds;
 pub mod workflows;
 
 pub use idle::IdleRegistry;
@@ -170,6 +175,14 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::orchestrator::gating::get_tool_state,
             crate::orchestrator::gating::apply_tool_state,
 
+            // === commands::onboarding_cmds (6 commands) ===
+            onboarding_cmds::db_save_onboarding_step,
+            onboarding_cmds::db_get_onboarding_progress,
+            onboarding_cmds::db_seed_demo_preset,
+            onboarding_cmds::db_finalize_onboarding,
+            onboarding_cmds::db_has_email_accounts,
+            onboarding_cmds::db_get_tool_status,
+
             // === pairing (3 commands) ===
             crate::pairing::generate_qr_token,
             crate::pairing::verify_device_token,
@@ -220,6 +233,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_delete_model,
             ai::ai_get_vector_db_path,
             ai::ai_reset_vector_db,
+            ai::ai_get_email_chunks,
+            ai::ai_insert_provider_vectors,
             ai::db_get_ai_cache,
             ai::db_set_ai_cache,
             ai::db_delete_ai_cache,
@@ -361,6 +376,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             comms::db_create_template_category,
             comms::db_update_template_category,
             comms::db_get_template_full,
+            comms::db_create_campaign_template,
+            comms::db_reorder_templates,
 
             // === commands::compliance (13 commands) ===
             compliance::db_list_compliance_profiles,
@@ -465,6 +482,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             contacts::db_delete_dynamic_segment,
             contacts::db_update_dynamic_segment_refresh,
             contacts::db_get_engagement_data_for_contact,
+            contacts::db_list_import_history,
 
             // === commands::core (58 commands) ===
             core::db_get_account,
@@ -541,6 +559,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crm::db_dashboard_campaigns_open_rate,
             crm::db_dashboard_campaigns_click_rate,
             crm::db_list_campaigns,
+            crm::db_list_campaigns_by_contact,
             crm::db_list_backup_schedules,
             crm::db_insert_analytics_snapshot,
             crm::db_update_campaign_ab_test_config,
@@ -707,6 +726,56 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             imap::imap_batch_mark_read,
             imap::imap_mark_read,
 
+            // === commands::invoicing (33 commands) ===
+            invoicing::db_list_invoices,
+            invoicing::db_get_invoice,
+            invoicing::db_get_invoice_with_items,
+            invoicing::db_create_invoice,
+            invoicing::db_update_invoice,
+            invoicing::db_delete_invoice,
+            invoicing::db_add_invoice_item,
+            invoicing::db_remove_invoice_item,
+            invoicing::db_update_invoice_status,
+            invoicing::db_list_clients,
+            invoicing::db_get_client,
+            invoicing::db_create_client,
+            invoicing::db_update_client,
+            invoicing::db_delete_client,
+            invoicing::db_get_company_settings,
+            invoicing::db_upsert_company_settings,
+            invoicing::db_delete_company_settings,
+            invoicing::db_list_categories,
+            invoicing::db_get_category,
+            invoicing::db_create_category,
+            invoicing::db_update_category,
+            invoicing::db_delete_category,
+            invoicing::db_list_items,
+            invoicing::db_get_item,
+            invoicing::db_create_item,
+            invoicing::db_update_item,
+            invoicing::db_delete_item,
+            invoicing::db_get_company,
+            invoicing::db_update_company,
+            invoicing::db_list_companies,
+            invoicing::db_create_company,
+            invoicing::db_generate_invoice_documents,
+            invoicing::db_send_invoice,
+            invoicing::db_calculate_invoice,
+            invoicing::db_list_low_stock,
+
+            // === commands::accounting (5 commands) ===
+            accounting::db_ensure_chart_of_accounts,
+            accounting::db_list_chart_of_accounts,
+            accounting::db_list_journal_entries,
+            accounting::db_post_invoice_journal,
+            accounting::db_get_profit_and_loss,
+
+            // === commands::wallet (4 commands) ===
+            wallet::db_ensure_wallet,
+            wallet::db_get_wallet,
+            wallet::db_credit_wallet,
+            wallet::db_debit_wallet,
+
             // === commands::logging (4 commands) ===
             logging::get_logs,
             logging::clear_logs,
@@ -797,6 +866,20 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             updater_commands::mark_successful_launch,
             updater_commands::get_app_version,
 
+            // === pos (11 commands) ===
+            pos::pos_get_hardware_configs,
+            pos::pos_test_printer,
+            pos::pos_print_receipt,
+            pos::pos_open_cash_drawer,
+            pos::db_list_products,
+            pos::db_search_products,
+            pos::db_create_product,
+            pos::db_update_product,
+            pos::db_delete_product,
+            pos::db_record_sale,
+            pos::db_list_sales,
+            pos::db_list_sale_items,
+
             // === commands::workflows (28 commands) ===
             workflows::db_dashboard_workflow_rules_total,
             workflows::db_dashboard_workflow_rules_active,
@@ -835,6 +918,10 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             workflows::db_delete_cleanup_rule,
             workflows::db_list_cleanup_history,
             workflows::db_execute_cleanup_rule,
+
+            // === Workflow Execution Logs ===
+            workflows::db_list_workflow_execution_logs,
+            workflows::db_count_workflow_execution_logs,
 
             // === reset_app (defined in this file) ===
             reset_app,

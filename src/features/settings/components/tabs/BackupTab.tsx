@@ -403,7 +403,7 @@ export default function BackupTab() {
                   </p>
                   <p className="text-[0.625rem] text-text-tertiary truncate mt-0.5">{filePath}</p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0 ml-2">
+                <div className="flex items-center gap-1 shrink-0 ms-2">
                   <Button
                     variant="ghost"
                     size="sm"

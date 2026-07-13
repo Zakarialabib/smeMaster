@@ -125,7 +125,7 @@ describe("tasks DB service", () => {
         "db_update_task",
         expect.objectContaining({
           id: "t1",
-          updates: expect.objectContaining({
+          request: expect.objectContaining({
             title: "Updated",
             priority: "high",
           }),

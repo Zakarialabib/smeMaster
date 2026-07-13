@@ -1,0 +1,19 @@
+{
+  "id": "tasks",
+  "name": "Task Management",
+  "description": "Task CRUD with priorities, due dates, recurrence rules, multiple views (list/kanban/calendar), and linked workflow support. Backed by db::tasks data access layer.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["tasks"],
+  "dependencies": [
+    { "module": "db", "reason": "Tasks data access", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "task:completed", "description": "Task marked completed", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

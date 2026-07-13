@@ -1,5 +1,6 @@
 {
   "nav": {
+    "more": "Altro",
     "smartFolders": "Cartelle intelligenti",
     "labels": "Etichette",
     "compose": "Scrivi",
@@ -13,29 +14,11 @@
     "nameExample": "es. Non letti dal capo",
     "addSmartFolder": "Aggiungi cartella intelligente",
     "addLabel": "Aggiungi etichetta",
-    "addYourFirstLabel": "Aggiungi la tua prima etichetta"
-  ,
-    "business": "Azienda",
+    "addYourFirstLabel": "Aggiungi la tua prima etichetta",
     "mail": "Posta",
-    "people": "Persone",
-    "automation": "Automazione",
-    "vault": "Caveau",
     "settings": "Impostazioni",
-    "inbox": "Posta in arrivo",
-    "starred": "Con stella",
-    "snoozed": "Posticipate",
-    "sent": "Inviati",
-    "drafts": "Bozze",
-    "trash": "Cestino",
-    "spam": "Spam",
-    "allMail": "Tutti i messaggi",
-    "attachments": "Allegati",
-    "about": "Informazioni e licenza",
-    "dashboard": "Pannello",
-    "crm": "CRM",
     "label": "Etichetta",
-    "noItems": "Nessun elemento",
-    "aiAssistant": "Assistente AI"
+    "noItems": "Nessun elemento"
   },
   "onboarding": {
     "step1_title": "Benvenuto in SMEMaster",
@@ -146,9 +129,9 @@
     "threadActions": "Azioni conversazione",
     "archive": "Archivia",
     "snooze": "Posticipa",
-    "all": "[TODO] email.all",
-    "unread": "[TODO] email.unread",
-    "read": "[TODO] email.read"
+    "all": "All",
+    "unread": "Unread",
+    "read": "Read"
   },
   "actionBar": {
     "reply": "Rispondi",
@@ -209,7 +192,7 @@
     "expandToFullComposer": "Espandi al compositore completo",
     "regenerateAiDraft": "Rigenera bozza AI",
     "clearAiDraft": "Cancella bozza AI",
-    "via": "[TODO] composer.via",
+    "via": "Via",
     "insertTemplate": "Inserisci template",
     "templates": "Template"
   },
@@ -242,9 +225,17 @@
       "deliverabilityDashboard": "Dashboard consegnabilità",
       "presend": "Pre-invio",
       "bounce": "Rimbalzi",
-      "license": "Licenza"
+      "license": "Licenza",
+      "developer": "Sviluppatore",
+      "accountCleaning": "Pulizia account",
+      "hardware": "Hardware",
+      "businessProfile": "Business Profile"
     },
     "appearance": "Aspetto",
+    "surface": "Surface",
+    "surfaceFlat": "Piana",
+    "surfaceGlass": "Vetro smerigliato",
+    "surfaceGlassHint": "Orbi in vetro smerigliato e sfocatura per un look più ricco.",
     "theme": "Tema",
     "light": "Chiaro",
     "dark": "Scuro",
@@ -451,7 +442,8 @@
       "readability": "Leggibilità",
       "readingTime": "Tempo di lettura",
       "suggestions": "Suggerimenti",
-      "wordCount": "Conteggio parole"
+      "wordCount": "Conteggio parole",
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
     },
     "contactsDescription": "I contatti vengono aggiunti automaticamente quando invii o ricevi email. Modifica i nomi visualizzati o rimuovi contatti qui sotto.",
     "subscriptionsDescription": "Visualizza tutti i mittenti di newsletter e promozioni rilevati. Disiscriviti usando POST RFC 8058, mailto o browser di fallback.",
@@ -611,9 +603,9 @@
       "results": "Risultati",
       "runChecklist": "Esegui checklist",
       "subjectPlaceholder": "Oggetto...",
-      "description": "[TODO] settings.presend.description",
-      "fromPlaceholder": "[TODO] settings.presend.fromPlaceholder",
-      "bodyPlaceholder": "[TODO] settings.presend.bodyPlaceholder"
+      "description": "Run a pre-send checklist to catch common mistakes before sending",
+      "fromPlaceholder": "sender@example.com",
+      "bodyPlaceholder": "Paste email body here..."
     },
     "previewTemplate": "Anteprima template",
     "recentlyUsed": "Usati di recente",
@@ -708,7 +700,162 @@
     "pushNotifications": "Notifiche push",
     "searchPlaceholder": "Cerca impostazioni...",
     "noResults": "Nessun risultato",
-    "licenseCurrent": "Licenza corrente"
+    "licenseCurrent": "Licenza corrente",
+    "syncStatusSyncing": "Syncing...",
+    "providerLmstudioDescription": "Connect to a local LM Studio server (OpenAI-compatible, no API key). Supports chat + embeddings for RAG.",
+    "providerOpenrouterDescription": "Route through OpenRouter for access to hundreds of models from one API key.",
+    "lmstudioUrlPlaceholder": "http://localhost:1234",
+    "lmstudioModelPlaceholder": "e.g. llama-3.2-3b-instruct",
+    "lmstudioDetecting": "Detecting…",
+    "lmstudioDetect": "Auto-Detect Models",
+    "lmstudioConnected": "LM Studio connected",
+    "subtabProviderModels": "Provider & Models",
+    "subtabFeatures": "AI Features",
+    "subtabKnowledgeBase": "Knowledge Base",
+    "statusProviderConnected": "Provider Connected",
+    "statusEmbeddingSet": "Embedding Set",
+    "statusIndexed": "Indexed",
+    "statusReady": "Ready",
+    "statusNotSet": "Not set",
+    "statusLoading": "Checking…",
+    "embeddingModel": "Embedding Model",
+    "embeddingModelPlaceholder": "e.g. text-embedding-nomic-embed-text-v1.5",
+    "embeddingModelSelect": "Detected models…",
+    "embeddingModelHint": "Load a dedicated embedding model in LM Studio (separate from the chat model) and enter its exact name. Use Test embedding to confirm it returns vectors.",
+    "testEmbedding": "Test embedding",
+    "embeddingDims": "Embedding dimension: {{dims}}",
+    "embeddingTestFailed": "Embedding test failed",
+    "knowledgeBase": "Knowledge Base",
+    "knowledgeBaseDescription": "Index your emails, attachments, and vault items into a local vector store for semantic search and the AI knowledge assistant.",
+    "enableLocalRag": "Enable Knowledge Base",
+    "enableLocalRagDescription": "Allow local semantic search and the AI knowledge assistant",
+    "knowledgeBaseDisabledHint": "Enable the Knowledge Base above to configure the embedding engine, indexing, and vector storage.",
+    "embeddingEngine": "Embedding Engine",
+    "embeddingEngineDescription": "Choose how text is turned into vectors for semantic search.",
+    "embeddingSourceDescription": "Where query embeddings are generated",
+    "embeddingSource": "Embedding Source",
+    "engineAuto": "Auto",
+    "engineProvider": "Provider (LM Studio)",
+    "engineBge": "On-device BGE",
+    "engineProviderHint": "Uses your AI provider's embeddings API (LM Studio at http://localhost:1234/v1). Configure the embedding model in Provider & Models.",
+    "engineBgeHint": "Uses the on-device BGE-small model. Download and load it, then index your data.",
+    "engineAutoHint": "Automatically uses provider embeddings when available, otherwise falls back to the local BGE-small model.",
+    "providerEmbeddings": "Provider Embeddings",
+    "providerEmbeddingsDescription": "Status of the LM Studio embedding model used for indexing and search.",
+    "providerEmbeddingsRequiresLmstudio": "Provider embeddings require the LM Studio provider. Switch the AI Provider to Local AI (LM Studio) in Provider & Models.",
+    "activeProvider": "Active provider",
+    "kbNotSet": "Not set",
+    "bgeModelDescription": "Download and load the BGE-small-en-v1.5 embedding model locally.",
+    "modelStatus": "Model Status",
+    "downloadBge": "Download BGE-Small",
+    "kbLoading": "Loading…",
+    "loadModel": "Load Model",
+    "localModelsFolder": "Local Models Folder",
+    "localModelsFolderDescription": "Downloaded embedding models are stored here so they don't clutter the shared HF cache.",
+    "kbLocation": "Location",
+    "openFolder": "Open folder",
+    "removeModel": "Remove model",
+    "knowledgeBaseIndexing": "Knowledge Base Indexing",
+    "knowledgeBaseIndexingDescription": "Index your emails, attachments, and vault documents for semantic search.",
+    "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
+    "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",
+    "lastIndexed": "Last Indexed",
+    "indexing": "Indexing…",
+    "indexAllData": "Index All Data",
+    "reindex": "Re-index",
+    "vectorDatabase": "Vector Database",
+    "vectorDatabaseDescription": "LanceDB stores embedding vectors locally for semantic search. No external service required.",
+    "vectorEngine": "Engine",
+    "storageLocation": "Storage Location",
+    "clearIndexConfirm": "Clear the entire knowledge base? This removes all indexed vectors. Re-index to rebuild.",
+    "clearIndex": "Clear index",
+    "textSplitter": "Text Splitter & Chunking",
+    "textSplitterDescription": "How documents are split before embedding. Applies on the next index.",
+    "splitter": "Splitter",
+    "splitterParagraph": "Paragraph",
+    "splitterSentence": "Sentence",
+    "splitterToken": "Token",
+    "chunkSize": "Chunk Size (chars)",
+    "chunkOverlap": "Chunk Overlap (chars)",
+    "kbHelpWhy": "Local RAG keeps your data on-device. Embeddings can be generated locally using the BGE-small model (no API keys needed, no data leaves your machine) or via your AI provider's embeddings API (LM Studio) for higher accuracy without downloading a model.",
+    "kbHelpHow": "Choose your embedding engine above — provider (LM Studio) or on-device BGE-small. Set the embedding model (if using a provider), then index your data into LanceDB. The AI Assistant page, thread summaries, and smart replies all use RAG context when enabled.",
+    "kbHelpWhen": "Perfect for offline-first usage, sensitive data that cannot leave your device, or when you want semantic search without cloud API costs. Provider embeddings are ideal if you already have an AI provider configured and want better accuracy.",
+    "providerLmstudio": "Local AI (LM Studio)",
+    "downloading": "Downloading",
+    "loading": "Loading",
+    "providerOpenrouter": "OpenRouter",
+    "livePreviewUndoAvailable": "Undo available",
+    "livePreviewRemaining": "remaining",
+    "setupContentQuality": "Content Quality",
+    "setup": {
+      "sending": {
+        "desc": "Undo delay & send options"
+      },
+      "behavior": {
+        "desc": "Reply mode & read tracking"
+      },
+      "signatures": {
+        "desc": "Add your email signature"
+      },
+      "templates": {
+        "desc": "Save email templates"
+      },
+      "quickReplies": {
+        "desc": "Pre-written responses"
+      },
+      "contentQuality": {
+        "desc": "AI-powered content check"
+      }
+    },
+    "undoSendDelaySet": "Undo send delay set to",
+    "signaturesSelectAccountFirst": "Please select an account first.",
+    "signaturesSavedToast": "AI signature saved to your account.",
+    "stat": {
+      "undoSend": "Undo Send",
+      "replyMode": "Reply Mode",
+      "markAsRead": "Mark as Read",
+      "sendArchive": "Send & Archive"
+    },
+    "composing": {
+      "setupGuide": "Setup Guide",
+      "step": "Step",
+      "of": "of"
+    },
+    "livePreview": "Live Preview",
+    "livePreviewDesc": "See how your email renders with the current composing settings. Toggle options below to reflect changes in real time.",
+    "sendingDesc": "Configure how emails are dispatched, including undo delay and archive behavior.",
+    "help": {
+      "sending": {
+        "how": "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server.",
+        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks."
+      },
+      "behavior": {
+        "why": "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically.",
+        "how": "Reply mode sets whether Reply goes to sender only or all recipients. Mark-as-read can be instant, delayed, or manual depending on your reading workflow.",
+        "when": "Set reply mode if you frequently need to reply-all. Choose instant read marking for rapid triage, or manual for careful inbox management."
+      },
+      "signatures": {
+        "why": "Signatures provide professional consistency and can include legal disclaimers, contact info, and brand elements.",
+        "how": "Signatures are automatically appended to new emails and replies. You can create multiple signatures and set defaults per account.",
+        "when": "Use for all business correspondence, client emails, and any communication requiring a professional footer."
+      },
+      "templates": {
+        "why": "Templates save time by reusing common email structures with variable placeholders for personalized content.",
+        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups."
+      },
+      "quickReplies": {
+        "why": "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency.",
+        "how": "Saved snippets appear in the quick reply bar. Click to insert them into your reply with a single tap.",
+        "when": "Perfect for support teams, sales responses, and any situation where you answer the same questions repeatedly."
+      },
+      "contentQuality": {
+        "why": "Content quality analysis helps you write clearer, more effective emails by catching readability issues, spam triggers, and tone mismatches before you send.",
+        "how": "The analyzer checks your composition in real time: readability grade, spam score, sentiment, and engagement predictions.",
+        "when": "Enable for all outbound email or toggle per-message from the composer toolbar. Review suggestions before hitting send."
+      }
+    },
+    "behaviorDesc": "Control default reply mode, mark-as-read behavior, and reading workflow preferences.",
+    "signaturesGenerateAi": "Generate with AI"
   },
   "addAccount": {
     "easySetup": "Configurazione facile (IMAP + password app)",
@@ -785,6 +932,8 @@
     "markAsVip": "Segna come VIP",
     "addToContacts": "Aggiungi ai contatti",
     "added": "Aggiunto!",
+    "extractFromEmail": "contact.extractFromEmail",
+    "extractNone": "contact.extractNone",
     "editName": "Modifica nome",
     "notes": "Note",
     "addANote": "Aggiungi una nota...",
@@ -796,6 +945,14 @@
     "noSavedSegments": "Nessun segmento salvato",
     "noMatchingContacts": "Nessun contatto corrispondente",
     "recentActivity": "Attività recente",
+    "relations": "Relations",
+    "company": "Company",
+    "linkedCompany": "Linked company",
+    "viewCompany": "View company",
+    "noCompany": "No company linked",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet",
+    "noCampaignsRel": "Not in any campaign",
     "refreshSegment": "Aggiorna segmento",
     "activity": "Attività",
     "files": "File",
@@ -808,7 +965,10 @@
       "createdPrefix": "Creato {date}",
       "openedLabel": "Aperto {date}",
       "clickedLabel": "Cliccato {date}"
-    }
+    },
+    "loading": "contact.loading",
+    "campaigns": "contact.campaigns",
+    "opened": "contact.opened"
   },
   "calendar": {
     "gregorian": "Gregoriano",
@@ -841,14 +1001,151 @@
     "showCampaigns": "Mostra campagne",
     "showCampaignsDesc": "Mostra campagne marketing pianificate e inviate.",
     "showScheduledEmails": "Mostra email programmate",
-    "showScheduledEmailsDesc": "Mostra email programmate per l'invio futuro."
+    "showScheduledEmailsDesc": "Mostra email programmate per l'invio futuro.",
+    "noEvents": "Nessun evento in questo periodo",
+    "connectAccountBtn": "calendar.connectAccountBtn",
+    "title": "calendar.title",
+    "retry": "calendar.retry",
+    "noEventsHint": "calendar.noEventsHint",
+    "createEvent": "calendar.createEvent"
   },
   "tasks": {
     "tasks": "Attività",
     "dueDate": "Data scadenza",
-    "title": "Attività"
+    "title": "Attività",
+    "search": "Cerca...",
+    "toggleFilters": "Mostra filtri",
+    "newTask": "Nuova attività",
+    "mobileQuickAddPlaceholder": "Aggiunta rapida attività...",
+    "addDetails": "Aggiungi dettagli",
+    "openFullForm": "Apri modulo completo",
+    "createWithDetails": "Crea attività con tutti i dettagli",
+    "clearSelection": "Cancella selezione",
+    "closeQuickAdd": "Chiudi aggiunta rapida",
+    "addTask": "Aggiungi attività",
+    "markComplete": "Contrassegna come completata",
+    "markIncomplete": "Contrassegna come non completata",
+    "undo": "Annulla",
+    "flag": "Contrassegna",
+    "unflag": "Rimuovi contrassegno",
+    "delete": "Elimina",
+    "linkedToEmailThread": "Collegata al thread email",
+    "subtasks": "Sottoattività",
+    "recurring": "Ricorrente",
+    "unableToLoad": "Impossibile caricare le attività",
+    "failedToLoad": "Caricamento attività fallito",
+    "retry": "Riprova",
+    "tasksList": "Elenco attività",
+    "taskCreated": "Attività creata",
+    "hasBeenAdded": "è stata aggiunta.",
+    "failedToCreate": "Creazione attività fallita",
+    "tasksCompleted": "Attività completate",
+    "tasksDone": "attività completate.",
+    "someFailed": "Alcune attività sono fallite",
+    "couldNotComplete": "attività non completate.",
+    "tasksDeleted": "Attività eliminate",
+    "someDeletionsFailed": "Alcune eliminazioni sono fallite",
+    "taskCompleted": "Attività completata",
+    "wayToGo": "Ben fatto!",
+    "failedToUpdateTask": "Aggiornamento attività fallito",
+    "failedToReschedule": "Riprogrammazione attività fallita",
+    "complete": "Completa",
+    "empty": {
+      "noTasksTitle": "Nessuna attività per ora",
+      "noTasksSubtitleList": "Sei in pari! Aggiungi un'attività per iniziare.",
+      "noTasksSubtitleKanban": "Aggiungi la tua prima attività per iniziare con Kanban",
+      "noTasksSubtitleCalendar": "Aggiungi un'attività con una scadenza per vederla sul calendario",
+      "noTasksSubtitleAgenda": "Il tuo agenda è vuoto. Aggiungi un'attività per iniziare.",
+      "addFirstTask": "Aggiungi la tua prima attività",
+      "filteredTitle": "Nessuna attività corrisponde ai filtri",
+      "filteredSubtitle": "Prova a regolare le impostazioni dei filtri per vedere più attività.",
+      "addTaskInstead": "Aggiungi un'attività invece",
+      "noResultsTitle": "Nessuna attività trovata",
+      "noResultsSubtitle": "Prova una ricerca diversa o cancella i filtri.",
+      "viewEmptyTitleKanban": "Nessuna attività nella vista Kanban",
+      "viewEmptyTitleCalendar": "Nessuna attività sul calendario",
+      "viewEmptyTitleAgenda": "L'agenda è vuoto",
+      "viewEmptyTitleList": "Nessuna attività da visualizzare",
+      "viewEmptySubtitle": "Aggiungi un'attività o passa a una vista diversa.",
+      "switchToList": "Passa alla vista elenco",
+      "searchEmptyTitle": "Nessuna attività corrispondente",
+      "searchEmptySubtitle": "Prova parole diverse o controlla l'ortografia.",
+      "clearSearch": "Cancella ricerca",
+      "defaultTitle": "Qui non c'è nulla",
+      "defaultSubtitle": "Aggiungi un'attività per iniziare.",
+      "defaultAction": "Aggiungi attività",
+      "clearFilters": "tasks.empty.clearFilters",
+      "addTask": "tasks.empty.addTask"
+    },
+    "tasksArchived": "tasks.tasksArchived",
+    "disableReminders": "tasks.disableReminders",
+    "enableReminders": "tasks.enableReminders",
+    "archiveCompleted": "tasks.archiveCompleted"
   },
   "campaign": {
+    "editor": {
+      "title": "Editor e-mail",
+      "addBlock": "Aggiungi blocco",
+      "blocks": "Blocchi",
+      "heading": "Titolo",
+      "paragraph": "Paragrafo",
+      "button": "Pulsante",
+      "spacer": "Spaziatore",
+      "duplicate": "Duplica",
+      "delete": "Elimina",
+      "configure": "Configura",
+      "undo": "Annulla",
+      "redo": "Ripeti",
+      "preview": "Anteprima",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "noContent": "Nessun contenuto",
+      "insertImage": "Inserisci immagine",
+      "fromVault": "Dal Vault",
+      "imageAlt": "Testo alternativo",
+      "linkUrl": "URL link",
+      "align": "Allineamento",
+      "left": "Sinistra",
+      "center": "Centro",
+      "right": "Destra",
+      "bgColor": "Sfondo",
+      "textColor": "Colore testo",
+      "borderRadius": "Raggio bordi",
+      "width": "Larghezza",
+      "height": "Altezza",
+      "thickness": "Spessore",
+      "fontSize": "Dimensione font",
+      "fontWeight": "Spessore",
+      "fontFamily": "Font",
+      "fontFamilySans": "Sans-serif",
+      "fontFamilySerif": "Serif",
+      "fontFamilyMono": "Monospace",
+      "padding": "Spaziatura",
+      "subject": "Oggetto",
+      "generateSubjects": "Genera oggetti",
+      "writeBody": "Scrivi corpo",
+      "rewrite": "Riscrivi",
+      "changeTone": "Cambia tono",
+      "translate": "Traduci",
+      "aiPowered": "Copilot IA",
+      "aiNoProvider": "Collega un provider IA locale in Impostazioni per attivare il copilot",
+      "insertBlocks": "Inserisci come blocchi",
+      "apply": "Applica",
+      "templateName": "Nome modello",
+      "saveAsTemplate": "Salva come modello",
+      "gallery": "Modelli",
+      "pickTemplate": "Scegli un modello",
+      "useTemplate": "Usa modello",
+      "fullWidth": "Larghezza piena",
+      "cardTitle": "Title",
+      "cardBody": "Description",
+      "cardButton": "Button text",
+      "cardImage": "Add image",
+      "leftColumn": "Left column",
+      "rightColumn": "Right column",
+      "gap": "Gap",
+      "lineHeight": "Line height"
+    },
     "campaigns": "Campagne",
     "newCampaign": "Nuova campagna",
     "noCampaigns": "Nessuna campagna",
@@ -863,7 +1160,6 @@
     "noTemplates": "Nessun modello trovato",
     "templatePreviewContent": "Il contenuto dell'email apparirà qui",
     "campaignName": "Nome campagna",
-    "selectTemplate": "Seleziona modello",
     "campaignSummary": "Riepilogo campagna",
     "noTemplate": "Nessuno (testo semplice)",
     "creating": "Creazione...",
@@ -881,13 +1177,9 @@
     "noContactGroupsYet": "Ancora nessun gruppo di contatti",
     "noSegmentsYet": "Ancora nessun segmento",
     "abTesting": "Test A/B",
-    "abTestingDesc": "Prova due varianti per trovare la migliore",
     "subjectAPlaceholder": "Oggetto A",
-    "bodyAPlaceholder": "Corpo A (HTML)",
     "subjectBPlaceholder": "Oggetto B",
-    "bodyBPlaceholder": "Corpo B (HTML)",
     "splitRatio": "Rapporto di divisione",
-    "testDuration": "Durata test",
     "sendSchedule": "Programma di invio",
     "now": "Ora",
     "later": "Dopo",
@@ -988,7 +1280,7 @@
     "importParsing": "Analisi in corso...",
     "confirmImport": "Conferma importazione",
     "deleteConfirm": "Sei sicuro di voler eliminare la chiave",
-    "userId": "[TODO] pgp.userId"
+    "userId": "User ID"
   },
   "common": {
     "save": "Salva",
@@ -1092,14 +1384,16 @@
     "both": "Entrambi",
     "noContactsFound": "Nessun contatto trovato",
     "taskDetails": "Dettagli attività",
-    "connections": "Connessioni"
+    "connections": "Connessioni",
+    "enabled": "Enabled"
   },
   "quickReply": {
     "title": "Risposte rapide",
     "noReplies": "Nessuna risposta rapida ancora",
     "createInSettings": "Creane una in Impostazioni",
     "shortcut": "Tasto scorciatoia",
-    "body": "Corpo del messaggio"
+    "body": "Corpo del messaggio",
+    "description": "Save pre-written responses for common inquiries to respond faster."
   },
   "snooze": {
     "addPreset": "Aggiungi preimpostazione",
@@ -1139,22 +1433,21 @@
   "dashboard": {
     "title": "Business",
     "compliancePending": "Controlli conformità in sospeso",
-    "recentVaultActivity": "Attività recente archivio",
     "upcomingCampaigns": "Campagne imminenti",
     "followUpReminders": "Promemoria follow-up",
-    "nextBackup": "Prossimo backup programmato",
-    "noComplianceIssues": "Nessun problema conformità in sospeso",
-    "noRecentVaultActivity": "Nessuna attività recente archivio",
-    "noUpcomingCampaigns": "Nessuna campagna imminente",
-    "noFollowUps": "Nessun promemoria follow-up",
-    "noBackupScheduled": "Nessun backup programmato",
     "description": "Panoramica delle tue attività",
-    "emptyTitle": "Benvenuto nella tua dashboard",
-    "emptySubtitle": "Man mano che utilizzi l'app, le tue metriche chiave, le campagne imminenti e i promemoria di follow-up appariranno qui.",
-    "customize": "[TODO] dashboard.customize",
-    "heroTotalContacts": "[TODO] Total Contacts",
-    "heroTrendLabel": "[TODO] vs last 12 weeks",
-    "customizeWidgets": "[TODO] dashboard.customizeWidgets"
+    "customize": "Customize",
+    "heroTotalContacts": "Total Contacts",
+    "heroTrendLabel": "vs last 12 weeks",
+    "customizeWidgets": "Customize widgets",
+    "heroNewContacts": "New Contacts",
+    "heroTasksDue": "Tasks Due",
+    "heroOverdue": "Overdue",
+    "heroCampaigns": "Campaigns",
+    "range": "Range",
+    "density": "Density",
+    "autoRefresh": "Auto-refresh",
+    "refresh": "Refresh"
   },
   "dialog": {
     "snoozeTitle": "Posticipa fino a"
@@ -1302,7 +1595,9 @@
       "downloaded": "Pronto per installare",
       "available": "Aggiornamento disponibile",
       "upToDate": "Aggiornato",
-      "error": "Errore"
+      "error": "Errore",
+      "downloading": "Downloading...",
+      "idle": "Idle"
     },
     "version": {
       "new": "Nuova versione"
@@ -1317,21 +1612,187 @@
     "installRestart": "Installa e riavvia",
     "skip": "Salta"
   },
-  "placeholders": {
-    "loading": "Caricamento in corso...",
-    "addDescription": "Aggiungi una descrizione...",
-    "selectTemplate": "Seleziona un template...",
-    "notificationText": "Testo notifica...",
-    "taskTitlePreset": "Titolo preimpostato...",
-    "saving": "Salvataggio in corso...",
-    "deleting": "Eliminazione in corso...",
-    "searchContacts": "Cerca contatti...",
-    "noActionsConfigured": "Nessuna azione configurata. Aggiungi un'azione da eseguire quando questo trigger si attiva."
-  },
   "lock": {
     "appLocked": "App bloccata",
     "unlockToAccess": "Sblocca per accedere",
     "unlocking": "Sblocco in corso...",
     "unlockWithBiometric": "Sblocca con impronta/Face ID"
+  },
+  "businessHealth": {
+    "notScheduled": "businessHealth.notScheduled",
+    "nextBackup": "businessHealth.nextBackup",
+    "title": "businessHealth.title"
+  },
+  "Loading": {
+    "": {
+      "": {
+        "": "Loading..."
+      }
+    }
+  },
+  "Add a description": {
+    "": {
+      "": {
+        "": "Add a description..."
+      }
+    }
+  },
+  "No actions configured": {
+    " Add an action to run when this trigger fires": {
+      "": "No actions configured. Add an action to run when this trigger fires."
+    }
+  },
+  "Select a template": {
+    "": {
+      "": {
+        "": "Select a template..."
+      }
+    }
+  },
+  "Notification text": {
+    "": {
+      "": {
+        "": "Notification text..."
+      }
+    }
+  },
+  "Task title preset": {
+    "": {
+      "": {
+        "": "Task title preset..."
+      }
+    }
+  },
+  "Saving": {
+    "": {
+      "": {
+        "": "Saving..."
+      }
+    }
+  },
+  "Deleting": {
+    "": {
+      "": {
+        "": "Deleting..."
+      }
+    }
+  },
+  "Search contacts": {
+    "": {
+      "": {
+        "": "Search contacts..."
+      }
+    }
+  },
+  "contacts": {
+    "title": "Contatti",
+    "newContact": "Nuovo contatto",
+    "searchPlaceholder": "Cerca contatti...",
+    "stats": {
+      "total": "Total:",
+      "active30": "Active (30d):"
+    },
+    "tabs": {
+      "contacts": "Contatti",
+      "tags": "Etichette",
+      "groups": "Gruppi",
+      "segments": "Segmenti",
+      "imports": "Importazioni"
+    },
+    "hideSearch": "contacts.hideSearch",
+    "showSearch": "contacts.showSearch",
+    "clearSearch": "contacts.clearSearch"
+  },
+  "invoicing": {
+    "title": "Fatturazione",
+    "newDocument": "Nuovo documento",
+    "yourCompany": "La tua azienda",
+    "lowStock": "scorta bassa",
+    "retry": "Riprova",
+    "tabs": {
+      "documents": "Documenti",
+      "clients": "Clienti",
+      "items": "Articoli",
+      "settings": "Impostazioni"
+    },
+    "clientsNoMatches": "No matches",
+    "clientsEmptyTitle": "No clients yet",
+    "clientsNoMatchesHint": "Try adjusting your search.",
+    "clientsEmptyHint": "Only Client and Supplier contacts appear here. Contacts from your CRM or email sync are saved as 'contact' and won't show — add them with \"New Client\" to start billing them."
+  },
+  "automation": {
+    "title": "Automazione",
+    "subtitle": "Gestisci le regole di automazione del flusso di lavoro",
+    "createRule": "Crea regola",
+    "addRule": "Aggiungi regola",
+    "visualBuilder": "Builder visivo",
+    "generateWithAi": "Genera con IA",
+    "viewModeList": "Vista elenco",
+    "viewModeCard": "Vista schede",
+    "switchToList": "Passa alla vista elenco",
+    "switchToCard": "Passa alla vista schede",
+    "retry": "Riprova",
+    "errorTitle": "Caricamento delle regole di automazione fallito",
+    "emptyTitle": "Nessuna regola di automazione ancora",
+    "emptySubtitle": "Le regole di automazione monitorano la tua posta ed eseguono azioni automaticamente — senza lavoro manuale.",
+    "whatYouCanAutomate": "Cosa puoi automatizzare",
+    "examples": {
+      "archive": "Archivia automaticamente newsletter e ricevute",
+      "starVip": "Contrassegna o etichetta istantaneamente i mittenti VIP",
+      "autoReply": "Rispondi automaticamente alle richieste comuni",
+      "createTasks": "Crea attività dalle e-mail contrassegnate",
+      "forwardInvoices": "Inoltra le fatture al tuo commercialista",
+      "snoozeFollowups": "Posponi i promemoria a più tardi"
+    },
+    "deleteTitle": "Elimina regola",
+    "deleteMessage": "Sei sicuro di voler eliminare questa regola di automazione? L'operazione non può essere annullata.",
+    "delete": "Elimina",
+    "notifyTitle": "Automazione",
+    "notifyFailed": "Creazione della regola di workflow fallita.",
+    "templatesTitle": "Workflow Templates",
+    "templatesSubtitle": "Pre-built workflows — one click to activate",
+    "templatesAutomation": "Automation",
+    "templatesAiEnhanced": "AI Enhanced",
+    "applying": "Applying...",
+    "useTemplate": "Use Template",
+    "templates": "automation.templates"
+  },
+  "erp": {
+    "title": "Console ERP",
+    "yourCompany": "la tua azienda",
+    "companyManagement": "Company Management",
+    "companyManagementSub": "Manage your companies and Morocco DGI identifiers",
+    "addCompany": "Add Company",
+    "noCompanies": "No companies yet. Add your first company to get started.",
+    "createCompany": "Create Company",
+    "editCompany": "Edit Company"
+  },
+  "attachments": {
+    "senderUnknown": "Unknown",
+    "filenameUnknown": "Unnamed",
+    "preview": "Preview",
+    "download": "Download",
+    "jumpToEmail": "Jump to email",
+    "loadError": "Failed to load attachments",
+    "allFiles": "All Files",
+    "searchPlaceholder": "Search attachments...",
+    "search": "Search attachments",
+    "filterByType": "Filter by type",
+    "filterBySender": "Filter by sender",
+    "allSenders": "All senders",
+    "filterByDate": "Filter by date",
+    "filterBySize": "Filter by size",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "emptyTitle": "No attachments yet",
+    "noMatchesTitle": "No matching attachments",
+    "emptySubtitle": "When people email you files such as invoices, photos, or contracts, they appear here automatically so you can find them without digging through your inbox.",
+    "noMatchesSubtitle": "Try adjusting your filters or searching for a different file name.",
+    "goToMail": "Go to Mail",
+    "title": "Attachments",
+    "subtitle": "Files shared with you across your mail, organized in one place.",
+    "loading": "Loading attachments...",
+    "loadErrorTitle": "Failed to load attachments",
+    "retry": "Retry"
   }
 }

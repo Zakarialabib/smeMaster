@@ -1,0 +1,17 @@
+{
+  "id": "drivers",
+  "name": "Protocol Driver Registry",
+  "description": "Protocol driver registry that maps provider_type (IMAP, SMTP, Microsoft Graph, JMAP) to driver implementations. Created at startup and managed as Tauri state.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Reads provider configurations", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

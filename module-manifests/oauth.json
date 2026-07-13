@@ -1,0 +1,18 @@
+{
+  "id": "oauth",
+  "name": "OAuth Token Manager",
+  "description": "OAuth 2.0 flow management: authorization URL generation, token exchange, refresh token rotation, AES-256-GCM encrypted token storage, token revocation. Supports Google (Gmail) and Microsoft Graph providers.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists encrypted tokens and provider config", "required": true },
+    { "module": "crypto", "reason": "AES-256-GCM encryption for tokens", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

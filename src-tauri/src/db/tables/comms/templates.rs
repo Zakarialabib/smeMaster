@@ -76,14 +76,36 @@ pub async fn get_by_id_opt(pool: &SqlitePool, id: &str) -> Result<Option<Templat
 pub async fn create(pool: &SqlitePool, data: &Template) -> Result<Template, AppDbError> {
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().timestamp();
+
+    // SQLite can't enforce a FK on category_id (added via ALTER in 024), so
+    // validate ownership here: a category must belong to the same company
+    // (or be a system category) to prevent orphaned references.
+    if let Some(cat_id) = &data.category_id {
+        let owns = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM template_categories \
+             WHERE id = ? AND (company_id = ? OR is_system = 1)",
+        )
+        .bind(cat_id)
+        .bind(&data.company_id)
+        .fetch_one(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+        if owns == 0 {
+            return Err(AppDbError::Validation(format!(
+                "category {cat_id} does not belong to company {}",
+                data.company_id
+            )));
+        }
+    }
+
     sqlx::query_as::<_, Template>(
         r#"INSERT INTO templates (
             id, company_id, name, subject, body_html, shortcut, sort_order,
             category_id, is_favorite, usage_count, last_used_at,
             conditional_blocks_json, template_type, origin,
             delivery_config_json, ai_config_json, voice_config_json,
-            compliance_profile_id, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *"#,
+            compliance_profile_id, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *"#,
     )
     .bind(&id)
     .bind(&data.company_id)
@@ -102,19 +124,21 @@ pub async fn create(pool: &SqlitePool, data: &Template) -> Result<Template, AppD
     .bind(&data.voice_config_json)
     .bind(&data.compliance_profile_id)
     .bind(now)
+    .bind(now)
     .fetch_one(pool)
     .await
     .map_err(AppDbError::Database)
 }
 
 pub async fn update(pool: &SqlitePool, data: &Template) -> Result<Template, AppDbError> {
+    let now = chrono::Utc::now().timestamp();
     sqlx::query_as::<_, Template>(
         r#"UPDATE templates SET
             name = ?, subject = ?, body_html = ?, shortcut = ?, sort_order = ?,
             category_id = ?, is_favorite = ?,
             conditional_blocks_json = ?, template_type = ?, origin = ?,
             delivery_config_json = ?, ai_config_json = ?, voice_config_json = ?,
-            compliance_profile_id = ?
+            compliance_profile_id = ?, updated_at = ?
         WHERE id = ? RETURNING *"#,
     )
     .bind(&data.name)
@@ -131,11 +155,35 @@ pub async fn update(pool: &SqlitePool, data: &Template) -> Result<Template, AppD
     .bind(&data.ai_config_json)
     .bind(&data.voice_config_json)
     .bind(&data.compliance_profile_id)
+    .bind(now)
     .bind(&data.id)
     .fetch_optional(pool)
     .await
     .map_err(AppDbError::Database)?
     .ok_or_else(|| AppDbError::NotFound(format!("Template {} not found", data.id)))
+}
+
+/// Persist an explicit template ordering for a company.
+///
+/// * `ordered_ids` — template ids in the desired order; index becomes `sort_order`.
+///   Ids not present keep their existing order. Runs in a transaction.
+/// * Errors: `AppDbError::Database` on SQL failure.
+pub async fn reorder(
+    pool: &SqlitePool,
+    ordered_ids: &[String],
+) -> Result<(), AppDbError> {
+    let mut tx = pool.begin().await.map_err(AppDbError::Database)?;
+    for (idx, id) in ordered_ids.iter().enumerate() {
+        sqlx::query("UPDATE templates SET sort_order = ?, updated_at = ? WHERE id = ?")
+            .bind(idx as i64)
+            .bind(chrono::Utc::now().timestamp())
+            .bind(id)
+            .execute(&mut *tx)
+            .await
+            .map_err(AppDbError::Database)?;
+    }
+    tx.commit().await.map_err(AppDbError::Database)?;
+    Ok(())
 }
 
 /// Delete a template by id.
@@ -262,37 +310,70 @@ pub async fn insert_ignore(
 /// * `fields` — map of column values to set (`fields.set`) and columns to clear
 ///   to NULL (`fields.unset`).
 /// * Returns `()`. When both maps are empty the row is still touched by a no-op
-///   `SET created_at = created_at` (a dummy "bump").
-/// * Errors: `AppDbError::Database` on SQL failure.
-/// * SQL-safety: the SET list is built from the `fields` keys and executed via
-///   `sqlx::AssertSqlSafe`; values are bound positionally, so callers must only
-///   supply valid column names in `fields`.
+/// Columns that may be partially updated via `update_fields`. Any other key is
+/// rejected to prevent column-identifier injection: keys are interpolated into
+/// the SET clause, while only values are parameter-bound.
+const ALLOWED_TEMPLATE_FIELDS: &[&str] = &[
+    "name",
+    "subject",
+    "body_html",
+    "shortcut",
+    "sort_order",
+    "category_id",
+    "is_favorite",
+    "conditional_blocks_json",
+    "template_type",
+    "origin",
+    "delivery_config_json",
+    "ai_config_json",
+    "voice_config_json",
+    "compliance_profile_id",
+    "usage_count",
+    "last_used_at",
+];
+
 pub async fn update_fields(
     pool: &SqlitePool,
     id: &str,
     fields: &crate::db::commands::UpdateFields,
 ) -> Result<(), AppDbError> {
     let now = chrono::Utc::now().timestamp();
-    let set_count = fields.set.len();
-    if set_count == 0 && fields.unset.is_empty() {
-        sqlx::query("UPDATE templates SET created_at = created_at WHERE id = ?")
+    if fields.set.is_empty() && fields.unset.is_empty() {
+        sqlx::query("UPDATE templates SET updated_at = ? WHERE id = ?")
+            .bind(now)
             .bind(id)
             .execute(pool)
             .await
             .map_err(AppDbError::Database)?;
         return Ok(());
     }
-    let mut set_parts: Vec<String> = Vec::with_capacity(set_count + 1 + fields.unset.len());
-    let mut set_values: Vec<serde_json::Value> = Vec::with_capacity(set_count);
+    let mut set_parts: Vec<String> =
+        Vec::with_capacity(fields.set.len() + 1 + fields.unset.len());
+    let mut set_values: Vec<serde_json::Value> = Vec::with_capacity(fields.set.len());
     for key in &fields.unset {
+        if !ALLOWED_TEMPLATE_FIELDS.contains(&key.as_str()) {
+            return Err(AppDbError::Validation(format!(
+                "unknown template field: {key}"
+            )));
+        }
         set_parts.push(format!("\"{key}\" = NULL"));
     }
     for (key, value) in &fields.set {
+        if !ALLOWED_TEMPLATE_FIELDS.contains(&key.as_str()) {
+            return Err(AppDbError::Validation(format!(
+                "unknown template field: {key}"
+            )));
+        }
         set_parts.push(format!("\"{key}\" = ?"));
         set_values.push(value.clone());
     }
-    set_parts.push("\"created_at\" = ?".to_string()); // dummy bump
-    let sql = format!("UPDATE templates SET {} WHERE id = ?", set_parts.join(", "));
+    set_parts.push("\"updated_at\" = ?".to_string());
+    let sql = format!(
+        "UPDATE templates SET {} WHERE id = ?",
+        set_parts.join(", ")
+    );
+    // Safe: every key in `set_parts` was validated against ALLOWED_TEMPLATE_FIELDS
+    // above, so no caller-controlled identifier reaches the SQL text.
     let mut q = sqlx::query(sqlx::AssertSqlSafe(sql));
     for val in &set_values {
         q = q.bind(val);
@@ -535,5 +616,40 @@ mod tests {
         let pool = helpers::create_memory_pool().await;
         let result = increment_usage(&pool, "nonexistent").await;
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_update_fields_rejects_unknown_column() {
+        let pool = helpers::create_memory_pool().await;
+        helpers::insert_test_account(&pool, "acct_1").await;
+        let created = create(&pool, &make_template("acct_1", "Col Test")).await.unwrap();
+        // A caller-supplied key that is not an allowlisted column must be rejected,
+        // not interpolated into the SET clause (column-identifier injection guard).
+        let bad = crate::db::commands::UpdateFields {
+            set: std::collections::HashMap::from([
+                ("is_admin".to_string(), serde_json::json!(1)),
+            ]),
+            unset: vec![],
+        };
+        let res = update_fields(&pool, &created.id, &bad).await;
+        assert!(matches!(res, Err(AppDbError::Validation(_))), "expected Validation error, got {res:?}");
+    }
+
+    #[tokio::test]
+    async fn test_reorder_persists_sort_order() {
+        let pool = helpers::create_memory_pool().await;
+        helpers::insert_test_account(&pool, "acct_1").await;
+        let a = create(&pool, &make_template("acct_1", "A")).await.unwrap();
+        let b = create(&pool, &make_template("acct_1", "B")).await.unwrap();
+        let c = create(&pool, &make_template("acct_1", "C")).await.unwrap();
+        reorder(&pool, &[c.id.clone(), b.id.clone(), a.id.clone()]).await.unwrap();
+        let rows = list(&pool, "acct_1").await.unwrap();
+        let by_name: std::collections::HashMap<_, _> = rows
+            .iter()
+            .map(|t| (t.name.clone(), t.sort_order))
+            .collect();
+        assert_eq!(by_name["C"], 0);
+        assert_eq!(by_name["B"], 1);
+        assert_eq!(by_name["A"], 2);
     }
 }

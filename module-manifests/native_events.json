@@ -1,0 +1,22 @@
+{
+  "id": "native_events",
+  "name": "Kotlin Native Events",
+  "description": "Bridges Kotlin-native events (connectivity changes, app foreground/background, widget updates) into the Rust EventBus for forwarding to the frontend.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "events", "reason": "Forwards native events into EventBus", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "connectivity:changed", "description": "Network connectivity changed", "direction": "publishes" },
+    { "name": "app:foregrounded", "description": "App brought to foreground", "direction": "publishes" },
+    { "name": "app:backgrounded", "description": "App sent to background", "direction": "publishes" },
+    { "name": "widget:unread-update", "description": "Unread count widget update", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

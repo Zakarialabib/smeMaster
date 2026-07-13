@@ -72,7 +72,7 @@ export function FilterBar({
   );
 
   const containerClass = cn(
-    "flex items-center gap-2 flex-wrap",
+    "w-full flex justify-start items-cnter gap-2 flex-wrap",
     responsive ? "md:flex-nowrap" : "",
     "px-3 py-2 border-b border-border-primary glass-category-bar",
     compact ? "gap-1.5" : "gap-2.5",
@@ -87,25 +87,6 @@ export function FilterBar({
           <Filter size={16} className="text-accent" />
           <span className="hidden sm:inline">Filters</span>
         </div>
-      )}
-
-      {/* Status filter */}
-      {config.status && (
-        <StyledSelect
-          id="status-filter"
-          value={config.status.value}
-          onChange={(e) => handleChange("status", e)}
-          aria-label="Filter by status"
-          compact
-          size="sm"
-          className="flex-1 min-w-[90px] sm:min-w-[120px]"
-        >
-          {config.status.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </StyledSelect>
       )}
 
       {/* Priority filter */}
@@ -139,25 +120,6 @@ export function FilterBar({
           className="flex-1 min-w-[90px] sm:min-w-[120px]"
         >
           {config.groupBy.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </StyledSelect>
-      )}
-
-      {/* Sort by filter */}
-      {config.sortBy && (
-        <StyledSelect
-          id="sortby-filter"
-          value={config.sortBy.value}
-          onChange={(e) => handleChange("sortBy", e)}
-          aria-label="Sort by"
-          compact
-          size="sm"
-          className="flex-1 min-w-[90px] sm:min-w-[120px]"
-        >
-          {config.sortBy.options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

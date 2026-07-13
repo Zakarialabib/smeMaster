@@ -297,6 +297,46 @@ All CSS tokens are defined in `src/styles/globals.css` via Tailwind's `@theme` b
 
 ## 4. Page Templates & States
 
+### 4.0 Page Template Contract (canonical — all primary pages MUST comply)
+
+Every primary list/content page renders through `PageScaffold`
+(`src/shared/components/layout/PageScaffold.tsx`). The contract below is the single
+source of truth for page anatomy; deviations require review.
+
+Anatomy:
+  - **Header**: `title` (already translated by caller) + optional numeric `count` chip
+    (`<span class="rounded-full bg-bg-tertiary ...">`) + optional one-line `subtitle`.
+    Primary `actions` (buttons/menus) render right-aligned.
+  - **Toolbar** (optional): search input + `FilterBar` + view toggles, full-width, sticky
+    below the header.
+  - **Content**: a single scroll region; constrain width via `maxWidth` (full | xl | 2xl |
+    prose).
+  - **Empty**: when `isEmpty`, render the shared `EmptyState` (icon + title + body + CTA) —
+    never bare "no data" text.
+  - **Focus**: on mount, focus the search input when a toolbar is present (a11y).
+  - **States**: loading → `Skeleton` family (or `CenteredLoader`); empty → shared
+    `EmptyState` (icon + title + body + CTA); error → `ErrorState` with retry.
+    All four are mandatory primitives for any list/detail surface; do not inline
+    ad-hoc spinners or bare "no data" text.
+
+Compliance (verified 2026-07-13): Contacts, Attachments, Tasks, Calendar, Automation,
+Invoicing, ERP use `PageScaffold` with title/toolbar/empty-state.
+
+**Intentional exemptions** (NOT to be wrapped in `PageScaffold` — they have bespoke or
+embedded layouts by design):
+- Mail (thread/label reader), Dashboard (hero KPIs), POS, AI Assistant, Vault lock screen
+  — bespoke surfaces.
+- Campaigns — renders via `SettingGroup` + `GlassPanel` (settings-style, correct).
+- Deliverability — embedded `DeliverabilityPanel` (no standalone route).
+- Accounts / Sync — live under Settings, not standalone pages.
+- Workflows — `@deprecated`, merged into Automation; `WorkflowsPage.tsx` to be deleted
+  (see DESIGN_UI_UX_SPEC Chunk 3 / UI_REFACTOR C5).
+
+These exemptions still follow the *spirit* of the contract (consistent header, toolbar,
+empty/loading/error states) using their appropriate primitives. See
+`docs/plans/DESIGN_UI_UX_SPEC.md` (Chunk 3).
+
+
 ### 4.1 Mobile Dashboard
 
 ```

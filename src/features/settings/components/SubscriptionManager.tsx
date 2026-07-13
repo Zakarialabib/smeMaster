@@ -104,13 +104,13 @@ export function SubscriptionManager() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search size={14} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search senders..."
-            className="w-full pl-8 pr-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-md text-xs text-text-primary outline-none focus:border-accent"
+            className="w-full ps-8 pe-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-md text-xs text-text-primary outline-none focus:border-accent"
           />
         </div>
         {selectedIds.size > 0 && (
