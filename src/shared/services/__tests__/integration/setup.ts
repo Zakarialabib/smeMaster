@@ -1164,12 +1164,12 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
           "UPDATE campaigns SET status = 'sent', sent_count = 1 WHERE id = $1",
           [campaignId],
         );
-        const campaign = await db.select<{ account_id: string }[]>(
+        const campaign = await db.select<{ account_id: string }>(
           "SELECT account_id FROM campaigns WHERE id = $1",
           [campaignId],
         );
         const accountId = campaign[0]?.account_id ?? null;
-        const recipients = await db.select<{ contact_id: string }[]>(
+        const recipients = await db.select<{ contact_id: string }>(
           "SELECT contact_id FROM campaign_recipients WHERE campaign_id = $1",
           [campaignId],
         );

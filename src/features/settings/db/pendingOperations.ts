@@ -142,7 +142,7 @@ export async function compactQueue(accountId?: string): Promise<number> {
 
   const byResource = new Map<string, PendingOperation[]>();
   for (const op of ops) {
-    const key = `${op.account_id}:${op.resource_id}`;
+    const key = `${op.company_id}:${op.resource_id}`;
     const list = byResource.get(key) ?? [];
     list.push(op);
     byResource.set(key, list);

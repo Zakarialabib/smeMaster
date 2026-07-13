@@ -497,6 +497,10 @@ export async function imapInitialSync(
           uidvalidity: searchResult.folder_status.uidvalidity,
           last_uid: 0,
           modseq: null,
+          sync_phase: null,
+          last_error: null,
+          retry_count: null,
+          is_paused: null,
           last_sync_at: Math.floor(Date.now() / 1000),
         });
         continue;
@@ -679,6 +683,10 @@ export async function imapInitialSync(
         uidvalidity,
         last_uid: lastUid,
         modseq: null,
+        sync_phase: null,
+        last_error: null,
+        retry_count: null,
+        is_paused: null,
         last_sync_at: Math.floor(Date.now() / 1000),
       });
     } catch (err) {
@@ -916,6 +924,10 @@ export async function imapDeltaSync(accountId: string, daysBack = 365): Promise<
         uidvalidity: searchResult.folder_status.uidvalidity,
         last_uid: lastUid,
         modseq: null,
+        sync_phase: null,
+        last_error: null,
+        retry_count: null,
+        is_paused: null,
         last_sync_at: Math.floor(Date.now() / 1000),
       });
     } catch (err) {
@@ -1021,6 +1033,10 @@ export async function imapDeltaSync(accountId: string, daysBack = 365): Promise<
             uidvalidity: searchResult.folder_status.uidvalidity,
             last_uid: lastUid,
             modseq: null,
+            sync_phase: null,
+            last_error: null,
+            retry_count: null,
+            is_paused: null,
             last_sync_at: Math.floor(Date.now() / 1000),
           });
           continue;
@@ -1050,10 +1066,14 @@ export async function imapDeltaSync(accountId: string, daysBack = 365): Promise<
           account_id: accountId,
           folder_path: folder.raw_path,
           uidvalidity,
-          last_uid: Math.max(savedState.last_uid, lastUid),
-          modseq: null,
-          last_sync_at: Math.floor(Date.now() / 1000),
-        });
+        last_uid: Math.max(savedState.last_uid, lastUid),
+        modseq: null,
+        sync_phase: null,
+        last_error: null,
+        retry_count: null,
+        is_paused: null,
+        last_sync_at: Math.floor(Date.now() / 1000),
+      });
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err ?? "Unknown error");
         console.error(`Delta sync failed for folder ${folder.path}:`, err);
