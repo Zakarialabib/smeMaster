@@ -664,6 +664,20 @@ async fn execute_create_task_action(
     let now = chrono::Utc::now().timestamp();
     let due_date = if due_days > 0 { Some(now + due_days * 86400) } else { None };
 
+    // Resolve company_id from account_id
+    let company_row: Option<(String,)> = sqlx::query_as(
+        "SELECT company_id FROM accounts WHERE id = ?"
+    )
+    .bind(&account_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Failed to resolve company_id: {e}"))?;
+
+    let company_id = match company_row {
+        Some((cid,)) => cid,
+        None => return Err(format!("No company found for account {account_id}")),
+    };
+
     let result = sqlx::query(
         r#"
         INSERT INTO tasks (id, company_id, title, is_completed, due_date, thread_id, thread_account_id, created_at, updated_at)
@@ -671,7 +685,7 @@ async fn execute_create_task_action(
         "#
     )
     .bind(&id)
-    .bind(&account_id)
+    .bind(&company_id)
     .bind(title)
     .bind(due_date)
     .bind(&thread_id)

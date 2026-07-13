@@ -46,6 +46,7 @@ impl AppLifecycle {
     /// Delegates to the standalone `crate::events::heartbeat::spawn_heartbeat`.
     pub fn spawn_heartbeat(app: &AppHandle) {
         if let Some(bus) = app.try_state::<EventBus>() {
+            crate::events::heartbeat::reset_stop();
             crate::events::heartbeat::spawn_heartbeat(bus.inner().clone(), 30);
             log::info!("[init] Heartbeat emitter started (30s interval, standalone module)");
         } else {
@@ -277,9 +278,11 @@ impl AppLifecycle {
             service_registry.register(backup_scheduler.clone()).await;
 
             // ── DataCacheService: in-memory cache layer ──
-            let data_cache_service = Arc::new(DataCacheService::new(handle.clone(), pool.clone()));
-            service_registry.register(data_cache_service.clone()).await;
-            handle.manage(data_cache_service);
+            // Already managed as Tauri state in lib.rs setup (early registration).
+            // Retrieve the existing instance here for ServiceRegistry lifecycle
+            // management (pre-warming, health checks, graceful shutdown).
+            let data_cache_service: Arc<DataCacheService> = handle.state::<Arc<DataCacheService>>().inner().clone();
+            service_registry.register(data_cache_service).await;
 
             // ── SyncEngineService: CRDT sync engine ──
             let sync_engine_service = Arc::new(SyncEngineService::new(handle.clone(), pool.clone()));

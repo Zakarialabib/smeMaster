@@ -44,10 +44,12 @@ mod microsoft_graph;
 mod error;
 mod errors;
 
+use std::sync::Arc;
 use tauri::Manager;
 #[cfg(desktop)]
 use tauri::Emitter;
 use tauri::Listener;
+use crate::data_cache::DataCacheService;
 use crate::orchestrator::SystemState;
 
 // NOTE: All #[tauri::command] functions have been moved into the
@@ -290,6 +292,7 @@ pub fn run() {
                             let _ = window.emit("tray:before-quit", ());
                         }
                         std::thread::sleep(std::time::Duration::from_millis(500));
+                        crate::events::heartbeat::signal_stop();
                         app.exit(0);
                     }
                     _ => {}
@@ -341,6 +344,14 @@ pub fn run() {
 
         // ── Post-migration health check runs inside spawn_orchestrator ──
         app.manage(pool.clone());
+
+        // ── DataCacheService: in-memory cache layer ──
+        // Registered here (early, before spawn_orchestrator) so IPC commands
+        // can access it immediately — they don't need to wait for the async
+        // orchestrator pipeline (migrations, seeding, service start) to finish.
+        // The orchestrator will retrieve this same instance later for
+        // ServiceRegistry lifecycle management (pre-warming, health checks).
+        app.manage(Arc::new(DataCacheService::new(app.handle().clone(), pool.clone())));
 
         // ── Protocol Driver Registry — maps provider_type to driver impls
         app.manage(drivers::DriverRegistry::new(pool.clone()));
