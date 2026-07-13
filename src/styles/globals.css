@@ -87,9 +87,9 @@
   --icon-xl: 32px;
 
   /* ─── Frosted Glass / Border-based Depth ─── */
-  --glass-blur: 0px;
-  --glass-blur-heavy: 0px;
-  --glass-blur-light: 0px;
+  --glass-blur: 14px;
+  --glass-blur-heavy: 22px;
+  --glass-blur-light: 10px;
   --frost-border: 1px solid #e4e6ea;
   --frost-border-strong: 1px solid #d5d8dd;
   --frost-highlight: 0 1px 2px rgba(16, 24, 40, 0.04);
@@ -563,6 +563,8 @@ html[data-input-modality='keyboard'] *:focus {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 /* Individual animated gradient orb */
@@ -1975,10 +1977,23 @@ html:not(.mobile) .sidebar-nav-item:hover {
   box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 
-/* --- Flat theme overrides (2026-07 refactor: bohemi/glass -> flat) --- */
-.animated-bg { display: none !important; }
-.liquid-glass::before,
-.liquid-glass:hover::before,
-.liquid-glass-elevated::before { opacity: 0 !important; animation: none !important; }
-.liquid-glow { animation: none !important; }
-.liquid-sheen-burst::after { display: none !important; }
+/* --- Surface layer: FLAT (default) vs GLASS ---
+ * Direction A (award-winning glass) is implemented as a surface LAYER toggled by
+ * [data-surface="glass"] on <html>. Flat is the accessible default; glass turns on
+ * the FrostedBackground orbs + real backdrop blur. The legacy bohemi/liquid overrides
+ * below are scoped to flat so they no longer fight the glass surface. */
+[data-surface="flat"] .animated-bg { display: none !important; }
+[data-surface="flat"] .liquid-glass::before,
+[data-surface="flat"] .liquid-glass:hover::before,
+[data-surface="flat"] .liquid-glass-elevated::before { opacity: 0 !important; animation: none !important; }
+[data-surface="flat"] .liquid-glow { animation: none !important; }
+[data-surface="flat"] .liquid-sheen-burst::after { display: none !important; }
+
+/* Glass surface: orbs visible + real blur on frosted surfaces. */
+[data-surface="glass"] .frosted-bg { opacity: 1; }
+[data-surface="glass"] .frost-surface,
+[data-surface="glass"] .frost-surface-strong,
+[data-surface="glass"] .glass-panel,
+[data-surface="glass"] .glass-modal { backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); }
+[data-surface="glass"] .liquid-glass,
+[data-surface="glass"] .liquid-glass-elevated { backdrop-filter: blur(var(--glass-blur-heavy)); -webkit-backdrop-filter: blur(var(--glass-blur-heavy)); }

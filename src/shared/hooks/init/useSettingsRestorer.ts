@@ -3,6 +3,7 @@ import { useConfigStore, useUIStore } from "@/stores/core";
 import { getAllSettings } from "@features/settings/db/settings";
 import { initConfigPersistence } from "@shared/services/settings/configPersistence";
 import { COLOR_THEMES } from "@/constants/themes";
+import { useThemeStore } from "@/shared/stores/themeStore";
 import type { ColorThemeId } from "@/constants/themes";
 import type {
   ThemeMode,
@@ -107,6 +108,12 @@ export function useSettingsRestorer(): void {
       const colorTheme = all.color_theme;
       if (colorTheme && COLOR_THEMES.some((t) => t.id === colorTheme)) {
         config.setColorTheme(colorTheme as ColorThemeId);
+      }
+
+      // Surface (flat | glass)
+      const surface = all.surface;
+      if (surface === "flat" || surface === "glass") {
+        useThemeStore.getState().setSurface(surface);
       }
 
       // Inbox view mode

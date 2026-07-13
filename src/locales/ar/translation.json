@@ -229,6 +229,10 @@
       "accountCleaning": "تنظيف الحساب"
     },
     "appearance": "المظهر",
+    "surface": "Surface",
+    "surfaceFlat": "مسطح",
+    "surfaceGlass": "زجاجي",
+    "surfaceGlassHint": "أجرام زجاجية مموهة وضبابية لمظهر أغنى.",
     "theme": "السمة",
     "light": "فاتح",
     "dark": "داكن",

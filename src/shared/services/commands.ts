@@ -389,6 +389,7 @@ interface ThemePreference {
   colorTheme: string;
   fontScale: string;
   reduceMotion: boolean;
+  surface: string;
 }
 
 // ── Observability (Gate 6) ────────────────────────────────────────────────

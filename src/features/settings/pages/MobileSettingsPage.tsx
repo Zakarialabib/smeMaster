@@ -113,7 +113,7 @@ export function MobileSettingsPage() {
   const navigate = useNavigate();
 
   /* ── Theme ───────────────────────────────────────────────────────────── */
-  const { mode, colorTheme, setMode, setColorTheme } = useThemeStore();
+  const { mode, colorTheme, setMode, setColorTheme, surface, setSurface } = useThemeStore();
 
   const modeLabel = MODE_LABELS[mode];
 
@@ -318,6 +318,36 @@ export function MobileSettingsPage() {
                       />
                     ))}
                   </div>
+                </div>
+
+                {/* Surface style: Flat vs Glass */}
+                <div>
+                  <h3 className="text-xs font-semibold text-text-secondary mb-3">
+                    {t("settings.surface")}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { id: "flat", label: t("settings.surfaceFlat") },
+                      { id: "glass", label: t("settings.surfaceGlass") },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSurface(opt.id)}
+                        className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                          surface === opt.id
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-white/15 text-text-secondary active:bg-white/10"
+                        }`}
+                        aria-pressed={surface === opt.id}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-text-tertiary">
+                    {t("settings.surfaceGlassHint")}
+                  </p>
                 </div>
               </div>
             )}

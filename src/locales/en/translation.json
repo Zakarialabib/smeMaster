@@ -237,6 +237,10 @@
       "accountCleaning": "Account Cleaning"
     },
     "appearance": "Appearance",
+    "surface": "Surface",
+    "surfaceFlat": "Flat",
+    "surfaceGlass": "Glass",
+    "surfaceGlassHint": "Frosted glass orbs and blur for a richer look.",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",

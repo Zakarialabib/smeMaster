@@ -229,6 +229,10 @@
       "accountCleaning": "Pulizia account"
     },
     "appearance": "Aspetto",
+    "surface": "Surface",
+    "surfaceFlat": "Piana",
+    "surfaceGlass": "Vetro smerigliato",
+    "surfaceGlassHint": "Orbi in vetro smerigliato e sfocatura per un look più ricco.",
     "theme": "Tema",
     "light": "Chiaro",
     "dark": "Scuro",

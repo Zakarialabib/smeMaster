@@ -229,6 +229,10 @@
       "accountCleaning": "Nettoyage du compte"
     },
     "appearance": "Apparence",
+    "surface": "Surface",
+    "surfaceFlat": "Plat",
+    "surfaceGlass": "Verre dépoli",
+    "surfaceGlassHint": "Orbes en verre dépoli et flou pour un rendu plus riche.",
     "theme": "Thème",
     "light": "Clair",
     "dark": "Sombre",

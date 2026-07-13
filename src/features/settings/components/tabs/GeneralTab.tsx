@@ -57,6 +57,8 @@ export default function GeneralTab() {
   const setReduceMotion = useThemeStore((s) => s.setReduceMotion);
   const highContrast = useThemeStore((s) => s.highContrast);
   const setHighContrast = useThemeStore((s) => s.setHighContrast);
+  const surface = useThemeStore((s) => s.surface);
+  const setSurface = useThemeStore((s) => s.setSurface);
   const readingPanePosition = useLayoutStore((s) => s.readingPanePosition);
   const setReadingPanePosition = useLayoutStore((s) => s.setReadingPanePosition);
   const readingPaneExpanded = useLayoutStore((s) => s.readingPaneExpanded);
@@ -124,6 +126,8 @@ export default function GeneralTab() {
         currentAccent={currentAccent}
         onThemeChange={handleThemeChange}
         onAccentChange={handleAccentChange}
+        currentSurface={surface}
+        onSurfaceChange={setSurface}
       />
 
       {/* ── Display ────────────────────────────────────────────────── */}

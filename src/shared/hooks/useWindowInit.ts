@@ -128,5 +128,11 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
     }
   }, [colorTheme, theme]);
 
+  // Sync surface layer (flat | glass) to <html> for CSS gating
+  const surface = useThemeStore((s) => s.surface);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-surface", surface);
+  }, [surface]);
+
   return { loading, error };
 }

@@ -8,6 +8,8 @@ export interface AppearanceSectionProps {
   currentAccent: string;
   onThemeChange: (mode: ThemeMode) => void;
   onAccentChange: (color: string) => void;
+  currentSurface?: "flat" | "glass";
+  onSurfaceChange?: (surface: "flat" | "glass") => void;
 }
 
 const PRESET_COLORS = [
@@ -24,6 +26,8 @@ export function AppearanceSection({
   currentAccent,
   onThemeChange,
   onAccentChange,
+  currentSurface = "flat",
+  onSurfaceChange,
 }: AppearanceSectionProps) {
   return (
     <section className="space-y-6">
@@ -60,6 +64,38 @@ export function AppearanceSection({
           ))}
         </div>
       </div>
+
+      {/* Surface style: Flat (default) vs Glass */}
+      {onSurfaceChange && (
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
+            Surface
+          </h3>
+          <div className="flex gap-3">
+            {([
+              { id: "flat", label: "Flat" },
+              { id: "glass", label: "Glass" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => onSurfaceChange(opt.id)}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                  currentSurface === opt.id
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover"
+                }`}
+                aria-pressed={currentSurface === opt.id}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-[var(--text-tertiary)]">
+            Glass adds frosted orbs and blur for a richer look.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
