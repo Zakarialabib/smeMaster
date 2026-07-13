@@ -3,6 +3,7 @@ import { Plus, Trash2, Printer } from 'lucide-react';
 import { useHardwareStore, HardwareConfig, DeviceType, ConnectionType } from '@features/pos/stores/hardwareStore';
 import { invoke } from '@tauri-apps/api/core';
 import { notify } from '@shared/services/notifications/toastHelper';
+import { HelpCard } from '@features/settings/components/HelpCard';
 
 export const HardwareSettings: React.FC = () => {
   const { configs, addConfig, removeConfig } = useHardwareStore();
@@ -57,6 +58,16 @@ export const HardwareSettings: React.FC = () => {
           <Plus size={18} /> Add Device
         </button>
       </div>
+
+      {/* Education: Hardware Configuration */}
+      <HelpCard
+        items={[
+          { type: "why", text: "Hardware devices like receipt printers, barcode scanners, and cash drawers are essential for POS and invoicing workflows in retail and hospitality environments." },
+          { type: "how", text: "Each device is configured by type (printer, scanner, scale, cash drawer) and connection method (network, USB, system driver, or serial). Test each device after adding to verify connectivity." },
+          { type: "when", text: "Configure hardware when setting up POS capabilities. Add printers for receipt/invoice printing, scanners for barcode entry, and scales for weighted items." },
+          { type: "tip", text: "Network printers (TCP/IP) are recommended for reliability. USB connections work well for single-workstation setups. Test each device after adding to verify connectivity." },
+        ]}
+      />
 
       <div className="grid gap-4">
         {configs.map((config) => (

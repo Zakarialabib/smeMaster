@@ -11,7 +11,7 @@ import type { ColorThemeId } from "@/constants/themes";
 import { Button } from "@shared/components/ui/Button";
 import { Toggle } from "@shared/components/ui/Toggle";
 import { LanguageSwitcher } from "@features/settings/components/LanguageSwitcher";
-import { InlineTooltip } from "@features/settings/components/HelpCard";
+import { HelpCard, InlineTooltip } from "@features/settings/components/HelpCard";
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { ButtonGroup, ChoiceCards } from "@features/settings/components/SettingsHelpers";
 import { SettingsSection, SettingsRow } from "@shared/components/settings";
@@ -207,6 +207,16 @@ export default function GeneralTab() {
             </SettingsRow>
           </SettingsSection>
 
+          {/* ── Education: Appearance ──────────────────────────────── */}
+          <HelpCard
+            items={[
+              { type: "why", text: "Customizing appearance and layout makes the app comfortable for your eyes and workflow — reducing eye strain and improving reading efficiency." },
+              { type: "how", text: "Choose a theme mode (light/dark/system), accent color, font size, and surface style. Adjust reading pane position and email density to match your preferred layout." },
+              { type: "when", text: "Set up appearance on first use. Toggle dark mode in low-light environments. Adjust font size for accessibility. Change layout when switching between reading and triage workflows." },
+              { type: "tip", text: "The reading pane shortcut keys (m, [, ]) let you cycle positions without navigating settings — great for quick layout experimentation." },
+            ]}
+          />
+
           {/* ── Layout ──────────────────────────────────────────────── */}
           <SettingsSection title="Layout" description="Reading pane, email density, and inbox view">
             {screen.isDesktop && (
@@ -287,6 +297,16 @@ export default function GeneralTab() {
               />
             </SettingsRow>
           </SettingsSection>
+
+          {/* ── Education: Language & Region ─────────────────────────── */}
+          <HelpCard
+            items={[
+              { type: "why", text: "Language and region settings ensure the interface, dates, and formatting match your locale — essential for comfortable daily use." },
+              { type: "how", text: "Select your preferred UI language. The app interface, date formats, and number formatting will update to match your choice." },
+              { type: "when", text: "Set your language on first use. Switch languages at any time — all UI text will update immediately without restarting." },
+              { type: "tip", text: "Enabling Advanced Settings reveals additional configuration tabs like Queue, Backup, Templates, and Shortcuts for power users." },
+            ]}
+          />
 
           {/* ── System ─────────────────────────────────────────────────── */}
           <SettingsSection title="System">
@@ -385,6 +405,16 @@ export default function GeneralTab() {
             )}
           </SettingsSection>
 
+          {/* ── Education: Privacy & Security ──────────────────────────── */}
+          <HelpCard
+            items={[
+              { type: "why", text: "Privacy settings protect your personal information and device from tracking, phishing, and unauthorized access." },
+              { type: "how", text: "Block remote images to prevent sender tracking. Enable phishing detection to flag suspicious emails. Use biometric lock on mobile for additional device security." },
+              { type: "when", text: "Enable remote image blocking if privacy is a concern. Phishing detection should always be on for protection against scams." },
+              { type: "tip", text: "Higher phishing sensitivity catches more threats but may flag legitimate emails. Start at default and adjust if you see too many false positives." },
+            ]}
+          />
+
           {/* ── Storage ────────────────────────────────────────────────── */}
           <SettingsSection title={t('settings.storage')} description="Attachment caching">
             <div className="flex items-center justify-between py-3 first:pt-0 gap-4 min-h-[40px] rounded-lg px-3 -mx-3 transition-colors hover:bg-bg-hover/30 border-b border-border-primary/10">
@@ -438,6 +468,16 @@ export default function GeneralTab() {
       {/* ── Sub-tab: Advanced ───────────────────────────────────────── */}
       {activeSubTab === "advanced" && (
         <>
+          {/* ── Education: Advanced ──────────────────────────────────── */}
+          <HelpCard
+            items={[
+              { type: "why", text: "Advanced settings give you control over the sidebar navigation and data lifecycle — useful for customizing the app to your exact needs." },
+              { type: "how", text: "The Sidebar Nav Editor lets you reorder, hide, or rename navigation items. Data Management provides an irreversible factory reset option." },
+              { type: "when", text: "Customize sidebar navigation if you have a preferred workflow. Data wipe should only be used before selling your device or for a complete fresh start." },
+              { type: "tip", text: "Sidebar changes take effect immediately. Create a mental map of your ideal workflow before reordering — moving items is drag-and-drop." },
+            ]}
+          />
+
           {/* ── Sidebar Nav Editor (inline) ────────────────────────────── */}
           <SidebarNavEditor />
 

@@ -1,6 +1,7 @@
 pub mod emit;
 pub mod heartbeat;
 pub mod processor;
+pub(crate) mod automation;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
@@ -86,6 +87,21 @@ pub enum AppEvent {
         message_id: String,
         from_address: String,
         date: i64,
+    },
+    #[serde(rename = "email:opened")]
+    EmailOpened {
+        account_id: String,
+        message_id: String,
+        contact_id: String,
+        timestamp: i64,
+    },
+    #[serde(rename = "link:clicked")]
+    LinkClicked {
+        account_id: String,
+        message_id: String,
+        contact_id: String,
+        url: String,
+        timestamp: i64,
     },
     #[serde(rename = "contact:updated")]
     ContactUpdated {

@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Wifi,
 } from "lucide-react";
+import { HelpCard } from "@features/settings/components/HelpCard";
 import { syncNow, SyncState, SyncResult } from "../services/sync/syncService";
 
 interface PairedDevice {
@@ -315,6 +316,18 @@ export function DevicePairingPage() {
         <Plus className="w-5 h-5" />
         {t("settings.pairNewDevice")}
       </button>
+
+      {/* Education: Device Pairing */}
+      <div className="mt-6">
+        <HelpCard
+          items={[
+            { type: "why", text: "Device pairing lets you sync your email, calendar, and settings between desktop and mobile seamlessly — no manual setup on each device." },
+            { type: "how", text: "Pair a new device by generating a token on this page, then scanning a QR code from the SME Master mobile app. Paired devices sync automatically in the background." },
+            { type: "when", text: "Pair when setting up a new device, after reinstalling the app, or when you want to sync settings across devices. Keep both devices on the same network for best performance." },
+            { type: "tip", text: "Check sync status regularly. A green indicator means the device has synced recently. Use the per-device sync button to force an immediate sync if needed." },
+          ]}
+        />
+      </div>
     </div>
   );
 }

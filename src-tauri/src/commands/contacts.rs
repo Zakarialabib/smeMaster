@@ -1111,10 +1111,13 @@ pub async fn db_get_attachments_from_contact(
     limit: Option<i64>,
 ) -> CmdResult<Vec<ContactAttachment>> {
     let limit = limit.unwrap_or(20);
-    let rows = sqlx::query_as::<_, (String, String, Option<String>, Option<i64>, i64)>(
-        "SELECT a.id, a.filename, a.mime_type, a.size, a.created_at FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.from_address = ?1 ORDER BY a.created_at DESC LIMIT ?2"
+    // NOTE: `attachments` has no `created_at` column — its timestamp is
+    // `cached_at`. We surface that as `ContactAttachment.created_at` (the
+    // field the frontend consumes) so the contract is preserved.
+    let rows = sqlx::query_as::<_, (String, String, Option<String>, Option<i64>, Option<i64>)>(
+        "SELECT a.id, a.filename, a.mime_type, a.size, a.cached_at FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.from_address = ?1 ORDER BY a.cached_at DESC LIMIT ?2"
     ).bind(&email).bind(limit).fetch_all(&*pool).await.map_err(|e| AppDbError::Database(e))?;
-    Ok(rows.into_iter().map(|(id, filename, mime, size, created)| ContactAttachment { id, filename, mime_type: mime, size, created_at: created }).collect())
+    Ok(rows.into_iter().map(|(id, filename, mime, size, created)| ContactAttachment { id, filename, mime_type: mime, size, created_at: created.unwrap_or(0) }).collect())
 }
 
 #[tauri::command]

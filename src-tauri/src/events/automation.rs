@@ -712,7 +712,7 @@ async fn execute_create_task_action(
 /// Ensure the `is_flagged` column exists on the messages table.
 /// This handles the case where migration 026 hasn't been applied yet.
 async fn ensure_is_flagged_column(pool: &SqlitePool) {
-    let result: Result<(String,), _> = sqlx::query_as(
+    let result: Result<Option<(String,)>, _> = sqlx::query_as(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='messages' AND sql LIKE '%is_flagged%'"
     )
     .fetch_optional(pool)

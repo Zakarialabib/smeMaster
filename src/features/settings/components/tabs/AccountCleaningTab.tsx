@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { invokeCommand } from "@shared/services/db/invoke/command";
 import { getSetting, setSetting } from "@features/settings/db/settings";
+import { HelpCard } from "@features/settings/components/HelpCard";
 import { SettingGroup, SettingRow, ButtonGroup } from "@features/settings/components/SettingsHelpers";
 import { TextField } from "@shared/components/ui/TextField";
 import { Button } from "@shared/components/ui/Button";
@@ -207,6 +208,16 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
           </p>
         </div>
       </SettingGroup>
+
+      {/* ── Education: Account Cleaning ───────────────────────────── */}
+      <HelpCard
+        items={[
+          { type: "why", text: "Account cleaning helps you maintain a tidy inbox by automatically deleting, archiving, or categorizing old or unwanted emails based on rules you define." },
+          { type: "how", text: "Set retention policies to define how long emails are kept. Create cleanup rules that match by sender, subject, age, or unsubscribe status — then choose an action like delete or archive." },
+          { type: "when", text: "Use for clearing old newsletters, auto-deleting spammy senders, archiving aged threads, or bulk-unsubscribing from unwanted mailing lists." },
+          { type: "tip", text: "Start with a 'mark read' or 'archive' rule before using 'delete' to avoid accidentally removing emails you might need. Scheduled rules run automatically at your chosen interval." },
+        ]}
+      />
 
       {/* Cleanup Rules Section */}
       <SettingGroup title="Cleanup Rules">

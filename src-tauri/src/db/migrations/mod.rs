@@ -45,6 +45,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("025_workflow_execution", include_str!("025_workflow_execution.sql")),
     ("026_automation_actions", include_str!("026_automation_actions.sql")),
     ("027_contacts_fix", include_str!("027_contacts_fix.sql")),
+    ("028_attachments_account_id", include_str!("028_attachments_account_id.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────

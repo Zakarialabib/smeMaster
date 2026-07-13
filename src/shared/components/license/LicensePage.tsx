@@ -35,6 +35,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { HelpCard } from '@features/settings/components/HelpCard';
 import { SettingGroup, InfoRow } from '@features/settings/components/SettingsHelpers';
 import { useLicenseStore, type LicenseTier } from '@shared/stores/licenseStore';
 import { notify } from '@shared/services/notifications/toastHelper';
@@ -351,6 +352,16 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
           )}
         </div>
       </SettingGroup>
+
+      {/* Education: Licensing */}
+      <HelpCard
+        items={[
+          { type: "why", text: "Licensing manages your subscription tier — Basic (free) or Pro (paid). Your tier determines which features (AI, campaigns, workflows, deliverability suite) are available." },
+          { type: "how", text: "Your license key is verified using Ed25519 cryptography and bound to your device's hardware ID. Activate a key to unlock Pro. Trial users get 14 days of full Pro access." },
+          { type: "when", text: "Set up your license on first use. Start a trial to evaluate Pro before purchasing. Upgrade from Basic to Pro when you need advanced features like AI, campaigns, or the deliverability suite." },
+          { type: "tip", text: "Hardware ID is used for license binding. If you upgrade your computer, deactivate the license first on the old device, then activate on the new one using the same key." },
+        ]}
+      />
 
       {/* Hardware ID — needed for license transfer / support */}
       {hardwareId && (

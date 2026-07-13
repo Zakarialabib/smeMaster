@@ -376,6 +376,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             comms::db_create_template_category,
             comms::db_update_template_category,
             comms::db_get_template_full,
+            comms::db_create_campaign_template,
+            comms::db_reorder_templates,
 
             // === commands::compliance (13 commands) ===
             compliance::db_list_compliance_profiles,

@@ -4,7 +4,6 @@
 --  enforced in Rust — see PRODUCTION_HARDENING_PLAN.md Phase 2.)
 
 -- ── Templates ──────────────────────────────────────────────────────────────
-ALTER TABLE templates ADD COLUMN updated_at INTEGER NOT NULL DEFAULT (unixepoch());
 CREATE INDEX idx_templates_company_fav ON templates(company_id, is_favorite);
 CREATE INDEX idx_templates_company_sort ON templates(company_id, sort_order);
 CREATE UNIQUE INDEX idx_template_categories_company_name
@@ -49,7 +48,7 @@ CREATE TABLE IF NOT EXISTS event_reminders (
     method TEXT NOT NULL DEFAULT 'popup', -- popup | email
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
-CREATE INDEX idx_event_reminders_event ON event_reminders(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_reminders_event ON event_reminders(event_id);
 
 -- ── Calendars: store the calendar's timezone ───────────────────────────────
 ALTER TABLE calendars ADD COLUMN timezone TEXT;

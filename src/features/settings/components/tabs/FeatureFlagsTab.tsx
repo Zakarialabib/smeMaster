@@ -21,6 +21,7 @@ import { useFeatureFlagStore, type FeatureUsage } from "@features/settings/store
 import {
   FEATURE_FLAGS, type FeatureFlag, type Tier, setDevProMode, isDevProMode,
 } from "@/constants/featureFlags";
+import { HelpCard } from "@features/settings/components/HelpCard";
 import { SettingGroup } from "@features/settings/components/SettingsHelpers";
 import { Toggle } from "@shared/components/ui/Toggle";
 
@@ -318,6 +319,17 @@ export default function FeatureFlagsTab() {
           </div>
         </div>
       </SettingGroup>
+
+      {/* ─── Education: Feature Flags ─────────────────────────────── */}
+      <HelpCard
+        collapsible
+        items={[
+          { type: "why", text: "Feature flags let you test and preview Pro-tier capabilities while on a Basic plan. Use override controls to simulate different usage scenarios without affecting real data." },
+          { type: "how", text: "Toggle subscription tier between Basic and Pro to see which features unlock. Enable Testing Overrides to simulate usage counts and verify progressive disclosure behavior." },
+          { type: "when", text: "Use during development to test tier gating. Use overrides to preview Pro features before upgrading. Developer Pro Mode unlocks everything for testing." },
+          { type: "tip", text: "Developer Pro Mode bypasses all tier checks — ideal for testing features without toggling individual overrides. Disable it to return to real tier restrictions." },
+        ]}
+      />
 
       {/* ─── Search ─── */}
       <div className="relative">
