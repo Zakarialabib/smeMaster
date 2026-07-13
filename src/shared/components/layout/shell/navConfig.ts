@@ -15,7 +15,6 @@ import {
   Paperclip,
   BarChart3,
   ReceiptText,
-  CheckSquare,
   FolderSearch,
   Tag,
   UserCircle,

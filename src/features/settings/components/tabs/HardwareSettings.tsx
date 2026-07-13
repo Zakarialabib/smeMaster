@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { notify } from '@shared/services/notifications/toastHelper';
 
 export const HardwareSettings: React.FC = () => {
-  const { configs, addConfig, removeConfig, updateConfig } = useHardwareStore();
+  const { configs, addConfig, removeConfig } = useHardwareStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newConfig, setNewConfig] = useState<Partial<HardwareConfig>>({
     name: '',
