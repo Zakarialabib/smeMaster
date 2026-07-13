@@ -2111,3 +2111,41 @@ pub async fn db_get_template_full(
         .await
         .map_err(Into::into)
 }
+
+
+/// Persist a campaign email built in the block editor as a reusable template.
+///
+/// Stores the rendered `body_html` plus an optional subject under the
+/// `templates` table (`template_type = "campaign"`) so it shows up in the
+/// existing campaign template picker.
+#[tauri::command]
+pub async fn db_create_campaign_template(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+    name: String,
+    subject: Option<String>,
+    body_html: String,
+) -> CmdResult<Template> {
+    let now = chrono::Utc::now().timestamp();
+    let id = uuid::Uuid::new_v4().to_string();
+    let tmpl = sqlx::query_as::<_, Template>(
+        r#"INSERT INTO templates (
+            id, company_id, name, subject, body_html, shortcut, sort_order,
+            category_id, is_favorite, usage_count, last_used_at,
+            conditional_blocks_json, template_type, origin,
+            delivery_config_json, ai_config_json, voice_config_json,
+            compliance_profile_id, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, NULL, 0, NULL, 0, 0, NULL, NULL, 'campaign', 'user', NULL, NULL, NULL, NULL, ?, ?) RETURNING *"#,
+    )
+    .bind(&id)
+    .bind(&company_id)
+    .bind(&name)
+    .bind(&subject)
+    .bind(&body_html)
+    .bind(now)
+    .bind(now)
+    .fetch_one(&*pool)
+    .await
+    .map_err(crate::db::AppDbError::from)?;
+    Ok(tmpl)
+}
