@@ -85,7 +85,7 @@ pub(crate) fn list_vault_dir_internal(dir_path: &str) -> Result<Vec<VaultEntry>,
 }
 
 // ---------------------------------------------------------------------------
-// Helpers for account-scoped vault paths
+// Internal helpers for account-scoped vault paths
 // ---------------------------------------------------------------------------
 
 /// Get the vault root path for a given account.
@@ -98,6 +98,47 @@ fn get_vault_root_for_account(app: &tauri::AppHandle, account_id: &str) -> Resul
         .join("vault")
         .join(account_id);
     Ok(base)
+}
+
+/// Validate that a path is within the vault root directory.
+/// Prevents path traversal attacks (e.g., `../../etc/passwd`).
+fn validate_vault_path(path: &str, vault_root: &Path) -> Result<(), SerializedError> {
+    let canonical_path = Path::new(path)
+        .canonicalize()
+        .unwrap_or_else(|_| PathBuf::from(path));
+
+    // If canonicalize fails (path doesn't exist yet), try to canonicalize the parent
+    let check_path = if canonical_path.exists() {
+        canonical_path
+    } else {
+        // For new paths, check the parent directory
+        Path::new(path)
+            .parent()
+            .and_then(|p| p.canonicalize().ok())
+            .unwrap_or_else(|| PathBuf::from(path))
+    };
+
+    let canonical_root = vault_root
+        .canonicalize()
+        .unwrap_or_else(|_| vault_root.to_path_buf());
+
+    if !check_path.starts_with(&canonical_root) {
+        return Err(SerializedError::new(
+            error::ERR_INVALID_INPUT,
+            "Path is outside the vault directory (path traversal blocked)",
+        ));
+    }
+    Ok(())
+}
+
+/// Validate a path is within vault root, returning an error with the command context.
+fn validate_vault_path_for(path: &str, vault_root: &Path, command: &str) -> Result<(), SerializedError> {
+    validate_vault_path(path, vault_root).map_err(|_| {
+        SerializedError::new(
+            error::ERR_INVALID_INPUT,
+            format!("{}: path is outside the vault directory", command),
+        )
+    })
 }
 
 //// Compute the relative path of a file within an account's vault directory.
@@ -217,11 +258,21 @@ pub async fn get_vault_root(
 }
 
 #[tauri::command]
-pub fn copy_to_vault(
+pub async fn copy_to_vault(
+    app: tauri::AppHandle,
     source_path: String,
     vault_path: String,
-    _account_id: Option<String>,
+    account_id: Option<String>,
 ) -> Result<(), SerializedError> {
+    // CRITICAL: Require auth before copying files into vault
+    crate::vault::require_biometric(&app, "Unlock vault to store files").await?;
+
+    let aid = account_id.unwrap_or_else(|| "default".to_string());
+    let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Validate destination is within vault root (path traversal protection)
+    validate_vault_path(&vault_path, &vault_root)?;
+
     copy_to_vault_internal(&source_path, &vault_path)
 }
 
@@ -287,6 +338,9 @@ pub async fn delete_from_vault(
     crate::vault::require_biometric(&app, "Unlock vault to delete files").await?;
     let aid = account_id.unwrap_or_else(|| "default".to_string());
     let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Path traversal protection
+    validate_vault_path_for(&vault_path, &vault_root, "delete_from_vault")?;
 
     let path = vault_path.clone();
     tokio::task::spawn_blocking(move || delete_from_vault_internal(&path))
@@ -356,9 +410,15 @@ pub async fn list_vault_dir(
 pub async fn read_vault_file(
     app: tauri::AppHandle,
     path: String,
-    _account_id: Option<String>,
+    account_id: Option<String>,
 ) -> Result<String, SerializedError> {
     crate::vault::require_biometric(&app, "Unlock vault to read files").await?;
+    let aid = account_id.unwrap_or_else(|| "default".to_string());
+    let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Path traversal protection
+    validate_vault_path_for(&path, &vault_root, "read_vault_file")?;
+
     let data = fs::read(&path).await?;
     Ok(base64::engine::general_purpose::STANDARD.encode(&data))
 }
@@ -367,9 +427,14 @@ pub async fn read_vault_file(
 pub async fn copy_vault_to_downloads(
     app: tauri::AppHandle,
     vault_path: String,
-    _account_id: Option<String>,
+    account_id: Option<String>,
 ) -> Result<(), SerializedError> {
     crate::vault::require_biometric(&app, "Unlock vault to export files").await?;
+    let aid = account_id.unwrap_or_else(|| "default".to_string());
+    let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Path traversal protection
+    validate_vault_path_for(&vault_path, &vault_root, "copy_vault_to_downloads")?;
 
     let download_dir = dirs::download_dir().ok_or_else(|| {
         SerializedError::new(error::ERR_NOT_FOUND, "Cannot find Downloads folder")
@@ -411,11 +476,13 @@ pub async fn create_vault_dir(
     account_id: Option<String>,
 ) -> Result<(), SerializedError> {
     crate::vault::require_biometric(&app, "Unlock vault to create folders").await?;
-    fs::create_dir_all(&path).await?;
-
-    // Record directory in DB
     let aid = account_id.unwrap_or_else(|| "default".to_string());
     let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Path traversal protection
+    validate_vault_path_for(&path, &vault_root, "create_vault_dir")?;
+
+    fs::create_dir_all(&path).await?;
     let pool = app.state::<SqlitePool>().inner().clone();
     record_entry_in_db(&pool, &path, &vault_root, &aid, true).await?;
 
@@ -424,7 +491,15 @@ pub async fn create_vault_dir(
 
 #[tauri::command]
 pub async fn set_vault_pin(app: tauri::AppHandle, pin: String) -> Result<(), SerializedError> {
-    let hash = format!("{:x}", Sha256::digest(pin.as_bytes()));
+    // Validate PIN length
+    if pin.len() < 4 || pin.len() > 8 {
+        return Err(SerializedError::new(
+            error::ERR_INVALID_INPUT,
+            "PIN must be between 4 and 8 digits",
+        ));
+    }
+
+    let hash = crate::vault::hash_pin(&pin).await?;
     let vault_root = app
         .path()
         .app_data_dir()
@@ -437,21 +512,29 @@ pub async fn set_vault_pin(app: tauri::AppHandle, pin: String) -> Result<(), Ser
 
 #[tauri::command]
 pub async fn verify_vault_pin(app: tauri::AppHandle, pin: String) -> Result<bool, SerializedError> {
-    let vault_root = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| SerializedError::new(error::ERR_FILE_IO, e.to_string()))?
-        .join("vault");
-    let pin_file = vault_root.join(".vault_pin");
-
-    if !fs::try_exists(&pin_file).await.unwrap_or(false) {
-        return Ok(false);
+    // Check lockout
+    if let Some(remaining) = crate::vault::check_lockout() {
+        return Err(SerializedError::new(
+            crate::error::ERR_AUTH_FAILED,
+            format!("Too many failed attempts. Try again in {} seconds.", remaining),
+        ));
     }
 
-    let stored_hash = fs::read_to_string(&pin_file).await?;
-    let input_hash = format!("{:x}", Sha256::digest(pin.as_bytes()));
+    let result = crate::vault::verify_pin_hash(&app, &pin).await?;
 
-    Ok(stored_hash.trim() == input_hash)
+    if result {
+        crate::vault::clear_attempts();
+    } else {
+        let locked = crate::vault::record_failed_attempt();
+        if locked {
+            return Err(SerializedError::new(
+                crate::error::ERR_AUTH_FAILED,
+                "Too many failed attempts. Locked for 30 seconds.",
+            ));
+        }
+    }
+
+    Ok(result)
 }
 
 /// Returns `true` if a vault PIN has been set.
@@ -606,6 +689,10 @@ pub async fn move_vault_item(
     let aid = account_id.unwrap_or_else(|| "default".to_string());
     let vault_root = get_vault_root_for_account(&app, &aid)?;
 
+    // Path traversal protection
+    validate_vault_path_for(&source_path, &vault_root, "move_vault_item (source)")?;
+    validate_vault_path_for(&dest_path, &vault_root, "move_vault_item (dest)")?;
+
     let source = source_path.clone();
     let dest = dest_path.clone();
     tokio::task::spawn_blocking(move || move_vault_item_internal(&source, &dest))
@@ -698,6 +785,7 @@ pub async fn get_vault_size(
     app: tauri::AppHandle,
     account_id: Option<String>,
 ) -> Result<u64, SerializedError> {
+    crate::vault::require_biometric(&app, "Unlock vault to check size").await?;
     let aid = account_id.unwrap_or_else(|| "default".to_string());
     let vault_root = get_vault_root_for_account(&app, &aid)?;
     let dir = vault_root
@@ -797,7 +885,13 @@ pub async fn db_get_vault_items(
     dir_path: String,
     account_id: Option<String>,
 ) -> Result<Vec<VaultItem>, SerializedError> {
+    crate::vault::require_biometric(&app, "Unlock vault to list items").await?;
     let aid = account_id.unwrap_or_else(|| "default".to_string());
+    let vault_root = get_vault_root_for_account(&app, &aid)?;
+
+    // Path traversal protection
+    validate_vault_path_for(&dir_path, &vault_root, "db_get_vault_items")?;
+
     let pool = app.state::<sqlx::SqlitePool>().inner().clone();
     crate::db::vault::operations::get_vault_items(&pool, &dir_path, &aid).await
 }
@@ -808,6 +902,7 @@ pub async fn db_delete_vault_items_by_account(
     app: tauri::AppHandle,
     account_id: String,
 ) -> Result<(), SerializedError> {
+    crate::vault::require_biometric(&app, "Unlock vault to delete items").await?;
     let pool = app.state::<sqlx::SqlitePool>().inner().clone();
     crate::db::vault::operations::delete_vault_items_by_account(&pool, &account_id).await
 }
@@ -818,6 +913,7 @@ pub async fn db_count_vault_items(
     app: tauri::AppHandle,
     account_id: Option<String>,
 ) -> Result<i64, SerializedError> {
+    crate::vault::require_biometric(&app, "Unlock vault to count items").await?;
     let aid = account_id.unwrap_or_else(|| "default".to_string());
     let pool = app.state::<sqlx::SqlitePool>().inner().clone();
     crate::db::vault::operations::count_vault_items(&pool, &aid).await
