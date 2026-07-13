@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   X, Check, PenLine, UserPlus,
   Paperclip, Building2, ChevronDown, ChevronRight, Info, Activity, FolderOpen,
+  Network, Receipt, Send,
 } from "lucide-react";
 import { getContactFilesBySender, type ContactFile } from "@features/contacts/db/contactFiles";
 import {
@@ -32,6 +33,9 @@ import { ContactFilesList } from "@features/contacts/components/ContactFilesList
 import { EngagementScoreBar } from "@features/contacts/components/EngagementScoreBar";
 import { useContactNotes } from "@features/contacts/hooks/useContactNotes";
 import { useContactStore } from "@features/contacts/stores/contactStore";
+import { listInvoices } from "@features/invoicing/services/invoicing-invoke";
+import type { Invoice } from "@features/invoicing/types";
+import { listCampaignsByContact } from "@shared/services/db/invoke/campaigns";
 
 interface ContactSidebarProps {
   email: string;
@@ -61,9 +65,12 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"info" | "activity" | "files">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "activity" | "files" | "relations">("info");
   const [vaultFiles, setVaultFiles] = useState<ContactFile[]>([]);
   const [engagement, setEngagement] = useState<ContactEngagementRow | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [campaignRels, setCampaignRels] = useState<import("@shared/services/db/schema").CampaignRecipientWithCampaign[]>([]);
+  const [relationsLoading, setRelationsLoading] = useState(false);
 
   const loadedRef = useRef<string | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,6 +173,23 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
       getContactEngagementData(c.id).then((e) => {
         if (!cancelled) setEngagement(e);
       });
+      // Load company invoices + campaign memberships for the Relations tab.
+      setRelationsLoading(true);
+      const run = async () => {
+        try {
+          if (c.company_id) {
+            const inv = await listInvoices(c.company_id);
+            if (!cancelled) setInvoices(inv.slice(0, 8));
+          }
+          const camps = await listCampaignsByContact(c.id);
+          if (!cancelled) setCampaignRels(camps.slice(0, 8));
+        } catch {
+          /* relations are best-effort */
+        } finally {
+          if (!cancelled) setRelationsLoading(false);
+        }
+      };
+      void run();
     });
 
     return () => { cancelled = true; };
@@ -398,6 +422,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
             { id: "info" as const, icon: Info, label: t('contact.info') },
             { id: "activity" as const, icon: Activity, label: t('contact.activity') },
             { id: "files" as const, icon: FolderOpen, label: t('contact.files') },
+            { id: "relations" as const, icon: Network, label: t('contact.relations') },
           ]).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -427,6 +452,81 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
               {t('contact.recentActivity')}
             </h4>
             <ContactTimeline events={activityEvents} isLoading={activityLoading} />
+          </div>
+        ) : activeTab === "relations" ? (
+          <div className="mt-4 space-y-4">
+            {/* Company */}
+            <div>
+              <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                <Building2 size={11} /> {t('contact.company')}
+              </h4>
+              {contact?.company_id ? (
+                <div className="flex items-center justify-between rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
+                  <span className="text-sm text-text-primary truncate">{t('contact.linkedCompany')}</span>
+                  <button
+                    type="button"
+                    onClick={() => navigateToLabel("company")}
+                    className="text-xs text-accent hover:underline shrink-0 ml-2"
+                  >
+                    {t('contact.viewCompany')}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs text-text-tertiary">{t('contact.noCompany')}</p>
+              )}
+            </div>
+
+            {/* Invoices (company) */}
+            <div>
+              <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                <Receipt size={11} /> {t('contact.invoices')}
+              </h4>
+              {relationsLoading ? (
+                <p className="text-xs text-text-tertiary">{t('contact.loading')}</p>
+              ) : invoices.length > 0 ? (
+                <div className="space-y-1">
+                  {invoices.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
+                      <div className="min-w-0">
+                        <div className="text-sm text-text-primary truncate">{inv.invoice_number}</div>
+                        <div className="text-[0.625rem] text-text-tertiary">{inv.status}</div>
+                      </div>
+                      <span className="text-xs text-text-secondary shrink-0 ml-2">
+                        {inv.total_amount.toFixed(2)} {inv.currency}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-text-tertiary">{t('contact.noInvoices')}</p>
+              )}
+            </div>
+
+            {/* Campaigns (recipient of) */}
+            <div>
+              <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                <Send size={11} /> {t('contact.campaigns')}
+              </h4>
+              {relationsLoading ? (
+                <p className="text-xs text-text-tertiary">{t('contact.loading')}</p>
+              ) : campaignRels.length > 0 ? (
+                <div className="space-y-1">
+                  {campaignRels.map((rel) => (
+                    <div key={rel.campaign_id} className="rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-text-primary truncate">{rel.campaign_name}</span>
+                        <span className="text-[0.625rem] text-text-tertiary shrink-0 ml-2">{rel.recipient_status}</span>
+                      </div>
+                      {rel.opened_at != null && (
+                        <div className="text-[0.625rem] text-success mt-0.5">{t('contact.opened')}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-text-tertiary">{t('contact.noCampaignsRel')}</p>
+              )}
+            </div>
           </div>
         ) : (
           <>

@@ -138,7 +138,7 @@ pub async fn db_dashboard_campaigns_open_rate(
     pool: State<'_, SqlitePool>,
 ) -> CmdResult<f64> {
     let result: (i64, i64) = sqlx::query_as(
-        "SELECT COALESCE(SUM(sent_count), 0), COUNT(*) FROM campaign_recipients WHERE opened_at IS NOT NULL"
+        "SELECT COALESCE((SELECT SUM(sent_count) FROM campaigns WHERE id IN (SELECT DISTINCT campaign_id FROM campaign_recipients WHERE opened_at IS NOT NULL)), 0), COUNT(*) FROM campaign_recipients WHERE opened_at IS NOT NULL"
     )
     .fetch_one(&*pool)
     .await
@@ -195,6 +195,26 @@ pub async fn db_list_campaigns(
     company_id: String,
 ) -> CmdResult<Vec<Campaign>> {
     crate::db::tables::campaigns::campaigns::list(&pool, &company_id)
+        .await
+        .map_err(Into::into)
+}
+
+/// List every campaign a contact is a recipient of, with that contact's
+/// delivery/engagement status in each. Powers the contact sidebar "relations"
+/// view.
+///
+/// # Parameters
+/// - `contact_id`: contact whose campaign memberships are returned.
+/// # Returns
+/// A `Vec<CampaignRecipientWithCampaign>` (possibly empty).
+/// # Errors
+/// Database failures surface as `SerializedError`.
+#[tauri::command]
+pub async fn db_list_campaigns_by_contact(
+    pool: State<'_, SqlitePool>,
+    contact_id: String,
+) -> CmdResult<Vec<CampaignRecipientWithCampaign>> {
+    crate::db::tables::campaigns::campaign_recipients::get_campaigns_for_contact(&pool, &contact_id)
         .await
         .map_err(Into::into)
 }

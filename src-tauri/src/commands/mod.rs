@@ -480,6 +480,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             contacts::db_delete_dynamic_segment,
             contacts::db_update_dynamic_segment_refresh,
             contacts::db_get_engagement_data_for_contact,
+            contacts::db_list_import_history,
 
             // === commands::core (58 commands) ===
             core::db_get_account,
@@ -556,6 +557,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crm::db_dashboard_campaigns_open_rate,
             crm::db_dashboard_campaigns_click_rate,
             crm::db_list_campaigns,
+            crm::db_list_campaigns_by_contact,
             crm::db_list_backup_schedules,
             crm::db_insert_analytics_snapshot,
             crm::db_update_campaign_ab_test_config,
