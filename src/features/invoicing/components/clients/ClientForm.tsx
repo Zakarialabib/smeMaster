@@ -5,6 +5,8 @@ import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import { useTranslation } from 'react-i18next';
 import type { Client } from '../../types';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { getUserFriendlyErrorMessage } from '@shared/services/error/safeDbOperation';
 
 type ClientRole = Client['contact_type'];
 
@@ -138,7 +140,10 @@ export default function ClientForm({
         };
         await createClient(payload);
       }
+      notify(client ? 'Client updated' : 'Client created', form.name.trim());
       onClose();
+    } catch (err) {
+      notify(client ? 'Failed to update client' : 'Failed to create client', getUserFriendlyErrorMessage(err, 'save client'));
     } finally {
       setSaving(false);
     }

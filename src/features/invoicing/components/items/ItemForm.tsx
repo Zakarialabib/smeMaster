@@ -4,6 +4,8 @@ import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import type { Item } from '../../types';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { getUserFriendlyErrorMessage } from '@shared/services/error/safeDbOperation';
 
 type ItemType = Item['type'];
 
@@ -110,7 +112,10 @@ export default function ItemForm({
       } else {
         await createItem({ ...base, ...extra } as Parameters<typeof createItem>[0]);
       }
+      notify(item ? 'Product updated' : 'Product created', form.name.trim());
       onClose();
+    } catch (err) {
+      notify(item ? 'Failed to update product' : 'Failed to create product', getUserFriendlyErrorMessage(err, 'save product'));
     } finally {
       setSaving(false);
     }
