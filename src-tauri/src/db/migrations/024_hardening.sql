@@ -4,9 +4,13 @@
 --  enforced in Rust — see PRODUCTION_HARDENING_PLAN.md Phase 2.)
 
 -- ── Templates ──────────────────────────────────────────────────────────────
-CREATE INDEX idx_templates_company_fav ON templates(company_id, is_favorite);
-CREATE INDEX idx_templates_company_sort ON templates(company_id, sort_order);
-CREATE UNIQUE INDEX idx_template_categories_company_name
+-- IF NOT EXISTS guards make this migration safely re-runnable: a prior partial
+-- run may have already committed some of these indexes (the runner applies
+-- statements independently, so a crash leaves the DB at the previous version
+-- with some 024 objects already present).
+CREATE INDEX IF NOT EXISTS idx_templates_company_fav ON templates(company_id, is_favorite);
+CREATE INDEX IF NOT EXISTS idx_templates_company_sort ON templates(company_id, sort_order);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_template_categories_company_name
     ON template_categories(company_id, name);
 
 -- ── Scheduled emails (the "schedule" dispatcher needs these) ───────────────
@@ -14,7 +18,7 @@ ALTER TABLE scheduled_emails ADD COLUMN sent_at INTEGER;
 ALTER TABLE scheduled_emails ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE scheduled_emails ADD COLUMN last_error TEXT;
 -- Dispatcher scan: pick rows due to send.
-CREATE INDEX idx_scheduled_emails_due ON scheduled_emails(status, scheduled_at);
+CREATE INDEX IF NOT EXISTS idx_scheduled_emails_due ON scheduled_emails(status, scheduled_at);
 
 -- ── Calendar events: recurrence + provider-agnostic remote id ───────────────
 ALTER TABLE calendar_events ADD COLUMN rrule TEXT;
@@ -22,7 +26,7 @@ ALTER TABLE calendar_events ADD COLUMN timezone TEXT;
 ALTER TABLE calendar_events ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE calendar_events ADD COLUMN recurrence_id TEXT;
 ALTER TABLE calendar_events ADD COLUMN remote_event_id TEXT;
-CREATE INDEX idx_calendar_events_cal_start ON calendar_events(calendar_id, start_time);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_cal_start ON calendar_events(calendar_id, start_time);
 
 -- Generic remote id so non-Google providers (CalDAV/Outlook) can coexist.
 -- NOTE: the legacy UNIQUE(company_id, google_event_id) stays for Google back-compat;
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS event_attendees (
     optional INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
-CREATE INDEX idx_event_attendees_event ON event_attendees(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_attendees_event ON event_attendees(event_id);
 
 CREATE TABLE IF NOT EXISTS event_reminders (
     id TEXT PRIMARY KEY,

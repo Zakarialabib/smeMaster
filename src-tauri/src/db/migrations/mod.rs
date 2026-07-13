@@ -111,10 +111,28 @@ pub async fn run(pool: &SqlitePool, force_drop: bool) -> Result<(), String> {
             if trimmed.is_empty() {
                 continue;
             }
-            sqlx::raw_sql(sqlx::AssertSqlSafe(trimmed))
-                .execute(pool)
-                .await
-                .map_err(|e| format!("Migration {name} (v{version}) failed: {e}\nSQL: {trimmed}"))?;
+            match sqlx::raw_sql(sqlx::AssertSqlSafe(trimmed)).execute(pool).await {
+                Ok(_) => {}
+                Err(e) => {
+                    let msg = e.to_string();
+                    // Tolerate idempotent-reapply errors. The runner applies each
+                    // statement independently (no wrapping transaction), so a crash
+                    // mid-migration leaves the DB at the previous version with some
+                    // of this migration's objects already committed. On the next
+                    // startup we re-run the whole migration; statements that already
+                    // landed ("already exists" / "duplicate column") are skipped so
+                    // the migration can finally complete instead of failing forever.
+                    if msg.contains("already exists") || msg.contains("duplicate column") {
+                        log::warn!(
+                            "[migrate] {name} (v{version}): statement already applied, skipping: {trimmed}"
+                        );
+                        continue;
+                    }
+                    return Err(format!(
+                        "Migration {name} (v{version}) failed: {e}\nSQL: {trimmed}"
+                    ));
+                }
+            }
         }
 
         // Record the migration
