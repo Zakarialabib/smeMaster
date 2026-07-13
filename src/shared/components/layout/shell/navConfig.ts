@@ -40,6 +40,7 @@ import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/na
 import { router } from "@/router";
 import type { NavRailItem } from "./NavRail";
 import type { LucideIcon } from "lucide-react";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface NavRailSubItem {
