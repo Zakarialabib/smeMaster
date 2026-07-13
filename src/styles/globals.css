@@ -127,6 +127,11 @@
   --desktop-density-compact: 32px;
   --desktop-density-normal: 40px;
   --desktop-density-relaxed: 48px;
+  /* Global UI density, driven by [data-density] on <html> (set in Appearance). */
+  --ui-row-height: 40px;
+[data-density="compact"] { --ui-row-height: 32px; }
+[data-density="normal"] { --ui-row-height: 40px; }
+[data-density="relaxed"] { --ui-row-height: 48px; }
   --desktop-nav-item-height: 36px;
   --desktop-toolbar-height: 44px;
   --desktop-statusbar-height: 28px;

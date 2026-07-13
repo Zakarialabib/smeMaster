@@ -134,5 +134,11 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
     document.documentElement.setAttribute("data-surface", surface);
   }, [surface]);
 
+  // Sync UI density (compact | normal | relaxed) to <html>
+  const density = useThemeStore((s) => s.density);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-density", density);
+  }, [density]);
+
   return { loading, error };
 }

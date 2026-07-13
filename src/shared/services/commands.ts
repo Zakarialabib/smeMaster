@@ -390,6 +390,7 @@ interface ThemePreference {
   fontScale: string;
   reduceMotion: boolean;
   surface: string;
+  density: string;
 }
 
 // ── Observability (Gate 6) ────────────────────────────────────────────────

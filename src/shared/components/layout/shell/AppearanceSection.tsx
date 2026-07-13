@@ -10,6 +10,8 @@ export interface AppearanceSectionProps {
   onAccentChange: (color: string) => void;
   currentSurface?: "flat" | "glass";
   onSurfaceChange?: (surface: "flat" | "glass") => void;
+  currentDensity?: "compact" | "normal" | "relaxed";
+  onDensityChange?: (density: "compact" | "normal" | "relaxed") => void;
 }
 
 const PRESET_COLORS = [
@@ -28,6 +30,8 @@ export function AppearanceSection({
   onAccentChange,
   currentSurface = "flat",
   onSurfaceChange,
+  currentDensity = "normal",
+  onDensityChange,
 }: AppearanceSectionProps) {
   return (
     <section className="space-y-6">
@@ -94,6 +98,32 @@ export function AppearanceSection({
           <p className="mt-2 text-xs text-[var(--text-tertiary)]">
             Glass adds frosted orbs and blur for a richer look.
           </p>
+        </div>
+      )}
+
+      {/* UI density */}
+      {onDensityChange && (
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
+            Density
+          </h3>
+          <div className="flex gap-3">
+            {([
+              { id: "compact", label: "Compact" },
+              { id: "normal", label: "Normal" },
+              { id: "relaxed", label: "Relaxed" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => onDensityChange(opt.id)}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${currentDensity === opt.id ? "border-accent bg-accent/10 text-accent" : "border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover"}`}
+                aria-pressed={currentDensity === opt.id}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </section>

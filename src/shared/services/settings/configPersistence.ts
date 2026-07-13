@@ -28,6 +28,7 @@ const SYNC_LIST: SyncEntry[] = [
   { field: "theme", dbKey: "theme", serialize: String },
   { field: "colorTheme", dbKey: "color_theme", serialize: String },
   { field: "fontScale", dbKey: "font_size", serialize: String },
+  { field: "density", dbKey: "ui_density", serialize: String },
   { field: "surface", dbKey: "surface", serialize: String },
   { field: "reduceMotion", dbKey: "reduce_motion", serialize: (v) => (v ? "true" : "false") },
   { field: "readingPanePosition", dbKey: "reading_pane_position", serialize: String },
