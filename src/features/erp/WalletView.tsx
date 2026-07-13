@@ -12,6 +12,7 @@ import {
   getWallet, creditWallet, debitWallet,
   listChartOfAccounts, listJournalEntries,
 } from '@shared/services/db/invoke/invoicing';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 const CASH_CODE = '1000';
 const PRESETS = [100, 500, 1000, 5000];
@@ -321,7 +322,7 @@ function WalletActionModal({
       await onDone();
     } catch (e: any) {
       setSaving(false);
-      window.alert(e?.message ?? 'Transaction failed');
+      notify('Wallet', e?.message ?? 'Transaction failed');
     }
   }
 

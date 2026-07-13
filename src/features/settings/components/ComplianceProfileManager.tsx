@@ -4,6 +4,7 @@ import { Shield, ShieldCheck, ShieldOff, Plus, Trash2, Download, Upload, Check, 
 import { getAllProfiles, upsertProfile, setProfileActive, setDefaultProfile } from "@features/mail/db/complianceProfiles";
 import type { ComplianceProfile, ComplianceRule, ComplianceRuleType, RuleSeverity } from "@features/mail/services/compliance/types";
 import { Button } from "@shared/components/ui/Button";
+import { notify } from "@shared/services/notifications/toastHelper";
 
 const RULE_TYPE_OPTIONS: { value: ComplianceRuleType; label: string }[] = [
   { value: "signature_required", label: "Signature Required" },
@@ -121,13 +122,13 @@ export function ComplianceProfileManager() {
       const text = await file.text();
       const parsed = JSON.parse(text) as ComplianceProfile;
       if (!parsed.code || !parsed.name || !parsed.rules) {
-        alert(t("compliance.invalidJson"));
+        notify(t("compliance.invalidJson"), "");
         return;
       }
       await upsertProfile(parsed);
       await loadProfiles();
     } catch {
-      alert(t("compliance.invalidJson"));
+      notify(t("compliance.invalidJson"), "");
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };

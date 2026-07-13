@@ -8,6 +8,7 @@ import { useCompanyStore, getActiveCompany } from './companyStore';
 import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
 import type { Item } from '@shared/services/db/schema';
 import { listItems, listLowStock, updateItem } from '@shared/services/db/invoke/invoicing';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 export default function StockView() {
   const companies = useCompanyStore((s) => s.companies);
@@ -218,7 +219,7 @@ function AdjustStockModal({
     } catch (e: any) {
       setSaving(false);
       // Surface the error in the modal title area via alert-free inline message.
-      window.alert(e?.message ?? 'Failed to save stock adjustment');
+      notify('Stock', e?.message ?? 'Failed to save stock adjustment');
     }
   }
 
