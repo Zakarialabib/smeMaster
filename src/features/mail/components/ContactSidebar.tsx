@@ -249,7 +249,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
       setContact(refreshed);
     }
     setTimeout(() => setExtractFeedback(null), 2500);
-  }, [contact, bodyText, email]);
+  }, [contact, bodyText, email, t]);
 
   const handleStartEditName = useCallback(() => {
     setEditNameValue(contact?.display_name ?? name ?? "");
