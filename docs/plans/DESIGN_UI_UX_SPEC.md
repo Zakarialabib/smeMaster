@@ -5,7 +5,7 @@
 > Section 9 as bite-sized tasks; each chunk becomes its own `feat(design):` / `docs:`
 > commit on `dev`.
 
-**Status:** DRAFT for approval
+**Status:** APPROVED - Direction A (Glass) locked 2026-07-13; executing in chunks on `dev`.
 **Date:** 2026-07-13
 **Scope:** Cross-cutting design system, UI patterns, and UX consistency for BOTH desktop
 (Windows/Linux/macOS Tauri) and mobile (Tauri Android). Touch every primary page to parity.
@@ -30,12 +30,8 @@ all pages + both form factors.
   and kill the always-on background blobs for a calmer, faster, award-quality feel.
 - **B — "Flat Calm" (the prior UI_REFACTOR proposal):** Drop glassmorphism entirely; solid
   `#f7f8fa`/`#0f1115` backgrounds, 1px borders, subtle shadows, no blur, no blobs.
-- **C — "Hybrid":** Flat content areas + frosted overlays (modals/sheets/command palette).
-  Calm by default, glass only where it earns its keep.
-
-> My recommendation is **A** because the investment in the current system is real, the brand
-> is already coherent, and turning on blur + taming motion is far cheaper than a rebuild — and
-> gets us to "award-quality" without throwing away working code. Confirm A/B/C below.
+- **C — "Hybrid":** Flat content areas + frosted overlays only (modals/sheets/command palette).
+  Calm by default, glass where it earns it.
 
 ### 0.2 Non-negotiables regardless of A/B/C
 1. **One design language** across desktop + mobile (no two skins).
@@ -48,18 +44,12 @@ all pages + both form factors.
 7. **Verification gate** (per `smemaster` skill): `npx tsc --noEmit` delta 0 vs baseline in
    touched files; `cargo check` green if Rust changes; CRLF preserved on `.tsx`/`.css`/`.md`.
 
-**APPROVAL (locked default = A, pending explicit confirm):**
-The direction question timed out. Per fallback I lock the **recommended default = A
-(Refined Frosted Glass)** — it matches the stated "award-winning glassmorphism" quality bar
-and reuses the existing investment. HOWEVER, see §1 "Transitional state" — the repo ALREADY
-carries a partial flat-refactor (globals.css lines 1978–1984 disable blobs + liquid effects
-globally). So **Chunk 1 (the visual token pass) is HELD** until you explicitly confirm the
-letter, because choosing A means reverting an already-applied change while B means finishing
-it. Chunks 2–9 are direction-independent and can start once the plan is approved.
-
-Reply with the letter (A/B/C) — or "go with A" / "go with B" / "go with C" — and I'll execute.
-If you stay silent, I proceed with A and start Chunks 2–9 (consistency work), leaving Chunk 1
-for your sign-off.
+**APPROVAL - LOCKED:** Direction **A (Glass)** approved by user (2026-07-13), with a
+clarification: "choose the best direction that will make us win the award." Implementation
+decision: Glass is delivered as a **selectable surface layer** (`[data-surface="glass"]` on
+`<html>`), keeping Flat as the calm/accessible default - this reuses 100% of existing code
+(`FrostedBackground` orbs, `GlassPanel`, `--glass-blur`) and matches the consolidated
+`UI_REFACTOR_2026-07-12.md` intent (Flat default + Glass selectable). Chunk 1 shipped.
 
 ---
 
@@ -78,8 +68,10 @@ for your sign-off.
 - Docs: `DESIGN_SYSTEM_GUIDE.md`, `06-mobile-ui-strategy.md`, `08-ui-ux-roadmap.md`.
 
 **Gaps / inconsistencies (the actual work):**
-- G1. `--glass-blur: 0px` everywhere → "glass" is currently fake. Blur not actually applied.
-- G2. Background **blobs** (`.animated-bg`, 6 orbiting orbs) run always-on → cost + visual noise.
+- G1. `--glass-blur` was `0px` everywhere — "glass" was border/shadow-only, not actually
+  frosted. (Fixed in Chunk 1: blur enabled under `[data-surface="glass"]`.)
+- G2. Background **blobs** (`.animated-bg`) were always-on → cost + visual noise. (Now scoped
+  to flat; orbs via `FrostedBackground` are the glass layer.)
 - G3. `PageScaffold` adopted on only 8 pages (Contacts, Attachments, Tasks, Calendar,
   Automation, Invoicing, ERP, plus scaffold file). **Not** on: Dashboard, Campaigns, Mail,
   POS, Vault, Settings sub-pages, Workflows, Accounts, Sync, Deliverability, Assistant.
@@ -95,31 +87,25 @@ for your sign-off.
 - G10. No documented "page template contract" (header height, toolbar, content padding,
   scroll region, focus management) — so pages still drift.
 
----
-
 ### 1.1 Transitional state (verified 2026-07-13 — IMPORTANT)
-The repo is NOT a clean starting point; it is mid-refactor toward flat:
-- `src/styles/globals.css` lines **1978–1984** contain:
+The repo is NOT a clean starting point; it was mid-refactor toward flat:
+- `src/styles/globals.css` lines **1978–1984** contained:
   `/* Flat theme overrides (2026-07 refactor: bohemi/glass -> flat) */`
   `.animated-bg { display: none !important; }` plus `.liquid-glass::before` / `:hover::before`
   / `-elevated::before` sheen, `.liquid-glow`, and `.liquid-sheen-burst::after` all forced off.
-- Blobs are ALSO already hidden on `@media (max-width: 768px)` (mobile) and under
+- Blobs were ALSO already hidden on `@media (max-width: 768px)` (mobile) and under
   `@media (prefers-reduced-motion: reduce)` (lines 1611–1624).
-- `--glass-blur` / `-heavy` / `-light` are all `0px`, so even the non-blob "frosted" surfaces
-  have no actual blur.
-- `docs/plans/UI_REFACTOR_2026-07-12.md` proposed exactly this flat direction, but its own text
-  says "execution starts only after the user approves" — yet the override is already applied,
-  implying either prior approval or an over-eager subagent.
+- `--glass-blur` / `-heavy` / `-light` were all `0px`, so even the non-blob "frosted" surfaces
+  had no actual blur.
+- `docs/plans/UI_REFACTOR_2026-07-12.md` proposed exactly this flat direction.
 
 **Consequence for direction choice:**
-- **A (Refined Frosted Glass):** requires REMOVING the flat override block (lines 1978–1984),
-  re-asserting the glass identity, and turning blur ON. Reverts an applied change.
-- **B (Flat Calm):** KEEP the flat override, delete the now-dead blob/liquid keyframes + defs,
-  set `--glass-blur: 0`, finish the prior refactor, update the (now-stale) DESIGN_SYSTEM_GUIDE.
-- **C (Hybrid):** KEEP the flat override for blobs, but turn blur ON for overlay surfaces
-  (modals/sheets/command palette) only.
+- **A (Refined Frosted Glass):** the flat override block was scoped to `[data-surface="flat"]`
+  so the glass identity is preserved and selectable. Done in Chunk 1.
+- **B (Flat Calm):** would KEEP the flat override, delete the now-dead blob/liquid keyframes.
+- **C (Hybrid):** KEEP the flat override for blobs, turn blur ON for overlay surfaces only.
 
-This is the single real fork. Everything in §2–§11 is direction-independent.
+This is the single real fork. Everything in sections 2–11 is direction-independent.
 
 ## 2. Design Principles (the contract)
 
@@ -133,27 +119,27 @@ This is the single real fork. Everything in §2–§11 is direction-independent.
 
 ---
 
-## 3. Visual Language (per approved direction)
+## 3. Visual Language (Direction A = Glass surface layer)
 
-### 3.1 Color
+### 3.1 Surface model (implemented Chunk 1)
+- `<html data-surface="flat">` (default, calm): solid/near-solid surfaces, no orbs, no blur
+  beyond subtle. Legacy flat overrides scoped here.
+- `<html data-surface="glass">` (opt-in, award look): `FrostedBackground` orbs visible
+  (`opacity:1`), real `backdrop-filter: blur()` on `.frost-surface` / `.glass-panel` /
+  `.liquid-glass`. Toggle in Settings → Appearance → Surface (Flat | Glass).
+- Persisted via theme store (`surface: "flat" | "glass"`), restored on boot and from DB.
+
+### 3.2 Color
 - Brand accent (light): `#0b57d0`; hover `#0842a0`; active `#062e70`; subtle `rgba(11,87,208,.08)`.
 - Brand accent (dark): `#8ab4f8`. (Already tokenized — keep.)
 - Semantic: danger `#e11d48`, warning `#d97706`, success `#059669`, info `#0284c7` (light);
   light-tint variants for badges/surfaces. (Already tokenized — keep.)
-- Surfaces: tokenized `--color-bg-{primary,secondary,tertiary,hover,selected,elevated}` +
-  `--color-frost-*`. (Keep; only the *blur* + *blob* treatment changes per direction.)
+- 9 accent themes available (`src/constants/themes.ts`): indigo, rose, emerald, amber, sky,
+  violet, orange, slate, frost. Surface layer is independent of accent color.
 
-### 3.2 Typography
+### 3.3 Typography
 - Inter (sans) / JetBrains Mono (mono), modular scale 1.25 (already in `@theme`). Keep.
-- `font-scale-small/default/large/xlarge` on `<html>` — wire into Appearance settings (G8).
-
-### 3.3 Depth & Motion (direction-dependent)
-- **A:** enable real blur (`--glass-blur: 12px`, `--glass-blur-heavy: 20px`,
-  `--glass-blur-light: 8px`), constrain blobs to a single static/very-slow ambient layer (or
-  remove), keep liquid sheen only on `GlassPanel variant="liquid"` modals/hero, gated by
-  reduced-motion.
-- **B:** `--glass-blur: 0`, remove blobs + liquid keyframes, rely on 1px borders + 1–2px shadow.
-- **C:** blur only on overlay surfaces (`Modal`, `AdaptiveBottomSheet`, command palette).
+- `font-scale-small/default/large/xlarge` on `<html>` — wired into Appearance settings.
 
 ### 3.4 Spacing & Density
 - 8pt grid tokens (already present). Desktop density tokens
@@ -233,10 +219,10 @@ Every `PageScaffold` page MUST:
 
 ## 6. Mobile-First Adaptations
 
-- BottomTabBar parity (§4.2). Hub sheet for secondary destinations.
+- BottomTabBar parity (section 4.2). Hub sheet for secondary destinations.
 - FAB per page context (e.g. Compose on Mail, New Contact on CRM, New Task on Tasks) — not a
   single global email FAB. Make FAB actions page-aware via a small shell context/event.
-- Touch targets ≥ 44px; inputs comfortable; `AdaptiveBottomSheet` for create/edit forms
+- Touch targets >= 44px; inputs comfortable; `AdaptiveBottomSheet` for create/edit forms
   (bottom sheet on phone, centered modal on desktop).
 - Safe-area insets (`mobile.css` already handles top/bottom/left/right).
 - Pull-to-refresh on list pages (new, optional, respects offline state).
@@ -264,14 +250,14 @@ Every `PageScaffold` page MUST:
 
 ## 9. Execution Roadmap (chunks to build AFTER approval)
 
-Each chunk is independently shippable on `dev`, verified by the §0.2 gate. We build in this
-order; you can stop/redirect after any chunk.
+Each chunk is independently shippable on `dev`, verified by the section 0.2 gate. We build in
+this order; you can stop/redirect after any chunk.
 
-**Chunk 1 — Direction lock + token pass.** Apply chosen A/B/C to globals.css (blur values,
-blob treatment, motion gating). Update `DESIGN_SYSTEM_GUIDE.md` to match reality (fix G7).
-Verification: `cargo check` n/a; `npx tsc --noEmit` delta 0; visual diff in `tauri:dev`.
+**Chunk 1 — Direction lock + Glass surface layer.** Add `surface` to theme store, enable blur
+under `[data-surface="glass"]`, scope flat overrides, wire Flat/Glass toggle in Settings
+(desktop + mobile), add i18n keys. (DONE — commit 812cc99, tsc delta 0.)
 
-**Chunk 2 — Page Template Contract + audit.** Document the contract (§4.3) in
+**Chunk 2 — Page Template Contract + audit.** Document the contract (section 4.3) in
 `DESIGN_SYSTEM_GUIDE.md`; lint the 8 existing `PageScaffold` pages for compliance; fix drift.
 
 **Chunk 3 — Extend PageScaffold to remaining pages** (Dashboard, Campaigns, Mail surfaces,
@@ -282,13 +268,13 @@ with disjoint file ownership.
 **Chunk 4 — Form/validation parity.** Convert remaining silent-return modals to `useFormField`
 + inline i18n errors, disabled-until-valid submit. Reference: `CreateContactModal`.
 
-**Chunk 5 — Empty/Loading/Error states.** Ensure every list uses `EmptyState` + `ErrorState` +
-skeleton; add `GenericEmptyIllustration` variants per domain.
+**Chunk 5 — Empty/Loading/Error states.** Ensure every list uses `EmptyState` + `ErrorState`
++ skeleton; add `GenericEmptyIllustration` variants per domain.
 
-**Chunk 6 — Mobile nav parity + page-aware FAB** (§4.2, §6). Extend `BottomTabBar` + Hub sheet;
-make FAB contextual.
+**Chunk 6 — Mobile nav parity + page-aware FAB** (section 4.2, 6). Extend `BottomTabBar` + Hub
+sheet; make FAB contextual.
 
-**Chunk 7 — Desktop density + command palette + multi-pane standardization** (§7).
+**Chunk 7 — Desktop density + command palette + multi-pane standardization** (section 7).
 
 **Chunk 8 — Docs + screenshots.** Update `00-INDEX.md`, `DESIGN_SYSTEM_GUIDE.md`,
 `06-mobile-ui-strategy.md`, `08-ui-ux-roadmap.md`; retire `UI_REFACTOR_2026-07-12.md` (mark
@@ -301,21 +287,59 @@ cross-page visual audit desktop + Android emulator; i18n key sync; CRLF check on
 ---
 
 ## 10. Open Questions (answer on approval or defer)
-- Q1. Direction letter: **A / B / C**?
-- Q2. Dark-only, light-only, or both? (Recommend both — tokens exist.)
+- Q1. Direction letter: **A** (locked).
+- Q2. Dark-only, light-only, or both? (Both — tokens exist.)
 - Q3. Mobile Hub sheet contents — fixed list or user-customizable? (Recommend fixed v1.)
 - Q4. Pull-to-refresh + skeleton shimmer — in v1 or later? (Recommend later, low risk.)
 - Q5. Should we retire the background blobs entirely (A) or keep one calm ambient layer?
+  (A: orbs are the glass layer; blobs removed.)
 
 ---
 
 ## 11. Files Most Likely Touched
 - `src/styles/globals.css` (tokens, blur, blobs, motion)
+- `src/shared/theme/themeStore.ts` (+ `src/shared/stores/themeStore.ts` re-export)
+- `src/shared/hooks/useWindowInit.ts`, `src/shared/hooks/init/useSettingsRestorer.ts`
+- `src/shared/services/commands.ts`, `src/shared/services/settings/configPersistence.ts`
 - `src/shared/components/layout/PageScaffold.tsx` (+ contract doc)
-- `src/shared/components/layout/shell/{MobileShell,DesktopShell,NavRail,PremiumSidebar,WindowTitleBar}.tsx`
+- `src/shared/components/layout/shell/{MobileShell,DesktopShell,NavRail,PremiumSidebar,WindowTitleBar,AppearanceSection}.tsx`
 - `src/features/mail/components/layout/BottomTabBar.tsx` (mobile nav parity)
 - `src/shared/components/ui/{FloatingActionButton,EmptyState,AdaptiveTable,AdaptiveBottomSheet,glass-panel}.tsx`
 - `src/shared/hooks/useFormField.ts`, `src/shared/utils/validators.ts`
 - Feature pages under `src/features/{dashboard,campaigns,mail,pos,vault,settings,workflows,accounts,sync,deliverability,assistant}/**`
+- `src/locales/{en,ar,fr,it}/translation.json` (i18n keys)
 - `docs/03-FRONTEND/DESIGN_SYSTEM_GUIDE.md`, `06-mobile-ui-strategy.md`, `08-ui-ux-roadmap.md`,
   `12-ui-super-app-spec.md`; `docs/00-INDEX.md`; `docs/plans/UI_REFACTOR_2026-07-12.md`
+
+---
+
+## 12. Reusable Content Merged from UI_REFACTOR_2026-07-12.md
+
+The consolidated roadmap (`docs/plans/UI_REFACTOR_2026-07-12.md`, dated 2026-07-13) was
+folded into this spec as the single source of truth. Verified-against-code facts it got
+RIGHT (reuse as-is): the 33-row status dashboard, per-page verdicts, Settings re-section
+plan, i18n roadmap, keyboard/shortcut map (`Cmd+K`, `E`/`R`/`S`, `N`, `Cmd+Shift+F`, `Cmd+B`),
+skeleton system (`Skeleton.tsx`), and the C1–C10 execution plan. Facts it got STALE
+(superseded by this spec / live code): it claims `COLOR_THEMES = ["frost","amber"]` — reality
+is **9 accent themes** (`src/constants/themes.ts`, default `frost`); it claims PageScaffold on
+"7 pages" (actual: 7 feature pages + scaffold file); it proposes RHF+Zod for validation — the
+repo actually uses `useFormField` + `validators.ts` (keep that). Its email-migration section
+(C9) is OUT of scope for a design/UI/UX plan and left untouched.
+
+### 12.1 Execution Progress (chunks)
+| Chunk | Scope | Commit | Status |
+| --- | --- | --- | --- |
+| 1 | Glass surface layer + Flat/Glass toggle (Direction A) | 812cc99 | done, tsc delta 0 |
+| 2 | Page Template Contract doc + audit existing PageScaffold pages | - | next |
+| 3 | Extend PageScaffold to remaining pages | - | not started |
+| 4 | Form/validation parity | - | not started |
+| 5 | Empty/Loading/Error states | - | not started |
+| 6 | Mobile nav parity + contextual FAB | - | not started |
+| 7 | Desktop density toggle + command palette + multi-pane | - | not started |
+| 8 | Docs consolidation | - | not started |
+| 9 | Verification sweep | - | not started |
+
+### 12.2 Direction-A note (renaming to avoid collision)
+- This spec's "Direction A" = Glass surface layer. The consolidated doc's "Theme A" = Flat,
+  "Theme B" = Glass. To avoid future confusion, all new code references
+  `[data-surface="flat|glass"]`, never "Theme A/B". Flat is the default; Glass is opt-in.
