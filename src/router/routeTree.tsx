@@ -147,7 +147,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/mail/$label", params: { label: "inbox" } });
+    throw redirect({ to: "/dashboard" });
   },
 });
 
@@ -442,10 +442,10 @@ export const notFoundRoute = createRoute({
       <h1 className="text-2xl font-bold text-text-primary">Page Not Found</h1>
       <p className="text-text-secondary">The page you're looking for doesn't exist.</p>
       <a
-        href="#/mail/inbox"
+        href="#/dashboard"
         className="text-accent hover:underline text-sm font-medium"
       >
-        Back to Inbox
+        Back to Dashboard
       </a>
     </div>
   ),
