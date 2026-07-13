@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
 export type DeviceType = 'printer' | 'scanner' | 'scale' | 'cash_drawer';
@@ -39,7 +39,7 @@ export const useHardwareStore = create<HardwareState>()(
     }),
     {
       name: 'smemaster-hardware-configs',
-      storage: tauriStoreStorage,
+      storage: createJSONStorage(() => tauriStoreStorage),
     }
   )
 );

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
 export interface Product {
@@ -66,7 +66,7 @@ export const usePosStore = create<PosState>()(
     }),
     {
       name: 'smemaster-pos-cart',
-      storage: tauriStoreStorage,
+      storage: createJSONStorage(() => tauriStoreStorage),
     }
   )
 );
