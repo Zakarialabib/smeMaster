@@ -1621,7 +1621,11 @@
       "clients": "Clienti",
       "items": "Articoli",
       "settings": "Impostazioni"
-    }
+    },
+    "clientsNoMatches": "[TODO] invoicing.clientsNoMatches",
+    "clientsEmptyTitle": "[TODO] invoicing.clientsEmptyTitle",
+    "clientsNoMatchesHint": "[TODO] invoicing.clientsNoMatchesHint",
+    "clientsEmptyHint": "[TODO] invoicing.clientsEmptyHint"
   },
   "automation": {
     "title": "Automazione",

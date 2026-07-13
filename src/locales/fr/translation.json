@@ -1622,7 +1622,11 @@
       "clients": "Clients",
       "items": "Articles",
       "settings": "Paramètres"
-    }
+    },
+    "clientsNoMatches": "[TODO] invoicing.clientsNoMatches",
+    "clientsEmptyTitle": "[TODO] invoicing.clientsEmptyTitle",
+    "clientsNoMatchesHint": "[TODO] invoicing.clientsNoMatchesHint",
+    "clientsEmptyHint": "[TODO] invoicing.clientsEmptyHint"
   },
   "automation": {
     "title": "Automatisation",

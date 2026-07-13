@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search, Plus, Users, Trash2, Check, AlertTriangle, Phone, MapPin,
 } from 'lucide-react';
@@ -272,18 +273,19 @@ function ListSkeleton() {
 }
 
 function EmptyState({ hasClients, onNew }: { hasClients: boolean; onNew: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="p-12 sm:p-16 text-center">
       <div className="w-16 h-16 rounded-2xl bg-bg-tertiary flex items-center justify-center mx-auto mb-4 text-text-tertiary">
         <Users size={30} />
       </div>
       <h3 className="text-lg font-bold text-text-primary">
-        {hasClients ? 'No matches' : 'No clients yet'}
+        {hasClients ? t("invoicing.clientsNoMatches") : t("invoicing.clientsEmptyTitle")}
       </h3>
       <p className="text-text-secondary text-sm mt-1 max-w-xs mx-auto">
         {hasClients
-          ? 'Try adjusting your search.'
-          : 'Add your customers and suppliers to start billing them.'}
+          ? t("invoicing.clientsNoMatchesHint")
+          : t("invoicing.clientsEmptyHint")}
       </p>
       {!hasClients && (
         <Button icon={<Plus size={16} />} className="mt-5" onClick={onNew}>

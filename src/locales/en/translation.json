@@ -1684,7 +1684,11 @@
       "clients": "Clients",
       "items": "Items",
       "settings": "Settings"
-    }
+    },
+    "clientsEmptyTitle": "No clients yet",
+    "clientsEmptyHint": "Only Client and Supplier contacts appear here. Contacts from your CRM or email sync are saved as 'contact' and won't show — add them with \"New Client\" to start billing them.",
+    "clientsNoMatches": "No matches",
+    "clientsNoMatchesHint": "Try adjusting your search."
   },
   "automation": {
     "title": "Automation",

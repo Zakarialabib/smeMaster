@@ -134,10 +134,12 @@ export function AutomationPage() {
   if (showBuilder && activeAccountId) {
     return (
       <div className="flex-1 overflow-hidden">
-        <AutomationBuilder
-          accountId={activeAccountId}
-          onSaveSuccess={() => {}}
-        />
+        <Suspense fallback={<SkeletonPage />}>
+          <AutomationBuilder
+            accountId={activeAccountId}
+            onSaveSuccess={() => {}}
+          />
+        </Suspense>
       </div>
     );
   }

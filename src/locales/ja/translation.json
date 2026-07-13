@@ -17,7 +17,8 @@
     "mail": "メール",
     "settings": "設定",
     "label": "ラベル",
-    "noItems": "項目なし"
+    "noItems": "項目なし",
+    "more": "[TODO] nav.more"
   },
   "onboarding": {
     "step1_title": "SMEMasterへようこそ",
@@ -700,7 +701,11 @@
     "lmstudioModelPlaceholder": "[TODO] e.g. llama-3.2-3b-instruct",
     "lmstudioDetecting": "[TODO] Detecting…",
     "lmstudioDetect": "[TODO] Auto-Detect Models",
-    "lmstudioConnected": "[TODO] LM Studio connected"
+    "lmstudioConnected": "[TODO] LM Studio connected",
+    "surface": "[TODO] settings.surface",
+    "surfaceFlat": "[TODO] settings.surfaceFlat",
+    "surfaceGlass": "[TODO] settings.surfaceGlass",
+    "surfaceGlassHint": "[TODO] settings.surfaceGlassHint"
   },
   "addAccount": {
     "easySetup": "簡単セットアップ IMAP + アプリパスワード ",
@@ -1547,6 +1552,10 @@
     "yourCompany": "[TODO] Your Company",
     "lowStock": "[TODO] low stock",
     "newDocument": "[TODO] New Document",
-    "retry": "[TODO] Retry"
+    "retry": "[TODO] Retry",
+    "clientsNoMatches": "[TODO] invoicing.clientsNoMatches",
+    "clientsEmptyTitle": "[TODO] invoicing.clientsEmptyTitle",
+    "clientsNoMatchesHint": "[TODO] invoicing.clientsNoMatchesHint",
+    "clientsEmptyHint": "[TODO] invoicing.clientsEmptyHint"
   }
 }
