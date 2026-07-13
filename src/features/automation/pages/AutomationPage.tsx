@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   List,
   GitBranch,
+  LayoutTemplate,
 } from "lucide-react";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
@@ -20,6 +21,7 @@ import { useAutomationStore } from "@features/automation/stores/automationStore"
 import { AutomationRuleCard } from "@features/automation/components/AutomationRuleCard";
 import { AutomationRuleList } from "@features/automation/components/AutomationRuleList";
 import { AutomationRuleEditor } from "@features/automation/components/AutomationRuleEditor";
+import { WorkflowTemplatesGallery } from "@features/automation/components/WorkflowTemplatesGallery";
 import { upsertWorkflowRule } from "@features/settings/db/workflowRules";
 
 // Heavy, conditionally-rendered UI: the visual flow builder pulls in xyflow
@@ -66,6 +68,9 @@ export function AutomationPage() {
   const closeAiModal = useAutomationStore((s) => s.closeAiModal);
   const setViewMode = useAutomationStore((s) => s.setViewMode);
   const openBuilder = useAutomationStore((s) => s.openBuilder);
+  const showTemplates = useAutomationStore((s) => s.showTemplates);
+  const openTemplates = useAutomationStore((s) => s.openTemplates);
+  const closeTemplates = useAutomationStore((s) => s.closeTemplates);
 
   useEffect(() => {
     if (activeAccountId) {
@@ -92,6 +97,30 @@ export function AutomationPage() {
       requestDelete(id);
     },
     [requestDelete],
+  );
+
+  // ── Templates Gallery ──────────────────────────────────────────────
+
+  const handleCreateFromTemplate = useCallback(
+    async (preset: WorkflowPreset) => {
+      if (!activeAccountId) return;
+      try {
+        await upsertWorkflowRule({
+          companyId: activeAccountId,
+          name: preset.name,
+          triggerEvent: preset.trigger_event,
+          triggerConditions: preset.trigger_conditions,
+          actions: preset.actions,
+        });
+        closeTemplates();
+        await loadRules(activeAccountId);
+        notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
+      } catch (err) {
+        console.error("Failed to create workflow from template:", err);
+        notify(t("automation.notifyTitle"), t("automation.notifyFailed"));
+      }
+    },
+    [activeAccountId, loadRules, closeTemplates, t],
   );
 
   // ── AI Create ───────────────────────────────────────────────────────
@@ -193,6 +222,14 @@ export function AutomationPage() {
             onClick={openAiModal}
           >
             {t("automation.generateWithAi")}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<LayoutTemplate size={14} />}
+            onClick={openTemplates}
+          >
+            {t("automation.templates")}
           </Button>
           <Button
             variant="primary"
@@ -322,6 +359,19 @@ export function AutomationPage() {
           onCreate={handleAiCreate}
         />
       </Suspense>
+
+      {/* Templates Gallery (inline overlay) */}
+      {showTemplates && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-4xl max-h-[85vh] overflow-y-auto mx-4 bg-bg-primary rounded-2xl border border-border-primary shadow-2xl p-5">
+            <WorkflowTemplatesGallery
+              onCreate={handleCreateFromTemplate}
+              onCancel={closeTemplates}
+              creating={false}
+            />
+          </div>
+        </div>
+      )}
     </PageScaffold>
   );
 }

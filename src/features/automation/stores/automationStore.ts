@@ -58,11 +58,29 @@ interface AutomationState extends AsyncSlice, EditorSlice<AutomationEditorState,
   /** Whether the AI generate modal is open */
   showAiModal: boolean;
 
+  /** Whether the templates gallery is open */
+  showTemplates: boolean;
+
   /** Current view mode for the rules list */
   viewMode: ViewMode;
 
   /** Whether the visual builder is open */
   showBuilder: boolean;
+
+  /** Undo/redo history stack (past editor states) */
+  editorHistory: AutomationEditorState[];
+  /** Future editor states for redo */
+  editorFuture: AutomationEditorState[];
+  /** Whether undo is available */
+  canUndo: boolean;
+  /** Whether redo is available */
+  canRedo: boolean;
+  /** Push the current editor state onto the history stack (call before mutations) */
+  pushEditorHistory: () => void;
+  /** Undo: restore the previous editor state */
+  undo: () => void;
+  /** Redo: restore the most recently undone editor state */
+  redo: () => void;
 
   // ── Data actions ───────────────────────────────────────────────────────
   loadRules: (companyId: string) => Promise<void>;
@@ -73,6 +91,10 @@ interface AutomationState extends AsyncSlice, EditorSlice<AutomationEditorState,
   // ── AI modal ───────────────────────────────────────────────────────────
   openAiModal: () => void;
   closeAiModal: () => void;
+
+  // ── Templates gallery ─────────────────────────────────────────────────
+  openTemplates: () => void;
+  closeTemplates: () => void;
 
   // ── View mode ──────────────────────────────────────────────────────────
   setViewMode: (mode: ViewMode) => void;
@@ -134,11 +156,56 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
     error: null,
 
     showAiModal: false,
+    showTemplates: false,
     viewMode: "cards" as ViewMode,
     showBuilder: false,
 
     ...editorSlice,
     ...deleteSlice,
+
+    // ── Undo / Redo ─────────────────────────────────────────────────────────
+    editorHistory: [],
+    editorFuture: [],
+    canUndo: false,
+    canRedo: false,
+
+    pushEditorHistory: () => {
+      const { editor, editorHistory } = get();
+      set({
+        editorHistory: [...editorHistory, { ...editor }],
+        editorFuture: [],
+        canUndo: true,
+        canRedo: false,
+      });
+    },
+
+    undo: () => {
+      const { editor, editorHistory, editorFuture } = get();
+      if (editorHistory.length === 0) return;
+      const history = [...editorHistory];
+      const previous = history.pop()!;
+      set({
+        editorHistory: history,
+        editorFuture: [...editorFuture, { ...editor }],
+        editor: previous,
+        canUndo: history.length > 0,
+        canRedo: true,
+      });
+    },
+
+    redo: () => {
+      const { editor, editorHistory, editorFuture } = get();
+      if (editorFuture.length === 0) return;
+      const future = [...editorFuture];
+      const next = future.pop()!;
+      set({
+        editorHistory: [...editorHistory, { ...editor }],
+        editorFuture: future,
+        editor: next,
+        canUndo: true,
+        canRedo: future.length > 0,
+      });
+    },
 
     // ── Data actions ───────────────────────────────────────────────────────
     loadRules: async (companyId) => {
@@ -202,12 +269,18 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
     openAiModal: () => set({ showAiModal: true }),
     closeAiModal: () => set({ showAiModal: false }),
 
+    // ── Templates gallery ─────────────────────────────────────────────────
+    openTemplates: () => set({ showTemplates: true }),
+    closeTemplates: () => set({ showTemplates: false }),
+
     // ── View mode ──────────────────────────────────────────────────────────
     setViewMode: (mode) => set({ viewMode: mode }),
 
     // ── Builder ────────────────────────────────────────────────────────────
-    openBuilder: () => set({ showBuilder: true, showEditor: false }),
-    closeBuilder: () => set({ showBuilder: false }),
+    openBuilder: () =>
+      set({ showBuilder: true, showEditor: false, editorHistory: [], editorFuture: [], canUndo: false, canRedo: false }),
+    closeBuilder: () =>
+      set({ showBuilder: false, editorHistory: [], editorFuture: [], canUndo: false, canRedo: false }),
     openBuilderForRule: (rule) => {
       let parsedItems: AutomationAction[] = [];
       try {
@@ -219,6 +292,10 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
       set({
         showBuilder: true,
         showEditor: false,
+        editorHistory: [],
+        editorFuture: [],
+        canUndo: false,
+        canRedo: false,
         editor: {
           editingId: rule.id,
           name: rule.name,

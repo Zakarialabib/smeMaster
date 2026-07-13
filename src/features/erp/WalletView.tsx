@@ -127,7 +127,7 @@ export default function WalletView() {
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                   Cash on hand
                 </p>
-                <p className="text-sm font-medium text-text-secondary">{company.name}</p>
+                <p className="text-sm font-medium text-text-secondary">{company?.name ?? "Company"}</p>
               </div>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-bg-primary/60 text-text-secondary border border-border-primary backdrop-blur">
@@ -276,7 +276,7 @@ export default function WalletView() {
       {action && (
         <WalletActionModal
           mode={action}
-          companyName={company.name}
+          companyName={company?.name ?? "Company"}
           currency={currency}
           onClose={() => setAction(null)}
           onDone={async () => {
@@ -330,7 +330,7 @@ function WalletActionModal({
   function activeCompanyIdSafe(): string {
     const companies = useCompanyStore.getState().companies;
     const id = useCompanyStore.getState().activeCompanyId;
-    return getActiveCompany(companies, id).id;
+    return getActiveCompany(companies, id)?.id ?? id;
   }
 
   return (

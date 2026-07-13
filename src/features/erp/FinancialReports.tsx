@@ -93,7 +93,7 @@ export default function FinancialReports() {
 
       {!error && !hasData && !loading && (
         <InfoBanner>
-          No financial data yet for <span className="font-medium text-text-primary">{company.name}</span>.
+          No financial data yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>.
           Send invoices from <span className="font-medium">Invoicing</span> to populate the ledger, then the
           P&amp;L and chart of accounts update automatically.
         </InfoBanner>

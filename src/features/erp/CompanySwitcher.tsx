@@ -18,6 +18,18 @@ export default function CompanySwitcher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Handle loading / empty state
+  if (!active && companies.length === 0) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary">
+        No companies loaded
+      </div>
+    );
+  }
+
+  // Fallback for display — use the first company if somehow active is null but companies exist
+  const displayCompany = active ?? companies[0]!;
+
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -42,14 +54,14 @@ export default function CompanySwitcher() {
         className="flex items-center gap-2.5 pl-1.5 pr-2.5 py-1.5 rounded-xl border border-border-primary bg-bg-secondary/60 backdrop-blur-xl hover:bg-bg-hover/60 transition-colors"
       >
         <span className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
-          {companyInitials(active.name)}
+          {companyInitials(displayCompany.name)}
         </span>
         <span className="text-left min-w-0 hidden sm:block">
           <span className="block text-sm font-semibold text-text-primary truncate max-w-[160px]">
-            {active.name}
+            {displayCompany.name}
           </span>
           <span className="block text-[10px] text-text-tertiary uppercase tracking-wide">
-            {active.role} · ICE {active.ice}
+            ICE {displayCompany.ice}
           </span>
         </span>
         <ChevronDown
@@ -89,7 +101,7 @@ export default function CompanySwitcher() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-primary truncate">{c.name}</p>
                     <p className="text-[11px] text-text-tertiary truncate">
-                      {c.role} · ICE {c.ice}
+                      ICE {c.ice}
                     </p>
                   </div>
                   {isActive ? (

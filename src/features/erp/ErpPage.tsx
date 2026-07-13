@@ -8,12 +8,13 @@ import JournalView from './JournalView';
 import FinancialReports from './FinancialReports';
 import WalletView from './WalletView';
 import RbacRoles from './RbacRoles';
+import CompanyManagementView from './CompanyManagementView';
 import { useCompanyStore, getActiveCompany, companyInitials } from './companyStore';
 import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
 import type { Item } from '@shared/services/db/schema';
 import { listItems, listLowStock, getProfitAndLoss, getWallet } from '@shared/services/db/invoke/invoicing';
 
-type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'wallet' | 'roles';
+type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'wallet' | 'roles' | 'company';
 
 const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -22,6 +23,7 @@ const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'reports', label: 'Reports', icon: FileBarChart },
   { id: 'wallet', label: 'Cash', icon: Wallet },
   { id: 'roles', label: 'Roles', icon: ShieldCheck },
+  { id: 'company', label: 'Company', icon: Calculator },
 ];
 
 export default function ErpPage() {
@@ -30,7 +32,12 @@ export default function ErpPage() {
 
   const companies = useCompanyStore((s) => s.companies);
   const activeCompanyId = useCompanyStore((s) => s.activeCompanyId);
+  const loadCompanies = useCompanyStore((s) => s.loadCompanies);
   const company = getActiveCompany(companies, activeCompanyId);
+
+  useEffect(() => {
+    loadCompanies();
+  }, [loadCompanies]);
 
   return (
     <PageScaffold
@@ -86,6 +93,7 @@ export default function ErpPage() {
           {tab === 'reports' && <FinancialReports />}
           {tab === 'wallet' && <WalletView />}
           {tab === 'roles' && <RbacRoles />}
+          {tab === 'company' && <CompanyManagementView />}
         </div>
       </main>
     </PageScaffold>
@@ -137,7 +145,7 @@ function OverviewTab() {
   return (
     <div className="space-y-5">
       <InfoBanner>
-        Live figures for <span className="font-medium text-text-primary">{company.name}</span> pulled
+        Live figures for <span className="font-medium text-text-primary">{company?.name ?? 'your company'}</span> pulled
         from the Inventory and Accounting backends (Iteration 5). Open the Stock, Accounting, and
         Reports tabs for detail.
       </InfoBanner>
@@ -165,19 +173,25 @@ function OverviewTab() {
 
         <SectionCard className="p-5">
           <h3 className="font-bold text-text-primary mb-3">Active company</h3>
-          <div className="flex items-center gap-3">
-            <span className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-sm font-bold">
-              {companyInitials(company.name)}
-            </span>
-            <div className="min-w-0">
-              <p className="font-semibold text-text-primary truncate">{company.name}</p>
-              <p className="text-[11px] text-text-tertiary">ICE {company.ice}</p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border-primary flex items-center justify-between text-sm">
-            <span className="text-text-tertiary">Your role</span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent">{company.role}</span>
-          </div>
+          {company ? (
+            <>
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-sm font-bold">
+                  {companyInitials(company.name)}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-text-primary truncate">{company.name}</p>
+                  <p className="text-[11px] text-text-tertiary">ICE {company.ice}</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border-primary flex items-center justify-between text-sm">
+                <span className="text-text-tertiary">Timezone</span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent">{company.timezone}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-text-tertiary">No company selected</p>
+          )}
         </SectionCard>
       </div>
     </div>

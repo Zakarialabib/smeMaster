@@ -169,6 +169,69 @@ export async function getCompany(companyId: string): Promise<Company> {
   return invokeCommand<Company>('db_get_company', { companyId });
 }
 
+export async function listCompanies(): Promise<Company[]> {
+  return invokeCommand<Company[]>('db_list_companies', {});
+}
+
+export async function createCompany(data: {
+  name: string;
+  legal_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  timezone?: string;
+  ice?: string | null;
+  tax_id?: string | null;
+  rc?: string | null;
+  cnss?: string | null;
+}): Promise<Company> {
+  const {
+    name,
+    legal_name = null,
+    email = null,
+    phone = null,
+    address_line1 = null,
+    address_line2 = null,
+    city = null,
+    state = null,
+    postal_code = null,
+    country = null,
+    website = null,
+    industry = null,
+    timezone = 'Africa/Casablanca',
+    ice = null,
+    tax_id = null,
+    rc = null,
+    cnss = null,
+  } = data;
+  return invokeCommand<Company>('db_create_company', {
+    name,
+    legal_name,
+    email,
+    phone,
+    address_line1,
+    address_line2,
+    city,
+    state,
+    postal_code,
+    country,
+    website,
+    industry,
+    timezone,
+    ice,
+    tax_id,
+    rc,
+    cnss,
+  });
+}
+
 export async function updateCompany(id: string, fields: Record<string, unknown>): Promise<void> {
   // Rust `db_update_company` takes `company_id` (not `id`) + individual Option params.
   return invokeCommand<void>('db_update_company', { company_id: id, ...fields });

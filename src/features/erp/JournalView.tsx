@@ -109,7 +109,7 @@ export default function JournalView() {
 
       {!error && entries.length === 0 && !loading && (
         <InfoBanner>
-          No postings yet for <span className="font-medium text-text-primary">{company.name}</span>. Send an
+          No postings yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>. Send an
           invoice from <span className="font-medium">Invoicing</span> and it is posted here automatically as a
           double-entry journal entry.
         </InfoBanner>

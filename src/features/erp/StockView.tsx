@@ -89,7 +89,7 @@ export default function StockView() {
 
       {!error && items.length === 0 && !loading && (
         <InfoBanner>
-          No products yet for <span className="font-medium text-text-primary">{company.name}</span>. Add
+          No products yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>. Add
           items in <span className="font-medium">Invoicing → Items</span> and they will appear here with
           live stock levels and reorder alerts.
         </InfoBanner>
