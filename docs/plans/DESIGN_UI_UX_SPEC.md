@@ -72,9 +72,10 @@ decision: Glass is delivered as a **selectable surface layer** (`[data-surface="
   frosted. (Fixed in Chunk 1: blur enabled under `[data-surface="glass"]`.)
 - G2. Background **blobs** (`.animated-bg`) were always-on → cost + visual noise. (Now scoped
   to flat; orbs via `FrostedBackground` are the glass layer.)
-- G3. `PageScaffold` adopted on only 8 pages (Contacts, Attachments, Tasks, Calendar,
-  Automation, Invoicing, ERP, plus scaffold file). **Not** on: Dashboard, Campaigns, Mail,
-  POS, Vault, Settings sub-pages, Workflows, Accounts, Sync, Deliverability, Assistant.
+- G3. `PageScaffold` adopted on 7 primary list pages (Contacts, Attachments, Tasks, Calendar,
+  Automation, Invoicing, ERP). The other surfaces are **intentionally exempt** (bespoke or
+  embedded): Mail, Dashboard, POS, Vault, Assistant, Campaigns (SettingGroup), Deliverability
+  (panel), Accounts/Sync (Settings), Workflows (deprecated). See DESIGN_SYSTEM_GUIDE 4.0.
 - G4. Modal/form validation inconsistent — many modals still use silent early-return instead
   of `useFormField`. Reference parity = `CreateContactModal`.
 - G5. Empty states: only some pages use `EmptyState`; many show bare "no data" or nothing.
@@ -331,7 +332,7 @@ repo actually uses `useFormField` + `validators.ts` (keep that). Its email-migra
 | --- | --- | --- | --- |
 | 1 | Glass surface layer + Flat/Glass toggle (Direction A) | 812cc99 | done, tsc delta 0 |
 | 2 | Page Template Contract doc + audit existing PageScaffold pages | 0da9436 | done |
-| 3 | Extend PageScaffold to remaining pages | - | not started |
+| 3 | Page parity: survey shows exempt pages are bespoke-by-design, not drift; document exemptions + confirm Campaigns/Deliverability follow contract | e0333d7 | done (doc) |
 | 4 | Form/validation parity | - | not started |
 | 5 | Empty/Loading/Error states | - | not started |
 | 6 | Mobile nav parity + contextual FAB | - | not started |

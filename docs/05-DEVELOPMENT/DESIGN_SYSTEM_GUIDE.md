@@ -317,9 +317,20 @@ Anatomy:
   - **States**: loading → `Skeleton` family; error → `ErrorState` with retry.
 
 Compliance (verified 2026-07-13): Contacts, Attachments, Tasks, Calendar, Automation,
-Invoicing, ERP already use `PageScaffold` with title/toolbar/empty-state. Pages still
-exempt (must be brought to parity): Dashboard, Campaigns, Mail, POS, Vault, Settings
-sub-pages, Workflows, Accounts, Sync, Deliverability, Assistant. See
+Invoicing, ERP use `PageScaffold` with title/toolbar/empty-state.
+
+**Intentional exemptions** (NOT to be wrapped in `PageScaffold` — they have bespoke or
+embedded layouts by design):
+- Mail (thread/label reader), Dashboard (hero KPIs), POS, AI Assistant, Vault lock screen
+  — bespoke surfaces.
+- Campaigns — renders via `SettingGroup` + `GlassPanel` (settings-style, correct).
+- Deliverability — embedded `DeliverabilityPanel` (no standalone route).
+- Accounts / Sync — live under Settings, not standalone pages.
+- Workflows — `@deprecated`, merged into Automation; `WorkflowsPage.tsx` to be deleted
+  (see DESIGN_UI_UX_SPEC Chunk 3 / UI_REFACTOR C5).
+
+These exemptions still follow the *spirit* of the contract (consistent header, toolbar,
+empty/loading/error states) using their appropriate primitives. See
 `docs/plans/DESIGN_UI_UX_SPEC.md` (Chunk 3).
 
 
