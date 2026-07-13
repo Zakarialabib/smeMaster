@@ -752,6 +752,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             invoicing::db_delete_item,
             invoicing::db_get_company,
             invoicing::db_update_company,
+            invoicing::db_list_companies,
+            invoicing::db_create_company,
             invoicing::db_generate_invoice_documents,
             invoicing::db_send_invoice,
             invoicing::db_calculate_invoice,

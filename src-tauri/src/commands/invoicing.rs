@@ -939,7 +939,93 @@ pub async fn db_update_company(
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// 30. db_generate_invoice_documents — generate PEPPOL XML + PDF, save to vault
+// 30. db_list_companies — list all companies for an account
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_list_companies(
+    pool: State<'_, SqlitePool>,
+    _account_id: String,
+) -> Result<Vec<Company>, String> {
+    // Companies are scoped to an account via the account's default company or
+    // via explicit association. Since the schema uses `companies` with a direct
+    // query, we list all companies (multi-company support).
+    sqlx::query_as::<_, Company>("SELECT * FROM companies ORDER BY name ASC")
+        .fetch_all(&*pool)
+        .await
+        .map_err(|e| format!("Failed to list companies: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 31. db_create_company — create a new company with Morocco DGI fields
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_create_company(
+    pool: State<'_, SqlitePool>,
+    name: String,
+    legal_name: Option<String>,
+    email: Option<String>,
+    phone: Option<String>,
+    address_line1: Option<String>,
+    address_line2: Option<String>,
+    city: Option<String>,
+    state: Option<String>,
+    postal_code: Option<String>,
+    country: Option<String>,
+    website: Option<String>,
+    industry: Option<String>,
+    timezone: Option<String>,
+    logo_url: Option<String>,
+    ice: Option<String>,
+    tax_id: Option<String>,
+    rc: Option<String>,
+    cnss: Option<String>,
+) -> Result<Company, String> {
+    let id = format!("company-{}", uuid::Uuid::new_v4());
+    let now = chrono::Utc::now().timestamp();
+    let tz = timezone.unwrap_or_else(|| "Africa/Casablanca".to_string());
+
+    sqlx::query_as::<_, Company>(
+        r#"
+        INSERT INTO companies (
+            id, name, legal_name, email, phone,
+            address_line1, address_line2, city, state, postal_code,
+            country, website, industry, timezone, logo_url,
+            ice, tax_id, rc, cnss,
+            settings_json, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '{}', ?, ?)
+        RETURNING *
+        "#,
+    )
+    .bind(&id)
+    .bind(&name)
+    .bind(&legal_name)
+    .bind(&email)
+    .bind(&phone)
+    .bind(&address_line1)
+    .bind(&address_line2)
+    .bind(&city)
+    .bind(&state)
+    .bind(&postal_code)
+    .bind(&country)
+    .bind(&website)
+    .bind(&industry)
+    .bind(&tz)
+    .bind(&logo_url)
+    .bind(&ice)
+    .bind(&tax_id)
+    .bind(&rc)
+    .bind(&cnss)
+    .bind(now)
+    .bind(now)
+    .fetch_one(&*pool)
+    .await
+    .map_err(|e| format!("Failed to create company: {e}"))
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 32. db_generate_invoice_documents — generate PEPPOL XML + PDF, save to vault
 // ═════════════════════════════════════════════════════════════════════════════
 
 #[command]
