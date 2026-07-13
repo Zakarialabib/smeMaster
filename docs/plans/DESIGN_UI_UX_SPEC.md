@@ -330,7 +330,7 @@ repo actually uses `useFormField` + `validators.ts` (keep that). Its email-migra
 | Chunk | Scope | Commit | Status |
 | --- | --- | --- | --- |
 | 1 | Glass surface layer + Flat/Glass toggle (Direction A) | 812cc99 | done, tsc delta 0 |
-| 2 | Page Template Contract doc + audit existing PageScaffold pages | - | next |
+| 2 | Page Template Contract doc + audit existing PageScaffold pages | 0da9436 | done |
 | 3 | Extend PageScaffold to remaining pages | - | not started |
 | 4 | Form/validation parity | - | not started |
 | 5 | Empty/Loading/Error states | - | not started |
