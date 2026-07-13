@@ -75,3 +75,18 @@ pub struct CleanupHistory {
     pub error_message: Option<String>,
     pub executed_at: i64,
 }
+
+// ─── Workflow Execution Logs ────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct WorkflowExecutionLog {
+    pub id: String,
+    pub company_id: String,
+    pub rule_id: String,
+    pub rule_name: Option<String>,
+    pub trigger_event: String,
+    pub actions_executed: Option<String>,
+    pub status: String,
+    pub error_message: Option<String>,
+    pub executed_at: i64,
+}

@@ -82,6 +82,30 @@ pub(crate) mod helpers {
         id.to_string()
     }
 
+    /// Insert a minimal workflow rule row so FK constraints on `rule_id` pass.
+    /// Requires an existing account with `account_id` (used as company_id).
+    /// Returns the rule id.
+    pub(crate) async fn insert_test_workflow_rule(
+        pool: &SqlitePool,
+        id: &str,
+        account_id: &str,
+    ) -> String {
+        let now = chrono::Utc::now().timestamp();
+        sqlx::query(
+            "INSERT OR IGNORE INTO workflow_rules (id, company_id, name, trigger_event, actions, is_active, created_at) VALUES (?, ?, ?, ?, ?, 1, ?)",
+        )
+        .bind(id)
+        .bind(account_id)
+        .bind("test-rule")
+        .bind("inbound")
+        .bind(r#"[{"action":"log"}]"#)
+        .bind(now)
+        .execute(pool)
+        .await
+        .unwrap();
+        id.to_string()
+    }
+
     /// Insert a minimal client row so FK constraints on `client_id` pass.
     /// Generates an ID from `name` and links it to `company_id`.
     /// Returns the generated client id.

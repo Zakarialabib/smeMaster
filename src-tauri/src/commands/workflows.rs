@@ -13,7 +13,7 @@ use tauri::State;
 use sqlx::{SqlitePool, QueryBuilder};
 use crate::db::common::{count_rows, like_pattern};
 use crate::db::error::AppDbError;
-use crate::db::workflows::schema::{FollowUpReminder, PendingOperation, WorkflowRule, CleanupRule, CleanupHistory};
+use crate::db::workflows::schema::{FollowUpReminder, PendingOperation, WorkflowRule, CleanupRule, CleanupHistory, WorkflowExecutionLog};
 use crate::error::SerializedError;
 
 type CmdResult<T> = Result<T, SerializedError>;
@@ -809,3 +809,34 @@ struct CleanupResult {
 //       invoke_handler). See commands/mod.rs::register().
 //     builder
 // }
+
+// ── Workflow Execution Logs Commands ──────────────────────────────────────
+
+/// List workflow execution logs for a company with pagination.
+///
+/// # Errors
+/// Returns `SerializedError` wrapping `AppDbError::Database` on query failure.
+#[tauri::command]
+pub async fn db_list_workflow_execution_logs(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+    limit: i64,
+    offset: i64,
+) -> CmdResult<Vec<WorkflowExecutionLog>> {
+    crate::db::tables::workflows::execution_logs::list(&pool, &company_id, limit, offset)
+        .await
+        .map_err(Into::into)
+}
+
+/// Count workflow execution logs for a company.
+///
+/// # Errors
+/// Returns `SerializedError` wrapping `AppDbError::Database` on query failure.
+#[tauri::command]
+pub async fn db_count_workflow_execution_logs(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> CmdResult<Vec<CountRow>> {
+    let count = crate::db::tables::workflows::execution_logs::count(&pool, &company_id).await?;
+    Ok(vec![CountRow { count }])
+}

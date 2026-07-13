@@ -6,6 +6,7 @@
 //! against a shared `SqlitePool` and return `Result<_, AppDbError>`.
 
 pub mod cleanup_rules;
+pub mod execution_logs;
 pub mod follow_up_reminders;
 pub mod pending_operations;
 pub mod workflow_rules;

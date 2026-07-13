@@ -912,6 +912,10 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             workflows::db_list_cleanup_history,
             workflows::db_execute_cleanup_rule,
 
+            // === Workflow Execution Logs ===
+            workflows::db_list_workflow_execution_logs,
+            workflows::db_count_workflow_execution_logs,
+
             // === reset_app (defined in this file) ===
             reset_app,
     ])
