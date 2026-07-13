@@ -1,6 +1,20 @@
 ﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  Settings2,
+  Signature,
+  FileText,
+  MessageSquare,
+  CheckCircle2,
+  Clock,
+  Layers,
+  ChevronRight,
+  ChevronDown,
+  Zap,
+} from "lucide-react";
+import { cn } from "@shared/utils/cn";
 import { useLayoutStore } from "@shared/stores/layoutStore";
 import { notify } from "@shared/services/notifications/toastHelper";
 import { getSetting, setSetting } from "@features/settings/db/settings";
@@ -13,8 +27,6 @@ import { AiSignatureGenerateModal } from "@features/settings/components/AiSignat
 import type { GeneratedSignature } from "@shared/services/ai/signatureGenerator";
 import { ContentQualityAnalyzer } from "@features/settings/components/ContentQualityAnalyzer";
 import { HelpCard, InlineTooltip } from "@features/settings/components/HelpCard";
-import { SectionNav } from "@features/settings/components/SectionNav";
-import type { SectionNavItem } from "@features/settings/components/SectionNav";
 import { usePlatform } from "@shared/hooks/usePlatform"
 import { SettingGroup, SettingRow, ToggleRow, ButtonGroup } from "@features/settings/components/SettingsHelpers";
 
@@ -110,6 +122,66 @@ function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; 
   );
 }
 
+/* ─── Setup Step Component ─── */
+
+interface SetupStep {
+  id: string;
+  icon: typeof Send;
+  label: string;
+  description: string;
+}
+
+const SETUP_STEPS: SetupStep[] = [
+  { id: "sending", icon: Send, label: "Sending", description: "Undo delay & send options" },
+  { id: "behavior", icon: Settings2, label: "Behavior", description: "Reply mode & read tracking" },
+  { id: "signatures", icon: Signature, label: "Signature", description: "Add your email signature" },
+  { id: "templates", icon: FileText, label: "Templates", description: "Save email templates" },
+  { id: "quick-replies", icon: MessageSquare, label: "Quick Replies", description: "Pre-written responses" },
+  { id: "content-quality", icon: Zap, label: "Quality", description: "AI-powered content check" },
+];
+
+/* ─── Stats Card ─── */
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone = "neutral",
+}: {
+  icon: typeof CheckCircle2;
+  label: string;
+  value: string;
+  tone?: "accent" | "success" | "warning" | "neutral";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
+        tone === "accent" && "bg-accent/5 border-accent/20",
+        tone === "success" && "bg-success/5 border-success/20",
+        tone === "warning" && "bg-warning/5 border-warning/20",
+        tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+      )}
+    >
+      <div className="p-2 rounded-lg bg-white/50">
+        <Icon
+          className={cn(
+            "w-4 h-4",
+            tone === "accent" && "text-accent",
+            tone === "success" && "text-success",
+            tone === "warning" && "text-warning",
+            tone === "neutral" && "text-text-tertiary",
+          )}
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
+        <p className="text-sm font-bold truncate">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 /* ─── ComposingSettings Component ─── */
 
 export default function ComposingTab() {
@@ -159,28 +231,105 @@ export default function ComposingTab() {
     notify("Signatures", "AI signature saved to your account.");
   }, [activeAccountId]);
 
-  // ── Section navigation ────────────────────────────────────────────────
-  const sections: SectionNavItem[] = [
-    { id: "sending", label: t("settings.sending") },
-    { id: "behavior", label: t("settings.behavior") },
-    { id: "signatures", label: t("settings.signatures") },
-    { id: "templates", label: t("search.templates") },
-    { id: "quick-replies", label: t("quickReply.title") },
-    { id: "content-quality", label: t("settings.contentQuality") },
-  ];
+  // ── Setup step tracking ─────────────────────────────────
+  const [activeStep, setActiveStep] = useState<string>("sending");
+  const [setupExpanded, setSetupExpanded] = useState(true);
 
   const scrollToSection = useCallback((sectionId: string) => {
+    setActiveStep(sectionId);
     const el = document.getElementById(`composing-section-${sectionId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, []);
 
-  // ── Render ────────────────────────────────────────────────────────────
+  const stepIndex = SETUP_STEPS.findIndex((s) => s.id === activeStep);
+  const progressPct = ((stepIndex + 1) / SETUP_STEPS.length) * 100;
+
+  // ── Render ────────────────────────────────────────────
   return (
-    <div ref={sectionsRef}>
-      {/* Section sub-navigation */}
-      <SectionNav sections={sections} onSectionClick={scrollToSection} />
+    <div ref={sectionsRef} className="space-y-6">
+      {/* ── Header Stats Row ───────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard
+          icon={Clock}
+          label="Undo Send"
+          value={`${undoSendDelay}s delay`}
+          tone={undoSendDelay > 0 ? "success" : "warning"}
+        />
+        <StatCard
+          icon={Settings2}
+          label="Reply Mode"
+          value={defaultReplyMode === "replyAll" ? "Reply All" : "Reply"}
+          tone="accent"
+        />
+        <StatCard
+          icon={Layers}
+          label="Mark as Read"
+          value={markAsReadBehavior === "instant" ? "Instant" : markAsReadBehavior === "2s" ? "2s Delay" : "Manual"}
+          tone={markAsReadBehavior !== "manual" ? "success" : "neutral"}
+        />
+        <StatCard
+          icon={Send}
+          label="Send & Archive"
+          value={sendAndArchive ? "Enabled" : "Disabled"}
+          tone={sendAndArchive ? "accent" : "neutral"}
+        />
+      </div>
+
+      {/* ── Setup Progress Stepper ─────────────────────────────────── */}
+      <div className="bg-accent/5 border border-accent/12 rounded-xl p-4">
+        <button
+          type="button"
+          onClick={() => setSetupExpanded(!setupExpanded)}
+          className="flex items-center justify-between w-full text-left"
+        >
+          <div className="flex items-center gap-2">
+            <Zap size={16} className="text-accent" />
+            <span className="text-sm font-semibold text-text-primary">Quick Setup Guide</span>
+            <span className="text-xs text-text-tertiary ml-2">
+              Step {stepIndex + 1} of {SETUP_STEPS.length}
+            </span>
+          </div>
+          {setupExpanded ? <ChevronDown size={16} className="text-text-tertiary" /> : <ChevronRight size={16} className="text-text-tertiary" />}
+        </button>
+
+        {/* Progress bar */}
+        <div className="mt-3 h-1.5 rounded-full bg-bg-tertiary overflow-hidden">
+          <div
+            className="h-full rounded-full bg-accent transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+
+        {setupExpanded && (
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+            {SETUP_STEPS.map((step, idx) => {
+              const StepIcon = step.icon;
+              const isActive = activeStep === step.id;
+              const isCompleted = idx < stepIndex;
+              const isPending = idx > stepIndex;
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => scrollToSection(step.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center",
+                    isActive && "bg-accent text-white shadow-sm border-accent scale-[1.02]",
+                    isCompleted && "bg-success/10 text-success border-success/20",
+                    isPending && "bg-bg-secondary text-text-tertiary border-border-primary/50 hover:text-text-primary hover:bg-bg-hover",
+                  )}
+                >
+                  <StepIcon size={18} />
+                  <span className="text-[10px] font-semibold leading-tight">{step.label}</span>
+                  <span className="text-[8px] opacity-70 leading-tight hidden sm:block">{step.description}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Live Preview — shows how settings affect composed emails ── */}
       {!isMobileDevice && (
@@ -191,8 +340,11 @@ export default function ComposingTab() {
 
       {/* ── Sending Section ── */}
       <div id="composing-section-sending">
-        <SettingGroup title={t('settings.sending')}>
-          {/* Undo Send Delay — slider per spec §3 */}
+        <SettingGroup
+          title={t('settings.sending')}
+          description="Configure how emails are dispatched, including undo delay and archive behavior."
+        >
+          {/* Undo Send Delay — slider */}
           <SettingRow label={t('settings.undoSendDelay')}>
             <div className="flex items-center gap-3">
               <UndoSlider value={undoSendDelay} onChange={handleUndoDelayChange} />
@@ -219,7 +371,10 @@ export default function ComposingTab() {
 
       {/* ── Behavior Section ── */}
       <div id="composing-section-behavior">
-        <SettingGroup title={t('settings.behavior')}>
+        <SettingGroup
+          title={t('settings.behavior')}
+          description="Control default reply mode, mark-as-read behavior, and reading workflow preferences."
+        >
           <SettingRow label={t('settings.defaultReplyAction')}>
             <div className="flex items-center gap-2">
               <ButtonGroup
@@ -287,9 +442,20 @@ export default function ComposingTab() {
         </SettingGroup>
       </div>
 
+      {/* AI Signature Generation Modal */}
+      <AiSignatureGenerateModal
+        isOpen={showSigModal}
+        onClose={() => setShowSigModal(false)}
+        onInsert={handleSigGenerated}
+        onSave={handleSigGenerated}
+      />
+
       {/* ── Templates Section ── */}
       <div id="composing-section-templates">
-        <SettingGroup title={t("search.templates")}>
+        <SettingGroup
+          title={t("search.templates")}
+          description="Create reusable email templates with variable placeholders for consistent messaging."
+        >
           <HelpCard
             items={[
               { type: "why", text: "Templates save time by reusing common email structures with variable placeholders for personalized content." },
@@ -303,17 +469,12 @@ export default function ComposingTab() {
         </SettingGroup>
       </div>
 
-      {/* AI Signature Generation Modal */}
-      <AiSignatureGenerateModal
-        isOpen={showSigModal}
-        onClose={() => setShowSigModal(false)}
-        onInsert={handleSigGenerated}
-        onSave={handleSigGenerated}
-      />
-
       {/* ── Quick Replies Section ── */}
       <div id="composing-section-quick-replies">
-        <SettingGroup title={t("quickReply.title")}>
+        <SettingGroup
+          title={t("quickReply.title")}
+          description="Save pre-written responses for common inquiries to respond faster."
+        >
           <HelpCard
             items={[
               { type: "why", text: "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency." },
@@ -328,7 +489,7 @@ export default function ComposingTab() {
         </SettingGroup>
       </div>
 
-      {/* ── Content Quality Section (merged from standalone ContentTab) ── */}
+      {/* ── Content Quality Section ── */}
       <div id="composing-section-content-quality">
         <SettingGroup
           title={t('settings.contentQuality')}
@@ -349,4 +510,3 @@ export default function ComposingTab() {
     </div>
   );
 }
-
