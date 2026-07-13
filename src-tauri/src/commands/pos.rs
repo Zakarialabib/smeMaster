@@ -292,6 +292,24 @@ pub async fn db_list_sales(
     .map_err(|e| format!("Failed to list sales: {e}"))
 }
 
+// ═════════════════════════════════════════════════════════════════
+// 8. db_list_sale_items — list the line items for a single sale
+// ═════════════════════════════════════════════════════════════════
+
+#[command]
+pub async fn db_list_sale_items(
+    pool: State<'_, SqlitePool>,
+    sale_id: String,
+) -> Result<Vec<SaleItem>, String> {
+    sqlx::query_as::<_, SaleItem>(
+        "SELECT * FROM pos_sale_items WHERE sale_id = ? ORDER BY created_at ASC",
+    )
+    .bind(&sale_id)
+    .fetch_all(&*pool)
+    .await
+    .map_err(|e| format!("Failed to list sale items: {e}"))
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // (Existing hardware commands follow below)
 // ═════════════════════════════════════════════════════════════════════════════

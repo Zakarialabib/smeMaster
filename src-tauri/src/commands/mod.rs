@@ -876,6 +876,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             pos::db_delete_product,
             pos::db_record_sale,
             pos::db_list_sales,
+            pos::db_list_sale_items,
 
             // === commands::workflows (28 commands) ===
             workflows::db_dashboard_workflow_rules_total,

@@ -13,7 +13,25 @@ pub fn spawn_domain_event_processor(app: &AppHandle) {
         let mut prev_state: Option<String> = None;
 
         loop {
-            match rx.recv().await {
+            let received = rx.recv().await;
+            // Borrow the event (if any) for workflow automation dispatch before
+            // the ownership-consuming match below.
+            let event = match &received {
+                Ok(ev) => ev,
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                    log::warn!("[domain-event-processor] Lagged, dropped {} events", n);
+                    continue;
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                    log::info!("[domain-event-processor] Channel closed, shutting down");
+                    break;
+                }
+            };
+
+            // Run any matching workflow automation rules for this event.
+            dispatch_workflow_rules(&pool, event).await;
+
+            match received {
                 Ok(crate::events::AppEvent::SystemStateChanged { from, to, reason, at_ms }) => {
                     log::info!(
                         "[domain-event-processor] system state changed: {from} → {to} ({reason}) @ {at_ms}"
@@ -98,17 +116,23 @@ pub fn spawn_domain_event_processor(app: &AppHandle) {
                         log::info!("[domain-event-processor] Cache invalidated for domain: {}", domain);
                     }
                 }
-                Ok(_) => {
+                _ => {
                     // Ignore other events
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
-                    log::warn!("[domain-event-processor] Lagged, dropped {} events", n);
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                    log::info!("[domain-event-processor] Channel closed, shutting down");
-                    break;
                 }
             }
         }
     });
+}
+
+/// Map a domain event to its workflow trigger name (if any) and run matching
+/// automation rules. No-op for events that don't carry a workflow trigger
+/// (e.g. system-state changes, device sync, cache invalidation).
+async fn dispatch_workflow_rules(pool: &sqlx::SqlitePool, event: &crate::events::AppEvent) {
+    let trigger = match event {
+        crate::events::AppEvent::EmailReceived { .. } => "email_received",
+        crate::events::AppEvent::EmailOpened { .. } => "email_opened",
+        crate::events::AppEvent::LinkClicked { .. } => "link_clicked",
+        _ => return,
+    };
+    crate::events::automation::check_and_execute_workflow_rules(pool, trigger, event).await;
 }

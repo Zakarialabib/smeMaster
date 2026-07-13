@@ -685,6 +685,14 @@ pub async fn db_reorder_quick_steps(
     crate::db::tables::comms::quick_steps::reorder(&pool, &account_id, &ordered_ids).await.map_err(Into::into)
 }
 
+#[tauri::command]
+pub async fn db_reorder_templates(
+    pool: State<'_, SqlitePool>,
+    ordered_ids: Vec<String>,
+) -> CmdResult<()> {
+    crate::db::tables::comms::templates::reorder(&pool, &ordered_ids).await.map_err(Into::into)
+}
+
 // ── Quick Replies ──
 
 /// Insert or update a quick reply identified by `id`.
