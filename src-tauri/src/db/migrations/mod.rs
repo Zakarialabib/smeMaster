@@ -41,6 +41,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("021_engagement_log_fix", include_str!("021_engagement_log_fix.sql")),
     ("022_accounting", include_str!("022_accounting.sql")),
     ("023_wallet", include_str!("023_wallet.sql")),
+    ("024_hardening", include_str!("024_hardening.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────
@@ -416,6 +417,88 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(version, MIGRATIONS.len() as i32);
+    }
+
+    // ── 024_hardening schema assertions ──────────────────────────────────
+    #[tokio::test]
+    async fn test_hardening_024_schema() {
+        let pool = setup().await;
+        run(&pool, false).await.expect("Migration should succeed");
+
+        // templates: updated_at + new indexes
+        let cols: Vec<String> = sqlx::query_scalar(
+            "SELECT name FROM pragma_table_info('templates') WHERE name='updated_at'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(cols.len(), 1, "templates.updated_at missing");
+
+        let idx: Vec<String> = sqlx::query_scalar(
+            "SELECT name FROM sqlite_master WHERE type='index' AND name='idx_templates_company_fav'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(idx.len(), 1, "idx_templates_company_fav missing");
+
+        // template_categories unique (company, name)
+        let uniq: Vec<String> = sqlx::query_scalar(
+            "SELECT name FROM sqlite_master WHERE type='index' AND name='idx_template_categories_company_name'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(uniq.len(), 1, "template_categories unique index missing");
+
+        // scheduled_emails: dispatcher columns + index
+        for c in ["sent_at", "attempts", "last_error"] {
+            let n: i32 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM pragma_table_info('scheduled_emails') WHERE name=?",
+            )
+            .bind(c)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(n, 1, "scheduled_emails.{c} missing");
+        }
+        let due_idx: Vec<String> = sqlx::query_scalar(
+            "SELECT name FROM sqlite_master WHERE type='index' AND name='idx_scheduled_emails_due'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert_eq!(due_idx.len(), 1, "idx_scheduled_emails_due missing");
+
+        // calendar_events: recurrence columns + new tables
+        for c in ["rrule", "timezone", "is_recurring", "recurrence_id", "remote_event_id"] {
+            let n: i32 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM pragma_table_info('calendar_events') WHERE name=?",
+            )
+            .bind(c)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(n, 1, "calendar_events.{c} missing");
+        }
+        for t in ["event_attendees", "event_reminders"] {
+            let n: i32 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
+            )
+            .bind(t)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(n, 1, "{t} table missing");
+        }
+        // calendars: timezone
+        let n: i32 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM pragma_table_info('calendars') WHERE name='timezone'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(n, 1, "calendars.timezone missing");
     }
 
     // ── DbState tests ───────────────────────────────────────────────────
