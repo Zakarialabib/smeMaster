@@ -11,7 +11,6 @@ import {
   Terminal,
   Search,
   AlertCircle,
-  AlertTriangle as AlertTriangleIcon,
   Info,
   Bug,
   ChevronDown,
@@ -26,6 +25,9 @@ import {
   HardDrive,
   Activity,
   FileText,
+  Shield,
+  Bell,
+  Server,
 } from "lucide-react";
 import { Button } from "@shared/components/ui/Button";
 import { HelpCard } from "@features/settings/components/HelpCard";
@@ -50,7 +52,7 @@ interface SubTab {
 
 const SUB_TABS: SubTab[] = [
   { id: "health", labelKey: "System Health", icon: Activity },
-  { id: "updates", labelKey: "Updates", icon: Package },
+  { id: "updates", labelKey: "Updates & Data", icon: Package },
   { id: "logs", labelKey: "Logs", icon: FileText },
 ];
 
@@ -76,7 +78,7 @@ const LOG_LEVEL_CONFIG: Record<
     badge: "bg-danger/90 text-white",
   },
   warning: {
-    icon: AlertTriangleIcon,
+    icon: AlertTriangle,
     label: "Warning",
     color: "text-warning",
     bg: "bg-warning/5",
@@ -99,9 +101,10 @@ const LOG_LEVEL_CONFIG: Record<
     border: "border-l-border",
     badge: "bg-text-secondary text-bg-primary",
   },
-};
+} as const;
 
-// ── Copy Helper ──────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 const copyToClipboard = async (text: string, label: string) => {
   try {
     const { copyToClipboard: clip } = await import("@shared/hooks/useClipboard");
@@ -112,8 +115,145 @@ const copyToClipboard = async (text: string, label: string) => {
   }
 };
 
-// ── Log Row Component ──────────────────────────────────────────────────────
-const LogRow = ({ log }: { log: LogEntry }) => {
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+};
+
+const formatUptime = (seconds: number): string => {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
+  return parts.join(" ");
+};
+
+interface DbHealthStats {
+  dbSizeBytes: number;
+  walSizeBytes: number;
+  uptimeSecs: number;
+}
+
+/* ─── Stat Card ─── */
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  sublabel,
+  tone = "neutral",
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: string;
+  sublabel?: string;
+  tone?: "accent" | "success" | "warning" | "neutral";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
+        tone === "accent" && "bg-accent/5 border-accent/20",
+        tone === "success" && "bg-success/5 border-success/20",
+        tone === "warning" && "bg-warning/5 border-warning/20",
+        tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+      )}
+    >
+      <div className="p-2 rounded-lg bg-white/50">
+        <Icon
+          className={cn(
+            "w-4 h-4",
+            tone === "accent" && "text-accent",
+            tone === "success" && "text-success",
+            tone === "warning" && "text-warning",
+            tone === "neutral" && "text-text-tertiary",
+          )}
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
+        <p className="text-sm font-bold truncate">{value}</p>
+        {sublabel && <p className="text-[10px] text-text-tertiary truncate">{sublabel}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Info Card ─── */
+
+function InfoCard({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-xl bg-bg-tertiary/50 border border-border/50",
+        "hover:border-border hover:bg-bg-tertiary transition-all duration-200 group",
+      )}
+    >
+      <div className="p-2 rounded-lg bg-bg-primary border border-border/50 text-text-tertiary group-hover:text-text-secondary transition-colors">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary mb-0.5">
+          {label}
+        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-text-primary font-mono truncate">
+            {value || <span className="animate-pulse">...</span>}
+          </p>
+          {value && (
+            <button
+              onClick={() => copyToClipboard(value, label)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary"
+              title="Copy"
+            >
+              <Copy className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Status Badge ─── */
+
+function StatusBadge({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: "success" | "warning" | "info" | "neutral";
+}) {
+  const variants = {
+    success: "bg-success/10 text-success border-success/20",
+    warning: "bg-warning/10 text-warning border-warning/20",
+    info: "bg-accent/10 text-accent border-accent/20",
+    neutral: "bg-bg-tertiary text-text-tertiary border-border",
+  };
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border", variants[variant])}>
+      {variant === "success" && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
+      {children}
+    </span>
+  );
+}
+
+/* ─── Log Row ─── */
+
+function LogRow({ log }: { log: LogEntry }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -144,13 +284,13 @@ const LogRow = ({ log }: { log: LogEntry }) => {
         "hover:shadow-sm hover:translate-x-0.5",
         config.bg,
         config.border,
-        isExpanded && "bg-bg-tertiary/80 ring-1 ring-inset ring-border shadow-sm"
+        isExpanded && "bg-bg-tertiary/80 ring-1 ring-inset ring-border shadow-sm",
       )}
     >
       <div
         className={cn(
           "flex items-center gap-3 p-3 cursor-pointer select-none",
-          !hasData && "cursor-default"
+          !hasData && "cursor-default",
         )}
         onClick={() => hasData && setIsExpanded(!isExpanded)}
       >
@@ -177,7 +317,7 @@ const LogRow = ({ log }: { log: LogEntry }) => {
               })}
             </span>
           </div>
-          <span className="text-sm text-text-secondary leading-snug wrap-break-words">
+          <span className="text-sm text-text-secondary leading-snug break-words">
             {log.message}
           </span>
         </div>
@@ -188,7 +328,7 @@ const LogRow = ({ log }: { log: LogEntry }) => {
             className={cn(
               "shrink-0 p-1 rounded-full transition-all duration-200",
               "text-text-tertiary group-hover:text-text-secondary group-hover:bg-bg-tertiary",
-              isExpanded && "rotate-180 bg-bg-tertiary text-text-primary"
+              isExpanded && "rotate-180 bg-bg-tertiary text-text-primary",
             )}
           >
             <ChevronDown className="w-4 h-4" />
@@ -219,95 +359,9 @@ const LogRow = ({ log }: { log: LogEntry }) => {
       )}
     </div>
   );
-};
-
-// ── Info Card Component ────────────────────────────────────────────────────
-const InfoCard = ({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ElementType;
-}) => (
-  <div
-    className={cn(
-      "flex items-center gap-3 p-3 rounded-xl bg-bg-tertiary/50 border border-border/50",
-      "hover:border-border hover:bg-bg-tertiary transition-all duration-200 group"
-    )}
-  >
-    <div className="p-2 rounded-lg bg-bg-primary border border-border/50 text-text-tertiary group-hover:text-text-secondary transition-colors">
-      <Icon className="w-4 h-4" />
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary mb-0.5">
-        {label}
-      </p>
-      <div className="flex items-center gap-2">
-        <p className="text-sm font-medium text-text-primary font-mono truncate">
-          {value || <span className="animate-pulse">...</span>}
-        </p>
-        {value && (
-          <button
-            onClick={() => copyToClipboard(value, label)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary"
-            title="Copy"
-          >
-            <Copy className="w-3 h-3" />
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-// ── Status Badge ───────────────────────────────────────────────────────────
-const StatusBadge = ({
-  children,
-  variant,
-}: {
-  children: React.ReactNode;
-  variant: "success" | "warning" | "info" | "neutral";
-}) => {
-  const variants = {
-    success: "bg-success/10 text-success border-success/20",
-    warning: "bg-warning/10 text-warning border-warning/20",
-    info: "bg-accent/10 text-accent border-accent/20",
-    neutral: "bg-bg-tertiary text-text-tertiary border-border",
-  };
-  return (
-    <span className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border", variants[variant])}>
-      {variant === "success" && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
-      {children}
-    </span>
-  );
-};
-
-// ── Health Dashboard Types & Helpers ────────────────────────────────────
-interface DbHealthStats {
-  dbSizeBytes: number;
-  walSizeBytes: number;
-  uptimeSecs: number;
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
-};
-
-const formatUptime = (seconds: number): string => {
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const parts: string[] = [];
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
-  return parts.join(" ");
-};
+/* ─── Main Component ─── */
 
 export default function DeveloperTab() {
   const [appVersion, setAppVersion] = useState("");
@@ -388,7 +442,6 @@ export default function DeveloperTab() {
     setSeedDone(false);
     setSeedResult("");
     try {
-      // Clear any existing seed flags first so seed can run fresh
       const { invokeCommand } = await import("@shared/services/db/invoke/command");
       const result = await invokeCommand<{ seeded: number }>("db_reseed_demo");
       const msg = result.seeded > 0
@@ -446,7 +499,7 @@ export default function DeveloperTab() {
 
   const toggleFilter = (level: LogFilterLevel) => {
     setActiveFilters((prev) =>
-      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level]
+      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level],
     );
   };
 
@@ -472,7 +525,7 @@ export default function DeveloperTab() {
   // ── Sub-navigation state ─────────────────────────────────────────────
   const [activeSubTab, setActiveSubTab] = useState<"health" | "updates" | "logs">("health");
 
-  // ── Overview (at-a-glance) derived state ──────────────────────────────
+  // ── Derived state ─────────────────────────────────────────────────────
   const tier = useFeatureFlagStore((s) => s.tier);
   const overrideEnabled = useFeatureFlagStore((s) => s.overrideEnabled);
   const overrideTier = useFeatureFlagStore((s) => s.overrideTier);
@@ -530,8 +583,42 @@ export default function DeveloperTab() {
     }
   };
 
+  const modeLabel = devPro ? "Dev Pro" : effectiveTier === "pro" ? "Pro" : "Basic";
+
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 md:space-y-6 pb-8">
+      {/* ── Stats Row ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard
+          icon={Shield}
+          label="System Status"
+          value={modeLabel}
+          sublabel={`${platformLabel}`}
+          tone={devPro ? "warning" : effectiveTier === "pro" ? "success" : "neutral"}
+        />
+        <StatCard
+          icon={Zap}
+          label="Features"
+          value={`${enabledFeatures} / ${totalFeatures}`}
+          sublabel={ragAvailable ? "RAG Available" : "RAG Locked"}
+          tone="accent"
+        />
+        <StatCard
+          icon={Server}
+          label="Database"
+          value={formatFileSize(healthStats.dbSizeBytes)}
+          sublabel={`Uptime: ${formatUptime(healthStats.uptimeSecs)}`}
+          tone="success"
+        />
+        <StatCard
+          icon={Bell}
+          label="Updates"
+          value={updateVersion ? "Available" : "Up to Date"}
+          sublabel={updateVersion ? `v${updateVersion}` : "No pending update"}
+          tone={updateVersion ? "warning" : "neutral"}
+        />
+      </div>
+
       {/* ── Sub-navigation ─────────────────────────────────────────── */}
       <div className="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none">
         {SUB_TABS.map((sub) => {
@@ -555,44 +642,12 @@ export default function DeveloperTab() {
         })}
       </div>
 
-      {/* ── Health Tab ─────────────────────────────────────────────── */}
+      {/* ==================================================================== */}
+      {/*  HEALTH TAB                                                          */}
+      {/* ==================================================================== */}
       {activeSubTab === "health" && (
-        <>
-          {/* ── Overview ──────────────────────────────────────────────────── */}
-          <SettingGroup
-            title="Overview"
-            description="At-a-glance status of your SME Master environment and feature availability."
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <InfoCard label="Environment" value={platformLabel} icon={Monitor} />
-              <InfoCard
-                label="Mode"
-                value={devPro ? "Dev Pro" : effectiveTier === "pro" ? "Pro" : "Basic"}
-                icon={Cpu}
-              />
-              <InfoCard
-                label="Features Enabled"
-                value={`${enabledFeatures} / ${totalFeatures}`}
-                icon={Zap}
-              />
-              <InfoCard
-                label="Local RAG"
-                value={ragAvailable ? "Available" : "Locked"}
-                icon={Activity}
-              />
-            </div>
-            <p className="mt-3 text-xs text-text-tertiary">
-              {devPro
-                ? "Developer Pro Mode is active — every feature is unlocked regardless of tier."
-                : effectiveTier === "pro"
-                  ? "Running on the Pro tier — all capabilities are available."
-                  : "Running on the Basic tier — some Pro features are locked. Open the Feature Flags tab to preview Pro."}
-              {" "}
-              Toggle tiers or enable Dev Pro Mode from the Feature Flags tab.
-            </p>
-          </SettingGroup>
-
-          {/* ── Health Dashboard ──────────────────────────────────────────── */}
+        <div className="space-y-4 md:space-y-6">
+          {/* ── Health Dashboard ────────────────────────────────────────── */}
           <SettingGroup
             title="Health Dashboard"
             description="Real-time observability metrics for the app runtime."
@@ -605,7 +660,7 @@ export default function DeveloperTab() {
             </div>
           </SettingGroup>
 
-          {/* ── App Info ───────────────────────────────────────────────────── */}
+          {/* ── App Info ──────────────────────────────────────────────────── */}
           <SettingGroup title={t("settings.appInfo")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <InfoCard label={t("settings.version")} value={appVersion} icon={Package} />
@@ -615,14 +670,134 @@ export default function DeveloperTab() {
             </div>
           </SettingGroup>
 
-          {/* ── Subsystem Status ────────────────────────────────────────────── */}
+          {/* ── Subsystem Status ────────────────────────────────────────── */}
           <SubsystemStatusPanel />
-        </>
+
+          {/* ── Developer Tools ──────────────────────────────────────────── */}
+          <SettingGroup title={t("settings.developerTools")}>
+            <div className="flex items-center justify-between p-1">
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-text-secondary">
+                  {t("settings.openDevtools")}
+                </span>
+                <p className="text-xs text-text-tertiary">
+                  {t("settings.openDevtoolsDescription")}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="md"
+                icon={<Code2 size={14} />}
+                onClick={async () => {
+                  const { invokeCommand } = await import("@shared/services/db/invoke/command");
+                  await invokeCommand("open_devtools");
+                }}
+              >
+                {t("settings.openDevtools")}
+              </Button>
+            </div>
+          </SettingGroup>
+
+          {/* ── Feature Flags ────────────────────────────────────────────── */}
+          <SettingGroup title="Feature Flags">
+            <p className="text-xs text-text-tertiary mb-3">
+              View feature access status and test tier-based progressive disclosure.
+              Feature flags control which capabilities are available based on your
+              subscription tier and usage limits.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<Code2 size={14} />}
+                onClick={async () => {
+                  const { navigateToSettings } = await import("@/router/navigate");
+                  navigateToSettings("feature-flags");
+                }}
+                className="bg-bg-tertiary text-text-primary border border-border-primary"
+              >
+                Open Feature Flags Dashboard
+              </Button>
+            </div>
+            <HelpCard
+              collapsible
+              items={[
+                { type: "why", text: "Developer tools give you deep visibility into app health, logs, database state, and feature flags — essential for troubleshooting and performance tuning." },
+                { type: "how", text: "Health dashboard shows real-time metrics. Subsystem panel reports component status. Logs capture filtered app events. Feature flags control tier access." },
+                { type: "when", text: "Use developer tools when diagnosing issues, checking update status, monitoring subsystem health, or testing feature flag behavior." },
+                { type: "tip", text: "Export logs before clearing them if you're investigating a recurring issue — they can be shared with support for faster resolution." },
+              ]}
+            />
+          </SettingGroup>
+
+          {/* ── Reset Database ───────────────────────────────────────────── */}
+          <SettingGroup
+            title="Reset Database"
+            description="Delete all data and restart the app. After restart, use 'Seed Demo Data' to repopulate."
+          >
+            <div
+              className={cn(
+                "rounded-xl border transition-all duration-300",
+                resetConfirm
+                  ? "border-danger/50 bg-danger/5 p-4"
+                  : "border-transparent p-1",
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "p-2 rounded-lg shrink-0",
+                      resetConfirm ? "bg-danger/10 text-danger" : "bg-bg-tertiary text-text-tertiary",
+                    )}
+                  >
+                    {resetConfirm ? <AlertTriangle size={18} /> : <HardDrive size={18} />}
+                  </div>
+                  <div>
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        resetConfirm ? "text-danger" : "text-text-secondary",
+                      )}
+                    >
+                      {resetConfirm
+                        ? "This action is irreversible. All data will be lost."
+                        : "Delete database, reset to clean state, and restart"}
+                    </span>
+                    {resetConfirm && (
+                      <p className="text-xs text-danger/80 mt-0.5">
+                        Click "Confirm Reset" to proceed. The app will restart immediately.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant={resetConfirm ? "danger" : "secondary"}
+                  size="md"
+                  icon={
+                    resetting ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={14} />
+                    )
+                  }
+                  onClick={handleResetDb}
+                  disabled={resetting}
+                >
+                  {resetting ? "Resetting..." : resetConfirm ? "Confirm Reset" : "Reset Database"}
+                </Button>
+              </div>
+            </div>
+          </SettingGroup>
+        </div>
       )}
 
-      {/* ── Updates Tab ────────────────────────────────────────────── */}
+      {/* ==================================================================== */}
+      {/*  UPDATES & DATA TAB                                                  */}
+      {/* ==================================================================== */}
       {activeSubTab === "updates" && (
-        <>
+        <div className="space-y-4 md:space-y-6">
+          {/* ── Software Updates ──────────────────────────────────────────── */}
           <SettingGroup title={t("settings.updates")}>
             <div className="flex items-center justify-between p-1">
               <div className="space-y-1">
@@ -681,7 +856,7 @@ export default function DeveloperTab() {
             </div>
           </SettingGroup>
 
-          {/* ── Demo Data ───────────────────────────────────────────────────── */}
+          {/* ── Demo Data ─────────────────────────────────────────────────── */}
           <SettingGroup
             title="Demo Data"
             description="Seed the database with comprehensive demo data for testing."
@@ -695,7 +870,7 @@ export default function DeveloperTab() {
                   <div
                     className={cn(
                       "flex items-center gap-1.5 text-xs",
-                      seedResult.includes("Failed") ? "text-danger" : "text-success"
+                      seedResult.includes("Failed") ? "text-danger" : "text-success",
                     )}
                   >
                     <CheckCircle size={12} />
@@ -720,273 +895,148 @@ export default function DeveloperTab() {
               </Button>
             </div>
           </SettingGroup>
-        </>
+        </div>
       )}
 
-      {/* ── Health Tab (cont.) ──────────────────────────────────────── */}
-      {activeSubTab === "health" && (
-        <>
-          <SettingGroup title={t("settings.developerTools")}>
-            <div className="flex items-center justify-between p-1">
-              <div className="space-y-1">
-                <span className="text-sm font-medium text-text-secondary">
-                  {t("settings.openDevtools")}
-                </span>
-                <p className="text-xs text-text-tertiary">
-                  {t("settings.openDevtoolsDescription")}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                size="md"
-                icon={<Code2 size={14} />}
-                onClick={async () => {
-                  const { invokeCommand } = await import("@shared/services/db/invoke/command");
-                  await invokeCommand("open_devtools");
-                }}
-              >
-                {t("settings.openDevtools")}
-              </Button>
-            </div>
-          </SettingGroup>
-
-          {/* ── Feature Flags ──────────────────────────────────────────────── */}
-          <SettingGroup title="Feature Flags">
-            <p className="text-xs text-text-tertiary mb-3">
-              View feature access status and test tier-based progressive disclosure.
-              Feature flags control which capabilities are available based on your
-              subscription tier and usage limits.
-            </p>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={<Code2 size={14} />}
-                onClick={async () => {
-                  const { navigateToSettings } = await import("@/router/navigate");
-                  navigateToSettings("feature-flags");
-                }}
-                className="bg-bg-tertiary text-text-primary border border-border-primary"
-              >
-                Open Feature Flags Dashboard
-              </Button>
-            </div>
-            <HelpCard
-              collapsible
-              items={[
-                { type: "why", text: "Developer tools give you deep visibility into app health, logs, database state, and feature flags — essential for troubleshooting and performance tuning." },
-                { type: "how", text: "Health dashboard shows real-time metrics. Subsystem panel reports component status. Logs capture filtered app events. Feature flags control tier access." },
-                { type: "when", text: "Use developer tools when diagnosing issues, checking update status, monitoring subsystem health, or testing feature flag behavior." },
-                { type: "tip", text: "Export logs before clearing them if you're investigating a recurring issue — they can be shared with support for faster resolution." },
-              ]}
-            />
-          </SettingGroup>
-        </>
-      )}
-
-      {/* ── Logs Tab ───────────────────────────────────────────────── */}
+      {/* ==================================================================== */}
+      {/*  LOGS TAB                                                            */}
+      {/* ==================================================================== */}
       {activeSubTab === "logs" && (
-        <>
-          <SettingGroup title="System Logs">
-            <div className="border border-border rounded-2xl bg-card overflow-hidden flex flex-col h-[520px] shadow-sm">
-              {/* Toolbar */}
-              <div className="p-4 border-b border-border/50 bg-bg-tertiary/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
-                    <Terminal className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-text-primary">Activity Stream</h3>
-                    <p className="text-[10px] text-text-tertiary">Real-time application events</p>
-                  </div>
+        <SettingGroup title="System Logs">
+          <div className="border border-border rounded-2xl bg-card overflow-hidden flex flex-col h-[520px] shadow-sm">
+            {/* Toolbar */}
+            <div className="p-4 border-b border-border/50 bg-bg-tertiary/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                  <Terminal className="w-4 h-4" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => refetch()}
-                    disabled={logsLoading}
-                    className="h-8 w-8 p-0"
-                    title="Refresh"
-                  >
-                    <RefreshCw className={cn("w-3.5 h-3.5", logsLoading && "animate-spin")} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearLogs}
-                    className="h-8 px-2.5 text-danger hover:bg-danger/10 hover:text-danger"
-                    title="Clear all logs"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span className="text-xs">Clear</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleExportLogs}
-                    className="h-8 px-2.5 text-text-secondary hover:bg-bg-tertiary"
-                    title="Export logs to file"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span className="text-xs">Export</span>
-                  </Button>
+                <div>
+                  <h3 className="font-semibold text-sm text-text-primary">Activity Stream</h3>
+                  <p className="text-[10px] text-text-tertiary">Real-time application events</p>
                 </div>
               </div>
-
-              {/* Search & Filters */}
-              <div className="px-4 py-3 border-b border-border/50 bg-bg-tertiary/10 flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
-                  <input
-                    type="text"
-                    placeholder="Search messages, components, or data..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-9 h-9 w-full bg-bg-primary border border-border rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 p-1 bg-bg-tertiary rounded-xl border border-border shrink-0">
-                  {(["error", "warning", "info", "debug"] as LogFilterLevel[]).map((level) => {
-                    const config = LOG_LEVEL_CONFIG[level];
-                    const isActive = activeFilters.includes(level);
-                    return (
-                      <button
-                        key={level}
-                        onClick={() => toggleFilter(level)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5",
-                          isActive
-                            ? cn(config.badge, "shadow-sm scale-105")
-                            : "text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary"
-                        )}
-                      >
-                        <config.icon className="w-3 h-3" />
-                        {level}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Log List */}
-              <div className="flex-1 overflow-y-auto p-3 custom-scrollbar bg-bg-primary/50">
-                {logs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full py-10 text-center space-y-4">
-                    <div className="p-4 rounded-2xl bg-bg-tertiary border border-border/50">
-                      <Bug className="w-8 h-8 text-text-tertiary opacity-30" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm text-text-tertiary">
-                        No matching events
-                      </p>
-                      <p className="text-xs text-text-tertiary max-w-[240px]">
-                        Adjust your filters or search query to find what you're looking for.
-                      </p>
-                    </div>
-                    {searchQuery && (
-                      <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")}>
-                        Clear Search
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {logs.map((log) => (
-                      <LogRow key={log.id} log={log} />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="px-4 py-2.5 bg-bg-tertiary/50 border-t border-border flex items-center justify-between">
-                <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
-                  {logs.length} {logs.length === 1 ? "event" : "events"} displayed
-                </span>
-                <div className="flex items-center gap-2 text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                  </span>
-                  Live
-                </div>
-              </div>
-            </div>
-          </SettingGroup>
-        </>
-      )}
-
-      {/* ── Health Tab (cont.) ──────────────────────────────────────── */}
-      {activeSubTab === "health" && (
-        <>
-          <SettingGroup
-            title="Reset Database"
-            description="Delete all data and restart the app. After restart, use 'Seed Demo Data' above to repopulate."
-          >
-            <div
-              className={cn(
-                "rounded-xl border transition-all duration-300",
-                resetConfirm
-                  ? "border-danger/50 bg-danger/5 p-4"
-                  : "border-transparent p-1"
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "p-2 rounded-lg shrink-0",
-                      resetConfirm ? "bg-danger/10 text-danger" : "bg-bg-tertiary text-text-tertiary"
-                    )}
-                  >
-                    {resetConfirm ? <AlertTriangle size={18} /> : <HardDrive size={18} />}
-                  </div>
-                  <div>
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        resetConfirm ? "text-danger" : "text-text-secondary"
-                      )}
-                    >
-                      {resetConfirm
-                        ? "This action is irreversible. All data will be lost."
-                        : "Delete database, reset to clean state, and restart"}
-                    </span>
-                    {resetConfirm && (
-                      <p className="text-xs text-danger/80 mt-0.5">
-                        Click "Confirm Reset" to proceed. The app will restart immediately.
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <div className="flex items-center gap-1.5">
                 <Button
-                  variant={resetConfirm ? "danger" : "secondary"}
-                  size="md"
-                  icon={
-                    resetting ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Trash2 size={14} />
-                    )
-                  }
-                  onClick={handleResetDb}
-                  disabled={resetting}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={logsLoading}
+                  className="h-8 w-8 p-0"
+                  title="Refresh"
                 >
-                  {resetting ? "Resetting..." : resetConfirm ? "Confirm Reset" : "Reset Database"}
+                  <RefreshCw className={cn("w-3.5 h-3.5", logsLoading && "animate-spin")} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearLogs}
+                  className="h-8 px-2.5 text-danger hover:bg-danger/10 hover:text-danger"
+                  title="Clear all logs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="text-xs">Clear</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExportLogs}
+                  className="h-8 px-2.5 text-text-secondary hover:bg-bg-tertiary"
+                  title="Export logs to file"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span className="text-xs">Export</span>
                 </Button>
               </div>
             </div>
-          </SettingGroup>
-        </>
+
+            {/* Search & Filters */}
+            <div className="px-4 py-3 border-b border-border/50 bg-bg-tertiary/10 flex flex-col md:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+                <input
+                  type="text"
+                  placeholder="Search messages, components, or data..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-9 h-9 w-full bg-bg-primary border border-border rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-bg-tertiary rounded-xl border border-border shrink-0">
+                {(["error", "warning", "info", "debug"] as LogFilterLevel[]).map((level) => {
+                  const config = LOG_LEVEL_CONFIG[level];
+                  const isActive = activeFilters.includes(level);
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => toggleFilter(level)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5",
+                        isActive
+                          ? cn(config.badge, "shadow-sm scale-105")
+                          : "text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary",
+                      )}
+                    >
+                      <config.icon className="w-3 h-3" />
+                      {level}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Log List */}
+            <div className="flex-1 overflow-y-auto p-3 custom-scrollbar bg-bg-primary/50">
+              {logs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full py-10 text-center space-y-4">
+                  <div className="p-4 rounded-2xl bg-bg-tertiary border border-border/50">
+                    <Bug className="w-8 h-8 text-text-tertiary opacity-30" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm text-text-tertiary">
+                      No matching events
+                    </p>
+                    <p className="text-xs text-text-tertiary max-w-[240px]">
+                      Adjust your filters or search query to find what you're looking for.
+                    </p>
+                  </div>
+                  {searchQuery && (
+                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")}>
+                      Clear Search
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {logs.map((log) => (
+                    <LogRow key={log.id} log={log} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2.5 bg-bg-tertiary/50 border-t border-border flex items-center justify-between">
+              <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
+                {logs.length} {logs.length === 1 ? "event" : "events"} displayed
+              </span>
+              <div className="flex items-center gap-2 text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                </span>
+                Live
+              </div>
+            </div>
+          </div>
+        </SettingGroup>
       )}
     </div>
   );
