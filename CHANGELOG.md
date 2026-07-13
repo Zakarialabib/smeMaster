@@ -1,5 +1,35 @@
 # Changelog
 
+## [v1.0.0-rc.1] — 2026-07-13
+
+### Highlights
+
+- **Settings UI overhaul**: All 24 settings tabs redesigned with premium card layout,
+  stats rows (DeliverabilityDashboard pattern), step-by-step setup wizards
+- **RTL + i18n cleanup**: 164 physical-direction CSS violations fixed across 48 files
+  using Tailwind logical properties (`ms-*`, `me-*`, `ps-*`, `pe-*`, `start-*`, `end-*`);
+  1,685 `[TODO]` translation prefixes cleared across fr/ar/ja/it locales
+- **Onboarding rework**: Standalone page after splash; auto-skips if email accounts
+  or demo data exist; root redirect changed from `/mail/inbox` to `/dashboard`
+- **Onboarding data-check**: Uses `db_has_email_accounts` and `is_system_initialized`
+  IPC to skip onboarding when accounts or demo data already exist
+
+### Settings tabs redesigned
+
+- ComposingTab: Stats row (4 cards), Quick Setup Guide stepper with 6-step progress
+- TemplatesTab: Stats row (template count, categories, AI ready, demo presets)
+- DeveloperTab: Stats row (system status, features, database, updates); consolidated health pane
+- AboutTab: Premium gradient hero with app icon, tech stack badges, 8-feature highlights grid
+- GeneralTab: 4 HelpCards for appearance/language/privacy/advanced sub-tabs
+- FeatureFlagsTab, AccountCleaningTab, HardwareSettings: Added HelpCard education content
+- LicensePage, DevicePairingPage: Added HelpCard education content
+
+### Quality
+
+- TypeScript: `tsc --noEmit` — zero errors
+- ESLint: zero warnings
+- 2,470+ TS tests + 735 Rust tests passing
+
 ## [Unreleased] — account_id → company_id rename (company-scoped domains)
 
 ### Scope
