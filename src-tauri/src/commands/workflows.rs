@@ -156,7 +156,7 @@ pub async fn db_upsert_workflow_rule(
         let rows = sqlx::query(
             r#"
             UPDATE workflow_rules
-            SET account_id = ?, name = ?, trigger_event = ?, trigger_conditions = ?, actions = ?
+            SET name = ?, trigger_event = ?, trigger_conditions = ?, actions = ?
             WHERE id = ?
             "#,
         )
@@ -178,7 +178,7 @@ pub async fn db_upsert_workflow_rule(
         sqlx::query(
             r#"
             INSERT INTO workflow_rules
-                (id, account_id, name, trigger_event, trigger_conditions, actions, is_active, created_at)
+                (id, company_id, name, trigger_event, trigger_conditions, actions, is_active, created_at)
             VALUES (?, ?, ?, ?, ?, ?, 1, ?)
             "#,
         )
@@ -435,7 +435,7 @@ pub async fn db_clear_failed_operations(
     company_id: Option<String>,
 ) -> CmdResult<()> {
     if let Some(acct) = company_id {
-        sqlx::query("DELETE FROM pending_operations WHERE account_id = ? AND status = 'failed'")
+        sqlx::query("DELETE FROM pending_operations WHERE company_id = ? AND status = 'failed'")
             .bind(&acct)
             .execute(&*pool)
             .await
@@ -460,7 +460,7 @@ pub async fn db_retry_failed_operations(
 ) -> CmdResult<()> {
     if let Some(acct) = company_id {
         sqlx::query(
-            "UPDATE pending_operations SET status = 'pending', retry_count = 0, next_retry_at = NULL, error_message = NULL WHERE account_id = ? AND status = 'failed'"
+            "UPDATE pending_operations SET status = 'pending', retry_count = 0, next_retry_at = NULL, error_message = NULL WHERE company_id = ? AND status = 'failed'"
         )
         .bind(&acct)
         .execute(&*pool)
@@ -491,7 +491,7 @@ pub async fn db_upsert_pending_operation(
 ) -> CmdResult<String> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query(
-        "INSERT INTO pending_operations (id, account_id, operation_type, resource_id, params, status, retry_count, max_retries, campaign_id, created_at) VALUES (?,?,?,?,?,?,0,?,?,?) ON CONFLICT(id) DO UPDATE SET status=excluded.status, params=excluded.params"
+        "INSERT INTO pending_operations (id, company_id, operation_type, resource_id, params, status, retry_count, max_retries, campaign_id, created_at) VALUES (?,?,?,?,?,?,0,?,?,?) ON CONFLICT(id) DO UPDATE SET status=excluded.status, params=excluded.params"
     )
     .bind(&id)
     .bind(&company_id)

@@ -1151,7 +1151,7 @@ pub async fn db_get_recent_threads_with_contact(
 ) -> CmdResult<Vec<RecentThreadResult>> {
     let limit = limit.unwrap_or(10);
     let rows = sqlx::query_as::<_, (String, Option<String>, i64)>(
-        "SELECT t.id, t.subject, MAX(m.internal_date) as last_msg FROM threads t JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id WHERE (m.from_address = ?1 OR m.to_address LIKE ?2) GROUP BY t.id ORDER BY last_msg DESC LIMIT ?3"
+        "SELECT t.id, t.subject, MAX(m.internal_date) as last_msg FROM threads t JOIN messages m ON m.thread_id = t.id AND m.account_id = t.account_id WHERE (m.from_address = ?1 OR m.to_addresses LIKE ?2) GROUP BY t.id ORDER BY last_msg DESC LIMIT ?3"
     ).bind(&email).bind(format!("%{}%", email)).bind(limit)
     .fetch_all(&*pool).await.map_err(|e| AppDbError::Database(e))?;
     Ok(rows.into_iter().map(|(tid, sub, ts)| RecentThreadResult { thread_id: tid, subject: sub, last_message_at: ts }).collect())
@@ -1348,4 +1348,36 @@ pub async fn db_get_engagement_data_for_contact(
         replies_sent: replies_sent.0,
         emails_received: emails_received.0,
     })
+}
+
+// ── Import History ──────────────────────────────────────────────────────
+
+#[derive(Clone, Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ImportHistoryRecord {
+    pub id: String,
+    pub account_id: String,
+    pub file_name: String,
+    pub row_count: i64,
+    pub imported_count: i64,
+    pub failed_count: i64,
+    pub status: String,
+    pub error_log: Option<String>,
+    pub created_at: i64,
+    pub completed_at: Option<i64>,
+}
+
+#[tauri::command]
+pub async fn db_list_import_history(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+) -> CmdResult<Vec<ImportHistoryRecord>> {
+    let rows = sqlx::query_as::<_, ImportHistoryRecord>(
+        "SELECT id, account_id, file_name, row_count, imported_count, failed_count, status, error_log, created_at, completed_at \
+         FROM import_history WHERE account_id = ? ORDER BY created_at DESC",
+    )
+    .bind(&account_id)
+    .fetch_all(&*pool)
+    .await
+    .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
+    Ok(rows)
 }

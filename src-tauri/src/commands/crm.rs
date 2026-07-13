@@ -160,7 +160,7 @@ pub async fn db_dashboard_campaigns_click_rate(
     pool: State<'_, SqlitePool>,
 ) -> CmdResult<f64> {
     let result: (i64, i64) = sqlx::query_as(
-        "SELECT COALESCE(SUM(sent_count), 0), COUNT(*) FROM campaign_recipients WHERE clicked_at IS NOT NULL"
+        "SELECT COALESCE((SELECT SUM(sent_count) FROM campaigns WHERE id IN (SELECT DISTINCT campaign_id FROM campaign_recipients WHERE clicked_at IS NOT NULL)), 0), COUNT(*) FROM campaign_recipients WHERE clicked_at IS NOT NULL"
     )
     .fetch_one(&*pool)
     .await
