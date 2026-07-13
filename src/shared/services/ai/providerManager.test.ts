@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("@features/settings/db/settings", () => {
   const fn = vi.fn();
@@ -189,7 +189,11 @@ describe("providerManager", () => {
       });
 
       await getActiveProvider();
-      expect(createLMStudioProvider).toHaveBeenCalledWith("http://localhost:1234", "llama3.2", "auto");
+      expect(createLMStudioProvider).toHaveBeenCalledWith(
+        "http://localhost:1234",
+        { chatModel: "llama3.2", embeddingModel: "" },
+        "auto",
+      );
     });
 
     it("uses default lmstudio url and empty model when not configured", async () => {
@@ -199,7 +203,11 @@ describe("providerManager", () => {
       });
 
       await getActiveProvider();
-      expect(createLMStudioProvider).toHaveBeenCalledWith("http://localhost:1234", "", "auto");
+      expect(createLMStudioProvider).toHaveBeenCalledWith(
+        "http://localhost:1234",
+        { chatModel: "", embeddingModel: "" },
+        "auto",
+      );
     });
 
     it("creates ollama provider with server url and model", async () => {

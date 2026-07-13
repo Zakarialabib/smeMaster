@@ -31,6 +31,20 @@ export interface AiProviderClient {
   getEmbeddings?(req: AiEmbeddingRequest): Promise<number[][] | null>;
 }
 
+/** Options for the LM Studio provider. `embeddingModel` is the model loaded in
+ *  LM Studio for `/v1/embeddings` (usually distinct from the chat `chatModel`). */
+export interface LMStudioProviderOptions {
+  chatModel: string;
+  embeddingModel?: string;
+}
+
+/** Result of a lightweight embedding-endpoint health check. */
+export interface TestEmbeddingResult {
+  ok: boolean;
+  dims?: number;
+  error?: string;
+}
+
 export const DEFAULT_MODELS: Record<AiProvider, string> = {
   claude: "claude-haiku-4-5-20251001",
   openai: "gpt-4o-mini",

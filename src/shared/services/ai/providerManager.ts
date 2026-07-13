@@ -1,6 +1,6 @@
-﻿import { getSetting, getSecureSetting } from "@features/settings/db/settings";
+import { getSetting, getSecureSetting } from "@features/settings/db/settings";
 import { AiError } from "./errors";
-import type { AiProvider, AiProviderClient } from "./types";
+import type { AiProvider, AiProviderClient, TestEmbeddingResult } from "./types";
 import { DEFAULT_MODELS, MODEL_SETTINGS } from "./types";
 import { createClaudeProvider, clearClaudeProvider } from "./providers/claudeProvider";
 import { createOpenAIProvider, clearOpenAIProvider } from "./providers/openaiProvider";
@@ -8,7 +8,7 @@ import { createGeminiProvider, clearGeminiProvider } from "./providers/geminiPro
 import { createOllamaProvider, clearOllamaProvider } from "./providers/ollamaProvider";
 import { createCopilotProvider, clearCopilotProvider } from "./providers/copilotProvider";
 import { createCustomProvider } from "./providers/customProvider";
-import { createLMStudioProvider, clearLMStudioProvider } from "./providers/lmstudioProvider";
+import { createLMStudioProvider, clearLMStudioProvider, testEmbedding } from "./providers/lmstudioProvider";
 import { createOpenRouterProvider, clearOpenRouterProvider } from "./providers/openrouterProvider";
 
 const API_KEY_SETTINGS: Record<Exclude<AiProvider, "ollama" | "custom" | "lmstudio">, string> = {
@@ -60,13 +60,18 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
   if (providerName === "lmstudio") {
     const serverUrl = (await getSetting("lmstudio_server_url")) ?? "http://localhost:1234";
     const model = (await getSetting("lmstudio_model")) ?? "";
-    const cacheKey = `${serverUrl}|${model}|${aiLanguage}`;
+    const embeddingModel = (await getSetting("lmstudio_embedding_model")) ?? "";
+    const cacheKey = `${serverUrl}|${model}|${embeddingModel}|${aiLanguage}`;
 
     if (cachedProvider && cachedProvider.name === "lmstudio" && cachedProvider.key === cacheKey) {
       return cachedProvider.client;
     }
 
-    const client = createLMStudioProvider(serverUrl, model, aiLanguage);
+    const client = createLMStudioProvider(
+      serverUrl,
+      { chatModel: model, embeddingModel },
+      aiLanguage,
+    );
     cachedProvider = { name: "lmstudio", key: cacheKey, client };
     return client;
   }
@@ -164,4 +169,15 @@ export function clearProviderClients(): void {
   clearLMStudioProvider();
   clearCopilotProvider();
   clearOpenRouterProvider();
+}
+
+/**
+ * Validate the configured LM Studio embedding model by embedding a test string.
+ * Reads the `lmstudio_server_url` + `lmstudio_embedding_model` settings and
+ * delegates to the provider's `testEmbedding`. Used by the AI settings UI.
+ */
+export async function testLMStudioEmbedding(): Promise<TestEmbeddingResult> {
+  const serverUrl = (await getSetting("lmstudio_server_url")) ?? "http://localhost:1234";
+  const embeddingModel = (await getSetting("lmstudio_embedding_model")) ?? "";
+  return testEmbedding(serverUrl, embeddingModel || undefined);
 }

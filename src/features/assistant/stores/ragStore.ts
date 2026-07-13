@@ -25,6 +25,7 @@ import {
   getProviderEmbedding,
 } from "@shared/services/ai/embeddingService";
 import { RAG_ANSWER_SYSTEM_PROMPT } from "@shared/services/ai/prompts";
+import { TestEmbeddingResult } from "@/shared/services/ai/types";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -76,6 +77,10 @@ export interface RagState {
   isSearching: boolean;
   searchError: string | null;
 
+  // ── Embedding endpoint validation ──
+  embeddingTest: TestEmbeddingResult | null;
+  embeddingTesting: boolean;
+
   // ── Persisted config rehydration ──
   _hydrated: boolean;
 
@@ -89,6 +94,7 @@ export interface RagState {
   loadEmbeddingModel: () => Promise<void>;
   indexAll: () => Promise<void>;
   search: (query: string) => Promise<void>;
+  testEmbedding: () => Promise<TestEmbeddingResult | null>;
   clearHistory: () => void;
 }
 
@@ -118,6 +124,8 @@ export const useRagStore = create<RagState>((set, get) => ({
   conversation: [],
   isSearching: false,
   searchError: null,
+  embeddingTest: null,
+  embeddingTesting: false,
   _hydrated: false,
 
   // ── Hydrate persisted config ──
@@ -342,6 +350,26 @@ export const useRagStore = create<RagState>((set, get) => ({
   setEmbeddingSource: async (val) => {
     set({ embeddingSource: val });
     await tauriStoreStorage.setItem(RAG_EMBEDDING_SOURCE_KEY, val ?? "auto");
+  },
+
+  // ── Validate the configured LM Studio embedding model ──
+  testEmbedding: async () => {
+    set({ embeddingTesting: true, embeddingTest: null });
+    try {
+      const { testLMStudioEmbedding } = await import("@shared/services/ai/providerManager");
+      const result = await testLMStudioEmbedding();
+      set({ embeddingTest: result });
+      return result;
+    } catch (err) {
+      const result: TestEmbeddingResult = {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+      set({ embeddingTest: result });
+      return result;
+    } finally {
+      set({ embeddingTesting: false });
+    }
   },
 
   // ── Resolve the local models folder path ──
