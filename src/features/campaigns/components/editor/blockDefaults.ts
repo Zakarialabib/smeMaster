@@ -87,6 +87,32 @@ export function createBlock(type: BlockType): EmailBlock {
       };
     case "spacer":
       return { id, type: "spacer", height: 24 };
+    case "card":
+      return {
+        id,
+        type: "card",
+        image: "",
+        imageAlt: "",
+        title: "Special offer",
+        body: "Add a short, punchy description of what makes this offer worth clicking.",
+        buttonText: "Learn more",
+        buttonUrl: "https://example.com",
+        backgroundColor: "#ffffff",
+        borderRadius: 12,
+        padding: { top: 16, bottom: 16, left: 16, right: 16 },
+        alignment: "left",
+      };
+    case "columns":
+      return {
+        id,
+        type: "columns",
+        leftHtml: "<h3 style=\"margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;\">Left</h3><p style=\"margin:0;font-family:Arial,Helvetica,sans-serif;\">Left column content.</p>",
+        rightHtml: "<h3 style=\"margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;\">Right</h3><p style=\"margin:0;font-family:Arial,Helvetica,sans-serif;\">Right column content.</p>",
+        backgroundColor: "#f9fafb",
+        borderRadius: 12,
+        padding: { top: 16, bottom: 16, left: 16, right: 16 },
+        gap: 16,
+      };
     default:
       throw new Error(`Unknown block type: ${type}`);
   }
@@ -97,6 +123,8 @@ export const BLOCK_PALETTE: { type: BlockType; label: string }[] = [
   { type: "paragraph", label: "Paragraph" },
   { type: "image", label: "Image" },
   { type: "button", label: "Button" },
+  { type: "card", label: "Card" },
+  { type: "columns", label: "Columns" },
   { type: "divider", label: "Divider" },
   { type: "spacer", label: "Spacer" },
 ];

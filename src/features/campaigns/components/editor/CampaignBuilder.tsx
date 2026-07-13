@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, Undo2, Redo2, Eye, Save, LayoutTemplate } from "lucide-react";
+import { Sparkles, Undo2, Redo2, Eye, Save, LayoutTemplate, SplitSquareHorizontal, GalleryHorizontal } from "lucide-react";
 import { useCampaignComposerStore } from "@features/campaigns/stores/campaignComposerStore";
+import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { EmailEditor } from "./EmailEditor";
 import { BlockConfigPanel } from "./config/BlockConfigPanel";
 import { EmailPreview } from "./Preview/EmailPreview";
 import { AIPanel } from "./ai/AIPanel";
 import { VaultFilePicker } from "./VaultFilePicker";
 import { STARTER_TEMPLATES } from "./starterTemplates";
+import { getCampaignTemplateList } from "@features/campaigns/services/campaignTemplateCatalog";
+import { htmlToBlocks } from "@features/campaigns/services/htmlToBlocks";
 import type { EmailBlock } from "./types";
+import type { DbTemplate } from "@features/mail/db/templates";
 
 interface CampaignBuilderProps {
   onSaveTemplate?: (name: string) => void;
@@ -21,10 +25,13 @@ interface CampaignBuilderProps {
 export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
   const { t } = useTranslation();
   const store = useCampaignComposerStore();
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const [showPreview, setShowPreview] = useState(true);
   const [showAi, setShowAi] = useState(false);
+  const [showAb, setShowAb] = useState(false);
   const [vaultOpen, setVaultOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<DbTemplate[]>([]);
 
   const handleInsertBody = (text: string) => {
     const paras = text
@@ -59,6 +66,22 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
     }
   };
 
+  // Load saved campaign templates for the "use template" gallery.
+  useEffect(() => {
+    if (!activeAccountId) return;
+    let cancelled = false;
+    getCampaignTemplateList(activeAccountId)
+      .then((list) => { if (!cancelled) setTemplates(list); })
+      .catch(() => { if (!cancelled) setTemplates([]); });
+    return () => { cancelled = true; };
+  }, [activeAccountId]);
+
+  const handleUseTemplate = (tmpl: DbTemplate) => {
+    if (!tmpl.body_html) return;
+    const blocks = htmlToBlocks(tmpl.body_html);
+    if (blocks.length) store.loadBlocks(blocks);
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
@@ -91,6 +114,13 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
         >
           <Sparkles size={14} /> {t("campaign.editor.aiPowered")}
         </button>
+        <button
+          onClick={() => setShowAb((v) => !v)}
+          className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs transition-colors ${showAb ? "bg-accent/10 text-accent" : "text-text-secondary hover:bg-bg-tertiary"}`}
+          title={t("campaign.abTest")}
+        >
+          <SplitSquareHorizontal size={14} /> {t("campaign.abTest")}
+        </button>
         {onSaveTemplate && (
           <button
             onClick={handleSaveAsTemplate}
@@ -102,6 +132,51 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
           </button>
         )}
       </div>
+
+      {/* A/B testing panel */}
+      {showAb && (
+        <div className="border-b border-border-primary bg-bg-secondary/40 px-3 py-2 shrink-0 text-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium text-text-primary">{t("campaign.abTesting")}</span>
+            <label className="flex items-center gap-1.5 text-text-secondary">
+              <input
+                type="checkbox"
+                checked={store.abEnabled}
+                onChange={(e) => store.setAbEnabled(e.target.checked)}
+                className="accent-accent"
+              />
+              {t("campaign.enabled")}
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              value={store.variantA.subject}
+              onChange={(e) => store.setVariantA({ ...store.variantA, subject: e.target.value })}
+              placeholder={t("campaign.subjectAPlaceholder")}
+              className="rounded border border-border-primary bg-bg-primary px-2 py-1 text-text-primary outline-none focus:border-accent"
+            />
+            <input
+              value={store.variantB.subject}
+              onChange={(e) => store.setVariantB({ ...store.variantB, subject: e.target.value })}
+              placeholder={t("campaign.subjectBPlaceholder")}
+              className="rounded border border-border-primary bg-bg-primary px-2 py-1 text-text-primary outline-none focus:border-accent"
+            />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-text-tertiary">{t("campaign.splitRatio")}</span>
+            <input
+              type="range"
+              min={10}
+              max={90}
+              step={5}
+              value={store.splitRatio}
+              onChange={(e) => store.setSplitRatio(Number(e.target.value))}
+              className="flex-1 accent-accent"
+            />
+            <span className="w-16 text-right text-text-secondary">{store.splitRatio}% / {100 - store.splitRatio}%</span>
+          </div>
+        </div>
+      )}
 
       {/* Body: editor | config | preview | ai */}
       <div className="flex flex-1 min-h-0">
@@ -127,6 +202,29 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
               <div className="mt-4">
                 <EmailEditor onPickFromVault={() => setVaultOpen(true)} />
               </div>
+
+              {/* Saved campaign templates */}
+              {templates.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 text-sm text-text-secondary mb-3">
+                    <GalleryHorizontal size={16} className="text-accent" />
+                    {t("campaign.editor.gallery")}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {templates.map((tmpl) => (
+                      <button
+                        key={tmpl.id}
+                        onClick={() => handleUseTemplate(tmpl)}
+                        className="text-left p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 transition-all"
+                      >
+                        <div className="text-sm font-medium text-text-primary truncate">{tmpl.name}</div>
+                        <div className="text-xs text-text-tertiary mt-1 line-clamp-2">{tmpl.subject || t("campaign.noTemplate")}</div>
+                        <div className="text-xs text-accent mt-2">{t("campaign.editor.useTemplate")}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <EmailEditor configPanel={store.configOpenBlockId ? <BlockConfigPanel /> : undefined} onPickFromVault={() => setVaultOpen(true)} />

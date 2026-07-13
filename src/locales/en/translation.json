@@ -1048,7 +1048,17 @@
       "emptyTemplate": "Start from a blank email",
       "pickTemplate": "Choose a starting template",
       "useTemplate": "Use template",
-      "fullWidth": "Full width"
+      "fullWidth": "Full width",
+      "card": "Card",
+      "columns": "Columns",
+      "twoColumns": "Two columns",
+      "cardTitle": "Title",
+      "cardBody": "Description",
+      "cardButton": "Button text",
+      "cardImage": "Add image",
+      "leftColumn": "Left column",
+      "rightColumn": "Right column",
+      "gap": "Gap"
     },
 
     "campaigns": "Campaigns",

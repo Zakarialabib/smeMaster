@@ -1024,7 +1024,17 @@
       "emptyTemplate": "Inizia da un'e-mail vuota",
       "pickTemplate": "Scegli un modello",
       "useTemplate": "Usa modello",
-      "fullWidth": "Larghezza piena"
+      "fullWidth": "Larghezza piena",
+      "card": "Card",
+      "columns": "Columns",
+      "twoColumns": "Two columns",
+      "cardTitle": "Title",
+      "cardBody": "Description",
+      "cardButton": "Button text",
+      "cardImage": "Add image",
+      "leftColumn": "Left column",
+      "rightColumn": "Right column",
+      "gap": "Gap"
     },
 
     "campaigns": "Campagne",

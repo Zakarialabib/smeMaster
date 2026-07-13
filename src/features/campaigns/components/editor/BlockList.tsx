@@ -23,6 +23,8 @@ import type {
   ButtonBlock as ButtonBlockT,
   DividerBlock as DividerBlockT,
   SpacerBlock as SpacerBlockT,
+  CardBlock as CardBlockT,
+  ColumnsBlock as ColumnsBlockT,
 } from "./types";
 import { useCampaignComposerStore } from "../../stores/campaignComposerStore";
 import { BlockWrapper } from "./BlockWrapper";
@@ -33,6 +35,8 @@ import { ImageBlock } from "./blocks/ImageBlock";
 import { ButtonBlock } from "./blocks/ButtonBlock";
 import { DividerBlock } from "./blocks/DividerBlock";
 import { SpacerBlock } from "./blocks/SpacerBlock";
+import { CardBlock } from "./blocks/CardBlock";
+import { ColumnsBlock } from "./blocks/ColumnsBlock";
 
 function renderBlockBody(
   block: EmailBlock,
@@ -81,6 +85,21 @@ function renderBlockBody(
         <SpacerBlock
           block={block as SpacerBlockT}
           onChange={onChange as (c: Partial<SpacerBlockT>) => void}
+        />
+      );
+    case "card":
+      return (
+        <CardBlock
+          block={block as CardBlockT}
+          onChange={onChange as (c: Partial<CardBlockT>) => void}
+          onPickFromVault={onPickFromVault}
+        />
+      );
+    case "columns":
+      return (
+        <ColumnsBlock
+          block={block as ColumnsBlockT}
+          onChange={onChange as (c: Partial<ColumnsBlockT>) => void}
         />
       );
     default:

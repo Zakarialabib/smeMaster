@@ -10,7 +10,9 @@ export type BlockType =
   | "image"
   | "button"
   | "divider"
-  | "spacer";
+  | "spacer"
+  | "card"
+  | "columns";
 
 export type FontFamily = "sans-serif" | "serif" | "monospace";
 export type TextAlign = "left" | "center" | "right";
@@ -91,10 +93,38 @@ export interface SpacerBlock extends BlockBase {
   height: number; // px
 }
 
+/** A self-contained promo/testimonial card: image + title + text + button. */
+export interface CardBlock extends BlockBase {
+  type: "card";
+  image: string; // vault path or data URL
+  imageAlt: string;
+  title: string;
+  body: string;
+  buttonText: string;
+  buttonUrl: string;
+  backgroundColor: string; // hex
+  borderRadius: number; // px
+  padding: Padding;
+  alignment: TextAlign;
+}
+
+/** Two side-by-side columns; each holds raw inline HTML (kept simple/flat). */
+export interface ColumnsBlock extends BlockBase {
+  type: "columns";
+  leftHtml: string;
+  rightHtml: string;
+  backgroundColor: string; // hex
+  borderRadius: number; // px
+  padding: Padding;
+  gap: number; // px between columns
+}
+
 export type EmailBlock =
   | HeadingBlock
   | ParagraphBlock
   | ImageBlock
   | ButtonBlock
   | DividerBlock
-  | SpacerBlock;
+  | SpacerBlock
+  | CardBlock
+  | ColumnsBlock;

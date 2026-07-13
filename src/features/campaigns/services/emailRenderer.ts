@@ -10,6 +10,8 @@ import type {
   ButtonBlock,
   DividerBlock,
   SpacerBlock,
+  CardBlock,
+  ColumnsBlock,
   TypographyProps,
   Padding,
 } from "../components/editor/types";
@@ -110,6 +112,27 @@ function renderSpacer(b: SpacerBlock): string {
   return `<tr><td style="height:${b.height}px;font-size:0;line-height:0">&nbsp;</td></tr>`;
 }
 
+function renderCard(b: CardBlock): string {
+  const align =
+    b.alignment === "center"
+      ? "text-align:center"
+      : b.alignment === "right"
+        ? "text-align:right"
+        : "text-align:left";
+  const img = b.image
+    ? `<img src="${esc(b.image)}" alt="${esc(b.imageAlt)}" border="0" style="display:block;width:100%;max-width:100%;height:auto;border-radius:${b.borderRadius}px 0 0 0;" />`
+    : "";
+  const btn = b.buttonText
+    ? `<p style="margin:12px 0 0;${align}"><a href="${esc(b.buttonUrl)}" target="_blank" rel="noopener" style="display:inline-block;background-color:${b.backgroundColor};color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 18px;border-radius:6px;">${esc(b.buttonText)}</a></p>`
+    : "";
+  return `<tr><td style="padding:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${b.backgroundColor};border-radius:${b.borderRadius}px;overflow:hidden;"><tr><td style="padding:${pad(b.padding)}"><div style="${align}">${img}${img ? '<div style="height:12px"></div>' : ""}<h3 style="margin:0 0 6px;font-size:18px;font-weight:700;color:#111827;font-family:Arial,Helvetica,sans-serif;">${esc(b.title)}</h3><p style="margin:0;font-size:14px;line-height:1.6;color:#374151;font-family:Arial,Helvetica,sans-serif;">${escMultiline(b.body)}</p>${btn}</div></td></tr></table></td></tr>`;
+}
+
+function renderColumns(b: ColumnsBlock): string {
+  const colStyle = `width:50%;vertical-align:top;padding:${pad(b.padding)};font-size:14px;line-height:1.6;color:#374151;font-family:Arial,Helvetica,sans-serif;`;
+  return `<tr><td style="padding:${pad(b.padding)}"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${b.backgroundColor};border-radius:${b.borderRadius}px;"><tr><td style="${colStyle}">${b.leftHtml}</td><td width="${b.gap}" style="font-size:0;line-height:0">&nbsp;</td><td style="${colStyle}">${b.rightHtml}</td></tr></table></td></tr>`;
+}
+
 export function renderEmailHtml(blocks: EmailBlock[]): string {
   const rows = blocks
     .map((b) => {
@@ -126,6 +149,10 @@ export function renderEmailHtml(blocks: EmailBlock[]): string {
           return renderDivider(b);
         case "spacer":
           return renderSpacer(b);
+        case "card":
+          return renderCard(b);
+        case "columns":
+          return renderColumns(b);
         default:
           return "";
       }

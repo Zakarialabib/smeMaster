@@ -992,7 +992,17 @@
       "emptyTemplate": "ابدأ من بريد فارغ",
       "pickTemplate": "اختر قالبًا",
       "useTemplate": "استخدام القالب",
-      "fullWidth": "بالكامل"
+      "fullWidth": "بالكامل",
+      "card": "Card",
+      "columns": "Columns",
+      "twoColumns": "Two columns",
+      "cardTitle": "Title",
+      "cardBody": "Description",
+      "cardButton": "Button text",
+      "cardImage": "Add image",
+      "leftColumn": "Left column",
+      "rightColumn": "Right column",
+      "gap": "Gap"
     },
 
     "campaigns": "الحملات",

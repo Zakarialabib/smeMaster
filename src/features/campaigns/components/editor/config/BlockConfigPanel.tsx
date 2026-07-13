@@ -9,6 +9,8 @@ import type {
   ButtonBlock,
   DividerBlock,
   SpacerBlock,
+  CardBlock,
+  ColumnsBlock,
   Padding,
 } from "../types";
 import { TypographyConfig, Field } from "./TypographyConfig";
@@ -350,9 +352,47 @@ function BlockIcon({ type }: { type: EmailBlock["type"] }) {
       return <Minus size={16} />;
     case "spacer":
       return <StretchVertical size={16} />;
+    case "card":
+      return <MousePointerClick size={16} />;
+    case "columns":
+      return <Link2 size={16} />;
     default:
       return <Link2 size={16} />;
   }
+}
+
+function CardConfig({ block }: { block: CardBlock }) {
+  const { t } = useTranslation();
+  const update = (c: Partial<CardBlock>) =>
+    useCampaignComposerStore.getState().updateBlock(block.id, c);
+  return (
+    <>
+      <ContentField label={t("campaign.editor.cardTitle")} value={block.title} onChange={(title) => update({ title })} />
+      <ContentField label={t("campaign.editor.cardBody")} value={block.body} onChange={(body) => update({ body })} />
+      <Field label={t("campaign.editor.cardButton")}>
+        <input className={inputCls} value={block.buttonText} onChange={(e) => update({ buttonText: e.target.value })} />
+      </Field>
+      <LinkConfig value={block.buttonUrl} onChange={(buttonUrl) => update({ buttonUrl })} />
+      <ColorConfig value={block.backgroundColor} onChange={(backgroundColor) => update({ backgroundColor })} />
+      <AlignmentConfig value={block.alignment} onChange={(alignment) => update({ alignment })} />
+      <SliderField label={t("campaign.editor.borderRadius")} value={block.borderRadius} min={0} max={32} suffix="px" onChange={(borderRadius) => update({ borderRadius })} />
+      <PadField value={block.padding} onChange={(padding) => update({ padding })} />
+    </>
+  );
+}
+
+function ColumnsConfig({ block }: { block: ColumnsBlock }) {
+  const { t } = useTranslation();
+  const update = (c: Partial<ColumnsBlock>) =>
+    useCampaignComposerStore.getState().updateBlock(block.id, c);
+  return (
+    <>
+      <ColorConfig value={block.backgroundColor} onChange={(backgroundColor) => update({ backgroundColor })} />
+      <SliderField label={t("campaign.editor.borderRadius")} value={block.borderRadius} min={0} max={32} suffix="px" onChange={(borderRadius) => update({ borderRadius })} />
+      <SliderField label={t("campaign.editor.gap")} value={block.gap} min={0} max={48} suffix="px" onChange={(gap) => update({ gap })} />
+      <PadField value={block.padding} onChange={(padding) => update({ padding })} />
+    </>
+  );
 }
 
 export function BlockConfigPanel() {
@@ -385,6 +425,8 @@ export function BlockConfigPanel() {
       {block.type === "button" && <ButtonConfig block={block} />}
       {block.type === "divider" && <DividerConfig block={block} />}
       {block.type === "spacer" && <SpacerConfig block={block} />}
+      {block.type === "card" && <CardConfig block={block} />}
+      {block.type === "columns" && <ColumnsConfig block={block} />}
     </div>
   );
 }

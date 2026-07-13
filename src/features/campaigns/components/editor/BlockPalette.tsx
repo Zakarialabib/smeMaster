@@ -8,6 +8,8 @@ import {
   Pilcrow,
   Plus,
   Type,
+  CreditCard,
+  Columns3,
 } from "lucide-react";
 import type { BlockType } from "./types";
 import { BLOCK_PALETTE } from "./blockDefaults";
@@ -20,6 +22,8 @@ const ICONS: Record<BlockType, React.ReactNode> = {
   button: <MousePointerClick className="h-4 w-4" />,
   divider: <Minus className="h-4 w-4" />,
   spacer: <Type className="h-4 w-4" />,
+  card: <CreditCard className="h-4 w-4" />,
+  columns: <Columns3 className="h-4 w-4" />,
 };
 
 interface BlockPaletteProps {
