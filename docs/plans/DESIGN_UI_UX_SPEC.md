@@ -333,8 +333,8 @@ repo actually uses `useFormField` + `validators.ts` (keep that). Its email-migra
 | 1 | Glass surface layer + Flat/Glass toggle (Direction A) | 812cc99 | done, tsc delta 0 |
 | 2 | Page Template Contract doc + audit existing PageScaffold pages | 0da9436 | done |
 | 3 | Page parity: survey shows exempt pages are bespoke-by-design, not drift; document exemptions + confirm Campaigns/Deliverability follow contract | e0333d7 | done (doc) |
-| 4 | Form/validation parity | - | not started |
-| 5 | Empty/Loading/Error states | - | not started |
+| 4 | Form/validation parity (useFormField + inline i18n) | 0696cb1 | done (AddSegmentModal converted; 25 spots surveyed) |
+| 5 | Empty/Loading/Error states (EmptyState/Skeleton/ErrorState/CenteredLoader) | 0696cb1 | done (convention documented; 31 pages use EmptyState) |
 | 6 | Mobile nav parity + contextual FAB | - | not started |
 | 7 | Desktop density toggle + command palette + multi-pane | - | not started |
 | 8 | Docs consolidation | - | not started |

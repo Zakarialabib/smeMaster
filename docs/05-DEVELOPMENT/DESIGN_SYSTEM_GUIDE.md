@@ -314,7 +314,10 @@ Anatomy:
   - **Empty**: when `isEmpty`, render the shared `EmptyState` (icon + title + body + CTA) —
     never bare "no data" text.
   - **Focus**: on mount, focus the search input when a toolbar is present (a11y).
-  - **States**: loading → `Skeleton` family; error → `ErrorState` with retry.
+  - **States**: loading → `Skeleton` family (or `CenteredLoader`); empty → shared
+    `EmptyState` (icon + title + body + CTA); error → `ErrorState` with retry.
+    All four are mandatory primitives for any list/detail surface; do not inline
+    ad-hoc spinners or bare "no data" text.
 
 Compliance (verified 2026-07-13): Contacts, Attachments, Tasks, Calendar, Automation,
 Invoicing, ERP use `PageScaffold` with title/toolbar/empty-state.
