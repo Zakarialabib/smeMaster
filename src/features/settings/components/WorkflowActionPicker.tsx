@@ -145,7 +145,7 @@ export function WorkflowActionPicker({ actions, onChange }: WorkflowActionPicker
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
-          <Plus size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+          <Plus size={12} className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
         </div>
       )}
     </div>

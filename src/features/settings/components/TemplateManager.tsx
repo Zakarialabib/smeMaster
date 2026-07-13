@@ -757,7 +757,7 @@ function TemplateAnalytics({ paginatedTemplates, maxUsage }: { paginatedTemplate
       <div className="space-y-1.5">
         {sorted.map((tmpl) => (
           <div key={tmpl.id} className="flex items-center gap-3">
-            <div className="w-4 text-[0.5rem] text-text-tertiary text-right shrink-0">
+            <div className="w-4 text-[0.5rem] text-text-tertiary text-end shrink-0">
               {tmpl.usage_count}
             </div>
             <div className="flex-1 h-5 bg-bg-tertiary rounded-sm overflow-hidden relative">
@@ -769,7 +769,7 @@ function TemplateAnalytics({ paginatedTemplates, maxUsage }: { paginatedTemplate
                 {tmpl.name}
               </span>
             </div>
-            <span className="text-[0.5rem] text-text-tertiary shrink-0 w-12 text-right">
+            <span className="text-[0.5rem] text-text-tertiary shrink-0 w-12 text-end">
               {formatTimestamp(tmpl.last_used_at)}
             </span>
           </div>
@@ -982,7 +982,7 @@ function TemplateListItem({
           <div className="text-xs text-text-tertiary truncate">{template.subject}</div>
         )}
       </div>
-      <div className="flex items-center gap-1 shrink-0 ml-2">
+      <div className="flex items-center gap-1 shrink-0 ms-2">
         <Button variant="ghost" size="sm" iconOnly icon={<Download size={12} />} onClick={() => onExport(template)} title={t("settings.exportTemplate")} aria-label={t("settings.exportTemplate")} />
         <Button variant="ghost" size="sm" iconOnly icon={<Pencil size={12} />} onClick={() => onEdit(template)} title={t("common.edit")} aria-label={t("common.edit")} />
         <Button variant="ghost" size="sm" iconOnly icon={<Trash2 size={12} />} onClick={() => onDelete(template.id)} className="hover:text-danger" title={t("common.delete")} aria-label={t("common.delete")} />
@@ -1010,7 +1010,7 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
         <ChevronDown size={12} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
       </Button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-10 bg-bg-primary border border-border-primary rounded-md shadow-lg py-1 min-w-[220px]">
+        <div className="absolute start-0 top-full mt-1 z-10 bg-bg-primary border border-border-primary rounded-md shadow-lg py-1 min-w-[220px]">
           {TEMPLATE_VARIABLES.map((v) => (
             <button
               key={v.key}
@@ -1019,7 +1019,7 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
                 onInsert(v.key);
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-bg-hover text-xs flex items-center justify-between gap-3"
+              className="w-full text-start px-3 py-1.5 hover:bg-bg-hover text-xs flex items-center justify-between gap-3"
             >
               <code className="text-accent">{v.key}</code>
               <span className="text-text-tertiary">{v.desc}</span>

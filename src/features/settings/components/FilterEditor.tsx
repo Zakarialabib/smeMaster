@@ -291,7 +291,7 @@ export function FilterEditor() {
               title={filter.is_enabled === 1 ? t('common.disable') : t('common.enable')}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow ${
+                className={`absolute top-0.5 start-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow ${
                   filter.is_enabled === 1 ? "translate-x-4" : ""
                 }`}
               />
@@ -325,7 +325,7 @@ export function FilterEditor() {
             <div className="text-xs font-medium text-text-secondary mb-1.5">
               {t('filter.matchCriteria')}
               {conditions.length > 1 && (
-                <span className="ml-2 inline-flex items-center gap-1">
+                <span className="ms-2 inline-flex items-center gap-1">
                   <button
                     onClick={() => setMatchType("all")}
                     className={`px-1.5 py-0.5 text-[0.625rem] rounded ${
@@ -380,10 +380,10 @@ export function FilterEditor() {
                         value={cond.value}
                         onChange={(e) => updateCondition(idx, { value: e.target.value })}
                         placeholder={t('filter.valuePlaceholder')}
-                        className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent pr-6"
+                        className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent pe-6"
                       />
                       {isRegex && cond.value && (
-                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                        <span className="absolute end-1.5 top-1/2 -translate-y-1/2">
                           {regexValid ? (
                             <Check size={14} className="text-success" />
                           ) : (

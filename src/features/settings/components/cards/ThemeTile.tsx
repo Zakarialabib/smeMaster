@@ -78,7 +78,7 @@ export function ThemeTile({ mode, selected, onSelect }: ThemeTileProps) {
 
       {/* Checkmark */}
       {selected && (
-        <span className="absolute top-2 right-2 flex items-center justify-center w-5 h-5 rounded-full bg-accent text-white">
+        <span className="absolute top-2 end-2 flex items-center justify-center w-5 h-5 rounded-full bg-accent text-white">
           <Check size={12} strokeWidth={3} />
         </span>
       )}

@@ -1,5 +1,6 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   Sparkles,
   Send,
@@ -41,7 +42,7 @@ function UndoSlider({
 }) {
   return (
     <div className="flex items-center gap-3 min-w-[200px]">
-      <span className="text-xs text-text-tertiary w-6 text-right tabular-nums">{value}s</span>
+      <span className="text-xs text-text-tertiary w-6 text-end tabular-nums">{value}s</span>
       <input
         type="range"
         min={5}
@@ -80,6 +81,7 @@ function UndoSlider({
 /* ─── Live Preview — mock email with realistic background ─── */
 
 function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; showSignature: boolean }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-border-primary overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
       {/* Email header bar */}
@@ -88,7 +90,7 @@ function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; 
           <div className="w-2 h-2 rounded-full bg-success" />
           <span className="text-xs font-medium text-text-primary">me@example.com</span>
         </div>
-        <span className="text-[0.625rem] text-text-tertiary ml-auto">to: recipient@example.com</span>
+        <span className="text-[0.625rem] text-text-tertiary ltr:ml-auto rtl:mr-auto">to: recipient@example.com</span>
       </div>
       {/* Email body — white background mimics actual email render */}
       <div className="p-5 bg-white dark:bg-slate-900">
@@ -114,7 +116,7 @@ function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; 
         {undoSendDelay > 0 && (
           <div className="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-accent/5 rounded-lg px-3.5 py-2.5 border border-accent/10">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0" />
-            <span>Undo send available — <strong className="font-semibold text-accent">{undoSendDelay}s</strong> remaining</span>
+            <span>{t("settings.livePreviewUndoAvailable", "Undo available")} — <strong className="font-semibold text-accent">{undoSendDelay}s</strong> {t("settings.livePreviewRemaining", "remaining")}</span>
           </div>
         )}
       </div>
@@ -122,23 +124,55 @@ function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; 
   );
 }
 
-/* ─── Setup Step Component ─── */
+/* ─── Setup Steps ──────────────────────────────────────────────── */
 
-interface SetupStep {
-  id: string;
-  icon: typeof Send;
-  label: string;
-  description: string;
+const SETUP_STEPS: { id: string; icon: typeof Send }[] = [
+  { id: "sending", icon: Send },
+  { id: "behavior", icon: Settings2 },
+  { id: "signatures", icon: Signature },
+  { id: "templates", icon: FileText },
+  { id: "quick-replies", icon: MessageSquare },
+  { id: "content-quality", icon: Zap },
+];
+
+/* ─── Setup step i18n helpers (labels reuse existing keys) ─────── */
+
+function setupStepLabel(id: string, t: TFunction): string {
+  switch (id) {
+    case "sending":
+      return t("settings.sending");
+    case "behavior":
+      return t("settings.behavior");
+    case "signatures":
+      return t("settings.signatures");
+    case "templates":
+      return t("search.templates");
+    case "quick-replies":
+      return t("quickReply.title");
+    case "content-quality": return t("settings.setupContentQuality", "Content Quality");
+    default:
+      return id;
+  }
 }
 
-const SETUP_STEPS: SetupStep[] = [
-  { id: "sending", icon: Send, label: "Sending", description: "Undo delay & send options" },
-  { id: "behavior", icon: Settings2, label: "Behavior", description: "Reply mode & read tracking" },
-  { id: "signatures", icon: Signature, label: "Signature", description: "Add your email signature" },
-  { id: "templates", icon: FileText, label: "Templates", description: "Save email templates" },
-  { id: "quick-replies", icon: MessageSquare, label: "Quick Replies", description: "Pre-written responses" },
-  { id: "content-quality", icon: Zap, label: "Quality", description: "AI-powered content check" },
-];
+function setupStepDescription(id: string, t: TFunction): string {
+  switch (id) {
+    case "sending":
+      return t("settings.setup.sending.desc", "Undo delay & send options");
+    case "behavior":
+      return t("settings.setup.behavior.desc", "Reply mode & read tracking");
+    case "signatures":
+      return t("settings.setup.signatures.desc", "Add your email signature");
+    case "templates":
+      return t("settings.setup.templates.desc", "Save email templates");
+    case "quick-replies":
+      return t("settings.setup.quickReplies.desc", "Pre-written responses");
+    case "content-quality":
+      return t("settings.setup.contentQuality.desc", "AI-powered content check");
+    default:
+      return "";
+  }
+}
 
 /* ─── Stats Card ─── */
 
@@ -208,7 +242,7 @@ export default function ComposingTab() {
   const handleUndoDelayChange = useCallback(async (value: number) => {
     setUndoSendDelay(value);
     await setSetting("undo_send_delay_seconds", String(value));
-    notify("Composing", `Undo send delay set to ${value}s.`);
+    notify(t("settings.tabs.composing"), `${t("settings.undoSendDelaySet", "Undo send delay set to")} ${value}s.`);
   }, []);
 
   // AI generation modals state
@@ -218,7 +252,7 @@ export default function ComposingTab() {
 
   const handleSigGenerated = useCallback(async (_sig: GeneratedSignature) => {
     if (!activeAccountId) {
-      notify("Signatures", "Please select an account first.");
+      notify(t("settings.signatures"), t("settings.signaturesSelectAccountFirst", "Please select an account first."));
       return;
     }
     await insertSignature({
@@ -228,7 +262,7 @@ export default function ComposingTab() {
       isDefault: false,
     });
     setSigRefreshKey((k) => k + 1);
-    notify("Signatures", "AI signature saved to your account.");
+    notify(t("settings.signatures"), t("settings.signaturesSavedToast", "AI signature saved to your account."));
   }, [activeAccountId]);
 
   // ── Setup step tracking ─────────────────────────────────
@@ -253,26 +287,26 @@ export default function ComposingTab() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard
           icon={Clock}
-          label="Undo Send"
-          value={`${undoSendDelay}s delay`}
+          label={t("settings.stat.undoSend", "Undo Send")}
+          value={`${undoSendDelay}s`}
           tone={undoSendDelay > 0 ? "success" : "warning"}
         />
         <StatCard
           icon={Settings2}
-          label="Reply Mode"
-          value={defaultReplyMode === "replyAll" ? "Reply All" : "Reply"}
+          label={t("settings.stat.replyMode", "Reply Mode")}
+          value={defaultReplyMode === "replyAll" ? t("actionBar.replyAll") : t("actionBar.reply")}
           tone="accent"
         />
         <StatCard
           icon={Layers}
-          label="Mark as Read"
-          value={markAsReadBehavior === "instant" ? "Instant" : markAsReadBehavior === "2s" ? "2s Delay" : "Manual"}
+          label={t("settings.stat.markAsRead", "Mark as Read")}
+          value={markAsReadBehavior === "instant" ? t("settings.instantly") : markAsReadBehavior === "2s" ? t("settings.after2s") : t("settings.manually")}
           tone={markAsReadBehavior !== "manual" ? "success" : "neutral"}
         />
         <StatCard
           icon={Send}
-          label="Send & Archive"
-          value={sendAndArchive ? "Enabled" : "Disabled"}
+          label={t("settings.stat.sendArchive", "Send & Archive")}
+          value={sendAndArchive ? t("common.enabled") : t("common.disabled")}
           tone={sendAndArchive ? "accent" : "neutral"}
         />
       </div>
@@ -282,14 +316,16 @@ export default function ComposingTab() {
         <button
           type="button"
           onClick={() => setSetupExpanded(!setupExpanded)}
-          className="flex items-center justify-between w-full text-left"
+          className="flex items-center justify-between w-full text-start"
         >
           <div className="flex items-center gap-2">
             <Zap size={16} className="text-accent" />
-            <span className="text-sm font-semibold text-text-primary">Quick Setup Guide</span>
-            <span className="text-xs text-text-tertiary ml-2">
-              Step {stepIndex + 1} of {SETUP_STEPS.length}
-            </span>
+            <span className="text-sm font-semibold text-text-primary">
+            {t("settings.composing.setupGuide", "Setup Guide")}
+          </span>
+          <span className="text-xs text-text-tertiary ltr:ms-2 rtl:me-2">
+            {t("settings.composing.step", "Step")} {stepIndex + 1} {t("settings.composing.of", "of")} {SETUP_STEPS.length}
+          </span>
           </div>
           {setupExpanded ? <ChevronDown size={16} className="text-text-tertiary" /> : <ChevronRight size={16} className="text-text-tertiary" />}
         </button>
@@ -322,8 +358,8 @@ export default function ComposingTab() {
                   )}
                 >
                   <StepIcon size={18} />
-                  <span className="text-[10px] font-semibold leading-tight">{step.label}</span>
-                  <span className="text-[8px] opacity-70 leading-tight hidden sm:block">{step.description}</span>
+                  <span className="text-[10px] font-semibold leading-tight">{setupStepLabel(step.id, t)}</span>
+                  <span className="text-[8px] opacity-70 leading-tight hidden sm:block">{setupStepDescription(step.id, t)}</span>
                 </button>
               );
             })}
@@ -333,7 +369,7 @@ export default function ComposingTab() {
 
       {/* ── Live Preview — shows how settings affect composed emails ── */}
       {!isMobileDevice && (
-        <SettingGroup title="Live Preview" description="See how your email renders with the current composing settings. Toggle options below to reflect changes in real time.">
+        <SettingGroup title={t("settings.livePreview", "Live Preview")} description={t("settings.livePreviewDesc", "See how your email renders with the current composing settings. Toggle options below to reflect changes in real time.")}>
           <LivePreview undoSendDelay={undoSendDelay} showSignature={true} />
         </SettingGroup>
       )}
@@ -342,7 +378,7 @@ export default function ComposingTab() {
       <div id="composing-section-sending">
         <SettingGroup
           title={t('settings.sending')}
-          description="Configure how emails are dispatched, including undo delay and archive behavior."
+          description={t("settings.sendingDesc", "Configure how emails are dispatched, including undo delay and archive behavior.")}
         >
           {/* Undo Send Delay — slider */}
           <SettingRow label={t('settings.undoSendDelay')}>
@@ -354,9 +390,9 @@ export default function ComposingTab() {
           {/* Education: Undo Send */}
           <HelpCard
             items={[
-              { type: "why", text: "Prevents accidental sends and lets you catch mistakes before the email reaches the recipient's inbox." },
-              { type: "how", text: "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server." },
-              { type: "when", text: "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks." },
+              { type: "why", text: t("settings.help.sending.why", "Prevents accidental sends and lets you catch mistakes before the email reaches the recipient's inbox.") },
+              { type: "how", text: t("settings.help.sending.how", "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server.") },
+              { type: "when", text: t("settings.help.sending.when", "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks.") },
             ]}
           />
           {/* Send and Archive */}
@@ -373,7 +409,7 @@ export default function ComposingTab() {
       <div id="composing-section-behavior">
         <SettingGroup
           title={t('settings.behavior')}
-          description="Control default reply mode, mark-as-read behavior, and reading workflow preferences."
+          description={t("settings.behaviorDesc", "Control default reply mode, mark-as-read behavior, and reading workflow preferences.")}
         >
           <SettingRow label={t('settings.defaultReplyAction')}>
             <div className="flex items-center gap-2">
@@ -405,9 +441,9 @@ export default function ComposingTab() {
           <HelpCard
             collapsible
             items={[
-              { type: "why", text: "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically." },
-              { type: "how", text: "Reply mode sets whether Reply goes to sender only or all recipients. Mark-as-read can be instant, delayed, or manual depending on your reading workflow." },
-              { type: "when", text: "Set reply mode if you frequently need to reply-all. Choose instant read marking for rapid triage, or manual for careful inbox management." },
+              { type: "why", text: t("settings.help.behavior.why", "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically.") },
+              { type: "how", text: t("settings.help.behavior.how", "Reply mode sets whether Reply goes to sender only or all recipients. Mark-as-read can be instant, delayed, or manual depending on your reading workflow.") },
+              { type: "when", text: t("settings.help.behavior.when", "Set reply mode if you frequently need to reply-all. Choose instant read marking for rapid triage, or manual for careful inbox management.") },
             ]}
           />
         </SettingGroup>
@@ -426,14 +462,14 @@ export default function ComposingTab() {
               className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-accent bg-accent/5 hover:bg-accent/10 rounded-lg border border-accent/20 hover:border-accent/30 transition-colors"
             >
               <Sparkles size={12} />
-              Generate with AI
+              {t("settings.signaturesGenerateAi", "Generate with AI")}
             </button>
           </div>
           <HelpCard
             items={[
-              { type: "why", text: "Signatures provide professional consistency and can include legal disclaimers, contact info, and brand elements." },
-              { type: "how", text: "Signatures are automatically appended to new emails and replies. You can create multiple signatures and set defaults per account." },
-              { type: "when", text: "Use for all business correspondence, client emails, and any communication requiring a professional footer." },
+              { type: "why", text: t("settings.help.signatures.why", "Signatures provide professional consistency and can include legal disclaimers, contact info, and brand elements.") },
+              { type: "how", text: t("settings.help.signatures.how", "Signatures are automatically appended to new emails and replies. You can create multiple signatures and set defaults per account.") },
+              { type: "when", text: t("settings.help.signatures.when", "Use for all business correspondence, client emails, and any communication requiring a professional footer.") },
             ]}
           />
           <div className="mt-4">
@@ -454,13 +490,13 @@ export default function ComposingTab() {
       <div id="composing-section-templates">
         <SettingGroup
           title={t("search.templates")}
-          description="Create reusable email templates with variable placeholders for consistent messaging."
+          description={t("search.templates.desc", "Create reusable email templates with variable placeholders for consistent messaging.")}
         >
           <HelpCard
             items={[
-              { type: "why", text: "Templates save time by reusing common email structures with variable placeholders for personalized content." },
-              { type: "how", text: "Create templates with {{variable}} placeholders. When applied, you're prompted to fill in the variables before sending." },
-              { type: "when", text: "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups." },
+              { type: "why", text: t("settings.help.templates.why", "Templates save time by reusing common email structures with variable placeholders for personalized content.") },
+              { type: "how", text: t("settings.help.templates.how", "Create templates with {{variable}} placeholders. When applied, you're prompted to fill in the variables before sending.") },
+              { type: "when", text: t("settings.help.templates.when", "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups.") },
             ]}
           />
           <div className="mt-4">
@@ -473,13 +509,13 @@ export default function ComposingTab() {
       <div id="composing-section-quick-replies">
         <SettingGroup
           title={t("quickReply.title")}
-          description="Save pre-written responses for common inquiries to respond faster."
+          description={t("quickReply.description", "Save pre-written responses for common inquiries to respond faster.")}
         >
           <HelpCard
             items={[
-              { type: "why", text: "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency." },
-              { type: "how", text: "Saved snippets appear in the quick reply bar. Click to insert them into your reply with a single tap." },
-              { type: "when", text: "Perfect for support teams, sales responses, and any situation where you answer the same questions repeatedly." },
+              { type: "why", text: t("settings.help.quickReplies.why", "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency.") },
+              { type: "how", text: t("settings.help.quickReplies.how", "Saved snippets appear in the quick reply bar. Click to insert them into your reply with a single tap.") },
+              { type: "when", text: t("settings.help.quickReplies.when", "Perfect for support teams, sales responses, and any situation where you answer the same questions repeatedly.") },
             ]}
           />
           <p className="text-xs text-text-tertiary mt-4 mb-3">
@@ -493,13 +529,13 @@ export default function ComposingTab() {
       <div id="composing-section-content-quality">
         <SettingGroup
           title={t('settings.contentQuality')}
-          description="Write better emails with AI-powered analysis, spam detection, and readability scoring."
+          description={t("settings.contentQuality.desc", "Write better emails with AI-powered analysis, spam detection, and readability scoring.")}
         >
           <HelpCard
             items={[
-              { type: "why", text: "Content quality analysis helps you write clearer, more effective emails by catching readability issues, spam triggers, and tone mismatches before you send." },
-              { type: "how", text: "The analyzer checks your composition in real time: readability grade, spam score, sentiment, and engagement predictions." },
-              { type: "when", text: "Enable for all outbound email or toggle per-message from the composer toolbar. Review suggestions before hitting send." },
+              { type: "why", text: t("settings.help.contentQuality.why", "Content quality analysis helps you write clearer, more effective emails by catching readability issues, spam triggers, and tone mismatches before you send.") },
+              { type: "how", text: t("settings.help.contentQuality.how", "The analyzer checks your composition in real time: readability grade, spam score, sentiment, and engagement predictions.") },
+              { type: "when", text: t("settings.help.contentQuality.when", "Enable for all outbound email or toggle per-message from the composer toolbar. Review suggestions before hitting send.") },
             ]}
           />
           <div className="mt-4">

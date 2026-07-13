@@ -64,7 +64,7 @@ function SettingsRow({
     <Comp
       onClick={onClick}
       type={onClick ? "button" : undefined}
-      className={`flex items-center gap-3 px-4 py-3.5 w-full text-left transition-all duration-150 active:bg-white/10 dark:active:bg-white/5 ${
+      className={`flex items-center gap-3 px-4 py-3.5 w-full text-start transition-all duration-150 active:bg-white/10 dark:active:bg-white/5 ${
         onClick ? "cursor-pointer" : ""
       }`}
     >
@@ -518,7 +518,7 @@ export function MobileSettingsPage() {
       <button
         type="button"
         onClick={goToAccounts}
-        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg shadow-accent/30 active:scale-90 transition-transform duration-150 flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="fixed bottom-24 end-4 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg shadow-accent/30 active:scale-90 transition-transform duration-150 flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-label="Add account"
       >
         <Plus size={24} />

@@ -112,7 +112,7 @@ export function AiWarmupGenerateModal({
                   type="button"
                   onClick={() => setStyle(s.value)}
                   className={cn(
-                    "flex flex-col items-start gap-1 px-3 py-3 rounded-xl border text-left transition-all active:scale-95",
+                    "flex flex-col items-start gap-1 px-3 py-3 rounded-xl border text-start transition-all active:scale-95",
                     style === s.value
                       ? "bg-accent/10 text-accent border-accent/30 shadow-sm"
                       : "bg-bg-tertiary/50 text-text-tertiary border-border hover:text-text-secondary hover:border-border-secondary hover:bg-bg-tertiary"
@@ -255,7 +255,7 @@ export function AiWarmupGenerateModal({
             <button
               type="button"
               onClick={regenerate}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors ml-auto"
+              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors ms-auto"
             >
               <RefreshCw size={12} />
               {t("modals.aiWarmup.regenerate")}

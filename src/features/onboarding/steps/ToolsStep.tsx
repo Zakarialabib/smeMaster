@@ -73,7 +73,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
             <button
               key={opt.key}
               onClick={() => toggle(opt.key)}
-              className="group relative w-full text-left"
+              className="group relative w-full text-start"
               style={{
                 animation: `slideUp 350ms cubic-bezier(0.16, 1, 0.3, 1) both`,
                 animationDelay: `${idx * 50}ms`,
@@ -97,7 +97,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
                   </div>
                   {/* PRO badge */}
                   {opt.pro && (
-                    <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 shadow-sm">
+                    <div className="absolute -top-1.5 -end-1.5 flex items-center gap-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 shadow-sm">
                       <Crown className="h-2.5 w-2.5 text-amber-500" />
                       <span className="text-[9px] font-bold text-amber-500 leading-none">PRO</span>
                     </div>
@@ -122,7 +122,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
 
                 {/* Bottom accent line on hover */}
                 {enabled && (
-                  <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 start-4 end-4 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
               </div>
             </button>

@@ -108,7 +108,7 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
               <button
                 key={p.provider}
                 onClick={handleConnect}
-                className="flex items-center gap-4 rounded-xl border border-border/60 bg-background/50 hover:bg-accent/[0.03] hover:border-accent/30 px-4 py-3.5 text-left transition-all duration-200 group"
+                className="flex items-center gap-4 rounded-xl border border-border/60 bg-background/50 hover:bg-accent/[0.03] hover:border-accent/30 px-4 py-3.5 text-start transition-all duration-200 group"
                 style={{
                   animation: `slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both`,
                   animationDelay: `${i * 60}ms`,
@@ -168,7 +168,7 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
           <div className="relative rounded-2xl border border-border bg-card p-6 shadow-2xl w-full max-w-md">
             <button
               onClick={() => setShowAddAccount(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+              className="absolute top-4 end-4 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
             >
               <X className="h-4 w-4" />
             </button>

@@ -103,9 +103,9 @@ export function WarmingSettings() {
             {t("settings.warming.targetAccount") || "Target Account"}
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+            <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
             <select
-              className="pl-10 pr-8 py-2 bg-bg-primary border border-border rounded-xl text-sm text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-accent/30 min-w-[240px]"
+              className="ps-10 pe-8 py-2 bg-bg-primary border border-border rounded-xl text-sm text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-accent/30 min-w-[240px]"
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
             >
@@ -115,7 +115,7 @@ export function WarmingSettings() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+            <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
           </div>
         </div>
 
@@ -420,7 +420,7 @@ export function WarmingSettings() {
             <div className="flex items-center gap-2 mb-4">
               <ShieldAlert className="w-4 h-4 text-warning" />
               <h3 className="text-sm font-bold text-text-primary">Safety Guardrails</h3>
-              <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary border border-border">
+              <span className="ms-auto text-[10px] px-2 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary border border-border">
                 Placeholder
               </span>
             </div>

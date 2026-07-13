@@ -56,7 +56,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
       </div>
 
       {event === "email_received" && (
-        <div className="space-y-1.5 pl-2">
+        <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24">From domain</span>
             <input
@@ -81,7 +81,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
       )}
 
       {event === "no_reply_after_days" && (
-        <div className="flex items-center gap-2 pl-2">
+        <div className="flex items-center gap-2 ps-2">
           <span className="text-xs text-text-secondary w-24">Days without reply</span>
           <input
             type="number"
@@ -95,7 +95,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
       )}
 
       {event === "time_based" && (
-        <div className="space-y-1.5 pl-2">
+        <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24">Cron expression</span>
             <input
@@ -106,7 +106,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
             />
           </div>
-          <p className="text-[0.625rem] text-text-tertiary pl-24">
+          <p className="text-[0.625rem] text-text-tertiary ps-24">
             Format: minute hour day-of-month month day-of-week (* = any)
           </p>
         </div>

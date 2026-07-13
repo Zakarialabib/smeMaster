@@ -49,7 +49,7 @@ export function WorkflowPresetList({ onApply }: WorkflowPresetListProps) {
         {isAiLocked ? (
           <UpgradeBadge variant="pro-only" size="sm" />
         ) : showAiPrompt ? (
-          <div className="flex items-center gap-2 flex-1 ml-4">
+          <div className="flex items-center gap-2 flex-1 ms-4">
             <input
               type="text"
               value={aiPrompt}
@@ -125,7 +125,7 @@ export function WorkflowPresetList({ onApply }: WorkflowPresetListProps) {
                 {preset.name}
               </span>
               {aiPresets.some((p) => p.id === preset.id) && (
-                <span className="text-[0.5rem] font-medium px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20 ml-auto">
+                <span className="text-[0.5rem] font-medium px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20 ms-auto">
                   AI
                 </span>
               )}

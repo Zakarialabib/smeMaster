@@ -162,7 +162,7 @@ export function AiSignatureGenerateModal({ isOpen, onClose, onInsert, onSave }: 
           </div>
           {result.variables.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              <span className="text-[0.625rem] text-text-tertiary mr-1 self-center">{t("modals.aiSignature.variables")}</span>
+              <span className="text-[0.625rem] text-text-tertiary me-1 self-center">{t("modals.aiSignature.variables")}</span>
               {result.variables.map((v) => (
                 <code key={v} className="text-[0.625rem] px-1.5 py-0.5 rounded bg-accent/5 text-accent border border-accent/10">
                   {`{{${v}}}`}
@@ -192,7 +192,7 @@ export function AiSignatureGenerateModal({ isOpen, onClose, onInsert, onSave }: 
             <button
               type="button"
               onClick={regenerate}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ml-auto"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ms-auto"
             >
               <Sparkles size={12} />
               {t("modals.aiSignature.regenerate")}

@@ -465,12 +465,12 @@ export default function AiTab() {
                   >
                     {lmstudioEmbeddingTesting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                        <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                         {t('settings.testing')}
                       </>
                     ) : (
                       <>
-                        <Cpu className="w-4 h-4 mr-1.5" />
+                        <Cpu className="w-4 h-4 me-1.5" />
                         {t('settings.testEmbedding')}
                       </>
                     )}

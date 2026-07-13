@@ -163,7 +163,7 @@ export function AiTemplateGenerateModal({
 
           {result.variables.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              <span className="text-[0.625rem] text-text-tertiary mr-1 self-center">{t("modals.aiTemplate.variables")}</span>
+              <span className="text-[0.625rem] text-text-tertiary me-1 self-center">{t("modals.aiTemplate.variables")}</span>
               {result.variables.map((v) => (
                 <code
                   key={v}
@@ -197,7 +197,7 @@ export function AiTemplateGenerateModal({
             <button
               type="button"
               onClick={regenerate}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ml-auto"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ms-auto"
             >
               <Sparkles size={12} />
               {t("modals.aiTemplate.regenerate")}

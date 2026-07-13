@@ -141,7 +141,7 @@ export function ComplianceProfileManager() {
     <div className="space-y-3">
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="w-full flex items-center gap-2 p-3 rounded-lg bg-bg-secondary border border-border-primary text-sm text-left group"
+        className="w-full flex items-center gap-2 p-3 rounded-lg bg-bg-secondary border border-border-primary text-sm text-start group"
       >
         <Shield className="w-4 h-4 text-accent shrink-0" />
         <span className="flex-1 font-medium text-text-primary">{t("compliance.whatIsThis")}</span>
@@ -230,7 +230,7 @@ export function ComplianceProfileManager() {
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0 ml-3">
+            <div className="flex items-center gap-2 shrink-0 ms-3">
               <div className="flex items-center gap-1.5">
                 {profiles
                   .filter((p) => p.id !== profile.id)
@@ -270,7 +270,7 @@ export function ComplianceProfileManager() {
                   checked={profile.isActive}
                   onChange={() => handleToggleActive(profile)}
                 />
-                <div className="w-8 h-4 bg-bg-tertiary rounded-full peer peer-checked:bg-accent after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4" />
+                <div className="w-8 h-4 bg-bg-tertiary rounded-full peer peer-checked:bg-accent after:content-[''] after:absolute after:top-0.5 after:start-0.5 after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4" />
               </label>
             </div>
           </div>

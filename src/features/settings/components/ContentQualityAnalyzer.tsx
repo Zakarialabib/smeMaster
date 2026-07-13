@@ -250,7 +250,7 @@ export function ContentQualityAnalyzer() {
           >
             <div className="flex flex-col sm:flex-row items-center gap-5">
               <ScoreGauge score={result.overallScore} size="md" />
-              <div className="flex-1 text-center sm:text-left">
+              <div className="flex-1 text-center sm:text-start">
                 <h3
                   className={cn(
                     "text-lg font-bold",

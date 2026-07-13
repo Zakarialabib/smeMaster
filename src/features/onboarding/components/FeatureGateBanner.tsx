@@ -82,7 +82,7 @@ export function FeatureGateBanner({
           <div className="relative rounded-2xl border border-border bg-card p-6 shadow-2xl w-full max-w-md">
             <button
               onClick={() => setShowAddAccount(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+              className="absolute top-4 end-4 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
             >
               <X className="h-4 w-4" />
             </button>

@@ -86,7 +86,7 @@ export default function SendAsAliasesSection() {
                   onClick={() => handleSetDefault(alias)}
                   variant="ghost"
                   size="sm"
-                  className="text-accent shrink-0 ml-3"
+                  className="text-accent shrink-0 ms-3"
                 >
                   {t("compliance.setDefault")}
                 </Button>

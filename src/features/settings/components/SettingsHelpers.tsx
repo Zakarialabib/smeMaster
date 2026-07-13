@@ -145,7 +145,7 @@ export function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between py-3 first:pt-0 gap-4 min-h-[44px] rounded-lg px-3 -mx-3 transition-colors hover:bg-bg-hover/50 border-b border-border-primary/15 last:border-b-0 cursor-pointer">
-      <div className="min-w-0 flex-1 pr-2">
+      <div className="min-w-0 flex-1 pe-2">
         <span className="text-sm font-medium text-text-primary">{label}</span>
         {description && (
           <p className="text-xs text-text-tertiary mt-0.5 leading-relaxed">

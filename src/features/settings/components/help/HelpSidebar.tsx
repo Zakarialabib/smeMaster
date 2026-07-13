@@ -104,14 +104,14 @@ export function HelpSidebar({
       <div className="relative px-3 py-2">
         <Search
           size={12}
-          className="absolute left-5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
+          className="absolute start-5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
         />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Filter topics…"
-          className="w-full pl-6 pr-2 py-1.5 text-[11px] rounded-md border border-border-primary bg-bg-tertiary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
+          className="w-full ps-6 pe-2 py-1.5 text-[11px] rounded-md border border-border-primary bg-bg-tertiary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
         />
       </div>
 
@@ -128,7 +128,7 @@ export function HelpSidebar({
                 setSearchQuery("");
               }}
               className={cn(
-                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left transition-all text-xs",
+                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs",
                 isActive
                   ? "bg-accent/15 text-accent font-semibold"
                   : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
@@ -142,7 +142,7 @@ export function HelpSidebar({
                 )}
               />
               <span className="truncate">{cat.label}</span>
-              <span className="ml-auto text-[10px] text-text-tertiary/60 tabular-nums">
+              <span className="ms-auto text-[10px] text-text-tertiary/60 tabular-nums">
                 {cat.cards.length}
               </span>
             </button>

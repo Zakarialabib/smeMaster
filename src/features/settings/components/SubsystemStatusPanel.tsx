@@ -104,9 +104,9 @@ function ClassBadge({ cls }: { cls: string }) {
         variants[cls] || "bg-bg-tertiary text-text-tertiary border-border",
       )}
     >
-      {cls === "always_on" ? <Activity className="w-2.5 h-2.5 mr-1" /> : null}
-      {cls === "lazy" ? <Clock className="w-2.5 h-2.5 mr-1" /> : null}
-      {cls === "on_demand" ? <Zap className="w-2.5 h-2.5 mr-1" /> : null}
+      {cls === "always_on" ? <Activity className="w-2.5 h-2.5 me-1" /> : null}
+      {cls === "lazy" ? <Clock className="w-2.5 h-2.5 me-1" /> : null}
+      {cls === "on_demand" ? <Zap className="w-2.5 h-2.5 me-1" /> : null}
       {cls?.replace("_", " ") || "unknown"}
     </span>
   );
@@ -226,7 +226,7 @@ export default function SubsystemStatusPanel() {
             </div>
           )}
           {error && (
-            <div className="flex items-center gap-1.5 text-[10px] text-danger ml-auto">
+            <div className="flex items-center gap-1.5 text-[10px] text-danger ms-auto">
               <AlertTriangle className="w-3 h-3" />
               Poll error
             </div>
@@ -243,7 +243,7 @@ export default function SubsystemStatusPanel() {
           disabled={loading}
           className="h-8 px-3"
         >
-          <RefreshCw className={cn("w-3.5 h-3.5 mr-1.5", loading && "animate-spin")} />
+          <RefreshCw className={cn("w-3.5 h-3.5 me-1.5", loading && "animate-spin")} />
           {loading ? "Refreshing..." : "Refresh"}
         </Button>
       </div>

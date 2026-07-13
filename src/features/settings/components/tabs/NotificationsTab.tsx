@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { getSetting, setSetting } from "@features/settings/db/settings";
@@ -122,7 +122,7 @@ export default function NotificationsTab() {
                       await removeVipSender(activeId, vip.email_address);
                       setVipSenders((prev) => prev.filter((v) => v.email_address !== vip.email_address));
                     }}
-                    className="text-xs text-danger hover:text-danger/80 ml-2 shrink-0"
+                    className="text-xs text-danger hover:text-danger/80 ms-2 shrink-0"
                   >
                     {t('common.remove')}
                   </button>
@@ -166,7 +166,7 @@ export default function NotificationsTab() {
         </>
       )}
 
-      {/* ── Snooze Presets (merged from SnoozeTab) ─────────────────── */}
+      {/* -- Snooze Presets (merged from SnoozeTab) ------------------- */}
       <SettingGroup
         title="Snooze Presets"
         description="Configure preset snooze durations for delaying email visibility."
@@ -177,7 +177,7 @@ export default function NotificationsTab() {
           items={[
             { type: "why", text: "Snooze lets you temporarily hide emails and bring them back at a more convenient time, reducing inbox overwhelm." },
             { type: "how", text: "Each preset defines a snooze duration (e.g., 1 hour, tomorrow, next week). Apply snooze from the email context menu or swipe action." },
-            { type: "when", text: "Use for emails that need attention later but aren't urgent right now — ideal for batch processing and time management." },
+            { type: "when", text: "Use for emails that need attention later but aren't urgent right now � ideal for batch processing and time management." },
           ]}
         />
         <div className="mt-4">

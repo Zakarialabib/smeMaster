@@ -333,18 +333,18 @@ export default function FeatureFlagsTab() {
 
       {/* ─── Search ─── */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+        <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('settings.searchFeatures', 'Search features by name, id, or description...')}
-          className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
+          className="w-full ps-9 pe-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+            className="absolute end-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />

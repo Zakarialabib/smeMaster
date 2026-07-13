@@ -1,4 +1,4 @@
-﻿import { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Globe,
@@ -27,13 +27,13 @@ import type { BlacklistCheckResult } from "@features/deliverability/services/bla
 import type { BlacklistCheckRow } from "@features/deliverability/db/blacklistCache";
 import { cn } from "@shared/utils/cn";
 
-// ─── Type Config ───
+// --- Type Config ---
 const TYPE_CONFIG = {
   ip: { icon: Server, label: "IP Address", placeholder: "192.168.1.1" },
   domain: { icon: Globe, label: "Domain", placeholder: "example.com" },
 };
 
-// ─── Status Config ───
+// --- Status Config ---
 const STATUS_CONFIG = {
   listed: {
     icon: ShieldAlert,
@@ -61,7 +61,7 @@ const STATUS_CONFIG = {
   },
 };
 
-// ─── Copy Helper ───
+// --- Copy Helper ---
 const copyToClipboard = async (text: string) => {
   try {
     const { copyToClipboard: clip } = await import("@shared/hooks/useClipboard");
@@ -72,7 +72,7 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-// ─── Result Card ───
+// --- Result Card ---
 const ResultCard = ({ result }: { result: BlacklistCheckResult }) => {
   const [copied, setCopied] = useState(false);
   const status = result.listed
@@ -162,7 +162,7 @@ const ResultCard = ({ result }: { result: BlacklistCheckResult }) => {
             onClick={() => {
               /* placeholder: open delist wizard */
             }}
-            className="ml-auto text-[10px] font-bold text-danger hover:text-danger/80 underline"
+            className="ms-auto text-[10px] font-bold text-danger hover:text-danger/80 underline"
           >
             Start Delist
           </button>
@@ -172,7 +172,7 @@ const ResultCard = ({ result }: { result: BlacklistCheckResult }) => {
   );
 };
 
-// ─── History Row ───
+// --- History Row ---
 const HistoryRow = ({ row }: { row: BlacklistCheckRow }) => {
   const isListed = row.listed;
   return (
@@ -259,14 +259,14 @@ export function BlacklistChecker() {
 
   return (
     <div className="space-y-6">
-      {/* ── Input Bar ─── */}
+      {/* -- Input Bar --- */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Account */}
           <div className="relative">
-            <Monitor className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+            <Monitor className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
             <select
-              className="pl-10 pr-8 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-accent/30 min-w-[200px]"
+              className="ps-10 pe-8 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-accent/30 min-w-[200px]"
               value={selectedAccountId}
               onChange={(e) => {
                 setSelectedAccountId(e.target.value);
@@ -280,7 +280,7 @@ export function BlacklistChecker() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+            <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
           </div>
 
           {/* Type Toggle */}
@@ -310,10 +310,10 @@ export function BlacklistChecker() {
 
           {/* Target Input */}
           <div className="relative flex-1">
-            <typeConfig.icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+            <typeConfig.icon className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full ps-10 pe-4 py-2.5 bg-bg-primary border border-border rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder={typeConfig.placeholder}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
@@ -339,7 +339,7 @@ export function BlacklistChecker() {
         </div>
       </div>
 
-      {/* ── Results Section ─── */}
+      {/* -- Results Section --- */}
       {results && (
         <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
           {/* Header */}
@@ -364,14 +364,14 @@ export function BlacklistChecker() {
               >
                 {listedCount > 0 ? <ShieldAlert size={16} /> : <ShieldCheck size={16} />}
               </div>
-              <div className="text-left">
+              <div className="text-start">
                 <h3 className="text-sm font-bold text-text-primary">
                   {listedCount > 0
                     ? `${listedCount} ${listedCount === 1 ? "listing" : "listings"} detected`
-                    : "All clear — no listings found"}
+                    : "All clear � no listings found"}
                 </h3>
                 <p className="text-[10px] text-text-tertiary">
-                  {results.length} DNSBLs checked · {cleanCount} clean · {noResponseCount} no response
+                  {results.length} DNSBLs checked � {cleanCount} clean � {noResponseCount} no response
                 </p>
               </div>
             </div>
@@ -425,7 +425,7 @@ export function BlacklistChecker() {
         </div>
       )}
 
-      {/* ── Automated Monitoring Placeholder ─── */}
+      {/* -- Automated Monitoring Placeholder --- */}
       <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -433,7 +433,7 @@ export function BlacklistChecker() {
             <h3 className="text-sm font-bold text-text-primary">Automated Monitoring</h3>
           </div>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary border border-border">
-            Placeholder — needs backend
+            Placeholder � needs backend
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -474,7 +474,7 @@ export function BlacklistChecker() {
         </div>
       </div>
 
-      {/* ── History Section ─── */}
+      {/* -- History Section --- */}
       <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
         <div
           onClick={() => setExpandedSection((s) => (s === "history" ? null : "history"))}
@@ -492,7 +492,7 @@ export function BlacklistChecker() {
             <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
               <History size={16} />
             </div>
-            <div className="text-left">
+            <div className="text-start">
               <h3 className="text-sm font-bold text-text-primary">
                 {t("settings.blacklist.history") || "Check History"}
               </h3>
@@ -556,7 +556,7 @@ export function BlacklistChecker() {
             )}
 
             {!historyLoading && history.length > 0 && (
-              <div className="space-y-1 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+              <div className="space-y-1 max-h-80 overflow-y-auto custom-scrollbar pe-1">
                 {history.slice(0, 20).map((h) => (
                   <HistoryRow key={h.id} row={h} />
                 ))}

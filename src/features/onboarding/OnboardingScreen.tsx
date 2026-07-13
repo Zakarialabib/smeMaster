@@ -120,7 +120,7 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
             </div>
             <h2 className="text-lg font-bold tracking-tight">SMEMaster</h2>
           </div>
-          <p className="text-xs text-muted-foreground ml-[42px]">Setup wizard</p>
+          <p className="text-xs text-muted-foreground ms-[42px]">Setup wizard</p>
         </div>
 
         <div className="mb-6">
@@ -134,7 +134,7 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
         </div>
 
         <div className="relative flex-1">
-          <div className="absolute left-[11px] top-2 bottom-8 w-[2px] bg-border rounded-full" />
+          <div className="absolute start-[11px] top-2 bottom-8 w-[2px] bg-border rounded-full" />
           <div className="space-y-8 relative">
             {ONBOARDING_STEPS.map((s, i) => {
               const isActive = step === i;

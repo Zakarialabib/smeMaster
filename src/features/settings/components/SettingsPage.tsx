@@ -84,7 +84,7 @@ function SearchResultsGrid({
             <button
               key={tab.id}
               onClick={() => onSelectTab(tab.id as SettingsTabId)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-secondary border border-border-primary hover:border-accent/30 hover:bg-bg-hover/50 transition-all text-left active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-secondary border border-border-primary hover:border-accent/30 hover:bg-bg-hover/50 transition-all text-start active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
                 <Icon size={15} className="text-accent" />
@@ -272,7 +272,7 @@ export function SettingsPage() {
           <>
             <button
               onClick={() => navigateToLabel("inbox")}
-              className="p-1.5 -ml-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
+              className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
               title={t("settings.backToInbox")}
               aria-label={t("settings.backToInbox")}
             >
@@ -288,7 +288,7 @@ export function SettingsPage() {
           <>
             <button
               onClick={goToHome}
-              className="p-1.5 -ml-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
+              className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
               title="Back to settings overview"
               aria-label="Back to settings overview"
             >
@@ -301,10 +301,10 @@ export function SettingsPage() {
         )}
 
         {/* Search */}
-        <div className="relative flex-1 min-w-0 ml-auto max-w-xs">
+        <div className="relative flex-1 min-w-0 ms-auto max-w-xs">
           <Search
             size={14}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
+            className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
           />
           <input
             type="text"
@@ -312,12 +312,12 @@ export function SettingsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search settings… ⌘K"
             aria-label="Search settings"
-            className="settings-search-input w-full pl-8 pr-8 py-2 text-xs rounded-md border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
+            className="settings-search-input w-full ps-8 pe-8 py-2 text-xs rounded-md border border-border-primary bg-bg-secondary text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
               aria-label="Clear search"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

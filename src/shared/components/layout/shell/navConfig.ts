@@ -178,7 +178,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
       { id: "__divider__", label: "", icon: undefined },
       // Developer
       { id: "developer", label: "settings.tabGroupDeveloper", icon: Bug },
-      { id: "hardware", label: "Hardware", icon: Cpu },
+      { id: "hardware", label: "settings.tabs.hardware", icon: Cpu },
       // ── divider ──
       { id: "__divider__", label: "", icon: undefined },
       // About

@@ -90,7 +90,7 @@ export function HelpCard({
         type="button"
         onClick={() => setOpen(true)}
         className={`
-          w-full text-left bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 mt-3
+          w-full text-start bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 mt-3
           ${variant === "warning" ? "border-warning/20 bg-warning/4" : ""}
           hover:bg-accent/10 transition-colors cursor-pointer
           ${className}
@@ -102,7 +102,7 @@ export function HelpCard({
           <span className="text-xs font-medium text-text-secondary">
             {title ?? "Learn more — why, how, when"}
           </span>
-          <span className="ml-auto text-[10px] text-text-tertiary uppercase tracking-wider">
+          <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
             {items.map((i) => i.type.charAt(0).toUpperCase()).join(" · ")}
           </span>
         </div>
@@ -184,8 +184,8 @@ export function InlineTooltip({ text, label }: { text: string; label?: string })
         ?
       </span>
       {/* Desktop tooltip on hover */}
-      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block group-focus-within:block z-30 w-56 pointer-events-none">
-        <span className="block bg-bg-primary border border-border-primary rounded-lg shadow-lg px-3 py-2 text-xs text-text-secondary text-left leading-relaxed pointer-events-none">
+      <span className="absolute bottom-full start-1/2 -translate-x-1/2 mb-2 hidden group-hover:block group-focus-within:block z-30 w-56 pointer-events-none">
+        <span className="block bg-bg-primary border border-border-primary rounded-lg shadow-lg px-3 py-2 text-xs text-text-secondary text-start leading-relaxed pointer-events-none">
           {text}
         </span>
       </span>

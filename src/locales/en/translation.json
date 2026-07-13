@@ -235,7 +235,9 @@
       "calendar": "Calendar",
       "license": "License",
       "developer": "Developer",
-      "accountCleaning": "Account Cleaning"
+      "accountCleaning": "Account Cleaning",
+      "hardware": "Hardware",
+      "businessProfile": "Business Profile"
     },
     "appearance": "Appearance",
     "surface": "Surface",
@@ -465,7 +467,8 @@
       "readability": "Readability",
       "readingTime": "Reading time",
       "suggestions": "Suggestions",
-      "wordCount": "Word count"
+      "wordCount": "Word count",
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
     },
     "contactsDescription": "Contacts are automatically added when you send or receive emails. Edit display names or remove contacts below.",
     "subscriptionsDescription": "View all detected newsletter and promotional senders. Unsubscribe using RFC 8058 one-click POST, mailto, or browser fallback.",
@@ -800,7 +803,81 @@
     "searchPlaceholder": "Search...",
     "noResults": "No results",
     "licenseCurrent": "Current license",
-    "syncStatusSyncing": "Syncing..."
+    "syncStatusSyncing": "Syncing...",
+    "downloading": "Downloading",
+    "loading": "Loading",
+    "livePreviewUndoAvailable": "Undo available",
+    "livePreviewRemaining": "remaining",
+    "setupContentQuality": "Content Quality",
+    "setup": {
+      "sending": {
+        "desc": "Undo delay & send options"
+      },
+      "behavior": {
+        "desc": "Reply mode & read tracking"
+      },
+      "signatures": {
+        "desc": "Add your email signature"
+      },
+      "templates": {
+        "desc": "Save email templates"
+      },
+      "quickReplies": {
+        "desc": "Pre-written responses"
+      },
+      "contentQuality": {
+        "desc": "AI-powered content check"
+      }
+    },
+    "undoSendDelaySet": "Undo send delay set to",
+    "signaturesSelectAccountFirst": "Please select an account first.",
+    "signaturesSavedToast": "AI signature saved to your account.",
+    "stat": {
+      "undoSend": "Undo Send",
+      "replyMode": "Reply Mode",
+      "markAsRead": "Mark as Read",
+      "sendArchive": "Send & Archive"
+    },
+    "composing": {
+      "setupGuide": "Setup Guide",
+      "step": "Step",
+      "of": "of"
+    },
+    "livePreview": "Live Preview",
+    "livePreviewDesc": "See how your email renders with the current composing settings. Toggle options below to reflect changes in real time.",
+    "sendingDesc": "Configure how emails are dispatched, including undo delay and archive behavior.",
+    "help": {
+      "sending": {
+        "how": "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server.",
+        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks."
+      },
+      "behavior": {
+        "why": "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically.",
+        "how": "Reply mode sets whether Reply goes to sender only or all recipients. Mark-as-read can be instant, delayed, or manual depending on your reading workflow.",
+        "when": "Set reply mode if you frequently need to reply-all. Choose instant read marking for rapid triage, or manual for careful inbox management."
+      },
+      "signatures": {
+        "why": "Signatures provide professional consistency and can include legal disclaimers, contact info, and brand elements.",
+        "how": "Signatures are automatically appended to new emails and replies. You can create multiple signatures and set defaults per account.",
+        "when": "Use for all business correspondence, client emails, and any communication requiring a professional footer."
+      },
+      "templates": {
+        "why": "Templates save time by reusing common email structures with variable placeholders for personalized content.",
+        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups."
+      },
+      "quickReplies": {
+        "why": "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency.",
+        "how": "Saved snippets appear in the quick reply bar. Click to insert them into your reply with a single tap.",
+        "when": "Perfect for support teams, sales responses, and any situation where you answer the same questions repeatedly."
+      },
+      "contentQuality": {
+        "why": "Content quality analysis helps you write clearer, more effective emails by catching readability issues, spam triggers, and tone mismatches before you send.",
+        "how": "The analyzer checks your composition in real time: readability grade, spam score, sentiment, and engagement predictions.",
+        "when": "Enable for all outbound email or toggle per-message from the composer toolbar. Review suggestions before hitting send."
+      }
+    },
+    "behaviorDesc": "Control default reply mode, mark-as-read behavior, and reading workflow preferences.",
+    "signaturesGenerateAi": "Generate with AI"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -878,7 +955,6 @@
     "addToContacts": "Add to Contacts",
     "added": "Added!",
     "extractFromEmail": "contact.extractFromEmail",
-    "extractApplied": "Added from email: {{fields}}",
     "extractNone": "contact.extractNone",
     "editName": "Edit name",
     "notes": "Notes",
@@ -910,7 +986,11 @@
       "createdPrefix": "Created {date}",
       "openedLabel": "Opened {date}",
       "clickedLabel": "Clicked {date}"
-    }
+    },
+    "linkedCompany": "contact.linkedCompany",
+    "loading": "contact.loading",
+    "campaigns": "contact.campaigns",
+    "opened": "contact.opened"
   },
   "calendar": {
     "day": "Day",
@@ -949,63 +1029,19 @@
     "title": "calendar.title",
     "retry": "calendar.retry",
     "noEventsHint": "calendar.noEventsHint",
-    "createEvent": "calendar.createEvent",
-    "endBeforeStart": "End time must be after start time"
+    "createEvent": "calendar.createEvent"
   },
   "tasks": {
     "tasks": "Tasks",
     "title": "Tasks",
     "dueDate": "Due date",
     "newTask": "New task",
-    "searchPlaceholder": "Search...",
-    "quickAddPlaceholder": "Add a task...",
     "mobileQuickAddPlaceholder": "Quick add task...",
     "addDetails": "Add details",
     "openFullForm": "Open full task form",
     "createWithDetails": "Create task with full details",
     "toggleFilters": "Toggle filters",
-    "clearFilters": "Clear filters",
-    "priority": "Priority",
-    "group": "Group",
-    "sort": "Sort",
-    "all": "All",
-    "none": "None",
-    "priorityNone": "None",
-    "priorityLow": "Low",
-    "priorityMedium": "Medium",
-    "priorityHigh": "High",
-    "priorityUrgent": "Urgent",
-    "active": "Active",
-    "completed": "Completed",
-    "noGrouping": "No grouping",
-    "groupByPriority": "Group by priority",
-    "groupByDueDate": "Group by due date",
-    "groupByTag": "Group by tag",
-    "sortDueDate": "Due Date",
-    "sortPriority": "Priority",
-    "sortCreated": "Created",
-    "sortAlphabetical": "Alphabetical",
-    "allPriorities": "All priorities",
-    "allDates": "All",
-    "dateToday": "Today",
-    "dateThisWeek": "This Week",
-    "dateOverdue": "Overdue",
-    "dueToday": "Today",
-    "dueTomorrow": "Tomorrow",
-    "dueThisWeek": "This Week",
-    "dueLater": "Later",
-    "dueOverdue": "Overdue",
-    "dueNoDate": "No Due Date",
-    "kanban": "Kanban",
-    "agenda": "Agenda",
-    "compact": "Compact",
-    "normal": "Normal",
-    "comfortable": "Comfortable",
-    "selectedCount": "{{count}} selected",
     "clearSelection": "Clear selection",
-    "kanbanRecommended": "Kanban recommended",
-    "tryKanban": "Try Kanban for better overview",
-    "switchNow": "Switch now",
     "closeQuickAdd": "Close quick add",
     "addTask": "Add task",
     "markComplete": "Mark complete",
@@ -1014,16 +1050,13 @@
     "flag": "Flag",
     "unflag": "Unflag",
     "delete": "Delete",
-    "reschedule": "Reschedule",
     "linkedToEmailThread": "Linked to email thread",
     "subtasks": "Subtasks",
     "recurring": "Recurring",
     "unableToLoad": "Unable to load tasks",
     "failedToLoad": "Failed to load tasks",
     "retry": "Retry",
-    "noTasks": "No tasks",
     "tasksList": "Tasks list",
-    "loadError": "Could not connect to the database. Some features may be unavailable in browser preview mode.",
     "empty": {
       "noTasksTitle": "No tasks yet",
       "noTasksSubtitleList": "You're all caught up! Add a task to get started.",
@@ -1066,7 +1099,10 @@
     "failedToUpdateTask": "Failed to update task",
     "failedToReschedule": "Failed to reschedule task",
     "complete": "Complete",
-    "taskTitle": "Title"
+    "tasksArchived": "tasks.tasksArchived",
+    "disableReminders": "tasks.disableReminders",
+    "enableReminders": "tasks.enableReminders",
+    "archiveCompleted": "tasks.archiveCompleted"
   },
   "campaign": {
     "editor": {
@@ -1075,9 +1111,7 @@
       "blocks": "Blocks",
       "heading": "Heading",
       "paragraph": "Paragraph",
-      "image": "Image",
       "button": "Button",
-      "divider": "Divider",
       "spacer": "Spacer",
       "duplicate": "Duplicate",
       "delete": "Delete",
@@ -1119,26 +1153,21 @@
       "aiNoProvider": "Connect a Local AI provider in Settings to enable the copilot",
       "insertBlocks": "Insert as blocks",
       "apply": "Apply",
-      "saveTemplate": "Save template",
       "templateName": "Template name",
       "saveAsTemplate": "Save as template",
       "gallery": "Templates",
-      "emptyTemplate": "Start from a blank email",
       "pickTemplate": "Choose a starting template",
       "useTemplate": "Use template",
       "fullWidth": "Full width",
-      "card": "Card",
-      "columns": "Columns",
-      "twoColumns": "Two columns",
       "cardTitle": "Title",
       "cardBody": "Description",
       "cardButton": "Button text",
       "cardImage": "Add image",
       "leftColumn": "Left column",
       "rightColumn": "Right column",
-      "gap": "Gap"
+      "gap": "Gap",
+      "lineHeight": "Line height"
     },
-
     "campaigns": "Campaigns",
     "newCampaign": "New Campaign",
     "noCampaigns": "No campaigns yet",
@@ -1153,7 +1182,6 @@
     "noTemplates": "No templates found",
     "templatePreviewContent": "Your email content will appear here",
     "campaignName": "Campaign Name",
-    "selectTemplate": "Select Template",
     "campaignSummary": "Campaign Summary",
     "noTemplate": "None (plain text)",
     "creating": "Creating...",
@@ -1171,13 +1199,9 @@
     "noContactGroupsYet": "No contact groups yet",
     "noSegmentsYet": "No segments yet",
     "abTesting": "A/B Testing",
-    "abTestingDesc": "Test two variants to find the better performer",
     "subjectAPlaceholder": "Subject A",
-    "bodyAPlaceholder": "Body A (HTML)",
     "subjectBPlaceholder": "Subject B",
-    "bodyBPlaceholder": "Body B (HTML)",
     "splitRatio": "Split Ratio",
-    "testDuration": "Test Duration",
     "sendSchedule": "Send Schedule",
     "now": "Now",
     "later": "Later",
@@ -1382,14 +1406,16 @@
     "both": "Both",
     "noContactsFound": "No contacts found",
     "taskDetails": "Task details",
-    "connections": "Connections"
+    "connections": "Connections",
+    "enabled": "Enabled"
   },
   "quickReply": {
     "title": "Quick Replies",
     "noReplies": "No quick replies yet",
     "createInSettings": "Create one in Settings",
     "shortcut": "Shortcut key",
-    "body": "Message body"
+    "body": "Message body",
+    "description": "Save pre-written responses for common inquiries to respond faster."
   },
   "snooze": {
     "addPreset": "Add preset",
@@ -1685,23 +1711,7 @@
     "subtitle": "Files shared with you across your mail, organized in one place.",
     "search": "Search attachments",
     "searchPlaceholder": "Search attachments...",
-    "allTypes": "All types",
-    "images": "Images",
-    "pdfs": "PDFs",
-    "documents": "Documents",
-    "spreadsheets": "Spreadsheets",
-    "archives": "Archives",
-    "other": "Other",
     "allSenders": "All senders",
-    "anyTime": "Any time",
-    "today": "Today",
-    "pastWeek": "Past week",
-    "pastMonth": "Past month",
-    "pastYear": "Past year",
-    "anySize": "Any size",
-    "small": "< 1 MB",
-    "medium": "1–10 MB",
-    "large": "> 10 MB",
     "filterByType": "Filter by type",
     "filterBySender": "Filter by sender",
     "filterByDate": "Filter by date",
@@ -1726,10 +1736,7 @@
   },
   "contacts": {
     "title": "Contacts",
-    "subtitle": "People you've emailed and received mail from.",
     "newContact": "New contact",
-    "importCsv": "Import from CSV",
-    "findDuplicates": "Find Duplicates",
     "searchPlaceholder": "Search contacts...",
     "stats": {
       "total": "Total:",
@@ -1742,90 +1749,15 @@
       "segments": "Segments",
       "imports": "Imports"
     },
-    "empty": {
-      "title": "No contacts yet",
-      "subtitle": "Contacts appear as you send and receive emails. Or import them now.",
-      "searchTitle": "No matching contacts",
-      "searchSubtitle": "Try a different search term or clear the filters."
-    },
-    "grid": {
-      "title": "No contacts to display",
-      "subtitle": "Adjust your search or filters to see contacts."
-    },
-    "tagsEmpty": {
-      "title": "No tags yet",
-      "subtitle": "Create your first tag to start organizing contacts by topic or relationship.",
-      "createFirst": "Create your first tag"
-    },
-    "segmentsEmpty": {
-      "title": "No segments yet",
-      "subtitle": "Build dynamic audiences with a query — e.g. active:30d, tag:client, or name:smith.",
-      "createFirst": "Create your first segment"
-    },
-    "newTag": "New Tag",
-    "newSegment": "New Segment",
-    "newImport": "New import",
-    "tagsHint": "Click a tag to filter contacts. Manage tag colors and naming here.",
-    "groupsHint": "Click a group to view its members.",
-    "segmentsHint": "Dynamic segments evaluate a query against your contacts.",
-    "importsHint": "History of CSV imports and their results.",
-    "contactSingular": "contact",
-    "contactPlural": "contacts",
-    "never": "Never",
-    "columns": {
-      "contact": "Contact",
-      "email": "Email",
-      "freq": "Freq.",
-      "lastContact": "Last Contact"
-    },
-    "filters": {
-      "by": "Filtered by:",
-      "clearAll": "Clear all"
-    },
-    "toolbar": {
-      "selectAll": "Select all contacts",
-      "sort": "Sort contacts",
-      "exportAll": "Export all data",
-      "merge": "Merge",
-      "import": "Import",
-      "selectedCount": "{{count}} selected",
-      "tag": "Tag",
-      "group": "Group",
-      "export": "Export",
-      "delete": "Delete",
-      "clear": "Clear"
-    },
-    "viewMode": {
-      "list": "List",
-      "grid": "Grid",
-      "compact": "Compact",
-      "normal": "Normal",
-      "comfortable": "Comfortable"
-    },
-    "sortOptions": {
-      "lastContact": "Last contact",
-      "name": "Name",
-      "email": "Email",
-      "frequency": "Frequency"
-    },
     "hideSearch": "contacts.hideSearch",
     "showSearch": "contacts.showSearch",
     "clearSearch": "contacts.clearSearch"
-  },
-  "validation": {
-    "required": "This field is required",
-    "email": "Enter a valid email address",
-    "minLength": "Too short",
-    "maxLength": "Too long",
-    "numeric": "Enter a number",
-    "positive": "Enter a value greater than zero"
   },
   "invoicing": {
     "title": "Invoicing",
     "newDocument": "New Document",
     "yourCompany": "Your Company",
     "lowStock": "low stock",
-    "failedToLoad": "Failed to load {{tab}}",
     "retry": "Retry",
     "tabs": {
       "documents": "Documents",
@@ -1866,12 +1798,23 @@
     "deleteMessage": "Are you sure you want to delete this automation rule? This cannot be undone.",
     "delete": "Delete",
     "notifyTitle": "Automation",
-    "notifyCreated": "AI workflow \"{{name}}\" created.",
-    "notifyFailed": "Failed to create workflow rule."
+    "notifyFailed": "Failed to create workflow rule.",
+    "templatesTitle": "Workflow Templates",
+    "templatesSubtitle": "Pre-built workflows — one click to activate",
+    "templatesAutomation": "Automation",
+    "templatesAiEnhanced": "AI Enhanced",
+    "applying": "Applying...",
+    "useTemplate": "Use Template",
+    "templates": "automation.templates"
   },
   "erp": {
     "title": "ERP Console",
-    "subtitle": "Inventory · Accounting · Platform — for {{company}}",
-    "yourCompany": "your company"
+    "yourCompany": "your company",
+    "companyManagement": "Company Management",
+    "companyManagementSub": "Manage your companies and Morocco DGI identifiers",
+    "addCompany": "Add Company",
+    "noCompanies": "No companies yet. Add your first company to get started.",
+    "createCompany": "Create Company",
+    "editCompany": "Edit Company"
   }
 }

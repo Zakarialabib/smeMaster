@@ -16,7 +16,7 @@ export function HelpPageCard({ card, isExpanded, onToggle }: HelpPageCardProps) 
       {/* Collapsed header: icon + title + summary + chevron */}
       <button
         onClick={onToggle}
-        className="flex items-center gap-3 w-full px-4 py-3 text-left cursor-pointer"
+        className="flex items-center gap-3 w-full px-4 py-3 text-start cursor-pointer"
       >
         <div className="w-8 h-8 rounded-md bg-accent/10 text-accent flex items-center justify-center shrink-0">
           <Icon size={16} />
@@ -40,7 +40,7 @@ export function HelpPageCard({ card, isExpanded, onToggle }: HelpPageCardProps) 
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 ml-11 border-t border-border-secondary/50 pt-3 space-y-3">
+          <div className="px-4 pb-4 ms-11 border-t border-border-secondary/50 pt-3 space-y-3">
             <p className="text-xs text-text-secondary leading-relaxed">
               {card.description}
             </p>

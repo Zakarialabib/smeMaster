@@ -270,7 +270,7 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
         Insert variable
       </Button>
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-10 bg-bg-primary border border-border-primary rounded-md shadow-lg py-1 min-w-[220px]">
+        <div className="absolute start-0 top-full mt-1 z-10 bg-bg-primary border border-border-primary rounded-md shadow-lg py-1 min-w-[220px]">
           {TEMPLATE_VARIABLES.map((v) => (
             <button
               key={v.key}
@@ -279,7 +279,7 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
                 onInsert(v.key);
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-bg-hover text-xs flex items-center justify-between gap-3"
+              className="w-full text-start px-3 py-1.5 hover:bg-bg-hover text-xs flex items-center justify-between gap-3"
             >
               <code className="text-accent">{v.key}</code>
               <span className="text-text-tertiary">{v.desc}</span>

@@ -66,7 +66,7 @@ const LOG_LEVEL_CONFIG: Record<
     label: "Critical",
     color: "text-danger",
     bg: "bg-danger/10",
-    border: "border-l-danger",
+    border: "border-s-danger",
     badge: "bg-danger text-white",
   },
   error: {
@@ -74,7 +74,7 @@ const LOG_LEVEL_CONFIG: Record<
     label: "Error",
     color: "text-danger",
     bg: "bg-danger/5",
-    border: "border-l-danger",
+    border: "border-s-danger",
     badge: "bg-danger/90 text-white",
   },
   warning: {
@@ -82,7 +82,7 @@ const LOG_LEVEL_CONFIG: Record<
     label: "Warning",
     color: "text-warning",
     bg: "bg-warning/5",
-    border: "border-l-warning",
+    border: "border-s-warning",
     badge: "bg-warning text-white",
   },
   info: {
@@ -90,7 +90,7 @@ const LOG_LEVEL_CONFIG: Record<
     label: "Info",
     color: "text-info",
     bg: "bg-info/5",
-    border: "border-l-info",
+    border: "border-s-info",
     badge: "bg-info text-white",
   },
   debug: {
@@ -98,7 +98,7 @@ const LOG_LEVEL_CONFIG: Record<
     label: "Debug",
     color: "text-text-tertiary",
     bg: "bg-bg-tertiary",
-    border: "border-l-border",
+    border: "border-s-border",
     badge: "bg-text-secondary text-bg-primary",
   },
 } as const;
@@ -280,7 +280,7 @@ function LogRow({ log }: { log: LogEntry }) {
   return (
     <div
       className={cn(
-        "group border-l-[3px] mb-1.5 rounded-r-lg transition-all duration-200",
+        "group border-s-[3px] mb-1.5 rounded-e-lg transition-all duration-200",
         "hover:shadow-sm hover:translate-x-0.5",
         config.bg,
         config.border,
@@ -308,7 +308,7 @@ function LogRow({ log }: { log: LogEntry }) {
             <span className="px-1.5 py-0.5 rounded-md bg-bg-tertiary text-[10px] font-semibold text-text-tertiary border border-border">
               {getContextLabel(log.category)}
             </span>
-            <span className="text-[10px] font-mono text-text-tertiary opacity-60 tabular-nums ml-auto md:ml-0">
+            <span className="text-[10px] font-mono text-text-tertiary opacity-60 tabular-nums ms-auto md:ms-0">
               {new Date(log.timestamp).toLocaleTimeString(undefined, {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -340,7 +340,7 @@ function LogRow({ log }: { log: LogEntry }) {
       {isExpanded && hasData && (
         <div className="px-3 pb-3 pt-0">
           <div className="relative group/data">
-            <div className="absolute top-2 right-2 opacity-0 group-hover/data:opacity-100 transition-opacity z-10">
+            <div className="absolute top-2 end-2 opacity-0 group-hover/data:opacity-100 transition-opacity z-10">
               <button
                 onClick={handleCopyData}
                 className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-medium text-text-secondary backdrop-blur-sm border border-white/10 transition-colors"
@@ -952,18 +952,18 @@ export default function DeveloperTab() {
             {/* Search & Filters */}
             <div className="px-4 py-3 border-b border-border/50 bg-bg-tertiary/10 flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
                 <input
                   type="text"
                   placeholder="Search messages, components, or data..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-9 h-9 w-full bg-bg-primary border border-border rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
+                  className="ps-10 pe-9 h-9 w-full bg-bg-primary border border-border rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary transition-colors"
+                    className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

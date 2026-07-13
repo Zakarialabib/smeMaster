@@ -306,12 +306,12 @@ export default function KnowledgeBaseSettings() {
                   >
                     {embeddingTesting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                        <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                         {t("settings.testing")}
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-1.5" />
+                        <Sparkles className="w-4 h-4 me-1.5" />
                         {t("settings.testEmbedding")}
                       </>
                     )}
@@ -372,12 +372,12 @@ export default function KnowledgeBaseSettings() {
             >
               {modelStatus === "downloading" ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                   {t("settings.downloading")}
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4 mr-1.5" />
+                  <Download className="w-4 h-4 me-1.5" />
                   {t("settings.downloadBge")}
                 </>
               )}
@@ -396,12 +396,12 @@ export default function KnowledgeBaseSettings() {
             >
               {modelStatus === "loading" ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                   {t("settings.loading")}
                 </>
               ) : (
                 <>
-                  <BrainCircuit className="w-4 h-4 mr-1.5" />
+                  <BrainCircuit className="w-4 h-4 me-1.5" />
                   {t("settings.loadModel")}
                 </>
               )}
@@ -417,7 +417,7 @@ export default function KnowledgeBaseSettings() {
           description={t("settings.localModelsFolderDescription")}
         >
           <SettingRow label={t("settings.kbLocation")}>
-            <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-right">
+            <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-end">
               {modelsDir ?? t("settings.loading")}
             </span>
           </SettingRow>
@@ -429,7 +429,7 @@ export default function KnowledgeBaseSettings() {
               onClick={openModelsFolder}
               disabled={!modelsDir}
             >
-              <FolderOpen className="w-4 h-4 mr-1.5" />
+              <FolderOpen className="w-4 h-4 me-1.5" />
               {t("settings.openFolder")}
             </Button>
             <Button
@@ -439,7 +439,7 @@ export default function KnowledgeBaseSettings() {
               onClick={removeModel}
               disabled={!modelPath}
             >
-              <Trash2 className="w-4 h-4 mr-1.5" />
+              <Trash2 className="w-4 h-4 me-1.5" />
               {t("settings.removeModel")}
             </Button>
           </div>
@@ -484,12 +484,12 @@ export default function KnowledgeBaseSettings() {
             >
               {indexingStatus === "indexing" ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
                   {t("settings.indexing")}
                 </>
               ) : (
                 <>
-                  <Database className="w-4 h-4 mr-1.5" />
+                  <Database className="w-4 h-4 me-1.5" />
                   {t("settings.indexAllData")}
                 </>
               )}
@@ -503,7 +503,7 @@ export default function KnowledgeBaseSettings() {
               onClick={indexAll}
               disabled={indexingStatus === "indexing"}
             >
-              <RotateCcw className="w-3 h-3 mr-1" />
+              <RotateCcw className="w-3 h-3 me-1" />
               {t("settings.reindex")}
             </Button>
           )}
@@ -522,7 +522,7 @@ export default function KnowledgeBaseSettings() {
                 </span>
               </SettingRow>
               <SettingRow label={t("settings.storageLocation")}>
-                <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-right">
+                <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-end">
                   {kbPath ?? t("settings.kbLoading")}
                 </span>
         </SettingRow>
@@ -543,7 +543,7 @@ export default function KnowledgeBaseSettings() {
               }
             }}
           >
-            <Trash2 className="w-4 h-4 mr-1.5" />
+            <Trash2 className="w-4 h-4 me-1.5" />
             {t("settings.clearIndex")}
           </Button>
         </div>

@@ -325,6 +325,9 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
     queue: t("settings.tabs.queue"),
     "account-cleaning": t("settings.tabs.accountCleaning"),
     license: t("settings.tabs.license"),
+    hardware: t("settings.tabs.hardware"),
+    "business-profile": t("settings.tabs.businessProfile"),
+    "feature-flags": t("settings.tabs.featureFlags"),
   };
   return labels[id] ?? id;
 }

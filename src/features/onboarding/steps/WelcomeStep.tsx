@@ -105,7 +105,7 @@ export function WelcomeStep({ onNext, onExpressMode, onSkipToDemos }: WelcomeSte
                 }}
               >
                 {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                  <div className="absolute top-2 end-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
                     <span className="text-accent-foreground text-xs font-bold">✓</span>
                   </div>
                 )}
@@ -135,7 +135,7 @@ export function WelcomeStep({ onNext, onExpressMode, onSkipToDemos }: WelcomeSte
               <button
                 key={p.id}
                 onClick={() => setSelectedPreset(p.id)}
-                className={`group relative rounded-xl border p-4 text-left transition-all duration-300 ${
+                className={`group relative rounded-xl border p-4 text-start transition-all duration-300 ${
                   isSelected
                     ? "border-accent ring-2 ring-accent/30 bg-accent/[0.04]"
                     : "border-border hover:border-accent/40 hover:bg-accent/[0.02]"
@@ -146,7 +146,7 @@ export function WelcomeStep({ onNext, onExpressMode, onSkipToDemos }: WelcomeSte
                 }}
               >
                 {isSelected && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                  <div className="absolute top-3 end-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
                     <span className="text-accent-foreground text-xs font-bold">✓</span>
                   </div>
                 )}
