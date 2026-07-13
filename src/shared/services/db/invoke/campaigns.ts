@@ -46,6 +46,7 @@ export async function createCampaignWithRecipients(input: {
   templateId?: string | null;
   segmentId?: string | null;
   abTestConfig?: string | null;
+  bodyHtml?: string | null;
   contactIds: string[];
 }): Promise<{ campaign: Campaign; recipientCount: number }> {
   return invokeCommand<{ campaign: Campaign; recipientCount: number }>(
@@ -57,6 +58,7 @@ export async function createCampaignWithRecipients(input: {
         template_id: input.templateId ?? null,
         segment_id: input.segmentId ?? null,
         ab_test_config: input.abTestConfig ?? null,
+        body_html: input.bodyHtml ?? null,
         contact_ids: input.contactIds,
       },
     },
