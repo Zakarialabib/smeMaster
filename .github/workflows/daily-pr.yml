@@ -1,0 +1,85 @@
+name: Daily PR (dev → main)
+
+on:
+  schedule:
+    # Runs daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes between dev and main
+        id: check
+        run: |
+          # Fetch both branches
+          git fetch origin main
+          git fetch origin dev
+
+          # Count commits dev is ahead of main
+          AHEAD=$(git rev-list --count origin/main..origin/dev)
+          echo "ahead=$AHEAD" >> "$GITHUB_OUTPUT"
+
+          if [ "$AHEAD" -eq 0 ]; then
+            echo "No new commits on dev — skipping PR."
+            exit 0
+          fi
+
+          echo "Dev is $AHEAD commit(s) ahead of main."
+
+      - name: Create or update PR
+        if: steps.check.outputs.ahead > 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if an open PR from dev to main already exists
+          EXISTING=$(gh pr list \
+            --head dev \
+            --base main \
+            --state open \
+            --json number \
+            --jq '.[0].number' 2>/dev/null)
+
+          if [ -n "$EXISTING" ]; then
+            # Update existing PR body
+            gh pr edit "$EXISTING" \
+              --title "chore: daily sync dev → main ($(date +'%Y-%m-%d'))" \
+              --body "## 🔄 Daily Sync: dev → main
+
+            Automated PR created $(date +'%Y-%m-%d %H:%M UTC').
+
+            ### Changes since last sync
+
+            $(git log origin/main..origin/dev --oneline --no-merges --format='- %h %s')
+
+            > **Note:** This PR is auto-generated. Merge it to sync dev changes into main.
+            > After merge, Release Please will create the next release automatically."
+            echo "Updated existing PR #$EXISTING"
+          else
+            # Create new PR
+            gh pr create \
+              --base main \
+              --head dev \
+              --title "chore: daily sync dev → main ($(date +'%Y-%m-%d'))" \
+              --body "## 🔄 Daily Sync: dev → main
+
+            Automated PR created $(date +'%Y-%m-%d %H:%M UTC').
+
+            ### Changes since last sync
+
+            $(git log origin/main..origin/dev --oneline --no-merges --format='- %h %s')
+
+            > **Note:** This PR is auto-generated. Merge it to sync dev changes into main.
+            > After merge, Release Please will create the next release automatically."
+            echo "Created new PR"
+          fi
