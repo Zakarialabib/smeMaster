@@ -103,16 +103,15 @@ impl AppLifecycle {
             )
         );
 
-        // 4. OnDemand: workflows_executor (future workflow engine)
+        // 4. OnDemand: workflows_executor (workflow rule engine)
+        //    Polls for pending operations and due follow-up reminders every 60s.
+        let workflow_handle = app.handle().clone();
         subsystem_registry.register_ondemand(
             orchestrator::SubsystemEntry::new_ondemand(
                 "workflows_executor",
                 Some("workflows"),
-                Box::new(|| -> Arc<dyn orchestrator::Service> {
-                    Arc::new(crate::orchestrator::services::StubService::new(
-                        "workflows_executor",
-                        "Workflow executor not yet implemented",
-                    ))
+                Box::new(move || -> Arc<dyn orchestrator::Service> {
+                    Arc::new(crate::orchestrator::services::WorkflowExecutorService::new(workflow_handle.clone()))
                 }),
             )
         );
