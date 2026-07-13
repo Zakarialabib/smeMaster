@@ -1,0 +1,17 @@
+{
+  "id": "licensing",
+  "name": "License System",
+  "description": "Hardware fingerprint generation, Ed25519 license validation, license cache bound to SQLite pool. Init called during app setup, validates license state before enabling premium features.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Persists license state via db::license", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "imap",
+  "name": "IMAP Email Engine",
+  "description": "Async IMAP client using async-imap with tokio runtime. Full session management: connect, login, LIST, SELECT, SEARCH, FETCH, IDLE. SessionPoolManager for connection reuse, channel-based idle notifications. Handles Gmail API compatible labels and IMAP extensions.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists email records and sync state", "required": true },
+    { "module": "events", "reason": "Emits email:received event", "required": true }
+  ],
+  "tables": [
+    { "name": "mail_*", "description": "Mail tables (messages, threads, folders, accounts)", "shared": true }
+  ],
+  "events": [
+    { "name": "email:received", "description": "New email received via IDLE", "direction": "publishes" },
+    { "name": "sync:*", "description": "Sync lifecycle events", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

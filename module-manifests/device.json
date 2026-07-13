@@ -1,0 +1,21 @@
+{
+  "id": "device",
+  "name": "Device Management",
+  "description": "Device identity, pairing lifecycle, LAN sync commands, sync persistence (Automerge CRDT storage), and sync type definitions. Manages peer-to-peer device relationships for multi-device sync.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Persists device pairing state", "required": true },
+    { "module": "sync_engine", "reason": "Uses CRDT document sync", "required": false }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "sync:device-*", "description": "Device sync lifecycle events", "direction": "publishes" },
+    { "name": "sync:document-conflict", "description": "CRDT document conflict", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": true
+}

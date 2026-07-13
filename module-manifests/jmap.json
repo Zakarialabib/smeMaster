@@ -1,0 +1,17 @@
+{
+  "id": "jmap",
+  "name": "JMAP Protocol",
+  "description": "JMAP (JSON Meta Application Protocol) client for email, calendars, and contacts. Provides an alternative to IMAP/Caldav for compatible providers.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists JMAP sync state", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

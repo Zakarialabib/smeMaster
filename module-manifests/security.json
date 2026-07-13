@@ -1,0 +1,17 @@
+{
+  "id": "security",
+  "name": "Security Module",
+  "description": "Security settings and commands: biometric auth, encryption key management, secure storage, audit logging.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Reads/writes security settings", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

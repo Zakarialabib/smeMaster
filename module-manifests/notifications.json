@@ -1,0 +1,17 @@
+{
+  "id": "notifications",
+  "name": "OS Notifications",
+  "description": "Tauri plugin for desktop/mobile OS notifications. Displays system notifications for incoming mail, task reminders, and sync events.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [
+    { "name": "notification:received", "description": "Notification received by OS", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": true
+}

@@ -1,0 +1,17 @@
+{
+  "id": "android",
+  "name": "Android Native Bridge",
+  "description": "Tauri plugins for Android: share-sheet (pending share from other apps), contacts cache, calendar events cache. Kotlin bridge invokes setters; frontend polls getters.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [
+    { "name": "share:received", "description": "Share intent received from Android", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

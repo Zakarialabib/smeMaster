@@ -1,0 +1,15 @@
+{
+  "id": "db",
+  "name": "Database Core",
+  "description": "SQLite pool creation, WAL journal mode, migrations, health check, change tracker (FFI commit hook), and all domain data-access layers (mail, contacts, campaigns, calendar, tasks, vault, AI, invoicing, compliance, security, deliverability, workflows, licensing).",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [{ "name": "*", "description": "All application tables managed through db::* submodules", "shared": true }],
+  "events": [{ "name": "db:change-tracker", "description": "SQLite commit hook notifications", "direction": "publishes" }],
+  "config_fields": [],
+  "always_active": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "dns",
+  "name": "DNS Resolution",
+  "description": "Async DNS resolution using trust-dns-resolver with tokio runtime. Used by deliverability module for SPF, DKIM, DMARC lookups and by SMTP for MX resolution.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

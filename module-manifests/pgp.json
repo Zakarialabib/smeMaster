@@ -1,0 +1,17 @@
+{
+  "id": "pgp",
+  "name": "PGP Encryption",
+  "description": "Sequoia OpenPGP integration for email encryption and signing. Key management (generate, import, export), encrypt/decrypt, sign/verify. Registered as Tauri plugin with IPC commands.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email"],
+  "dependencies": [
+    { "module": "db", "reason": "Stores PGP key metadata", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

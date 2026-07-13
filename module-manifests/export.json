@@ -1,0 +1,20 @@
+{
+  "id": "export",
+  "name": "Backup & Export",
+  "description": "Database backup scheduler (configurable cron-style), export commands for data portability, and backup configuration management.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Backs up the SQLite database", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [
+    { "key": "backup_enabled", "label": "Automatic Backups", "type": "boolean", "required": false, "secret": false, "hint": "Enable scheduled database backups" },
+    { "key": "backup_interval_hours", "label": "Backup Interval", "type": "number", "required": false, "secret": false, "hint": "Hours between automatic backups" }
+  ],
+  "always_active": false
+}

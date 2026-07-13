@@ -8,6 +8,8 @@ Areas:
 - B. Shows / Schedule (scheduled emails, campaign scheduling, publishing)
 - C. Calendar (events, calendars, CalDAV sync)
 
+> **Area A status (2026-07-13):** The block-based email editor described in this plan is now **built and shipped** in `src/features/campaigns/components/editor/` - typed `EmailBlock` model, `@dnd-kit` drag-and-drop, per-block config panel, live iframe preview, AI copilot, and Vault image picker. `body_html` persistence and `db_create_campaign_template` are wired end to end. Remaining Area A items (template `updated_at`, richer DnD affordances) are tracked in the campaign feature doc.
+
 Ground-truth gaps found (verified against code, not guessed):
 
 ## A. TEMPLATES + EDITOR + DnD

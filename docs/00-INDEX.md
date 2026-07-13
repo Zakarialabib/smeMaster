@@ -86,7 +86,7 @@ What the app does, grouped by functional area.
 | [Email](04-FEATURES/Core/01-email-management.md)            | Inbox, threads, sync, triage        |
 | [Accounts](04-FEATURES/Core/04-accounts.md)                 | Account setup, auth, providers      |
 | [CRM](04-FEATURES/Core/03-crm-contacts.md)                  | Contacts, groups, segments          |
-| [Campaigns](04-FEATURES/Core/02-campaigns-mail-merge.md)    | Campaign builder, A/B, mail merge   |
+| [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)         | Campaign builder, block editor, mail merge |
 | [Calendar](04-FEATURES/Core/07-calendar.md)                 | Calendars, events, views            |
 | [Tasks](04-FEATURES/Core/08-tasks.md)                       | Priorities, recurrence, linked work |
 | [Automation](04-FEATURES/Core/05-automation.md)             | Trigger/action rules                |

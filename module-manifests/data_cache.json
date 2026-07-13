@@ -1,0 +1,20 @@
+{
+  "id": "data_cache",
+  "name": "In-Memory Data Cache",
+  "description": "In-memory caches for accounts, contacts, labels, threads. Improves UI responsiveness by reducing DB queries. Invalidated via EventBus CacheInvalidate event.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "core",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Populates caches from database", "required": true },
+    { "module": "events", "reason": "Listens for cache invalidation events", "required": true }
+  ],
+  "tables": [],
+  "events": [
+    { "name": "cache:invalidate", "description": "Invalidate cache domain", "direction": "subscribes" }
+  ],
+  "config_fields": [],
+  "always_active": true
+}

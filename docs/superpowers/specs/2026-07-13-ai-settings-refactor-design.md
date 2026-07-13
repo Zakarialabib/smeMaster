@@ -80,8 +80,8 @@ Refactor `src/features/settings/components/tabs/AiTab.tsx` into a single tab wit
 
 **`src/features/assistant/stores/ragStore.ts`**
 - Keep `embeddingSource: "provider" | "rust_bge" | null` semantics (provider = LM Studio embeddings; `null`/auto = provider→BGE fallback).
-- Make the **Index All Data** enable logic mode-aware:
-  - Provider mode → enabled when `isAiAvailable()` AND `lmstudio_embedding_model` is set (or the active provider is embeddings-capable with an embedding model).
+- Make the **Index All Data** enable logic mode-aware. For v1, provider embeddings are scoped to **LM Studio** (the only provider with a configurable embedding model in this spec):
+  - Provider mode → enabled when the active provider is `lmstudio` **and** `lmstudio_embedding_model` is set.
   - BGE mode → enabled when `modelStatus === "loaded"` (current behavior).
 - When provider mode is selected but no embedding model is set → disable Index + show an inline hint: *"Load an embedding model in LM Studio and enter its name in Provider & Models."*
 - Add a `testEmbedding()` action that calls through `providerManager` → `lmstudioProvider.testEmbedding` and exposes the result for the UI.

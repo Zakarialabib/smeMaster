@@ -1,0 +1,19 @@
+{
+  "id": "campaigns",
+  "name": "Email Campaigns",
+  "description": "Campaign builder, mail merge, A/B testing, delivery analytics, outreach workflows. Backed by db::campaigns data access with send scheduling and bounce tracking.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["email", "crm"],
+  "dependencies": [
+    { "module": "db", "reason": "Campaign data access", "required": true },
+    { "module": "contacts", "reason": "Contact targeting and segments", "required": true },
+    { "module": "smtp", "reason": "Sends campaign emails", "required": true }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}

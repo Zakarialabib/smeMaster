@@ -1,0 +1,15 @@
+{
+  "id": "error",
+  "name": "Error Types & Codes",
+  "description": "SerializedError struct for IPC-safe error passing, error code constants (CONNECTION_TIMEOUT, AUTH_FAILED, FILE_NOT_FOUND, etc.), bail! macro for quick error construction, and From impls for common error types.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "infrastructure",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": true
+}

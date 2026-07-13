@@ -1,0 +1,24 @@
+{
+  "id": "contacts",
+  "name": "Contact Management",
+  "description": "Contact CRUD, groups, tags, dynamic segments, activity context, scoring. Backed by db::contacts data access layer.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": ["crm"],
+  "dependencies": [
+    { "module": "db", "reason": "Persists contacts, groups, tags", "required": true },
+    { "module": "data_cache", "reason": "Caches contact data for UI", "required": false }
+  ],
+  "tables": [
+    { "name": "contacts", "description": "Contact records", "shared": true },
+    { "name": "contact_groups", "description": "Contact group records", "shared": true },
+    { "name": "contact_tags", "description": "Contact tag records", "shared": true }
+  ],
+  "events": [
+    { "name": "contact:updated", "description": "Contact updated", "direction": "publishes" }
+  ],
+  "config_fields": [],
+  "always_active": false
+}

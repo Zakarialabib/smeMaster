@@ -1,0 +1,18 @@
+{
+  "id": "pairing",
+  "name": "Device Pairing",
+  "description": "Device-to-device pairing protocol for multi-device sync. Handles pairing handshake, trust-on-first-use, and secure channel establishment.",
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "classification": "optional",
+  "feature_flags": [],
+  "tool_types": [],
+  "dependencies": [
+    { "module": "db", "reason": "Persists pairing state", "required": true },
+    { "module": "sync_engine", "reason": "Used for syncing paired devices", "required": false }
+  ],
+  "tables": [],
+  "events": [],
+  "config_fields": [],
+  "always_active": false
+}
