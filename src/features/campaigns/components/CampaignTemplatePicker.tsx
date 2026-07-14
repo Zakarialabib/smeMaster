@@ -5,6 +5,7 @@ import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { getCampaignTemplateList } from "@features/campaigns/services/campaignTemplateCatalog";
 import type { DbTemplate } from "@features/mail/db/templates";
 import { generateTemplate } from "@shared/services/ai/templateGenerator";
+import { searchTemplates } from "@shared/services/db/invoke/comms";
 import { Modal } from "@shared/components/ui/Modal";
 import { Button } from "@shared/components/ui/Button";
 import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
@@ -64,6 +65,8 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiTemplates, setAiTemplates] = useState<DbTemplate[]>([]);
+  const [searchResults, setSearchResults] = useState<DbTemplate[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -74,9 +77,33 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
     load();
   }, [activeAccountId]);
 
+  // Debounced backend search. When the query is empty we fall back to the
+  // local template list (searchResults stays null).
+  useEffect(() => {
+    if (!activeAccountId) return;
+    const q = search.trim();
+    if (!q) {
+      setSearchResults(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      searchTemplates(activeAccountId, q)
+        .then((results) => setSearchResults(results))
+        .catch((err) => {
+          console.error("Template search failed:", err);
+          setSearchResults([]);
+        })
+        .finally(() => setSearching(false));
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [search, activeAccountId]);
+
   const allTemplates = useMemo(() => [...aiTemplates, ...templates], [aiTemplates, templates]);
 
   const filtered = useMemo(() => {
+    if (searchResults) return searchResults;
     if (!search.trim()) return allTemplates;
     const q = search.toLowerCase();
     return allTemplates.filter(
@@ -85,7 +112,7 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
         (tmpl.subject ?? tmpl.name).toLowerCase().includes(q) ||
         tmpl.template_type.toLowerCase().includes(q),
     );
-  }, [allTemplates, search]);
+  }, [allTemplates, search, searchResults]);
 
   const selectedTemplate = selectedTemplateId
     ? [...aiTemplates, ...templates].find((t) => t.id === selectedTemplateId) ?? null
@@ -180,14 +207,17 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
           placeholder={t("campaign.searchTemplates")}
           className="w-full pl-8 pr-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent transition-colors"
         />
-        {search && (
+        {searching ? (
+          <Loader2 size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary animate-spin" />
+        ) : search ? (
           <button
             onClick={() => setSearch("")}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+            aria-label={t("common.clear")}
           >
             <X size={14} />
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* Currently selected */}
