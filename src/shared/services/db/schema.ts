@@ -355,6 +355,19 @@ export interface SendAsAlias {
   created_at: number;
 }
 
+export interface SenderCredential {
+  id: string;
+  company_id: string;
+  account_id: string | null;
+  email: string;
+  verification_type: string;
+  status: string;
+  token: string | null;
+  verified_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface ScheduledEmail {
   id: string;
   account_id: string;

@@ -314,6 +314,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             comms::db_delete_local_draft,
             comms::db_upsert_send_as_alias,
             comms::db_delete_send_as_alias,
+            comms::db_set_sender_credential,
+            comms::db_get_sender_credentials,
             comms::db_update_scheduled_email_status,
             comms::db_delete_scheduled_email,
             comms::db_update_filter,
@@ -378,6 +380,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             comms::db_get_template_full,
             comms::db_create_campaign_template,
             comms::db_reorder_templates,
+            comms::db_search_templates,
 
             // === commands::compliance (13 commands) ===
             compliance::db_list_compliance_profiles,

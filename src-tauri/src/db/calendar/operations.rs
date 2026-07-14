@@ -3,14 +3,18 @@
 // High-level operations that orchestrate multiple table queries.
 // This module provides the `sync_all_calendars` entry point used by the
 // background CalDAV sync loop.
+//
+// The CalDAV HTTP protocol and iCalendar parsing have been extracted into
+// `crate::calendar::drivers::caldav::CalDavDriver`. This module retains
+// the DB orchestration (querying calendars, upserting events, updating
+// sync tokens) and delegates remote protocol operations to the driver.
 
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
-use base64::Engine;
-use uuid::Uuid;
 
+use crate::calendar::drivers::CalendarDriverRegistry;
 use crate::db::calendar::schema::Calendar;
 use crate::db::core::schema::Account;
 use crate::db::error::AppDbError;
@@ -25,131 +29,21 @@ pub struct SyncSummary {
     pub synced_error: usize,
 }
 
-/// Build a CalDAV REPORT XML body requesting all calendar data.
-fn build_caldav_report_body() -> String {
-    r#"<?xml version="1.0" encoding="utf-8"?>
-<C:calendar-query xmlns:C="urn:ietf:params:xml:ns:caldav"
-                  xmlns:D="DAV:">
-  <D:prop>
-    <D:getetag/>
-    <C:calendar-data/>
-  </D:prop>
-  <C:filter>
-    <C:comp-filter name="VCALENDAR"/>
-  </C:filter>
-</C:calendar-query>"#
-    .to_string()
-}
-
-/// Parse an iCalendar text blob and extract VEVENT entries.
-/// Returns a vector of (uid, summary, description, location, dtstart, dtend, ical_raw) tuples.
-fn parse_ical_events(ical_text: &str) -> Vec<HashMap<String, String>> {
-    let mut events = Vec::new();
-    let mut current_event: Option<HashMap<String, String>> = None;
-    let mut in_event = false;
-
-    for line in ical_text.lines() {
-        let trimmed = line.trim();
-        if trimmed == "BEGIN:VEVENT" {
-            current_event = Some(HashMap::new());
-            in_event = true;
-            continue;
-        }
-        if trimmed == "END:VEVENT" {
-            if let Some(event) = current_event.take() {
-                events.push(event);
-            }
-            in_event = false;
-            continue;
-        }
-        if !in_event {
-            continue;
-        }
-        if let Some(event) = &mut current_event {
-            // Handle key:value lines (may have folded continuation)
-            if let Some(pos) = trimmed.find(':') {
-                let key = trimmed[..pos].to_uppercase();
-                let value = trimmed[pos + 1..].trim().to_string();
-                match key.as_str() {
-                    "UID" => { event.insert("uid".to_string(), value); }
-                    "SUMMARY" => { event.insert("summary".to_string(), value); }
-                    "DESCRIPTION" => { event.insert("description".to_string(), value); }
-                    "LOCATION" => { event.insert("location".to_string(), value); }
-                    "DTSTART" => { event.insert("dtstart".to_string(), value); }
-                    "DTEND" => { event.insert("dtend".to_string(), value); }
-                    "STATUS" => { event.insert("status".to_string(), value); }
-                    "ORGANIZER" => { event.insert("organizer".to_string(), value); }
-                    "DTSTAMP" => { event.insert("dtstamp".to_string(), value); }
-                    _ => {}
-                }
-            }
-        }
-    }
-
-    events
-}
-
-/// Parse an iCalendar datetime string into a Unix timestamp.
-/// Supports UTC (ends with Z) and local with TZID prefix.
-/// Defaults to 0 on failure.
-fn parse_ical_dt(dt_str: &str) -> i64 {
-    // Handle UTC format: 20240101T120000Z
-    if dt_str.ends_with('Z') {
-        let stripped = dt_str.trim_end_matches('Z');
-        if let Ok(ts) = chrono::NaiveDateTime::parse_from_str(
-            stripped,
-            "%Y%m%dT%H%M%S",
-        ) {
-            return ts.and_utc().timestamp();
-        }
-    }
-    // Handle DATE format: 20240101 (all-day)
-    if dt_str.len() == 8 && !dt_str.contains('T') {
-        if let Ok(d) = chrono::NaiveDate::parse_from_str(dt_str, "%Y%m%d") {
-            return d.and_hms_opt(0, 0, 0)
-                .map(|dt| dt.and_utc().timestamp())
-                .unwrap_or(0);
-        }
-    }
-    // Handle TZID prefix: TZID=America/New_York:20240101T120000
-    if let Some(pos) = dt_str.find(':') {
-        return parse_ical_dt(&dt_str[pos + 1..]);
-    }
-    // Try without timezone info
-    if let Ok(ts) = chrono::NaiveDateTime::parse_from_str(dt_str, "%Y%m%dT%H%M%S") {
-        return ts.and_utc().timestamp();
-    }
-    log::warn!("[caldav_ops] Could not parse datetime: {dt_str}");
-    0
-}
-
 /// Upsert a single event into the calendar_events table.
+///
+/// Accepts a `CalendarEvent` as returned by the driver's `fetch_events()`.
 async fn upsert_event(
     pool: &SqlitePool,
-    account_id: &str,
-    calendar_id: &str,
-    event_data: &HashMap<String, String>,
-    ical_raw: &str,
+    event: &crate::db::calendar::schema::CalendarEvent,
 ) -> Result<(), SerializedError> {
-    let uid = event_data.get("uid").map(|s| s.as_str()).unwrap_or("");
-    let summary = event_data.get("summary").map(|s| s.as_str());
-    let description = event_data.get("description").map(|s| s.as_str());
-    let location = event_data.get("location").map(|s| s.as_str());
-    let dtstart = event_data.get("dtstart").map(|s| s.as_str()).unwrap_or("");
-    let dtend = event_data.get("dtend").map(|s| s.as_str()).unwrap_or("");
-    let status = event_data.get("status").map(|s| s.as_str()).unwrap_or("confirmed");
-    let organizer = event_data.get("organizer").map(|s| s.as_str());
-
-    let start_time = parse_ical_dt(dtstart);
-    let end_time = parse_ical_dt(dtend);
-
-    // Detect all-day: DATE format (no T) or dtstart == dtend on same day
-    let is_all_day = if dtstart.len() == 8 && !dtstart.contains('T') { 1 } else { 0 };
-
     let now = chrono::Utc::now().timestamp();
-    let event_id = Uuid::new_v4().to_string();
 
-    // Use UID as remote_event_id — check if it already exists
+    // Use remote_event_id (UID) as the dedup key
+    let uid = event.remote_event_id.as_deref().unwrap_or("");
+    let account_id = &event.company_id;
+    let calendar_id = event.calendar_id.as_deref().unwrap_or("");
+
+    // Check if it already exists by remote_event_id + calendar_id
     let existing: Option<(String,)> = sqlx::query_as(
         "SELECT id FROM calendar_events WHERE account_id = ?1 AND remote_event_id = ?2 AND calendar_id = ?3"
     )
@@ -161,49 +55,58 @@ async fn upsert_event(
     .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
 
     if let Some((existing_id,)) = existing {
-        // Update
+        // Update existing event
         sqlx::query(
             "UPDATE calendar_events SET summary = ?1, description = ?2, location = ?3, \
              start_time = ?4, end_time = ?5, is_all_day = ?6, status = ?7, \
              organizer_email = ?8, ical_data = ?9, updated_at = ?10 \
              WHERE id = ?11"
         )
-        .bind(summary)
-        .bind(description)
-        .bind(location)
-        .bind(start_time)
-        .bind(end_time)
-        .bind(is_all_day)
-        .bind(status)
-        .bind(organizer)
-        .bind(ical_raw)
+        .bind(&event.summary)
+        .bind(&event.description)
+        .bind(&event.location)
+        .bind(event.start_time)
+        .bind(event.end_time)
+        .bind(event.is_all_day)
+        .bind(&event.status)
+        .bind(&event.organizer_email)
+        .bind(&event.ical_data)
         .bind(now)
         .bind(&existing_id)
         .execute(pool)
         .await
         .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
     } else {
-        // Insert
+        // Insert new event
+        let mut id = event.id.clone();
+        if id.is_empty() {
+            id = uuid::Uuid::new_v4().to_string();
+        }
         sqlx::query(
             "INSERT INTO calendar_events (id, account_id, calendar_id, google_event_id, \
              remote_event_id, summary, description, location, start_time, end_time, \
-             is_all_day, status, organizer_email, ical_data, updated_at) \
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)"
+             is_all_day, status, organizer_email, attendees_json, html_link, etag, \
+             ical_data, uid, updated_at) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)"
         )
-        .bind(&event_id)
+        .bind(&id)
         .bind(account_id)
         .bind(calendar_id)
-        .bind("") // google_event_id — unused for CalDAV
-        .bind(uid)
-        .bind(summary)
-        .bind(description)
-        .bind(location)
-        .bind(start_time)
-        .bind(end_time)
-        .bind(is_all_day)
-        .bind(status)
-        .bind(organizer)
-        .bind(ical_raw)
+        .bind(&event.google_event_id)
+        .bind(&event.remote_event_id)
+        .bind(&event.summary)
+        .bind(&event.description)
+        .bind(&event.location)
+        .bind(event.start_time)
+        .bind(event.end_time)
+        .bind(event.is_all_day)
+        .bind(&event.status)
+        .bind(&event.organizer_email)
+        .bind(&event.attendees_json)
+        .bind(&event.html_link)
+        .bind(&event.etag)
+        .bind(&event.ical_data)
+        .bind(&event.uid)
         .bind(now)
         .execute(pool)
         .await
@@ -213,86 +116,41 @@ async fn upsert_event(
     Ok(())
 }
 
-/// Synchronise a single CalDAV calendar by sending a REPORT request to the
-/// server and upserting returned VEVENT data.
+/// Synchronise a single CalDAV calendar using the CalendarDriverRegistry.
+///
+/// Uses the `CalDavDriver` to fetch remote events, then upserts them into the
+/// local database.
 async fn sync_one_calendar(
     pool: &SqlitePool,
     cal: &Calendar,
-    account: &Account,
+    _account: &Account,
 ) -> Result<usize, SerializedError> {
-    // Build the CalDAV URL from the account's metadata_json or fallback.
-    let base_url = get_caldav_base_url(account);
-    let report_url = format!(
-        "{}{}",
-        base_url.trim_end_matches('/'),
-        cal.remote_id
-    );
-
-        // Determine authentication
-        let auth_header = build_auth_header(pool, account).await?;
-
-    let client = reqwest::Client::builder()
-        .user_agent("SMEMaster/1.0")
-        .build()
-        .map_err(|e| SerializedError::new("HTTP_CLIENT", format!("Failed to build HTTP client: {e}")))?;
-
-    let body = build_caldav_report_body();
+    let registry = CalendarDriverRegistry::new(pool.clone());
+    let driver = registry
+        .create("caldav")
+        .map_err(|e| SerializedError::new(e.code, e.message))?;
 
     log::info!(
-        "[caldav_ops] REPORT {report_url} for calendar {} ({})",
-        cal.display_name.as_deref().unwrap_or(cal.id.as_str()),
+        "[caldav_ops] Syncing calendar {} ({}) via CalDavDriver",
+        cal.display_name.as_deref().unwrap_or(&cal.id),
         cal.remote_id,
     );
 
-    let resp = client
-        .request(reqwest::Method::from_bytes(b"REPORT").unwrap_or_else(|_| reqwest::Method::GET), &report_url)
-        .header("Content-Type", "application/xml; charset=utf-8")
-        .header("Depth", "1")
-        .header("Authorization", &auth_header)
-        .body(body)
-        .send()
+    // Fetch events via the driver (full-range: we pass 0..MAX_TIMESTAMP)
+    let events = driver
+        .fetch_events(&cal.company_id, &cal.remote_id, 0, i64::MAX)
         .await
-        .map_err(|e| {
-            SerializedError::new(
-                "NETWORK_ERROR",
-                format!("CalDAV REPORT failed for {}: {e}", cal.remote_id),
-            )
-        })?;
+        .map_err(|e| SerializedError::new(e.code, e.message))?;
 
-    if !resp.status().is_success() {
-        log::warn!(
-            "[caldav_ops] CalDAV REPORT returned {} for {}",
-            resp.status(),
-            cal.remote_id,
-        );
-        return Err(SerializedError::new(
-            "CALDAV_ERROR",
-            format!("CalDAV server returned {}", resp.status()),
-        ));
-    }
-
-    // The response is typically multipart/alternative or text/calendar
-    let _content_type = resp.headers()
-        .get(reqwest::header::CONTENT_TYPE)
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("text/calendar")
-        .to_string();
-
-    let body_text = resp.text().await.map_err(|e| {
-        SerializedError::new("PARSE_ERROR", format!("Failed to read CalDAV response body: {e}"))
-    })?;
-
-    // Parse iCalendar data
-    let events = parse_ical_events(&body_text);
     let count = events.len();
     log::info!(
-        "[caldav_ops] Parsed {count} VEVENT(s) from {}",
+        "[caldav_ops] Fetched {count} VEVENT(s) from {} via driver",
         cal.remote_id,
     );
 
-    // Upsert each event
-    for event_data in &events {
-        upsert_event(pool, &cal.company_id, &cal.id, event_data, &body_text).await?;
+    // Upsert each event into the DB
+    for event in &events {
+        upsert_event(pool, event).await?;
     }
 
     // Update the calendar's sync_token (use a simple timestamp-based token)
@@ -315,74 +173,6 @@ async fn sync_one_calendar(
     );
 
     Ok(count)
-}
-
-/// Determine the CalDAV base URL from the account's metadata_json or
-/// construct a reasonable default from the email domain.
-fn get_caldav_base_url(account: &Account) -> String {
-    // Try to extract server_url from metadata_json
-    if !account.metadata_json.is_empty() && account.metadata_json != "{}" {
-        if let Ok(meta) = serde_json::from_str::<serde_json::Value>(&account.metadata_json) {
-            if let Some(url) = meta.get("caldav_server_url").and_then(|v| v.as_str()) {
-                return url.to_string();
-            }
-        }
-    }
-
-    // Fallback: use IMAP host if it looks like a server hostname
-    if let Some(host) = &account.imap_host {
-        let scheme = if host.contains("://") { String::new() } else { "https://".to_string() };
-        return format!("{}{}", scheme, host);
-    }
-
-    // Last resort: derive from email domain
-    let domain = account.email.split('@').nth(1).unwrap_or("localhost");
-    format!("https://{domain}")
-}
-
-/// Build the Authorization header value for CalDAV requests.
-/// Supports basic auth (password) and bearer token (OAuth).
-async fn build_auth_header(
-    pool: &SqlitePool,
-    account: &Account,
-) -> Result<String, SerializedError> {
-    match account.auth_method.as_str() {
-        "oauth" | "xoauth2" => {
-            // Get OAuth token from oauth_tokens table
-            let token: Option<(String,)> = sqlx::query_as(
-                "SELECT access_token FROM oauth_tokens WHERE account_id = ?1"
-            )
-            .bind(&account.id)
-            .fetch_optional(pool)
-            .await
-            .map_err(|e| SerializedError::new("DB_ERROR", format!("Token lookup failed: {e}")))?;
-
-            if let Some((access_token,)) = token {
-                Ok(format!("Bearer {}", access_token))
-            } else {
-                // Fall back to basic auth if we have a password
-                if let Some(password) = &account.imap_password {
-                    let username = account.imap_username.as_deref().unwrap_or(&account.email);
-                    let encoded = base64::engine::general_purpose::STANDARD
-                        .encode(format!("{username}:{password}"));
-                    Ok(format!("Basic {encoded}"))
-                } else {
-                    Err(SerializedError::new(
-                        "AUTH_FAILED",
-                        format!("No OAuth token or password for account {}", account.email),
-                    ))
-                }
-            }
-        }
-        "password" | _ => {
-            // Basic auth with imap_username / imap_password
-            let username = account.imap_username.as_deref().unwrap_or(&account.email);
-            let password = account.imap_password.as_deref().unwrap_or("");
-            let encoded = base64::engine::general_purpose::STANDARD
-                .encode(format!("{username}:{password}"));
-            Ok(format!("Basic {encoded}"))
-        }
-    }
 }
 
 /// Run a full sync cycle for every calendar whose provider is `"caldav"`.

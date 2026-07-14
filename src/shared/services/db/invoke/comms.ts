@@ -9,6 +9,7 @@ import type {
   QuickStep,
   ScheduledEmail,
   SendAsAlias,
+  SenderCredential,
   Signature,
   SmartFolder,
   Template,
@@ -215,6 +216,13 @@ export async function getTemplateContent(templateId: string): Promise<ContentRow
   return invokeCommand<ContentRow[]>('db_get_template_content', { templateId });
 }
 
+export async function searchTemplates(
+  companyId: string,
+  query: string,
+): Promise<Template[]> {
+  return invokeCommand<Template[]>('db_search_templates', { companyId, query });
+}
+
 export async function listSignatures(accountId: string): Promise<Signature[]> {
   return invokeCommand<Signature[]>('db_list_signatures', { accountId });
 }
@@ -385,6 +393,32 @@ export async function upsertSendAsAlias(alias: UpsertSendAsAliasRequest): Promis
 
 export async function deleteSendAsAlias(id: string): Promise<void> {
   return invokeCommand<void>('db_delete_send_as_alias', { id });
+}
+
+export async function setSenderCredential(request: {
+  id: string;
+  companyId: string;
+  accountId?: string | null;
+  email: string;
+  verificationType: string;
+  status: string;
+  token?: string | null;
+  verifiedAt?: number | null;
+}): Promise<void> {
+  return invokeCommand<void>('db_set_sender_credential', {
+    id: request.id,
+    companyId: request.companyId,
+    accountId: request.accountId ?? null,
+    email: request.email,
+    verificationType: request.verificationType,
+    status: request.status,
+    token: request.token ?? null,
+    verifiedAt: request.verifiedAt ?? null,
+  });
+}
+
+export async function getSenderCredentials(companyId: string): Promise<SenderCredential[]> {
+  return invokeCommand<SenderCredential[]>('db_get_sender_credentials', { companyId });
 }
 
 export async function setDefaultAlias(accountId: string, aliasId: string): Promise<void> {

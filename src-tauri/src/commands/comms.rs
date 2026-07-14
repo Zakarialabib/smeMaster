@@ -16,7 +16,7 @@ use crate::db::commands::{LabelSortOrderUpdate, UpdateFields};
 use crate::db::error::AppDbError;
 use crate::db::mail::schema::{
     ComposerPreset, FilterLog, FilterRule, LocalDraft, QuickReply, QuickStep,
-    ScheduledEmail, SendAsAlias, Signature, SmartFolder, Template,
+    ScheduledEmail, SendAsAlias, SenderCredential, Signature, SmartFolder, Template,
 };
 use crate::error::SerializedError;
 
@@ -693,6 +693,37 @@ pub async fn db_reorder_templates(
     crate::db::tables::comms::templates::reorder(&pool, &ordered_ids).await.map_err(Into::into)
 }
 
+/// Search templates across all types by name, subject, or shortcut.
+///
+/// Performs a LIKE search on `name`, `subject`, and `shortcut` columns,
+/// returning matches ordered by `usage_count DESC, name ASC`.
+///
+/// * `company_id` — owning company; rows with NULL `company_id` are included.
+/// * `query` — free-text search string (matched case-insensitively via LIKE).
+/// * Returns the matching `Template` rows.
+#[tauri::command]
+pub async fn db_search_templates(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+    query: String,
+) -> CmdResult<Vec<Template>> {
+    let templates = sqlx::query_as::<_, Template>(
+        r#"SELECT * FROM templates
+          WHERE (company_id IS NULL OR company_id = ?)
+          AND (name LIKE ? OR subject LIKE ? OR shortcut LIKE ?)
+          ORDER BY usage_count DESC, name ASC"#,
+    )
+    .bind(&company_id)
+    .bind(format!("%{}%", query))
+    .bind(format!("%{}%", query))
+    .bind(format!("%{}%", query))
+    .fetch_all(&*pool)
+    .await
+    .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
+
+    Ok(templates)
+}
+
 // ── Quick Replies ──
 
 /// Insert or update a quick reply identified by `id`.
@@ -969,6 +1000,72 @@ pub async fn db_delete_send_as_alias(
     let rows = sqlx::query("DELETE FROM send_as_aliases WHERE id = ?").bind(&id).execute(&*pool).await.map_err(|e| AppDbError::Database(e))?.rows_affected();
     if rows == 0 { return Err(AppDbError::NotFound(id).into()); }
     Ok(())
+}
+
+// ── Sender Credentials ──
+
+/// Upsert a sender verification credential (SPF/DKIM/DMARC) for an account.
+///
+/// * `id` — credential primary key; existing row updated, else created.
+/// * `company_id` — owning company.
+/// * `account_id` — optional owning account.
+/// * `email` — sender email/domain being verified.
+/// * `verification_type` — one of `spf`, `dkim`, `dmarc`.
+/// * `status` — `pending` | `verified` | `failed`.
+/// * `token` — optional verification token.
+/// * `verified_at` — optional Unix timestamp of verification.
+/// * Returns `()`. Errors: `SerializedError` on `AppDbError`.
+#[tauri::command]
+pub async fn db_set_sender_credential(
+    pool: State<'_, SqlitePool>,
+    id: String,
+    company_id: String,
+    account_id: Option<String>,
+    email: String,
+    verification_type: String,
+    status: String,
+    token: Option<String>,
+    verified_at: Option<i64>,
+) -> CmdResult<()> {
+    let now = chrono::Utc::now().timestamp();
+    sqlx::query(
+        "INSERT INTO sender_credentials (id, company_id, account_id, email, verification_type, status, token, verified_at, created_at, updated_at) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10) \
+         ON CONFLICT(id) DO UPDATE SET company_id=excluded.company_id, account_id=excluded.account_id, email=excluded.email, verification_type=excluded.verification_type, status=excluded.status, token=excluded.token, verified_at=excluded.verified_at, updated_at=excluded.updated_at"
+    )
+    .bind(&id)
+    .bind(&company_id)
+    .bind(&account_id)
+    .bind(&email)
+    .bind(&verification_type)
+    .bind(&status)
+    .bind(&token)
+    .bind(verified_at)
+    .bind(now)
+    .bind(now)
+    .execute(&*pool)
+    .await
+    .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
+    Ok(())
+}
+
+/// List sender verification credentials for a company.
+///
+/// * `company_id` — owning company; rows with NULL `company_id` are included.
+/// * Returns matching `SenderCredential` rows ordered by `email ASC, verification_type ASC`.
+#[tauri::command]
+pub async fn db_get_sender_credentials(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> CmdResult<Vec<SenderCredential>> {
+    let rows = sqlx::query_as::<_, SenderCredential>(
+        "SELECT * FROM sender_credentials WHERE company_id = ?1 OR company_id IS NULL ORDER BY email ASC, verification_type ASC"
+    )
+    .bind(&company_id)
+    .fetch_all(&*pool)
+    .await
+    .map_err(|e| SerializedError::from(AppDbError::Database(e)))?;
+    Ok(rows)
 }
 
 // ── Scheduled Emails ──

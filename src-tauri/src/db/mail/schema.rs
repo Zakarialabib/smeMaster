@@ -249,6 +249,20 @@ pub struct SendAsAlias {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct SenderCredential {
+    pub id: String,
+    pub company_id: String,
+    pub account_id: Option<String>,
+    pub email: String,
+    pub verification_type: String,
+    pub status: String,
+    pub token: Option<String>,
+    pub verified_at: Option<i64>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct ScheduledEmail {
     pub id: String,
     pub account_id: String,

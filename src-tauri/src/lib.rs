@@ -5,6 +5,7 @@
 
 mod ai;
 mod background;
+mod calendar;
 mod commands;
 mod data_cache;
 mod db;
