@@ -127,12 +127,12 @@ function FeatureRow({
         {/* Name + description */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-text-primary">{feature.name}</span>
+            <span className="text-sm font-medium text-text-primary">{t(feature.name)}</span>
             <span className="text-[10px] text-text-tertiary bg-bg-tertiary/50 px-1.5 py-0.5 rounded font-mono">
-              {feature.tier}
+              {t(feature.tier === "pro" ? "settings.proTier" : "settings.basicTier")}
             </span>
           </div>
-          <p className="text-xs text-text-tertiary truncate mt-0.5">{feature.description}</p>
+          <p className="text-xs text-text-tertiary truncate mt-0.5">{t(feature.description)}</p>
         </div>
 
         {/* Usage bar */}
@@ -200,12 +200,12 @@ export default function FeatureFlagsTab() {
     const results = new Map<string, FeatureFlag[]>();
     for (const [group, features] of groupedFeatures) {
       const matched = features.filter(
-        (f) => f.name.toLowerCase().includes(q) || f.id.includes(q) || f.description.toLowerCase().includes(q),
+        (f) => t(f.name).toLowerCase().includes(q) || f.id.includes(q) || t(f.description).toLowerCase().includes(q),
       );
       if (matched.length > 0) results.set(group, matched);
     }
     return results;
-  }, [groupedFeatures, searchQuery]);
+  }, [groupedFeatures, searchQuery, t]);
 
   const effectiveTier = store.getEffectiveTier();
 
@@ -358,7 +358,7 @@ export default function FeatureFlagsTab() {
         <div key={group} className="space-y-2">
           <div className="flex items-center gap-2 px-1">
             <h3 className="text-[10px] uppercase tracking-widest font-semibold text-text-tertiary">
-              {group}
+              {t(group)}
             </h3>
             <div className="h-px flex-1 bg-border-primary/20" />
             <span className="text-[10px] text-text-tertiary font-mono">

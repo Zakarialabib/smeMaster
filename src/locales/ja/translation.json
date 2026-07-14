@@ -18,7 +18,8 @@
     "settings": "設定",
     "label": "ラベル",
     "noItems": "項目なし",
-    "more": "More"
+    "more": "More",
+    "keyboardNavHint": "[TODO] nav.keyboardNavHint"
   },
   "onboarding": {
     "step1_title": "SMEMasterへようこそ",
@@ -229,7 +230,8 @@
       "developer": "Developer",
       "accountCleaning": "Account Cleaning",
       "hardware": "Hardware",
-      "businessProfile": "Business Profile"
+      "businessProfile": "Business Profile",
+      "ai": "[TODO] AI"
     },
     "appearance": "外観",
     "theme": "テーマ",
@@ -366,7 +368,120 @@
     "autoArchive": "{{cat}}を自動アーカイブ",
     "skipInbox": "{{cat}}メールを受信トレイをスキップ",
     "categories": "カテゴリ",
-    "features": "機能",
+    "features": {
+      "general": {
+        "name": "[TODO] General",
+        "desc": "[TODO] Theme, layout, language, privacy, and appearance settings"
+      },
+      "people": {
+        "name": "[TODO] People",
+        "desc": "[TODO] Contact management, groups, tags, segments, CSV import"
+      },
+      "composing": {
+        "name": "[TODO] Composing",
+        "desc": "[TODO] Rich text editor, signatures, quick replies, pre-send checklist"
+      },
+      "templates": {
+        "name": "[TODO] Templates",
+        "desc": "[TODO] Email templates with variables, categories, and conditional blocks"
+      },
+      "notifications": {
+        "name": "[TODO] Notifications",
+        "desc": "[TODO] Desktop and push notifications for incoming mail"
+      },
+      "snooze": {
+        "name": "[TODO] Snooze",
+        "desc": "[TODO] Snooze presets for delaying email visibility until later"
+      },
+      "shortcuts": {
+        "name": "[TODO] Shortcuts",
+        "desc": "[TODO] Customizable keyboard shortcuts with two-key sequences"
+      },
+      "ai": {
+        "name": "[TODO] AI",
+        "desc": "[TODO] Claude/OpenAI/Gemini integration, smart replies, auto-categorization, thread summaries"
+      },
+      "mailRules": {
+        "name": "[TODO] Mail Rules",
+        "desc": "[TODO] Labels, filters, smart folders, quick steps for auto-organizing mail"
+      },
+      "workflows": {
+        "name": "[TODO] Workflows",
+        "desc": "[TODO] Trigger/action automation engine: auto-reply, follow-ups, task creation, forwarding"
+      },
+      "campaigns": {
+        "name": "[TODO] Campaigns",
+        "desc": "[TODO] Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
+      },
+      "pgp": {
+        "name": "[TODO] PGP Encryption",
+        "desc": "[TODO] End-to-end encryption with Sequoia OpenPGP key management"
+      },
+      "compliance": {
+        "name": "[TODO] Compliance",
+        "desc": "[TODO] GDPR, CAN-SPAM, LGPD profiles with rule engine and AI enhancer"
+      },
+      "backup": {
+        "name": "[TODO] Backup",
+        "desc": "[TODO] Full data backup, restore, export, and archive management"
+      },
+      "pairing": {
+        "name": "[TODO] Pairing",
+        "desc": "[TODO] QR-based secure pairing between Desktop and Mobile devices"
+      },
+      "queue": {
+        "name": "[TODO] Queue",
+        "desc": "[TODO] Offline queue, pending operations, send scheduling, and retry management"
+      },
+      "deliverabilityDashboard": {
+        "name": "[TODO] Deliverability",
+        "desc": "[TODO] Domain health scores, provider compatibility, and remediation wizard"
+      },
+      "presend": {
+        "name": "[TODO] Pre-send",
+        "desc": "[TODO] Pre-flight checklist, attachment validation, and send verification"
+      },
+      "content": {
+        "name": "[TODO] Quality",
+        "desc": "[TODO] Content quality analysis, readability scoring, and tone suggestions"
+      },
+      "dns": {
+        "name": "[TODO] DNS",
+        "desc": "[TODO] SPF, DKIM, DMARC, MX, and DNS record verification"
+      },
+      "blacklist": {
+        "name": "[TODO] Blacklist",
+        "desc": "[TODO] Blacklist monitoring, IP reputation, and DNSBL queries"
+      },
+      "bounce": {
+        "name": "[TODO] Bounces",
+        "desc": "[TODO] Bounce classification, suppression list, and undelivered email tracking"
+      },
+      "warming": {
+        "name": "[TODO] Warming",
+        "desc": "[TODO] Sender reputation warming, volume ramp-up, and IP warm-up schedules"
+      },
+      "offlineAvailability": {
+        "name": "[TODO] Offline Availability",
+        "desc": "[TODO] Mark accounts, folders, and contacts as available offline — compose, search, and act without network"
+      },
+      "rag": {
+        "name": "[TODO] Local RAG",
+        "desc": "[TODO] On-device retrieval-augmented generation for private, context-aware AI answers over your mail and documents"
+      },
+      "businessProfile": {
+        "name": "[TODO] Business Profile",
+        "desc": "[TODO] Company legal, tax, and compliance identity (ICE, CNSS, RC) used across documents and invoicing"
+      },
+      "dashboard": {
+        "name": "[TODO] Dashboard",
+        "desc": "[TODO] Business health, KPIs, and analytics across mail, tasks, and campaigns"
+      },
+      "invoicing": {
+        "name": "[TODO] Invoicing",
+        "desc": "[TODO] Create, send, and track professional invoices and estimates with PDF export"
+      }
+    },
     "aiLanguage": "AI応答言語",
     "aiLanguageAuto": "自動 アプリ言語に合わせる ",
     "aiLanguageEn": "英語",
@@ -601,7 +716,10 @@
       "fromPlaceholder": "KEY",
       "results": "KEY",
       "runChecklist": "KEY",
-      "subjectPlaceholder": "KEY"
+      "subjectPlaceholder": "KEY",
+      "why": "[TODO] A pre-send checklist catches mistakes before they ship.",
+      "how": "[TODO] Enable attachment and tone checks in Pre-send settings.",
+      "when": "[TODO] Use it for important or external emails."
     },
     "previewTemplate": "KEY",
     "recentlyUsed": "KEY",
@@ -659,15 +777,27 @@
       "featureFlags": "Basic vs Proの機能フラグ、使用制限、段階的開示のテストUI"
     },
     "selectAccount": "Select account",
-    "pairing": "Pairing",
+    "pairing": {
+      "why": "[TODO] Pairing links your phone so mail and data stay in sync.",
+      "how": "[TODO] Scan the QR code in Pairing with the mobile app to connect.",
+      "when": "[TODO] Pair when you install SMEMaster on a new mobile device."
+    },
     "pairingDevicePlaceholder": "Device name",
     "generate": "Generate",
     "scanWithMobile": "Scan with mobile app",
     "pairedDevices": "Paired devices",
     "microsoftApi": "Microsoft API",
-    "backup": "Backup",
+    "backup": {
+      "why": "[TODO] Backups protect you from data loss and device failure.",
+      "how": "[TODO] Create an encrypted backup and store it somewhere safe.",
+      "when": "[TODO] Back up before major changes or on a regular schedule."
+    },
     "backupScheduler": "Backup scheduler",
-    "calendar": "Calendar",
+    "calendar": {
+      "why": "[TODO] Calendar sync keeps meetings and email in one place.",
+      "how": "[TODO] Connect a CalDAV account and choose which calendars to display.",
+      "when": "[TODO] Set this up when you start scheduling meetings from email."
+    },
     "deliverabilityDesc": "Monitor domain health, DNS records, and overall deliverability.",
     "featureFlagTesterDesc": "Toggle between Basic and Pro tiers and override usage counts to test progressive disclosure behavior.",
     "totalFeatures": "total features",
@@ -819,7 +949,10 @@
     "composing": {
       "setupGuide": "Setup Guide",
       "step": "Step",
-      "of": "of"
+      "of": "[TODO] of",
+      "why": "[TODO] A consistent composing setup saves time and keeps your brand voice uniform.",
+      "how": "[TODO] Set your default editor, signatures, quick replies, and pre-send checklist in Composing.",
+      "when": "[TODO] Review these when adding a new signature or changing your writing style."
     },
     "livePreview": "Live Preview",
     "livePreviewDesc": "See how your email renders with the current composing settings. Toggle options below to reflect changes in real time.",
@@ -855,7 +988,212 @@
       }
     },
     "behaviorDesc": "Control default reply mode, mark-as-read behavior, and reading workflow preferences.",
-    "signaturesGenerateAi": "Generate with AI"
+    "signaturesGenerateAi": "Generate with AI",
+    "featureGroups": {
+      "gettingStarted": "[TODO] Getting Started",
+      "dailyWorkflow": "[TODO] Daily Workflow",
+      "aiAutomation": "[TODO] AI & Automation",
+      "securityData": "[TODO] Security & Data",
+      "monitoring": "[TODO] Monitoring",
+      "deliverabilityTools": "[TODO] Deliverability Tools",
+      "offlineSync": "[TODO] Offline & Sync",
+      "business": "[TODO] Business"
+    },
+    "about": {
+      "why": "[TODO] About shows your version, license, and credits.",
+      "how": "[TODO] Open About to verify your build and activation status.",
+      "when": "[TODO] Review it before reporting a bug or upgrading."
+    },
+    "groups": {
+      "workspace": {
+        "label": "[TODO] Workspace",
+        "desc": "[TODO] Core configuration and productivity tools"
+      },
+      "accountsSync": {
+        "label": "[TODO] Accounts & Sync",
+        "desc": "[TODO] Email accounts, pairing, and data protection"
+      },
+      "notifications": {
+        "label": "[TODO] Notifications",
+        "desc": "[TODO] Alerts and smart notifications"
+      },
+      "aiAutomation": {
+        "label": "[TODO] AI & Automation",
+        "desc": "[TODO] Intelligent assistance and workflow automation"
+      },
+      "deliverability": {
+        "label": "[TODO] Deliverability",
+        "desc": "[TODO] Email deliverability and domain health"
+      },
+      "securityCompliance": {
+        "label": "[TODO] Security & Compliance",
+        "desc": "[TODO] Encryption, compliance, and business identity"
+      },
+      "developer": {
+        "label": "[TODO] Developer",
+        "desc": "[TODO] Developer tools, diagnostics, and feature flags"
+      },
+      "aboutHelp": {
+        "label": "[TODO] About & Help",
+        "desc": "[TODO] App info, licenses, and help"
+      }
+    },
+    "tabSubtitles": {
+      "general": "[TODO] Theme, language, privacy, and data controls",
+      "composing": "[TODO] Compose and send emails efficiently",
+      "calendar": "[TODO] Calendar and scheduling integration",
+      "shortcuts": "[TODO] Keyboard shortcuts and quick actions",
+      "accounts": "[TODO] Manage email accounts and signatures",
+      "accountCleaning": "[TODO] Automated cleanup and retention rules",
+      "pairing": "[TODO] Connect your mobile device securely",
+      "backup": "[TODO] Back up and restore your data",
+      "notifications": "[TODO] Control alerts and smart notifications",
+      "ai": "[TODO] AI assistant, smart replies, and automation",
+      "mailRules": "[TODO] Labels, filters, and automation rules",
+      "deliverabilityDashboard": "[TODO] Monitor domain health and deliverability",
+      "presend": "[TODO] Pre-flight checks before sending",
+      "pgp": "[TODO] End-to-end email encryption",
+      "compliance": "[TODO] GDPR, CAN-SPAM, and legal disclaimers",
+      "businessProfile": "[TODO] Company identity and tax details",
+      "developer": "[TODO] Developer tools and diagnostics",
+      "hardware": "[TODO] Hardware monitoring and diagnostics",
+      "queue": "[TODO] Offline operations and sync queue",
+      "featureFlags": "[TODO] Preview and toggle experimental features",
+      "about": "[TODO] Version, license, and credits"
+    },
+    "sectionSubtitles": {
+      "composing": "[TODO] Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
+      "general": "[TODO] Configure appearance, language, behavior, and data controls.",
+      "accounts": "[TODO] Connect and manage your email accounts, signatures, and aliases.",
+      "shortcuts": "[TODO] Customize keyboard shortcuts for faster navigation.",
+      "about": "[TODO] Application information, licenses, and credits.",
+      "pairing": "[TODO] Securely connect your mobile device to sync data.",
+      "backup": "[TODO] Create backups and restore your data when needed.",
+      "deliverabilityDashboard": "[TODO] Track domain health, reputation, and deliverability.",
+      "ai": "[TODO] Set up AI providers, smart replies, and automation.",
+      "notifications": "[TODO] Choose what to be notified about and how.",
+      "compliance": "[TODO] Configure legal disclaimers and compliance rules.",
+      "pgp": "[TODO] Manage PGP keys for end-to-end encryption.",
+      "mailRules": "[TODO] Automate organization with labels and filters.",
+      "presend": "[TODO] Verify emails before they leave your outbox.",
+      "calendar": "[TODO] Sync and manage your calendar events.",
+      "developer": "[TODO] Developer tools, diagnostics, and experiments.",
+      "queue": "[TODO] Inspect pending operations and sync status.",
+      "accountCleaning": "[TODO] Automate cleanup of old or unwanted mail.",
+      "license": "[TODO] View your license and activation status.",
+      "featureFlags": "[TODO] Preview experimental and tier-gated features."
+    },
+    "education": {
+      "general": {
+        "why": "[TODO] Your workspace preferences affect everyday comfort — theme, language, and privacy.",
+        "how": "[TODO] Open General to set your theme, language, timezone, and data retention.",
+        "when": "[TODO] Adjust these when onboarding a new device or after a major update."
+      },
+      "composing": {
+        "why": "[TODO] A consistent composing setup saves time and keeps your brand voice uniform.",
+        "how": "[TODO] Set your default editor, signatures, quick replies, and pre-send checklist in Composing.",
+        "when": "[TODO] Review these when adding a new signature or changing your writing style."
+      },
+      "accounts": {
+        "why": "[TODO] Accounts are the source of your mail, contacts, and sync.",
+        "how": "[TODO] Add an IMAP/SMTP or OAuth account and configure signatures.",
+        "when": "[TODO] Add an account when onboarding or switching providers."
+      },
+      "notifications": {
+        "why": "[TODO] Smart notifications keep you informed without overwhelming you.",
+        "how": "[TODO] Choose which folders and VIPs trigger desktop or push alerts.",
+        "when": "[TODO] Tune these when you change devices or notification habits."
+      },
+      "shortcuts": {
+        "why": "[TODO] Shortcuts let power users move through mail without the mouse.",
+        "how": "[TODO] Open Shortcuts to assign or reset two-key sequences.",
+        "when": "[TODO] Customize when you adopt a new workflow or device."
+      },
+      "calendar": {
+        "why": "[TODO] Calendar sync keeps meetings and email in one place.",
+        "how": "[TODO] Connect a CalDAV account and choose which calendars to display.",
+        "when": "[TODO] Set this up when you start scheduling meetings from email."
+      },
+      "pairing": {
+        "why": "[TODO] Pairing links your phone so mail and data stay in sync.",
+        "how": "[TODO] Scan the QR code in Pairing with the mobile app to connect.",
+        "when": "[TODO] Pair when you install SMEMaster on a new mobile device."
+      },
+      "backup": {
+        "why": "[TODO] Backups protect you from data loss and device failure.",
+        "how": "[TODO] Create an encrypted backup and store it somewhere safe.",
+        "when": "[TODO] Back up before major changes or on a regular schedule."
+      },
+      "deliverabilityDashboard": {
+        "why": "[TODO] Deliverability protects your sender reputation and inbox placement.",
+        "how": "[TODO] Review domain health, DNS, and reputation in the dashboard.",
+        "when": "[TODO] Check this before large campaigns or after deliverability drops."
+      },
+      "ai": {
+        "why": "[TODO] AI assists with drafting, replies, and organization.",
+        "how": "[TODO] Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
+        "when": "[TODO] Enable AI when you want help writing or triaging mail."
+      },
+      "mailRules": {
+        "why": "[TODO] Rules automate the busywork of sorting incoming mail.",
+        "how": "[TODO] Create labels and filters, then attach quick steps or workflows.",
+        "when": "[TODO] Add rules when a new project or sender pattern emerges."
+      },
+      "compliance": {
+        "why": "[TODO] Compliance keeps your outgoing mail legally safe.",
+        "how": "[TODO] Add GDPR/CAN-SPAM disclaimers and unsubscribe footers.",
+        "when": "[TODO] Configure when sending to regulated regions or lists."
+      },
+      "pgp": {
+        "why": "[TODO] PGP gives true end-to-end privacy for sensitive mail.",
+        "how": "[TODO] Generate or import a key pair, then share your public key.",
+        "when": "[TODO] Set up PGP before exchanging confidential messages."
+      },
+      "presend": {
+        "why": "[TODO] A pre-send checklist catches mistakes before they ship.",
+        "how": "[TODO] Enable attachment and tone checks in Pre-send settings.",
+        "when": "[TODO] Use it for important or external emails."
+      },
+      "developer": {
+        "why": "[TODO] Developer tools help diagnose and extend the app.",
+        "how": "[TODO] Use Developer for logs, health checks, and seeding demo data.",
+        "when": "[TODO] Open it when troubleshooting or building integrations."
+      },
+      "queue": {
+        "why": "[TODO] The queue shows what happens when you are offline.",
+        "how": "[TODO] Inspect pending operations and retry failed syncs.",
+        "when": "[TODO] Check it after connectivity loss or sync errors."
+      },
+      "accountCleaning": {
+        "why": "[TODO] Cleanup rules prevent storage bloat and keep mail relevant.",
+        "how": "[TODO] Create retention rules to archive or delete old messages automatically.",
+        "when": "[TODO] Set this up when your mailbox grows large or slow."
+      },
+      "about": {
+        "why": "[TODO] About shows your version, license, and credits.",
+        "how": "[TODO] Open About to verify your build and activation status.",
+        "when": "[TODO] Review it before reporting a bug or upgrading."
+      }
+    },
+    "helpCenter": {
+      "title": "[TODO] Help & Info",
+      "titlePinned": "[TODO] Help & Info (pinned)",
+      "pin": "[TODO] Pin sidebar",
+      "pinKeepOpen": "[TODO] Pin sidebar (keep open)",
+      "unpin": "[TODO] Unpin sidebar",
+      "noHelp": "[TODO] No help available for this section.",
+      "quickHelp": "[TODO] Quick Help",
+      "articles": "[TODO] Articles",
+      "tips": "[TODO] Tips",
+      "learnMore": "[TODO] Learn more",
+      "dismiss": "[TODO] Dismiss",
+      "browseFull": "[TODO] Browse full Help Center"
+    },
+    "educationLabels": {
+      "why": "[TODO] Why",
+      "how": "[TODO] How",
+      "when": "[TODO] When"
+    }
   },
   "addAccount": {
     "easySetup": "簡単セットアップ IMAP + アプリパスワード ",
@@ -1614,10 +1952,10 @@
     "skip": "Skip"
   },
   "lock": {
-    "appLocked": "appLocked",
-    "unlockToAccess": "unlockToAccess",
-    "unlocking": "unlocking",
-    "unlockWithBiometric": "unlockWithBiometric"
+    "appLocked": "[TODO] lock.appLocked",
+    "unlockToAccess": "[TODO] lock.unlockToAccess",
+    "unlocking": "[TODO] lock.unlocking",
+    "unlockWithBiometric": "[TODO] lock.unlockWithBiometric"
   },
   "businessHealth": {
     "notScheduled": "businessHealth.notScheduled",

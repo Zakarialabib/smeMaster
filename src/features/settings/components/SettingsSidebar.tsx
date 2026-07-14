@@ -206,7 +206,7 @@ export function SettingsSidebar({
           <div key={group.label}>
             <div className="px-2 mb-1.5">
               <span className="text-[10px] font-semibold text-text-tertiary uppercase tracking-[0.05em]">
-                {group.label}
+                {t(group.label)}
               </span>
             </div>
             <div className="space-y-0.5">

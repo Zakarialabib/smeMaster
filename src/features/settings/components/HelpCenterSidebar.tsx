@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, BookOpen, ExternalLink, EyeOff, Pin, PinOff, HelpCircle, Lightbulb, Clock } from "lucide-react";
 import { getContextualHelp } from "@/constants/contextualHelp";
 import type { ContextualHelpEntry } from "@/constants/contextualHelp";
@@ -35,9 +36,9 @@ const eduColors: Record<string, string> = {
 };
 
 const eduLabels: Record<string, string> = {
-  why: "Why",
-  how: "How",
-  when: "When",
+  why: "settings.educationLabels.why",
+  how: "settings.educationLabels.how",
+  when: "settings.educationLabels.when",
 };
 
 /**
@@ -54,6 +55,7 @@ const eduLabels: Record<string, string> = {
  * - Link to full Help Center
  */
 export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: HelpCenterSidebarProps) {
+  const { t } = useTranslation();
   const { dismissedKeys, unseenKeys, dismissKey, markSeen } = useContextualHelp();
   const [pinned, setPinned] = useState(false);
 
@@ -92,7 +94,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
     <SlidePanel
       isOpen={isOpen}
       onClose={onClose}
-      title={pinned ? "Help & Info (pinned)" : "Help & Info"}
+      title={pinned ? t("settings.helpCenter.titlePinned") : t("settings.helpCenter.title")}
       headerIcon={<BookOpen size={16} className="text-accent" />}
       headerChildren={
         <button
@@ -103,8 +105,8 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
               ? "text-accent bg-accent/10"
               : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
           )}
-          title={pinned ? "Unpin sidebar" : "Pin sidebar (keep open)"}
-          aria-label={pinned ? "Unpin sidebar" : "Pin sidebar"}
+          title={pinned ? t("settings.helpCenter.unpin") : t("settings.helpCenter.pinKeepOpen")}
+          aria-label={pinned ? t("settings.helpCenter.unpin") : t("settings.helpCenter.pin")}
         >
           {pinned ? <PinOff size={14} /> : <Pin size={14} />}
         </button>
@@ -114,18 +116,18 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
         <div className="text-center py-8">
           <Search size={24} className="mx-auto text-text-tertiary mb-2" />
           <p className="text-xs text-text-tertiary">
-            No help available for this section.
+            {t("settings.helpCenter.noHelp")}
           </p>
         </div>
       ) : (
         <div className="space-y-6">
-          {/* ── Section 1: Quick Education (Why/How/When) ──────────── */}
+          {/* ── Section 1: Quick Education (Why/How/When) ─────────── */}
           {educationItems.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3 px-1">
                 <Lightbulb size={13} className="text-accent" />
                 <h3 className="text-xs font-semibold text-text-primary uppercase tracking-[0.05em]">
-                  Quick Help
+                  {t("settings.helpCenter.quickHelp")}
                 </h3>
               </div>
               <div className="space-y-3">
@@ -150,10 +152,10 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                           "text-[10px] font-semibold uppercase tracking-[0.04em]",
                           item.type === "why" ? "text-warning" : item.type === "how" ? "text-accent" : "text-success",
                         )}>
-                          {eduLabels[item.type] ?? item.type}
+                          {t(eduLabels[item.type] ?? `settings.educationLabels.${item.type}`)}
                         </span>
                         <p className="text-xs text-text-secondary leading-relaxed mt-0.5">
-                          {item.text}
+                          {t(item.text)}
                         </p>
                       </div>
                     </div>
@@ -163,13 +165,13 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
             </section>
           )}
 
-          {/* ── Section 2: Help Articles ──────────────────────────── */}
+          {/* ── Section 2: Help Articles ─────────────────────────── */}
           {helpEntries.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3 px-1">
                 <BookOpen size={13} className="text-accent" />
                 <h3 className="text-xs font-semibold text-text-primary uppercase tracking-[0.05em]">
-                  Articles
+                  {t("settings.helpCenter.articles")}
                 </h3>
               </div>
               <div className="space-y-4">
@@ -202,7 +204,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                       {entry.tips && entry.tips.length > 0 && (
                         <div className="mb-3">
                           <span className="text-[0.625rem] font-semibold text-accent uppercase tracking-wider">
-                            Tips
+                            {t("settings.helpCenter.tips")}
                           </span>
                           <ul className="mt-1.5 space-y-1">
                             {entry.tips.map((tip, idx) => (
@@ -237,17 +239,17 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                             }}
                           >
                             <ExternalLink size={12} />
-                            Learn more
+                            {t("settings.helpCenter.learnMore")}
                           </a>
                         )}
 
                         <button
                           onClick={() => handleDismiss(entry.key)}
                           className="inline-flex items-center gap-1 text-xs text-text-tertiary hover:text-text-primary transition-colors ms-auto"
-                          aria-label={`Dismiss ${entry.key}`}
+                          aria-label={`${t("settings.helpCenter.dismiss")} ${entry.key}`}
                         >
                           <EyeOff size={12} />
-                          Dismiss
+                          {t("settings.helpCenter.dismiss")}
                         </button>
                       </div>
                     </article>
@@ -268,7 +270,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
               className="flex items-center gap-2 text-xs text-text-tertiary hover:text-accent transition-colors w-full"
             >
               <BookOpen size={14} />
-              Browse full Help Center
+              {t("settings.helpCenter.browseFull")}
             </button>
           </div>
         </div>

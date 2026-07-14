@@ -18,18 +18,6 @@ export default function CompanySwitcher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Handle loading / empty state
-  if (!active && companies.length === 0) {
-    return (
-      <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary">
-        No companies loaded
-      </div>
-    );
-  }
-
-  // Fallback for display — use the first company if somehow active is null but companies exist
-  const displayCompany = active ?? companies[0]!;
-
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -45,6 +33,18 @@ export default function CompanySwitcher() {
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
+
+  // Handle loading / empty state
+  if (!active && companies.length === 0) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary">
+        No companies loaded
+      </div>
+    );
+  }
+
+  // Fallback for display — use the first company if somehow active is null but companies exist
+  const displayCompany = active ?? companies[0]!;
 
   return (
     <div className="relative" ref={ref}>

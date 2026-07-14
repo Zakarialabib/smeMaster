@@ -63,6 +63,12 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
     return () => { cancelled = true; };
   }, []);
 
+  const weeks = Math.max(1, Math.round(rangeDays / 7));
+  const visible = useMemo(
+    () => data.slice(-Math.min(weeks, data.length)),
+    [data, weeks],
+  );
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
@@ -75,12 +81,6 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
   if (error) {
     return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
   }
-
-  const weeks = Math.max(1, Math.round(rangeDays / 7));
-  const visible = useMemo(
-    () => data.slice(-Math.min(weeks, data.length)),
-    [data, weeks],
-  );
 
   return (
     <>

@@ -4,6 +4,10 @@
 // the Deliverability Dashboard as sub-sections. Snooze merged into Notifications.
 // Data Wipe merged into General. Feature Flags → Developer sub-section.
 // Content Quality → Composing sub-section.
+//
+// i18n: all user-facing strings below are stored as translation keys and
+// resolved via t() at the call site (see SettingsSidebar / SettingsPage /
+// HelpCenterSidebar). No English literals are rendered directly.
 
 import type { LucideIcon } from "lucide-react";
 import {
@@ -40,11 +44,12 @@ export interface SettingsTabItem {
   label: string;
   icon: LucideIcon;
   platform?: SettingsPlatform; // default: "all"
-  /** Short subtitle shown in grid overview */
+  /** i18n key for the short subtitle shown in grid overview */
   subtitle?: string;
 }
 
 export interface SettingsGroup {
+  /** i18n key for the group label */
   label: string;
   icon?: LucideIcon;
   description?: string;
@@ -52,10 +57,11 @@ export interface SettingsGroup {
 }
 
 // ── Tab Groups (Condensed from 28 tabs / 10 groups → 18 tabs / 8 groups) ──
+// Group labels and tab subtitles are i18n keys resolved via t().
 
 export const tabGroups: SettingsGroup[] = [
   {
-    label: "Workspace",
+    label: "settings.groups.workspace.label",
     icon: Laptop,
     description: "Appearance, composition, shortcuts, and calendar",
     tabs: [
@@ -63,30 +69,30 @@ export const tabGroups: SettingsGroup[] = [
         id: "general",
         label: "General",
         icon: Settings,
-        subtitle: "Theme, layout, language, privacy, cache",
+        subtitle: "settings.tabSubtitles.general",
       },
       {
         id: "composing",
         label: "Composing",
         icon: PenLine,
-        subtitle: "Editor, signatures, templates, quick replies, content quality",
+        subtitle: "settings.tabSubtitles.composing",
       },
       {
         id: "calendar",
         label: "Calendar",
         icon: Calendar,
-        subtitle: "Calendar type, overlays, and CalDAV sync",
+        subtitle: "settings.tabSubtitles.calendar",
       },
       {
         id: "shortcuts",
         label: "Shortcuts",
         icon: Keyboard,
-        subtitle: "Custom keyboard shortcuts",
+        subtitle: "settings.tabSubtitles.shortcuts",
       },
     ],
   },
   {
-    label: "Accounts & Sync",
+    label: "settings.groups.accountsSync.label",
     icon: MonitorCheck,
     description: "Email accounts, device pairing, and data management",
     tabs: [
@@ -94,32 +100,32 @@ export const tabGroups: SettingsGroup[] = [
         id: "accounts",
         label: "Accounts",
         icon: UserCircle,
-        subtitle: "IMAP/SMTP, Gmail, OAuth, signatures, sync",
+        subtitle: "settings.tabSubtitles.accounts",
       },
       {
         id: "account-cleaning",
         label: "Account Cleaning",
         icon: Trash2,
-        subtitle: "Cleanup rules, retention, and scheduled maintenance",
+        subtitle: "settings.tabSubtitles.accountCleaning",
         platform: "desktop",
       },
       {
         id: "pairing",
         label: "Pairing",
         icon: Smartphone,
-        subtitle: "Mobile device sync via QR code",
+        subtitle: "settings.tabSubtitles.pairing",
       },
       {
         id: "backup",
         label: "Backup",
         icon: HardDrive,
-        subtitle: "Backup scheduler, restore, export",
+        subtitle: "settings.tabSubtitles.backup",
         platform: "desktop",
       },
     ],
   },
   {
-    label: "Notifications",
+    label: "settings.groups.notifications.label",
     icon: Bell,
     description: "Alerts, VIPs, category filters, and snooze presets",
     tabs: [
@@ -127,12 +133,12 @@ export const tabGroups: SettingsGroup[] = [
         id: "notifications",
         label: "Notifications",
         icon: Bell,
-        subtitle: "Push alerts, VIP senders, category filters, snooze",
+        subtitle: "settings.tabSubtitles.notifications",
       },
     ],
   },
   {
-    label: "AI & Automation",
+    label: "settings.groups.aiAutomation.label",
     icon: Sparkles,
     description: "AI providers, mail rules, and workflow automation",
     tabs: [
@@ -140,18 +146,18 @@ export const tabGroups: SettingsGroup[] = [
         id: "ai",
         label: "AI",
         icon: Sparkles,
-        subtitle: "Providers, smart replies, auto-categorize, writing style",
+        subtitle: "settings.tabSubtitles.ai",
       },
       {
         id: "mail-rules",
         label: "Mail Rules",
         icon: Filter,
-        subtitle: "Labels, filters, smart folders, quick steps",
+        subtitle: "settings.tabSubtitles.mailRules",
       },
     ],
   },
   {
-    label: "Deliverability",
+    label: "settings.groups.deliverability.label",
     icon: BarChart3,
     description: "DNS checks, blacklist monitoring, bounce handling, warming",
     tabs: [
@@ -159,20 +165,20 @@ export const tabGroups: SettingsGroup[] = [
         id: "deliverability-dashboard",
         label: "Deliverability",
         icon: BarChart3,
-        subtitle: "DNS, blacklist, bounces, warming — all in one place",
+        subtitle: "settings.tabSubtitles.deliverabilityDashboard",
         platform: "desktop",
       },
       {
         id: "presend",
         label: "Pre-send",
         icon: ClipboardCheck,
-        subtitle: "Pre-flight checklist and send verification",
+        subtitle: "settings.tabSubtitles.presend",
         platform: "desktop",
       },
     ],
   },
   {
-    label: "Security & Compliance",
+    label: "settings.groups.securityCompliance.label",
     icon: ShieldCheck,
     description: "Encryption, compliance profiles, and legal safeguards",
     tabs: [
@@ -180,26 +186,26 @@ export const tabGroups: SettingsGroup[] = [
         id: "pgp",
         label: "PGP Encryption",
         icon: Lock,
-        subtitle: "End-to-end encryption keys",
+        subtitle: "settings.tabSubtitles.pgp",
         platform: "desktop",
       },
       {
         id: "compliance",
         label: "Compliance",
         icon: ShieldCheck,
-        subtitle: "GDPR, CAN-SPAM, disclaimers",
+        subtitle: "settings.tabSubtitles.compliance",
         platform: "desktop",
       },
       {
         id: "business-profile",
         label: "Business Profile",
         icon: Building2,
-        subtitle: "Company info, ICE, IF, RC, CNSS (Morocco DGI)",
+        subtitle: "settings.tabSubtitles.businessProfile",
       },
     ],
   },
   {
-    label: "Developer",
+    label: "settings.groups.developer.label",
     icon: Code2,
     description: "System info, logs, updates, demo data, and feature flags",
     tabs: [
@@ -207,34 +213,34 @@ export const tabGroups: SettingsGroup[] = [
         id: "developer",
         label: "Developer",
         icon: Code2,
-        subtitle: "Health, logs, updates, demo data, feature flags",
+        subtitle: "settings.tabSubtitles.developer",
         platform: "desktop",
       },
       {
         id: "hardware",
         label: "Hardware",
         icon: Cpu,
-        subtitle: "Printers, scanners, scales, and cash drawers",
+        subtitle: "settings.tabSubtitles.hardware",
         platform: "desktop",
       },
       {
         id: "queue",
         label: "Queue",
         icon: Activity,
-        subtitle: "Sync queue, pending operations, retry inspector",
+        subtitle: "settings.tabSubtitles.queue",
         platform: "desktop",
       },
       {
         id: "feature-flags",
         label: "Feature Flags",
         icon: Flag,
-        subtitle: "Basic vs Pro tiers, usage overrides, progressive disclosure",
+        subtitle: "settings.tabSubtitles.featureFlags",
         platform: "desktop",
       },
     ],
   },
   {
-    label: "About & Help",
+    label: "settings.groups.aboutHelp.label",
     icon: HelpCircle,
     description: "Version info, license, and documentation",
     tabs: [
@@ -242,7 +248,7 @@ export const tabGroups: SettingsGroup[] = [
         id: "about",
         label: "About & License",
         icon: Info,
-        subtitle: "Version, license, credits, reset onboarding",
+        subtitle: "settings.tabSubtitles.about",
       },
     ],
   },
@@ -332,30 +338,30 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
   return labels[id] ?? id;
 }
 
-// ── Section Subtitles ──────────────────────────────────────────────────────
+// ── Section Subtitles (i18n keys) ──────────────────────────────────────────
 
 export function getSectionSubtitle(id: string): string | undefined {
   const subtitles: Record<string, string> = {
-    composing: "Email composition, signatures, templates, quick replies, undo send, and content quality analysis",
-    general: "Appearance, layout, language, privacy, storage, and data management",
-    accounts: "Manage email accounts, IMAP/SMTP settings, CalDAV sync, and API credentials",
-    shortcuts: "Customize keyboard shortcuts for faster workflow",
-    about: "Version information, license tier, credits, and onboarding reset",
-    pairing: "Pair with mobile devices via QR code for cross-device sync",
-    backup: "Backup scheduler, manual backup creation, restore, and export",
-    "deliverability-dashboard": "All-in-one deliverability hub: DNS checks, blacklist monitoring, bounce tracking, and sender warming",
-    ai: "AI providers, smart replies, auto-categorization, writing style learning, and bundle delivery",
-    notifications: "Push notifications, smart alerts, VIP senders, category filters, and snooze presets",
-    compliance: "GDPR, CAN-SPAM, and legal compliance profiles with auto-appended disclaimers",
-    pgp: "PGP encryption keys for end-to-end email security",
-    "mail-rules": "Labels, filters, smart labels, smart folders, quick steps, and workflow automation",
-    presend: "Pre-flight checklist and send verification rules (attachments, spell check, recipients)",
-    calendar: "Calendar type, task overlays, campaign display, and CalDAV synchronization",
-    developer: "System health, app info, subsystem status, update management, demo data, feature flags, and logs",
-    queue: "Outgoing send queue, background sync operations, retry inspector, and pause/resume controls",
-    "account-cleaning": "Mailbox cleanup rules, retention policies, scheduled maintenance, and cleanup history",
-    license: "Manage your license tier, activate a Pro key, or start a free trial",
-    "feature-flags": "Toggle Basic vs Pro tiers, override usage counts, and preview progressive disclosure of locked features",
+    composing: "settings.sectionSubtitles.composing",
+    general: "settings.sectionSubtitles.general",
+    accounts: "settings.sectionSubtitles.accounts",
+    shortcuts: "settings.sectionSubtitles.shortcuts",
+    about: "settings.sectionSubtitles.about",
+    pairing: "settings.sectionSubtitles.pairing",
+    backup: "settings.sectionSubtitles.backup",
+    "deliverability-dashboard": "settings.sectionSubtitles.deliverabilityDashboard",
+    ai: "settings.sectionSubtitles.ai",
+    notifications: "settings.sectionSubtitles.notifications",
+    compliance: "settings.sectionSubtitles.compliance",
+    pgp: "settings.sectionSubtitles.pgp",
+    "mail-rules": "settings.sectionSubtitles.mailRules",
+    presend: "settings.sectionSubtitles.presend",
+    calendar: "settings.sectionSubtitles.calendar",
+    developer: "settings.sectionSubtitles.developer",
+    queue: "settings.sectionSubtitles.queue",
+    "account-cleaning": "settings.sectionSubtitles.accountCleaning",
+    license: "settings.sectionSubtitles.license",
+    "feature-flags": "settings.sectionSubtitles.featureFlags",
   };
   return subtitles[id];
 }
@@ -363,102 +369,103 @@ export function getSectionSubtitle(id: string): string | undefined {
 // ── Education Content (Why/How/When) ───────────────────────────────────────
 // Maps each settings tab to its consolidated education items shown in the
 // HelpCenterSidebar "Quick Help" section. Replaces inline HelpCard usage.
+// Each `text` is an i18n key resolved via t() in HelpCenterSidebar.
 
 export interface EducationItem {
   type: "why" | "how" | "when";
-  text: string;
+  text: string; // i18n key, e.g. "settings.education.general.why"
 }
 
 export const EDUCATION_CONTENT: Record<string, EducationItem[]> = {
   general: [
-    { type: "why", text: "Appearance, layout, language, and privacy settings let you tailor the app to your workflow and environment." },
-    { type: "how", text: "Theme and accent color are applied instantly. Font size, email density, and reading pane position change the layout without page reload." },
-    { type: "when", text: "Adjust these once during initial setup, or revisit whenever your preferences change. Dark mode helps in low-light environments." },
+    { type: "why", text: "settings.education.general.why" },
+    { type: "how", text: "settings.education.general.how" },
+    { type: "when", text: "settings.education.general.when" },
   ],
   composing: [
-    { type: "why", text: "Composing settings save keystrokes and prevent mistakes — signatures, templates, and undo send speed up your daily email workflow." },
-    { type: "how", text: "Signatures are auto-appended to new emails. Templates insert pre-written content. Undo send holds the email briefly before delivery." },
-    { type: "when", text: "Set up signatures and templates once, then forget them. Enable undo send for important or high-volume sending." },
+    { type: "why", text: "settings.education.composing.why" },
+    { type: "how", text: "settings.education.composing.how" },
+    { type: "when", text: "settings.education.composing.when" },
   ],
   accounts: [
-    { type: "why", text: "Account settings let you connect Gmail, IMAP/SMTP, and CalDAV accounts from a single interface." },
-    { type: "how", text: "Each account maintains its own sync state, labels, and OAuth tokens. Credentials are encrypted with AES-256-GCM." },
-    { type: "when", text: "Add accounts during initial setup. Update credentials or re-authorize when tokens expire or passwords change." },
+    { type: "why", text: "settings.education.accounts.why" },
+    { type: "how", text: "settings.education.accounts.how" },
+    { type: "when", text: "settings.education.accounts.when" },
   ],
   notifications: [
-    { type: "why", text: "Notifications keep you informed of important emails without constantly checking your inbox." },
-    { type: "how", text: "Smart notifications analyze sender priority and email category to reduce noise. VIP senders always trigger alerts." },
-    { type: "when", text: "Enable for time-sensitive communications. Use smart mode to filter out marketing and social notifications." },
+    { type: "why", text: "settings.education.notifications.why" },
+    { type: "how", text: "settings.education.notifications.how" },
+    { type: "when", text: "settings.education.notifications.when" },
   ],
   shortcuts: [
-    { type: "why", text: "Keyboard shortcuts let you navigate and act on email without the mouse, dramatically speeding up daily triage." },
-    { type: "how", text: "Single-key shortcuts work when no text input is focused. Two-key sequences (g then i) enable quick navigation." },
-    { type: "when", text: "Enable keyboard-first mode if you process more than 50 emails per day. Customize bindings to match your muscle memory." },
+    { type: "why", text: "settings.education.shortcuts.why" },
+    { type: "how", text: "settings.education.shortcuts.how" },
+    { type: "when", text: "settings.education.shortcuts.when" },
   ],
   calendar: [
-    { type: "why", text: "Calendar integration lets you manage events and tasks alongside your email without switching apps." },
-    { type: "how", text: "Events sync via CalDAV or Google Calendar. Task overlays show to-dos on your calendar. Campaign display shows email campaign schedules." },
-    { type: "when", text: "Connect your calendar during setup for unified scheduling. Use overlays to see tasks and campaigns at a glance." },
+    { type: "why", text: "settings.education.calendar.why" },
+    { type: "how", text: "settings.education.calendar.how" },
+    { type: "when", text: "settings.education.calendar.when" },
   ],
   pairing: [
-    { type: "why", text: "Device pairing syncs your app state between desktop and mobile for a seamless cross-device experience." },
-    { type: "how", text: "Pairing uses a QR code exchange with end-to-end encryption. Once paired, accounts, settings, and drafts stay in sync." },
-    { type: "when", text: "Pair when you install the app on a second device. Re-pair if sync breaks or after reinstalling on either device." },
+    { type: "why", text: "settings.education.pairing.why" },
+    { type: "how", text: "settings.education.pairing.how" },
+    { type: "when", text: "settings.education.pairing.when" },
   ],
   backup: [
-    { type: "why", text: "Backups protect your local data — settings, templates, and cached email — against data loss or corruption." },
-    { type: "how", text: "Backups export your SQLite database, encryption keys, and configuration to a file you choose. Restore re-imports everything." },
-    { type: "when", text: "Schedule weekly backups if you rely on local data. Create a manual backup before major updates or device changes." },
+    { type: "why", text: "settings.education.backup.why" },
+    { type: "how", text: "settings.education.backup.how" },
+    { type: "when", text: "settings.education.backup.when" },
   ],
   "deliverability-dashboard": [
-    { type: "why", text: "Deliverability tools help ensure your emails reach the inbox, not the spam folder." },
-    { type: "how", text: "DNS checks validate SPF, DKIM, and DMARC records. Blacklist monitoring alerts you if your domain is flagged. Warming gradually builds sender reputation." },
-    { type: "when", text: "Check deliverability when setting up a new sending domain, after DNS changes, or if you notice emails going to spam." },
+    { type: "why", text: "settings.education.deliverabilityDashboard.why" },
+    { type: "how", text: "settings.education.deliverabilityDashboard.how" },
+    { type: "when", text: "settings.education.deliverabilityDashboard.when" },
   ],
   ai: [
-    { type: "why", text: "AI features save time by drafting replies, summarizing long threads, and categorizing email automatically. The optional Local RAG system indexes your email for on-device semantic search without sending data to the cloud." },
-    { type: "how", text: "Your API key is stored locally. Email content is sent directly to your chosen provider — no middleman server involved. For RAG, embeddings are generated via the built-in BGE-small model or through your provider's embeddings API (LM Studio, Ollama, OpenAI-compatible)." },
-    { type: "when", text: "Enable AI if you process a high volume of email and want automated assistance. Set up your API key from Anthropic, OpenAI, or Google. Enable Local RAG for offline-first semantic search or when working with sensitive data." },
+    { type: "why", text: "settings.education.ai.why" },
+    { type: "how", text: "settings.education.ai.how" },
+    { type: "when", text: "settings.education.ai.when" },
   ],
   "mail-rules": [
-    { type: "why", text: "Mail rules automate organization — labels, filters, smart folders, and quick steps keep your inbox tidy without manual effort." },
-    { type: "how", text: "Filters match incoming mail by sender/subject/content and apply actions automatically. Smart labels use AI for natural-language matching." },
-    { type: "when", text: "Create rules for recurring patterns: newsletters, recurring invoices, project notifications. Smart labels for fuzzy categorization." },
+    { type: "why", text: "settings.education.mailRules.why" },
+    { type: "how", text: "settings.education.mailRules.how" },
+    { type: "when", text: "settings.education.mailRules.when" },
   ],
   compliance: [
-    { type: "why", text: "Compliance profiles help you meet legal requirements like GDPR, CAN-SPAM, and industry-specific regulations." },
-    { type: "how", text: "Each profile auto-appends disclaimers, unsubscribe links, and required disclosures to outgoing email based on jurisdiction rules." },
-    { type: "when", text: "Enable compliance if you send marketing email, operate in regulated industries, or have subscribers in the EU or California." },
+    { type: "why", text: "settings.education.compliance.why" },
+    { type: "how", text: "settings.education.compliance.how" },
+    { type: "when", text: "settings.education.compliance.when" },
   ],
   pgp: [
-    { type: "why", text: "PGP encryption ensures only the intended recipient can read your email content — end-to-end." },
-    { type: "how", text: "Your public key is shared so others can encrypt email to you. Your private key is stored locally and never leaves your device." },
-    { type: "when", text: "Use PGP for sensitive communications: legal, financial, or confidential business correspondence that must not be readable in transit." },
+    { type: "why", text: "settings.education.pgp.why" },
+    { type: "how", text: "settings.education.pgp.how" },
+    { type: "when", text: "settings.education.pgp.when" },
   ],
   presend: [
-    { type: "why", text: "Pre-send checks catch mistakes before email goes out — missing attachments, wrong recipients, or compliance violations." },
-    { type: "how", text: "The checklist runs automatically when you hit send: checks for attachment mentions, recipient validity, and disclaimer presence." },
-    { type: "when", text: "Enable all pre-send checks by default. Customize severity: block for critical issues, warn for suggestions." },
+    { type: "why", text: "settings.education.presend.why" },
+    { type: "how", text: "settings.education.presend.how" },
+    { type: "when", text: "settings.education.presend.when" },
   ],
   developer: [
-    { type: "why", text: "Developer tools let you monitor app health, manage updates, debug issues, and configure advanced behaviors." },
-    { type: "how", text: "System health shows memory, CPU, sync status, and database integrity. Feature flags toggle in-development capabilities." },
-    { type: "when", text: "Use for troubleshooting, when reporting bugs, or if you want early access to experimental features." },
+    { type: "why", text: "settings.education.developer.why" },
+    { type: "how", text: "settings.education.developer.how" },
+    { type: "when", text: "settings.education.developer.when" },
   ],
   queue: [
-    { type: "why", text: "The queue manages all background operations — sending emails, syncing folders, and processing retries. Monitoring it helps diagnose slow sends and sync issues." },
-    { type: "how", text: "Operations are processed in FIFO order. Failed items are retried with exponential backoff. The inspector shows pending, processing, and failed items in real time." },
-    { type: "when", text: "Inspect the queue when emails aren't sending, sync appears stuck, or before making major configuration changes. Pause during demos to prevent interruptions." },
+    { type: "why", text: "settings.education.queue.why" },
+    { type: "how", text: "settings.education.queue.how" },
+    { type: "when", text: "settings.education.queue.when" },
   ],
   "account-cleaning": [
-    { type: "why", text: "Mailbox cleanup rules help you stay within storage limits by automatically archiving or deleting old email based on sender, age, or subject patterns." },
-    { type: "how", text: "Rules define conditions (sender, age, subject) and actions (delete, archive, mark read). Scheduled rules run automatically at set intervals via cron." },
-    { type: "when", text: "Set up rules when approaching storage limits, for recurring newsletters, or to enforce data retention policies. Schedule during off-peak hours." },
+    { type: "why", text: "settings.education.accountCleaning.why" },
+    { type: "how", text: "settings.education.accountCleaning.how" },
+    { type: "when", text: "settings.education.accountCleaning.when" },
   ],
   about: [
-    { type: "why", text: "The About section shows version information, license details, and app credits so you know exactly what you're running." },
-    { type: "how", text: "Version info is read from the app build. License status is checked against your activation key via the licensing service." },
-    { type: "when", text: "Check here when verifying you're on the latest version, troubleshooting license activation, or viewing app credits." },
+    { type: "why", text: "settings.education.about.why" },
+    { type: "how", text: "settings.education.about.how" },
+    { type: "when", text: "settings.education.about.when" },
   ],
 };
 

@@ -74,6 +74,7 @@ function SearchResultsGrid({
   onSelectTab: (id: SettingsTabId) => void;
   labelFor: (id: string) => string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4 p-5">
       <h2 className="text-sm font-bold text-text-primary">Search Results</h2>
@@ -95,7 +96,7 @@ function SearchResultsGrid({
                 </span>
                 {tab.subtitle && (
                   <span className="text-[10px] text-text-tertiary block truncate">
-                    {tab.subtitle}
+                    {t(tab.subtitle)}
                   </span>
                 )}
               </div>
@@ -394,9 +395,9 @@ export function SettingsPage() {
                     {labelFor(activeTabDef.id)}
                   </h2>
                   {(() => {
-                    const subtitle = getSectionSubtitle(activeTab);
-                    return subtitle ? (
-                      <p className="text-xs text-text-tertiary mt-1">{subtitle}</p>
+                    const subtitleKey = getSectionSubtitle(activeTab);
+                    return subtitleKey ? (
+                      <p className="text-xs text-text-tertiary mt-1">{t(subtitleKey)}</p>
                     ) : null;
                   })()}
                 </div>

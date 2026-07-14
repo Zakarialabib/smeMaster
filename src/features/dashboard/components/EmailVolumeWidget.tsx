@@ -31,6 +31,11 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
     return () => { cancelled = true; };
   }, []);
 
+  const visible = useMemo(
+    () => data.slice(-Math.min(rangeDays, data.length)),
+    [data, rangeDays],
+  );
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
@@ -43,11 +48,6 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   if (error) {
     return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
   }
-
-  const visible = useMemo(
-    () => data.slice(-Math.min(rangeDays, data.length)),
-    [data, rangeDays],
-  );
 
   return (
     <>
