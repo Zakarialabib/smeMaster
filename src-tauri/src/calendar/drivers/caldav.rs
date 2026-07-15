@@ -636,6 +636,7 @@ fn calendar_id(event: &CalendarEvent) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::SerializedError;
 
     #[test]
     fn test_parse_ical_events_basic() {

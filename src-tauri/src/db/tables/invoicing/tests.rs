@@ -11,7 +11,6 @@
 mod tests {
     use crate::db::tables::test_helpers::helpers::*;
     use crate::db::tables::invoicing::{clients, items, invoices, company_settings, categories};
-    use crate::db::invoicing::schema::{Client, InvoiceItem, CompanySetting, Category};
     use crate::invoicing::calc::{
         self, Money, LineInput, LineOutput, TaxMode, calculate_line, calculate_document_totals,
     };

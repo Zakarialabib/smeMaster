@@ -100,7 +100,7 @@ mod tests {
         let driver = registry.create("google_calendar");
         assert!(driver.is_err());
         assert_eq!(
-            driver.unwrap_err().code,
+            driver.err().unwrap().code,
             "UNSUPPORTED"
         );
     }
