@@ -546,6 +546,71 @@ pub async fn db_health_stats(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// DATA CACHE CONTROL: status, invalidate, benchmark (Settings > Cache tab)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Per-domain cache control status returned to the Settings → Cache tab.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CacheControlStatus {
+    /// Whether the in-memory data cache layer is enabled. Always true while
+    /// the DataCacheService is running; surfaced so the UI can show a toggle
+    /// state and (in future) allow disabling it.
+    pub enabled: bool,
+    /// Per-domain statistics (contacts, accounts, labels, threads).
+    pub domains: HashMap<String, crate::data_cache::cache::CacheStats>,
+}
+
+/// Return the current enabled state and per-domain cache statistics.
+#[tauri::command]
+pub async fn db_cache_status(
+    data_cache: State<'_, std::sync::Arc<crate::data_cache::DataCacheService>>,
+) -> CmdResult<CacheControlStatus> {
+    let domains = data_cache
+        .cache()
+        .stats()
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect();
+    Ok(CacheControlStatus {
+        enabled: data_cache.cache().is_healthy(),
+        domains,
+    })
+}
+
+/// Invalidate all in-memory data caches (contacts, accounts, labels, threads).
+/// Useful when the UI shows stale data after a reset or external change.
+#[tauri::command]
+pub async fn db_cache_invalidate_all(
+    data_cache: State<'_, std::sync::Arc<crate::data_cache::DataCacheService>>,
+) -> CmdResult<()> {
+    data_cache.cache().invalidate_all();
+    log::info!("[cache] All in-memory data caches invalidated via Settings control");
+    Ok(())
+}
+
+/// Run a synthetic read benchmark against every domain cache and return the
+/// per-domain duration in milliseconds. Lets the user verify the cache/DB path
+/// is responsive without leaving Settings.
+#[tauri::command]
+pub async fn db_cache_benchmark(
+    data_cache: State<'_, std::sync::Arc<crate::data_cache::DataCacheService>>,
+) -> CmdResult<HashMap<String, f64>> {
+    let cache = data_cache.cache();
+    let mut result = HashMap::new();
+    for (name, ms) in [
+        ("contacts", cache.contacts.inner.benchmark().await),
+        ("accounts", cache.accounts.inner.benchmark().await),
+        ("labels", cache.labels.inner.benchmark().await),
+        ("threads", cache.threads.inner.benchmark().await),
+    ] {
+        result.insert(name.to_string(), ms);
+    }
+    log::info!("[cache] Benchmark complete: {:?}", result);
+    Ok(result)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SYNC STATUS: Per-account sync summary
 // ═══════════════════════════════════════════════════════════════════════════════
 

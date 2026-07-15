@@ -6,8 +6,8 @@
 use std::future::Future;
 use std::hash::Hash;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use dashmap::DashMap;
@@ -74,6 +74,7 @@ pub struct Cache<K, V> {
     name: &'static str,
     pub hits: AtomicU64,
     pub misses: AtomicU64,
+    last_benchmark_ms: std::sync::atomic::AtomicU64,
 }
 
 impl<K, V> Cache<K, V>
@@ -102,6 +103,7 @@ where
             name,
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
+            last_benchmark_ms: std::sync::atomic::AtomicU64::new(0),
         }
     }
 
@@ -214,5 +216,30 @@ where
             hit_rate_pct,
             size: self.map.len(),
         }
+    }
+}
+
+/// Benchmark helper — only implemented for `String`-keyed caches (all four
+/// domain caches use `String` composite keys).
+impl<K, V> Cache<K, V>
+where
+    K: Eq + Hash + Clone + Send + Sync + From<String> + 'static,
+    V: Clone + Send + Sync + 'static,
+{
+    /// Run a tiny synthetic benchmark against this cache's loader and store
+    /// the duration in ms. Intended for the Settings Cache tab so users can
+    /// see whether the DB/cache path is healthy without leaving Settings.
+    pub async fn benchmark(&self) -> f64 {
+        // Warm-up to avoid one-off startup noise.
+        let key: K = format!("{}:benchmark", self.name).into();
+        let _ = self.get(&key).await;
+
+        let start = Instant::now();
+        let _ = self.get(&key).await;
+        let ms = start.elapsed().as_secs_f64() * 1000.0;
+
+        self.last_benchmark_ms
+            .store((ms * 1000.0) as u64, std::sync::atomic::Ordering::Relaxed);
+        ms
     }
 }

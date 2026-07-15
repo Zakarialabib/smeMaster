@@ -631,6 +631,9 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             db::db_wipe_all_data,
             db::db_reset_onboarding,
             db::db_health_stats,
+            db::db_cache_status,
+            db::db_cache_invalidate_all,
+            db::db_cache_benchmark,
             db::db_sync_status,
             db::db_bootstrap_state,
             db::db_status_snapshot,
@@ -981,20 +984,19 @@ pub async fn reset_app(
         .map_err(|e| SerializedError::new(ERR_DB, format!("Migration failed: {e}")))?;
     log::info!("[reset_app] Database schema recreated");
 
-    // ── 2. Mark system as initialized ─────────────────────────────────
-    // Bypass the onboarding wizard so the app transitions to Ready directly.
-    let now = chrono::Utc::now().timestamp();
+    // ── 2. Mark system as NOT initialized ─────────────────────────────
+    // After a backend reset the app should show the onboarding/startup
+    // flow again, not silently open the main UI. If the frontend has
+    // already removed `smemaster.onboarding.done` (wipe + restart path),
+    // this ensures the next bootstrap check discovers the missing flag
+    // and presents the wizard/etc. correctly.
     sqlx::query(
-        "INSERT INTO app_config (key, value, updated_at) \
-         VALUES ('is_initialized', 'true', ?) \
-         ON CONFLICT(key) DO UPDATE SET value = 'true', updated_at = ?"
+        "DELETE FROM app_config WHERE key = 'is_initialized'"
     )
-    .bind(now)
-    .bind(now)
     .execute(pool.inner())
     .await
-    .map_err(|e| SerializedError::from(format!("Failed to set is_initialized: {e}")))?;
-    log::info!("[reset_app] System marked as initialized (onboarding skipped)");
+    .map_err(|e| SerializedError::from(format!("Failed to clear initialized flag: {e}")))?;
+    log::info!("[reset_app] System marked as uninitialized (onboarding can show)");
 
     // ── 3. Clear seed flags ───────────────────────────────────────────
     // Forces useSeedOnFirstRun to re-seed the full demo dataset on next launch.
