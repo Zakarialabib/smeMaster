@@ -209,7 +209,7 @@ npm run windows:portable
 | NDK clang/ar not in PATH             | ✅ Resolved   | Use `.\build-android.ps1`                                                                                 |
 | Window management APIs on mobile     | ✅ Guarded    | `#[cfg(desktop)]` on tray, shortcuts, window management                                                   |
 | Tray icon on mobile                  | ✅ Guarded    | `#[cfg(desktop)]` — no-op                                                                                 |
-| Global shortcuts                     | ✅ Removed    | Plugin removed, frontend is a no-op                                                                       |
+| Global shortcuts                     | ✅ Present    | `tauri-plugin-global-shortcut` 2.2.1, registered in `lib.rs` (do NOT remove) |
 | `google-services.json`               | ✅ Configured | Real Firebase project `smemaster-fc43d`                                                                   |
 | Notification channels                | ✅ Configured | 4 channels: email_new, email_sync, downloads, reminders                                                   |
 | Deep link schemes                    | ✅ Configured | `smemaster://` + `smemaster-auth://` in manifest                                                          |

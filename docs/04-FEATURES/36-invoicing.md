@@ -1,6 +1,6 @@
 # Invoicing
 
-> **Status:** Production-ready | **Commands:** 33
+> **Status:** Production-ready | **Commands:** 35
 
 ## Architecture
 
@@ -8,14 +8,14 @@ The invoicing module follows a 3-layer design:
 
 1. **Calc Engine** (`src-tauri/src/invoicing/calc.rs`) — Pure Rust math for line items and document totals
 2. **Table Layer** (`src-tauri/src/db/tables/invoicing/`) — SQL CRUD per entity (invoices, items, clients, catalog, categories, company settings)
-3. **Commands Layer** (`src-tauri/src/commands/invoicing.rs`) — 33 Tauri IPC commands for the frontend
+3. **Commands Layer** (`src-tauri/src/commands/invoicing.rs`) — 35 Tauri IPC commands for the frontend
 
 ## Key Files
 
 | File                                                    | Purpose                                  |
 | ------------------------------------------------------- | ---------------------------------------- |
 | `src-tauri/src/invoicing/calc.rs`                       | Line & document total calculation engine |
-| `src-tauri/src/commands/invoicing.rs`                   | 33 IPC commands                          |
+| `src-tauri/src/commands/invoicing.rs`                   | 35 IPC commands                          |
 | `src-tauri/src/db/tables/invoicing/invoices.rs`         | Invoice CRUD                             |
 | `src-tauri/src/db/tables/invoicing/items.rs`            | Invoice line items                       |
 | `src-tauri/src/db/tables/invoicing/clients.rs`          | Client records                           |

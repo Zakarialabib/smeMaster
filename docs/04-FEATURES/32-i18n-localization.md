@@ -56,9 +56,9 @@ Keep these responsibilities separate:
 | Translation resources | `src/locales/en/translation.json`, `fr/translation.json`, `ar/translation.json`, `ja/translation.json`, `it/translation.json` |
 | Locale init hooks     | `src/shared/hooks/init/useI18nLocale.ts`                                                                                      |
 
-### Italian Translation Complete (2026-07-07)
+### Italian Translation Status (updated 2026-07-15)
 
-Italian (`it/translation.json`) is now **fully translated** — all 192 `[TODO]` placeholder strings and 89 `"KEY"` replacement strings have been resolved with proper Italian translations covering every feature section:
+> ⚠️ **Not complete.** Despite the date-stamped "Complete" claim below, `it/translation.json` still contains **211 `[TODO]`** placeholder strings (verified 2026-07-15). The per-section table that follows reflects *target* coverage, not verified completion. Work the TODO queue with `npm run translate:sync` before marking Italian done.
 
 | Section                                                               | Status      |
 | --------------------------------------------------------------------- | ----------- |

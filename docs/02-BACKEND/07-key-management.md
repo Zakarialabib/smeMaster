@@ -79,5 +79,5 @@ When working with sensitive data:
 
 - `03-pgp-crypto.md`
 - `04-oauth-flow.md`
-- `../04-FEATURES/Core/04-accounts.md`
+- `../04-FEATURES/04-accounts.md`
 - `../04-FEATURES/26-pgp-encryption.md`

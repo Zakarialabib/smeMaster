@@ -11,7 +11,7 @@ src-tauri/src/
 ├── lib.rs              # Tauri setup, command registration, tray, window events
 ├── main.rs             # Entry point (minimal)
 │
-├── commands/           # 15 domain modules — each a #[tauri::command] file
+├── commands/           # 29 domain command files (verified 2026-07-15) — each a #[tauri::command] file
 │   ├── core.rs         # ~67  — Accounts, Messages, Threads, Labels
 │   ├── contacts.rs     # ~93  — CRM Contacts, Groups, Labels, Segments, Tags, Files
 │   ├── crm.rs          # ~48  — Campaigns, Backup Schedules, Deliverability, Bounces

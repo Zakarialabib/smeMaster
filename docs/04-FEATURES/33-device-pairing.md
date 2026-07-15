@@ -13,7 +13,7 @@ Representative code areas:
 - `src/features/settings/pages/DevicePairingPage.tsx`
 - `src/features/settings/components/PairingSettings.tsx`
 - `src/features/settings/pages/MobileSettingsPage.tsx`
-- `src-tauri/src/pairing/`
+- `src-tauri/src/device/pairing.rs`
 - related device sync/types modules in `src-tauri/src/device/`
 
 ## What It Does
@@ -35,7 +35,7 @@ Keep these responsibilities separate:
 | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Pairing pages/UI       | `src/features/settings/pages/DevicePairingPage.tsx`, `src/features/settings/components/PairingSettings.tsx` |
 | Mobile entrypoint      | `src/features/settings/pages/MobileSettingsPage.tsx`                                                        |
-| Backend pairing        | `src-tauri/src/pairing/`, `src-tauri/src/device/`                                                           |
+| Backend pairing        | `src-tauri/src/device/pairing.rs`, `src-tauri/src/device/`                                                           |
 | Backend discovery/sync | `src-tauri/src/commands/discovery.rs`, `src-tauri/src/commands/sync.rs`                                     |
 
 ## Update Rules

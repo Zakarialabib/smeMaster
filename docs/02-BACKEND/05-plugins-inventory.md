@@ -1,4 +1,4 @@
-# Plugin Inventory (12 Tauri Plugins)
+# Plugin Inventory (15 Tauri Plugins)
 
 **What you need to know:** These are the Tauri plugins I'm currently using. Some are critical (deep-link, single-instance), some are nice-to-have (clipboard, window-state), and a few have caveats on mobile. I've removed several plugins that were either unused or replaced by Rust-native alternatives.
 
@@ -16,11 +16,13 @@
 | `tauri-plugin-biometric`         | 2.3.2   | Biometric auth (vault PIN)         | ✅                     |
 | `tauri-plugin-window-state`      | 2.4.1   | Save/restore window position       | ✅                     |
 | `tauri-plugin-clipboard-manager` | 2.3.2   | Clipboard read/write               | ✅                     |
+| `tauri-plugin-global-shortcut`  | 2.2.1   | Global keyboard shortcuts          | ✅ Registered in `lib.rs` (do NOT remove) |
+| `tauri-plugin-store`            | 2.4.2   | Key–value persisted store          | ✅                     |
 
 **Previously removed** (replaced or unnecessary):
 
 - `tauri-plugin-sql` — swapped for Rust `sqlx`
-- `autostart`, `global-shortcut`, `http`, `process`, `os` — just didn't need them
+- `autostart`, `http`, `process`, `os` — just didn't need them (note: `global-shortcut` is **NOT** in this list — it is still used and registered in `lib.rs`)
 
 ## Gotchas I learned the hard way
 

@@ -81,8 +81,7 @@ document (e.g. PROD-GATE-6 for security).
 - [ ] `src-tauri/tauri.conf.json` `version` is bumped.
 - [ ] All three match exactly. (See `scripts/bump-version.sh` /
       `scripts/release.ps1`.)
-- [ ] The version is consistent with the migration plan in
-      `docs/06-ROADMAP/release-strategy.md`.
+- [ ] The version is consistent with the roadmap in `docs/06-ROADMAP/09-master-plan.md`.
 
 ## 10. Final approvals
 

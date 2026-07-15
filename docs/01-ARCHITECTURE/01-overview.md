@@ -49,7 +49,7 @@ SQLite (WAL mode)
 
 ## What Happens When You Start the App
 
-1. Tauri's `setup` hook fires → creates SQLite pool → runs 56 migrations → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
+1. Tauri's `setup` hook fires → creates SQLite pool → runs 32 migrations (verified 2026-07-15; the "56" figure is from the old migration scheme) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
 
 2. `main.tsx` renders `<WindowBootstrap>` which checks: "what window are we in?"
 

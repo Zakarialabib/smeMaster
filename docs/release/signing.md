@@ -1,5 +1,7 @@
 # SMEMaster Code Signing Guide
 
+> ⚠️ **SCOPE — FUTURE / POST-v1.0.0.** Per `../SECURITY-AUDIT.md`, v1.0.0 ships **Windows (MSI/NSIS) + Android (APK) only, unsigned, with no auto-updater** (no external certs/keys). The macOS notarization and Linux GPG procedures below are **reference for a later release**, not v1.0.0 tasks. The `packaging.yml` / `update-homebrew.yml` workflows referenced in older sections do **not** exist yet.
+
 Every binary that ships to a user must be **signed**. An unsigned build is a
 trust failure, a SmartScreen warning, and on macOS a hard block. This document
 covers the three target platforms, the secrets that must be configured in CI,

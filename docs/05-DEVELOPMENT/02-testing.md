@@ -56,5 +56,5 @@ The project uses a mixed approach:
 ## Related Docs
 
 - `01-quickstart.md`
-- `04-agent-guide.md`
+- `../AGENTS.md` (agent contributor guide)
 - `../PRODUCTION-READINESS.md`

@@ -87,7 +87,7 @@ emit ai:indexing_completed (after, with count)
 
 ## Tauri commands (`commands/ai.rs`)
 
-All live-registered in `lib.rs` alongside the 652 existing commands (no breaking changes).
+All live-registered in `lib.rs` alongside the 802 existing commands (no breaking changes; verified 2026-07-15).
 
 | Command                   | Params                           | Returns                     | Notes                                                                                        |
 | ------------------------- | -------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
