@@ -16,6 +16,7 @@
     "addLabel": "Add label",
     "addYourFirstLabel": "Add your first label",
     "mail": "Mail",
+    "crm": "CRM",
     "settings": "Settings",
     "label": "Label",
     "noItems": "No items",
@@ -63,6 +64,7 @@
     "muted": "Muted"
   },
   "email": {
+    "nAttachments": "{{n}} attachment",
     "selectAll": "Select all",
     "otherEmails": "Other emails",
     "loadingMore": "Loading more...",
@@ -1871,6 +1873,16 @@
     "aiTemplate": {
       "title": "Generate Email Template",
       "describePlaceholder": "e.g. A modern newsletter for tech startups with a clean two-column layout...",
+      "announcement": "Announcement",
+      "newsletter": "Newsletter",
+      "promotion": "Promotion",
+      "followUp": "Follow-up",
+      "event": "Event",
+      "welcome": "Welcome",
+      "feedback": "Feedback",
+      "invoice": "Invoice",
+      "meeting": "Meeting",
+      "holiday": "Holiday",
       "categoryOptional": "Category (optional)",
       "generateTemplate": "Generate Template",
       "generatingTemplate": "Generating template...",
@@ -1887,6 +1899,14 @@
     "aiSignature": {
       "title": "Generate Email Signature",
       "style": "Style",
+      "modern": "Modern",
+      "modernDesc": "Clean and contemporary",
+      "classic": "Classic",
+      "classicDesc": "Timeless and formal",
+      "minimal": "Minimal",
+      "minimalDesc": "Simple and understated",
+      "branded": "Branded",
+      "brandedDesc": "Bold with brand colors",
       "generateSignature": "Generate Signature",
       "generatingSignature": "Generating signature...",
       "designingSignature": "Designing professional email signature",
@@ -1901,12 +1921,19 @@
     "rawMessage": {
       "title": "Message Source",
       "loading": "Loading message source...",
+      "failedToLoad": "Failed to load message source: {{error}}",
       "copyToClipboard": "Copy to clipboard",
       "copied": "Copied",
       "copy": "Copy"
     },
     "export": {
       "title": "Export Emails",
+    "formatMbox": "Mbox",
+    "formatEml": "EML",
+    "formatZip": "ZIP",
+    "mboxDesc": "Export all messages to a single .mbox file",
+    "emlDesc": "Export each message as an individual .eml file",
+    "zipDesc": "Export messages bundled into a compressed .zip archive",
       "chooseFormat": "Choose export format",
       "filterMessages": "Filter messages (optional)",
       "fromDate": "From date",
@@ -2047,6 +2074,7 @@
   },
   "attachments": {
     "title": "Attachments",
+    "allTypes": "All types",
     "subtitle": "Files shared with you across your mail, organized in one place.",
     "search": "Search attachments",
     "searchPlaceholder": "Search attachments...",
@@ -2145,6 +2173,14 @@
     "applying": "Applying...",
     "useTemplate": "Use Template",
     "templates": "automation.templates"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid email address.",
+    "minLength": "Too short.",
+    "maxLength": "Too long.",
+    "numeric": "Enter a valid number.",
+    "positive": "Enter a number greater than zero."
   },
   "erp": {
     "title": "ERP Console",

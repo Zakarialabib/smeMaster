@@ -2,10 +2,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AccountImportScanner } from "../AccountImportScanner";
 
-// Mock Tauri invoke directly (setup.ts override takes precedence over tauri.mock.ts)
+// AccountImportScanner routes its IPC through the app's typed command wrapper
+// (@shared/services/db/invoke/command), not @tauri-apps/api/core directly.
+// Mock the real module it imports. The setup file (tauri.mock.ts) already
+// installs a shared `@tauri-apps/api/core` mock, so we only override the
+// wrapper that the component actually calls.
 const mockInvoke = vi.fn();
-vi.mock("@tauri-apps/api/core", () => ({
-  invoke: (...args: unknown[]) => mockInvoke(...args),
+vi.mock("@shared/services/db/invoke/command", () => ({
+  invokeCommand: (...args: unknown[]) => mockInvoke(...args),
 }));
 
 // Mock toast notifications

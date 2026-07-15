@@ -2,11 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import { usePlatform, __resetPlatformCache, type FullPlatformInfo } from "./usePlatform";
 
-vi.mock("@tauri-apps/api/core", () => ({
-  invoke: vi.fn(),
+// usePlatform routes its IPC through the app's typed command wrapper, not
+// @tauri-apps/api/core directly. Mock the real module it imports.
+vi.mock("@shared/services/db/invoke/command", () => ({
+  invokeCommand: vi.fn(),
 }));
 
-import { invoke } from "@tauri-apps/api/core";
+import { invokeCommand } from "@shared/services/db/invoke/command";
+
+// Tests below reference `invoke` for ergonomics; alias it to the real wrapper.
+const invoke = invokeCommand;
 
 // ── Helpers ───────────────────────────────────────────────────────────
 

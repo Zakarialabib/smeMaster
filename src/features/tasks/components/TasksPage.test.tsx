@@ -170,15 +170,17 @@ describe("TasksPage", () => {
     expect(screen.getByText("Group")).toBeInTheDocument();
   });
 
-  it("shows task count badge when tasks exist", () => {
-    // With the mocked store returning no tasks, badge should not be present
+  it("renders the task count badge", () => {
+    // The mocked store returns no tasks, so the badge shows the current count (0).
     render(<TasksPage />);
-    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
-  it("renders the quick add area (desktop)", () => {
+  it("renders the new-task action (desktop)", () => {
     render(<TasksPage />);
-    expect(screen.getByTestId("task-quick-add")).toBeInTheDocument();
+    // Desktop shows a header "New task" button (the mobile quick-add FAB is
+    // gated on useMobile(), which is mocked to false in this suite).
+    expect(screen.getByText("New task")).toBeInTheDocument();
   });
 
   it("shows empty state when no tasks and not loading", async () => {

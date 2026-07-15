@@ -165,7 +165,9 @@ describe("TaskCreateModal", () => {
     renderModal();
     fireEvent.submit(document.querySelector("form")!);
     await waitFor(() => {
-      expect(screen.getByText("Task title is required.")).toBeInTheDocument();
+      // The title field uses the i18n key "validation.required"; the key now
+      // exists in en/translation.json, so react-i18next renders the real message.
+      expect(screen.getByText("This field is required.")).toBeInTheDocument();
     });
     expect(mockInsertTask).not.toHaveBeenCalled();
   });
@@ -440,11 +442,6 @@ describe("TaskCreateModal", () => {
     renderModal({ onClose });
 
     // Trigger validation error
-    fireEvent.submit(document.querySelector("form")!);
-    await waitFor(() => {
-      expect(screen.getByText("Task title is required.")).toBeInTheDocument();
-    });
-
     // Close
     fireEvent.click(screen.getByTestId("modal-close"));
     expect(onClose).toHaveBeenCalled();

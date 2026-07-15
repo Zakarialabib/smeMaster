@@ -92,7 +92,7 @@ describe("queueProcessor", () => {
     vi.mocked(getPendingOperations).mockResolvedValueOnce([
       {
         id: "op-1",
-        account_id: "acct-1",
+        company_id: "acct-1",
         operation_type: "archive",
         resource_id: "t1",
         params: '{"threadId":"t1","messageIds":[]}',
@@ -116,7 +116,7 @@ describe("queueProcessor", () => {
     vi.mocked(getPendingOperations).mockResolvedValueOnce([
       {
         id: "op-1",
-        account_id: "acct-1",
+        company_id: "acct-1",
         operation_type: "star",
         resource_id: "t1",
         params: '{"threadId":"t1","messageIds":[],"starred":true}',
@@ -149,7 +149,7 @@ describe("queueProcessor", () => {
     vi.mocked(getPendingOperations).mockResolvedValueOnce([
       {
         id: "op-1",
-        account_id: "acct-1",
+        company_id: "acct-1",
         operation_type: "archive",
         resource_id: "t1",
         params: '{"threadId":"t1","messageIds":[]}',
