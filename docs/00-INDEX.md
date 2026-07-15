@@ -1,12 +1,13 @@
 # SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 60 migrations · **Tests:** 2,470 TS + 735 Rust ✅
-> **Locales:** en, fr, ar, ja, it · **Commands:** 773 · **Stores:** 38 Zustand
+> **Version:** 1.0.0-rc · **DB:** 32 migrations (verified) · **Tests:** 2,470+ TS + 900+ Rust (verified via `npm run test` / `cargo test`)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 802 `#[tauri::command]` (verified) · **Stores:** 46 Zustand (verified)
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
-> **UI/UX Phases Complete:** 5/8 (Shell, Gestures, Adaptive, Focus, Polish) ✅
 > **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
-> **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — 9 phases of remaining work (~191h)
+> **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
+>
+> ⚠️ **Ground-truth note (2026-07-15):** Several historical docs quote stale metrics (773/652/704 commands, 60/56/22 migrations, 38/21 stores). The numbers above are grepped directly from source and are canonical. See `docs/STATUS.md → Verified Ground Truth` for the single reconciled table.
 
 ---
 
@@ -50,8 +51,8 @@ Rust & Tauri — the native layer.
 | [02-smtp-client](02-BACKEND/02-smtp-client.md)               | lettre transport, OAuth2                      |
 | [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                 | PGP key gen, encrypt/decrypt                  |
 | [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                 | PKCE OAuth, localhost server, token refresh   |
-| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 8 Tauri plugins + mobile                      |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 773 IPC commands (33 invoicing + POS)         |
+| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 15 Tauri plugins + mobile                      |
+| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 802 IPC commands (35 invoicing + POS)         |
 | [07-key-management](02-BACKEND/07-key-management.md)         | AES-256-GCM, PGP, security model              |
 | [08-mobile-build](02-BACKEND/08-mobile-build.md)             | APK generation, platform targets              |
 | [10-error-system](02-BACKEND/10-error-system.md)             | SerializedError type system                   |
@@ -66,12 +67,12 @@ React 19, TypeScript, Tailwind, Zustand.
 | [02-state-management](03-FRONTEND/02-state-management.md)     | Store boundaries and ownership    |
 | [03-service-layer](03-FRONTEND/03-service-layer.md)           | Frontend service and runtime flow |
 | [04-dependencies](03-FRONTEND/04-dependencies.md)             | Current package and crate choices |
-| [05-reuse-patterns](03-FRONTEND/05-reuse-patterns.md)         | Code reuse analysis               |
+| [05-reuse-patterns](05-DEVELOPMENT/05-reuse-patterns.md)   | Code reuse analysis               |
 | [06-mobile-ui-strategy](03-FRONTEND/06-mobile-ui-strategy.md) | Layout modes, touch               |
 | [07-event-bus](03-FRONTEND/07-event-bus.md)                   | App events and frontend bus usage |
 | [08-ui-ux-roadmap](03-FRONTEND/08-ui-ux-roadmap.md)           | Desktop + Mobile UI/UX plan       |
 | [09-state-split](03-FRONTEND/09-state-split.md)               | UI store split                    |
-| [10-rtl-audit](03-FRONTEND/10-rtl-audit.md)                   | RTL layout readiness audit        |
+| [10-rtl-audit](03-FRONTEND/10-rtl-audit.md) ⚠️ **MISSING** | RTL layout readiness audit — NOT YET WRITTEN (475 physical-direction violations remain in `src`; see `docs/STATUS.md` gaps) |
 | [11-typed-ipc](03-FRONTEND/11-typed-ipc.md)                   | Frontend ↔ Rust command boundary  |
 | [12-ui-super-app-spec](03-FRONTEND/12-ui-super-app-spec.md)   | UI reorganization & design spec   |
 
@@ -138,15 +139,15 @@ What the app does, grouped by functional area.
 
 | Doc                                                             | Covers                                                     |
 | --------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Invoicing](04-FEATURES/36-invoicing.md)                        | Calc engine, 33 IPC commands, PDF/PEPPOL, SMTP             |
+| [Invoicing](04-FEATURES/36-invoicing.md)                        | Calc engine, 35 IPC commands, PDF/PEPPOL, SMTP             |
 | [Company & ERP](04-FEATURES/Invoicing-ERP/01-company-tenant.md) | Tenant model, company switcher, where `company_id` is used |
 
 ### Feature Specs & Plans
 
 | Doc                                                           | Covers                                        |
 | ------------------------------------------------------------- | --------------------------------------------- |
-| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) | Full-screen setup wizard replacing modal tour |
-| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) | Settings UI/UX overhaul specification         |
+| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) ⚠️ **MISSING** | Full-screen setup wizard replacing modal tour — spec not written yet (see gaps) |
+| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ⚠️ **MISSING**  | Settings UI/UX overhaul specification — spec not written yet (see gaps) |
 
 ## Superpowers
 
@@ -166,7 +167,7 @@ For contributors and AI agents.
 | [Testing](05-DEVELOPMENT/02-testing.md)                      | Vitest patterns, Rust tests       |
 | [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)        | Component/hook/service reuse      |
 | [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)    | Daily PR → Release Please → Build |
-| [Manual Tests](05-DEVELOPMENT/07-manual-tests.md)            | Panic, WAL, watchdog, dev verify  |
+| [Manual Tests](05-DEVELOPMENT/03-manual-tests.md)            | Panic, WAL, watchdog, dev verify  |
 | [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)        | Logcat, WebView, Kotlin           |
 | [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | Tokens, components, patterns      |
 

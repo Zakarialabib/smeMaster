@@ -2,7 +2,7 @@
 
 > **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup.
 
-> **Last updated:** 2026-07-06
+> **Last updated:** 2026-07-15 (command/migration counts reconciled against source this pass)
 
 ## Status Summary
 
@@ -27,7 +27,7 @@
 
 ### 0.1 Attack Surface Audit
 
-- [x] 652 `#[tauri::command]` IPC commands across 62 files audited
+- [x] ≈800 `#[tauri::command]`/`#[command]` IPC commands across ~65 files audited (802 by attribute count)
 - [x] No command accepts raw SQL strings — all use `sqlx::query!`/`query_as!` with parameterized bindings
 - [x] No command writes to arbitrary file paths — all paths rooted at `app_data_dir()`
 - [x] PGP/crypto commands sanitize all inputs (uses `spawn_blocking`, no `unwrap()` in production paths)
@@ -46,7 +46,7 @@
 
 ### 0.3 Migration Safety
 
-- [x] 56 migrations, each with `up` semantics
+- [x] 32 migrations (numbered 001–030; 020 and 021 each split into two files), each with `up` semantics
 - [x] All use `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE`, `CREATE INDEX` — no silent data loss
 - [x] Migration runner uses `RETURNING` with `sqlx::query_as`
 
@@ -66,7 +66,7 @@
   - Captures panic message, location, and backtrace
   - Writes to `{app_data_dir}/com.smemaster.app/crash.log`
   - Outputs to stderr
-- [x] All 652 commands return `CmdResult<>` or `Result<>`
+- [x] All ≈800 commands return `CmdResult<>` or `Result<>`
 - [ ] Manual test: inject a panic in a command → verify dialog appears
 
 ### 1.2 SQLite WAL Recovery
@@ -137,13 +137,15 @@
 
 ## GATE 3 — DISTRIBUTION 🔶 IN PROGRESS
 
-### 3.1 Code Signing
+### 3.1 Code Signing (DEFERRED — post-v1.0.0)
 
-- [ ] macOS: Apple Developer certificate + notarization (purchase required)
-- [ ] Windows: EV code signing certificate (purchase required)
-- [ ] Android: Keystore signing (verify in CI)
+> **v1.0.0 decision (see `../SECURITY-AUDIT.md`):** ships **Windows (MSI/NSIS) + Android (APK)** only, **unsigned**, no updater. macOS/Linux targets are removed for v1.0.0. The items below are future-state, not v1.0.0 scope.
 
-**Detailed guide:** [release/signing.md](release/signing.md)
+- [ ] macOS: Apple Developer certificate + notarization (purchase required) — future
+- [ ] Windows: EV code signing certificate (purchase required) — future
+- [ ] Android: Keystore signing (verify in CI) — future
+
+**Detailed (future) guide:** [release/signing.md](release/signing.md)
 
 ### 3.2 Auto-Updater
 
@@ -153,20 +155,20 @@
 - [ ] Manual test: release v0.9 → install → release v1.0 → verify update prompt
 - [ ] Manual test: update fails mid-download → verify rollback
 
-### 3.3 Installer UX
+### 3.3 Installer UX (v1.0.0 = Windows MSI/NSIS + Android APK, unsigned)
 
-- [x] Bundle targets: MSI, NSIS, DMG, AppImage, DEB
+- [x] Bundle targets: **MSI, NSIS (Windows) + APK (Android)** — per `SECURITY-AUDIT.md` (DMG/AppImage/DEB are NOT built for v1.0.0)
 - [x] Windows NSIS `installMode: currentUser`, WiX `language: en-US`
 - [x] App icons: 32x32.png, 128x128.png, 128x128@2x.png, icon.icns, icon.ico
-- [ ] Manual verify: installers on all platforms
+- [ ] Manual verify: installers on Windows + Android
 
 ### 3.4 CI Pipeline
 
 - [x] `ci.yml` — runs lint, test, build on push/PR
 - [x] `release.yml` — builds Windows MSI + Android APK on tag push
 - [x] `release-please.yml` — automated release PRs
-- [x] `packaging.yml` — Flatpak and SRPM builds
-- [x] `update-homebrew.yml` — Homebrew tap updates
+- [ ] `packaging.yml` (Flatpak/SRPM) — **does not exist**; future/Linux
+- [ ] `update-homebrew.yml` — **does not exist**; future
 - [ ] Manual verify: CI build matches local build
 
 ### Blockers

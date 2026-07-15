@@ -7,8 +7,8 @@
 SMEMaster is an **offline-first desktop + mobile personal/business assistant** built as a **Tauri v2 + React 19 + Rust + SQLite** application. It unifies email, CRM/contacts, tasks, calendar, campaigns, automation, PGP/security, a local AI RAG layer, and a Morocco DGI-compliant invoicing + POS/ERP module.
 
 - **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS ⚠️ (requires a Mac to build)
-- **Version:** 1.0.0-rc · **DB:** 60+ migrations · **Tests:** 2,470 TS + 735 Rust
-- **Locales:** en, fr, ar (RTL), ja, it · **IPC commands:** 773 · **Zustand stores:** 38
+- **Version:** 1.0.0-rc · **DB:** 32 migrations · **Tests:** 2,470 TS + 735 Rust
+- **Locales:** en, fr, ar (RTL), ja, it · **IPC commands:** ≈800 (802 by attribute count) · **Zustand stores:** 46 (split across `src/shared/stores`, `src/features/*/stores`, and legacy `src/stores`)
 
 ## Current Project Goals (north star)
 
