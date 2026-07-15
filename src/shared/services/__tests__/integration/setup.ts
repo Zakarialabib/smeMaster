@@ -213,6 +213,7 @@ export async function runMigrations(): Promise<void> {
       email TEXT NOT NULL,
       display_name TEXT,
       avatar_url TEXT,
+      company_id TEXT,
       frequency INTEGER NOT NULL DEFAULT 0,
       last_contacted_at INTEGER,
       first_contacted_at INTEGER,

@@ -171,7 +171,11 @@ async function applyLocalDbUpdate(
   switch (action.type) {
     case "markRead":
       await updateThreadFlags(accountId, action.threadId, action.read);
-      window.dispatchEvent(new Event("smemaster-sync-done"));
+      // Notify other tabs/listeners (browser only). In non-DOM contexts
+      // (Node test env, SSR) there is no `window`; skip silently.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("smemaster-sync-done"));
+      }
       break;
     case "star":
       await updateThreadFlags(
@@ -515,8 +519,9 @@ export async function sendEmail(
     threadId,
   });
 
-  // Notify the UI to refresh (so sent message appears in Sent folder)
-  if (result.success) {
+  // Notify the UI to refresh (so sent message appears in Sent folder).
+  // Guard for non-DOM contexts (Node test env, SSR) where `window` is absent.
+  if (result.success && typeof window !== "undefined") {
     window.dispatchEvent(new Event("smemaster-sync-done"));
   }
 

@@ -1,11 +1,21 @@
-import { createRouter, createHashHistory } from "@tanstack/react-router";
+import {
+  createRouter,
+  createHashHistory,
+  createMemoryHistory,
+} from "@tanstack/react-router";
 import { routeTree } from "./routeTree";
 
-const hashHistory = createHashHistory();
+// In a browser we use hash history. In non-DOM contexts (Node test env, SSR,
+// or any environment where `window` is unavailable) fall back to an in-memory
+// history so router construction does not throw.
+const history =
+  typeof window !== "undefined"
+    ? createHashHistory()
+    : createMemoryHistory({ initialEntries: ["/"] });
 
 export const router = createRouter({
   routeTree,
-  history: hashHistory,
+  history,
   defaultPreload: false,
 });
 
