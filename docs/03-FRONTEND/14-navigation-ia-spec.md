@@ -35,26 +35,37 @@
 
 ## 1. Target Desktop NavRail (icon rail + hover flyout) — EMAIL-FIRST
 
-Order reflects the owner's priority. Icon rail holds ~9 main groups + Settings/Help pinned
-bottom (matches `NavRail` bottomIds pattern).
+Order reflects the owner's priority. Icon rail holds 8 main groups + Settings/Help pinned
+bottom (matches `NavRail` bottomIds pattern). **Reference implementation (tsc-clean, 37/37
+nav tests pass): `docs/navigation-redesign/proposed-navConfig.ts`** — drop-in replacement
+for `navConfig.ts`. This section mirrors it.
 
-| # | Group | Flyout / sub-items | Notes |
-| --- | --- | --- | --- |
-| 1 | **Mail** (landing `/`) | inbox, starred, snoozed, sent, drafts, trash, spam, all, attachments, smart-folders, labels | Keep as hub; add "Compose" FAB |
-| 2 | **CRM** (`/crm`) | contacts, companies, (deals — see §4) | Promote from #3 to #2 |
-| 3 | **Plan** (`/tasks`) | tasks, calendar | **NEW group** — merges orphaned Tasks+Calendar (Thumb-reachable "what's next") |
-| 4 | **Campaigns** (`/campaigns`) | campaigns list, segments, templates, analytics | **NEW rail group** — Marketing, formerly orphaned |
-| 5 | **Automation** (`/automation`) | workflows, mail-rules, ai-automations | Fix empty group; add real items |
-| 6 | **Dashboard** (`/dashboard`) | overview, invoicing, erp | Finance/overview — demoted from #1 to #6 (email-first) |
-| 7 | **Vault** (`/vault`) | files, categories | Keep |
-| 8 | **AI** (`/ai-assistant`) | assistant, local RAG | Keep |
-| — | **Settings** (bottom) | → settings registry | Fix drift (§5 of 37-spec) |
-| — | **Help** (bottom) | help-center, about | Keep |
+| # | Group | Icon (FIX) | Flyout / sub-items | Notes |
+| --- | --- | --- | --- | --- |
+| 1 | **Mail** (landing `/mail/inbox`) | Mail | inbox, starred, snoozed, sent, drafts, trash, spam, all, attachments, smart-folders, labels, splits | Hub; Compose FAB; unread badge |
+| 2 | **CRM** (`/crm`) | Users | contacts, companies, **deals**, timeline | `deals` addresses the #1 CRM gap (pipeline, §4.3); `timeline` = Customer 360 |
+| 3 | **Marketing** (`/marketing`) | Megaphone | campaigns, segments, templates, analytics, deliverability | Formerly orphaned `/campaigns`; now first-class |
+| 4 | **Automation** (`/automation`) | **GitBranch** (FIX: was `Bot`) | workflows, triggers, **rules (moved from Settings)**, webhooks | Co-locates mail-rules with automation (research pattern #4) |
+| 5 | **Plan** (`/calendar`) | CalendarDays | calendar, tasks | Folds orphaned Tasks+Calendar into one rail slot (calm rail ≤8) |
+| 6 | **Finance** (`/finance`, was "Dashboard") | Calculator | invoicing, erp, reports | Rebrand: SME owners think "Finance" not "Dashboard"; demoted from #1 |
+| 7 | **Vault** (`/vault`) | FolderLock | files, shared, recovery | Keep |
+| 8 | **AI** (`/ai-assistant`) | **Sparkles** (FIX: was `Bot`) | chat, knowledge, index | Local RAG |
+| — | **Settings** (bottom) | Settings | → settings registry | Fix drift (§5 of 37-spec) |
+| — | **Help** (bottom) | HelpCircle | help-center, about | Keep |
 
 **Why this order:** an SME owner opens the app to DO EMAIL, then acts on the people in
-it (CRM), schedules follow-ups (Plan), launches a campaign (Marketing), and automates the
-repeatable (Automation). Finance (Dashboard/Invoicing/ERP) is vital but not the daily
-entry point → lower. Vault/AI are utilities → lowest.
+it (CRM), launches a campaign (Marketing), automates the repeatable (Automation), schedules
+follow-ups (Plan), and manages money (Finance). Vault/AI are utilities → lowest.
+
+> **Route-mapping dependency (IMPORTANT):** the proposed config routes to
+> `/marketing/*`, `/finance`, `/automation/*`, `/crm?view=`, `/vault?view=` — these are
+> ASPIRATIONAL and do NOT yet match the live router (`/campaigns`, `/erp`, `/invoicing`,
+> `/dashboard`, `/workflows`, `/crm`, `/people`). Adopting the config requires either
+> (a) adding the new routes to `src/router/routeTree.tsx` + `App.tsx`/`MobileShell.tsx`, or
+> (b) re-pointing the config's `path`/`handleNavSelect` to the EXISTING routes. **Lowest-risk
+> path for N1–N2:** keep existing routes, only reorder `NAV_GROUPS` + fix icons + set landing
+> to `/mail/inbox`. Route renames (Dashboard→Finance, Campaigns→Marketing) are a follow-up
+> N-chunk, not required for the email-first win.
 
 ---
 
@@ -167,16 +178,35 @@ Owner priority implies content emphasis:
 
 ## 6. Implementation Chunks (after approval)
 
-- **N1** — Reorder `NAV_GROUPS` to email-first; set landing to `/mail/inbox`.
-- **N2** — Add `Plan` group (tasks+calendar) + `Campaigns` group + fix `Automation`
-  items in `navConfig.ts`; update `getActiveNavFromPath` / `getActiveSubItem` /
-  `handleNavSelect` / `handleSubItemSelect` to match.
+Reference drop-in: `docs/navigation-redesign/proposed-navConfig.ts` (tsc-clean, 37/37 tests).
+Adopt in two passes — **Pass A is low-risk and delivers the email-first win without any
+route changes**; Pass B is the route-rename polish.
+
+**Pass A — nav-only (no route changes; reuses existing paths)**
+- **N1** — Reorder `NAV_GROUPS` to email-first (Mail→CRM→Marketing→Automation→Plan→Finance→
+  Vault→AI); set landing to `/mail/inbox` in `routeTree.tsx:150`.
+- **N2** — Add `Plan` group (tasks+calendar) + `Marketing` group (campaigns/segments/
+  templates/analytics/deliverability) + fix `Automation` items (GitBranch icon, items from
+  proposed config); fix the `Bot`/`Bot` duplicate (automation→GitBranch, ai→Sparkles).
 - **N3** — Kill `navConfig` Settings drift: rail Settings flyout reads `SettingsTabRegistry`
-  (single source of truth).
-- **N4** — Add Customer 360 timeline tab to `ContactSidebar`; wire email→deal/task/
-  segment/automation affordances.
-- **N5** — Align mobile Hub sheet labels to new grouping.
-- **N6** — Fix DESIGN spec §4.2 false claim; update STATUS/INDEX.
+  (single source of truth) instead of the stale 18-item list.
+- **N4** — Align mobile Hub sheet labels to new grouping (Plan=Tasks+Calendar; Marketing
+  separate from Automation). Mobile thumb bar already email-first.
+- **N5** — Fix DESIGN spec §4.2 false claim (done in f0d7c5b); ensure STATUS/INDEX reflect.
+
+**Pass B — route renames (follow-up; optional for the email-first win)**
+- **N6** — Rename routes to match the proposed config: `/dashboard`→`/finance`,
+  `/campaigns`→`/marketing`, add `/automation/{workflows,triggers,rules,webhooks}`,
+  `/crm?view=`, `/vault?view=`. Requires `routeTree.tsx` + `App.tsx`/`MobileShell.tsx` +
+  `getActiveNavFromPath`/`handleNavSelect` updates. (The proposed config already has these
+  mappers; wire them once routes exist.)
+
+**Cross-wiring chunks (separate from nav; see §4)**
+- **X1** — `activities` spine table keyed by `contact_id` + polymorphic source.
+- **X2** — Customer 360 panel (timeline+deals+money+AI) reachable from any email/contact.
+- **X3** — Email-engagement → contact/deal score (first-class field; feeds segments+automations).
+- **X4** — Automation triggers from email events (wire into existing rule engine).
+- **X5** — CRM **Deals/Pipeline** + **Lead scoring** (the two #1 gaps, §4.3).
 
 ---
 
