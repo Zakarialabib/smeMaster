@@ -10,7 +10,7 @@
 >
 > ✅ **Campaign Analytics — Snapshot-Enabled (2026-07-14):** Analytics service now saves snapshots after live computation via `insertAnalyticsSnapshot`. `getCampaignAnalytics()` returns live stats with fire-and-forget snapshot persistence. `takeAnalyticsSnapshot()` available for manual refresh. CampaignList shows per-campaign stat badges (sent count).
 >
-> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Production-ready (2026-07-12):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, **33 Tauri commands**, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Calc engine fully wired** — `calculate_document_totals` powers `db_create_invoice` and `db_calculate_invoice`. **`db_send_invoice` confirmed live** with real SMTP dispatch, PGP encryption, stock/ledger side effects. **Residual gap:** `db_list_clients` ignores `company_id` (company filter dropped server-side). Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
+> 🧾 **Invoicing Module (Morocco DGI-Compliant) — Production-ready (2026-07-12):** Backend is complete and solid — 7-table schema (i64 minor-unit money), line-item calc engine, lopdf A4 PDF generator, PEPPOL/UBL 2.1 XML, **35 Tauri commands**, frontend invoke wrappers, and a Business Profile tab with ICE/IF/RC/CNSS. The **frontend UI is fully built** (`InvoicingDashboard` tabbed shell, functional `InvoiceEditor` + `LineItemsEditor` + `InvoiceTotals`, `InvoiceList` with type/status filters, `SettingsDrawer`, `ClientList`/`ClientForm`, `ItemList`/`ItemForm`, `InvoiceStatusPill` status workflow, CRM `InvoicesTab`, and `InvoiceSelectionModal`). A wiring audit fixed 5 contract mismatches in `invoicing.ts` (see below). **Calc engine fully wired** — `calculate_document_totals` powers `db_create_invoice` and `db_calculate_invoice`. **`db_send_invoice` confirmed live** with real SMTP dispatch, PGP encryption, stock/ledger side effects. **Residual gap:** `db_list_clients` ignores `company_id` (company filter dropped server-side). Also **`db/tables/invoicing/tests.rs` still does not compile** (undefined `format_money`; `DocumentTotals` shape drift vs `calc.rs`).
 >
 > 📧 **Campaign Block Editor — Paperling-grade (2026-07-13):** The campaign template step is now a block-based email editor (typed `EmailBlock` model + pure `renderEmailHtml` renderer). Block components: `Heading`/`Paragraph`/`Image`/`Button`/`Divider`/`Spacer` plus a `Card` promo card and `Columns` two-column; `@dnd-kit` drag-reorder, per-block config panel, live `<iframe>` preview (desktop/mobile), AI copilot wired to the real `callAi` provider, and a Vault image picker. A saved-template gallery uses `htmlToBlocks()` to reverse-parse `body_html` into editable blocks. `campaignComposerStore` gained `blocks` + undo/redo + A/B subject state; `getBodyHtml()` persists as `body_html` via `db_create_campaign_with_recipients`; `db_create_campaign_template` feeds `CampaignTemplatePicker`. **A/B subject testing re-added** via the `CampaignBuilder` A/B panel. Legacy `TemplateStep.tsx` removed. **Verified:** `npx tsc --noEmit` 0 errors; `cargo check` 0 errors.
 >
@@ -30,15 +30,71 @@
 >
 > Green checkmarks across the board:
 >
-> - `npx tsc --noEmit` → **zero errors** ✅
-> - `cargo check` → **zero errors, zero warnings** ✅
-> - `cargo test` → **735/735 passing** ✅ (note: `src-tauri/src/db/tables/invoicing/tests.rs` currently fails to compile, so the invoicing integration tests are effectively excluded)
-> - `npx vitest run --exclude integration` → **2,470/2,470 passing** ✅
-> - `npx eslint src` → **0 errors, 0 warnings** ✅
-> - `vite build` → **builds clean** ✅
-> - `vite --host` → **serves HTTP 200** ✅
+> - `npx tsc --noEmit` → **zero errors** ✅ (verify before tagging)
+> - `cargo check` → **zero errors, zero warnings** ✅ (verify before tagging)
+> - `cargo test` → **🔶 NOT confirmed** — `src-tauri/src/db/tables/invoicing/tests.rs` **fails to compile** (`format_money` / `DocumentTotals` shape drift), so the invoicing integration tests are excluded. The "735/735 passing" claim is **unverified and likely false**; run `cargo test --no-fail-fast` to get the real count.
+> - `npx vitest run` → **🔶 15 failing of 3,298** (vitest run 2026-07-15; 27 test files failed). The "2,470/2,470 passing" claim is **FALSE**.
+> - `npx eslint src --max-warnings=0` → **verify** (0 errors/warnings claimed; re-run to confirm)
+> - `vite build` → **builds clean** ✅ (verify before tagging)
+> - `vite --host` → **serves HTTP 200** ✅ (verify before tagging)
 >
+> ⚠️ **These self-reported green checks were not re-verified against live runs before this edit. The numbers above reflect the 2026-07-15 live `vitest run` and the known `invoicing/tests.rs` compile failure. Re-run all gates before declaring v1.0.**
 > 📄 **AI RAG docs reorganized (2026-07-11):** `docs/specs/ai-rag-ui.md` → `docs/04-FEATURES/ai-rag.md`. Feature fully built in code; all spec checkboxes ticked.
+
+---
+
+## 🔎 Verified Ground Truth (reconciled metrics — 2026-07-15)
+
+> Many historical docs quote **inconsistent** metric values (commands cited as 773 / 652 / 704 / 802; migrations as 60 / 56 / 22 / 32; stores as 38 / 21 / 46). The table below is **grepped directly from source** and is the single canonical reference. All other docs should be read against it.
+
+| Metric | Verified value | How verified | Common stale values to ignore |
+| --- | --- | --- | --- |
+| Rust `#[tauri::command]`s | **802** (739 `#[tauri::command]` + 63 `#[command]`) | `grep -rE '#\[tauri::command\]|#\[command\]' src-tauri/src \| wc -l` | 773, 777, 764, 704, 652 |
+| Zustand stores | **46** (`create<` + `createWithEqualityFn`) | `grep -rE 'create<|createWithEqualityFn' src` | 38, 21 |
+| SQL migrations | **32** `.sql` files | `find src-tauri -name '*.sql' \| wc -l` | 60, 56, 22 |
+| db `pub fn` | **520** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 586, 367, 78-query-files |
+| Frontend typed command wrappers | **504** (`db-invoke.ts` + `commands.ts`) | `grep -rE 'export (async )?function' src/shared/services` | 470+ |
+| Locales | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each | `src/locales/*/translation.json` | — |
+| Feature modules (`src/features`) | **23** | `ls src/features` | — |
+| Rust `#[test]`s | **915** attributes (incl. a few `#[cfg(test)]` modules) | `grep -rE '#\[test\]|#\[tokio::test\]' src-tauri/src` | 735, 900 |
+| TS test cases (`*.test.ts(x)`) | ~3,300 `it`/`test` calls across 297 files | `grep -rE '\b(it|test)\(' src --include='*.test.ts*'` | 2,470 |
+| Feature flags | **31** | `src/constants/featureFlags.ts` | 28 |
+
+> ⚠️ **Caveat on test counts:** the Rust test total excludes `src-tauri/src/db/tables/invoicing/tests.rs`, which currently **fails to compile** (`format_money` / `DocumentTotals` shape drift — acknowledged in §Invoicing Module). Run `npm run test` and `cargo test` before relying on the green-checkmark summary above; the numbers in that summary are self-reported and should be re-confirmed against live runs.
+
+---
+
+## ✅ DONE / 🔲 NOT DONE / 🧩 MISSING — Reconciliation (2026-07-15)
+
+> **Verified against source this pass:** 802 IPC commands (739 `#[tauri::command]` + 63 `#[command]` shorthand) · 32 migrations (numbered 001–030; 020 & 021 each split into two files) · 46 Zustand stores (verified) across `src/shared/stores`, `src/features/*/stores`, and a legacy `src/stores/` · ~200+ TS test files · 915 Rust `#[test]` attributes (735 reported passing; `invoicing/tests.rs` excluded). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below but were **not re-run** in this pass — re-run before tagging.
+
+### ✅ Done — built, wired, tested
+- **Architecture:** three-layer React 19 → TS service → Tauri/Rust → SQLite; offline-first; all DB access via Rust.
+- **Mail:** IMAP/SMTP + Microsoft Graph send/draft, PGP, OAuth (Gmail/Outlook/custom tabs), optimistic actions + offline queue, threading/categorization/smart labels.
+- **CRM/contacts, campaigns** (block editor + scheduling migration + analytics snapshots), **calendar, tasks, automation/workflows**.
+- **Invoicing (Morocco DGI):** 35 commands, line-item calc engine, lopdf PDF + PEPPOL/UBL XML, live SMTP/PGP send, wallet↔ledger sync.
+- **POS hardware** (ESC/POS, scanner, cash drawer) and **ERP shell** (company switcher, stock, journal, financials, RBAC).
+- **Deliverability** (blacklist/bounce/reputation/DNS) and **compliance engine**.
+- **AI RAG** (candle/LanceDB), prompt + context engineering, contact intelligence.
+- **Vault, device pairing, mobile shell + 5-phase UX overhaul, accessibility** (skip links, focus-order manager, a11y roles/live regions), **i18n** (en/fr/ar/ja/it) with RTL scaffolding, **WAL-deletion doc**.
+
+### 🔲 Not Done — manual / human validation (gates 1, 3, 4, 5, 9)
+- **Gate 1:** panic-injection, WAL kill-recovery, watchdog-restart, frontend error-boundary throw (procedures in `03-manual-tests.md`, none executed).
+- **Gate 2 benchmarks:** cold-start, memory (idle / 10k threads), 8h IMAP IDLE stability.
+- **Gate 3:** code-signing certs (macOS notarization, Windows EV), `tauri signer generate` pubkey, installer smoke-tests, CI build parity.
+- **Gate 4:** backup create → restore round-trip on a fresh install.
+- **Gate 5:** full screen-reader + keyboard audit; axe-core CI (deferred).
+- **Gate 9:** 7-day dogfooding; 5–10 SME beta testers; RC tagging + multi-platform build/install.
+
+### 🧩 Missing / Deferred / Debt — the worklist
+1. **RTL & i18n completion (north-star):** AGENTS.md still flags ~400 physical-direction violations (`text-left`→`text-start`, `ml-*`→`ms-*`, `left/right`→`inset-inline-*`) and residual `[TODO]`/`"KEY"` placeholders in ja/it. Largest single cleanup.
+2. **Store consolidation:** legacy `src/stores/` (production `threadsStore`, `labelsStore`, `composerStore`, `accountsStore`, …) duplicates `src/shared/stores` + `src/features/*/stores`. Merge into canonical locations.
+3. **Invoicing Rust tests:** `src-tauri/src/db/tables/invoicing/tests.rs` does **not compile** (`format_money` undefined; `DocumentTotals` drift vs `calc.rs`) — excluded from `cargo test`.
+4. **Campaign scheduled-send worker:** migration 029 + API wired, but the deferred-send background worker is unimplemented.
+5. **Entitlement / monetization engine:** `EntitlementEngine`, paywall gating, `owned_modules` are **not implemented** (deferred post-v1.0). Plans: `docs/06-ROADMAP/10-`→`13-monetization-*.md`.
+6. **CRDT multi-device sync hardening:** sync engine + offline queue exist; conflict-resolution UX/convergence still needs work per north-star goal.
+7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (802 / 32).
+8. **Stray/duplicate docs to archive:** `docs/analysis.md` + `docs/analysis/`, `docs/draft.md`, `docs/monetization-style.md`; `docs/plans/`, `docs/specs/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged.
 
 ---
 
@@ -59,7 +115,7 @@ The invoicing backend reached production readiness with 9 new commands and 3 enh
 | **`db_send_invoice` confirmed live** | Fully wired with real SMTP dispatch, PGP encryption, stock/ledger side effects — no longer a stub                                                                                      |
 | **Calc engine wired**                | `calculate_document_totals` now powers `db_create_invoice` and `db_calculate_invoice` — line-item totals computed in centimes via the calc engine                                      |
 
-**Total invoicing commands: 33** (was 24) — 8 new + 3 enhanced + 1 POS cash drawer.
+**Total invoicing commands: 35** (was 24) — verify against `src-tauri/src/commands/invoicing.rs` (gives 35 `#[command]` fns; earlier docs cited 33).
 
 ### Company Wallet — Cash Hub with Ledger Sync (2026-07-12)
 
@@ -108,7 +164,7 @@ Built the wallet so **all ERP money movement (sales, invoicing, expensing) flows
 | Metric             | Before | After                                            |
 | ------------------ | ------ | ------------------------------------------------ |
 | Invoicing commands | 24     | **33** (+8 new, +3 enhanced, +1 POS cash drawer) |
-| Total IPC commands | 764    | **773** (+9)                                     |
+| Total IPC commands | 764    | **802** (actual — 739 `#[tauri::command]` + 63 `#[command]` shorthand) |
 
 ---
 
@@ -542,7 +598,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | Updater                      | ~5       | Update check, download, install, rollback                                                                                                                                                                                                |
 | Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                                                                                                                                           |
 | Assets                       | ~3       | Asset management                                                                                                                                                                                                                         |
-| **Total**                    | **777**  | All registered via `tauri::generate_handler!` — 73 new commands added since last count (+33 invoicing, +36 POS, +4 wallet)                                                                                                               |
+| **Total**                                                    | **802**  | All registered via `tauri::generate_handler!` (actual count: 739 `#[tauri::command]` + 63 `#[command]` shorthand; earlier docs cited 773/777 which are stale)                                                                                                               |
 
 ---
 
@@ -699,7 +755,7 @@ Broke a 716-line monolith into clean components:
 | Docs consolidation + component repurposing                     | 2h     | ✅ Done (see above)                                                        |
 | Verify `npm run tauri dev` runtime fix                         | 5min   | 🔲 Manual check needed                                                     |
 | Manual tests (panic injection, WAL recovery, watchdog restart) | 1.5h   | 🔲 Not started                                                             |
-| WAL deletion doc                                               | 15min  | 🔲 Not started                                                             |
+| WAL deletion doc                                      | 15min  | ✅ Done (`docs/05-DEVELOPMENT/04-wal-deletion.md`)  |
 | Certificates + public key for distribution                     | varies | 🔲 Not started                                                             |
 | Dogfooding + beta testing                                      | 1-2w   | 🔲 Not started                                                             |
 
@@ -731,17 +787,17 @@ src/
 │   ├── styles/
 │   │   ├── ui-tokens.ts   ← Active class token library
 │   │   └── mobile-animations.css
-│   └── stores/            ← 38 Zustand stores (was 21)
+│   └── stores/            ← 46 Zustand stores (see "Verified Ground Truth")
 └── src-tauri/
     ├── commands/           ← 773 #[tauri::command] across 19 domain modules (+vault, background, licensing, updater, invoicing, pos)
-    ├── db/                 ← 586 pub fn across 130+ files in 13 domain table modules (invoicing, pos added)
+    ├── db/                 ← 520 `pub fn` across 130+ files in 13 domain table modules (invoicing, pos added)
     ├── invoicing/          ← Line-item calc engine (Money, TaxMode, calculate_line, calculate_document_totals) (NEW)
     ├── pos/                ← ESC/POS thermal printer driver, system printer fallback (NEW)
     │   ├── tables/         ← 78 query files
     │   ├── crypto.rs       ← AES-256-GCM encrypt/decrypt primitives
     │   ├── connection.rs   ← SQLite pool + version check + create_dir_all fix
     │   ├── schema.rs       ← 48 #[derive(FromRow)] structs
-    │   └── migrations/     ← 22 clean sequential .sql files (was 56 monolithic)
+    │   └── migrations/     ← 32 sequential .sql files (verified; earlier docs cited 22/56/60)
     ├── orchestrator/       ← subsystem_lifecycle.rs, state_machine.rs, tool_registry.rs, gating.rs (NEW in P10)
     │   ├── service.rs      ← Service trait + ServiceRegistry (unchanged)
     │   ├── services.rs     ← Service implementations (lazy-wired for Sync/Sentinel/Backup)
