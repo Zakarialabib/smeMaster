@@ -8,7 +8,7 @@
 // Follows the same pattern as `crate::drivers::DriverRegistry` used for email
 // protocols (IMAP, JMAP, Microsoft Graph).
 
-mod caldav;
+pub mod caldav;
 
 use super::driver::{CalendarDriver, CalendarDriverError};
 use sqlx::SqlitePool;

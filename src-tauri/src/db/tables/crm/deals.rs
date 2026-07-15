@@ -281,9 +281,12 @@ pub async fn list_deals(
     q.fetch_all(pool).await.map_err(AppDbError::Database)
 }
 
+/// Update a deal. When `company_id` is provided the `WHERE` clause is
+/// constrained to that tenant, preventing cross-account mutation.
 pub async fn update_deal(
     pool: &SqlitePool,
     id: &str,
+    company_id: Option<&str>,
     fields: std::collections::HashMap<String, serde_json::Value>,
 ) -> Result<Deal, AppDbError> {
     let now = chrono::Utc::now().timestamp();
@@ -301,23 +304,50 @@ pub async fn update_deal(
         }
     }
     if setters.is_empty() {
-        // Nothing to update; return current row.
-        return get_deal(pool, id)
-            .await?
-            .ok_or_else(|| AppDbError::NotFound(format!("deal {id} not found")));
+        // Nothing to update; return current row (scoped if a company_id was given).
+        return match company_id {
+            Some(cid) => get_deal_scoped(pool, id, cid).await,
+            None => get_deal(pool, id).await,
+        }?
+        .ok_or_else(|| AppDbError::NotFound(format!("deal {id} not found")));
     }
     setters.push("updated_at = ?".to_string());
     binds.push(serde_json::Value::from(now));
-    let sql = format!("UPDATE deals SET {} WHERE id = ?", setters.join(", "));
+    let sql = if company_id.is_some() {
+        format!(
+            "UPDATE deals SET {} WHERE id = ? AND company_id = ?",
+            setters.join(", ")
+        )
+    } else {
+        format!("UPDATE deals SET {} WHERE id = ?", setters.join(", "))
+    };
     let mut q = sqlx::query(sqlx::AssertSqlSafe(&*sql));
     for b in &binds {
         q = bind_json(q, b);
     }
     q = q.bind(id);
+    if let Some(cid) = company_id {
+        q = q.bind(cid);
+    }
     q.execute(pool).await.map_err(AppDbError::Database)?;
-    get_deal(pool, id)
-        .await?
-        .ok_or_else(|| AppDbError::NotFound(format!("deal {id} not found")))
+    match company_id {
+        Some(cid) => get_deal_scoped(pool, id, cid).await,
+        None => get_deal(pool, id).await,
+    }?
+    .ok_or_else(|| AppDbError::NotFound(format!("deal {id} not found")))
+}
+
+pub async fn get_deal_scoped(
+    pool: &SqlitePool,
+    id: &str,
+    company_id: &str,
+) -> Result<Option<Deal>, AppDbError> {
+    sqlx::query_as::<_, Deal>("SELECT * FROM deals WHERE id = ? AND company_id = ?")
+        .bind(id)
+        .bind(company_id)
+        .fetch_optional(pool)
+        .await
+        .map_err(AppDbError::Database)
 }
 
 pub async fn move_deal_stage(

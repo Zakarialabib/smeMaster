@@ -11,6 +11,7 @@ use serde::Deserialize;
 use tauri::State;
 use sqlx::SqlitePool;
 
+use crate::calendar::driver::CalendarDriver;
 use crate::db::calendar::schema::{Calendar, CalendarEvent, SnoozePreset};
 use crate::error::SerializedError;
 
@@ -508,4 +509,106 @@ pub async fn db_get_calendar_event_by_google_id(
     )
     .await
     .map_err(Into::into)
+}
+
+// ── CalendarDriver (provider-abstracted) commands ─────────────────────────
+//
+// These commands dispatch to the configured `CalendarDriver` for an account
+// (CalDAV today; Google Calendar / Microsoft Graph in Phase 2). They exercise
+// the trait methods that the build warns about (`list_calendars`, `test_connection`,
+// `create_event`, `update_event`, `delete_event`, `provider_type`) plus the
+// registry's `create_for_calendar` helper.
+
+// ── Driver error → SerializedError ─────────────────────────────────────────
+
+fn map_calendar_driver_err(e: crate::calendar::driver::CalendarDriverError) -> SerializedError {
+    SerializedError::new(e.code, e.message)
+}
+
+/// Look up the calendar's `provider` from the DB and return the driver-type
+/// string (e.g. `"caldav"`). Surfaced to the UI so it can show provider info.
+#[tauri::command]
+pub async fn db_calendar_provider_type(
+    pool: State<'_, SqlitePool>,
+    calendar_id: String,
+) -> CmdResult<String> {
+    let registry = crate::calendar::drivers::CalendarDriverRegistry::new(pool.inner().clone());
+    let driver = registry
+        .create_for_calendar(&calendar_id)
+        .await
+        .map_err(map_calendar_driver_err)?;
+    Ok(driver.provider_type().to_string())
+}
+
+/// List all calendars visible to the account via its calendar driver.
+#[tauri::command]
+pub async fn db_calendar_list_calendars(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+) -> CmdResult<Vec<Calendar>> {
+    // The "caldav" provider is the only one wired today, so create it directly.
+    // Once we have provider discovery, this can go through a registry.
+    let driver = crate::calendar::drivers::caldav::CalDavDriver::new(pool.inner().clone());
+    driver
+        .list_calendars(&account_id)
+        .await
+        .map_err(map_calendar_driver_err)
+}
+
+/// Test connectivity and authentication with the calendar provider.
+#[tauri::command]
+pub async fn db_calendar_test_connection(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+) -> CmdResult<()> {
+    let driver = crate::calendar::drivers::caldav::CalDavDriver::new(pool.inner().clone());
+    driver
+        .test_connection(&account_id)
+        .await
+        .map_err(map_calendar_driver_err)
+}
+
+/// Create a remote event on the account's primary calendar via the configured
+/// driver. Returns the remote event id.
+#[tauri::command]
+pub async fn db_calendar_create_event(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    calendar_id: String,
+    event: CalendarEvent,
+) -> CmdResult<String> {
+    let driver = crate::calendar::drivers::caldav::CalDavDriver::new(pool.inner().clone());
+    driver
+        .create_event(&account_id, &calendar_id, &event)
+        .await
+        .map_err(map_calendar_driver_err)
+}
+
+/// Update an event on the remote calendar via the configured driver.
+#[tauri::command]
+pub async fn db_calendar_update_event(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    event_id: String,
+    event: CalendarEvent,
+) -> CmdResult<()> {
+    let driver = crate::calendar::drivers::caldav::CalDavDriver::new(pool.inner().clone());
+    driver
+        .update_event(&account_id, &event_id, &event)
+        .await
+        .map_err(map_calendar_driver_err)
+}
+
+/// Delete an event on the remote calendar via the configured driver.
+#[tauri::command]
+pub async fn db_calendar_delete_event(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    event_id: String,
+) -> CmdResult<()> {
+    let driver = crate::calendar::drivers::caldav::CalDavDriver::new(pool.inner().clone());
+    driver
+        .delete_event(&account_id, &event_id)
+        .await
+        .map_err(map_calendar_driver_err)
 }

@@ -187,3 +187,22 @@ async fn load_imap_config_for_test(
         accept_invalid_certs: false,
     })
 }
+
+/// Create a draft on the remote Microsoft Graph mailbox.
+///
+/// The account must use the `microsoft_graph` provider. The raw RFC 2822
+/// message is parsed for headers + body, posted to `POST /me/messages`, and
+/// the remote draft ID is returned. Used by the composer to keep a server-
+/// side copy of in-progress drafts for Microsoft-connected accounts.
+#[tauri::command]
+pub async fn create_graph_draft(
+    account_id: String,
+    raw_message: String,
+    pool: State<'_, sqlx::SqlitePool>,
+) -> Result<String, SerializedError> {
+    let driver = crate::microsoft_graph::MicrosoftGraphDriver::new(pool.inner().clone());
+    driver
+        .create_draft(&account_id, &raw_message)
+        .await
+        .map_err(|e| SerializedError::new(e.code, e.message))
+}

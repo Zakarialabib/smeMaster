@@ -2254,3 +2254,16 @@ pub async fn db_create_campaign_template(
     .map_err(AppDbError::Database)?;
     Ok(tmpl)
 }
+
+/// Return the scheduled-but-not-yet-sent campaigns for a company. Used by the
+/// campaign dashboard and by the inbox's "upcoming sends" widget. Returns an
+/// empty `Vec` if the company has no schedules.
+#[tauri::command]
+pub async fn db_list_campaign_schedules(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> CmdResult<Vec<crate::db::campaigns::schema::CampaignSchedule>> {
+    crate::db::campaigns::operations::list_schedules(&pool, &company_id)
+        .await
+        .map_err(|e| crate::error::SerializedError::from(e))
+}

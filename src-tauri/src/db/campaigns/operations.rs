@@ -6,7 +6,7 @@
 //! single `invoke` call instead of chaining 3–4 round-trips. Each operation
 //! runs inside a `sqlx` transaction (`pool.begin()`) and reports failures via
 //! [`crate::db::error::AppDbError`].
-use crate::db::campaigns::schema::Campaign;
+use crate::db::campaigns::schema::{Campaign, CampaignSchedule};
 use crate::db::error::AppDbError;
 use crate::db::tables::campaigns::campaigns;
 use sqlx::SqlitePool;
@@ -292,6 +292,27 @@ fn deterministic_variant(contact_id: &[u8], split_ratio: f64) -> usize {
 struct AbTestConfig {
     #[serde(rename = "splitRatio")]
     split_ratio: f64,
+}
+
+/// List all `CampaignSchedule` rows for a company, ordered by `scheduled_at` ASC.
+///
+/// Surfaces scheduled-but-not-yet-sent campaigns for the dashboard / inbox.
+/// Returns an empty `Vec` if the company has no schedules.
+pub async fn list_schedules(
+    pool: &SqlitePool,
+    company_id: &str,
+) -> Result<Vec<CampaignSchedule>, AppDbError> {
+    sqlx::query_as::<_, CampaignSchedule>(
+        "SELECT cs.id, cs.campaign_id, cs.scheduled_at, cs.status, cs.created_at \
+         FROM campaign_schedules cs \
+         JOIN campaigns c ON c.id = cs.campaign_id \
+         WHERE c.company_id = ?1 \
+         ORDER BY cs.scheduled_at ASC",
+    )
+    .bind(company_id)
+    .fetch_all(pool)
+    .await
+    .map_err(AppDbError::Database)
 }
 
 #[cfg(test)]

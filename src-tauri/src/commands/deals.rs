@@ -1,6 +1,6 @@
 // ── Deal / Pipeline Commands ────────────────────────────────────────────────
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 use tauri::State;
 use sqlx::SqlitePool;
@@ -85,7 +85,9 @@ pub async fn db_create_deal(pool: State<'_, SqlitePool>, cmd: CreateDealCmd) -> 
 
 #[tauri::command]
 pub async fn db_update_deal(pool: State<'_, SqlitePool>, cmd: UpdateDealCmd) -> CmdResult<Deal> {
-    deals::update_deal(&pool, &cmd.id, cmd.fields)
+    // `company_id` is part of the wire DTO so the backend can scope the UPDATE and
+    // refuse to mutate deals belonging to a different tenant.
+    deals::update_deal(&pool, &cmd.id, Some(&cmd.company_id), cmd.fields)
         .await
         .map_err(|e| SerializedError::from(e))
 }
@@ -177,4 +179,40 @@ pub async fn db_recompute_scores(
     scoring::recompute_scores(&pool, &cmd.company_id)
         .await
         .map_err(|e| SerializedError::from(e))
+}
+
+/// Idempotently ensure the company has a default pipeline with the standard
+/// `DEFAULT_STAGES` populated. Returns the (existing or newly created) default
+/// pipeline along with its stages. Exposed so the UI can call it on first deal
+/// board mount or after a company reset.
+#[tauri::command]
+pub async fn db_ensure_default_pipeline(
+    pool: State<'_, SqlitePool>,
+    company_id: String,
+) -> CmdResult<PipelineWithStages> {
+    let pipeline = deals::seed_default_pipeline(&pool, &company_id)
+        .await
+        .map_err(|e| SerializedError::from(e))?;
+    let stages = deals::list_stages(&pool, &pipeline.id)
+        .await
+        .map_err(|e| SerializedError::from(e))?;
+    Ok(PipelineWithStages { pipeline, stages })
+}
+
+/// Fetch a single deal stage by id. Useful for resolving a `Deal.stage_id`
+/// reference without a full pipeline list query.
+#[tauri::command]
+pub async fn db_get_deal_stage(
+    pool: State<'_, SqlitePool>,
+    stage_id: String,
+) -> CmdResult<Option<DealStage>> {
+    deals::get_stage(&pool, &stage_id).await.map_err(|e| SerializedError::from(e))
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PipelineWithStages {
+    #[serde(flatten)]
+    pub pipeline: Pipeline,
+    pub stages: Vec<DealStage>,
 }
