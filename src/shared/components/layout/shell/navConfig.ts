@@ -3,7 +3,6 @@ import {
   Users,
   Calendar,
   Settings,
-  Bot,
   Inbox,
   Star,
   Clock,
@@ -118,11 +117,12 @@ export const NAV_GROUPS: NavRailGroup[] = [
     label: "nav.crm",
     items: [
       { id: "contacts", label: "nav.crm", icon: Users },
+      { id: "deals", label: "nav.deals", icon: ReceiptText, path: "/crm?tab=deals" },
     ],
   },
   {
     id: "automation",
-    icon: Bot,
+    icon: GitBranch,
     label: "nav.automation",
     items: [],
   },
@@ -134,7 +134,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
   },
   {
     id: "ai-assistant",
-    icon: Bot,
+    icon: Sparkles,
     label: "nav.aiAssistant",
     items: [],
   },

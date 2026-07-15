@@ -56,6 +56,7 @@ class TabErrorBoundary extends Component<
 // ── Tab configuration ────────────────────────────────────────────────────
 const TABS: CardTabItem[] = [
   { id: "contacts", label: "Contacts", icon: Users },
+  { id: "deals", label: "Deals", icon: ReceiptText },
   { id: "tasks", label: "Tasks", icon: ListChecks },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "invoices", label: "Invoices", icon: ReceiptText },
@@ -86,10 +87,17 @@ const InvoicesContent = lazy(() =>
   })),
 );
 
+const DealsContent = lazy(() =>
+  import("@features/crm/pages/DealsPage").then((m) => ({
+    default: m.DealsPage,
+  })),
+);
+
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
   contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  deals: DealsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
 
