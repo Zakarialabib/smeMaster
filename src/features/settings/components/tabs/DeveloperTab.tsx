@@ -511,10 +511,11 @@ export default function DeveloperTab() {
     setResetting(true);
     try {
       const { invokeCommand } = await import("@shared/services/db/invoke/command");
-      // `reset_app` recreates the schema, emits `app:reset-complete`, and (on a webview
-      // reload) leaves the data empty instead of re-seeding. The frontend listener soft-
-      // reloads so the dev server stays alive.
-      await invokeCommand("reset_app");
+      // `db_reset_and_reseed` drops all tables, re-runs migrations, and re-seeds the
+      // full demo dataset (company, pipelines, deals, tasks, invoices, contacts). The
+      // frontend listener soft-reloads so the dev server stays alive and the freshly
+      // seeded schema is re-read immediately.
+      await invokeCommand<{ seeded: number }>("db_reset_and_reseed");
       window.location.reload();
     } catch (err) {
       window.location.reload();

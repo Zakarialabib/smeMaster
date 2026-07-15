@@ -44,17 +44,27 @@ export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDial
   };
 
   const handleRestart = () => {
-    // `reset_app` recreates the schema, emits `app:reset-complete`, and leaves the data
-    // empty (no re-seed on a webview reload). Clear the onboarding-done flag so the fresh
-    // start returns to the onboarding wizard, then soft-reload (keeps the dev server alive).
+    // Recreate schema, re-seed demo data, then soft-reload. Using
+    // `db_reset_and_reseed` ensures the fresh DB has the default company,
+    // pipelines, tasks, and invoices instead of an empty database.
     try {
       localStorage.removeItem("smemaster.onboarding.done");
     } catch {
       /* ignore */
     }
-    invokeCommand("reset_app")
-      .then(() => window.location.reload())
-      .catch(() => window.location.reload());
+    setStep("wiping");
+    setErrorMsg("");
+    invokeCommand<{ seeded: number }>("db_reset_and_reseed")
+      .then((result) => {
+        setStep("done");
+        notify("Data Wipe", `All data deleted and re-seeded (${result.seeded} rows). The app will now reload.`);
+        setTimeout(() => window.location.reload(), 400);
+      })
+      .catch((err) => {
+        setStep("error");
+        setErrorMsg(String(err));
+        notify("Data Wipe", `Reset failed: ${err}`);
+      });
   };
 
   return (
