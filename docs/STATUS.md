@@ -33,12 +33,14 @@
 > - `npx tsc --noEmit` → **zero errors** ✅ (verify before tagging)
 > - `cargo check` → **zero errors, zero warnings** ✅ (verify before tagging)
 > - `cargo test` → **🔶 COMPILES clean (0 errors) but EXE fails to launch on this dev box** — `cargo clean` + `cargo test --no-run` and a static-CRT (`RUSTFLAGS=-C target-feature=+crt-static`) build both finish with **zero errors**; the original E0433 (`SerializedError`) / E0277 (`CalendarDriver: Debug`) blockers are fixed. The test binary crashes at OS load with `0xc0000139 STATUS_ENTRYPOINT_NOT_FOUND` because the installed Windows Universal-CRT / VC++ runtime is older than what **rustc 1.96** links against. This is an **environment/toolchain mismatch on this machine**, not a code defect — it resolves by installing the matching VC++ Build Tools / Windows SDK (or running `cargo test` on a properly-provisioned machine/CI). The "735/735 passing" claim remains unverified until the suite can actually run here.
-> - `npx vitest run` → **🔶 15 failing of 3,298** (vitest run 2026-07-15; 27 test files failed). The "2,470/2,470 passing" claim is **FALSE**.
+> - `npx vitest run` → **✅ 3,344 passing of 3,344 (0 failing)** (verified 2026-07-15). The earlier "15 failing of 3,298 / 27 files failed" report is now RESOLVED. Root-cause fixes: (1) split vitest into two projects — `unit` (jsdom) and `integration` (node); the integration suites genuinely need the `node` environment because they import `node:sqlite` and would otherwise fail to bundle; (2) excluded `src/tests/e2e/**` (Playwright specs) from vitest's glob so vitest stops trying to run `test.describe()` under jsdom; (3) added `src/test/setup.node.ts` node-safe setup (no `window` polyfills); (4) fixed source `window` assumptions — `emailActions.ts` now guards `window.dispatchEvent`, `router/index.ts` falls back to `createMemoryHistory` when `window` is undefined; (5) added the missing `company_id` column to the integration mock `contacts` schema in `setup.ts`.
 > - `npx eslint src --max-warnings=0` → **verify** (0 errors/warnings claimed; re-run to confirm)
 > - `vite build` → **builds clean** ✅ (verify before tagging)
 > - `vite --host` → **serves HTTP 200** ✅ (verify before tagging)
 >
 > ⚠️ **These self-reported green checks were not re-verified against live runs before this edit. The numbers above reflect the 2026-07-15 live `vitest run` and the known `invoicing/tests.rs` compile failure. Re-run all gates before declaring v1.0.**
+>
+> 🧩 **Cache tab + reset/onboarding fixes (2026-07-15, evening):** Added a Settings ▸ Cache tab (enabled flag, per-domain hit-rate/size, last-sync date, Run Benchmark, Clear Caches) backed by three new Tauri commands (`db_cache_status`, `db_cache_invalidate_all`, `db_cache_benchmark`) and `Cache::benchmark()`. **Root-cause fix for "reset/onboarding does nothing":** `reset_app` and the Data Wipe flow (`db_wipe_all_data`) only recreated the schema and soft-reloaded, so the demo dataset (company/pipelines/deals/tasks/invoices/contacts) was never re-seeded and the app opened empty. `DataWipeDialog` and the Developer "Reset Database" button now call `db_reset_and_reseed` (drops + migrates + seeds the full demo dataset). Also hardened source `window` assumptions in `emailActions.ts` and `router/index.ts` so the integration suites run under the Node environment.
 > 📄 **AI RAG docs reorganized (2026-07-11):** `docs/specs/ai-rag-ui.md` → `docs/04-FEATURES/ai-rag.md`. Feature fully built in code; all spec checkboxes ticked.
 
 ---
@@ -463,6 +465,8 @@ Additionally:
 | Tests           | 1,831/1,833 (22 failing) | **2,470/2,470 (0 failing)** (+41 invoicing/ERP → 2,511)   |
 | ESLint errors   | 2                        | **0**                                                     |
 | ESLint warnings | 10                       | **0**                                                     |
+
+**Note (2026-07-15, evening):** the live `vitest run` now reports **297 test files / 3,344 tests passing, 0 failing**. The earlier "15 failing / 27 files" regression was caused by (a) the integration suites importing `node:sqlite` while running in the default jsdom env, and (b) Playwright e2e specs being picked up by vitest. Both fixed via a two-project vitest config (`unit`=jsdom, `integration`=node) + e2e exclusion; see the gate summary above.
 
 **22 failures fixed across 11 test files:**
 
