@@ -161,7 +161,6 @@ Related (follow-up / retry machinery, same file): `db_*_follow_up_reminder`,
 ---
 
 ## UX / design notes
-
 - **Consistent with the rest of the app:** the rules list uses the shared
   `PageScaffold` shell, `EmptyState` for "no rules", and the same glass/flat
   tokens as Contacts and Tasks.
@@ -171,6 +170,10 @@ Related (follow-up / retry machinery, same file): `db_*_follow_up_reminder`,
   and only mounted on demand.
 - **Safety:** every rule has an active toggle and a delete confirmation
   (`createDeleteConfirmation` slice); nothing runs while inactive.
+- **Platform gating:** mobile and desktop share the same rule surface. Trigger/action
+  availability differences are handled at the service layer; automation UI does not
+  assume desktop-only channels. In-app alert surfaces and the notification bridge are
+  the first-class delivery path; no Slack/webhook dependency is required for mobile.
 
 ## Testing
 

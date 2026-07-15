@@ -184,11 +184,13 @@ Not everything belongs in the global settings tree:
   read the registry directly). Kill the drift.
 - **C4** — Advanced-mode gating of Developer/Hardware/Queue/FeatureFlags/AccountCleaning.
 - **C5** — Auto-save (debounce 500ms) across all tabs; remove redundant Save buttons.
-- **C6** — Wire `settings: <query>` into `CommandPalette`; add pinned favorites.
 - **C7** — i18n: wrap all `getTabLabel` hard-coded fallbacks in `t()`; add new group
   labels to en/ar/fr/it (ja deferred).
 - **C8** — Update `00-INDEX.md` (remove ⚠️ MISSING), `STATUS.md`, `DESIGN_UI_UX_SPEC.md`
   §4.2 (fix false rail claim).
+- **Platform safety:** do NOT re-add desktop-only Slack/webhook integrations in settings;
+  alerting should go through in-app UI + existing notification bridge. Mobile exposes the
+  same settings tab set; behavior/capability differences are handled at the service layer.
 
 ---
 
@@ -216,3 +218,12 @@ Raycast settings-row search (`⌘⌃F`); Raycast root search reaching settings; 
 top-level (Raycast/macOS); Advanced/Developer disclosure (Raycast/iOS); bird's-eye Shortcuts
 tab (Raycast); inline/contextual settings (Superhuman/Slack/Gmail "filter like these");
 config export/import (Raycast); Overview popular-actions front door (Stripe/Linear).
+
+## 8. Current Implementation Signals (2026-07-15)
+
+- Searchable `SettingsSidebar` + overview grid are already wired; do NOT rebuild them.
+- `tabGroups` in `SettingsTabRegistry.ts` is the actual tab registry shape being reused
+  for settings and other grouped-list surfaces.
+- Desktop-only Slack/webhook dependency behavior is **not** represented in settings today;
+  if reintroduced, keep it as an optional integrations tab rather than a default channel.
+

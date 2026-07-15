@@ -144,8 +144,8 @@ the full timeline.
 
 ### 4.3 Two CRITICAL CRM gaps vs best-in-class (currently MISSING in smeMaster)
 1. **Deal / pipeline stages** (kanban, drag-drop, per-deal value+probability) — Pipedrive/
-   HubSpot. "CRM without a pipeline isn't a sales CRM." **Biggest gap.**
-2. **Lead/contact scoring** as a first-class field — ActiveCampaign/Keap.
+   HubSpot. "CRM without a pipeline isn't a sales CRM." **Biggest Gap — PARTIALLY SHIPPED 2026-07-15:** migration 032 + Rust DAL/commands + kanban UI under `src/features/crm/components/deals/` and `DealsPage.tsx` exist.
+2. **Lead/contact scoring** as a first-class field — ActiveCampaign/Keap. **SHIPPED 2026-07-15:** scoring engine + recompute command exist; contacts table already has `engagement_score`; contacts list now has a sortable Score column; SegmentQueryEditor supports score filter.
 > Both must ship before smeMaster can claim "perfect management system for SME." The
 > engagement-score cross-wire (4.2 P0 #4) is the natural home for scoring.
 
