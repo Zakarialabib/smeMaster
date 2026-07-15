@@ -8,6 +8,7 @@ pub mod compliance;
 pub mod contacts;
 pub mod core;
 pub mod crm;
+pub mod deals;
 pub mod db;
 pub mod deliverability;
 pub mod discovery;
@@ -927,6 +928,19 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             // === Workflow Execution Logs ===
             workflows::db_list_workflow_execution_logs,
             workflows::db_count_workflow_execution_logs,
+
+            // === Deals / Pipeline (CRM sales) ===
+            deals::db_create_deal,
+            deals::db_update_deal,
+            deals::db_delete_deal,
+            deals::db_get_deal,
+            deals::db_list_deals,
+            deals::db_move_deal_stage,
+            deals::db_create_pipeline,
+            deals::db_list_pipelines,
+            deals::db_create_deal_stage,
+            deals::db_list_deal_stages,
+            deals::db_recompute_scores,
 
             // === reset_app (defined in this file) ===
             reset_app,

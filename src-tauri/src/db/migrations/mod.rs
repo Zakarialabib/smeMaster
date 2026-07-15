@@ -47,6 +47,9 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("027_contacts_fix", include_str!("027_contacts_fix.sql")),
     ("028_attachments_account_id", include_str!("028_attachments_account_id.sql")),
     ("029_campaign_scheduling", include_str!("029_campaign_scheduling.sql")),
+    ("030_sender_credentials", include_str!("030_sender_credentials.sql")),
+    ("031_thread_importance_score", include_str!("031_thread_importance_score.sql")),
+    ("032_deals_pipeline", include_str!("032_deals_pipeline.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────

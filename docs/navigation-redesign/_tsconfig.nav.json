@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "src/shared/components/layout/shell/NavRail.ts",
+    "docs/navigation-redesign/__router-stub.d.ts",
+    "docs/navigation-redesign/proposed-navConfig.ts",
+    "docs/navigation-redesign/proposed-mobile-nav.ts"
+  ]
+}

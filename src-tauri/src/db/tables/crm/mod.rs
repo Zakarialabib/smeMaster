@@ -14,5 +14,7 @@ pub mod contact_labels;
 pub mod contact_segments;
 pub mod contact_tags;
 pub mod contacts;
+pub mod deals;
 pub mod engagement_log;
 pub mod entity_pivots;
+pub mod scoring;
