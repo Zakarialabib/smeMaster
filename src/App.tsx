@@ -85,6 +85,24 @@ function useTrayCheckMail() {
 }
 
 /**
+ * After a backend reset (`reset_app`, and the other `db_reset_*` commands) the Rust side
+ * emits `app:reset-complete` instead of restarting the whole process. A soft webview reload
+ * keeps the dev server alive and re-reads the freshly-migrated (empty) schema. This mirrors
+ * simple-signage's reset flow.
+ */
+function useResetCompleteReload() {
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    import("@tauri-apps/api/event").then(({ listen }) => {
+      listen("app:reset-complete", () => {
+        window.location.reload();
+      }).then((fn) => { unlisten = fn; });
+    });
+    return () => { unlisten?.(); };
+  }, []);
+}
+
+/**
  * Suppresses the default browser context menu globally.
  * Elements with `data-native-context-menu` attribute opt out.
  */
@@ -265,6 +283,7 @@ export default function App() {
   }, []);
   useKeyboardShortcuts();
   useTrayCheckMail();
+  useResetCompleteReload();
   useShareHandler();
   useSyncEvents();
   usePushNotifications();

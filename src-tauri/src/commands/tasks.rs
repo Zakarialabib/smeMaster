@@ -410,8 +410,7 @@ pub async fn db_get_tasks_with_contacts(
     company_id: Option<String>,
     include_completed: Option<bool>,
 ) -> CmdResult<Vec<TaskWithContactResponse>> {
-    let aid = company_id.unwrap_or_default();
-    let results = crate::db::tables::tasks::tasks::list_with_contacts(&pool, &aid, include_completed.unwrap_or(false)).await?;
+    let results = crate::db::tables::tasks::tasks::list_with_contacts(&pool, company_id.as_deref(), include_completed.unwrap_or(false)).await?;
 
     Ok(results.into_iter().map(|(t, name, avatar, email)| TaskWithContactResponse {
         id: t.id, company_id: t.company_id, title: t.title,
@@ -436,9 +435,8 @@ pub async fn db_get_tasks_with_contacts_paginated(
     limit: i64,
     offset: i64,
 ) -> CmdResult<Vec<TaskWithContactResponse>> {
-    let aid = company_id.unwrap_or_default();
     let results = crate::db::tables::tasks::tasks::list_with_contacts_paginated(
-        &pool, &aid, include_completed.unwrap_or(false), limit, offset
+        &pool, company_id.as_deref(), include_completed.unwrap_or(false), limit, offset
     ).await?;
 
     Ok(results.into_iter().map(|(t, name, avatar, email)| TaskWithContactResponse {

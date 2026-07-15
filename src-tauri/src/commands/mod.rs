@@ -33,7 +33,7 @@ pub mod workflows;
 
 pub use idle::IdleRegistry;
 
-use tauri::{Manager, Builder, Wry};
+use tauri::{Manager, Builder, Wry, Emitter};
 
 use crate::error::{SerializedError, ERR_DB, ERR_INTERNAL};
 
@@ -262,6 +262,12 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             calendar::db_delete_snooze_preset,
             calendar::db_get_calendar_by_remote_id,
             calendar::db_get_calendar_event_by_google_id,
+            calendar::db_calendar_provider_type,
+            calendar::db_calendar_list_calendars,
+            calendar::db_calendar_test_connection,
+            calendar::db_calendar_create_event,
+            calendar::db_calendar_update_event,
+            calendar::db_calendar_delete_event,
 
             // === commands::comms (112 commands) ===
             comms::db_list_filter_rules,
@@ -380,6 +386,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             comms::db_update_template_category,
             comms::db_get_template_full,
             comms::db_create_campaign_template,
+            comms::db_list_campaign_schedules,
             comms::db_reorder_templates,
             comms::db_search_templates,
 
@@ -702,6 +709,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             sync::sync_protocol_delta,
             sync::send_protocol,
             sync::test_protocol_connection,
+            sync::create_graph_draft,
 
             // === commands::imap (27 commands) ===
             imap::imap_test_connection,
@@ -940,6 +948,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             deals::db_list_pipelines,
             deals::db_create_deal_stage,
             deals::db_list_deal_stages,
+            deals::db_get_deal_stage,
+            deals::db_ensure_default_pipeline,
             deals::db_recompute_scores,
 
             // === reset_app (defined in this file) ===
@@ -1004,10 +1014,13 @@ pub async fn reset_app(
         log::info!("[reset_app] Tauri-store prefs cleared");
     }
 
-    // ── 5. Restart the app ────────────────────────────────────────────
-    // The new process will find is_initialized=true + no seed flags
-    // → orchestrator transitions to Ready → seeding runs automatically.
-    app.restart();
-    #[allow(unreachable_code)]
+    // ── 5. Reload the frontend instead of restarting the whole process ──
+    // `app.restart()` re-spawns the binary, which kills the Vite dev server during
+    // `tauri dev` and forces a full re-seed on launch. A soft webview reload (mirroring
+    // simple-signage's reset flow) keeps the dev server alive, preserves the now-empty
+    // database (the orchestrator does NOT re-run on a webview reload, so no demo data is
+    // re-seeded), and lets the freshly-migrated schema be re-read immediately.
+    let _ = app.emit("app:reset-complete", ());
+    log::info!("[reset_app] reset complete — emitting app:reset-complete for frontend reload");
     Ok(())
 }

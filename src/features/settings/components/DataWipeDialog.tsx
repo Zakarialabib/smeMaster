@@ -44,9 +44,17 @@ export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDial
   };
 
   const handleRestart = () => {
-    invokeCommand("reset_app").catch(() => {
-      window.location.reload();
-    });
+    // `reset_app` recreates the schema, emits `app:reset-complete`, and leaves the data
+    // empty (no re-seed on a webview reload). Clear the onboarding-done flag so the fresh
+    // start returns to the onboarding wizard, then soft-reload (keeps the dev server alive).
+    try {
+      localStorage.removeItem("smemaster.onboarding.done");
+    } catch {
+      /* ignore */
+    }
+    invokeCommand("reset_app")
+      .then(() => window.location.reload())
+      .catch(() => window.location.reload());
   };
 
   return (

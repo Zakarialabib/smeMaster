@@ -511,9 +511,13 @@ export default function DeveloperTab() {
     setResetting(true);
     try {
       const { invokeCommand } = await import("@shared/services/db/invoke/command");
+      // `reset_app` recreates the schema, emits `app:reset-complete`, and (on a webview
+      // reload) leaves the data empty instead of re-seeding. The frontend listener soft-
+      // reloads so the dev server stays alive.
       await invokeCommand("reset_app");
-      // App restarts — code below won't execute
+      window.location.reload();
     } catch (err) {
+      window.location.reload();
       notify("Reset DB", `Failed: ${err instanceof Error ? err.message : "Unknown error"}`);
       setResetting(false);
       setResetConfirm(false);

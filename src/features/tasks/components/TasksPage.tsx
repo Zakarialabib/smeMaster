@@ -110,9 +110,11 @@ export function TasksPage() {
   const { t } = useTranslation();
   const isMobile = useMobile();
   const [showFilters, setShowFilters] = useState(false);
-  const accounts = useAccountStore((s) => s.accounts);
-  const activeAccount = accounts.find((a) => a.isActive);
-  const accountId = activeAccount?.id ?? null;
+  // Use the store's authoritative active account id (set during app init) rather than
+  // deriving it from the per-account `isActive` flag, which is frequently unset. A null
+  // accountId is passed through to the backend, which then returns tasks for *all* accounts
+  // so the table is never unexpectedly empty.
+  const accountId = useAccountStore((s) => s.activeAccountId) ?? null;
 
   const tasks = useTaskStore((s) => s.tasks);
   const setTasks = useTaskStore((s) => s.setTasks);

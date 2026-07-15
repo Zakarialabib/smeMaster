@@ -453,21 +453,33 @@ pub async fn count_by_account(
 /// List tasks joined with contact info, for a company, with pagination.
 pub async fn list_with_contacts_paginated(
     pool: &SqlitePool,
-    company_id: &str,
+    company_id: Option<&str>,
     include_completed: bool,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<(Task, Option<String>, Option<String>, Option<String>)>, AppDbError> {
-    let query = if include_completed {
+    // Treat an empty/missing company_id as "show tasks for all accounts". This keeps the
+    // task table populated even when no specific account is active, and mirrors the behaviour
+    // of `list`/`count_by_account` (which already return all rows for a NULL company_id).
+    let show_all = company_id.map(|c| c.is_empty()).unwrap_or(true);
+
+    let base = if include_completed {
         "SELECT t.*, c.display_name as contact_name, c.avatar_url as contact_avatar, c.email as contact_email \
-         FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id \
-         WHERE t.company_id = ? ORDER BY t.sort_order ASC, t.created_at DESC \
-         LIMIT ? OFFSET ?"
+         FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id"
     } else {
         "SELECT t.*, c.display_name as contact_name, c.avatar_url as contact_avatar, c.email as contact_email \
          FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id \
-         WHERE t.company_id = ? AND t.is_completed = 0 ORDER BY t.sort_order ASC, t.created_at DESC \
-         LIMIT ? OFFSET ?"
+         WHERE t.is_completed = 0"
+    };
+
+    let query = if show_all {
+        format!(
+            "{base} ORDER BY t.sort_order ASC, t.created_at DESC LIMIT ? OFFSET ?"
+        )
+    } else {
+        format!(
+            "{base} AND t.company_id = ? ORDER BY t.sort_order ASC, t.created_at DESC LIMIT ? OFFSET ?"
+        )
     };
 
     #[derive(sqlx::FromRow)]
@@ -481,8 +493,11 @@ pub async fn list_with_contacts_paginated(
         contact_name: Option<String>, contact_avatar: Option<String>, contact_email: Option<String>,
     }
 
-    let rows = sqlx::query_as::<_, TaskWithContact>(query)
-        .bind(company_id)
+    let mut q = sqlx::query_as::<_, TaskWithContact>(sqlx::AssertSqlSafe(query));
+    if !show_all {
+        q = q.bind(company_id.unwrap());
+    }
+    let rows = q
         .bind(limit)
         .bind(offset)
         .fetch_all(pool)
@@ -519,17 +534,30 @@ pub async fn list_with_contacts_paginated(
 /// Returns `AppDbError::Database` on query failure. Never returns `NotFound`.
 pub async fn list_with_contacts(
     pool: &SqlitePool,
-    company_id: &str,
+    company_id: Option<&str>,
     include_completed: bool,
 ) -> Result<Vec<(Task, Option<String>, Option<String>, Option<String>)>, AppDbError> {
-    let query = if include_completed {
+    // Treat an empty/missing company_id as "show tasks for all accounts" (see
+    // `list_with_contacts_paginated` for the rationale).
+    let show_all = company_id.map(|c| c.is_empty()).unwrap_or(true);
+
+    let base = if include_completed {
         "SELECT t.*, c.display_name as contact_name, c.avatar_url as contact_avatar, c.email as contact_email \
-         FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id \
-         WHERE t.company_id = ? ORDER BY t.sort_order ASC, t.created_at DESC"
+         FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id"
     } else {
         "SELECT t.*, c.display_name as contact_name, c.avatar_url as contact_avatar, c.email as contact_email \
          FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id \
-         WHERE t.company_id = ? AND t.is_completed = 0 ORDER BY t.sort_order ASC, t.created_at DESC"
+         WHERE t.is_completed = 0"
+    };
+
+    let query = if show_all {
+        format!(
+            "{base} ORDER BY t.sort_order ASC, t.created_at DESC"
+        )
+    } else {
+        format!(
+            "{base} AND t.company_id = ? ORDER BY t.sort_order ASC, t.created_at DESC"
+        )
     };
 
     #[derive(sqlx::FromRow)]
@@ -545,8 +573,11 @@ pub async fn list_with_contacts(
         contact_name: Option<String>, contact_avatar: Option<String>, contact_email: Option<String>,
     }
 
-    let rows = sqlx::query_as::<_, TaskWithContact>(query)
-        .bind(company_id)
+    let mut q = sqlx::query_as::<_, TaskWithContact>(sqlx::AssertSqlSafe(query));
+    if !show_all {
+        q = q.bind(company_id.unwrap());
+    }
+    let rows = q
         .fetch_all(pool)
         .await
         .map_err(AppDbError::Database)?;
