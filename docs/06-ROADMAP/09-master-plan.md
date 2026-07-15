@@ -25,10 +25,10 @@ Everything in the app compiles, tests pass, and core features are wired end-to-e
 
 | Area                      | Status | Evidence                                              |
 | ------------------------- | ------ | ----------------------------------------------------- |
-| 652 Rust IPC commands     | ✅     | All 14 domain modules, 62 files                       |
-| 2,470 TS + 735 Rust tests | ✅     | Zero failures across both suites                      |
-| DB layer (56 migrations)  | ✅     | 367 `pub fn` across 11 domains, all wired to commands |
-| Store split (21 Zustand)  | ✅     | UI, layout, sync, theme, per-feature stores           |
+| 802 Rust IPC commands     | ✅     | All 14 domain modules, 62 files (verified 2026-07-15) |
+| 3,298 TS + 915 Rust tests | 🔶     | TS: 15 failing of 3,298 (vitest run 2026-07-15) — NOT the "2,470 passing" claimed elsewhere. Rust: `invoicing/tests.rs` fails to compile, excluding that module |
+| DB layer (32 migrations)  | ✅     | 520 `pub fn` across 13 domains, all wired to commands (verified) |
+| Store split (46 Zustand)  | ✅     | UI, layout, sync, theme, per-feature stores (verified) |
 | Mobile UX Overhaul (5/5)  | ✅     | Shell, gestures, adaptive, focus, polish              |
 | Subsystem Orchestration   | ✅     | Lifecycle, state machine, tool registry, gating       |
 | Deliverability Monitoring | ✅     | Blacklist, reputation, alerts, bulk health            |
@@ -50,11 +50,11 @@ Gate items from PRODUCTION-READINESS.md that are in progress or remaining.
 | ---- | ------------------------------------------ | ------ | ---------- | ------ | ---------------------------------------------------------------------------------- |
 | 1.1  | **CI pipeline (cargo check + pnpm test)**  | 30min  | —          | ✅     | `ci.yml` + `release.yml` + `release-please.yml` + `packaging.yml` already exist    |
 | 1.2  | Keyboard shortcuts system                  | 2h     | —          | ✅     | `useKeyboardShortcuts.ts` (25 shortcuts) + `shortcutStore.ts` + `ShortcutsTab.tsx` |
-| 1.3  | Panic injection manual test                | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
-| 1.4  | WAL recovery manual test                   | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
+| 1.3  | Panic injection manual test                | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/03-manual-tests.md` — run before tagging                  |
+| 1.4  | WAL recovery manual test                   | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/03-manual-tests.md` — run before tagging                  |
 | 1.5  | WAL deletion doc                           | 15min  | —          | ✅     | `docs/05-DEVELOPMENT/04-wal-deletion.md`                                           |
-| 1.6  | Watchdog restart manual tests              | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
-| 1.7  | `npm run tauri dev` runtime verification   | 5min   | —          | 📋     | See `docs/05-DEVELOPMENT/07-manual-tests.md` — run before tagging                  |
+| 1.6  | Watchdog restart manual tests              | 30min  | —          | 📋     | See `docs/05-DEVELOPMENT/03-manual-tests.md` — run before tagging                  |
+| 1.7  | `npm run tauri dev` runtime verification   | 5min   | —          | 📋     | See `docs/05-DEVELOPMENT/03-manual-tests.md` — run before tagging                  |
 | 1.8  | React.memo / lazy loading (P9 items)       | 2h     | —          | ✅     | `memo` on Skeleton/Badge/EmptyState/ContactAvatar; routes already use `lazy`       |
 | 1.9  | Certificates + public key for distribution | varies | —          | 🔲     | Code signing setup                                                                 |
 | 1.10 | Dogfooding + beta testing                  | 1-2w   | 1.1-1.9    | 🔲     | 7-day dogfood, then beta                                                           |
@@ -89,11 +89,11 @@ From UI/UX roadmap P1 + P6 gaps.
 
 | #   | Task                         | Effort | Depends On | Status | Notes                                                                                             |
 | --- | ---------------------------- | ------ | ---------- | ------ | ------------------------------------------------------------------------------------------------- |
-| 3.1 | **RTL layout audit**         | 2h     | —          | ✅     | `docs/03-FRONTEND/12-rtl-audit-report.md` — 4-phase plan, 26h estimate                            |
+| 3.1 | **RTL layout audit**         | 2h     | —          | 🔲     | **NOT DONE** — no `docs/03-FRONTEND/10-rtl-audit.md` exists; 475 physical-direction (`left`/`right`/`ml-*`/`mr-*`) violations remain in `src`. See `docs/STATUS.md` gaps. |
 | 3.2 | High contrast mode           | 2h     | —          | ✅     | `themeStore` + `useThemeManager` + `GeneralTab` toggle                                            |
 | 3.3 | Font scaling (system size)   | 2h     | —          | ✅     | `themeStore` + `font-scale-*` CSS classes on `<html>`                                             |
 | 3.4 | Reduced motion support       | 1h     | —          | ✅     | `themeStore` + `.reduce-motion` CSS class + settings toggle                                       |
-| 3.5 | Translation management tools | 2h     | —          | ✅     | `translate:sync` + `translate:clean` scripts work. `ja`/`it` locales added. `it` 100% translated. |
+| 3.5 | Translation management tools | 2h     | —          | 🔶     | `translate:sync` + `translate:clean` scripts work; `ja`/`it` locales added but ~215/211 keys still `TODO`-prefixed auto-stubs (NOT 100% translated) |
 
 ---
 
@@ -281,8 +281,8 @@ SMEMaster is competitive on architecture (local-first SQLite, Rust-owned data, t
 
 All remaining work follows the pattern: **Spec → Files → Workflow → Acceptance**. Each phase in this document has acceptance criteria. Feature specs that were extracted as separate documents now live in:
 
-- `docs/04-FEATURES/36-onboarding-reboot-plan.md` — Onboarding wizard spec
-- `docs/04-FEATURES/37-settings-redesign-spec.md` — Settings redesign spec
+- `docs/04-FEATURES/36-onboarding-reboot-plan.md` — ⚠️ **MISSING** (referenced but never written; see gaps)
+- `docs/04-FEATURES/37-settings-redesign-spec.md` — ⚠️ **MISSING** (referenced but never written; see gaps)
 
 ---
 
@@ -290,6 +290,6 @@ All remaining work follows the pattern: **Spec → Files → Workflow → Accept
 
 - [Production Readiness](../PRODUCTION-READINESS.md) — 9 gates with detailed evidence
 - [UI/UX Super-App Spec](../03-FRONTEND/12-ui-super-app-spec.md) — Desktop & Mobile UI/UX gaps
-- [Frontend RTL Audit](../03-FRONTEND/10-rtl-audit.md) — RTL readiness findings
+- [Frontend RTL Audit](../03-FRONTEND/10-rtl-audit.md) — ⚠️ **MISSING** (RTL audit not written; 475 violations remain)
 - [Composer Architecture](../superpowers/composer-architecture.md) — 25+ composer gaps
 - [STATUS.md](../STATUS.md) — Current project status

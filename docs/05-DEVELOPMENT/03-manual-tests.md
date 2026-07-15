@@ -6,6 +6,20 @@
 
 ---
 
+## Quick Pre-Release Checklist (≈1.5h)
+
+Run these after a fresh `npm run tauri dev` before tagging a release:
+
+1. **Panic Injection** (~30min) — [§1](#1-panic-injection-test): inject a panic, confirm the error dialog appears and the app keeps running, then remove the test panic.
+2. **WAL Recovery** (~30min) — [§2](#2-wal-recovery-test): kill the process mid-write, confirm a clean restart with pre-kill data intact.
+3. **Watchdog Restart** (~30min) — [§4](#4-watchdog-restart-test): panic a non-critical subsystem, confirm the watchdog auto-restarts it.
+4. **Runtime Verification** (~5min) — [§5](#5-runtime-verification): `npm run tauri dev` launches with no console or Rust errors.
+5. **WAL Deletion Behavior** — [§3](#3-wal-deletion-behavior): understand the impact if the WAL file is deleted while the app is running.
+
+> Detailed step-by-step procedures and acceptance criteria follow below.
+
+---
+
 ## Table of Contents
 
 1. [Panic Injection Test](#1-panic-injection-test)
@@ -46,11 +60,11 @@ Verify that when a Rust panic occurs, the global panic hook in `src-tauri/src/li
 3. **Trigger a panic** by invoking a backend command that contains a deliberate panic point.  
    The easiest approach — add a **temporary panic** to an existing command handler:
 
-   In `src-tauri/src/commands/db.rs`, find the `db_health` command (or any trivial command) and insert:
+   In `src-tauri/src/commands/db.rs`, find the `db_health_stats` command (or any trivial command) and insert:
 
    ```rust
    #[tauri::command]
-   pub fn db_health(app: tauri::AppHandle) -> Result<DbHealth, String> {
+   pub fn db_health_stats(app: tauri::AppHandle) -> Result<DbHealth, String> {
        panic!("MANUAL_TEST_PANIC: intentional panic for crash-log verification");
    }
    ```
@@ -60,7 +74,7 @@ Verify that when a Rust panic occurs, the global panic hook in `src-tauri/src/li
    Trigger it from the frontend (DevTools console):
 
    ```js
-   await invoke('db_health');
+   await invoke('db_health_stats');
    ```
 
    Alternatively, if the F/E does not expose the command directly, reload the app so the startup sequence triggers the panic.
@@ -75,7 +89,7 @@ Verify that when a Rust panic occurs, the global panic hook in `src-tauri/src/li
   Backtrace:
      0: std::panic::set_hook::{{closure}}
               at ...
-     1: smemaster::commands::db::db_health
+     1: smemaster::commands::db::db_health_stats
               at src-tauri/src/commands/db.rs:42
      ...
   ```
@@ -367,7 +381,7 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 5. **Quick database health check** via the Tauri CLI (or a console command):
    ```js
    // In DevTools console
-   const health = await window.__TAURI__.invoke('db_health');
+   const health = await window.__TAURI__.invoke('db_health_stats');
    console.log('DB Health:', health);
    ```
    Expected output:
@@ -391,11 +405,11 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 | Watchdog log shows poll cycle start                 | **PASS** |
 | DevTools Console has zero uncaught errors           | **PASS** |
 | UI renders main layout with sidebar + content       | **PASS** |
-| `db_health` returns `{ status: "ok", ... }`         | **PASS** |
+| `db_health_stats` returns `{ status: "ok", ... }`         | **PASS** |
 | Any compilation error or panic during startup       | **FAIL** |
 | DevTools shows red uncaught errors                  | **FAIL** |
 | UI shows blank screen or persistent loading spinner | **FAIL** |
-| `db_health` returns error or times out              | **FAIL** |
+| `db_health_stats` returns error or times out              | **FAIL** |
 
 ---
 
