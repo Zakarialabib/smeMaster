@@ -86,17 +86,71 @@ the cross-wiring research delegate (to be integrated). Baseline already in code:
 `ContactSidebar` (Relations tab: company/invoices/campaigns), email→task DnD, composer
 company badge, `db_list_campaigns_by_contact`.
 
-Proposed hub affordances (each reachable from a thread/contact):
-- **From any email →** "Add to CRM" (if unknown sender), "Create task", "Create deal",
-  "Add to segment", "Start automation". (Hover rail + context menu.)
-- **Customer 360 panel:** open a contact → unified timeline (emails, tasks, deals,
-  campaigns received, invoices). Reuse `ContactSidebar` + new timeline tab.
-- **Email event → CRM:** open/click/reply updates contact engagement score (Campaigns
-  already tracks; surface in CRM).
-- **Automation triggers from email:** no-reply in 14d → create task / nudge (workflows
-  engine exists).
-- **Search across everything:** `CommandPalette` already does nav; extend to global search
-  (contacts + mail + tasks + campaigns) — already partially present via unifiedSearch.
+### 4.1 The architectural spine (from cross-wiring research, 2026-07-15)
+
+The unifying insight from HubSpot/ActiveCampaign/Pipedrive/Front/Missive: **there is no
+"email module" — email is one activity type on a shared contact/deal timeline; every module
+reads/writes that same stream.** Build this FIRST — it dissolves the silos. Concretely: a
+single **`activities` event stream keyed by `contact_id` + polymorphic source** (email,
+call, note, task, invoice, campaign send/open/click, calendar event, deal-stage change).
+`ContactSidebar` already shows Relations (company/invoices/campaigns); extend it to render
+the full timeline.
+
+### 4.2 Prioritized cross-wiring (P0/P1/P2) — complexity + source
+
+**P0 — the spine (nothing feels unified without these)**
+- **Email↔Contact auto-resolve + auto-create** (Low-Med) — match every message to a
+  contact by address; one-tap/silent create if unknown. CRM populates itself from the inbox.
+  *(Pipedrive auto-mirrors pitches/replies to deal timeline; HubSpot auto-logs.)*
+- **Unified activity timeline** (Med) — the `activities` spine above. #1 "feels like one
+  system" driver. *(HubSpot record activities; Pipedrive deal timeline.)*
+- **Email thread ↔ CRM contact/deal, bidirectional, from inside the inbox** (Med) — in-inbox
+  360 side panel (open deals, last invoice, recent activity, notes); reply from CRM, read CRM
+  from inbox. *(Front/Missive; Superhuman enrichment panel.)*
+- **Email engagement events → contact/deal score** (Med) — opens/clicks/replies raise a
+  score; inactivity decays it; score is a first-class field usable in segments+automations.
+  *(ActiveCampaign deal+lead scoring; Keap.)*
+
+**P1 — connective tissue**
+- **Automation triggers from email events** (Med) — wire email events into the existing rule
+  engine: no-reply N days → follow-up task; link clicked → raise score+notify; reply →
+  advance deal stage. *(HubSpot workflows.)*
+- **Campaign segment ↔ CRM saved filter (one query language)** (Med) — a segment and a CRM
+  list are the SAME object (saved filter over contacts); build in Campaigns, use as CRM view.
+  *(ActiveCampaign; Brevo.)*
+- **Email compose ↔ invoice/quote insert** (Med) — UNIQUE smeMaster edge (native DGI
+  invoicing, no cloud competitor has it): "Attach quote/invoice" pulls from Invoicing, logs
+  to timeline, payment flows back, deal↔invoice total sync.
+- **Calendar event ↔ email follow-up loop** (Low-Med) — book from thread; post-meeting
+  auto-draft follow-up + task; no-show → re-engage automation. *(HubSpot Meetings+workflows.)*
+
+**P2 — intelligence (AI/RAG differentiator)**
+- **AI summarize contact from full email + activity history** (Med) — local RAG over the
+  timeline → "state of this relationship" paragraph + grounded draft-reply. Offline/private =
+  genuine edge over cloud tools.
+- **Deal auto-progression from email semantics** (High) — AI reads reply intent ("send quote"
+  / "not interested") → suggests stage move. *(ActiveCampaign/HubSpot AI; do it locally.)*
+
+### 4.3 Two CRITICAL CRM gaps vs best-in-class (currently MISSING in smeMaster)
+1. **Deal / pipeline stages** (kanban, drag-drop, per-deal value+probability) — Pipedrive/
+   HubSpot. "CRM without a pipeline isn't a sales CRM." **Biggest gap.**
+2. **Lead/contact scoring** as a first-class field — ActiveCampaign/Keap.
+> Both must ship before smeMaster can claim "perfect management system for SME." The
+> engagement-score cross-wire (4.2 P0 #4) is the natural home for scoring.
+
+### 4.4 "Wow" cohesion features (award-winning bar)
+- **Customer 360 reachable from anywhere** — click any email address / contact / invoice /
+  attendee → same panel (timeline+deals+money+AI summary). One component, invoked everywhere.
+  The screenshot reviewers will love.
+- **Smart nudges / "attention inbox"** — daily digest IN email: "Haven't heard from Acme in
+  14d (open deal 40k MAD)", "3 invoices overdue", "Karim opened your quote 4× — call him."
+  From timeline+scores. *(HubSpot digest + Boomerang follow-up.)*
+- **One search across everything** — single ⌘K over emails+contacts+deals+invoices+notes+
+  files; jumps to any object. *(Superhuman/Missive speed + cross-module reach.)*
+- **Email-driven deal progression** — replies advance stages, silence stalls them; live
+  pipeline that "breathes" from inbox activity.
+- **Headline edge:** native DGI invoicing wired into email/deals + offline local-RAG AI
+  summarization — no cloud incumbent can match these. Lead with them.
 
 ---
 
