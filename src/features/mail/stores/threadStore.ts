@@ -14,6 +14,7 @@ export interface Thread {
   messageCount: number;
   isRead: boolean;
   isStarred: boolean;
+  isImportant?: boolean;
   isPinned: boolean;
   isMuted: boolean;
   hasAttachments: boolean;

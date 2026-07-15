@@ -39,6 +39,7 @@ const SYNC_LIST: SyncEntry[] = [
   { field: "markAsReadBehavior", dbKey: "mark_as_read_behavior", serialize: String },
   { field: "sendAndArchive", dbKey: "send_and_archive", serialize: (v) => (v ? "true" : "false") },
   { field: "inboxViewMode", dbKey: "inbox_view_mode", serialize: String },
+  { field: "focusedInbox", dbKey: "focused_inbox", serialize: (v) => (v ? "true" : "false") },
   { field: "sidebarNavConfig", dbKey: "sidebar_nav_config", serialize: JSON.stringify },
   { field: "locale", dbKey: "locale", serialize: String },
   { field: "aiLanguage", dbKey: "ai_language", serialize: String },

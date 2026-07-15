@@ -54,6 +54,68 @@ export async function setQueuePaused(paused: boolean): Promise<void> {
   await setSetting("queue_paused", paused ? "true" : "false");
 }
 
+/* ── Undo-send duration preference ──────────────────────────────────────── */
+
+/** Valid global undo-send durations (seconds), matching Gmail's options. */
+export const UNDO_SEND_DURATIONS = [5, 10, 20, 30] as const;
+export type UndoSendDuration = (typeof UNDO_SEND_DURATIONS)[number];
+
+export const DEFAULT_UNDO_SEND_DURATION: UndoSendDuration = 10;
+
+/**
+ * Read the global undo-send duration preference (seconds).
+ * Falls back to the active account's default composer preset
+ * `undo_send_delay` when the global setting has not been set, and to
+ * {@link DEFAULT_UNDO_SEND_DURATION} when neither is available or unparseable.
+ */
+export async function getUndoSendDuration(
+  accountId?: string | null,
+): Promise<UndoSendDuration> {
+  const raw = await getSetting("undo_send_delay_seconds");
+  if (raw != null && raw.trim() !== "") {
+    const n = Number.parseInt(raw, 10);
+    if (Number.isFinite(n) && (UNDO_SEND_DURATIONS as readonly number[]).includes(n)) {
+      return n as UndoSendDuration;
+    }
+  }
+
+  if (accountId) {
+    try {
+      const { listComposerPresets } = await import(
+        "@shared/services/db/invoke/comms"
+      );
+      const presets = await listComposerPresets(accountId);
+      const fallback = presets.find((p) => p.is_default === 1) ?? presets[0];
+      if (fallback && Number.isFinite(fallback.undo_send_delay)) {
+        const n = fallback.undo_send_delay;
+        return (
+          (UNDO_SEND_DURATIONS as readonly number[]).includes(n)
+            ? n
+            : DEFAULT_UNDO_SEND_DURATION
+        ) as UndoSendDuration;
+      }
+    } catch {
+      // ignore — preset lookup is best-effort
+    }
+  }
+
+  return DEFAULT_UNDO_SEND_DURATION;
+}
+
+/**
+ * Persist the global undo-send duration preference (seconds).
+ * Clamped to the allowed set.
+ */
+export async function setUndoSendDuration(
+  seconds: number,
+): Promise<UndoSendDuration> {
+  const clamped = (UNDO_SEND_DURATIONS as readonly number[]).includes(seconds)
+    ? (seconds as UndoSendDuration)
+    : DEFAULT_UNDO_SEND_DURATION;
+  await setSetting("undo_send_delay_seconds", String(clamped));
+  return clamped;
+}
+
 /** Queue schedule preset identifier */
 export type QueueSchedulePreset = "fast" | "normal" | "gentle" | "business-hours" | "custom";
 

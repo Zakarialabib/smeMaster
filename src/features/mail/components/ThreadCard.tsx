@@ -5,7 +5,7 @@ import { useThreadStore } from "@features/mail/stores/threadStore";
 import { useLayoutStore } from "@shared/stores/layoutStore";
 import { useActiveLabel } from "@shared/hooks/useRouteNavigation";
 import { formatRelativeDate } from "@shared/utils/date";
-import { Paperclip, Star, Check, Pin, BellRing, VolumeX, Archive, Trash2, Mail, MailOpen } from "lucide-react";
+import { Paperclip, Star, Check, Pin, BellRing, VolumeX, Archive, Trash2, Mail, MailOpen, Clock, Flag, ListTodo, CalendarDays } from "lucide-react";
 import type { DragData } from "@features/mail/components/dnd/DndProvider";
 import { LongPressMenu, type MenuAction } from "@shared/components/ui/LongPressMenu";
 import { HoverPreview } from "@shared/components/ui/HoverPreview";
@@ -34,9 +34,17 @@ interface ThreadCardProps {
   onMarkRead?: (threadId: string) => void;
   onMarkUnread?: (threadId: string) => void;
   onStar?: (threadId: string) => void;
+  /** Snooze a thread (opens the snooze picker in the parent) */
+  onSnooze?: (threadId: string) => void;
+  /** Toggle the thread's importance (star/flag marker) */
+  onToggleImportant?: (threadId: string) => void;
+  /** Create a task linked to this thread */
+  onCreateTask?: (thread: Thread) => void;
+  /** Create a calendar event linked to this thread */
+  onCreateEvent?: (thread: Thread) => void;
 }
 
-export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick, onContextMenu, category, showCategoryBadge, hasFollowUp, onLongPress, onArchive, onDelete, onMarkRead, onMarkUnread, onStar }: ThreadCardProps) {
+export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick, onContextMenu, category, showCategoryBadge, hasFollowUp, onLongPress, onArchive, onDelete, onMarkRead, onMarkUnread, onStar, onSnooze, onToggleImportant, onCreateTask, onCreateEvent }: ThreadCardProps) {
   const isMultiSelected = useThreadStore((s) => s.selectedThreadIds.has(thread.id));
   const hasMultiSelect = useThreadStore((s) => s.selectedThreadIds.size > 0);
   const toggleThreadSelection = useThreadStore((s) => s.toggleThreadSelection);
@@ -302,6 +310,62 @@ export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick
                     aria-label={thread.isStarred ? "Unstar thread" : "Star thread"}
                   >
                     <Star size={13} className={thread.isStarred ? "fill-current" : ""} />
+                  </button>
+                )}
+                {/* Mark important (flag) */}
+                {onToggleImportant && (
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleImportant(thread.id); }}
+                    className={`p-1 rounded transition-colors active:scale-90 ${
+                      thread.isImportant
+                        ? "text-danger hover:text-danger/80"
+                        : "text-text-tertiary hover:text-danger hover:bg-danger/10"
+                    }`}
+                    title={thread.isImportant ? "Unmark important" : "Mark important"}
+                    aria-label={thread.isImportant ? "Unmark thread as important" : "Mark thread as important"}
+                  >
+                    <Flag size={13} className={thread.isImportant ? "fill-current" : ""} />
+                  </button>
+                )}
+                {/* Snooze */}
+                {onSnooze && (
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onSnooze(thread.id); }}
+                    className="p-1 rounded text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors active:scale-90"
+                    title="Snooze thread"
+                    aria-label="Snooze thread"
+                  >
+                    <Clock size={13} />
+                  </button>
+                )}
+                {/* Create task from email */}
+                {onCreateTask && (
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onCreateTask(thread); }}
+                    className="p-1 rounded text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors active:scale-90"
+                    title="Create task from email"
+                    aria-label="Create task from this email"
+                  >
+                    <ListTodo size={13} />
+                  </button>
+                )}
+                {/* Create calendar event from email */}
+                {onCreateEvent && (
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onCreateEvent(thread); }}
+                    className="p-1 rounded text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors active:scale-90"
+                    title="Create calendar event from email"
+                    aria-label="Create calendar event from this email"
+                  >
+                    <CalendarDays size={13} />
                   </button>
                 )}
               </span>

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { DateTimePickerDialog } from "@shared/components/ui/DateTimePickerDialog";
 import { getSnoozePresets } from "@features/calendar/db/snoozePresets";
 import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
+import { parseSnooze } from "@shared/utils/parseSnooze";
 
 interface Preset {
   label: string;
@@ -30,6 +31,16 @@ function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
+function formatTimestamp(until: number): string {
+  return new Date(until * 1000).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 interface SnoozeDialogProps {
   isOpen?: boolean;
   onSnooze: (until: number) => void;
@@ -45,6 +56,7 @@ export function SnoozeDialog({
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const [customPresets, setCustomPresets] = useState<Preset[]>([]);
   const [builtinPresets, setBuiltinPresets] = useState<Preset[]>([]);
+  const [nlInput, setNlInput] = useState("");
 
   useEffect(() => {
     async function loadPresets() {
@@ -79,6 +91,11 @@ export function SnoozeDialog({
     );
   }, []);
 
+  const parsed = useMemo(
+    () => (nlInput.trim() ? parseSnooze(nlInput) : null),
+    [nlInput],
+  );
+
   const allPresets = [...customPresets, ...builtinPresets];
 
   return (
@@ -89,6 +106,41 @@ export function SnoozeDialog({
       presets={allPresets}
       onSelect={onSnooze}
       submitLabel={t("actionBar.snooze")}
+      footer={
+        <div className="mt-3 border-t border-border-primary pt-3">
+          <label className="mb-1 block text-xs font-medium text-text-secondary">
+            {t("snooze.naturalLanguage", "Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)")}
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={nlInput}
+              onChange={(e) => setNlInput(e.target.value)}
+              placeholder={t("snooze.nlPlaceholder", "tomorrow 9am")}
+              className="flex-1 rounded-md border border-border-primary bg-bg-primary px-2 py-1 text-sm text-text-primary outline-none focus:ring-1 focus:ring-accent"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && parsed) {
+                  e.preventDefault();
+                  onSnooze(parsed.until);
+                }
+              }}
+            />
+            <button
+              type="button"
+              disabled={!parsed}
+              onClick={() => parsed && onSnooze(parsed.until)}
+              className="rounded-md bg-accent px-3 py-1 text-sm font-medium text-white disabled:opacity-40"
+            >
+              {t("actionBar.snooze", "Snooze")}
+            </button>
+          </div>
+          {parsed && (
+            <p className="mt-1 text-xs text-text-tertiary">
+              → {formatTimestamp(parsed.until)}
+            </p>
+          )}
+        </div>
+      }
     />
   );
 }

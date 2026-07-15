@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "@shared/components/ui/Button";
 import { Modal } from "@shared/components/ui/Modal";
 import { INPUT_BASE, MENU_ITEM } from "@shared/styles/ui-tokens";
@@ -20,6 +20,8 @@ interface DateTimePickerDialogProps {
   onSelect: (timestamp: number) => void;
   submitLabel: string;
   zIndex?: string;
+  /** Optional content rendered below the custom date/time row. */
+  footer?: ReactNode;
 }
 
 export function DateTimePickerDialog({
@@ -30,6 +32,7 @@ export function DateTimePickerDialog({
   onSelect,
   submitLabel,
   zIndex,
+  footer,
 }: DateTimePickerDialogProps) {
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("09:00");
@@ -92,6 +95,7 @@ export function DateTimePickerDialog({
           {submitLabel}
         </Button>
       </div>
+      {footer}
     </Modal>
   );
 }

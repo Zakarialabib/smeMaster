@@ -28,6 +28,8 @@ export interface ComposerState {
   draftId: string | null;
   undoSendTimer: ReturnType<typeof setTimeout> | null;
   undoSendVisible: boolean;
+  /** Global undo-send window in seconds (mirrors the `undo_send_delay_seconds` setting). */
+  undoSendDelay: number;
   pendingSendOpId: string | null;
   attachments: ComposerAttachment[];
   lastSavedAt: number | null;
@@ -76,6 +78,7 @@ export interface ComposerState {
   setDraftId: (id: string | null) => void;
   setUndoSendTimer: (timer: ReturnType<typeof setTimeout> | null) => void;
   setUndoSendVisible: (visible: boolean) => void;
+  setUndoSendDelay: (seconds: number) => void;
   setPendingSendOpId: (id: string | null) => void;
   setTemplateId: (id: string | null) => void;
   setContactId: (id: string | null) => void;
@@ -107,6 +110,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   draftId: null,
   undoSendTimer: null,
   undoSendVisible: false,
+  undoSendDelay: 10,
   pendingSendOpId: null,
   attachments: [],
   viewMode: "modal",
@@ -182,6 +186,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   setDraftId: (draftId) => set({ draftId }),
   setUndoSendTimer: (undoSendTimer) => set({ undoSendTimer }),
   setUndoSendVisible: (undoSendVisible) => set({ undoSendVisible }),
+  setUndoSendDelay: (seconds) => set({ undoSendDelay: seconds }),
   addAttachment: (attachment) =>
     set((state) => ({ attachments: [...state.attachments, attachment] })),
   removeAttachment: (id) =>

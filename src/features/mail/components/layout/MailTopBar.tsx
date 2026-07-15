@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { SearchBar } from "@features/mail/components/search/SearchBar";
 import type { ReadFilter } from "@shared/stores/layoutStore";
+import { useConfigStore } from "@/stores/core/configStore";
 import { RefreshCw } from "lucide-react";
 
 export interface MailTopBarProps {
@@ -25,6 +26,8 @@ export function MailTopBar({
 }: MailTopBarProps) {
   const { t } = useTranslation();
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const focusedInbox = useConfigStore((s) => s.focusedInbox);
+  const setFocusedInbox = useConfigStore((s) => s.setFocusedInbox);
 
   const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "f") {
@@ -77,6 +80,29 @@ export function MailTopBar({
           {/* Vertical divider */}
           <span className="w-px h-4 bg-border-primary shrink-0" />
 
+          {/* Focused / All segmented toggle (inbox only) */}
+          {_activeLabel === "inbox" && (
+            <div className="flex items-center shrink-0 rounded-md bg-bg-tertiary/60 p-0.5">
+              {([true, false] as const).map((v) => (
+                <button
+                  key={v ? "focused" : "all"}
+                  onClick={() => setFocusedInbox(v)}
+                  aria-pressed={focusedInbox === v}
+                  className={`px-2 py-1 text-[0.625rem] sm:text-[0.6875rem] font-medium rounded-[4px] transition-all duration-150 whitespace-nowrap ${
+                    focusedInbox === v
+                      ? "bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  {v ? t("email.focused") : t("email.allMail")}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Vertical divider */}
+          <span className="w-px h-4 bg-border-primary shrink-0" />
+
           {/* Read filter toggle — compact pill-style */}
           <div className="flex items-center shrink-0 rounded-md bg-bg-tertiary/60 p-0.5">
             {(["all", "unread", "read"] as const).map((f) => (
@@ -85,7 +111,7 @@ export function MailTopBar({
                 onClick={() => onReadFilterChange(f)}
                 className={`px-2 py-1 text-[0.625rem] sm:text-[0.6875rem] font-medium rounded-[4px] transition-all duration-150 whitespace-nowrap ${
                   readFilter === f
-                    ? "bg-white/70 dark:bg-slate-700/70 text-text-primary shadow-sm"
+                    ? "bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm"
                     : "text-text-tertiary hover:text-text-primary"
                 }`}
               >

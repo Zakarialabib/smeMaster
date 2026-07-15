@@ -49,6 +49,7 @@ import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
 import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
+import { useConfigStore } from "@/stores/core/configStore";
 import { AiTaskExtractDialog } from "@features/tasks/components/AiTaskExtractDialog";
 import { isAiAvailable } from "@shared/services/ai/providerManager";
 import { getMessagesForThread } from "@shared/services/db/messages";
@@ -74,6 +75,11 @@ import {
   Package,
   FolderSearch,
   AlertCircle,
+  MailOpen,
+  Mail,
+  Tag,
+  FolderInput,
+  CheckSquare,
 } from "lucide-react";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import { AddAccount } from "@features/accounts/components/AddAccount";
@@ -87,6 +93,17 @@ import { triggerHaptic } from "@shared/hooks/useHaptics";
 import { useGestureActions } from "@/shared/hooks/useGestureActions";
 import { optimisticStore } from "@shared/stores/optimisticStore";
 import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
+import { setThreadImportance } from "@shared/services/db/invoke/core";
+import { getCalendarsForAccount } from "@features/calendar/db/calendars";
+import type { DbCalendar } from "@features/calendar/db/calendars";
+import { TaskCreateModal } from "@features/tasks/components/TaskCreateModal";
+import { EventCreateModal } from "@features/calendar/components/EventCreateModal";
+import { SnoozeDialog } from "@features/mail/components/SnoozeDialog";
+import { MoveToFolderDialog } from "@features/mail/components/MoveToFolderDialog";
+import {
+  addThreadLabel,
+} from "@features/mail/services/emailActions";
+import { batchUpdateThreads } from "@shared/services/db/invoke/core";
 import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
 import "@features/mail/styles/threadAnimations.css";
 import { toast } from "@shared/stores/toastStore";
@@ -191,6 +208,7 @@ export function EmailList({
 
   const inboxViewMode = useLayoutStore((s) => s.inboxViewMode);
   const routerCategory = useActiveCategory();
+  const focusedInbox = useConfigStore((s) => s.focusedInbox);
 
   // In split mode, use the router's category; in unified mode, always use "All"
   const activeCategory = inboxViewMode === "split" ? routerCategory : "All";
@@ -453,6 +471,106 @@ export function EmailList({
     [handleStar],
   );
 
+  // ── Phase B: hover-rail action handlers (importance / snooze / task / event) ──
+  const [snoozeThreadId, setSnoozeThreadId] = useState<string | null>(null);
+  const [taskCreateThread, setTaskCreateThread] = useState<Thread | null>(null);
+  const [eventCreateThread, setEventCreateThread] = useState<Thread | null>(null);
+  const [eventCalendars, setEventCalendars] = useState<DbCalendar[]>([]);
+
+  const handleToggleImportant = useCallback(
+    (threadId: string) => {
+      const thread = useThreadStore.getState().threadMap.get(threadId);
+      if (!thread || !activeAccountId) return;
+      const next = !thread.isImportant;
+      setThreadImportance(activeAccountId, threadId, next).catch(() => {});
+      useThreadStore.getState().updateThread(threadId, { isImportant: next });
+    },
+    [activeAccountId],
+  );
+
+  const handleSnoozeThread = useCallback((threadId: string) => {
+    setSnoozeThreadId(threadId);
+  }, []);
+
+  const handleCreateTaskFromThread = useCallback((thread: Thread) => {
+    setTaskCreateThread(thread);
+  }, []);
+
+  const handleCreateEventFromThread = useCallback(
+    async (thread: Thread) => {
+      if (activeAccountId) {
+        try {
+          setEventCalendars(await getCalendarsForAccount(activeAccountId));
+        } catch {
+          /* leave empty; EventCreateModal handles missing calendars */
+        }
+      }
+      setEventCreateThread(thread);
+    },
+    [activeAccountId],
+  );
+
+  const handleSnoozeConfirm = useCallback(
+    (until: number) => {
+      const id = snoozeThreadId;
+      setSnoozeThreadId(null);
+      if (!id || !activeAccountId) return;
+      snoozeThread(activeAccountId, id, until).catch(() => {});
+      useThreadStore.getState().removeThread(id);
+    },
+    [activeAccountId, snoozeThreadId],
+  );
+
+  // ── Phase B: bulk action state (multi-select toolbar) ──
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const labels = useLabelStore((s) => s.labels);
+
+  const handleBulkMarkRead = useCallback(async () => {
+    if (!activeAccountId || multiSelectCount === 0) return;
+    const ids = [...selectedThreadIds];
+    clearMultiSelect();
+    try {
+      await batchUpdateThreads(ids, { isRead: true });
+      ids.forEach((id) =>
+        useThreadStore.getState().updateThread(id, { isRead: true }),
+      );
+    } catch {
+      toast.error("Failed to mark as read");
+    }
+  }, [activeAccountId, multiSelectCount, selectedThreadIds, clearMultiSelect]);
+
+  const handleBulkMarkUnread = useCallback(async () => {
+    if (!activeAccountId || multiSelectCount === 0) return;
+    const ids = [...selectedThreadIds];
+    clearMultiSelect();
+    try {
+      await batchUpdateThreads(ids, { isRead: false });
+      ids.forEach((id) =>
+        useThreadStore.getState().updateThread(id, { isRead: false }),
+      );
+    } catch {
+      toast.error("Failed to mark as unread");
+    }
+  }, [activeAccountId, multiSelectCount, selectedThreadIds, clearMultiSelect]);
+
+  const handleBulkAddLabel = useCallback(
+    async (labelId: string) => {
+      if (!activeAccountId || multiSelectCount === 0) return;
+      const ids = [...selectedThreadIds];
+      setShowLabelPicker(false);
+      clearMultiSelect();
+      try {
+        await Promise.all(
+          ids.map((id) => addThreadLabel(activeAccountId, id, labelId)),
+        );
+      } catch {
+        toast.error("Failed to add label");
+      }
+    },
+    [activeAccountId, multiSelectCount, selectedThreadIds, clearMultiSelect],
+  );
+
   const searchThreadIds = useThreadStore((s) => s.searchThreadIds);
   const searchQuery = useThreadStore((s) => s.searchQuery);
 
@@ -475,6 +593,14 @@ export function EmailList({
     }
     return [...filtered].sort((a, b) => b.lastMessageAt - a.lastMessageAt);
   }, [threads, readFilter, searchThreadIds, filters.sortBy]);
+
+  const handleToggleSelectAll = useCallback(() => {
+    if (multiSelectCount >= filteredThreads.length) {
+      clearMultiSelect();
+    } else {
+      selectAll();
+    }
+  }, [multiSelectCount, filteredThreads.length, clearMultiSelect, selectAll]);
 
   // Pre-compute bundled category Set for O(1) lookups in filter
   const bundledCategorySet = useMemo(
@@ -529,6 +655,7 @@ export function EmailList({
             isStarred: t.is_starred === 1,
             isPinned: t.is_pinned === 1,
             isMuted: t.is_muted === 1,
+            isImportant: t.is_important === 1,
             hasAttachments: t.has_attachments === 1,
             labelIds,
             fromName: t.from_name,
@@ -576,6 +703,14 @@ export function EmailList({
             PAGE_SIZE,
             0,
           );
+        } else if (activeLabel === "inbox" && focusedInbox) {
+          // Focused/Primary inbox: threads with no category row (LEFT JOIN IS NULL)
+          dbThreads = await getThreadsForCategory(
+            activeAccountId,
+            "Primary",
+            PAGE_SIZE,
+            0,
+          );
         } else {
           const gmailLabelId = LABEL_MAP[activeLabel] ?? activeLabel;
           dbThreads = await getThreadsForAccount(
@@ -602,6 +737,7 @@ export function EmailList({
     activeCategory,
     isSmartFolder,
     activeSmartFolder,
+    focusedInbox,
     setThreads,
     setLoading,
     mapDbThreads,
@@ -619,6 +755,13 @@ export function EmailList({
         dbThreads = await getThreadsForCategory(
           activeAccountId,
           activeCategory,
+          PAGE_SIZE,
+          offset,
+        );
+      } else if (activeLabel === "inbox" && focusedInbox) {
+        dbThreads = await getThreadsForCategory(
+          activeAccountId,
+          "Primary",
           PAGE_SIZE,
           offset,
         );
@@ -650,6 +793,7 @@ export function EmailList({
     threads,
     loadingMore,
     hasMore,
+    focusedInbox,
     setThreads,
     mapDbThreads,
   ]);
@@ -673,6 +817,10 @@ export function EmailList({
     onMarkRead?: (threadId: string) => void;
     onMarkUnread?: (threadId: string) => void;
     onStar?: (threadId: string) => void;
+    onSnooze?: (threadId: string) => void;
+    onToggleImportant?: (threadId: string) => void;
+    onCreateTask?: (thread: Thread) => void;
+    onCreateEvent?: (thread: Thread) => void;
   };
 
   const ThreadRow = ({
@@ -692,6 +840,10 @@ export function EmailList({
     onMarkRead,
     onMarkUnread,
     onStar,
+    onSnooze,
+    onToggleImportant,
+    onCreateTask,
+    onCreateEvent,
   }: {
     index: number;
     style: CSSProperties;
@@ -729,6 +881,10 @@ export function EmailList({
           onMarkRead={onMarkRead}
           onMarkUnread={onMarkUnread}
           onStar={onStar}
+          onSnooze={onSnooze}
+          onToggleImportant={onToggleImportant}
+          onCreateTask={onCreateTask}
+          onCreateEvent={onCreateEvent}
         />
       </div>
     );
@@ -1170,6 +1326,16 @@ export function EmailList({
           className="px-3 py-2 border-b border-border-primary glass-accent-tint flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={multiSelectCount >= filteredThreads.length}
+              onClick={handleToggleSelectAll}
+              title={t("email.toggleSelectAll")}
+              className="p-1 text-text-secondary hover:text-text-primary hover:glass-accent-tint rounded transition-all duration-150"
+            >
+              <CheckSquare size={14} />
+            </button>
             <span className="text-xs font-medium text-text-primary">
               {t("email.nSelected", { n: multiSelectCount })}
             </span>
@@ -1183,6 +1349,58 @@ export function EmailList({
             )}
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={handleBulkMarkRead}
+              title={t("email.markReadSelected")}
+              className="p-1.5 text-text-secondary hover:text-text-primary hover:glass-accent-tint rounded transition-all duration-150"
+            >
+              <MailOpen size={14} />
+            </button>
+            <button
+              onClick={handleBulkMarkUnread}
+              title={t("email.markUnreadSelected")}
+              className="p-1.5 text-text-secondary hover:text-text-primary hover:glass-accent-tint rounded transition-all duration-150"
+            >
+              <Mail size={14} />
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowLabelPicker((v) => !v)}
+                title={t("email.addLabelSelected")}
+                className="p-1.5 text-text-secondary hover:text-text-primary hover:glass-accent-tint rounded transition-all duration-150"
+              >
+                <Tag size={14} />
+              </button>
+              {showLabelPicker && (
+                <div className="absolute z-50 mt-1 w-48 max-h-64 overflow-auto rounded-lg border border-border-primary bg-bg-secondary shadow-lg glass-accent-tint">
+                  {labels.length === 0 && (
+                    <div className="px-3 py-2 text-xs text-text-tertiary">
+                      {t("email.noLabels")}
+                    </div>
+                  )}
+                  {labels.map((l) => (
+                    <button
+                      key={l.id}
+                      onClick={() => handleBulkAddLabel(l.id)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text-primary hover:bg-accent/10 transition-colors"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: l.colorBg ?? undefined }}
+                      />
+                      <span className="truncate">{l.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowMoveDialog(true)}
+              title={t("email.moveToSelected")}
+              className="p-1.5 text-text-secondary hover:text-text-primary hover:glass-accent-tint rounded transition-all duration-150"
+            >
+              <FolderInput size={14} />
+            </button>
             <button
               onClick={handleBulkArchive}
               title={t("email.archiveSelected")}
@@ -1522,6 +1740,10 @@ export function EmailList({
                                       onMarkRead={handleMarkRead}
                                       onMarkUnread={handleMarkUnread}
                                       onStar={handleStarThread}
+                                      onSnooze={handleSnoozeThread}
+                                      onToggleImportant={handleToggleImportant}
+                                      onCreateTask={handleCreateTaskFromThread}
+                                      onCreateEvent={handleCreateEventFromThread}
                                     />
                                   </SwipeableRow>
                                 </div>
@@ -1577,6 +1799,10 @@ export function EmailList({
                             onMarkRead={handleMarkRead}
                             onMarkUnread={handleMarkUnread}
                             onStar={handleStarThread}
+                            onSnooze={handleSnoozeThread}
+                            onToggleImportant={handleToggleImportant}
+                            onCreateTask={handleCreateTaskFromThread}
+                            onCreateEvent={handleCreateEventFromThread}
                           />
                         </div>
                       );
@@ -1657,6 +1883,43 @@ export function EmailList({
           threadId={selectedThreadId ?? filteredThreads[0]?.id ?? undefined}
           accountId={activeAccountId}
           onClose={() => setShowTaskExtract(false)}
+        />
+      )}
+
+      <SnoozeDialog
+        isOpen={snoozeThreadId !== null}
+        onSnooze={handleSnoozeConfirm}
+        onClose={() => setSnoozeThreadId(null)}
+      />
+      <TaskCreateModal
+        isOpen={!!taskCreateThread}
+        onClose={() => setTaskCreateThread(null)}
+        onCreated={() => setTaskCreateThread(null)}
+        accountId={activeAccountId ?? ""}
+        prefill={
+          taskCreateThread
+            ? {
+                source: "from_email",
+                threadId: taskCreateThread.id,
+                threadAccountId: taskCreateThread.accountId,
+                title: taskCreateThread.subject ?? "",
+                description: taskCreateThread.snippet ?? "",
+              }
+            : undefined
+        }
+      />
+      {eventCreateThread && (
+        <EventCreateModal
+          calendars={eventCalendars}
+          onClose={() => setEventCreateThread(null)}
+          onCreate={() => setEventCreateThread(null)}
+        />
+      )}
+      {showMoveDialog && activeAccountId && (
+        <MoveToFolderDialog
+          isOpen={showMoveDialog}
+          threadIds={[...selectedThreadIds]}
+          onClose={() => setShowMoveDialog(false)}
         />
       )}
     </div>

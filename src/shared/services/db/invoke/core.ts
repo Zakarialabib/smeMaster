@@ -1233,6 +1233,20 @@ export async function addThreadLabel(
   return invokeCommand<void>('db_add_thread_label', { accountId, threadId, labelId });
 }
 
+export async function setThreadImportance(
+  accountId: string,
+  threadId: string,
+  isImportant: boolean,
+  importanceScore?: number | null,
+): Promise<void> {
+  return invokeCommand<void>('db_set_thread_importance', {
+    accountId,
+    threadId,
+    isImportant,
+    ...(importanceScore === undefined ? {} : { importanceScore }),
+  });
+}
+
 export async function removeThreadLabel(
   accountId: string,
   threadId: string,

@@ -41,6 +41,7 @@ interface ConfigState {
   markAsReadBehavior: MarkAsReadBehavior;
   sendAndArchive: boolean;
   inboxViewMode: InboxViewMode;
+  focusedInbox: boolean;
   sidebarNavConfig: SidebarNavItem[] | null;
 
   // Locale
@@ -68,6 +69,7 @@ interface ConfigState {
   setMarkAsReadBehavior: (behavior: MarkAsReadBehavior) => void;
   setSendAndArchive: (enabled: boolean) => void;
   setInboxViewMode: (mode: InboxViewMode) => void;
+  setFocusedInbox: (enabled: boolean) => void;
   setSidebarNavConfig: (config: SidebarNavItem[]) => void;
   restoreSidebarNavConfig: (config: SidebarNavItem[]) => void;
   setLocale: (locale: SupportedLocale) => void;
@@ -98,6 +100,7 @@ export const useConfigStore = create<ConfigState>()(
       markAsReadBehavior: "instant" as MarkAsReadBehavior,
       sendAndArchive: false,
       inboxViewMode: "unified" as InboxViewMode,
+      focusedInbox: false,
       sidebarNavConfig: null,
 
       // Locale defaults
@@ -126,6 +129,7 @@ export const useConfigStore = create<ConfigState>()(
       setMarkAsReadBehavior: (markAsReadBehavior) => set({ markAsReadBehavior }),
       setSendAndArchive: (sendAndArchive) => set({ sendAndArchive }),
       setInboxViewMode: (inboxViewMode) => set({ inboxViewMode }),
+      setFocusedInbox: (focusedInbox) => set({ focusedInbox }),
       setSidebarNavConfig: (sidebarNavConfig) => set({ sidebarNavConfig }),
       restoreSidebarNavConfig: (sidebarNavConfig) => set({ sidebarNavConfig }),
 
@@ -205,6 +209,10 @@ export const useConfigStore = create<ConfigState>()(
             set({ inboxViewMode: savedViewMode });
           }
 
+          const savedFocused = await getSetting("focused_inbox");
+          if (savedFocused === "true") set({ focusedInbox: true });
+          else if (savedFocused === "false") set({ focusedInbox: false });
+
           const savedNavConfig = await getSetting("sidebar_nav_config");
           if (savedNavConfig) {
             try {
@@ -253,6 +261,7 @@ export const useConfigStore = create<ConfigState>()(
         markAsReadBehavior: state.markAsReadBehavior,
         sendAndArchive: state.sendAndArchive,
         inboxViewMode: state.inboxViewMode,
+        focusedInbox: state.focusedInbox,
         sidebarNavConfig: state.sidebarNavConfig,
         locale: state.locale,
         textDirection: state.textDirection,

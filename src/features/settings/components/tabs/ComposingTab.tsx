@@ -380,11 +380,26 @@ export default function ComposingTab() {
           title={t('settings.sending')}
           description={t("settings.sendingDesc", "Configure how emails are dispatched, including undo delay and archive behavior.")}
         >
-          {/* Undo Send Delay — slider */}
+          {/* Undo Send Delay — slider + quick-pick segmented control */}
           <SettingRow label={t('settings.undoSendDelay')}>
-            <div className="flex items-center gap-3">
-              <UndoSlider value={undoSendDelay} onChange={handleUndoDelayChange} />
-              <InlineTooltip text="The time window after sending during which you can recall the email. Held in the local Tauri cache before dispatch." />
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <UndoSlider value={undoSendDelay} onChange={handleUndoDelayChange} />
+                <InlineTooltip text="The time window after sending during which you can recall the email. Held in the local Tauri cache before dispatch." />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-text-tertiary">{t('settings.undoSendQuickPick', 'Quick pick')}</span>
+                <ButtonGroup
+                  value={String(undoSendDelay)}
+                  onChange={(v) => handleUndoDelayChange(Number(v))}
+                  options={[
+                    { value: '5', label: '5s' },
+                    { value: '10', label: '10s' },
+                    { value: '20', label: '20s' },
+                    { value: '30', label: '30s' },
+                  ]}
+                />
+              </div>
             </div>
           </SettingRow>
           {/* Education: Undo Send */}
