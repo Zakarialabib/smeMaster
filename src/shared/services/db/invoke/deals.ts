@@ -110,3 +110,17 @@ export async function recomputeScores(input: RecomputeScoresInput): Promise<numb
     companyId: input.companyId,
   });
 }
+
+// Idempotently ensure a default pipeline with the standard `DEFAULT_STAGES`
+// exists for the company, returning the (existing or newly created) pipeline
+// along with its stages. Used by the CRM board on first mount / after reset.
+export async function ensureDefaultPipeline(companyId: string): Promise<Pipeline & { stages: DealStage[] }> {
+  return invokeCommand<Pipeline & { stages: DealStage[] }>('db_ensure_default_pipeline', {
+    companyId,
+  });
+}
+
+// Fetch a single deal stage by id. Returns `null` if the stage was deleted.
+export async function getDealStage(stageId: string): Promise<DealStage | null> {
+  return invokeCommand<DealStage | null>('db_get_deal_stage', { stageId });
+}

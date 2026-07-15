@@ -8,6 +8,7 @@ import {
   deleteDeal,
   listDeals,
   moveDealStage,
+  ensureDefaultPipeline,
 } from "@shared/services/db/invoke/deals";
 import type { Pipeline, DealStage, Deal, CreateDealInput } from "@shared/services/db/schema";
 
@@ -37,6 +38,10 @@ export const useDealStore = create<DealState>((set, get) => {
     ...initialAsyncState,
 
     loadPipelines: async (companyId) => {
+      // Idempotently ensure a default pipeline with the standard stages exists,
+      // then fall back to the regular list call (which now includes the seeded
+      // pipeline). This avoids an empty Kanban for newly-created companies.
+      await withLoading(async () => ensureDefaultPipeline(companyId).catch(() => null));
       const pipelines = await withLoading(async () => listPipelines(companyId));
       if (pipelines) {
         set({ pipelines, activePipelineId: pipelines[0]?.id ?? null });

@@ -428,3 +428,16 @@ export async function setDefaultAlias(accountId: string, aliasId: string): Promi
 export async function listComposerPresets(accountId: string): Promise<ComposerPreset[]> {
   return invokeCommand<ComposerPreset[]>('db_list_composer_presets', { accountId });
 }
+
+// ── Microsoft Graph draft ─────────────────────────────────────────────────
+//
+// `createGraphDraft` posts the raw RFC 2822 message to Microsoft Graph's
+// `POST /me/messages` endpoint and returns the remote draft id. Used by the
+// composer for Microsoft-connected accounts to keep a server-side copy of
+// in-progress drafts.
+export async function createGraphDraft(
+  accountId: string,
+  rawMessage: string,
+): Promise<string> {
+  return invokeCommand<string>('create_graph_draft', { accountId, rawMessage });
+}

@@ -80,3 +80,17 @@ export async function listBackupSchedules(companyId?: string | null): Promise<Ba
     companyId: companyId ?? null,
   });
 }
+
+// Return the scheduled-but-not-yet-sent campaigns for a company, ordered by
+// `scheduledAt` ASC. Used by the campaign dashboard and "upcoming sends" widget.
+export interface CampaignSchedule {
+  id: string;
+  campaignId: string;
+  scheduledAt: number;
+  status: string;
+  createdAt: number;
+}
+
+export async function listCampaignSchedules(companyId: string): Promise<CampaignSchedule[]> {
+  return invokeCommand<CampaignSchedule[]>('db_list_campaign_schedules', { companyId });
+}
