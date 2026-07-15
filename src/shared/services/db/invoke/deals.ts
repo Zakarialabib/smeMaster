@@ -1,0 +1,112 @@
+// ── Deal / Pipeline wrappers ──────────────────────────────────────────────
+
+import { invokeCommand } from './command';
+
+import type {
+  Deal,
+  DealStage,
+  Pipeline,
+  CreateDealInput,
+  MoveDealStageInput,
+  RecomputeScoresInput,
+} from '../schema';
+
+// Pipelines
+
+export async function listPipelines(companyId: string): Promise<Pipeline[]> {
+  return invokeCommand<Pipeline[]>('db_list_pipelines', { companyId });
+}
+
+export async function createPipeline(
+  companyId: string,
+  name: string,
+  isDefault = false,
+): Promise<Pipeline> {
+  return invokeCommand<Pipeline>('db_create_pipeline', {
+    companyId,
+    name,
+    isDefault,
+  });
+}
+
+// Stages
+
+export async function listDealStages(pipelineId: string): Promise<DealStage[]> {
+  return invokeCommand<DealStage[]>('db_list_deal_stages', { pipelineId });
+}
+
+export async function createDealStage(input: {
+  pipelineId: string;
+  name: string;
+  position: number;
+  probability: number;
+  color?: string | null;
+}): Promise<DealStage> {
+  return invokeCommand<DealStage>('db_create_deal_stage', {
+    pipelineId: input.pipelineId,
+    name: input.name,
+    position: input.position,
+    probability: input.probability,
+    color: input.color ?? null,
+  });
+}
+
+// Deals
+
+export async function createDeal(input: CreateDealInput): Promise<Deal> {
+  return invokeCommand<Deal>('db_create_deal', {
+    companyId: input.companyId,
+    contactId: input.contactId ?? null,
+    pipelineId: input.pipelineId,
+    stageId: input.stageId,
+    title: input.title,
+    amountMinor: input.amountMinor,
+    currency: input.currency ?? null,
+    expectedCloseAt: input.expectedCloseAt ?? null,
+    notes: input.notes ?? null,
+  });
+}
+
+export async function getDeal(id: string): Promise<Deal> {
+  return invokeCommand<Deal>('db_get_deal', { id });
+}
+
+export async function updateDeal(
+  id: string,
+  fields: Partial<Omit<Deal, 'id' | 'company_id' | 'created_at'>>,
+): Promise<Deal> {
+  return invokeCommand<Deal>('db_update_deal', { id, fields });
+}
+
+export async function deleteDeal(id: string): Promise<void> {
+  return invokeCommand<void>('db_delete_deal', { id });
+}
+
+export async function listDeals(input: {
+  companyId: string;
+  pipelineId?: string | null;
+  stageId?: string | null;
+  status?: string | null;
+}): Promise<Deal[]> {
+  return invokeCommand<Deal[]>('db_list_deals', {
+    companyId: input.companyId,
+    pipelineId: input.pipelineId ?? null,
+    stageId: input.stageId ?? null,
+    status: input.status ?? null,
+  });
+}
+
+export async function moveDealStage(input: MoveDealStageInput): Promise<Deal> {
+  return invokeCommand<Deal>('db_move_deal_stage', {
+    id: input.id,
+    stageId: input.stageId,
+  });
+}
+
+// Scoring
+
+export async function recomputeScores(input: RecomputeScoresInput): Promise<number> {
+  return invokeCommand<number>('db_recompute_scores', {
+    companyId: input.companyId,
+  });
+}

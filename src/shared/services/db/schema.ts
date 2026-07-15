@@ -1128,3 +1128,61 @@ export interface SyncConflict {
   resolved_at: number | null;
   created_at: number;
 }
+
+// ── Deal / Pipeline ─────────────────────────────────────────────────────────
+
+export interface Pipeline {
+  id: string;
+  company_id: string;
+  name: string;
+  is_default: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface DealStage {
+  id: string;
+  pipeline_id: string;
+  name: string;
+  position: number;
+  probability: number;
+  color: string;
+  created_at: number;
+}
+
+export interface Deal {
+  id: string;
+  company_id: string;
+  contact_id: string | null;
+  pipeline_id: string;
+  stage_id: string;
+  title: string;
+  amount_minor: number;
+  currency: string;
+  expected_close_at: number | null;
+  status: string;
+  notes: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CreateDealInput {
+  companyId: string;
+  contactId?: string | null;
+  pipelineId: string;
+  stageId: string;
+  title: string;
+  amountMinor: number;
+  currency?: string | null;
+  expectedCloseAt?: number | null;
+  notes?: string | null;
+}
+
+export interface MoveDealStageInput {
+  id: string;
+  stageId: string;
+}
+
+export interface RecomputeScoresInput {
+  companyId: string;
+}
