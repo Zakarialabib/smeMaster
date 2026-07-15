@@ -42,6 +42,15 @@ export interface DbContact {
   contact_type: 'contact' | 'client' | 'supplier' | 'other';
   credit_limit: number;
   payment_terms: number;
+  engagement_score?: number;
+  health_status?: string;
+  last_engaged_at?: number | null;
+}
+export interface DbContactEngagement {
+  id: string;
+  engagement_score: number;
+  last_engaged_at: number | null;
+  health_status: string;
 }
 
 export interface ContactAttachment {

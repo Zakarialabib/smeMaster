@@ -3,21 +3,13 @@ import { createAsyncActions, initialAsyncState } from "@shared/stores/createAsyn
 
 import {
   listPipelines,
-  createPipeline,
   listDealStages,
-  createDealStage,
   createDeal,
-  getDeal,
-  updateDeal,
   deleteDeal,
   listDeals,
   moveDealStage,
-  recomputeScores,
-  type Pipeline,
-  type DealStage,
-  type Deal,
-  type CreateDealInput,
 } from "@shared/services/db/invoke/deals";
+import type { Pipeline, DealStage, Deal, CreateDealInput } from "@shared/services/db/schema";
 
 export interface DealState {
   pipelines: Pipeline[];
@@ -30,7 +22,7 @@ export interface DealState {
   loadStages: (pipelineId: string) => Promise<DealStage[]>;
   loadDeals: (companyId: string) => Promise<void>;
   createDeal: (input: CreateDealInput) => Promise<Deal | undefined>;
-  removeDeal: (id: string, companyId: string) => Promise<void>;
+  removeDeal: (id: string) => Promise<void>;
   moveDeal: (id: string, stageId: string) => Promise<Deal | undefined>;
 }
 
@@ -42,8 +34,6 @@ export const useDealStore = create<DealState>((set, get) => {
     stages: {},
     deals: [],
     activePipelineId: null,
-    isLoading: false,
-    error: null,
     ...initialAsyncState,
 
     loadPipelines: async (companyId) => {
@@ -71,24 +61,18 @@ export const useDealStore = create<DealState>((set, get) => {
 
     createDeal: async (input) => {
       const created = await withLoading(async () => createDeal(input));
-      if (created) {
-        set((s) => ({ deals: [created, ...s.deals] }));
-      }
+      if (created) set((s) => ({ deals: [created, ...s.deals] }));
       return created;
     },
 
-    removeDeal: async (id, companyId) => {
+    removeDeal: async (id) => {
       await withLoading(async () => deleteDeal(id));
       set((s) => ({ deals: s.deals.filter((d) => d.id !== id) }));
     },
 
     moveDeal: async (id, stageId) => {
       const moved = await withLoading(async () => moveDealStage({ id, stageId }));
-      if (moved) {
-        set((s) => ({
-          deals: s.deals.map((d) => (d.id === id ? moved : d)),
-        }));
-      }
+      if (moved) set((s) => ({ deals: s.deals.map((d) => d.id === id ? moved : d) }));
       return moved;
     },
   };

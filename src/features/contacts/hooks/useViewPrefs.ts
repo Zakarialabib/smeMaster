@@ -3,7 +3,7 @@ import { usePersistentStorage } from "@shared/hooks/usePersistentStorage";
 
 export type ViewMode = "list" | "grid";
 export type Density = "compact" | "normal" | "comfortable";
-export type SortField = "name" | "email" | "last_contact" | "frequency";
+export type SortField = "name" | "email" | "last_contact" | "frequency" | "score";
 export type SortDirection = "asc" | "desc";
 
 export interface ContactsViewPrefs {

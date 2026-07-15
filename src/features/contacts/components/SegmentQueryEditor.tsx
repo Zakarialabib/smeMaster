@@ -50,11 +50,12 @@ const OPERATORS: Record<FieldType, { value: string; label: string }[]> = {
     { value: "not_equals", label: "Doesn't Equal" },
   ],
   number: [
-    { value: ">=", label: "\u2265" },
-    { value: "<=", label: "\u2264" },
+    { value: ">=", label: "≥" },
+    { value: "<=", label: "≤" },
     { value: "=", label: "=" },
     { value: ">", label: ">" },
     { value: "<", label: "<" },
+    { value: "crosses_threshold", label: "Crosses threshold" },
   ],
   boolean: [
     { value: "is_true", label: "Yes" },

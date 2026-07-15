@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { DbContact } from "@features/contacts/db/contacts";
@@ -6,6 +6,7 @@ import type { Density, SortField, SortDirection } from "@features/contacts/hooks
 import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
 import { ContactActions } from "@features/contacts/components/ContactActions";
 import { formatRelativeDate } from "@shared/utils/date";
+import { getHealthStyle } from "@shared/utils/scoreVariant";
 
 interface ContactListViewProps {
   contacts: DbContact[];
@@ -33,7 +34,6 @@ interface DensityConfig {
   nameClass: string;
   checkboxClass: string;
   showSecondary: boolean;
-  /// Estimated row height in pixels (used by the virtualizer).
   rowHeight: number;
 }
 
@@ -41,7 +41,7 @@ const DENSITY_CONFIGS: Record<Density, DensityConfig> = {
   compact: {
     avatar: 24,
     rowClass: "py-1 px-2",
-    cellTextClass: "text-[0.6875rem]",
+    cellTextClass: "text-[0.65rem]",
     nameClass: "text-xs",
     checkboxClass: "w-3 h-3",
     showSecondary: false,
@@ -68,7 +68,7 @@ const DENSITY_CONFIGS: Record<Density, DensityConfig> = {
 };
 
 interface ColumnDef {
-  id: SortField | "select" | "contact" | "actions";
+  id: SortField | "select" | "contact" | "actions" | "score";
   label: string;
   sortable: boolean;
   width: string;
@@ -81,6 +81,7 @@ const COLUMNS: ColumnDef[] = [
   { id: "email", label: "Email", sortable: true, width: "200px" },
   { id: "frequency", label: "Freq.", sortable: true, width: "70px", align: "right" },
   { id: "last_contact", label: "Last Contact", sortable: true, width: "110px", align: "right" },
+  { id: "score", label: "Score", sortable: true, width: "152px", align: "right" },
   { id: "actions", label: "", sortable: false, width: "auto" },
 ];
 
@@ -107,6 +108,8 @@ function sortContacts(
         const bv = b.last_contacted_at ?? 0;
         return (av - bv) * dir;
       }
+      case "score":
+        return ((a.engagement_score as unknown as number) - (b.engagement_score as unknown as number)) * dir;
       default:
         return 0;
     }
@@ -114,14 +117,6 @@ function sortContacts(
   return sorted;
 }
 
-/**
- * ContactListView — density-aware table with:
- * - Per-row checkbox with shift+click range select
- * - Sortable column headers
- * - Always-visible primary actions (no hover-only)
- * - Health dot on name column
- * - Avatar sized to density
- */
 export function ContactListView({
   contacts,
   density,
@@ -142,7 +137,6 @@ export function ContactListView({
 }: ContactListViewProps) {
   const cfg = DENSITY_CONFIGS[density];
 
-
   const sortedContacts = useMemo(
     () => sortContacts(contacts, sortField, sortDirection),
     [contacts, sortField, sortDirection],
@@ -159,9 +153,6 @@ export function ContactListView({
     [sortField, sortDirection, onSortChange],
   );
 
-  // Virtualize the row list — only visible rows are rendered to the DOM.
-  // The grid uses CSS grid (display: grid) to align columns; the virtualizer
-  // handles row-level scroll/positioning inside the scroll container.
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const virtualizer = useVirtualizer({
     count: sortedContacts.length,
@@ -171,113 +162,128 @@ export function ContactListView({
     getItemKey: (idx) => sortedContacts[idx]?.id ?? idx,
   });
 
-  // Column width tokens shared by header and body cells
   const gridStyle = {
-    gridTemplateColumns:
-      "32px minmax(180px, 1fr) 200px 70px 110px auto",
+    gridTemplateColumns: "32px minmax(180px, 1fr) 200px 70px 110px 152px auto",
   } as const;
 
-  const renderRow = (contact: DbContact, isSelected: boolean) => (
-    <div
-      role="row"
-      aria-selected={isSelected}
-      onClick={() => onContactClick(contact.id)}
-      className={`group transition-colors ${
-        isSelected ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-bg-hover"
-      } cursor-pointer grid items-center`}
-      style={gridStyle}
-    >
-      {/* Checkbox — always visible */}
+  const renderRow = (contact: DbContact, isSelected: boolean) => {
+    const healthStyle = getHealthStyle(contact.health_status);
+    const scorePercent = Math.round((contact.engagement_score as unknown as number) * 100);
+    return (
       <div
-        role="cell"
-        className={cfg.rowClass}
-        onClick={(e) => e.stopPropagation()}
+        role="row"
+        aria-selected={isSelected}
+        onClick={() => onContactClick(contact.id)}
+        className={`group transition-colors ${
+          isSelected ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-bg-hover"
+        } cursor-pointer grid items-center`}
+        style={gridStyle}
       >
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={(e) =>
-            onToggleSelect(contact.id, (e.nativeEvent as MouseEvent).shiftKey)
-          }
-          className={`${cfg.checkboxClass} rounded border-border-primary text-accent focus:ring-accent focus:ring-offset-0 cursor-pointer`}
-          aria-label={`Select ${contact.display_name ?? contact.email}`}
+        <div
+          role="cell"
+          className={cfg.rowClass}
           onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-
-      {/* Contact: avatar + name */}
-      <div role="cell" className={cfg.rowClass}>
-        <div className="flex items-center gap-2 min-w-0">
-          <ContactAvatar
-            name={contact.display_name}
-            email={contact.email}
-            imageUrl={contact.avatar_url}
-            size={cfg.avatar}
-          />
-          <span
-            className={`${cfg.nameClass} font-medium text-text-primary truncate`}
-          >
-            {contact.display_name ?? contact.email}
-          </span>
-        </div>
-      </div>
-
-      {/* Email */}
-      <div
-        role="cell"
-        className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary truncate max-w-[200px]`}
-      >
-        {contact.email}
-      </div>
-
-      {/* Frequency */}
-      <div
-        role="cell"
-        className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right tabular-nums`}
-      >
-        {contact.frequency > 0 ? contact.frequency : "—"}
-      </div>
-
-      {/* Last contact */}
-      <div
-        role="cell"
-        className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
-      >
-        {contact.last_contacted_at ? (
-          <span>{formatRelativeDate(contact.last_contacted_at)}</span>
-        ) : (
-          <span className="text-text-tertiary/50">Never</span>
-        )}
-      </div>
-
-      {/* Actions — always visible */}
-      <div
-        role="cell"
-        className={cfg.rowClass}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-end">
-          <ContactActions
-            contact={contact}
-            variant="inline"
-            onCompose={onCompose}
-            onViewContact={onViewContact}
-            onAddTag={onAddTag}
-            onAddToGroup={onAddToGroup}
-            onAddToSegment={onAddToSegment}
-            onMerge={onMerge}
-            onDelete={onDelete}
-            onExportVcard={onExportVcard}
+        >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) =>
+              onToggleSelect(contact.id, (e.nativeEvent as MouseEvent).shiftKey)
+            }
+            className={`${cfg.checkboxClass} rounded border-border-primary text-accent focus:ring-accent focus:ring-offset-0 cursor-pointer`}
+            aria-label={`Select ${contact.display_name ?? contact.email}`}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
+
+        <div role="cell" className={cfg.rowClass}>
+          <div className="flex items-center gap-2 min-w-0">
+            <ContactAvatar
+              name={contact.display_name}
+              email={contact.email}
+              imageUrl={contact.avatar_url}
+              size={cfg.avatar}
+            />
+            <span className={`${cfg.nameClass} font-medium text-text-primary truncate`}>
+              {contact.display_name ?? contact.email}
+            </span>
+          </div>
+        </div>
+
+        <div
+          role="cell"
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary truncate max-w-[200px]`}
+        >
+          {contact.email}
+        </div>
+
+        <div
+          role="cell"
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right tabular-nums`}
+        >
+          {contact.frequency > 0 ? contact.frequency : "—"}
+        </div>
+
+        <div
+          role="cell"
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+        >
+          {contact.last_contacted_at ? (
+            <span>{formatRelativeDate(contact.last_contacted_at)}</span>
+          ) : (
+            <span className="text-text-tertiary/50">Never</span>
+          )}
+        </div>
+
+        <div
+          role="cell"
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+        >
+          <div className="flex items-center justify-end gap-1.5 min-w-0">
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${healthStyle.bg} ${healthStyle.text} text-[0.55rem]`}
+            >
+              {healthStyle.label}
+            </span>
+            <div className="flex items-center gap-1 min-w-0">
+              <div className="w-14 h-1 bg-bg-tertiary rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${healthStyle.barColor}`}
+                  style={{ width: `${scorePercent}%` }}
+                />
+              </div>
+              <span className="tabular-nums text-[0.625rem]">{scorePercent}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          role="cell"
+          className={cfg.rowClass}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-end">
+            <ContactActions
+              contact={contact}
+              variant="inline"
+              onCompose={onCompose}
+              onViewContact={onViewContact}
+              onAddTag={onAddTag}
+              onAddToGroup={onAddToGroup}
+              onAddToSegment={onAddToSegment}
+              onMerge={onMerge}
+              onDelete={onDelete}
+              onExportVcard={onExportVcard}
+            />
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div role="region" aria-label="Contacts list" className="flex flex-col h-full min-h-0">
       <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-      {/* Sticky header */}
       <div
         role="row"
         className="grid border-b border-border-primary text-left sticky top-0 z-10 bg-bg-primary"
@@ -323,7 +329,6 @@ export function ContactListView({
         })}
       </div>
 
-      {/* Virtualized scroll body */}
       <div
         ref={scrollRef}
         role="rowgroup"
@@ -364,6 +369,3 @@ export function ContactListView({
     </div>
   );
 }
-
-// Helper export so parents can pass `lastSelectedId` for shift-select
-export { sortContacts };
