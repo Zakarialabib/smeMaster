@@ -1,5 +1,7 @@
 # smeMaster → Paperling-Grade Campaign System: Transformation Plan
 
+> ⚠️ **ARCHIVED WORKING DOC — 2026-07-15.** This design plan has been **executed**: the block-based campaign editor, live preview, AI copilot, Vault image picker, and `campaignComposerStore` (blocks + undo/redo + A/B) are shipped (see `docs/STATUS.md` → "Campaign Block Editor — Paperling-grade"). The code is now the source of truth; this file is kept for historical design rationale only. Do **not** implement from it — check `src/features/campaigns/` first.
+
 ## 0. Context
 
 **Objective:** Transform the smeMaster campaign module from a basic form-based email sender into a Paperling-grade email campaign platform with block-based editor, live preview, file management, AI copilot, and integrated campaign workflows.
