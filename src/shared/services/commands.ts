@@ -763,6 +763,12 @@ type TauriCommands = {
   db_sync_status: { params: void; result: AccountSyncStatus[] };
   db_bootstrap_state: { params: void; result: DbBootstrapState };
   db_status_snapshot: { params: void; result: DbStatusSnapshot };
+  db_cache_status: {
+    params: void;
+    result: { enabled: boolean; domains: Record<string, CacheStats> };
+  };
+  db_cache_invalidate_all: { params: void; result: void };
+  db_cache_benchmark: { params: void; result: Record<string, number> };
   db_set_offline_available: {
     params: {
       id: string;

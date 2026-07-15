@@ -23,6 +23,7 @@ import {
   PresendTab, CalendarTab, DeveloperTab,
   LicenseTab, DeliverabilityTab, FeatureFlagsTab,
   QueueTab, AccountCleaningTab, HardwareTab,BusinessProfileTab,
+  CacheTab,
 } from "./tabs";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -35,7 +36,7 @@ export type SettingsTabId =
   | "calendar" | "developer"
   | "license" | "feature-flags"
   | "queue" | "account-cleaning" | "hardware"
-  | "business-profile";
+  | "business-profile" | "cache";
 
 export type SettingsPlatform = "all" | "desktop" | "mobile";
 
@@ -237,6 +238,13 @@ export const tabGroups: SettingsGroup[] = [
         subtitle: "settings.tabSubtitles.featureFlags",
         platform: "desktop",
       },
+      {
+        id: "cache",
+        label: "Cache",
+        icon: Cpu,
+        subtitle: "settings.tabSubtitles.cache",
+        platform: "desktop",
+      },
     ],
   },
   {
@@ -279,6 +287,7 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   "account-cleaning": AccountCleaningTab,
   hardware: HardwareTab,
   "business-profile": BusinessProfileTab,
+  cache: CacheTab,
 };
 
 // ── Search Keywords ────────────────────────────────────────────────────────
@@ -305,6 +314,7 @@ export const TAB_KEYWORDS: Record<string, string[]> = {
   license: ["license", "key", "activation", "tier", "trial", "pro", "basic", "upgrade", "subscription", "premium"],
   "business-profile": ["company", "business", "ice", "tax", "rc", "cnss", "legal", "morocco", "dgi"],
     "feature-flags": ["feature", "flag", "flags", "tier", "pro", "basic", "override", "beta", "experimental", "rag", "progressive", "disclosure"],
+    cache: ["cache", "memory", "ttl", "hit rate", "benchmark", "invalidate", "contacts", "accounts", "labels", "threads", "data cache"],
 };
 
 // ── Tab Label (i18n-aware) ─────────────────────────────────────────────────
@@ -334,6 +344,7 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
     hardware: t("settings.tabs.hardware"),
     "business-profile": t("settings.tabs.businessProfile"),
     "feature-flags": t("settings.tabs.featureFlags"),
+    cache: t("settings.tabs.cache"),
   };
   return labels[id] ?? id;
 }
@@ -362,6 +373,7 @@ export function getSectionSubtitle(id: string): string | undefined {
     "account-cleaning": "settings.sectionSubtitles.accountCleaning",
     license: "settings.sectionSubtitles.license",
     "feature-flags": "settings.sectionSubtitles.featureFlags",
+    cache: "settings.sectionSubtitles.cache",
   };
   return subtitles[id];
 }

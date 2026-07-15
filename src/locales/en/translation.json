@@ -936,6 +936,20 @@
     "mobile": "Mobile",
     "enableBackgroundSync": "Background sync",
     "cache": "Cache",
+    "cacheTab": {
+      "overview": "Cache Overview",
+      "enabled": "Data cache enabled",
+      "enabledDesc": "In-memory TTL cache layer (contacts, accounts, labels, threads).",
+      "lastSync": "Last sync",
+      "lastSyncDesc": "Most recent background sync attempt (from the sync monitor).",
+      "domains": "Cache Domains",
+      "actions": "Actions",
+      "runBenchmark": "Run Benchmark",
+      "clearCaches": "Clear Caches",
+      "benchmarkDone": "Benchmark complete",
+      "cleared": "Caches cleared",
+      "actionsHint": "Benchmark measures read latency through the cache/DB path. Clearing caches forces a fresh reload from the database on next access."
+    },
     "cacheSize": "Cache size",
     "security": "Security",
     "biometricDescription": "Use your fingerprint or face to unlock SMEMaster",
@@ -1092,7 +1106,8 @@
       "hardware": "Hardware monitoring and diagnostics",
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
-      "about": "Version, license, and credits"
+      "about": "Version, license, and credits",
+      "cache": "Data cache status, hit rate, and benchmarks"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
