@@ -10,6 +10,7 @@ import {
   Plus,
   RefreshCw,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 
 // ── Error Boundary for tab content ────────────────────────────────────────
@@ -56,7 +57,7 @@ class TabErrorBoundary extends Component<
 // ── Tab configuration ────────────────────────────────────────────────────
 const TABS: CardTabItem[] = [
   { id: "contacts", label: "Contacts", icon: Users },
-  { id: "deals", label: "Deals", icon: ReceiptText },
+  { id: "deals", label: "Deals", icon: FileText },
   { id: "tasks", label: "Tasks", icon: ListChecks },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "invoices", label: "Invoices", icon: ReceiptText },
@@ -103,7 +104,16 @@ const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentTy
 
 // ── Main Component ───────────────────────────────────────────────────────
 export function CrmPage() {
-  const [activeTab, setActiveTab] = useState("contacts");
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    try {
+      const search = new URLSearchParams(window.location.search);
+      const tab = search.get("tab");
+      if (tab && TABS.some((t) => t.id === tab)) return tab;
+    } catch {
+      // ignore URL parsing in non-browser environments
+    }
+    return "contacts";
+  });
 
   const handleTabChange = (id: string) => {
     toast.info(`Switching to ${TABS.find((t) => t.id === id)?.label ?? id}...`);

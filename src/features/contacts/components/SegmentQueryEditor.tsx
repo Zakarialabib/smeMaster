@@ -55,7 +55,6 @@ const OPERATORS: Record<FieldType, { value: string; label: string }[]> = {
     { value: "=", label: "=" },
     { value: ">", label: ">" },
     { value: "<", label: "<" },
-    { value: "crosses_threshold", label: "Crosses threshold" },
   ],
   boolean: [
     { value: "is_true", label: "Yes" },
