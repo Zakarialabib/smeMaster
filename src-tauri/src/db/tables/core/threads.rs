@@ -392,6 +392,169 @@ pub async fn upsert_thread(
     .execute(pool)
     .await
     .map_err(AppDbError::Database)?;
+
+    // Best-effort auto-categorization (Promotions / Social / Updates). Non-fatal:
+    // a categorization failure must never break message ingest.
+    if let Some(from) = &thread.from_address {
+        let _ = categorize_thread(pool, &thread.account_id, &thread.id, from).await;
+    }
+    Ok(())
+}
+
+/// Derive a mailbox category (Promotions / Social / Updates / Primary) from a
+/// sender address using a built-in domain heuristic, then persist it.
+///
+/// The result is written idempotently into `thread_categories` (so the existing
+/// `get_threads_for_category` Focused/Primary split picks it up) and, when a
+/// matching `bundle_rules` row is enabled, into `bundled_threads`. Threads that
+/// resolve to `Primary` are intentionally *not* written to `thread_categories`
+/// (the Primary view is the LEFT JOIN IS NULL case).
+///
+/// Returns the derived category (defaults to `"Primary"`).
+pub async fn categorize_thread(
+    pool: &SqlitePool,
+    account_id: &str,
+    thread_id: &str,
+    from_address: &str,
+) -> Result<String, AppDbError> {
+    let category = derive_category(from_address);
+
+    if category != "Primary" {
+        sqlx::query(
+            "INSERT OR IGNORE INTO thread_categories (account_id, thread_id, category) VALUES (?, ?, ?)",
+        )
+        .bind(account_id)
+        .bind(thread_id)
+        .bind(category)
+        .execute(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+
+        // If a bundle rule enables bundling for this category, also hold it.
+        let bundled: Option<i64> = sqlx::query_scalar(
+            "SELECT is_bundled FROM bundle_rules WHERE account_id = ? AND category = ?",
+        )
+        .bind(account_id)
+        .bind(category)
+        .fetch_optional(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+
+        if bundled == Some(1) {
+            sqlx::query(
+                "INSERT OR IGNORE INTO bundled_threads (account_id, thread_id, category) VALUES (?, ?, ?)",
+            )
+            .bind(account_id)
+            .bind(thread_id)
+            .bind(category)
+            .execute(pool)
+            .await
+            .map_err(AppDbError::Database)?;
+        }
+    }
+
+    Ok(category.to_string())
+}
+
+/// Map a sender address to a mailbox category using a lightweight domain
+/// heuristic. Unknown/principal senders resolve to `Primary`.
+pub fn derive_category(from_address: &str) -> &'static str {
+    let domain = from_address
+        .rsplit('@')
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase();
+
+    // Social
+    if matches!(
+        domain.as_str(),
+        d if d.contains("facebook")
+            || d.contains("twitter")
+            || d.contains("instagram")
+            || d.contains("linkedin")
+            || d.contains("reddit")
+            || d.contains("youtube")
+            || d.contains("tiktok")
+            || d.contains("snapchat")
+            || d.contains("whatsapp")
+            || d.contains("telegram")
+    ) {
+        return "Social";
+    }
+
+    // Promotions / marketing
+    if matches!(
+        domain.as_str(),
+        d if d.contains("shop")
+            || d.contains("store")
+            || d.contains("deal")
+            || d.contains("offer")
+            || d.contains("promo")
+            || d.contains("sale")
+            || d.contains("mailchimp")
+            || d.contains("brevo")
+            || d.contains("sendgrid")
+            || d.contains("hubspot")
+            || d.contains("klaviyo")
+            || d.contains("marketing")
+            || d.contains("newsletter")
+    ) {
+        return "Promotions";
+    }
+
+    // Updates / transactional
+    if matches!(
+        domain.as_str(),
+        d if d.contains("no-reply")
+            || d.contains("noreply")
+            || d.contains("notifications")
+            || d.contains("notification")
+            || d.contains("account")
+            || d.contains("support")
+            || d.contains("billing")
+            || d.contains("security")
+            || d.contains("github")
+            || d.contains("gitlab")
+            || d.contains("npm")
+            || d.contains("stripe")
+            || d.contains("paypal")
+    ) {
+        return "Updates";
+    }
+
+    "Primary"
+}
+
+/// Set the importance flag + optional numeric score for a thread. A higher
+/// `importance_score` sorts a thread higher in a Focused inbox. `None` score
+/// leaves the existing value unchanged.
+pub async fn set_importance(
+    pool: &SqlitePool,
+    account_id: &str,
+    thread_id: &str,
+    is_important: bool,
+    importance_score: Option<i64>,
+) -> Result<(), AppDbError> {
+    if let Some(score) = importance_score {
+        sqlx::query(
+            "UPDATE threads SET is_important = ?, importance_score = ? WHERE account_id = ? AND id = ?",
+        )
+        .bind(if is_important { 1_i64 } else { 0_i64 })
+        .bind(score)
+        .bind(account_id)
+        .bind(thread_id)
+        .execute(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+    } else {
+        sqlx::query("UPDATE threads SET is_important = ? WHERE account_id = ? AND id = ?")
+            .bind(if is_important { 1_i64 } else { 0_i64 })
+            .bind(account_id)
+            .bind(thread_id)
+            .execute(pool)
+            .await
+            .map_err(AppDbError::Database)?;
+    }
     Ok(())
 }
 

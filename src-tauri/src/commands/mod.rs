@@ -508,6 +508,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             core::db_update_thread_metadata,
             core::db_batch_update_threads,
             core::db_upsert_thread,
+            core::db_set_thread_importance,
+            core::db_categorize_thread,
             core::db_delete_thread,
             core::db_delete_account_threads,
             core::db_get_all_threads,

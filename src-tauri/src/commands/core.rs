@@ -102,6 +102,10 @@ pub struct UpsertThreadRequest {
     pub is_starred: bool,
     pub is_important: bool,
     pub has_attachments: bool,
+    /// Optional sender address used to auto-categorize the thread into a
+    /// bundle/category (Promotions / Social / Updates) on ingest. If omitted,
+    /// categorization is skipped and the thread stays in Primary.
+    pub from_address: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -412,6 +416,45 @@ pub async fn db_upsert_thread(
     crate::db::tables::core::threads::upsert_thread(&pool, thread)
         .await
         .map_err(Into::into)
+}
+
+#[tauri::command]
+/// Set a thread's importance flag + optional numeric score (Focused inbox).
+pub async fn db_set_thread_importance(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    thread_id: String,
+    is_important: bool,
+    importance_score: Option<i64>,
+) -> CmdResult<()> {
+    crate::db::tables::core::threads::set_importance(
+        &pool,
+        &account_id,
+        &thread_id,
+        is_important,
+        importance_score,
+    )
+    .await
+    .map_err(Into::into)
+}
+
+#[tauri::command]
+/// Re-derive and persist a thread's category (Promotions / Social / Updates)
+/// from a sender address. Returns the derived category.
+pub async fn db_categorize_thread(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    thread_id: String,
+    from_address: String,
+) -> CmdResult<String> {
+    crate::db::tables::core::threads::categorize_thread(
+        &pool,
+        &account_id,
+        &thread_id,
+        &from_address,
+    )
+    .await
+    .map_err(Into::into)
 }
 
 #[tauri::command]

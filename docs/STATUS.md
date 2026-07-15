@@ -86,6 +86,14 @@
 - **Gate 5:** full screen-reader + keyboard audit; axe-core CI (deferred).
 - **Gate 9:** 7-day dogfooding; 5–10 SME beta testers; RC tagging + multi-platform build/install.
 
+
+### 🚀 Phase B backend core shipped (2026-07-15) — email UX parity foundation
+Rust-side groundwork for Gmail/Outlook-grade email UX (per `docs/plans/MVP_LAUNCH_PLAN.md` Phase B):
+- Migration `031_thread_importance_score.sql` adds a nullable `importance_score` to `threads` for Focused-inbox ranking.
+- `threads.categorize_thread` + `derive_category` auto-classify a thread into **Promotions / Social / Updates / Primary** from the sender domain on ingest (idempotent; writes `thread_categories` + `bundled_threads`; non-fatal so it never breaks ingest). Wired into `upsert_thread` via the new optional `UpsertThreadRequest.from_address`.
+- New IPC commands (registered in `commands/mod.rs` master `generate_handler!`): `db_set_thread_importance(account_id, thread_id, is_important, importance_score?)` and `db_categorize_thread(account_id, thread_id, from_address)`.
+- Frontend wiring (hover action rail, bulk toolbar, Focused toggle, undo-send pref, NL snooze, command palette) is the remaining UI work — see MVP plan Phase B.
+
 ### 🧩 Missing / Deferred / Debt — the worklist
 1. **RTL & i18n completion (north-star):** AGENTS.md still flags ~400 physical-direction violations (`text-left`→`text-start`, `ml-*`→`ms-*`, `left/right`→`inset-inline-*`) and residual `[TODO]`/`"KEY"` placeholders in ja/it. Largest single cleanup.
 2. **Store consolidation:** legacy `src/stores/` (production `threadsStore`, `labelsStore`, `composerStore`, `accountsStore`, …) duplicates `src/shared/stores` + `src/features/*/stores`. Merge into canonical locations.
