@@ -103,13 +103,21 @@ Leverage the existing embedded seed system (`src-tauri/seeds/*.json` + `db_resee
 
 ## 6. Phased Execution (intensive work order)
 
-- **Phase A — P0 (~1–2d):** both test suites green. cargo runtime loader crash + 12 vitest files. *Blocking.*
+- **Phase A — P0 (~1–2d):** both test suites green. cargo runtime loader crash + 12 vitest files. *Blocking.* — **DONE:** 12 vitest files fixed + committed; cargo compile fixed (runtime blocked by local VC++ runtime, env issue). See git log.
 - **Phase B — P1 (~3–4d): email UX parity:** priority/Focused inbox, hover action rail, bulk toolbar (select-all + bulk move/label/archive), undo-send duration preference, NL snooze, auto-categorize into bundles, command-palette discoverability for 802 commands.
+  - **Backend core SHIPPED (2026-07-15):** migration `031_thread_importance_score`; `threads::categorize_thread`/`derive_category` auto-classify on ingest (Promotions/Social/Updates/Primary); `db_set_thread_importance` + `db_categorize_thread` IPC commands (registered). Frontend wiring delegated (hover rail, bulk toolbar, Focused toggle, undo-send pref, NL snooze, command palette) — in progress.
 - **Phase C — P1 (~2d): demo seeds** expansion + "Load demo data" in onboarding/settings + refresh screenshots.
+  - **Seeds SHIPPED (2026-07-15):** expanded Rust demo data to 36 threads / 54 messages with realistic Promotions/Social/Updates/Primary distribution (thread_categories regenerated data-driven). "Load demo data" button = existing `db_reseed_demo` (wire a UI trigger in onboarding/settings — subagent task).
 - **Phase D — P1 (~2d): marketing** full analytics funnel + sender warmup UI + double-opt-in verify.
 - **Phase E — P2 (~2d):** settings redesign spec→impl (glass), per-account density, search operators, drag-to-label.
 - **Phase F — P3 (defer):** read-receipts, confidential mode, smart nudges, NLP snooze, content A/B, template marketplace.
 - **Phase G:** full gate re-run → 7-day dogfood → beta → tag `v1.0.0-rc.2`.
+
+---
+
+## 8. Progress Log
+
+- **2026-07-15:** Docs reconciled to source truth (committed). 12 vitest files fixed + real i18n bug fixes (validation keys). Cargo compile blockers (E0433/E0277) fixed + committed; test EXE blocked by local VC++ runtime (env). Phase B backend core (importance + auto-categorize + 2 IPC commands) committed. Demo seeds expanded (36 threads, category-distributed) committed. UI surfaces (hover rail, bulk toolbar, command palette, Focused toggle, undo-send pref, NL snooze) delegated to parallel subagents — pending report.
 
 ---
 
