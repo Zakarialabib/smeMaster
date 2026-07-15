@@ -147,7 +147,8 @@ What the app does, grouped by functional area.
 | Doc                                                           | Covers                                        |
 | ------------------------------------------------------------- | --------------------------------------------- |
 | [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) ⚠️ **MISSING** | Full-screen setup wizard replacing modal tour — spec not written yet (see gaps) |
-| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ⚠️ **MISSING**  | Settings UI/UX overhaul specification — spec not written yet (see gaps) |
+| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ✅ written 2026-07-15 | Settings IA regroup (9 groups), Appearance promotion, navConfig drift fix, global/per-account matrix |
+| [Navigation & IA Spec](03-FRONTEND/14-navigation-ia-spec.md) ✅ written 2026-07-15 | Email-first rail order, orphaned Tasks/Calendar/Campaigns fix, Customer-360 cross-wiring |
 
 ## Superpowers
 

@@ -161,8 +161,12 @@ This is the single real fork. Everything in sections 2–11 is direction-indepen
 - Decision point lives in `MobileShell` via `useScreenInfo()` (already wired). Keep.
 
 ### 4.2 Navigation parity (fixes G6)
-- Desktop NavRail groups already cover: Dashboard, Mail, CRM, Tasks, Calendar, Automation,
-  Invoicing, ERP, Campaigns, Settings, etc. (`navConfig.ts` `NAV_GROUPS`).
+- Desktop NavRail groups (VERIFIED 2026-07-15 against `navConfig.ts` `NAV_GROUPS`): only
+  `Dashboard, Mail, CRM, Automation, Vault, AI, Settings, Help`. **Tasks, Calendar and
+  Campaigns have NO rail group** and are only reachable via the command palette or deep
+  links — this is a known gap (see `docs/03-FRONTEND/14-navigation-ia-spec.md` §0). The
+  prior claim that the rail "covers Tasks/Calendar/Campaigns/Invoicing/ERP" was FALSE and
+  is corrected here. Invoicing/ERP are reachable only as sub-items of the Dashboard group.
 - **Mobile BottomTabBar** must expose the top-level primary destinations, NOT just mail.
   Proposed 5-tab phone bar (max 5 for thumb reach):
   1. Dashboard (`/dashboard/mobile`)
