@@ -8,6 +8,7 @@
 //   const folders = await invoke("imap_list_folders", { config: myConfig });
 
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import { isTauriEnvironment, TauriUnavailableError } from "@shared/services/ipc";
 
 // ==========================================================================
 // Shared Types (mirrors Rust structs used in command signatures)
@@ -818,5 +819,12 @@ export async function invoke<T extends keyof TauriCommands>(
     ? [params?: undefined]
     : [params: TauriCommands[T]['params']]
 ): Promise<TauriCommands[T]['result']> {
+  // Mirror the guard in @shared/services/ipc: outside a Tauri shell the raw
+  // invoke dereferences window.__TAURI_INTERNALS__ and throws the cryptic
+  // "Cannot read properties of undefined (reading 'invoke')". Short-circuit
+  // with a clean, catchable error instead.
+  if (!isTauriEnvironment()) {
+    throw new TauriUnavailableError(command as string);
+  }
   return tauriInvoke(command as string, (args ?? {}) as Record<string, unknown>);
 }
