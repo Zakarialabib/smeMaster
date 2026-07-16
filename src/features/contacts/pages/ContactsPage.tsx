@@ -15,10 +15,12 @@ import {
   UserPlus,
   X,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useContactStore, type ContactGroup, type ContactSegment } from "@features/contacts/stores/contactStore";
 import { getAllContacts, countAllContacts, type DbContact } from "@features/contacts/db/contacts";
+import { filterContacts } from "@shared/services/db/invoke/crm";
 import { GroupManager } from "@features/contacts/components/GroupManager";
 import { CsvImportWizard } from "@features/contacts/components/CsvImportWizard";
 import { ContactMergeDialog } from "@features/contacts/components/ContactMergeDialog";
@@ -90,6 +92,13 @@ export function ContactsPage() {
   const [groupFilter, setGroupFilter] = useState<string | null>(null);
   const [segmentFilter, setSegmentFilter] = useState<string | null>(null);
 
+  // Backend-filtered contacts (when a tag/group/segment filter is active).
+  // Falls back to the store-loaded `contacts` when no filter is active or the
+  // backend call fails (e.g. command not yet available in some environments).
+  const [filteredSource, setFilteredSource] = useState<DbContact[]>([]);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [filterError, setFilterError] = useState<string | null>(null);
+
   // View preferences (persisted in localStorage)
   const { prefs, setViewMode, setDensity, setSort } = useViewPrefs();
 
@@ -143,6 +152,44 @@ export function ContactsPage() {
       setTab("contacts");
     }
   }, [tagFilter, groupFilter, segmentFilter]);
+
+  // Fetch narrowed contacts from the backend whenever a tag/group/segment
+  // filter becomes active. When no filter is active, the store-loaded
+  // `contacts` list is the source. If the backend call throws (e.g. the
+  // command is unavailable in some environment), fall back to `contacts`
+  // rather than crashing.
+  const hasBackendFilter = tagFilter !== null || groupFilter !== null || segmentFilter !== null;
+  useEffect(() => {
+    if (!hasBackendFilter) {
+      setFilteredSource([]);
+      setFilterError(null);
+      return;
+    }
+    let cancelled = false;
+    setFilterLoading(true);
+    setFilterError(null);
+    filterContacts({
+      tagId: tagFilter,
+      groupId: groupFilter,
+      segmentId: segmentFilter,
+    })
+      .then((rows) => {
+        if (cancelled) return;
+        setFilteredSource(rows as unknown as DbContact[]);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("Failed to filter contacts:", err);
+        setFilterError((err as Error)?.message ?? "Failed to filter contacts");
+        setFilteredSource([]);
+      })
+      .finally(() => {
+        if (!cancelled) setFilterLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hasBackendFilter, tagFilter, groupFilter, segmentFilter]);
 
   const handleFindDuplicates = useCallback(async () => {
     const candidates = await findMergeCandidates();
@@ -217,13 +264,14 @@ export function ContactsPage() {
     setSegmentFilter(null);
   }, []);
 
-  // Filter contacts. Search narrows client-side immediately. Tag/group/segment
-  // narrowing requires a backend join query (`db_filter_contacts`) that is not
-  // yet exposed; the active-filter chips are shown for selection but do not
-  // currently narrow the list. This is a known backend gap, not a silent bug —
-  // see ContactsPage filter note below.
+  // Filter contacts. When a tag/group/segment filter is active, the source is
+  // the backend-narrowed list (`filteredSource`); otherwise it is the
+  // store-loaded `contacts` list. Search narrows client-side on top in both
+  // cases. If the backend filter call failed, `filteredSource` is empty and we
+  // fall back to the unfiltered `contacts` list so the UI never crashes.
+  const sourceContacts = hasBackendFilter && !filterError ? filteredSource : contacts;
   const filteredContacts = useMemo(() => {
-    let out = contacts;
+    let out = sourceContacts;
     if (search) {
       const q = search.toLowerCase();
       out = out.filter(
@@ -233,13 +281,7 @@ export function ContactsPage() {
       );
     }
     return out;
-  }, [contacts, search]);
-
-  // True only when a tag/group/segment filter is selected but the backend
-  // join to actually narrow the list is not yet available.
-  const filterPending =
-    (tagFilter !== null || groupFilter !== null || segmentFilter !== null) &&
-    filteredContacts.length === contacts.length;
+  }, [sourceContacts, search]);
 
   const orderedContactIds = useMemo(
     () => filteredContacts.map((c) => c.id),
@@ -529,11 +571,16 @@ export function ContactsPage() {
 
               {/* Active filters */}
               <FilterChipBar filters={activeFilters} onClearAll={clearAllFilters} />
-              {filterPending && (
+              {filterLoading && (
+                <p className="mt-1.5 text-[11px] text-text-tertiary flex items-center gap-1.5">
+                  <Loader2 size={12} className="shrink-0 animate-spin" />
+                  Filtering contacts…
+                </p>
+              )}
+              {filterError && (
                 <p className="mt-1.5 text-[11px] text-warning flex items-center gap-1.5">
                   <AlertCircle size={12} className="shrink-0" />
-                  Tag, group, and segment filters are selected but not yet
-                  narrowing the list — backend join filtering is coming soon.
+                  Couldn't apply the filter — showing all contacts instead.
                 </p>
               )}
 

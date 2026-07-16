@@ -9,7 +9,7 @@
  * unavailable (e.g. browser dev server) a clear empty state is shown instead
  * of fabricated data.
  */
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   RefreshCw,
   Server,
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useHealthStore } from "../stores/healthStore";
 import type { ServiceHealth } from "../stores/healthStore";
+import { restartSubsystem } from "@shared/services/db/invoke/crm";
 import { cn } from "@shared/utils/cn";
 import { Button } from "@shared/components/ui/Button";
 import { SettingGroup } from "@features/settings/components/SettingsHelpers";
@@ -75,6 +76,21 @@ function getSeverityCounts(services: ServiceHealth[]) {
 
 function ServiceCard({ service }: { service: ServiceHealth }) {
   const style = STATUS_STYLES[service.status];
+  const refresh = useHealthStore((s) => s.refresh);
+  const [restarting, setRestarting] = useState(false);
+
+  const handleRestart = useCallback(async () => {
+    if (restarting) return;
+    setRestarting(true);
+    try {
+      await restartSubsystem(service.id);
+      await refresh();
+    } catch (err) {
+      console.error("Failed to restart subsystem:", err);
+    } finally {
+      setRestarting(false);
+    }
+  }, [restarting, service.id, refresh]);
 
   return (
     <div
@@ -108,17 +124,16 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           </div>
         </div>
 
-        {/* Restart is managed automatically by the orchestrator watchdog;
-            no public restart IPC exists yet, so the control is disabled. */}
         <Button
           variant="ghost"
           size="xs"
-          disabled
-          className="shrink-0 opacity-40 cursor-not-allowed"
-          aria-label={`Restart ${service.name} (managed automatically)`}
-          title="Restart is managed automatically by the watchdog"
+          onClick={handleRestart}
+          disabled={restarting}
+          className="shrink-0"
+          aria-label={`Restart ${service.name}`}
+          title="Restart service"
         >
-          <Play size={12} />
+          {restarting ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
         </Button>
       </div>
 
