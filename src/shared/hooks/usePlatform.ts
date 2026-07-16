@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getDeviceInfoBridge } from "@/shared/services/nativeBridges";
+import { isTauriEnvironment } from "@/shared/services/ipc";
 
 /**
  * Platform identity from Rust IPC. Matches the Rust `PlatformInfo` struct.
@@ -124,9 +125,18 @@ const DEFAULT_PLATFORM: PlatformInfo = {
   is_phone: false,
 };
 
+/**
+ * Platform identity used when running outside a Tauri shell (browser dev
+ * server / web build). There is no native desktop or mobile backend, so
+ * capability flags are reported as false. Layout decisions should use
+ * `screen.isDesktop` / `screen.isMobile` (viewport based) instead — those
+ * remain accurate. Reporting `desktop: false` here lets capability-gated
+ * features (backup scheduler, hardware, native dialogs) skip their backend
+ * calls instead of throwing TauriUnavailableError in a dev server.
+ */
 const WEB_FALLBACK: PlatformInfo = {
   mobile: false,
-  desktop: true,
+  desktop: false,
   os: "web",
   arch: "web",
   is_tablet: false,
@@ -154,7 +164,9 @@ const WEB_FALLBACK: PlatformInfo = {
 export function usePlatform(): FullPlatformInfo {
   const [platform, setPlatform] = useState<PlatformInfo>(() => {
     if (cachedPlatform) return cachedPlatform;
-    return DEFAULT_PLATFORM;
+    // Outside a Tauri shell there is no native backend — report no platform
+    // capability so capability-gated features skip their IPC calls.
+    return isTauriEnvironment() ? DEFAULT_PLATFORM : WEB_FALLBACK;
   });
   const [screenInfo, setScreenInfo] = useState<ScreenInfo>(computeScreenInfo);
   const [nativeInfo, setNativeInfo] = useState<{ is_tablet: boolean; screenSizeClass?: string } | null>(null);

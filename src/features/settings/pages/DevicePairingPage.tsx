@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { HelpCard } from "@features/settings/components/HelpCard";
 import { syncNow, SyncState, SyncResult } from "../services/sync/syncService";
+import { isTauriEnvironment } from "@shared/services/ipc";
 
 interface PairedDevice {
   device_id: string;
@@ -224,7 +225,12 @@ export function DevicePairingPage() {
       {/* Global error display */}
       {error && !globalSyncError && (
         <div className="bg-danger-bg border border-danger-border text-danger-text rounded-lg p-3 mb-4 text-sm">
-          {error}
+          {!isTauriEnvironment() || error.includes("Tauri backend is not available")
+            ? t(
+                "settings.pairingUnavailableDev",
+                "Device pairing is available in the desktop app.",
+              )
+            : error}
         </div>
       )}
 
