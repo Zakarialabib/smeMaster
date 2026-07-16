@@ -14,6 +14,7 @@ import {
   History,
   UserPlus,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { useContactStore, type ContactGroup, type ContactSegment } from "@features/contacts/stores/contactStore";
@@ -216,8 +217,11 @@ export function ContactsPage() {
     setSegmentFilter(null);
   }, []);
 
-  // Filter contacts (search + tag/group/segment filters; filtering by tag/group/segment
-  // is a UI affordance — when a real backend join exists, replace with a query).
+  // Filter contacts. Search narrows client-side immediately. Tag/group/segment
+  // narrowing requires a backend join query (`db_filter_contacts`) that is not
+  // yet exposed; the active-filter chips are shown for selection but do not
+  // currently narrow the list. This is a known backend gap, not a silent bug —
+  // see ContactsPage filter note below.
   const filteredContacts = useMemo(() => {
     let out = contacts;
     if (search) {
@@ -228,11 +232,14 @@ export function ContactsPage() {
           (c.display_name?.toLowerCase().includes(q) ?? false),
       );
     }
-    // Tag/group/segment filters are placeholders; the backend filter is
-    // wired in Phase 2-B (depends on a `db_filter_contacts` command). Until
-    // then, the chip is shown but no narrowing happens client-side.
     return out;
   }, [contacts, search]);
+
+  // True only when a tag/group/segment filter is selected but the backend
+  // join to actually narrow the list is not yet available.
+  const filterPending =
+    (tagFilter !== null || groupFilter !== null || segmentFilter !== null) &&
+    filteredContacts.length === contacts.length;
 
   const orderedContactIds = useMemo(
     () => filteredContacts.map((c) => c.id),
@@ -522,6 +529,13 @@ export function ContactsPage() {
 
               {/* Active filters */}
               <FilterChipBar filters={activeFilters} onClearAll={clearAllFilters} />
+              {filterPending && (
+                <p className="mt-1.5 text-[11px] text-warning flex items-center gap-1.5">
+                  <AlertCircle size={12} className="shrink-0" />
+                  Tag, group, and segment filters are selected but not yet
+                  narrowing the list — backend join filtering is coming soon.
+                </p>
+              )}
 
               {/* Toolbar */}
               <ContactsToolbar
