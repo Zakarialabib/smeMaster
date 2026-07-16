@@ -25,8 +25,10 @@ export { useContactStore as useContactsStore, type ContactTag, type ContactGroup
 export { useContactStore as useGroupsStore } from "@features/contacts/stores/contactStore";
 export { useContactStore as useSegmentsStore } from "@features/contacts/stores/contactStore";
 
-// Campaigns stores - direct import from canonical location
-export { useCampaignsStore, type Campaign, type CampaignStat } from "./campaigns";
+// Campaigns stores - canonical store lives at @features/campaigns/stores/campaignStore.
+// Types are re-exported here for backward compatibility.
+export type { Campaign } from "@shared/services/db/schema";
+export type { CampaignStat } from "@features/campaigns/stores/campaignStore";
 
 // Vault stores - direct import from feature location
 export { useVaultStore, type VaultFileItem, type VaultViewMode, type VaultSortField, type VaultSortDirection } from "@features/vault/stores/vaultStore";
