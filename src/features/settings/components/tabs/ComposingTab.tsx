@@ -505,7 +505,7 @@ export default function ComposingTab() {
       <div id="composing-section-templates">
         <SettingGroup
           title={t("search.templates")}
-          description={t("search.templates.desc", "Create reusable email templates with variable placeholders for consistent messaging.")}
+          description={t("search.templateDesc", "Create reusable email templates with variable placeholders for consistent messaging.")}
         >
           <HelpCard
             items={[
@@ -543,7 +543,7 @@ export default function ComposingTab() {
       {/* ── Content Quality Section ── */}
       <div id="composing-section-content-quality">
         <SettingGroup
-          title={t('settings.contentQuality')}
+          title={t('settings.contentQualityTitle')}
           description={t("settings.contentQuality.desc", "Write better emails with AI-powered analysis, spam detection, and readability scoring.")}
         >
           <HelpCard

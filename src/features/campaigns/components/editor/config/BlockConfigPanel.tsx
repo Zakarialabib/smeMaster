@@ -208,10 +208,12 @@ function ImageConfig({ block }: { block: ImageBlock }) {
         value={block.padding}
         onChange={(p) => update(block.id, { padding: p })}
       />
-      {/* "From Vault" picker is owned by a separate agent; placeholder only. */}
+      {/* "From Vault" picker has no vault integration yet; kept visible but disabled to communicate intent. */}
       <button
         type="button"
         disabled
+        title={t("campaign.editor.fromVaultComingSoon")}
+        aria-disabled="true"
         className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded border border-dashed border-border-primary py-2 text-xs text-text-tertiary opacity-60"
       >
         <ImageIcon size={14} />

@@ -37,14 +37,14 @@ export default function PairingSettings() {
 
   if (isLocked) {
     return (
-      <SettingGroup title={t("settings.pairing")}>
-        <UpgradeBanner featureName={t("settings.pairing")} />
+      <SettingGroup title={t("settings.pairingTitle")}>
+        <UpgradeBanner featureName={t("settings.pairingTitle")} />
       </SettingGroup>
     );
   }
 
   return (
-    <SettingGroup title={t("settings.pairing")}>
+    <SettingGroup title={t("settings.pairingTitle")}>
       <div className="flex flex-col gap-4">
         {/* Device name + generate */}
         <div className="flex items-center gap-2">

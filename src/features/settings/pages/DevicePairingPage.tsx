@@ -145,8 +145,10 @@ export function DevicePairingPage() {
     }
   }
 
+  // Device-pairing IPC commands are not yet implemented on the backend.
+  // The button is intentionally disabled so the gap is explicit rather than a silent no-op.
   function handlePairNew() {
-    // Stub: Real pairing flow TBD
+    // No-op: pairing flow is not yet implemented.
   }
 
   /** CSS class for the global sync status indicator */
@@ -317,11 +319,17 @@ export function DevicePairingPage() {
 
       <button
         onClick={handlePairNew}
-        className="flex items-center justify-center gap-2 w-full py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent-hover transition-colors"
+        disabled
+        title={t("settings.pairNewDeviceComingSoon")}
+        aria-disabled="true"
+        className="flex items-center justify-center gap-2 w-full py-3 bg-accent text-white rounded-lg font-medium opacity-50 cursor-not-allowed transition-colors"
       >
         <Plus className="w-5 h-5" />
         {t("settings.pairNewDevice")}
       </button>
+      <p className="mt-2 text-xs text-text-tertiary text-center">
+        {t("settings.pairNewDeviceComingSoon")}
+      </p>
 
       {/* Education: Device Pairing */}
       <div className="mt-6">

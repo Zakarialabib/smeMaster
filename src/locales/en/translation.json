@@ -285,7 +285,7 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "settings.tabs.cache"
+      "cache": "Cache"
     },
     "appearance": "Appearance",
     "surface": "Surface",
@@ -438,120 +438,7 @@
     "autoArchive": "Auto-archive {{cat}}",
     "skipInbox": "Skip inbox for {{cat}} emails",
     "categories": "Categories",
-    "features": {
-      "general": {
-        "name": "General",
-        "desc": "Theme, layout, language, privacy, and appearance settings"
-      },
-      "people": {
-        "name": "People",
-        "desc": "Contact management, groups, tags, segments, CSV import"
-      },
-      "composing": {
-        "name": "Composing",
-        "desc": "Rich text editor, signatures, quick replies, pre-send checklist"
-      },
-      "templates": {
-        "name": "Templates",
-        "desc": "Email templates with variables, categories, and conditional blocks"
-      },
-      "notifications": {
-        "name": "Notifications",
-        "desc": "Desktop and push notifications for incoming mail"
-      },
-      "snooze": {
-        "name": "Snooze",
-        "desc": "Snooze presets for delaying email visibility until later"
-      },
-      "shortcuts": {
-        "name": "Shortcuts",
-        "desc": "Customizable keyboard shortcuts with two-key sequences"
-      },
-      "ai": {
-        "name": "AI",
-        "desc": "Claude/OpenAI/Gemini integration, smart replies, auto-categorization, thread summaries"
-      },
-      "mailRules": {
-        "name": "Mail Rules",
-        "desc": "Labels, filters, smart folders, quick steps for auto-organizing mail"
-      },
-      "workflows": {
-        "name": "Workflows",
-        "desc": "Trigger/action automation engine: auto-reply, follow-ups, task creation, forwarding"
-      },
-      "campaigns": {
-        "name": "Campaigns",
-        "desc": "Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
-      },
-      "pgp": {
-        "name": "PGP Encryption",
-        "desc": "End-to-end encryption with Sequoia OpenPGP key management"
-      },
-      "compliance": {
-        "name": "Compliance",
-        "desc": "GDPR, CAN-SPAM, LGPD profiles with rule engine and AI enhancer"
-      },
-      "backup": {
-        "name": "Backup",
-        "desc": "Full data backup, restore, export, and archive management"
-      },
-      "pairing": {
-        "name": "Pairing",
-        "desc": "QR-based secure pairing between Desktop and Mobile devices"
-      },
-      "queue": {
-        "name": "Queue",
-        "desc": "Offline queue, pending operations, send scheduling, and retry management"
-      },
-      "deliverabilityDashboard": {
-        "name": "Deliverability",
-        "desc": "Domain health scores, provider compatibility, and remediation wizard"
-      },
-      "presend": {
-        "name": "Pre-send",
-        "desc": "Pre-flight checklist, attachment validation, and send verification"
-      },
-      "content": {
-        "name": "Quality",
-        "desc": "Content quality analysis, readability scoring, and tone suggestions"
-      },
-      "dns": {
-        "name": "DNS",
-        "desc": "SPF, DKIM, DMARC, MX, and DNS record verification"
-      },
-      "blacklist": {
-        "name": "Blacklist",
-        "desc": "Blacklist monitoring, IP reputation, and DNSBL queries"
-      },
-      "bounce": {
-        "name": "Bounces",
-        "desc": "Bounce classification, suppression list, and undelivered email tracking"
-      },
-      "warming": {
-        "name": "Warming",
-        "desc": "Sender reputation warming, volume ramp-up, and IP warm-up schedules"
-      },
-      "offlineAvailability": {
-        "name": "Offline Availability",
-        "desc": "Mark accounts, folders, and contacts as available offline — compose, search, and act without network"
-      },
-      "rag": {
-        "name": "Local RAG",
-        "desc": "On-device retrieval-augmented generation for private, context-aware AI answers over your mail and documents"
-      },
-      "businessProfile": {
-        "name": "Business Profile",
-        "desc": "Company legal, tax, and compliance identity (ICE, CNSS, RC) used across documents and invoicing"
-      },
-      "dashboard": {
-        "name": "Dashboard",
-        "desc": "Business health, KPIs, and analytics across mail, tasks, and campaigns"
-      },
-      "invoicing": {
-        "name": "Invoicing",
-        "desc": "Create, send, and track professional invoices and estimates with PDF export"
-      }
-    },
+    "features": "Features",
     "aiLanguage": "AI Response Language",
     "aiLanguageAuto": "Auto (use app language)",
     "aiLanguageEn": "English",
@@ -629,7 +516,8 @@
       "readingTime": "Reading time",
       "suggestions": "Suggestions",
       "wordCount": "Word count",
-      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring.",
+      "contentQualityTitle": "Content Quality"
     },
     "contactsDescription": "Contacts are automatically added when you send or receive emails. Edit display names or remove contacts below.",
     "subscriptionsDescription": "View all detected newsletter and promotional senders. Unsubscribe using RFC 8058 one-click POST, mailto, or browser fallback.",
@@ -940,18 +828,15 @@
     "pairing": {
       "why": "Pairing links your phone so mail and data stay in sync.",
       "how": "Scan the QR code in Pairing with the mobile app to connect.",
-      "when": "Pair when you install SMEMaster on a new mobile device."
+      "when": "Pair when you install SMEMaster on a new mobile device.",
+      "pairingTitle": "Pairing"
     },
     "pairingDevicePlaceholder": "Device name",
     "generate": "Generate",
     "scanWithMobile": "Scan with mobile app",
     "pairedDevices": "Paired devices",
     "microsoftApi": "Microsoft API",
-    "backup": {
-      "why": "Backups protect you from data loss and device failure.",
-      "how": "Create an encrypted backup and store it somewhere safe.",
-      "when": "Back up before major changes or on a regular schedule."
-    },
+    "backup": "Backup",
     "backupScheduler": "Backup scheduler",
     "calendar": {
       "why": "Calendar sync keeps meetings and email in one place.",
@@ -968,6 +853,7 @@
     "devicePairing": "Device pairing",
     "noPairedDevices": "No paired devices",
     "pairNewDevice": "Pair new device",
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon",
     "mobile": "Mobile",
     "enableBackgroundSync": "Background sync",
     "cache": {
@@ -1170,7 +1056,8 @@
       "queue": "Inspect pending operations and sync status.",
       "accountCleaning": "Automate cleanup of old or unwanted mail.",
       "license": "View your license and activation status.",
-      "featureFlags": "Preview experimental and tier-gated features."
+      "featureFlags": "Preview experimental and tier-gated features.",
+      "cache": "Manage caches, sync state, and local storage used by the app."
     },
     "education": {
       "general": {
@@ -1357,15 +1244,13 @@
     "nav": "Navigation",
     "ai": "AI",
     "settings": "Settings",
-    "templates": {
-      "": "Templates",
-      "desc": "Reusable message templates"
-    },
+    "templates": "Create reusable email templates with variable placeholders for consistent messaging.",
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
     "insertTemplate": "Insert template",
-    "switchToTheme": "Switch to theme"
+    "switchToTheme": "Switch to theme",
+    "templateDesc": "Create reusable email templates with variable placeholders for consistent messaging."
   },
   "empty": {
     "noImportantConversations": "No important conversations",
@@ -1562,6 +1447,7 @@
       "noContent": "No content yet",
       "insertImage": "Insert image",
       "fromVault": "From Vault",
+      "fromVaultComingSoon": "Attach from Vault is coming soon",
       "imageAlt": "Alt text",
       "linkUrl": "Link URL",
       "align": "Alignment",
@@ -1856,8 +1742,8 @@
     "connections": "Connections",
     "enabled": "Enabled",
     "skipToContent": "Skip to main content",
-    "on": "common.on",
-    "off": "common.off"
+    "on": "On",
+    "off": "Off"
   },
   "quickReply": {
     "title": "Quick Replies",
@@ -2331,5 +2217,12 @@
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
     "editCompany": "Edit Company"
+  },
+  "categories": {
+    "primary": "Primary",
+    "updates": "Updates",
+    "promotions": "Promotions",
+    "social": "Social",
+    "newsletters": "Newsletters"
   }
 }
