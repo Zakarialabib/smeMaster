@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Printer } from 'lucide-react';
 import { useHardwareStore, HardwareConfig, DeviceType, ConnectionType } from '@features/pos/stores/hardwareStore';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import { notify } from '@shared/services/notifications/toastHelper';
 import { HelpCard } from '@features/settings/components/HelpCard';
 
@@ -40,7 +40,7 @@ export const HardwareSettings: React.FC = () => {
 
   const testDevice = async (config: HardwareConfig) => {
     try {
-      await invoke('pos_test_printer', { config });
+      await invokeCommand('pos_test_printer', { config });
       notify('Printer', 'Test print sent!');
     } catch (err) {
       notify('Printer', `Test failed: ${err}`);
