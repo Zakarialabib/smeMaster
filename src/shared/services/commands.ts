@@ -9,7 +9,21 @@
 
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { isTauriEnvironment, TauriUnavailableError } from "@shared/services/ipc";
-import type { Contact } from "./db/schema";
+import type {
+  Contact,
+  Invoice,
+  InvoiceItem,
+  InvoiceWithItems,
+  Client,
+  Item,
+  Company,
+  CompanySetting,
+  Category,
+  ErpAccount,
+  JournalEntry,
+  PnlResult,
+  Wallet,
+} from "./db/schema";
 
 // ==========================================================================
 // Shared Types (mirrors Rust structs used in command signatures)
@@ -804,6 +818,258 @@ type TauriCommands = {
   db_restart_subsystem: {
     params: { name: string };
     result: SubsystemStatusSnapshot;
+  };
+
+  // ── Invoicing: invoices ───────────────────────────────────────────
+  db_list_invoices: {
+    params: { companyId: string; typeFilter?: string | null; statusFilter?: string | null };
+    result: Invoice[];
+  };
+  db_get_invoice: { params: { id: string }; result: Invoice };
+  db_get_invoice_with_items: { params: { invoiceId: string }; result: InvoiceWithItems };
+  db_create_invoice: {
+    params: {
+      companyId: string;
+      clientId: string;
+      documentType: string;
+      invoiceNumber: string;
+      issueDate: number;
+      dueDate?: number | null;
+      currency: string;
+      notes?: string | null;
+      itemsReq: Array<{
+        description: string;
+        qty: number;
+        unit?: string | null;
+        unitPrice: number;
+        taxRate: number;
+        sortOrder: number;
+      }>;
+    };
+    result: Invoice;
+  };
+  db_update_invoice: {
+    params: {
+      id: string;
+      status?: string | null;
+      notes?: string | null;
+      date?: number | null;
+      dueDate?: number | null;
+      currency?: string | null;
+      clientId?: string | null;
+      items?: Array<{
+        description: string;
+        qty: number;
+        unit?: string | null;
+        unitPrice: number;
+        taxRate: number;
+        sortOrder: number;
+      }> | null;
+    };
+    result: Invoice;
+  };
+  db_delete_invoice: { params: { id: string }; result: void };
+  db_add_invoice_item: {
+    params: {
+      invoiceId: string;
+      description: string;
+      qty: number;
+      unit?: string | null;
+      unitPrice: number;
+      taxRate: number;
+      sortOrder: number;
+    };
+    result: InvoiceItem;
+  };
+  db_remove_invoice_item: { params: { itemId: string }; result: void };
+  db_update_invoice_status: { params: { id: string; status: string }; result: void };
+  db_calculate_invoice: { params: { invoiceId: string }; result: Invoice };
+
+  // ── Invoicing: clients ─────────────────────────────────────────────
+  db_list_clients: { params: { companyId: string; role?: string | null }; result: Client[] };
+  db_get_client: { params: { id: string }; result: Client };
+  db_create_client: {
+    params: {
+      companyId: string;
+      name: string;
+      email?: string | null;
+      phone?: string | null;
+      address?: string | null;
+      city?: string | null;
+      country?: string | null;
+      taxId?: string | null;
+      role?: string | null;
+      creditLimit?: number | null;
+      paymentTerms?: number | null;
+      notes?: string | null;
+    };
+    result: Client;
+  };
+  db_update_client: {
+    params: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      address?: string | null;
+      city?: string | null;
+      country?: string | null;
+      taxId?: string | null;
+      role?: string | null;
+      creditLimit?: number | null;
+      paymentTerms?: number | null;
+      notes?: string | null;
+    };
+    result: Client;
+  };
+  db_delete_client: { params: { id: string; hard?: boolean | null }; result: void };
+
+  // ── Invoicing: company settings ───────────────────────────────────
+  db_get_company_settings: { params: { companyId: string }; result: CompanySetting | null };
+  db_upsert_company_settings: {
+    params: {
+      companyId: string;
+      defaultCurrency?: string | null;
+      defaultTaxRate?: number | null;
+      invoicePrefix?: string | null;
+      invoiceSuffix?: string | null;
+      quotePrefix?: string | null;
+      defaultTemplateId?: string | null;
+      logoUrl?: string | null;
+      signatureText?: string | null;
+      bankDetails?: string | null;
+      termsDefault?: string | null;
+      themeColor?: string | null;
+      unitsEnabled?: string | null;
+      taxPosition?: string | null;
+      decimalPlaces?: number | null;
+    };
+    result: CompanySetting;
+  };
+  db_delete_company_settings: { params: { companyId: string }; result: void };
+
+  // ── Invoicing: categories ─────────────────────────────────────────
+  db_list_categories: { params: { companyId: string }; result: Category[] };
+  db_get_category: { params: { id: string }; result: Category };
+  db_create_category: { params: { name: string; companyId: string }; result: Category };
+  db_update_category: { params: { id: string; name: string }; result: Category };
+  db_delete_category: { params: { id: string }; result: void };
+
+  // ── Invoicing: catalog items ──────────────────────────────────────
+  db_list_items: { params: { companyId: string }; result: Item[] };
+  db_get_item: { params: { id: string }; result: Item };
+  db_create_item: {
+    params: {
+      name: string;
+      description?: string | null;
+      itemType: string;
+      sku?: string | null;
+      unit: string;
+      buyPrice: number;
+      sellPrice: number;
+      stockQty: number;
+      stockAlert: number;
+      taxRate: number;
+      barcode?: string | null;
+      imageUrl?: string | null;
+      companyId: string;
+    };
+    result: Item;
+  };
+  db_update_item: {
+    params: {
+      id: string;
+      name?: string | null;
+      description?: string | null;
+      itemType?: string | null;
+      sku?: string | null;
+      unit?: string | null;
+      buyPrice?: number | null;
+      sellPrice?: number | null;
+      stockQty?: number | null;
+      stockAlert?: number | null;
+      taxRate?: number | null;
+      barcode?: string | null;
+      imageUrl?: string | null;
+      active?: number | null;
+    };
+    result: Item;
+  };
+  db_delete_item: { params: { id: string }; result: void };
+  db_list_low_stock: { params: { companyId: string }; result: Item[] };
+
+  // ── Invoicing: company ────────────────────────────────────────────
+  db_get_company: { params: { companyId: string }; result: Company };
+  db_update_company: {
+    params: {
+      companyId: string;
+      name?: string | null;
+      legalName?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      addressLine1?: string | null;
+      addressLine2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      postalCode?: string | null;
+      country?: string | null;
+      website?: string | null;
+      industry?: string | null;
+      timezone?: string | null;
+      logoUrl?: string | null;
+      ice?: string | null;
+      taxId?: string | null;
+      rc?: string | null;
+      cnss?: string | null;
+    };
+    result: Company;
+  };
+  db_list_companies: { params: Record<string, never>; result: Company[] };
+  db_create_company: {
+    params: {
+      name: string;
+      legalName?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      addressLine1?: string | null;
+      addressLine2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      postalCode?: string | null;
+      country?: string | null;
+      website?: string | null;
+      industry?: string | null;
+      timezone?: string | null;
+      logoUrl?: string | null;
+      ice?: string | null;
+      taxId?: string | null;
+      rc?: string | null;
+      cnss?: string | null;
+    };
+    result: Company;
+  };
+
+  // ── Invoicing: documents & delivery ───────────────────────────────
+  db_generate_invoice_documents: { params: { invoiceId: string }; result: [string, string] };
+  db_send_invoice: { params: { invoiceId: string; to?: string | null }; result: string };
+
+  // ── ERP: accounting (double-entry ledger) ─────────────────────────
+  db_ensure_chart_of_accounts: { params: { companyId: string }; result: void };
+  db_list_chart_of_accounts: { params: { companyId: string }; result: ErpAccount[] };
+  db_list_journal_entries: { params: { companyId: string }; result: JournalEntry[] };
+  db_post_invoice_journal: { params: { invoiceId: string }; result: void };
+  db_get_profit_and_loss: { params: { companyId: string }; result: PnlResult };
+
+  // ── ERP: wallet (company cash hub) ────────────────────────────────
+  db_ensure_wallet: { params: { companyId: string }; result: Wallet };
+  db_get_wallet: { params: { companyId: string }; result: Wallet };
+  db_credit_wallet: {
+    params: { companyId: string; amount: number; reference?: string | null; description?: string | null };
+    result: Wallet;
+  };
+  db_debit_wallet: {
+    params: { companyId: string; amount: number; reference?: string | null; description?: string | null };
+    result: Wallet;
   };
 };
 

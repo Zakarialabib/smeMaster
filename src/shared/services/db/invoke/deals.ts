@@ -73,9 +73,16 @@ export async function getDeal(id: string): Promise<Deal> {
 
 export async function updateDeal(
   id: string,
+  companyId: string,
   fields: Partial<Omit<Deal, 'id' | 'company_id' | 'created_at'>>,
 ): Promise<Deal> {
-  return invokeCommand<Deal>('db_update_deal', { id, fields });
+  // Rust `db_update_deal` requires `company_id` in its DTO to scope the
+  // UPDATE to the owning tenant. Omitting it would fail command deserialization.
+  return invokeCommand<Deal>('db_update_deal', {
+    id,
+    companyId,
+    fields: fields as unknown as Record<string, unknown>,
+  });
 }
 
 export async function deleteDeal(id: string): Promise<void> {
