@@ -1,7 +1,7 @@
-// src/features/onboarding/steps/CompletionStep.tsx
 import { CheckCircle2, Inbox, Mail, Zap, ArrowLeft, Crown, Shield, Brain } from "lucide-react";
 import { GlassPanel } from "@shared/components/ui/glass-panel";
 import type { OnboardingData } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface CompletionStepProps {
   data: OnboardingData;
@@ -18,14 +18,15 @@ const toolLabels: Record<string, string> = {
 };
 
 const PRO_BENEFITS = [
-  { icon: Inbox, text: "Smart inbox with priority sorting and automated folders" },
-  { icon: Brain, text: "AI writing assistant for composing and replying" },
-  { icon: Zap, text: "Campaign analytics with open/click tracking" },
-  { icon: Shield, text: "GDPR/CCPA compliance tools and data protection" },
-  { icon: Crown, text: "Priority support with dedicated onboarding" },
-];
+  { icon: Inbox, i18n: "inbox" },
+  { icon: Brain, i18n: "ai" },
+  { icon: Zap, i18n: "campaign" },
+  { icon: Shield, i18n: "compliance" },
+  { icon: Crown, i18n: "support" },
+] as const;
 
 export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps) {
+  const { t } = useTranslation();
   const enabledTools = Object.entries(data.tools)
     .filter(([, v]) => v)
     .map(([k]) => toolLabels[k] || k);
@@ -34,35 +35,31 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
   const isSkippedDemo = data.demoPreset === "skip";
 
   return (
-    <div
-      className="flex flex-col gap-6 w-full max-w-2xl mx-auto"
-      style={{ animation: "fadeIn 500ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
-    >
-      {/* Header */}
-      <div className="text-center space-y-3">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+      <div className="text-center space-y-2">
         <div
-          className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/20 mb-4"
-          style={{ animation: "scalePop 500ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both" }}
+          className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/20"
+          style={{ animation: "scalePop 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both" }}
         >
-          <CheckCircle2 className="h-8 w-8 text-green-500" />
+          <CheckCircle2 className="h-7 w-7 text-green-500" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">You're All Set!</h1>
-        <p className="text-muted-foreground text-lg">
-          Your workspace is ready for <span className="font-semibold text-foreground">{data.businessName}</span>
+        <h1 className="text-2xl font-bold tracking-tight">{t("onboarding.allSet")}</h1>
+        <p className="text-muted-foreground text-sm">
+          {t("onboarding.readyDesc")}{" "}
+          <span className="font-semibold text-foreground">{data.businessName}</span>
         </p>
       </div>
 
-      {/* Summary card */}
-      <GlassPanel variant="card" className="p-5 space-y-3">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Summary</p>
+      <GlassPanel variant="card" className="p-4 space-y-2.5">
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("onboarding.summaryLabel")}</p>
         <div className="flex items-center gap-3 text-sm">
           <div className="rounded-lg p-2 bg-accent/10">
             <Zap className="h-4 w-4 text-accent" />
           </div>
-          <div>
-            <p className="font-medium">{data.businessName}</p>
+          <div className="min-w-0">
+            <p className="font-medium truncate">{data.businessName}</p>
             <p className="text-xs text-muted-foreground/70">
-              {data.theme === "light" ? "Light" : data.theme === "dark" ? "Dark" : "System"} theme
+              {t(`onboarding.theme.${data.theme}`)} theme
               {isSkippedDemo ? " · Demo data" : ` · ${(data.demoPreset ?? "custom").replace(/_/g, " ")} profile`}
             </p>
           </div>
@@ -77,66 +74,65 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
             </span>
           ))}
           <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+            className={[
+              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium",
               hasEmail
                 ? "border-green-500/20 bg-green-500/5 text-green-500"
-                : "border-muted-foreground/20 bg-muted/5 text-muted-foreground"
-            }`}
+                : "border-muted-foreground/20 bg-muted/5 text-muted-foreground",
+            ].join(" ")}
           >
             <Mail className="h-3 w-3" />
-            {hasEmail ? "Email connected" : "Email not connected"}
+            {hasEmail ? t("onboarding.emailConnected") : t("onboarding.emailNotConnected")}
           </span>
         </div>
       </GlassPanel>
 
-      {/* Pro Benefits */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Crown className="h-4 w-4 text-amber-500" />
-          <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
-            Pro Benefits
+          <Crown className="h-3.5 w-3.5 text-amber-500" />
+          <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider">
+            {t("onboarding.proBenefitsTitle")}
           </p>
         </div>
-        <p className="text-sm text-muted-foreground -mt-1">
-          Connect your email to unlock:
+        <p className="text-xs text-muted-foreground -mt-0.5">
+          {t("onboarding.proBenefitsHint")}
         </p>
         <div className="grid gap-2">
           {PRO_BENEFITS.map((benefit, i) => {
             const Icon = benefit.icon;
             return (
               <div
-                key={i}
-                className="flex items-start gap-3 rounded-xl border border-border/50 bg-background/60 backdrop-blur-sm p-3.5"
+                key={benefit.i18n}
+                className="flex items-start gap-3 rounded-xl border border-border/50 bg-background/60 backdrop-blur-sm p-3"
                 style={{
-                  animation: `slideUp 350ms cubic-bezier(0.16, 1, 0.3, 1) both`,
-                  animationDelay: `${(i + 1) * 80}ms`,
+                  animation: "slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both",
+                  animationDelay: `${i * 60}ms`,
                 }}
               >
-                <div className="rounded-lg p-1.5 bg-amber-500/8 mt-0.5">
+                <div className="rounded-lg p-1.5 bg-amber-500/10 mt-0.5">
                   <Icon className="h-4 w-4 text-amber-500" />
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{benefit.text}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t(`onboarding.benefits.${benefit.i18n}`)}</p>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-2.5 pt-1">
         <button
+          type="button"
           onClick={onBack}
-          className="group rounded-xl border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200 flex items-center gap-2"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
         >
-          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-          Back
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("onboarding.back")}
         </button>
         <button
+          type="button"
           onClick={onComplete}
-          className="group flex-1 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-accent/20"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
         >
-          Start Using SMEMaster
-          <Zap className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+          {t("onboarding.startUsing")} <Zap className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

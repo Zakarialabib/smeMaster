@@ -1,4 +1,3 @@
-// src/features/onboarding/OnboardingScreen.tsx
 import { useState, useCallback, useEffect } from "react";
 import { CheckCircle2, Circle, Zap } from "lucide-react";
 import { ONBOARDING_STEPS, DEFAULT_TOOLS, type OnboardingData } from "./types";
@@ -8,6 +7,7 @@ import { AccountSetupStep } from "./steps/AccountSetupStep";
 import { CompletionStep } from "./steps/CompletionStep";
 import { useOnboarding } from "./hooks/useOnboarding";
 import { seedDemoPreset, finalizeOnboarding } from "@shared/services/db/invoke/onboarding";
+import { useTranslation } from "react-i18next";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -26,6 +26,7 @@ const DEFAULT_DATA: OnboardingData = {
 };
 
 export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(() => {
     try {
       const saved = sessionStorage.getItem("smemaster.onboarding.step");
@@ -39,13 +40,11 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
   const [data, setData] = useState<OnboardingData>({ ...DEFAULT_DATA });
   const { completeOnboarding } = useOnboarding();
 
-  // Persist step changes to sessionStorage
   useEffect(() => {
     sessionStorage.setItem("smemaster.onboarding.step", String(step));
     onProgress?.(step);
   }, [step, onProgress]);
 
-  // Listen for restore events
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ step: number }>).detail;
@@ -66,7 +65,6 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
     setStep((s) => Math.max(0, s - 1));
   }, []);
 
-  // Quick Start — uses defaults and jumps to completion
   const handleExpressMode = useCallback(async () => {
     setData((prev) => ({
       ...prev,
@@ -77,12 +75,11 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
     try {
       await completeOnboarding();
     } catch {
-      /* backend may be unavailable (browser/dev server) — UI completion still proceeds */
+      /* backend may be unavailable (browser/dev server) */
     }
     onComplete();
   }, [completeOnboarding, onComplete]);
 
-  // Skip to Demos — seeds demo data and completes
   const handleSkipToDemos = useCallback(async () => {
     sessionStorage.removeItem("smemaster.onboarding.step");
     try {
@@ -98,7 +95,6 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
     onComplete();
   }, [completeOnboarding, onComplete, data.businessName, data.theme]);
 
-  // Full finalize — persists all choices and seeds
   const handleFinalize = useCallback(async () => {
     sessionStorage.removeItem("smemaster.onboarding.step");
     try {
@@ -113,82 +109,46 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
         hasConnectedEmail: data.emailConnected || false,
       });
     } catch {
-      // Fallback to simple complete if finalize fails
       await completeOnboarding();
     }
     onComplete();
   }, [completeOnboarding, onComplete, data]);
 
-  const progress = ((step + 1) / ONBOARDING_STEPS.length) * 100;
-
   return (
-    <div className="fixed inset-0 z-50 flex bg-background overflow-hidden">
-      {/* Left sidebar — Step progress */}
-      <div className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 p-8">
-        <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
-              <Zap className="h-4 w-4 text-accent" />
-            </div>
-            <h2 className="text-lg font-bold tracking-tight">SMEMaster</h2>
-          </div>
-          <p className="text-xs text-muted-foreground ms-[42px]">Setup wizard</p>
-        </div>
-
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Progress</span>
-            <span className="text-[11px] font-semibold text-accent">{Math.round(progress)}%</span>
-          </div>
-          <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-            <div className="h-full bg-accent rounded-full transition-all duration-700 ease-out" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-
-        <div className="relative flex-1">
-          <div className="absolute start-[11px] top-2 bottom-8 w-[2px] bg-border rounded-full" />
-          <div className="space-y-8 relative">
-            {ONBOARDING_STEPS.map((s, i) => {
-              const isActive = step === i;
-              const isPast = step > i;
-              return (
-                <div key={s.id} className="flex items-start gap-4 relative">
-                  <div className="relative z-10 bg-card/30 py-1">
-                    {isPast ? (
-                      <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-accent-foreground" />
-                      </div>
-                    ) : isActive ? (
-                      <div className="w-6 h-6 rounded-full border-2 border-accent flex items-center justify-center bg-background shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]">
-                        <div className="w-2.5 h-2.5 rounded-full bg-accent" />
-                      </div>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-border flex items-center justify-center">
-                        <Circle className="w-2.5 h-2.5 text-transparent" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="pt-1">
-                    <p className={`text-sm font-semibold transition-colors duration-300 ${
-                      isActive ? "text-foreground" : isPast ? "text-foreground/70" : "text-muted-foreground"
-                    }`}>{s.title}</p>
-                    <p className={`text-xs mt-0.5 transition-colors duration-300 ${
-                      isActive ? "text-foreground/60" : "text-muted-foreground/60"
-                    }`}>{s.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Right content area */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 overflow-y-auto relative">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--color-accent) 4%, transparent) 0%, transparent 60%)" }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+      <div className="absolute inset-0 bg-bg-primary/30 backdrop-blur-[3px]" />
+      <div className="relative w-full max-w-3xl overflow-hidden frost-surface rounded-[--frost-radius-lg] border border-[var(--color-border-primary)]">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-accent) 6%, transparent) 0%, transparent 50%)" }}
         />
-        <div className="w-full max-w-2xl relative">
+
+        <div className="relative px-6 py-5 md:px-10 md:py-6 border-b border-[var(--color-border-primary)]/60">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10 border border-accent/20">
+                <Zap className="h-4 w-4 text-accent" />
+              </div>
+              <div>
+                <p className="text-sm font-bold tracking-tight">SMEMaster</p>
+                <p className="text-[11px] text-muted-foreground -mt-0.5">{t("onboarding.setupWizard")}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExpressMode}
+              className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-accent/25 bg-accent/[0.04] px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/[0.07] transition-all duration-200"
+            >
+              <Zap className="h-3.5 w-3.5" />
+              {t("onboarding.quickStart")}
+            </button>
+          </div>
+
+          <Stepper step={step} />
+        </div>
+
+        <div className="relative px-6 py-6 md:px-10 md:py-8 max-h-[68vh] overflow-y-auto">
           {step === 0 && (
             <WelcomeStep
               onNext={handleNext}
@@ -219,6 +179,54 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Stepper({ step }: { step: number }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-2">
+      {ONBOARDING_STEPS.map((s, i) => {
+        const isActive = step === i;
+        const isPast = step > i;
+        return (
+          <div key={s.id} className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-2">
+              <div className={[
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-300",
+                isPast
+                  ? "border-accent bg-accent text-accent-foreground"
+                  : isActive
+                    ? "border-accent bg-background text-accent"
+                    : "border-border text-transparent",
+              ].join(" ")}>
+                {isPast ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                ) : isActive ? (
+                  <div className="h-2 w-2 rounded-full bg-accent" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5" />
+                )}
+              </div>
+              <div className="leading-none">
+                <p className={[
+                  "text-[11px] font-semibold transition-colors duration-300",
+                  isActive ? "text-foreground" : isPast ? "text-foreground/80" : "text-muted-foreground",
+                ].join(" ")}>
+                  {t(`onboarding.steps.${s.id}`)}
+                </p>
+                <p className="text-[10px] text-muted-foreground/70">
+                  {t(`onboarding.steps.${s.id}Desc`)}
+                </p>
+              </div>
+            </div>
+            {i < ONBOARDING_STEPS.length - 1 && (
+              <div className="mx-2 h-px flex-1 bg-border/70" />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

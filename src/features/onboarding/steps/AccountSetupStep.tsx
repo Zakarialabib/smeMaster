@@ -1,8 +1,8 @@
-// src/features/onboarding/steps/AccountSetupStep.tsx
 import { useState } from "react";
-import { Mail, Globe, Shield, CheckCircle, ArrowLeft, ArrowRight, Sparkles, X } from "lucide-react";
+import { Mail, Globe, Shield, CheckCircle, ArrowLeft, Sparkles, X } from "lucide-react";
 import { GlassPanel } from "@shared/components/ui/glass-panel";
 import { AddAccount } from "@features/accounts/components/AddAccount";
+import { useTranslation } from "react-i18next";
 
 interface AccountSetupStepProps {
   onNext: (data: { accountSkipped: boolean; emailConnected: boolean }) => void;
@@ -17,6 +17,7 @@ const PROVIDER_BUTTONS = [
 ];
 
 export function AccountSetupStep({ onNext, onBack, mailSelected = false }: AccountSetupStepProps) {
+  const { t } = useTranslation();
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [accountCount, setAccountCount] = useState(0);
 
@@ -40,43 +41,38 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
   // After connecting, show acknowledgment
   if (accountCount > 0 && !showAddAccount) {
     return (
-      <div
-        className="flex flex-col gap-6 w-full max-w-2xl mx-auto"
-        style={{ animation: "fadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
-      >
-        <div className="text-center space-y-3">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/20 shadow-[0_0_20px_color-mix(in_srgb,var(--color-green-500)_12%,transparent)]">
-            <CheckCircle className="h-8 w-8 text-green-500" />
+      <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+        <div className="text-center space-y-2">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/20">
+            <CheckCircle className="h-7 w-7 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Email Connected!</h2>
-          <p className="text-muted-foreground">
-            {accountCount} account{accountCount > 1 ? "s" : ""} configured successfully
+          <h2 className="text-xl font-bold tracking-tight">{t("onboarding.connectedTitle")}</h2>
+          <p className="text-muted-foreground text-sm">
+            {t("onboarding.connectedDesc", { count: accountCount })}
           </p>
         </div>
 
-        <GlassPanel variant="card" className="p-5 text-center">
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-accent" />
-            <span>
-              Smart recommendations and mail features are now enabled based on your connected account{accountCount > 1 ? "s" : ""}
-            </span>
+        <GlassPanel variant="card" className="p-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <span>{t("onboarding.connectedNote")}</span>
           </div>
         </GlassPanel>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-2.5 pt-3">
           <button
+            type="button"
             onClick={onBack}
-            className="group rounded-xl border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200 flex items-center gap-2"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
           >
-            <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-            Back
+            <ArrowLeft className="h-3.5 w-3.5" /> {t("onboarding.back")}
           </button>
           <button
+            type="button"
             onClick={handleContinueConnected}
-            className="group flex-1 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-accent/20"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
           >
-            Continue
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            {t("onboarding.continue")}
           </button>
         </div>
       </div>
@@ -84,91 +80,80 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
   }
 
   return (
-    <div
-      className="flex flex-col gap-6 w-full max-w-2xl mx-auto"
-      style={{ animation: "fadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
-    >
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Connect Your Email</h2>
-        <p className="text-muted-foreground">
-          Connect email for smart recommendations and mail features
-        </p>
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+      <div className="text-center space-y-1.5">
+        <h2 className="text-xl font-bold tracking-tight">{t("onboarding.connectTitle")}</h2>
+        <p className="text-muted-foreground text-sm">{t("onboarding.connectDesc")}</p>
       </div>
 
-      {/* Provider buttons */}
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Choose your provider
+      <div className="space-y-2">
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+          {t("onboarding.providerLabel")}
         </p>
-        <div className="grid gap-2.5">
+        <div className="grid gap-2">
           {PROVIDER_BUTTONS.map((p, i) => {
             const Icon = p.icon;
             return (
               <button
                 key={p.provider}
+                type="button"
                 onClick={handleConnect}
-                className="flex items-center gap-4 rounded-xl border border-border/60 bg-background/50 hover:bg-accent/[0.03] hover:border-accent/30 px-4 py-3.5 text-start transition-all duration-200 group"
+                className="flex items-center gap-3.5 rounded-xl border border-border/60 bg-background/50 hover:border-accent/30 px-4 py-3 text-start transition-all duration-200 group"
                 style={{
-                  animation: `slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both`,
+                  animation: "slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both",
                   animationDelay: `${i * 60}ms`,
                 }}
               >
-                <div className="rounded-lg p-2.5 bg-muted group-hover:bg-accent/8 transition-colors duration-200">
-                  <Icon className="h-5 w-5 text-muted-foreground group-hover:text-accent/70 transition-colors duration-200" />
+                <div className="rounded-lg p-2 bg-muted group-hover:bg-accent/8 transition-colors duration-200">
+                  <Icon className="h-4 w-4 text-muted-foreground group-hover:text-accent/70 transition-colors duration-200" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{p.label}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">{p.desc}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t(`onboarding.providers.${p.provider}`)}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">{t(`onboarding.providers.${p.provider}Desc`)}</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent/60 transition-all duration-200 group-hover:translate-x-0.5" />
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Reminder for mail users */}
       {mailSelected && (
-        <div className="rounded-xl border border-accent/20 bg-accent/5 p-3 flex items-start gap-2.5">
+        <GlassPanel variant="card" className="p-3 flex items-start gap-2.5">
           <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            You selected <span className="font-medium text-foreground">Mail</span> as a feature. Connecting an email account unlocks the full inbox experience with smart threading and recommendations.
-          </p>
-        </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{t("onboarding.mailReminder")}</p>
+        </GlassPanel>
       )}
 
-      {/* Skip for now */}
-      <div className="text-center pt-1">
+      <div className="text-center pt-0.5">
         <button
+          type="button"
           onClick={handleSkip}
-          className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors duration-200 underline underline-offset-2 decoration-muted-foreground/20 hover:decoration-muted-foreground/40"
+          className="text-xs text-muted-foreground/60 hover:text-muted-foreground underline underline-offset-2 decoration-muted-foreground/20 hover:decoration-muted-foreground/40 transition-colors duration-200"
         >
-          Skip for now
+          {t("onboarding.skipForNow")}
         </button>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-2.5 pt-1">
         <button
+          type="button"
           onClick={onBack}
-          className="group rounded-xl border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200 flex items-center gap-2"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
         >
-          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-          Back
+          <ArrowLeft className="h-3.5 w-3.5" /> {t("onboarding.back")}
         </button>
       </div>
 
-      {/* Add Account Modal */}
       {showAddAccount && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
           style={{ animation: "fadeIn 200ms ease-out both" }}
         >
           <div className="relative rounded-2xl border border-border bg-card p-6 shadow-2xl w-full max-w-md">
             <button
+              type="button"
               onClick={() => setShowAddAccount(false)}
-              className="absolute top-4 end-4 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+              className="absolute top-3 end-3 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
             >
               <X className="h-4 w-4" />
             </button>

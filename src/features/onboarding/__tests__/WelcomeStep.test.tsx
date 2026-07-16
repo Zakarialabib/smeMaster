@@ -106,14 +106,14 @@ describe("WelcomeStep", () => {
     render(<WelcomeStep onNext={onNext} />);
     // System should show a check mark indicator
     const systemBtn = screen.getByText("System").closest("button");
-    expect(systemBtn).toHaveClass("ring-2", "ring-accent/30");
+    expect(systemBtn).toHaveClass("ring-2", "ring-accent/25");
   });
 
   it("theme selection changes when clicked", () => {
     render(<WelcomeStep onNext={onNext} />);
     fireEvent.click(screen.getByText("Dark"));
     const darkBtn = screen.getByText("Dark").closest("button");
-    expect(darkBtn).toHaveClass("ring-2", "ring-accent/30");
+    expect(darkBtn).toHaveClass("ring-2", "ring-accent/25");
     const systemBtn = screen.getByText("System").closest("button");
     expect(systemBtn).not.toHaveClass("ring-2");
   });
