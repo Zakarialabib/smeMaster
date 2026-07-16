@@ -945,11 +945,13 @@ pub async fn db_update_company(
 #[command]
 pub async fn db_list_companies(
     pool: State<'_, SqlitePool>,
-    _account_id: String,
+    account_id: Option<String>,
 ) -> Result<Vec<Company>, String> {
     // Companies are scoped to an account via the account's default company or
     // via explicit association. Since the schema uses `companies` with a direct
-    // query, we list all companies (multi-company support).
+    // query, we list all companies (multi-company support). `account_id` is
+    // accepted for API symmetry but currently unused by the query.
+    let _ = account_id;
     sqlx::query_as::<_, Company>("SELECT * FROM companies ORDER BY name ASC")
         .fetch_all(&*pool)
         .await
