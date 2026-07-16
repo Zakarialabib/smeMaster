@@ -74,15 +74,27 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
       tools: { mail: true, crm: true, campaigns: false, calendar: false, ai: false },
     }));
     sessionStorage.removeItem("smemaster.onboarding.step");
-    await completeOnboarding();
+    try {
+      await completeOnboarding();
+    } catch {
+      /* backend may be unavailable (browser/dev server) — UI completion still proceeds */
+    }
     onComplete();
   }, [completeOnboarding, onComplete]);
 
   // Skip to Demos — seeds demo data and completes
   const handleSkipToDemos = useCallback(async () => {
     sessionStorage.removeItem("smemaster.onboarding.step");
-    await seedDemoPreset("solo_freelancer", data.businessName || "SME Master Demo", data.theme);
-    await completeOnboarding();
+    try {
+      await seedDemoPreset("solo_freelancer", data.businessName || "SME Master Demo", data.theme);
+    } catch {
+      /* backend seeding may be unavailable (browser/dev server) */
+    }
+    try {
+      await completeOnboarding();
+    } catch {
+      /* backend may be unavailable (browser/dev server) */
+    }
     onComplete();
   }, [completeOnboarding, onComplete, data.businessName, data.theme]);
 
