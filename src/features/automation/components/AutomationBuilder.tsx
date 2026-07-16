@@ -429,7 +429,14 @@ export function AutomationBuilder({
     }
   }, [editor.triggerConditions]);
 
-  // Sync store state → flow nodes/edges
+  // Stable structural signature: rebuild the whole graph only when the *shape*
+  // changes (action count, trigger, or condition presence). Editing an action's
+  // content must NOT trigger a full rebuild — otherwise ReactFlow recreates the
+  // node, the <select>/<input> loses its value/focus, and clicks appear to "do
+  // nothing". Content changes are patched in place below.
+  const structureKey = `${editor.triggerEvent}|${hasConditions}|${editor.actions.length}`;
+
+  // Full rebuild on structural change (desktop only).
   useEffect(() => {
     if (!isDesktop) return;
     const flowNodes = buildInitialNodes(
@@ -442,17 +449,36 @@ export function AutomationBuilder({
     const flowEdges = buildEdges(hasConditions, editor.actions.length);
     setNodes(flowNodes);
     setEdges(flowEdges);
-  }, [
-    editor.triggerEvent,
-    editor.triggerConditions,
-    editor.actions,
-    hasConditions,
-    handleActionUpdate,
-    handleActionDelete,
-    isDesktop,
-    setNodes,
-    setEdges,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [structureKey, isDesktop, setNodes, setEdges]);
+
+  // Patch node data in place when an action's *content* changes, so the input
+  // keeps focus and the node keeps its dragged position.
+  useEffect(() => {
+    if (!isDesktop) return;
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.type !== "action") return n;
+        const idx = Number(n.id.replace("action-", ""));
+        const action = editor.actions[idx];
+        if (!action) return n;
+        const paramKey = actionRequiresParam(action.type);
+        const invalid = !!paramKey && !(action[paramKey] as string);
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            index: idx,
+            action,
+            invalid,
+            onUpdate: handleActionUpdate,
+            onDelete: handleActionDelete,
+          },
+        };
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor.actions, isDesktop, handleActionUpdate, handleActionDelete]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
