@@ -22,6 +22,13 @@ vi.mock("@shared/stores/layoutStore", () => ({
   })),
 }));
 
+// ReadingPane guards rendering on an existing account (useAccountStore).
+vi.mock("@features/accounts/stores/accountStore", () => ({
+  useAccountStore: vi.fn((selector) => selector({
+    accounts: [{ id: "acc-1" }],
+  })),
+}));
+
 vi.mock("../ThreadView", () => ({
   ThreadView: ({ thread }: any) => <div data-testid="thread-view">{thread.subject}</div>,
 }));
