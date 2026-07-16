@@ -57,6 +57,22 @@ pub fn get_subsystem_status(
     registry.get_all_status()
 }
 
+/// IPC command: restart a named subsystem and return its post-restart status.
+///
+/// Delegates to `SubsystemRegistry::restart_subsystem`, which performs a real
+/// stop (force_shutdown) followed by class-appropriate re-activation, then
+/// returns the single entry's `SubsystemStatusSnapshot`.
+#[tauri::command]
+pub async fn db_restart_subsystem(
+    registry: tauri::State<'_, std::sync::Arc<SubsystemRegistry>>,
+    name: String,
+) -> Result<crate::orchestrator::subsystem_lifecycle::SubsystemStatusSnapshot, crate::error::SerializedError> {
+    registry
+        .restart_subsystem(&name)
+        .await
+        .map_err(crate::error::SerializedError::from)
+}
+
 /// IPC command: get all tool states from the ToolRegistry.
 /// Returns a list of (tool_id, enabled) tuples.
 #[tauri::command]

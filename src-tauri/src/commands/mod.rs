@@ -175,6 +175,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::orchestrator::gating::get_subsystem_status,
             crate::orchestrator::gating::get_tool_state,
             crate::orchestrator::gating::apply_tool_state,
+            crate::orchestrator::gating::db_restart_subsystem,
 
             // === commands::onboarding_cmds (6 commands) ===
             onboarding_cmds::db_save_onboarding_step,
@@ -421,6 +422,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             contacts::db_contact_tags,
             contacts::db_contact_workflow_rule_count,
             contacts::db_list_contacts,
+            contacts::db_filter_contacts,
             contacts::db_count_contacts,
             contacts::db_get_contact,
             contacts::db_get_contact_by_email,

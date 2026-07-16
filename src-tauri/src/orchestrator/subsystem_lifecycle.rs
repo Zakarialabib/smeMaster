@@ -360,6 +360,121 @@ impl SubsystemRegistry {
         Ok(())
     }
 
+    /// Restart a named subsystem and return its post-restart status snapshot.
+    ///
+    /// Real implementation (not a no-op):
+    /// 1. Look up the entry by name (returns `AppError::SubsystemNotFound` if missing).
+    /// 2. `force_shutdown(name)` stops it (status → Inactive).
+    /// 3. Re-activate per class:
+    ///    - `Lazy`: set status back to `Dormant` with reason "restart requested"
+    ///      (mirrors `enable_ready_subsystems` for a single entry). The next
+    ///      `require_active` will start it again.
+    ///    - `OnDemand`: leave as `Inactive` — it restarts on next demand.
+    ///    - `AlwaysOn`: not expected in this registry; return an error rather than
+    ///      silently leaving it stopped.
+    /// 4. Build and return the entry's `SubsystemStatusSnapshot`.
+    pub async fn restart_subsystem(&self, name: &str) -> Result<SubsystemStatusSnapshot, AppError> {
+        // 1. Lookup (also validates the name exists before we touch anything).
+        let entry = self.entries.get(name)
+            .map(|r| r.clone())
+            .ok_or_else(|| AppError::SubsystemNotFound { name: name.to_string() })?;
+
+        // 2. Stop it.
+        self.force_shutdown(name).await?;
+
+        // 3. Re-activate per class.
+        match entry.class {
+            SubsystemClass::AlwaysOn => {
+                return Err(AppError::SubsystemUnavailable {
+                    name: name.to_string(),
+                    status: "always_on".to_string(),
+                    message: "AlwaysOn subsystems are managed externally and cannot be restarted via this command".to_string(),
+                });
+            }
+            SubsystemClass::Lazy => {
+                let mut status = entry.status.write().await;
+                *status = SubsystemStatus::Dormant {
+                    reason: "restart requested".to_string(),
+                };
+                log::info!("[subsystem] {} restarted (Dormant)", name);
+            }
+            SubsystemClass::OnDemand => {
+                // Already Inactive after force_shutdown — it will rebuild on next demand.
+                log::info!("[subsystem] {} restarted (Inactive, on-demand)", name);
+            }
+        }
+
+        // 4. Build the snapshot for this single entry (reuse get_all_status logic).
+        Ok(self.get_status_for(name))
+    }
+
+    /// Build a `SubsystemStatusSnapshot` for a single named subsystem.
+    ///
+    /// Returns a snapshot with status "unknown" if the entry exists but its
+    /// status lock is contended. Panics are avoided by using `try_read`.
+    pub fn get_status_for(&self, name: &str) -> SubsystemStatusSnapshot {
+        let entry = match self.entries.get(name) {
+            Some(e) => e.clone(),
+            None => return SubsystemStatusSnapshot {
+                name: name.to_string(),
+                class: "unknown".to_string(),
+                status: "not_found".to_string(),
+                reason: "subsystem not registered".to_string(),
+                uptime_secs: None,
+                error: None,
+                feature_flag: None,
+            },
+        };
+
+        let class = match entry.class {
+            SubsystemClass::AlwaysOn => "always_on",
+            SubsystemClass::Lazy => "lazy",
+            SubsystemClass::OnDemand => "on_demand",
+        };
+
+        let status_snapshot = match entry.status.try_read() {
+            Ok(status) => status.clone(),
+            Err(_) => return SubsystemStatusSnapshot {
+                name: entry.name.clone(),
+                class: class.to_string(),
+                status: "unknown".to_string(),
+                reason: "status lock contended".to_string(),
+                uptime_secs: None,
+                error: None,
+                feature_flag: entry.feature_flag.map(|s| s.to_string()),
+            },
+        };
+
+        let (status_str, reason, uptime_secs, error) = match status_snapshot {
+            SubsystemStatus::Inactive { reason } => ("inactive", reason, None, None),
+            SubsystemStatus::Dormant { reason } => ("dormant", reason, None, None),
+            SubsystemStatus::Starting { .. } => {
+                ("starting", "activation in progress".to_string(), None, None)
+            }
+            SubsystemStatus::Active { started_at } => (
+                "active",
+                "running".to_string(),
+                Some(started_at.elapsed().as_secs()),
+                None,
+            ),
+            SubsystemStatus::ShuttingDown { .. } => {
+                ("shutting_down", "grace period".to_string(), None, None)
+            }
+            SubsystemStatus::Failed { error, .. } => {
+                ("failed", "error".to_string(), None, Some(error))
+            }
+        };
+        SubsystemStatusSnapshot {
+            name: entry.name.clone(),
+            class: class.to_string(),
+            status: status_str.to_string(),
+            reason,
+            uptime_secs,
+            error,
+            feature_flag: entry.feature_flag.map(|s| s.to_string()),
+        }
+    }
+
     /// Report idle: start the grace period timer.
     pub async fn report_idle(&self, name: &str) {
         let entry = match self.entries.get(name) {
