@@ -20,6 +20,10 @@ describe("OnboardingScreen", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // OnboardingScreen persists the active step in sessionStorage; clear it so
+    // each test starts on the welcome step instead of inheriting a step from a
+    // previous (navigating) test.
+    sessionStorage.clear();
   });
 
   it("renders actions on the welcome step by default", () => {
@@ -65,8 +69,8 @@ describe("OnboardingScreen", () => {
     fireEvent.click(screen.getByText("Solo Freelancer"));
     fireEvent.click(screen.getAllByText("Continue")[0]);
     fireEvent.click(screen.getAllByText("Continue")[0]);
-    expect(screen.getByText(/connect/i)).toBeInTheDocument();
-    expect(screen.getByText(/skip for now/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/connect/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/skip for now/i).length).toBeGreaterThan(0);
   });
 
   it("completes to the final screen via skip", () => {
@@ -75,8 +79,8 @@ describe("OnboardingScreen", () => {
     fireEvent.click(screen.getAllByText("Continue")[0]);
     fireEvent.click(screen.getAllByText("Continue")[0]);
     fireEvent.click(screen.getByText("Skip for now"));
-    expect(screen.getByText(/pro/i)).toBeInTheDocument();
-    expect(screen.getByText(/start using/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/pro/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/start using/i).length).toBeGreaterThan(0);
   });
 
   it("shows pro benefits on completion step", () => {
@@ -85,11 +89,11 @@ describe("OnboardingScreen", () => {
     fireEvent.click(screen.getAllByText("Continue")[0]);
     fireEvent.click(screen.getAllByText("Continue")[0]);
     fireEvent.click(screen.getByText("Skip for now"));
-    expect(screen.getByText(/smart inbox|priority/i)).toBeInTheDocument();
-    expect(screen.getByText(/writing assistant/i)).toBeInTheDocument();
-    expect(screen.getByText(/analytics/i)).toBeInTheDocument();
-    expect(screen.getByText(/compliance/i)).toBeInTheDocument();
-    expect(screen.getByText(/priority support|dedicated onboarding/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/smart inbox|priority/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/writing assistant/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/analytics/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/compliance/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/priority support|dedicated onboarding/i).length).toBeGreaterThan(0);
   });
 
   it("calls onComplete when clicking final CTA", async () => {

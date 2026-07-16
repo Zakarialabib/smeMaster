@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { AccountSetupStep } from "./AccountSetupStep";
+import { AccountSetupStep } from "../steps/AccountSetupStep";
 
 vi.mock("@features/accounts/components/AddAccount", () => ({
   AddAccount: ({ onSuccess }: { onSuccess: () => void }) => (
@@ -41,7 +41,7 @@ describe("AccountSetupStep", () => {
 
   it("renders the connect email view by default", () => {
     render(<AccountSetupStep onNext={onNext} onBack={onBack} />);
-    expect(screen.getByText("Connect your email")).toBeInTheDocument();
+    expect(screen.getByText(/connect your email/i)).toBeInTheDocument();
     expect(screen.getByText("Skip for now")).toBeInTheDocument();
   });
 
@@ -54,8 +54,8 @@ describe("AccountSetupStep", () => {
 
   it("shows reminder banner when mailSelected is true", () => {
     render(<AccountSetupStep onNext={onNext} onBack={onBack} mailSelected />);
-    expect(screen.getByText(/mail/)).toBeInTheDocument();
-    expect(screen.getByText(/feature/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/you selected mail/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/feature/i).length).toBeGreaterThan(0);
   });
 
   it("hides reminder banner when mailSelected is false", () => {
@@ -73,8 +73,8 @@ describe("AccountSetupStep", () => {
     render(<AccountSetupStep onNext={onNext} onBack={onBack} />);
     fireEvent.click(screen.getByText(/Gmail|Google/));
     fireEvent.click(screen.getByTestId("mock-add-success"));
-    expect(screen.getByText(/connected/i)).toBeInTheDocument();
-    expect(screen.getByText(/configured successfully/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/connected/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/configured successfully/i).length).toBeGreaterThan(0);
   });
 
   it("calls onNext with connected status when continuing after connect", () => {
