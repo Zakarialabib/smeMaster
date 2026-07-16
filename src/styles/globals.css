@@ -68,8 +68,8 @@
   --color-info-light: #e0f2fe;
 
   /* Frosted Glass surface tokens */
-  --color-frost-bg: #ffffff;
-  --color-frost-bg-strong: #ffffff;
+  --color-frost-bg: rgba(255, 255, 255, 0.25);
+  --color-frost-bg-strong: rgba(255, 255, 255, 0.45);
   --color-frost-border: #e4e6ea;
   --color-frost-border-strong: #d5d8dd;
   --color-frost-highlight: transparent;
@@ -175,8 +175,8 @@
   --color-info: #78c4f8;
   --color-info-light: rgba(120, 196, 248, 0.15);
 
-  --color-frost-bg: #1a1d23;
-  --color-frost-bg-strong: #1e2128;
+  --color-frost-bg: rgba(26, 29, 35, 0.35);
+  --color-frost-bg-strong: rgba(30, 33, 40, 0.5);
   --color-frost-border: #2c313a;
   --color-frost-border-strong: #363c46;
   --color-frost-highlight: transparent;
@@ -232,6 +232,9 @@ body {
   background: #f7f8fa;
   background-attachment: fixed;
   color: var(--color-text-primary);
+}
+[data-surface="glass"] body {
+  background: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
@@ -2005,3 +2008,26 @@ html:not(.mobile) .sidebar-nav-item:hover {
 [data-surface="glass"] .glass-modal { backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); }
 [data-surface="glass"] .liquid-glass,
 [data-surface="glass"] .liquid-glass-elevated { backdrop-filter: blur(var(--glass-blur-heavy)); -webkit-backdrop-filter: blur(var(--glass-blur-heavy)); }
+
+/* Glass mode: upgrade surface tokens to translucent + blur so every bg-bg-* card
+ * frosts the orbs behind it (holistic frosted-glass direction). */
+[data-surface="glass"] {
+  --color-bg-primary: rgba(255, 255, 255, 0.55);
+  --color-bg-secondary: rgba(255, 255, 255, 0.45);
+  --color-bg-tertiary: rgba(255, 255, 255, 0.35);
+  --color-bg-elevated: rgba(255, 255, 255, 0.7);
+}
+[data-surface="glass"].dark {
+  --color-bg-primary: rgba(26, 29, 35, 0.5);
+  --color-bg-secondary: rgba(26, 29, 35, 0.4);
+  --color-bg-tertiary: rgba(26, 29, 35, 0.3);
+  --color-bg-elevated: rgba(30, 33, 40, 0.65);
+}
+[data-surface="glass"] .bg-bg-primary,
+[data-surface="glass"] .bg-bg-secondary,
+[data-surface="glass"] .bg-bg-tertiary,
+[data-surface="glass"] .bg-bg-elevated {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--frost-border);
+}

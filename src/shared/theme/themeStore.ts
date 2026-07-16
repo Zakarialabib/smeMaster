@@ -37,7 +37,7 @@ export type FontScale = "small" | "default" | "large" | "xlarge";
 const DEFAULT_MODE: ThemeMode = "system";
 const DEFAULT_COLOR: ColorThemeId = "indigo";
 const DEFAULT_SCALE: FontScale = "default";
-const DEFAULT_SURFACE: SurfaceStyle = "flat";
+const DEFAULT_SURFACE: SurfaceStyle = "glass";
 const DEFAULT_DENSITY: UiDensity = "normal";
 
 interface ThemeState {
