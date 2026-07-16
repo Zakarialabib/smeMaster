@@ -17,10 +17,31 @@
     "addYourFirstLabel": "Add your first label",
     "mail": "Mail",
     "crm": "CRM",
+    "dashboard": "Dashboard",
+    "automation": "Automation",
+    "vault": "Vault",
+    "aiAssistant": "AI Assistant",
+    "invoicing": "Invoicing",
+    "erp": "ERP",
+    "deals": "Deals",
+    "pos": "POS",
+    "productivity": "Productivity",
+    "about": "About",
     "settings": "Settings",
     "label": "Label",
     "noItems": "No items",
-    "keyboardNavHint": "nav.keyboardNavHint"
+    "keyboardNavHint": "Use Tab and arrow keys to navigate the sidebar. Press Enter to activate an item.",
+    "inbox": "Inbox",
+    "starred": "Starred",
+    "snoozed": "Snoozed",
+    "sent": "Sent",
+    "drafts": "Drafts",
+    "trash": "Trash",
+    "spam": "Spam",
+    "allMail": "All Mail",
+    "attachments": "Attachments",
+    "nMore": "{{count}} more",
+    "nPending": "{{count}} pending"
   },
   "onboarding": {
     "step1_title": "Welcome to SMEMaster",
@@ -61,7 +82,8 @@
   "thread": {
     "unknownSender": "Unknown",
     "noSubject": "(No subject)",
-    "muted": "Muted"
+    "muted": "Muted",
+    "nMessagesInThread": "{{count}} messages in thread"
   },
   "email": {
     "nAttachments": "{{n}} attachment",
@@ -115,6 +137,15 @@
     "markUnreadSelected": "Mark unread",
     "addLabelSelected": "Add label",
     "moveToSelected": "Move to folder",
+    "showReadingPane": "Show reading pane",
+    "hideReadingPane": "Hide reading pane",
+    "readingPane": "Reading pane",
+    "readingPaneExpanded": "Expanded",
+    "readingPaneRight": "Right",
+    "readingPaneBottom": "Bottom",
+    "readingPaneHidden": "Hidden",
+    "selectAnEmailToRead": "Select an email to read",
+    "selectAnEmailHint": "Choose a conversation from your inbox or use the arrow keys to navigate",
     "noLabels": "No labels",
     "tryChangingFilter": "Try changing the filter",
     "primaryIsClear": "Primary is clear",
@@ -147,7 +178,10 @@
     "unread": "Unread",
     "read": "Read",
     "focused": "Focused",
-    "allMail": "All Mail"
+    "allMail": "All Mail",
+    "loading": "email.loading",
+    "inboxCategory": "Category",
+    "noReadFilterEmails": "No emails match this filter"
   },
   "actionBar": {
     "reply": "Reply",
@@ -250,7 +284,8 @@
       "accountCleaning": "Account Cleaning",
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
-      "ai": "AI"
+      "ai": "AI",
+      "cache": "settings.tabs.cache"
     },
     "appearance": "Appearance",
     "surface": "Surface",
@@ -935,7 +970,11 @@
     "pairNewDevice": "Pair new device",
     "mobile": "Mobile",
     "enableBackgroundSync": "Background sync",
-    "cache": "Cache",
+    "cache": {
+      "": "Cache",
+      "benchmarkDone": "Benchmark complete",
+      "cleared": "Cache cleared"
+    },
     "cacheTab": {
       "overview": "Cache Overview",
       "enabled": "Data cache enabled",
@@ -1007,7 +1046,8 @@
     "help": {
       "sending": {
         "how": "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server.",
-        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks."
+        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks.",
+        "why": "Why this matters"
       },
       "behavior": {
         "why": "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically.",
@@ -1021,7 +1061,8 @@
       },
       "templates": {
         "why": "Templates save time by reusing common email structures with variable placeholders for personalized content.",
-        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups."
+        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups.",
+        "how": "How it works"
       },
       "quickReplies": {
         "why": "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency.",
@@ -1241,7 +1282,11 @@
       "why": "Why",
       "how": "How",
       "when": "When"
-    }
+    },
+    "undoSendQuickPick": "Quick pick",
+    "calendarDesc": "Calendar preferences and sync",
+    "expiresIn": "Expires in {{count}}",
+    "pairingUnavailableDev": "Pairing is unavailable in development mode"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -1312,10 +1357,15 @@
     "nav": "Navigation",
     "ai": "AI",
     "settings": "Settings",
-    "templates": "Templates",
+    "templates": {
+      "": "Templates",
+      "desc": "Reusable message templates"
+    },
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
-    "select": "Select"
+    "select": "Select",
+    "insertTemplate": "Insert template",
+    "switchToTheme": "Switch to theme"
   },
   "empty": {
     "noImportantConversations": "No important conversations",
@@ -1333,8 +1383,8 @@
     "markAsVip": "Mark as VIP",
     "addToContacts": "Add to Contacts",
     "added": "Added!",
-    "extractFromEmail": "contact.extractFromEmail",
-    "extractNone": "contact.extractNone",
+    "extractFromEmail": "Extract From Email",
+    "extractNone": "Extract None",
     "editName": "Edit name",
     "notes": "Notes",
     "addANote": "Add a note...",
@@ -1366,10 +1416,18 @@
       "openedLabel": "Opened {date}",
       "clickedLabel": "Clicked {date}"
     },
-    "linkedCompany": "contact.linkedCompany",
-    "loading": "contact.loading",
-    "campaigns": "contact.campaigns",
-    "opened": "contact.opened"
+    "linkedCompany": "Linked Company",
+    "loading": "Loading",
+    "campaigns": "Campaigns",
+    "opened": "Opened",
+    "composeTo": "Compose to",
+    "extractApplied": "Extraction applied",
+    "firstEmail": "First email",
+    "lastEmail": "Last email",
+    "nEmails": "{{count}} emails",
+    "othersAtDomain": "Others at {{domain}}",
+    "previewFile": "Preview file",
+    "viewPerson": "View contact"
   },
   "calendar": {
     "day": "Day",
@@ -1404,11 +1462,11 @@
     "showScheduledEmails": "Show Scheduled Emails",
     "showScheduledEmailsDesc": "Display emails scheduled to be sent in the future.",
     "noEvents": "No events in this period",
-    "connectAccountBtn": "calendar.connectAccountBtn",
-    "title": "calendar.title",
-    "retry": "calendar.retry",
-    "noEventsHint": "calendar.noEventsHint",
-    "createEvent": "calendar.createEvent"
+    "connectAccountBtn": "Connect Account Btn",
+    "title": "Title",
+    "retry": "Retry",
+    "noEventsHint": "No Events Hint",
+    "createEvent": "Create Event"
   },
   "tasks": {
     "tasks": "Tasks",
@@ -1460,8 +1518,8 @@
       "defaultTitle": "Nothing here",
       "defaultSubtitle": "Add a task to get started.",
       "defaultAction": "Add task",
-      "clearFilters": "tasks.empty.clearFilters",
-      "addTask": "tasks.empty.addTask"
+      "clearFilters": "Clear Filters",
+      "addTask": "Add Task"
     },
     "search": "Search...",
     "taskCreated": "Task created",
@@ -1478,10 +1536,11 @@
     "failedToUpdateTask": "Failed to update task",
     "failedToReschedule": "Failed to reschedule task",
     "complete": "Complete",
-    "tasksArchived": "tasks.tasksArchived",
-    "disableReminders": "tasks.disableReminders",
-    "enableReminders": "tasks.enableReminders",
-    "archiveCompleted": "tasks.archiveCompleted"
+    "tasksArchived": "Tasks Archived",
+    "disableReminders": "Disable Reminders",
+    "enableReminders": "Enable Reminders",
+    "archiveCompleted": "Archive Completed",
+    "selectedCount": "{{count}} selected"
   },
   "campaign": {
     "editor": {
@@ -1625,7 +1684,15 @@
     "variablesDescription": "Insert variables into your email content",
     "standardVariables": "Standard variables",
     "additionalVariables": "Additional variables",
-    "variablesResolvedAtSend": "Variables are resolved when the campaign is sent"
+    "variablesResolvedAtSend": "Variables are resolved when the campaign is sent",
+    "groupLabel": "Group",
+    "nContacts": "{{count}} contacts",
+    "nRecipients": "{{count}} recipients",
+    "nSelected": "{{count}} selected",
+    "nSent": "{{count}} sent",
+    "recurringLabel": "Recurring",
+    "scheduledLabel": "Scheduled",
+    "segmentLabel": "Segment"
   },
   "filter": {
     "testFilter": "Test filter",
@@ -1681,7 +1748,8 @@
     "confirmImport": "Import Key",
     "confirmGenerate": "Generate",
     "cancel": "Cancel",
-    "createdLabel": "Created"
+    "createdLabel": "Created",
+    "algorithms": "Algorithms"
   },
   "common": {
     "save": "Save",
@@ -1787,7 +1855,9 @@
     "taskDetails": "Task details",
     "connections": "Connections",
     "enabled": "Enabled",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "on": "common.on",
+    "off": "common.off"
   },
   "quickReply": {
     "title": "Quick Replies",
@@ -1802,7 +1872,9 @@
     "presetName": "Preset name",
     "recurringLower": "recurring",
     "editPreset": "Edit preset",
-    "newPreset": "New preset"
+    "newPreset": "New preset",
+    "naturalLanguage": "Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)",
+    "nlPlaceholder": "tomorrow 9am"
   },
   "compliance": {
     "violations": "Violations",
@@ -1849,7 +1921,10 @@
     "range": "Range",
     "density": "Density",
     "autoRefresh": "Auto-refresh",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "updatedSeconds": "Updated {{count}}s ago",
+    "updatedMinutes": "Updated {{count}}m ago",
+    "updatedHours": "Updated {{count}}h ago"
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
@@ -1864,7 +1939,12 @@
       "cancel": "Cancel",
       "done": "Done",
       "email": "Email",
-      "name": "Name"
+      "name": "Name",
+      "andMore": "and {{count}} more",
+      "contactsFound": "{{count}} contacts found",
+      "failed": "Import failed",
+      "import": "Import",
+      "successfullyImported": "Successfully imported {{count}} contacts"
     },
     "contactMerge": {
       "title": "Merge Duplicate Contacts",
@@ -1967,12 +2047,12 @@
     },
     "export": {
       "title": "Export Emails",
-    "formatMbox": "Mbox",
-    "formatEml": "EML",
-    "formatZip": "ZIP",
-    "mboxDesc": "Export all messages to a single .mbox file",
-    "emlDesc": "Export each message as an individual .eml file",
-    "zipDesc": "Export messages bundled into a compressed .zip archive",
+      "formatMbox": "Mbox",
+      "formatEml": "EML",
+      "formatZip": "ZIP",
+      "mboxDesc": "Export all messages to a single .mbox file",
+      "emlDesc": "Export each message as an individual .eml file",
+      "zipDesc": "Export messages bundled into a compressed .zip archive",
       "chooseFormat": "Choose export format",
       "filterMessages": "Filter messages (optional)",
       "fromDate": "From date",
@@ -2000,7 +2080,9 @@
       "connectDescription": "Connect to iCloud, Fastmail, Nextcloud, or any CalDAV server",
       "appPasswordRequired": "This provider requires an app-specific password. Generate one in your provider's security settings.",
       "testingConnection": "Testing connection...",
-      "connectionFailed": "Connection failed"
+      "connectionFailed": "Connection failed",
+      "detected": "CalDAV account detected",
+      "foundCalendars": "Found calendars"
     },
     "workflow": {
       "title": "Workflow",
@@ -2034,7 +2116,8 @@
     "checkNow": "Check Now",
     "download": "Update Now",
     "installRestart": "Install & Restart",
-    "skip": "Skip"
+    "skip": "Skip",
+    "description": "Download and install the latest version"
   },
   "mail": {
     "subject": "Subject"
@@ -2046,9 +2129,9 @@
     "unlockWithBiometric": "Unlock with biometric"
   },
   "businessHealth": {
-    "notScheduled": "businessHealth.notScheduled",
-    "nextBackup": "businessHealth.nextBackup",
-    "title": "businessHealth.title"
+    "notScheduled": "No backup scheduled",
+    "nextBackup": "Next backup",
+    "title": "Business Health"
   },
   "Loading": {
     "": {
@@ -2138,7 +2221,22 @@
     "senderUnknown": "Unknown",
     "filenameUnknown": "Unnamed",
     "gridView": "Grid view",
-    "listView": "List view"
+    "listView": "List view",
+    "images": "Images",
+    "pdfs": "PDFs",
+    "documents": "Documents",
+    "spreadsheets": "Spreadsheets",
+    "archives": "Archives",
+    "other": "Other",
+    "anyTime": "Any time",
+    "today": "Today",
+    "pastWeek": "Past week",
+    "pastMonth": "Past month",
+    "pastYear": "Past year",
+    "anySize": "Any size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
   },
   "contacts": {
     "title": "Contacts",
@@ -2155,14 +2253,15 @@
       "segments": "Segments",
       "imports": "Imports"
     },
-    "hideSearch": "contacts.hideSearch",
-    "showSearch": "contacts.showSearch",
-    "clearSearch": "contacts.clearSearch"
+    "hideSearch": "Hide Search",
+    "showSearch": "Show Search",
+    "clearSearch": "Clear Search"
   },
   "invoicing": {
     "title": "Invoicing",
     "newDocument": "New Document",
     "yourCompany": "Your Company",
+    "failedToLoad": "Failed to load {{tab}}.",
     "lowStock": "low stock",
     "retry": "Retry",
     "tabs": {
@@ -2211,7 +2310,8 @@
     "templatesAiEnhanced": "AI Enhanced",
     "applying": "Applying...",
     "useTemplate": "Use Template",
-    "templates": "automation.templates"
+    "templates": "Templates",
+    "notifyCreated": "Rule created"
   },
   "validation": {
     "required": "This field is required.",
@@ -2223,6 +2323,7 @@
   },
   "erp": {
     "title": "ERP Console",
+    "subtitle": "Live figures for {{company}}, pulled from the Inventory and Accounting backends.",
     "yourCompany": "your company",
     "companyManagement": "Company Management",
     "companyManagementSub": "Manage your companies and Morocco DGI identifiers",
