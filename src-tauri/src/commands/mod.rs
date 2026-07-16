@@ -873,6 +873,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             tasks::db_get_tasks_for_account,
             tasks::db_get_tasks_with_contacts,
             tasks::db_get_tasks_with_contacts_paginated,
+            tasks::db_filter_tasks,
             tasks::db_count_tasks,
             tasks::db_get_tasks_for_thread,
             tasks::db_get_subtasks,
