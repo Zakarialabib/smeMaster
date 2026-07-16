@@ -362,3 +362,35 @@ Committed as `02351ba` (locale + 3 source files) and pushed to `dev`
 (`77ce423..02351ba`). Excluded unrelated pre-existing modifications (EmailList /
 MailLayout / ReadingPane / DesktopShell / WindowTitleBar) and concurrent Rust files
 in `src-tauri/` (not part of this UI task).
+
+### Batch 3 — holistic Frosted Glass direction (2026-07-16)
+Loaded `smemaster-dev` skill + `DESIGN_SYSTEM_GUIDE.md` + `08-ui-ux-roadmap.md`.
+Key finding: the design system mandates **Frosted Glass** (animated orbs +
+real `backdrop-blur`, border-based depth, NO box-shadow, 24px radius) as the
+"award-winning" direction, but the app was rendering **flat** because:
+- `themeStore.DEFAULT_SURFACE = "flat"` (overrode the glass intent; the code
+  comment at globals.css:1988-1991 literally says glass is "Direction A").
+- The frost tokens (`--color-frost-bg*` / `--color-bg-*`) were OPAQUE (#ffffff /
+  #1a1d23) so even in glass mode nothing blurred.
+- Many pages used `bg-bg-*` Tailwind tokens (opaque) instead of `frost-surface`.
+
+Fixes (committed `0ec8cd8`, pushed `a221963..0ec8cd8`):
+- `themeStore.ts`: `DEFAULT_SURFACE` -> `"glass"`.
+- `globals.css`: frost tokens translucent (per design guide §1.2); in
+  `[data-surface="glass"]` mode upgrade `bg-bg-primary/secondary/tertiary/elevated`
+  to translucent + `backdrop-blur`, and make `body` transparent so the mounted
+  `FrostedBackground` orbs show through — frosts EVERY card app-wide via one CSS
+  block. `DesktopShell` already used `bg-bg-primary/50 + backdrop-blur`, so it
+  picks up glass automatically.
+
+Browser-verified (live DOM computed styles, not just vision):
+- dashboard card `backgroundColor: rgba(255,255,255,0.45)` + `backdropFilter: blur(14px)`;
+  `.frosted-bg` orb `opacity: 0.35` (visible).
+- **Command Palette** (Ctrl+K): ARIA `dialog`/`combobox`/`listbox`, ~47 commands,
+  fuzzy search + shortcut badges, renders frosted over dashboard, no raw keys.
+- **Customize widgets** dialog: ARIA `dialog` with reorder controls, frosted, accessible.
+- No raw i18n keys leaked in any interaction tested.
+
+Note: a returning user who previously persisted `surface:"flat"` keeps flat (correct
+— their explicit choice wins); new installs get glass by default. eslint 0 errors;
+no tsc errors in touched files.
