@@ -15,6 +15,12 @@ describe("RawMessageModal", () => {
     vi.mocked(getEmailProvider).mockResolvedValue({
       fetchRawMessage: mockFetchRawMessage,
     } as never);
+    // The shared tauri.mock.ts setup marks jsdom as a Tauri shell. This
+    // component copies via @shared/hooks/useClipboard, which routes to the
+    // Tauri clipboard plugin when __TAURI_INTERNALS__ is present. Strip the
+    // global so the test exercises the navigator.clipboard fallback path.
+    delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+    delete (window as unknown as Record<string, unknown>).__TAURI__;
   });
 
   it("shows loading state initially", () => {
