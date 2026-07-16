@@ -52,10 +52,12 @@ describe("usePlatform", () => {
 
     render(<TestComponent />);
 
-    // When invoke returns undefined, the catch handler sets WEB_FALLBACK
+    // When invoke returns undefined, the catch handler sets WEB_FALLBACK.
+    // Outside a Tauri shell (jsdom has no __TAURI_INTERNALS__) the capability
+    // flags are false — there is no native backend in a browser dev server.
     expect(screen.getByTestId("platform").textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
+        mobile: false, desktop: false, os: "web", arch: "web",
         is_tablet: false, is_phone: false,
         screen: DEFAULT_SCREEN,
       })
@@ -92,7 +94,7 @@ describe("usePlatform", () => {
 
     expect(screen.getByTestId("platform").textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
+        mobile: false, desktop: false, os: "web", arch: "web",
         is_tablet: false, is_phone: false,
         screen: DEFAULT_SCREEN,
       })
@@ -135,7 +137,7 @@ describe("usePlatform", () => {
 
     expect(screen.getByTestId("platform").textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
+        mobile: false, desktop: false, os: "web", arch: "web",
         is_tablet: false, is_phone: false,
         screen: DEFAULT_SCREEN,
       })
