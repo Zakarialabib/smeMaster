@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
 import { PageScaffold } from "@shared/components/layout";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
 import { useAutomationStore } from "@features/automation/stores/automationStore";
 import { AutomationRuleCard } from "@features/automation/components/AutomationRuleCard";
 import { AutomationRuleList } from "@features/automation/components/AutomationRuleList";
@@ -74,7 +75,7 @@ export function AutomationPage() {
 
   useEffect(() => {
     if (activeAccountId) {
-      loadRules(activeAccountId);
+      loadRules(ACTIVE_COMPANY_ID);
     }
   }, [activeAccountId, loadRules]);
 
@@ -106,14 +107,14 @@ export function AutomationPage() {
       if (!activeAccountId) return;
       try {
         await upsertWorkflowRule({
-          companyId: activeAccountId,
+          companyId: ACTIVE_COMPANY_ID,
           name: preset.name,
           triggerEvent: preset.trigger_event,
           triggerConditions: preset.trigger_conditions,
           actions: preset.actions,
         });
         closeTemplates();
-        await loadRules(activeAccountId);
+        await loadRules(ACTIVE_COMPANY_ID);
         notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
       } catch (err) {
         console.error("Failed to create workflow from template:", err);
@@ -130,14 +131,14 @@ export function AutomationPage() {
       if (!activeAccountId) return;
       try {
         await upsertWorkflowRule({
-          companyId: activeAccountId,
+          companyId: ACTIVE_COMPANY_ID,
           name: preset.name,
           triggerEvent: preset.trigger_event,
           triggerConditions: preset.trigger_conditions,
           actions: preset.actions,
         });
         closeAiModal();
-        await loadRules(activeAccountId);
+        await loadRules(ACTIVE_COMPANY_ID);
         notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
       } catch (err) {
         console.error("Failed to create AI workflow:", err);
