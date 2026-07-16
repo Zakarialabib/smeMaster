@@ -1,6 +1,6 @@
 [package]
 name = "smemaster"
-version = "1.0.0" # x-release-please-version
+version = "0.4.23" # x-release-please-version
 description = "Mobile-first email, automation, and lightweight CRM for SMEs"
 authors = ["SMEMaster Team"]
 license = "Apache-2.0"

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "SMEMaster",
-  "version": "1.0.0",
+  "version": "0.4.23",
   "identifier": "com.smemaster.app",
   "build": {
     "frontendDist": "../dist",
@@ -35,7 +35,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": [
+      "msi",
+      "nsis"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/64x64.png",
@@ -69,11 +72,15 @@
   },
   "plugins": {
     "sql": {
-      "preload": ["sqlite:smemaster.db"]
+      "preload": [
+        "sqlite:smemaster.db"
+      ]
     },
     "updater": {
       "active": false,
-      "endpoints": ["https://api.github.com/repos/smemaster/smemaster/releases/latest"],
+      "endpoints": [
+        "https://api.github.com/repos/smemaster/smemaster/releases/latest"
+      ],
       "pubkey": ""
     },
     "deep-link": {
@@ -83,7 +90,11 @@
         }
       ],
       "desktop": {
-        "schemes": ["mailto", "smemaster", "smemaster-auth"]
+        "schemes": [
+          "mailto",
+          "smemaster",
+          "smemaster-auth"
+        ]
       }
     }
   }

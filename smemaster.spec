@@ -1,6 +1,6 @@
 %global app_name smemaster
 # x-release-please-start-version
-%global app_version 0.4.22
+%global app_version 0.4.23
 # x-release-please-end
 %global app_release 1
 
