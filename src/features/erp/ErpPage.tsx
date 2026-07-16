@@ -146,7 +146,7 @@ function OverviewTab() {
     <div className="space-y-5">
       <InfoBanner>
         Live figures for <span className="font-medium text-text-primary">{company?.name ?? 'your company'}</span> pulled
-        from the Inventory and Accounting backends (Iteration 5). Open the Stock, Accounting, and
+        from the Inventory and Accounting backends via <code>invokeCommand</code>. Open the Stock, Accounting, and
         Reports tabs for detail.
       </InfoBanner>
 
@@ -159,9 +159,11 @@ function OverviewTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SectionCard className="p-5 lg:col-span-2">
-          <h3 className="font-bold text-text-primary mb-1">What ships in Iteration 5</h3>
+          <h3 className="font-bold text-text-primary mb-1">ERP sub-views</h3>
           <p className="text-sm text-text-secondary mb-4">
-            The console is ready to be wired to real services. Today these modules are visual shells.
+            These modules are wired to the real backend via <code>invokeCommand</code> wrappers
+            (e.g. <code>listItems</code>, <code>getProfitAndLoss</code>, <code>getWallet</code> from
+            <code>@shared/services/db/invoke/invoicing</code>), not mock data.
           </p>
           <ul className="space-y-2.5 text-sm">
             <ModuleRow icon={<Package size={15} />} title="Inventory" desc="Real-time stock levels, reorder alerts, and adjustments." />
