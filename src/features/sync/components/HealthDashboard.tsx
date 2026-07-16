@@ -4,8 +4,10 @@
  * A settings tab panel showing a card grid of all background services with
  * status indicators, heartbeat info, uptime, and restart controls.
  *
- * Uses the healthStore (initially seeded with mock data) and auto-refreshes
- * every 30 seconds. Can be replaced with real IPC calls later.
+ * Data is sourced from the real backend via `db_status_snapshot` (orchestrator
+ * subsystem statuses), polled every 30 seconds. When the backend is
+ * unavailable (e.g. browser dev server) a clear empty state is shown instead
+ * of fabricated data.
  */
 import { useEffect, useMemo } from "react";
 import {
@@ -72,17 +74,7 @@ function getSeverityCounts(services: ServiceHealth[]) {
 // ── Service Card ─────────────────────────────────────────────────────────
 
 function ServiceCard({ service }: { service: ServiceHealth }) {
-  const updateService = useHealthStore((s) => s.updateService);
   const style = STATUS_STYLES[service.status];
-
-  const handleRestart = () => {
-    // Optimistically set to running — real IPC would call restart command
-    updateService(service.id, {
-      status: "running",
-      error: undefined,
-      lastHeartbeat: Date.now(),
-    });
-  };
 
   return (
     <div
@@ -116,14 +108,15 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           </div>
         </div>
 
-        {/* Restart button */}
+        {/* Restart is managed automatically by the orchestrator watchdog;
+            no public restart IPC exists yet, so the control is disabled. */}
         <Button
           variant="ghost"
           size="xs"
-          onClick={handleRestart}
-          className="shrink-0"
-          aria-label={`Restart ${service.name}`}
-          title="Restart service"
+          disabled
+          className="shrink-0 opacity-40 cursor-not-allowed"
+          aria-label={`Restart ${service.name} (managed automatically)`}
+          title="Restart is managed automatically by the watchdog"
         >
           <Play size={12} />
         </Button>
@@ -170,11 +163,13 @@ export default function HealthDashboard() {
   const services = useHealthStore((s) => s.services);
   const loading = useHealthStore((s) => s.loading);
   const lastRefreshed = useHealthStore((s) => s.lastRefreshed);
+  const backendAvailable = useHealthStore((s) => s.backendAvailable);
   const refresh = useHealthStore((s) => s.refresh);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
-    const interval = setInterval(refresh, 30_000);
+    void refresh();
+    const interval = setInterval(() => void refresh(), 30_000);
     return () => clearInterval(interval);
   }, [refresh]);
 
@@ -182,6 +177,8 @@ export default function HealthDashboard() {
 
   const allRunning = counts.stopped === 0 && counts.degraded === 0;
   const degradedCount = counts.degraded + counts.stopped;
+
+  const showEmptyState = !loading && services.length === 0;
 
   return (
     <div className="space-y-6">
@@ -193,22 +190,24 @@ export default function HealthDashboard() {
         <div
           className={cn(
             "flex items-center justify-between rounded-xl border px-4 py-3 mb-4",
-            allRunning
+            allRunning && services.length > 0
               ? "border-success/20 bg-success/[0.02]"
               : "border-warning/20 bg-warning/[0.02]",
           )}
         >
           <div className="flex items-center gap-3">
-            {allRunning ? (
+            {allRunning && services.length > 0 ? (
               <CheckCircle2 size={18} className="text-success shrink-0" />
             ) : (
               <AlertCircle size={18} className="text-warning shrink-0" />
             )}
             <div>
               <p className="text-sm font-medium text-text-primary">
-                {allRunning
-                  ? "All systems running"
-                  : `${degradedCount} service${degradedCount > 1 ? "s" : ""} degraded`}
+                {showEmptyState
+                  ? "Service status unavailable"
+                  : allRunning
+                    ? "All systems running"
+                    : `${degradedCount} service${degradedCount > 1 ? "s" : ""} degraded`}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-text-tertiary">
@@ -237,7 +236,7 @@ export default function HealthDashboard() {
             <Button
               variant="ghost"
               size="xs"
-              onClick={refresh}
+              onClick={() => void refresh()}
               disabled={loading}
               className="shrink-0"
               aria-label="Refresh service status"
@@ -256,6 +255,15 @@ export default function HealthDashboard() {
           <div className="flex items-center justify-center py-10 text-text-tertiary gap-2">
             <Loader2 size={16} className="animate-spin" />
             <span className="text-xs">Loading service status...</span>
+          </div>
+        ) : showEmptyState ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center text-text-tertiary gap-1">
+            <Server size={20} className="opacity-50" />
+            <span className="text-xs">
+              {backendAvailable
+                ? "No background services are currently reporting status."
+                : "Service health is available in the desktop app."}
+            </span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
