@@ -181,6 +181,20 @@ export const TauriCommands = {
     params: { accountId: undefined as string | undefined },
     result: [] as unknown[],
   },
+  db_filter_contacts: {
+    params: {
+      tagId: null as string | null,
+      groupId: null as string | null,
+      segmentId: null as string | null,
+      limit: 200 as number,
+      offset: 0 as number,
+    },
+    result: [] as unknown[],
+  },
+  db_restart_subsystem: {
+    params: { name: '' as string },
+    result: {} as SubsystemStatusResponse,
+  },
   complete_onboarding: {
     params: {} as EmptyParams,
     result: undefined as void,

@@ -9,6 +9,7 @@
 
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { isTauriEnvironment, TauriUnavailableError } from "@shared/services/ipc";
+import type { Contact } from "./db/schema";
 
 // ==========================================================================
 // Shared Types (mirrors Rust structs used in command signatures)
@@ -785,6 +786,24 @@ type TauriCommands = {
   db_list_offline_available: {
     params: { accountId?: string };
     result: OfflineAvailabilityEntry[];
+  };
+
+  // ── Contacts: filtered query ───────────────────────────────────────
+  db_filter_contacts: {
+    params: {
+      tagId: string | null;
+      groupId: string | null;
+      segmentId: string | null;
+      limit: number;
+      offset: number;
+    };
+    result: Contact[];
+  };
+
+  // ── Subsystem lifecycle: restart ───────────────────────────────────
+  db_restart_subsystem: {
+    params: { name: string };
+    result: SubsystemStatusSnapshot;
   };
 };
 

@@ -33,6 +33,8 @@ import type {
   UpsertContactRequest,
 } from './core';
 
+import type { SubsystemStatusSnapshot } from '@shared/services/commands';
+
 export async function listContacts(
   limit: number,
   offset: number,
@@ -45,6 +47,26 @@ export async function listContacts(
     sortBy: sortBy ?? null,
     searchQuery: searchQuery ?? null,
   });
+}
+
+export async function filterContacts(opts: {
+  tagId?: string | null;
+  groupId?: string | null;
+  segmentId?: string | null;
+  limit?: number;
+  offset?: number;
+}): Promise<Contact[]> {
+  return invokeCommand<Contact[]>('db_filter_contacts', {
+    tagId: opts.tagId ?? null,
+    groupId: opts.groupId ?? null,
+    segmentId: opts.segmentId ?? null,
+    limit: opts.limit ?? 200,
+    offset: opts.offset ?? 0,
+  });
+}
+
+export async function restartSubsystem(name: string): Promise<SubsystemStatusSnapshot> {
+  return invokeCommand<SubsystemStatusSnapshot>('db_restart_subsystem', { name });
 }
 
 export async function countContacts(searchQuery?: string | null): Promise<CountRow[]> {
