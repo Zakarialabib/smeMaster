@@ -12,6 +12,11 @@ import {
   documentNumberPrefix, type InvoiceStatus,
 } from '../utils/status';
 import { addInvoiceItem, removeInvoiceItem } from '@shared/services/db/invoke/invoicing';
+
+/* Notes:
+ * - `store.clients` is backed by unified contacts (`contact_type='client'`).
+ * - Invoicing-specific fields like tax/credit/payment terms live on the same
+ *   contact row; no separate invoice client registry is needed. */
 import LineItemsEditor, { type EditorLineItem } from './LineItemsEditor';
 import InvoiceTotals from './InvoiceTotals';
 import InvoiceStatusPill from './InvoiceStatusPill';

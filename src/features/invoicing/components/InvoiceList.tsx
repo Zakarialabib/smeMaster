@@ -6,6 +6,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../stores/invoicingStore';
+
+/* Invoicing list uses `store.clients` from the same unified contacts registry
+ * (`contact_type='client'`). Client names for invoices are resolved from that
+ * single contacts-backed client list. */
 import { ACTIVE_COMPANY_ID, formatMoney, formatDate, daysUntil } from '../utils/format';
 import {
   DOCUMENT_TYPE_META, type InvoiceStatus,

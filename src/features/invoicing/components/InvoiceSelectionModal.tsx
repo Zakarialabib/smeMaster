@@ -13,6 +13,9 @@ interface InvoiceSelectionModalProps {
 
 export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: InvoiceSelectionModalProps) {
   const { invoices, clients, fetchInvoices, fetchClients, listLoading } = useInvoicingStore();
+/* `clients` come from the single unified contacts registry with
+ * `contact_type='client'`. Invoice payment/credit settings are stored on the
+ * same contact row; this modal only reads display data from that list. */
   const unpaidInvoices = invoices.filter((i: Invoice) => i.status !== 'paid');
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 

@@ -1,7 +1,7 @@
 import {
   Mail,
   Users,
-  Calendar,
+  ReceiptText,
   Settings,
   Inbox,
   Star,
@@ -10,28 +10,13 @@ import {
   FileEdit,
   Trash2,
   Ban,
-  Bug,
   Paperclip,
-  BarChart3,
-  ReceiptText,
-  FolderSearch,
   Tag,
-  UserCircle,
-  PenLine,
-  Bell,
-  Sparkles,
-  Filter,
+  FolderSearch,
   GitBranch,
-  Lock,
-  ShieldCheck,
-  HardDrive,
-  Smartphone,
-  ClipboardCheck,
-  Keyboard,
-  HelpCircle,
-  Info,
   FolderLock,
-  Cpu,
+  Sparkles,
+  HelpCircle,
   LayoutDashboard,
   Calculator,
 } from "lucide-react";
@@ -79,6 +64,45 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
   { id: "labels", label: "nav.labels", icon: Tag },
 ];
 
+// ─── Settings labels override ────────────────────────────────────────────────
+// Some tabs need nav-specific i18n keys; default to `settings.tabs.<id>`.
+const SETTINGS_NAV_LABELS: Record<string, string> = {
+  pairing: "settings.devicePairing",
+  "deliverability-dashboard": "settings.tabGroupDeliverability",
+  developer: "settings.tabGroupDeveloper",
+  about: "nav.about",
+};
+
+/**
+ * Build Settings group items from SettingsTabRegistry so the rail stays
+ * aligned with the single source of truth.
+ */
+function buildSettingsItems(): NavRailSubItem[] {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { tabGroups } = require("@/features/settings/components/SettingsTabRegistry") as {
+    tabGroups: {
+      label: string;
+      icon?: LucideIcon;
+      description?: string;
+      tabs: { id: string; label: string; icon: LucideIcon }[];
+    }[];
+  };
+
+  const items: NavRailSubItem[] = [];
+  for (const group of tabGroups) {
+    for (const tab of group.tabs) {
+      items.push({
+        id: tab.id,
+        label: SETTINGS_NAV_LABELS[tab.id] ?? `settings.tabs.${tab.id}`,
+        icon: tab.icon,
+      });
+    }
+    items.push({ id: "__divider__", label: "", icon: undefined });
+  }
+  items.pop();
+  return items;
+}
+
 // ─── Navigation tree ──────────────────────────────────────────────────────────
 
 export const NAV_GROUPS: NavRailGroup[] = [
@@ -117,7 +141,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
     label: "nav.crm",
     items: [
       { id: "contacts", label: "nav.crm", icon: Users },
-      { id: "deals", label: "nav.deals", icon: ReceiptText, path: "/crm?tab=deals" },
+      { id: "deals", label: "nav.deals", icon: ReceiptText, path: "/people?tab=deals" },
     ],
   },
   {
@@ -142,48 +166,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
     id: "settings",
     icon: Settings,
     label: "nav.settings",
-    items: [
-      // Workspace
-      { id: "general", label: "settings.tabs.general", icon: Settings },
-      { id: "composing", label: "settings.tabs.composing", icon: PenLine },
-      { id: "calendar", label: "settings.tabs.calendar", icon: Calendar },
-      { id: "shortcuts", label: "settings.tabs.shortcuts", icon: Keyboard },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // Accounts & Sync
-      { id: "accounts", label: "settings.tabs.accounts", icon: UserCircle },
-      { id: "pairing", label: "settings.devicePairing", icon: Smartphone },
-      { id: "backup", label: "settings.tabs.backup", icon: HardDrive },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // Notifications
-      { id: "notifications", label: "settings.tabs.notifications", icon: Bell },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // AI & Automation
-      { id: "ai", label: "search.ai", icon: Sparkles },
-      { id: "mail-rules", label: "settings.tabs.mailRules", icon: Filter },
-      { id: "workflows", label: "settings.tabs.workflows", icon: GitBranch },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // Deliverability
-      { id: "deliverability-dashboard", label: "settings.tabGroupDeliverability", icon: BarChart3 },
-      { id: "presend", label: "settings.tabs.presend", icon: ClipboardCheck },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // Security & Compliance
-      { id: "pgp", label: "settings.tabs.pgp", icon: Lock },
-      { id: "compliance", label: "settings.tabs.compliance", icon: ShieldCheck },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // Developer
-      { id: "developer", label: "settings.tabGroupDeveloper", icon: Bug },
-      { id: "hardware", label: "settings.tabs.hardware", icon: Cpu },
-      // ── divider ──
-      { id: "__divider__", label: "", icon: undefined },
-      // About
-      { id: "about", label: "nav.about", icon: Info },
-    ],
+    items: buildSettingsItems(),
   },
   {
     id: "help",
@@ -195,10 +178,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
   },
 ];
 
-/**
- * Backward-compatible NAV_ITEMS derived from groups.
- * Used by MobileShell and any existing code that references NAV_ITEMS directly.
- */
+/** Backward-compatible NAV_ITEMS derived from groups. */
 export const NAV_ITEMS: NavRailItem[] = NAV_GROUPS.map((g) => ({
   id: g.id,
   icon: g.icon,
@@ -207,11 +187,6 @@ export const NAV_ITEMS: NavRailItem[] = NAV_GROUPS.map((g) => ({
 
 // ─── Route helpers ────────────────────────────────────────────────────────────
 
-/**
- * Maps a URL pathname to the active navigation rail group ID.
- * Distinguishes page routes (settings, tasks, calendar, etc.)
- * from mail-like routes (inbox, labels, smart folders).
- */
 export function getActiveNavFromPath(pathname: string): string {
   if (pathname === "/" || pathname === "") return "mail";
   if (pathname.startsWith("/mail")) return "mail";
@@ -229,14 +204,10 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/invoicing")) return "dashboard";
   if (pathname.startsWith("/erp")) return "dashboard";
   if (pathname.startsWith("/ai-assistant")) return "ai-assistant";
-  if (pathname.startsWith("/pos")) return "mail"; // Or a separate 'pos' group if we add it
+  if (pathname.startsWith("/pos")) return "mail";
   return "mail";
 }
 
-/**
- * Maps a URL pathname to the active sub-item ID within its group.
- * Returns null for page routes without sub-items.
- */
 export function getActiveSubItem(pathname: string): string | null {
   if (pathname === "/" || pathname === "") return "inbox";
 
@@ -255,7 +226,6 @@ export function getActiveSubItem(pathname: string): string | null {
   if (pathname.startsWith("/crm")) return "contacts";
   if (pathname.startsWith("/attachments")) return "attachments";
 
-  // Analytics sub-items
   if (pathname.startsWith("/dashboard")) return null;
   if (pathname.startsWith("/invoicing")) return "invoicing";
   if (pathname.startsWith("/erp")) return "erp";
@@ -272,9 +242,6 @@ export function getActiveSubItem(pathname: string): string | null {
   return null;
 }
 
-/**
- * Returns the sub-items for a given group ID, or an empty array.
- */
 export function getSubItemsForGroup(groupId: string): NavRailSubItem[] {
   const group = NAV_GROUPS.find((g) => g.id === groupId);
   return group?.items ?? [];
@@ -282,13 +249,6 @@ export function getSubItemsForGroup(groupId: string): NavRailSubItem[] {
 
 // ─── Navigation handlers ──────────────────────────────────────────────────────
 
-/**
- * Navigates to the default view for each nav rail group.
- * Mail and People → mail-like routes (MailLayout)
- * Tasks, Calendar, Analytics, Automation → page routes
- * Help → help topic route
- * Settings → settings tab route
- */
 export function handleNavSelect(id: string): void {
   switch (id) {
     case "mail":
@@ -328,9 +288,6 @@ export function handleNavSelect(id: string): void {
   }
 }
 
-/**
- * Navigates to the view associated with a sub-item within a group.
- */
 export function handleSubItemSelect(groupId: string, subItemId: string): void {
   switch (groupId) {
     case "mail":

@@ -5,6 +5,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
+
+/* UI client registry: invoicing clients are unified contacts with
+ * `contact_type='client'`. Advanced fields such as `tax_id`,
+ * `credit_limit`, and `payment_terms` are persisted on the same contacts row. */
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import type { Client } from '../../types';
 import ClientForm from './ClientForm';

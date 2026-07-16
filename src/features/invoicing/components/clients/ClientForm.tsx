@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { X, Save, Loader2, Users } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
+
+/* Client form: clients are contacts with `contact_type='client'`.
+ * Invoicing extensions like `tax_id`, `credit_limit`, and `payment_terms`
+ * are stored directly on the contact row, so this form updates the unified
+ * contacts table via the invoicing store wrappers. */
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import { useTranslation } from 'react-i18next';
 import type { Client } from '../../types';
