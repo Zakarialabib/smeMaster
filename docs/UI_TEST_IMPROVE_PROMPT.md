@@ -323,3 +323,42 @@ the live Quick Start button works but subsequent vision/console reads can go sta
   persistence, automation rule save under `ACTIVE_COMPANY_ID`, etc.) are NOT exercisable here —
   verified only for graceful offline/error handling and i18n, per the doc's caching-vs-DB §2.
 - `ErpPage.tsx:142` has a pre-existing "unused eslint-disable directive" warning.
+
+### Batch 2 fixes (2026-07-16, after Playwright + browser re-check)
+Re-checked every Settings tab in a real browser and found a cluster of i18n bugs
+that only surface at render (scripted key audits miss them):
+
+- `settings.tabs.cache` — `[TODO] settings.tabs.cache` raw on Cache tab → `Cache`.
+- `common.on` / `common.off` — self-referential (`"common.on"`) on Cache toggle →
+  `On` / `Off`.
+- `settings.sectionSubtitles.pgp` — `[TODO]` placeholder in fr/ar/ja/it → backfilled
+  from en.
+- `settings.sectionSubtitles.cache` — missing subkey → added Cache subtitle.
+- `categories.primary/updates/promotions/social/newsletters` — missing top-level
+  block (Notifications → Category Filters showed raw `categories.primary` etc.) →
+  added; labels now render.
+- `settings.backup` — object (`why/how/when`, unused) caused i18next
+  "returned an object instead of string" diagnostic to leak onto the Backup tab
+  heading → converted to string `Backup`.
+- Object-leak class (parent object called as string title): `search.templates`,
+  `settings.features`, `settings.contentQuality`, `settings.pairing` were objects
+  but called via `t('key')` without subkey in CommandPalette / ComposingTab /
+  TemplatesTab / AiTab / PairingSettings → diagnostic leaked. Fixed by keeping the
+  catalog objects intact and adding dedicated `*Title` keys (`settings.featuresTitle`,
+  `settings.contentQualityTitle`, `settings.pairingTitle`), making `search.templates`
+  a string (matches en) + `search.templateDesc`, and updating the call sites
+  (AiTab + ComposingTab/PairingSettings source edits). **Caution:** an earlier
+  attempt wrongly deleted the `settings.features` catalog object — reverted and
+  re-applied keeping catalogs intact.
+
+Verified after Batch 2: `tsc --noEmit` clean, `npm run build` green, eslint 0 errors
+(2 pre-existing `react-hooks/exhaustive-deps` `t` warnings in ComposingTab), and a
+scripted scan reports **0 remaining `t('key')` calls that resolve to an object**.
+Browser spot-checks: Cache, PGP, Accounts, General, AI, Notifications (category
+labels), Backup, Composing, Device-pairing all render human-readable with no raw
+keys or diagnostics.
+
+Committed as `02351ba` (locale + 3 source files) and pushed to `dev`
+(`77ce423..02351ba`). Excluded unrelated pre-existing modifications (EmailList /
+MailLayout / ReadingPane / DesktopShell / WindowTitleBar) and concurrent Rust files
+in `src-tauri/` (not part of this UI task).
