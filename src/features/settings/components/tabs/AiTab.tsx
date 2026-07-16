@@ -868,7 +868,7 @@ export default function AiTab() {
       {/* ── Section B: AI Features ────────────────────────────────── */}
       {activeSubTab === "features" && (
         <>
-          <SettingGroup title={t('settings.features')}>
+          <SettingGroup title={t('settings.featuresTitle')}>
             <ToggleRow
               label={t('settings.enableAiFeatures')}
               description={t('settings.enableAiFeaturesDescription')}

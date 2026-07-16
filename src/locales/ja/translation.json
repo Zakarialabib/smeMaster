@@ -269,7 +269,7 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "[TODO] settings.tabs.cache"
+      "cache": "キャッシュ"
     },
     "appearance": "外観",
     "theme": "テーマ",
@@ -518,7 +518,8 @@
       "invoicing": {
         "name": "Invoicing",
         "desc": "Create, send, and track professional invoices and estimates with PDF export"
-      }
+      },
+      "featuresTitle": "機能"
     },
     "aiLanguage": "AI応答言語",
     "aiLanguageAuto": "自動 アプリ言語に合わせる ",
@@ -592,7 +593,8 @@
       "readingTime": "Reading time",
       "suggestions": "Suggestions",
       "wordCount": "Word count",
-      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring.",
+      "contentQualityTitle": "コンテンツ品質"
     },
     "contactsDescription": "メールの送受信時に連絡先が自動追加されます。表示名の編集や連絡先の削除が可能です。",
     "subscriptionsDescription": "検出されたすべてのニュースレターとプロモーション送信者を表示します。RFC 8058のワンクリックPOST、mailto、またはブラウザ経由で配信停止できます。",
@@ -818,18 +820,15 @@
     "pairing": {
       "why": "Pairing links your phone so mail and data stay in sync.",
       "how": "Scan the QR code in Pairing with the mobile app to connect.",
-      "when": "Pair when you install SMEMaster on a new mobile device."
+      "when": "Pair when you install SMEMaster on a new mobile device.",
+      "pairingTitle": "ペアリング"
     },
     "pairingDevicePlaceholder": "Device name",
     "generate": "Generate",
     "scanWithMobile": "Scan with mobile app",
     "pairedDevices": "Paired devices",
     "microsoftApi": "Microsoft API",
-    "backup": {
-      "why": "Backups protect you from data loss and device failure.",
-      "how": "Create an encrypted backup and store it somewhere safe.",
-      "when": "Back up before major changes or on a regular schedule."
-    },
+    "backup": "バックアップ",
     "backupScheduler": "Backup scheduler",
     "calendar": {
       "why": "Calendar sync keeps meetings and email in one place.",
@@ -1115,7 +1114,7 @@
       "ai": "Set up AI providers, smart replies, and automation.",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
-      "pgp": "[TODO] Manage PGP keys for end-to-end encryption.",
+      "pgp": "Manage PGP keys for end-to-end encryption.",
       "mailRules": "Automate organization with labels and filters.",
       "presend": "Verify emails before they leave your outbox.",
       "calendar": "Sync and manage your calendar events.",
@@ -1123,7 +1122,8 @@
       "queue": "Inspect pending operations and sync status.",
       "accountCleaning": "Automate cleanup of old or unwanted mail.",
       "license": "View your license and activation status.",
-      "featureFlags": "Preview experimental and tier-gated features."
+      "featureFlags": "Preview experimental and tier-gated features.",
+      "cache": "アプリが使用するキャッシュ、同期状態、ローカルストレージを管理します。"
     },
     "education": {
       "general": {
@@ -1304,10 +1304,7 @@
     "nav": "ナビゲーション",
     "ai": "AI",
     "settings": "設定",
-    "templates": {
-      "": "テンプレート",
-      "desc": "再利用可能なメッセージテンプレート"
-    },
+    "templates": "テンプレート",
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
@@ -1325,7 +1322,8 @@
     "snoozeThread": "[TODO] search.snoozeThread",
     "starThread": "[TODO] search.starThread",
     "archiveThread": "[TODO] search.archiveThread",
-    "markReadThread": "[TODO] search.markReadThread"
+    "markReadThread": "[TODO] search.markReadThread",
+    "templateDesc": "一貫したメッセージングのための変数プレースホルダーを備えた再利用可能なメールテンプレートを作成します。"
   },
   "empty": {
     "noImportantConversations": "重要な会話はありません",
@@ -1798,8 +1796,8 @@
     "connections": "Connections",
     "enabled": "Enabled",
     "skipToContent": "メインコンテンツにスキップ",
-    "on": "[TODO] common.on",
-    "off": "[TODO] common.off"
+    "on": "オン",
+    "off": "オフ"
   },
   "quickReply": {
     "title": "クイック返信",
@@ -2230,5 +2228,12 @@
     "clientsEmptyTitle": "No clients yet",
     "clientsNoMatchesHint": "Try adjusting your search.",
     "clientsEmptyHint": "Only Client and Supplier contacts appear here. Contacts from your CRM or email sync are saved as 'contact' and won't show — add them with \"New Client\" to start billing them."
+  },
+  "categories": {
+    "primary": "プライマリ",
+    "updates": "更新",
+    "promotions": "プロモーション",
+    "social": "ソーシャル",
+    "newsletters": "ニュースレター"
   }
 }

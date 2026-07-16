@@ -269,7 +269,7 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "[TODO] settings.tabs.cache"
+      "cache": "Cache"
     },
     "appearance": "Apparence",
     "surface": "Surface",
@@ -522,7 +522,8 @@
       "invoicing": {
         "name": "Invoicing",
         "desc": "Create, send, and track professional invoices and estimates with PDF export"
-      }
+      },
+      "featuresTitle": "Fonctionnalités"
     },
     "aiLanguage": "Langue de réponse IA",
     "aiLanguageAuto": "Auto (langue de l'app)",
@@ -596,7 +597,8 @@
       "readingTime": "Reading time",
       "suggestions": "Suggestions",
       "wordCount": "Word count",
-      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring.",
+      "contentQualityTitle": "Qualité du contenu"
     },
     "contactsDescription": "Les contacts sont automatiquement ajoutés lorsque vous envoyez ou recevez des emails. Modifiez les noms affichés ou supprimez des contacts ci-dessous.",
     "subscriptionsDescription": "Consultez tous les expéditeurs de newsletters et de promotions détectés. Désabonnez-vous via RFC 8058 (POST en un clic), mailto, ou navigateur.",
@@ -822,18 +824,15 @@
     "pairing": {
       "why": "Pairing links your phone so mail and data stay in sync.",
       "how": "Scan the QR code in Pairing with the mobile app to connect.",
-      "when": "Pair when you install SMEMaster on a new mobile device."
+      "when": "Pair when you install SMEMaster on a new mobile device.",
+      "pairingTitle": "Appairage"
     },
     "pairingDevicePlaceholder": "Device name",
     "generate": "Generate",
     "scanWithMobile": "Scan with mobile app",
     "pairedDevices": "Paired devices",
     "microsoftApi": "Microsoft API",
-    "backup": {
-      "why": "Backups protect you from data loss and device failure.",
-      "how": "Create an encrypted backup and store it somewhere safe.",
-      "when": "Back up before major changes or on a regular schedule."
-    },
+    "backup": "Sauvegarde",
     "backupScheduler": "Backup scheduler",
     "calendar": {
       "why": "Calendar sync keeps meetings and email in one place.",
@@ -1116,7 +1115,7 @@
       "ai": "Set up AI providers, smart replies, and automation.",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
-      "pgp": "[TODO] Manage PGP keys for end-to-end encryption.",
+      "pgp": "Manage PGP keys for end-to-end encryption.",
       "mailRules": "Automate organization with labels and filters.",
       "presend": "Verify emails before they leave your outbox.",
       "calendar": "Sync and manage your calendar events.",
@@ -1124,7 +1123,8 @@
       "queue": "Inspect pending operations and sync status.",
       "accountCleaning": "Automate cleanup of old or unwanted mail.",
       "license": "View your license and activation status.",
-      "featureFlags": "Preview experimental and tier-gated features."
+      "featureFlags": "Preview experimental and tier-gated features.",
+      "cache": "Gérez les caches, l'état de synchronisation et le stockage local de l'application."
     },
     "education": {
       "general": {
@@ -1272,10 +1272,7 @@
     "nav": "Navigation",
     "ai": "IA",
     "settings": "Paramètres",
-    "templates": {
-      "": "Modèles",
-      "desc": "Modèles de message réutilisables"
-    },
+    "templates": "Modèles",
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
@@ -1293,7 +1290,8 @@
     "snoozeThread": "[TODO] search.snoozeThread",
     "starThread": "[TODO] search.starThread",
     "archiveThread": "[TODO] search.archiveThread",
-    "markReadThread": "[TODO] search.markReadThread"
+    "markReadThread": "[TODO] search.markReadThread",
+    "templateDesc": "Créez des modèles d’e-mails réutilisables avec des espaces réservés pour un message cohérent."
   },
   "empty": {
     "noImportantConversations": "Aucune conversation importante",
@@ -1750,8 +1748,8 @@
     "connections": "Connections",
     "enabled": "Enabled",
     "skipToContent": "Passer au contenu principal",
-    "on": "[TODO] common.on",
-    "off": "[TODO] common.off"
+    "on": "Activé",
+    "off": "Désactivé"
   },
   "snooze": {
     "addPreset": "Ajouter un préréglage",
@@ -2231,5 +2229,12 @@
     "loading": "Loading attachments...",
     "loadErrorTitle": "Failed to load attachments",
     "retry": "Retry"
+  },
+  "categories": {
+    "primary": "Principal",
+    "updates": "Mises à jour",
+    "promotions": "Promotions",
+    "social": "Social",
+    "newsletters": "Newsletters"
   }
 }
