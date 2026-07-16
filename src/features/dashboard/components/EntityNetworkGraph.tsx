@@ -10,6 +10,7 @@ import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { WidgetHeader, WidgetSkeleton, WidgetError } from "./WidgetHelpers";
 import { Share2 } from "lucide-react";
 import { invokeCommand } from "@shared/services/db/invoke/command";
+import { isTauriEnvironment } from "@shared/services/ipc";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -255,10 +256,27 @@ export function EntityNetworkGraph() {
   if (loading) return <WidgetSkeleton />;
 
   if (error) {
+    // Outside a Tauri shell (browser dev server) the backend isn't reachable.
+    // Show a calm empty state instead of a scary raw error string.
+    const devMode = !isTauriEnvironment();
     return (
       <div>
         <WidgetHeader icon={<Share2 size={16} />} title="Entity Network" />
-        <WidgetError message={error} />
+        {devMode ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Share2
+              size={32}
+              className="text-text-tertiary mb-2"
+              strokeWidth={1.5}
+            />
+            <p className="text-xs text-text-tertiary max-w-[200px]">
+              Network graph is available in the desktop app. Run the Tauri
+              build to see entity relationships.
+            </p>
+          </div>
+        ) : (
+          <WidgetError message={error} />
+        )}
       </div>
     );
   }
