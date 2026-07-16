@@ -42,6 +42,11 @@ describe("usePersistentStorage (browser fallback)", () => {
   beforeEach(() => {
     mockStorage.clear();
     vi.clearAllMocks();
+    // The shared tauri.mock.ts setup marks jsdom as a Tauri shell. This hook's
+    // browser-fallback path requires the *non-Tauri* environment, so strip the
+    // global here (the hook detects Tauri lazily per call).
+    delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+    delete (window as unknown as Record<string, unknown>).__TAURI__;
   });
 
   it("returns the initial value when nothing is stored", async () => {

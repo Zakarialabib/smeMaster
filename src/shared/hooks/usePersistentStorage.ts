@@ -34,7 +34,15 @@ function detectTauri(): boolean {
   return "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
 }
 
-const isBrowser = typeof window !== "undefined" && !detectTauri();
+/**
+ * True when running in a plain browser (jsdom / web build) rather than a Tauri
+ * shell. Evaluated lazily (per call) rather than as a module-level constant so
+ * that the environment can be toggled at runtime — e.g. tests that delete
+ * `window.__TAURI_INTERNALS__` to exercise the localStorage fallback path.
+ */
+function isBrowser(): boolean {
+  return typeof window !== "undefined" && !detectTauri();
+}
 
 // ── Lazy store singleton (Tauri) ──────────────────────────────────────────
 // We keep one tauri-plugin-store instance for the whole app to avoid
@@ -128,7 +136,7 @@ export function usePersistentStorage<T>(
 
     async function load() {
       // Browser fallback: synchronous-ish via localStorage.
-      if (isBrowser) {
+      if (isBrowser()) {
         const cached = lsGet<T>(namespacedKey);
         if (!cancelled && cached !== null) setValueState(cached);
         if (!cancelled) setLoading(false);
@@ -183,7 +191,7 @@ export function usePersistentStorage<T>(
       lsSet(namespacedKey, resolved);
 
       // Also write to the durable plugin store if available.
-      if (!isBrowser) {
+      if (!isBrowser()) {
         const store = await getTauriStore();
         if (store) {
           try {
@@ -209,7 +217,7 @@ export function usePersistentStorage<T>(
   );
 
   const remove = useCallback(async (): Promise<void> => {
-    if (isBrowser) {
+    if (isBrowser()) {
       lsDelete(namespacedKey);
     } else {
       const store = await getTauriStore();
