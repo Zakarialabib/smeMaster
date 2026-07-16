@@ -362,10 +362,10 @@ export function DashboardPage() {
   const updatedLabel = useMemo(() => {
     if (!lastUpdated) return '';
     const secs = Math.max(0, Math.round((now.getTime() - lastUpdated.getTime()) / 1000));
-    if (secs < 60) return t('dashboard.updatedSeconds', { n: secs });
+    if (secs < 60) return t('dashboard.updatedSeconds', { count: secs });
     const mins = Math.round(secs / 60);
-    if (mins < 60) return t('dashboard.updatedMinutes', { n: mins });
-    return t('dashboard.updatedHours', { n: Math.round(mins / 60) });
+    if (mins < 60) return t('dashboard.updatedMinutes', { count: mins });
+    return t('dashboard.updatedHours', { count: Math.round(mins / 60) });
   }, [lastUpdated, now, t]);
 
   if (!loaded) {

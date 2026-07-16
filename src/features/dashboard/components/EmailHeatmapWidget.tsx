@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { dashboardEmailHeatmap } from '@shared/services/db/db-invoke';
 import type { DailyCount } from '@shared/services/db/db-invoke';
-import { WidgetHeader } from './WidgetHelpers';
+import { WidgetHeader, WidgetError } from './WidgetHelpers';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export function EmailHeatmapWidget() {
     return (
       <div className="space-y-3">
         <WidgetHeader icon={<CalendarDays size={16} />} title="Email Activity" />
-        <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>
+        <WidgetError message={error} />
       </div>
     );
   }

@@ -6,7 +6,7 @@ import {
 import { Mail, BarChart3, LineChart as LineChartIcon } from "lucide-react";
 import { dashboardEmailVolume } from "@shared/services/db/db-invoke";
 import type { DashboardTimeSeries } from "@shared/services/db/db-invoke";
-import { WidgetHeader } from "./WidgetHelpers";
+import { WidgetHeader, WidgetError } from "./WidgetHelpers";
 
 type ChartMode = "bar" | "line";
 
@@ -46,7 +46,7 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   }
 
   if (error) {
-    return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
+    return <WidgetError message={error} />;
   }
 
   return (

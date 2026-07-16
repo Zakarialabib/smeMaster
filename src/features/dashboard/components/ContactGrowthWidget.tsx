@@ -6,7 +6,7 @@ import {
 import { TrendingUp, BarChart3, AreaChart as AreaChartIcon } from "lucide-react";
 import { dashboardContactGrowth } from "@shared/services/db/db-invoke";
 import type { DashboardTimeSeries } from "@shared/services/db/db-invoke";
-import { WidgetHeader } from "./WidgetHelpers";
+import { WidgetHeader, WidgetError } from "./WidgetHelpers";
 
 type ChartMode = "area" | "bar";
 
@@ -79,7 +79,7 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
   }
 
   if (error) {
-    return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
+    return <WidgetError message={error} />;
   }
 
   return (
