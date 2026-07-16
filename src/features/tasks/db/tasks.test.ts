@@ -36,6 +36,10 @@ const mockInvoke = vi.mocked(invoke);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // The IPC layer short-circuits with TauriUnavailableError unless we are
+  // inside a Tauri shell. Mark the jsdom window as Tauri so the mocked
+  // `@tauri-apps/api/core` invoke (above) actually runs for these service tests.
+  (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {};
 });
 
 describe("tasks DB service", () => {

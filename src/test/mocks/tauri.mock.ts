@@ -3,6 +3,23 @@ import { vi, beforeEach } from "vitest";
 // ── Shared Tauri IPC mock functions ──────────────────────────────────────────
 // Import these in tests to configure Tauri IPC behavior.
 export const mockInvoke = vi.fn();
+
+// Mark the jsdom window as a Tauri shell for the duration of the unit suite.
+// The IPC layer (src/shared/services/ipc/invoke.ts and commands.ts) short-circuits
+// with a `TauriUnavailableError` when `isTauriEnvironment()` is false, which would
+// otherwise defeat the `@tauri-apps/api/core` `invoke` mock below and break every
+// DB-service test that exercises the real invoke path. Setting the global lets the
+// mocked invoke actually run, restoring pre-guard test behavior.
+//
+// Tests that intentionally exercise the *non-Tauri* path (e.g. usePlatform web
+// fallback, invoke.ts environment-guard specs) delete this global in their own
+// `beforeEach` — see src/shared/hooks/usePlatform.test.tsx and
+// src/shared/services/ipc/invoke.test.ts.
+if (typeof window !== "undefined") {
+  (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {
+    invoke: (...args: unknown[]) => (mockInvoke as unknown as (...a: unknown[]) => unknown)(...args),
+  };
+}
 export const mockListen = vi.fn(() => vi.fn());   // returns cleanup fn
 export const mockEmit = vi.fn();
 

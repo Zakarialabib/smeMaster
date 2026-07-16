@@ -40,6 +40,11 @@ describe("usePlatform", () => {
   beforeEach(() => {
     __resetPlatformCache();
     vi.clearAllMocks();
+    // The shared tauri.mock.ts setup marks jsdom as a Tauri shell so DB-service
+    // tests can reach the mocked invoke. usePlatform's web-fallback assertions
+    // require the *non-Tauri* path, so strip that global here.
+    delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+    delete (window as unknown as Record<string, unknown>).__TAURI__;
   });
 
   afterEach(() => {
