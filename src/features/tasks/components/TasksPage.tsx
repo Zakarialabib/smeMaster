@@ -31,6 +31,7 @@ import {
   type TaskWithContact,
   type TaskPriority,
 } from "@features/tasks/db/tasks";
+import { filterTasks } from "@shared/services/db/invoke/tasks";
 import { handleRecurringTaskCompletion } from "@features/tasks/services/taskManager";
 import { safeDbOperation } from "@features/tasks/services/errorHandler";
 import { useMobile } from "@shared/hooks/useMobile";
@@ -193,11 +194,32 @@ export function TasksPage() {
 
   // Paginated task loading
   const includeCompleted = filterStatus !== "incomplete";
+  // Any active filter (priority / date / search) routes through the backend
+  // filter command so results are computed server-side across the full dataset,
+  // not just the currently-loaded page.
+  const hasActiveFilter =
+    filterPriority !== "all" ||
+    dateFilter !== "all" ||
+    searchQuery.trim().length > 0;
   const paginationOptions = useMemo(() => ({
     fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
-      const loaded: TaskWithContact[] = await getTasksForAccountWithContactsPaginated(
-        accountId, includeCompleted, limit, offset,
-      );
+      let loaded: TaskWithContact[];
+      if (hasActiveFilter) {
+        loaded = await filterTasks(accountId, {
+          includeCompleted,
+          priority: filterPriority !== "all" ? filterPriority : null,
+          dateFilter: dateFilter !== "all" ? dateFilter : null,
+          search: searchQuery.trim() || null,
+          sortField: sortField,
+          sortDirection: sortDirection,
+          limit,
+          offset,
+        });
+      } else {
+        loaded = await getTasksForAccountWithContactsPaginated(
+          accountId, includeCompleted, limit, offset,
+        );
+      }
       const total = await countTasksForAccount(accountId, includeCompleted);
       // Build contact map from the rich result before casting
       const map = new Map<string, { name: string | null; avatar: string | null; email: string | null }>();
@@ -210,9 +232,9 @@ export function TasksPage() {
       return { items: loaded as unknown as DbTask[], total };
     },
     pageSize: 50,
-    deps: [accountId, includeCompleted],
+    deps: [accountId, includeCompleted, hasActiveFilter, filterPriority, dateFilter, searchQuery, sortField, sortDirection],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [accountId, includeCompleted]);
+  }), [accountId, includeCompleted, hasActiveFilter, filterPriority, dateFilter, searchQuery, sortField, sortDirection]);
 
   const {
     items: paginatedTasks,
