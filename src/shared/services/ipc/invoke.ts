@@ -18,6 +18,11 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { logger } from "@shared/services/logger";
 import { TauriCommands, type CommandName, type CommandParams, type CommandResult, type SubsystemStatusResponse } from "./CommandRegistry";
+import { isTauriEnvironment, TauriUnavailableError } from "./environment";
+
+// Re-export environment helpers so consumers can import everything IPC-related
+// from a single module ("@shared/services/ipc").
+export { isTauriEnvironment, TauriUnavailableError } from "./environment";
 
 // Re-export types for convenience
 export type { CommandName, CommandParams, CommandResult };
@@ -131,6 +136,15 @@ export async function invoke<C extends CommandName>(
   }
 
   try {
+    // Short-circuit outside a Tauri shell (browser dev server / web build).
+    // Without this, `@tauri-apps/api/core` dereferences `window.__TAURI_INTERNALS__`
+    // and throws the cryptic `Cannot read properties of undefined (reading 'invoke')`.
+    // Throwing a clean, catchable error lets every existing try/catch render a
+    // friendly fallback instead of crashing the component.
+    if (!isTauriEnvironment()) {
+      throw new TauriUnavailableError(command);
+    }
+
     if (typeof tauriInvoke !== "function") {
       throw new Error(`Tauri invoke is not available in this environment. Attempted: ${command}`);
     }
@@ -181,6 +195,31 @@ export async function invoke<C extends CommandName>(
     }
 
     throw err;
+  }
+}
+
+/**
+ * Invoke a command but never throw.
+ *
+ * Use for decorative / non-critical reads (dashboard widgets, presence checks)
+ * where a missing Tauri backend (browser dev server) should yield a safe
+ * fallback rather than an error. The fallback is returned when:
+ *   - we are not inside a Tauri environment, or
+ *   - the command rejects for any reason.
+ *
+ * @example
+ *   const nodes = await safeInvoke("db_get_entity_graph", { depth: 2 }, []);
+ */
+export async function safeInvoke<C extends CommandName>(
+  command: C,
+  params: CommandParams<C>,
+  fallback: CommandResult<C>,
+  options: InvokeOptions = {},
+): Promise<CommandResult<C>> {
+  try {
+    return await invoke<C>(command, params, { ...options, silent: true });
+  } catch {
+    return fallback;
   }
 }
 

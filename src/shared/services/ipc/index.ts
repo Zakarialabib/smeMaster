@@ -11,8 +11,11 @@
 
 export {
   invoke,
+  safeInvoke,
   hasCommand,
   listCommands,
+  isTauriEnvironment,
+  TauriUnavailableError,
   type InvokeOptions,
   type CommandName,
   type CommandParams,
