@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { listAccounts } from "../../../shared/services/db/db-invoke";
+import { queryKeys } from "@shared/query/keys";
 
 export function useAccounts() {
   return useQuery({
-    queryKey: ["accounts"],
+    queryKey: queryKeys.accounts.all,
     queryFn: async () => {
       return listAccounts();
     },

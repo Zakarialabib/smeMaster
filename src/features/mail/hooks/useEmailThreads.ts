@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getThreads } from "@shared/services/db/db-invoke";
+import { queryKeys } from "@shared/query/keys";
 
 export function useEmailThreads(accountId: string | null, folder: string, limit = 50) {
   return useQuery({
-    queryKey: ["emailThreads", accountId, folder, limit],
+    queryKey: queryKeys.threads.list(accountId, folder),
     queryFn: async () => {
       if (!accountId) return [];
       const threads = await getThreads(accountId, limit, 0, {

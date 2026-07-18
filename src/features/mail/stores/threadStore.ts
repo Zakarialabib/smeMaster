@@ -3,7 +3,9 @@ import { getAllLabelUnreadCounts } from "@shared/services/db/threads";
 import { updateThreadCategory } from "@features/mail/db/threadCategories";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { createAsyncActions, initialAsyncState } from "@shared/stores/createAsyncStore";
-import { createEventBusSubscription } from "@shared/stores/createEventBusSubscription";
+import { getQueryClient } from "@shared/query/queryClient";
+import { queryKeys } from "@shared/query/keys";
+import { uiBus } from "@shared/services/events/uiBus";
 
 export interface Thread {
   id: string;
@@ -260,25 +262,26 @@ export const useThreadStore = create<ThreadState>((set, get) => {
 
   setThreadCategory: async (accountId, threadId, category) => {
     await updateThreadCategory(accountId, threadId, category, true);
-    window.dispatchEvent(new Event("smemaster-sync-done"));
+    uiBus.emit("data:changed");
   },
 
   /**
-   * Unified event handler called by the EventBus.
-   * - `sync:complete` — reloads unread counts for the active account
-   * - `sync:account-complete` — same, scoped to the account that finished
-   * - `sync:account-start` — could mark loading state (future)
+   * Unified event handler. No longer self-subscribes to the EventBus (sync
+   * lifecycle events are owned by `syncStore`); it is retained because other
+   * code paths call it directly. On sync completion it invalidates the
+   * TanStack Query cache for threads/labels so query hooks refetch, and
+   * emits a `data:changed` UI signal for non-query consumers.
    */
   handleEvent: (eventType, payload) => {
-    const state = get();
     const activeAccountId = useAccountStore.getState().activeAccountId;
 
     switch (eventType) {
       case "sync:complete":
         if (activeAccountId) {
-          state.loadUnreadCounts(activeAccountId);
+          get().loadUnreadCounts(activeAccountId);
         }
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        invalidateThreadCache(activeAccountId);
+        uiBus.emit("data:changed");
         break;
 
       case "sync:account-complete": {
@@ -287,9 +290,10 @@ export const useThreadStore = create<ThreadState>((set, get) => {
           `[threadStore] Account sync complete for ${p.username}@${p.host} (${p.folders_synced ?? "?"} folders)`,
         );
         if (activeAccountId) {
-          state.loadUnreadCounts(activeAccountId);
+          get().loadUnreadCounts(activeAccountId);
         }
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        invalidateThreadCache(activeAccountId);
+        uiBus.emit("data:changed");
         break;
       }
 
@@ -305,13 +309,17 @@ export const useThreadStore = create<ThreadState>((set, get) => {
   };
 });
 
-// Subscribe to sync events once
-const threadStoreEventSubscription = createEventBusSubscription("threadStore", {
-  "sync:complete": (payload) => useThreadStore.getState().handleEvent("sync:complete", payload),
-  "sync:account-complete": (payload) => useThreadStore.getState().handleEvent("sync:account-complete", payload),
-  "sync:account-error": (payload) => useThreadStore.getState().handleEvent("sync:account-error", payload),
-});
-
-if (typeof window !== "undefined") {
-  threadStoreEventSubscription.init();
+/**
+ * Invalidate the TanStack Query cache for threads and unread-label counts for
+ * the active account. Safe no-op when no QueryClient is registered yet.
+ */
+function invalidateThreadCache(activeAccountId: string | null): void {
+  const client = getQueryClient();
+  if (!client) return;
+  client.invalidateQueries({ queryKey: queryKeys.threads.all });
+  if (activeAccountId) {
+    client.invalidateQueries({
+      queryKey: queryKeys.labels.unreadCounts(activeAccountId),
+    });
+  }
 }

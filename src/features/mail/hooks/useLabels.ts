@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLabelsForAccount } from "@shared/services/db/labels";
 import type { DbLabel } from "@shared/services/db/labels";
 import type { Label } from "@features/mail/stores/labelStore";
+import { queryKeys } from "@shared/query/keys";
 
 function mapLabel(l: DbLabel): Label {
   return {
@@ -17,7 +18,7 @@ function mapLabel(l: DbLabel): Label {
 
 export function useLabels(accountId: string | null) {
   return useQuery({
-    queryKey: ["labels", accountId],
+    queryKey: queryKeys.labels.byAccount(accountId),
     queryFn: async () => {
       if (!accountId) return [];
       const rows = await getLabelsForAccount(accountId);
