@@ -11,6 +11,7 @@ import {
   removeThreadLabel,
   moveThread,
 } from "@features/mail/services/emailActions";
+import { uiBus } from "@shared/services/events/uiBus";
 import {
   Inbox,
   Archive,
@@ -119,7 +120,7 @@ export function MoveToFolderDialog({
       }
 
       // Refresh thread list
-      window.dispatchEvent(new Event("smemaster-sync-done"));
+      uiBus.emit("data:changed");
     },
     [activeAccountId, threadIds, isImap, onClose],
   );
@@ -256,13 +257,13 @@ export function MoveToFolderDialog({
           <div className="flex items-center gap-3 px-3 py-1.5 border-t border-border-secondary text-[10px] text-text-tertiary">
             <span>
               <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
-                ÔåæÔåô
+                ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
               </kbd>{" "}
               navigate
             </span>
             <span>
               <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
-                ÔåÁ
+                ï¿½ï¿½ï¿½
               </kbd>{" "}
               select
             </span>

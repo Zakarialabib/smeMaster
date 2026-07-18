@@ -3,6 +3,7 @@ import { Inbox, Bell, Tag, Users, Newspaper, Pencil, type LucideIcon } from "luc
 import { ALL_CATEGORIES, updateThreadCategory } from "@features/mail/db/threadCategories";
 import { useThreadStore } from "@features/mail/stores/threadStore";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { uiBus } from "@shared/services/events/uiBus";
 
 export interface CategoryTabsProps {
   activeCategory: string;
@@ -84,7 +85,7 @@ export function CategoryTabs({ activeCategory, onCategoryChange, unreadCounts, u
                   for (const id of selectedIds) {
                     await updateThreadCategory(accountId, id, cat, true);
                   }
-                  window.dispatchEvent(new Event("smemaster-sync-done"));
+                  uiBus.emit("data:changed");
                 }
               }}
               className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-150 relative whitespace-nowrap flex items-center gap-1.5 ${

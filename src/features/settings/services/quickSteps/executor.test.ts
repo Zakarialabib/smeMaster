@@ -57,6 +57,7 @@ import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
 import { useThreadStore } from "@features/mail/stores/threadStore";
 import { executeQuickStep } from "./executor";
 import { createMockQuickStep } from "@/test/mocks";
+import { uiBus } from "@shared/services/events/uiBus";
 
 describe("executeQuickStep", () => {
   beforeEach(() => {
@@ -218,7 +219,7 @@ describe("executeQuickStep", () => {
   });
 
   it("executes moveToCategory action", async () => {
-    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+    const emitSpy = vi.spyOn(uiBus, "emit");
 
     const step = createMockQuickStep({
       actions: [{ type: "moveToCategory", params: { category: "Promotions" } }],
@@ -228,9 +229,9 @@ describe("executeQuickStep", () => {
 
     expect(result.success).toBe(true);
     expect(setThreadCategory).toHaveBeenCalledWith("acct-1", "t1", "Promotions", true);
-    expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: "smemaster-sync-done" }));
+    expect(emitSpy).toHaveBeenCalledWith("data:changed");
 
-    dispatchSpy.mockRestore();
+    emitSpy.mockRestore();
   });
 
   it("executes spam action", async () => {

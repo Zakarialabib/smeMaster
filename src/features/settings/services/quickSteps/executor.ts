@@ -8,6 +8,7 @@ import {
 import { setThreadCategory } from "@features/mail/db/threadCategories";
 import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
 import { useThreadStore as useThreadsStore } from "@features/mail/stores/threadStore";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Execute a single action for a set of threads.
@@ -94,7 +95,7 @@ async function executeSingleAction(
         await Promise.all(threadIds.map((id) =>
           setThreadCategory(accountId, id, action.params!.category!, true),
         ));
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        uiBus.emit("data:changed");
       }
       break;
 

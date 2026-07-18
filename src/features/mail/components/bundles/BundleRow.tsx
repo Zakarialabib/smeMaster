@@ -4,6 +4,7 @@ import { ThreadCard } from "@features/mail/components/ThreadCard";
 import { releaseHeldThreads, type DbBundleRule } from "@features/deliverability/db/bundleRules";
 import type { Thread } from "@features/mail/stores/threadStore";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { uiBus } from "@shared/services/events/uiBus";
 
 interface BundleRowProps {
   rule: DbBundleRule;
@@ -89,7 +90,7 @@ export const BundleRow = memo(function BundleRow({
       try {
         await releaseHeldThreads(activeAccountId, rule.category);
         setDelivered(true);
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        uiBus.emit("data:changed");
         setTimeout(() => setDelivered(false), 2000);
       } catch (err) {
         console.error("Failed to release held threads:", err);

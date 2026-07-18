@@ -2,6 +2,7 @@
 import { onSyncStatus } from "@features/mail/services/gmail/syncManager";
 import { updateBadgeCount } from "@shared/services/badgeManager";
 import { formatSyncError } from "@shared/utils/networkErrors";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Hook: subscribes to the sync engine and exposes current sync status
@@ -33,7 +34,7 @@ export function useSyncStatus() {
       } else if (status === "done") {
         setSyncStatus("Sync complete");
         setTimeout(() => setSyncStatus(null), 2_000);
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        uiBus.emit("data:changed");
         updateBadgeCount();
 
         // Backfill uncategorized threads after first successful sync
@@ -45,8 +46,8 @@ export function useSyncStatus() {
         }
       } else if (status === "error") {
         setSyncStatus(error ? `Sync failed: ${formatSyncError(error)}` : "Sync failed");
-        // Still dispatch sync-done so the UI refreshes with any partially stored data
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        // Still emit data:changed so the UI refreshes with any partially stored data
+        uiBus.emit("data:changed");
         // Auto-clear the error after 8 seconds
         setTimeout(() => setSyncStatus(null), 8_000);
       }

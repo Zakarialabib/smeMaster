@@ -9,6 +9,7 @@ import { CategoryTabs } from "@features/mail/components/CategoryTabs";
 import { EmailListSkeleton } from "@shared/components/ui/Skeleton";
 import { InfiniteScrollSentinel } from "@shared/components/ui/InfiniteScrollSentinel";
 import { MailTopBar } from "./MailTopBar";
+import { uiBus } from "@shared/services/events/uiBus";
 import { useEmailThreads } from "../../hooks/useEmailThreads";
 import {
   useArchiveThread,
@@ -1088,9 +1089,9 @@ export function EmailList({
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => refetchThreads(), 500);
     };
-    window.addEventListener("smemaster-sync-done", handler);
+    const off = uiBus.on("data:changed", handler);
     return () => {
-      window.removeEventListener("smemaster-sync-done", handler);
+      off();
       if (timer) clearTimeout(timer);
     };
   }, [refetchThreads]);

@@ -1,6 +1,7 @@
 import { invokeCommand } from "@shared/services/db/invoke/command";
 import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
 import { createBackgroundChecker } from "@shared/services/backgroundCheckers";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Check for snoozed threads that should be un-snoozed (time has passed).
@@ -25,7 +26,7 @@ async function checkSnoozedThreads(): Promise<void> {
     }
 
     // Notify the UI to refresh
-    window.dispatchEvent(new Event("smemaster-sync-done"));
+    uiBus.emit("data:changed");
   }
 }
 

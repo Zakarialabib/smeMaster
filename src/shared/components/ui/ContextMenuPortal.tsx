@@ -16,6 +16,7 @@ import { getEnabledQuickStepsForAccount, type DbQuickStep } from "@features/mail
 import { executeQuickStep } from "@features/settings/services/quickSteps/executor";
 import type { QuickStep, QuickStepAction } from "@features/settings/services/quickSteps/types";
 import { SnoozeDialog } from "@features/mail/components/SnoozeDialog";
+import { uiBus } from "@shared/services/events/uiBus";
 import {
   Reply,
   ReplyAll,
@@ -546,7 +547,7 @@ function ThreadMenu({
             await updateThreadCategory(activeAccountId, id, cat, true);
             reportUserCorrection(id, cat);
           }
-          window.dispatchEvent(new Event("smemaster-sync-done"));
+          uiBus.emit("data:changed");
         },
       })),
     },

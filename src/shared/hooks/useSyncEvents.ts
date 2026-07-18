@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useSyncStore } from "@shared/stores/syncStore";
+import { uiBus } from "@shared/services/events/uiBus";
 
 interface SyncStatus {
   last_sync: number | null;
@@ -18,7 +19,7 @@ export function useSyncEvents() {
 
     listen<SyncStatus>("sync:complete", () => {
       useSyncStore.getState().setSyncingFolder(null);
-      window.dispatchEvent(new CustomEvent("smemaster-sync-done"));
+      uiBus.emit("data:changed");
     }).then((fn) => unlisteners.push(fn));
 
     listen<SyncStatus>("sync:error", (event) => {

@@ -43,22 +43,22 @@ export const EVENT_BUS_MAP = {
     payload: "SyncStatusPayload",
   },
   "sync:complete": {
-    owner: "threadStore",
+    owner: "syncStore",
     description: "Sync finished for an account",
     payload: "SyncStatusPayload",
   },
   "sync:account-start": {
-    owner: "threadStore",
+    owner: "syncStore",
     description: "Single account sync started",
     payload: "SyncAccountStartPayload",
   },
   "sync:account-complete": {
-    owner: "threadStore",
+    owner: "syncStore",
     description: "Single account sync done",
     payload: "SyncAccountCompletePayload",
   },
   "sync:account-error": {
-    owner: "threadStore",
+    owner: "syncStore",
     description: "Single account sync failed",
     payload: "SyncAccountErrorPayload",
   },

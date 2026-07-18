@@ -17,6 +17,7 @@ import {
 } from "@shared/hooks/useRouteNavigation";
 import { navigateToLabel } from "@/router/navigate";
 import { getCategoryUnreadCounts } from "@features/mail/db/threadCategories";
+import { uiBus } from "@shared/services/events/uiBus";
 
 import { isDevProMode } from "@/constants/featureFlags";
 import { useThreadStore } from "@features/mail/stores/threadStore";
@@ -471,9 +472,9 @@ export function PremiumSidebar({
         useSyncStore.getState().setSyncingFolder(null);
       }, 500);
     };
-    window.addEventListener("smemaster-sync-done", handler);
+    const off = uiBus.on("data:changed", handler);
     return () => {
-      window.removeEventListener("smemaster-sync-done", handler);
+      off();
       if (timer) clearTimeout(timer);
     };
   }, [

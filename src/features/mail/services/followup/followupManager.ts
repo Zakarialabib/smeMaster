@@ -5,6 +5,7 @@ import {
 import { notifyFollowUpDue } from "@features/settings/services/notifications/notificationManager";
 import { createBackgroundChecker } from "@shared/services/backgroundCheckers";
 import { executeSearchQuery } from "@shared/services/db/db-invoke";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Check for follow-up reminders that have fired.
@@ -45,7 +46,7 @@ async function checkFollowUpReminders(): Promise<void> {
   }
 
   // Refresh UI
-  window.dispatchEvent(new Event("smemaster-sync-done"));
+  uiBus.emit("data:changed");
 }
 
 const followUpChecker = createBackgroundChecker("FollowUp", checkFollowUpReminders);
