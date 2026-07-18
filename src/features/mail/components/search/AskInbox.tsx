@@ -1,9 +1,14 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Sparkles, X, Send, ExternalLink } from "lucide-react";
+import { Sparkles, X, Send, ExternalLink, Download } from "lucide-react";
 import { askMyInbox, type AskInboxResult } from "@shared/services/ai/askInbox";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
 import { navigateToLabel } from "@/router/navigate";
+import {
+  ensureAiSidecar,
+  activateAiSidecar,
+} from "@features/assistant/services/aiSidecar";
+import { useAiSidecarStore } from "@features/assistant/stores/aiSidecarStore";
 
 interface AskInboxProps {
   isOpen: boolean;
@@ -16,6 +21,41 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
   const [result, setResult] = useState<AskInboxResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
+
+  // Local AI sidecar status — drives the "Download model" prompt.
+  const sidecarStatus = useAiSidecarStore((s) => s.status);
+  const sidecarError = useAiSidecarStore((s) => s.error);
+  const [activating, setActivating] = useState(false);
+
+  // When the assistant opens, lazily activate the local AI sidecar so the
+  // Rust engine is loaded only on explicit user action (never at startup).
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        await ensureAiSidecar();
+      } catch {
+        // Model not downloaded yet — UI shows a "Download model" prompt.
+      } finally {
+        if (cancelled) return;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  const handleDownloadModel = useCallback(async () => {
+    setActivating(true);
+    try {
+      await activateAiSidecar();
+    } catch (err) {
+      console.error("Failed to activate AI sidecar:", err);
+    } finally {
+      setActivating(false);
+    }
+  }, []);
 
   const handleAsk = useCallback(async () => {
     if (!question.trim() || !activeAccountId || loading) return;
@@ -157,6 +197,28 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
           {!loading && !result && (
             <div className="px-4 py-8 text-center text-sm text-text-tertiary">
               Ask anything about your emails — meetings, conversations, attachments, and more.
+            </div>
+          )}
+
+          {/* Local AI sidecar not ready — degrade gracefully with a prompt. */}
+          {sidecarStatus !== "ready" && sidecarStatus !== "loading" && (
+            <div className="px-4 py-6 text-center">
+              <div className="flex items-center justify-center gap-2 text-sm text-text-secondary mb-3">
+                <Download size={16} className="text-accent" />
+                <span>Local AI model not loaded</span>
+              </div>
+              <p className="text-xs text-text-tertiary mb-3">
+                {sidecarError
+                  ? `Could not load the model: ${sidecarError}`
+                  : "Download the on-device embedding model to enable semantic search."}
+              </p>
+              <button
+                onClick={handleDownloadModel}
+                disabled={activating}
+                className="px-3 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {activating ? "Downloading…" : "Download model"}
+              </button>
             </div>
           )}
         </div>

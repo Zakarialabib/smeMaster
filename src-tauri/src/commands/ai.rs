@@ -18,22 +18,24 @@ use crate::ai::rag::RagSystem;
 type CmdResult<T> = Result<T, SerializedError>;
 
 pub struct AiState {
-    pub engine: Arc<Mutex<LocalEngine>>,
+    /// The local embedding engine. **Lazily constructed** — `None` until the
+    /// user explicitly loads an embedding model via `ai_load_embedding_model`.
+    /// This keeps app startup free of any candle/LanceDB/heavy ML init.
+    engine: Arc<Mutex<Option<LocalEngine>>>,
     vector_db: RwLock<Option<Arc<VectorDb>>>,
     app_handle: tauri::AppHandle,
 }
 
 impl AiState {
-    /// Create an `AiState` with the engine ready but the vector DB deferred.
+    /// Create an `AiState` with **no** engine and no vector DB.
     ///
-    /// The LanceDB connection is opened lazily on the first RAG/index request
-    /// (see [`ensure_vector_db`]), so startup stays fast and the vector store
-    /// is only touched when the AI assistant actually needs it (on-demand).
+    /// Construction is panic-free: the heavy `LocalEngine` (candle + BGE-small)
+    /// is only built on the first `ai_load_embedding_model` call, and the
+    /// LanceDB connection is opened lazily on the first RAG/index request
+    /// (see [`ensure_vector_db`]). Startup therefore never touches ML deps.
     pub fn new(app_handle: tauri::AppHandle) -> Self {
         Self {
-            engine: Arc::new(Mutex::new(
-                LocalEngine::new().expect("Failed to init AI engine"),
-            )),
+            engine: Arc::new(Mutex::new(None)),
             vector_db: RwLock::new(None),
             app_handle,
         }
@@ -58,6 +60,29 @@ impl AiState {
             *guard = Some(db.clone());
         }
         Ok(db)
+    }
+
+    /// Returns a clone of the shared engine handle. The engine itself is
+    /// created lazily inside `ai_load_embedding_model`; callers that need the
+    /// engine to be *ready* should use [`ensure_engine_loaded`] instead.
+    pub fn engine_handle(&self) -> Arc<Mutex<Option<LocalEngine>>> {
+        self.engine.clone()
+    }
+
+    /// Ensure the embedding engine has been loaded. Returns an error (mapped to
+    /// a user-friendly message) if the model has not been loaded yet, so the
+    /// caller can surface a "Download model" prompt rather than panicking.
+    pub async fn ensure_engine_loaded(&self) -> Result<(), String> {
+        let guard = self.engine.lock().await;
+        if guard.is_some() {
+            Ok(())
+        } else {
+            Err(
+                "AI embedding model is not loaded. Download and load a model first \
+                 (e.g. via the AI assistant) before indexing or querying."
+                    .to_string(),
+            )
+        }
     }
 }
 
@@ -89,7 +114,16 @@ pub async fn ai_load_embedding_model(
     model_path: String,
     tokenizer_path: String,
 ) -> CmdResult<()> {
-    let mut engine = state.engine.lock().await;
+    // Lazily construct the LocalEngine on first use — never at startup.
+    let mut engine_guard = state.engine.lock().await;
+    let engine = match engine_guard.as_mut() {
+        Some(engine) => engine,
+        None => {
+            let mut created = LocalEngine::new()
+                .map_err(|e| SerializedError::new("AI_LOAD_ERROR", format!("Failed to init AI engine: {e}")))?;
+            engine_guard.insert(created)
+        }
+    };
     engine.load_model(PathBuf::from(model_path), PathBuf::from(tokenizer_path))
         .map_err(|e| SerializedError::new("AI_LOAD_ERROR", e.to_string()))?;
     Ok(())
@@ -101,9 +135,12 @@ pub async fn ai_index_emails(
     pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
 ) -> CmdResult<()> {
+    // The engine must be loaded before indexing (it produces embeddings).
+    state.ensure_engine_loaded().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let indexer = Indexer::new((*pool).clone(), state.engine_handle(), vector_db, app_handle);
     indexer.index_all().await
         .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
 
@@ -115,9 +152,11 @@ pub async fn ai_query_rag(
     state: State<'_, AiState>,
     query: String,
 ) -> CmdResult<String> {
+    state.ensure_engine_loaded().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine.clone());
+    let rag = RagSystem::new(vector_db, state.engine_handle());
     rag.generate_augmented_prompt(&query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }
@@ -128,9 +167,13 @@ pub async fn ai_search_by_vector(
     embedding: Vec<f32>,
     query: String,
 ) -> CmdResult<String> {
+    // Vector search does not need the local embedding model (the vector is
+    // supplied by the caller), but the engine slot must still exist.
+    state.ensure_engine_loaded().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine.clone());
+    let rag = RagSystem::new(vector_db, state.engine_handle());
     rag.generate_augmented_prompt_from_vector(embedding, &query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }

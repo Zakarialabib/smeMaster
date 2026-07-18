@@ -9,17 +9,18 @@ use tokio::sync::Mutex;
 
 pub struct RagSystem {
     vector_db: Arc<VectorDb>,
-    engine: Arc<Mutex<LocalEngine>>,
+    engine: Arc<Mutex<Option<LocalEngine>>>,
 }
 
 impl RagSystem {
-    pub fn new(vector_db: Arc<VectorDb>, engine: Arc<Mutex<LocalEngine>>) -> Self {
+    pub fn new(vector_db: Arc<VectorDb>, engine: Arc<Mutex<Option<LocalEngine>>>) -> Self {
         Self { vector_db, engine }
     }
 
     pub async fn search(&self, query: &str, dim: usize, limit: usize) -> Result<Vec<String>> {
         let vector = {
             let engine = self.engine.lock().await;
+            let engine = engine.as_ref().ok_or_else(|| anyhow::anyhow!("Model not loaded"))?;
             engine.get_embeddings(query).await?
         };
 

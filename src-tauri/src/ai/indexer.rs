@@ -51,13 +51,13 @@ impl Default for ChunkConfig {
 
 pub struct Indexer {
     pool: SqlitePool,
-    engine: Arc<Mutex<LocalEngine>>,
+    engine: Arc<Mutex<Option<LocalEngine>>>,
     vector_db: Arc<VectorDb>,
     app_handle: AppHandle,
 }
 
 impl Indexer {
-    pub fn new(pool: SqlitePool, engine: Arc<Mutex<LocalEngine>>, vector_db: Arc<VectorDb>, app_handle: AppHandle) -> Self {
+    pub fn new(pool: SqlitePool, engine: Arc<Mutex<Option<LocalEngine>>>, vector_db: Arc<VectorDb>, app_handle: AppHandle) -> Self {
         Self { pool, engine, vector_db, app_handle }
     }
 
@@ -166,6 +166,7 @@ impl Indexer {
     async fn index_text(&self, table: &lancedb::Table, id: &str, text: &str) -> Result<()> {
         let vector = {
             let engine = self.engine.lock().await;
+            let engine = engine.as_ref().ok_or_else(|| anyhow::anyhow!("Model not loaded"))?;
             engine.get_embeddings(text).await?
         };
 
