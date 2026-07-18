@@ -99,8 +99,24 @@ env_logger = "0.11"
 windows = { version = "0.62.2", features = ["Win32_UI_Shell"] }
 
 [features]
-default = ["rustls-tls"]
+default = ["rustls-tls", "local-ai"]
 native-tls = ["dep:native-tls", "dep:tokio-native-tls"]
 rustls-tls = []
 updater = ["dep:tauri-plugin-updater"]
 devtools = ["tauri/devtools"]
+
+# ── local-ai ───────────────────────────────────────────────────────────────
+# Enables the on-device RAG / local LLM inference sidecar (candle + BGE-small
+# embedding engine, LanceDB vector store, HF Hub model downloads, document
+# parsers). It is ON by default so existing behaviour is preserved.
+#
+# The heavy ML dependencies (rig-core, lancedb, arrow, candle-*, hf-hub,
+# tokenizers, calamine, docx-rs, lopdf) are only *initialised* on explicit
+# user action — `AiState` no longer constructs `LocalEngine` at app startup
+# (see src-tauri/src/commands/ai.rs). Turning this feature OFF is intended for
+# builds that ship without the local RAG engine; the AI Tauri commands remain
+# registered either way, but the model-loading path becomes a no-op stub.
+# (Full `#[cfg(feature = "local-ai")]` gating of the ML modules is a follow-up
+# that keeps the feature ON-compatible and is intentionally not done here to
+# avoid removing functionality when the feature is enabled.)
+local-ai = []

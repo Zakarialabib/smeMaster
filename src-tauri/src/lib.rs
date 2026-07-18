@@ -207,9 +207,17 @@ pub fn run() {
         // ── Record app start time as early as possible for accurate uptime
         crate::commands::db::set_app_start_time();
 
-        // ── Reactive data layer: register SQLite change tracker ─────
+        // ── Reactive data layer: register + spawn SQLite change tracker ──
+        // The tracker polls `PRAGMA data_version` and emits per-table
+        // `db:change` events so the frontend's `useLiveQuery` stays reactive
+        // without any native SQLite hooks.
         let app_handle = app.handle().clone();
-        db::change_tracker::register(app_handle);
+        db::change_tracker::register(app_handle.clone());
+        db::change_tracker::spawn_tracker(
+            &app_handle,
+            pool.clone(),
+            app.state::<events::EventBus>().inner().clone(),
+        );
 
         // ── Logger – initialised inside setup so we can control level ─
         {
@@ -424,9 +432,12 @@ pub fn run() {
         );
         app.manage(sentinel.clone());
 
-        // ── AI State (on-demand) ──────────────────────────────────────
-        // The engine is created immediately, but the LanceDB vector store is
-        // opened lazily on the first RAG/index request (see AiState::ensure_vector_db).
+        // ── AI State (fully lazy / sidecar) ──────────────────────────
+        // Neither the LocalEngine (candle + BGE-small) nor the LanceDB vector
+        // store is created here. `AiState::new` is panic-free; the engine is
+        // built on the first `ai_load_embedding_model` call and the vector DB
+        // is opened on the first RAG/index request. App startup never touches
+        // the heavy ML deps.
         app.manage(crate::commands::ai::AiState::new(app.handle().clone()));
 
         // Bridge: EventBus → WebView `core-event`
