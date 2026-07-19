@@ -51,11 +51,11 @@
 
 | Metric | Verified value | How verified | Common stale values to ignore |
 | --- | --- | --- | --- |
-| Rust `#[tauri::command]`s | **802** (739 `#[tauri::command]` + 63 `#[command]`) | `grep -rE '#\[tauri::command\]|#\[command\]' src-tauri/src \| wc -l` | 773, 777, 764, 704, 652 |
-| Zustand stores | **46** (`create<` + `createWithEqualityFn`) | `grep -rE 'create<|createWithEqualityFn' src` | 38, 21 |
-| SQL migrations | **32** `.sql` files | `find src-tauri -name '*.sql' \| wc -l` | 60, 56, 22 |
-| db `pub fn` | **520** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 586, 367, 78-query-files |
-| Frontend typed command wrappers | **504** (`db-invoke.ts` + `commands.ts`) | `grep -rE 'export (async )?function' src/shared/services` | 470+ |
+| Rust `#[tauri::command]`s | **831** (768 `#[tauri::command]` + 63 `#[command]`) | `grep -rE '#\\[tauri::command\\]|#\\[command\\]' src-tauri/src \\| wc -l` | 802, 773, 777, 764, 704, 652 |
+| Zustand stores | **43** (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) | `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` | 46, 38, 21 |
+| SQL migrations | **34** `.sql` files (numbered 001–032; 020 & 021 each split into two files) | `find src-tauri/src/db/migrations -name '*.sql' \\| wc -l` | 32, 60, 56, 22 |
+| db `pub fn` | **542** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 520, 586, 367 |
+| Frontend typed command wrappers | **536** (`db-invoke` domain modules = 479 + `commands.ts` = 57) | `grep -rhoE 'export (async )?function [a-zA-Z0-9_]+' src/shared/services/db/invoke/ src/shared/services/commands.ts \\| wc -l` | 504, 470+ |
 | Locales | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each | `src/locales/*/translation.json` | — |
 | Feature modules (`src/features`) | **23** | `ls src/features` | — |
 | Rust `#[test]`s | **915** attributes (incl. a few `#[cfg(test)]` modules) | `grep -rE '#\[test\]|#\[tokio::test\]' src-tauri/src` | 735, 900 |
@@ -68,7 +68,7 @@
 
 ## ✅ DONE / 🔲 NOT DONE / 🧩 MISSING — Reconciliation (2026-07-15)
 
-> **Verified against source this pass:** 802 IPC commands (739 `#[tauri::command]` + 63 `#[command]` shorthand) · 32 migrations (numbered 001–030; 020 & 021 each split into two files) · 46 Zustand stores (verified) across `src/shared/stores`, `src/features/*/stores`, and a legacy `src/stores/` · ~200+ TS test files · 915 Rust `#[test]` attributes (735 reported passing; `invoicing/tests.rs` excluded). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below but were **not re-run** in this pass — re-run before tagging.
+> **Verified against source this pass:** 831 IPC commands (768 `#[tauri::command]` + 63 `#[command]` shorthand) · 34 migrations (numbered 001–032; 020 & 021 each split into two files) · 43 Zustand stores (`create<`, incl. `src/shared/stores`, `src/features/*/stores`, legacy `src/stores/`) · ~200+ TS test files · 915 Rust `#[test]` attributes (735 reported passing; `invoicing/tests.rs` excluded). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below but were **not re-run** in this pass — re-run before tagging.
 
 ### ✅ Done — built, wired, tested
 - **Architecture:** three-layer React 19 → TS service → Tauri/Rust → SQLite; offline-first; all DB access via Rust.
@@ -103,7 +103,7 @@ Rust-side groundwork for Gmail/Outlook-grade email UX (per `docs/plans/MVP_LAUNC
 4. **Campaign scheduled-send worker:** migration 029 + API wired, but the deferred-send background worker is unimplemented.
 5. **Entitlement / monetization engine:** `EntitlementEngine`, paywall gating, `owned_modules` are **not implemented** (deferred post-v1.0). Plans: `docs/06-ROADMAP/10-`→`13-monetization-*.md`.
 6. **CRDT multi-device sync hardening:** sync engine + offline queue exist; conflict-resolution UX/convergence still needs work per north-star goal.
-7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (802 / 32).
+7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (831 / 34).
 8. **Stray/duplicate docs to archive:** `docs/analysis.md` + `docs/analysis/`, `docs/draft.md`, `docs/monetization-style.md`; `docs/plans/`, `docs/specs/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged.
 
 ---

@@ -1,8 +1,8 @@
 # SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 32 migrations (verified) · **Tests:** 2,470+ TS + 900+ Rust (verified via `npm run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 802 `#[tauri::command]` (verified) · **Stores:** 46 Zustand (verified)
+> **Version:** 1.0.0-rc · **DB:** 34 migrations (verified) · **Tests:** 2,470+ TS + 900+ Rust (verified via `npm run test` / `cargo test`)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 831 `#[tauri::command]` (verified) · **Stores:** 43 Zustand (verified)
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
