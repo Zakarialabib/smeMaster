@@ -167,7 +167,7 @@ That's it. Two function calls and the DB layer is ready. The old TypeScript `run
 
 | Crate                                         | Purpose        |
 | --------------------------------------------- | -------------- |
-| `tauri` 2.11 + 15 plugins                    | App framework  |
+| `tauri` 2.11 + 14 plugins                    | App framework  |
 | `async-imap` 0.11.2 + `tokio-rustls`          | IMAP client    |
 | `lettre` 0.11 + `tokio1-rustls-tls`           | SMTP client    |
 | `pgp` 0.19.0                                  | PGP encryption |
