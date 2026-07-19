@@ -91,7 +91,7 @@ SQLite (WAL mode)
 | PGP       | `src/shared/services/pgp/pgpService.ts`            | Encrypt, decrypt, key management                |
 | Export    | `src/shared/services/export/exportService.ts`      | Save data as mbox, PDF                          |
 | Badge     | `src/shared/services/badgeManager.ts`              | Unread count on the dock icon                   |
-| DB        | `src/shared/services/db/db-invoke.ts` (re-exports 15 domain modules; ~479 `db_*` wrappers) + `commands.ts` (~57) | 536 typed IPC wrappers total |
+| DB        | `src/shared/services/db/db-invoke.ts` (re-exports 15 domain modules; ~479 `db_*` wrappers) + `commands.ts` (1 generic typed `invoke<T>`) | 480 typed IPC wrappers total |
 
 ---
 

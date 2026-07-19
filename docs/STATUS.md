@@ -55,7 +55,7 @@
 | Zustand stores | **43** (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) | `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` | 46, 38, 21 |
 | SQL migrations | **34** `.sql` files (numbered 001–032; 020 & 021 each split into two files) | `find src-tauri/src/db/migrations -name '*.sql' \\| wc -l` | 32, 60, 56, 22 |
 | db `pub fn` | **542** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 520, 586, 367 |
-| Frontend typed command wrappers | **536** (`db-invoke` domain modules = 479 + `commands.ts` = 57) | `grep -rhoE 'export (async )?function [a-zA-Z0-9_]+' src/shared/services/db/invoke/ src/shared/services/commands.ts \\| wc -l` | 504, 470+ |
+| Frontend typed command wrappers | **479** `db_*` wrappers in `db-invoke.ts` (re-export of 15 domain modules under `src/shared/services/db/invoke/`) + 1 generic typed `invoke<T extends keyof TauriCommands>` in `commands.ts` | `grep -rhoE 'export (const|async function|function) [a-zA-Z0-9_]+' src/shared/services/db/invoke/ \\| wc -l` (=479) | 504, 470+ |
 | Locales | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each | `src/locales/*/translation.json` | — |
 | Feature modules (`src/features`) | **23** | `ls src/features` | — |
 | Rust `#[test]`s | **915** attributes (incl. a few `#[cfg(test)]` modules) | `grep -rE '#\[test\]|#\[tokio::test\]' src-tauri/src` | 735, 900 |
