@@ -33,15 +33,15 @@ npm run tauri dev
 | Directory | Purpose |
 |-----------|---------|
 | `src-tauri/` | Rust backend (Tauri commands, plugins, system tray) |
-| `src/components/` | React UI components (12 groups) |
-| `src/stores/` | Zustand state stores |
-| `src/services/` | Business logic (email, AI, sync, DB) |
-| `src/services/db/` | SQLite query functions and migrations |
-| `src/hooks/` | Custom React hooks |
+| `src/components/` | React UI components (grouped by domain, e.g. `accounts/`) |
+| `src/stores/` | Legacy Zustand state stores (being consolidated into `src/shared/stores` + `src/features/*/stores`) |
+| `src/shared/stores/` | Canonical Zustand state stores |
+| `src/shared/services/db/` | SQLite query functions and typed command wrappers (`invoke/`) |
+| `src/shared/hooks/` | Custom React hooks |
 | `src/constants/` | Static data (shortcuts, themes, help content) |
-| `src/utils/` | Shared utility functions |
+| `src/shared/utils/` | Shared utility functions |
 
-For detailed architecture, see [docs/architecture.md](docs/architecture.md).
+For detailed architecture, see [docs/01-ARCHITECTURE/](../docs/01-ARCHITECTURE/).
 
 ## Code Guidelines
 
@@ -56,12 +56,12 @@ For detailed architecture, see [docs/architecture.md](docs/architecture.md).
 ### Rust
 
 - Backend code lives in `src-tauri/src/`
-- New Tauri commands must be registered in `src-tauri/src/lib.rs`
+- New Tauri commands must be registered in the master `generate_handler!` macro inside `src-tauri/src/commands/mod.rs` (via `commands::register()`, invoked from `src-tauri/src/lib.rs`).
 - New plugins need permissions added to `src-tauri/capabilities/default.json`
 
 ### Database
 
-- Migrations go in `src/services/db/migrations.ts` -- always add to the end of the array
+- Migrations live in `src-tauri/src/db/migrations/` as sequential `.sql` files (`001_*.sql` … `032_*.sql`); `run_migrations` applies them on startup. Always add a new numbered file — never modify existing migrations.
 - Never modify existing migrations; only append new ones
 - Query functions go in `src/services/db/` as separate files
 
@@ -220,5 +220,14 @@ To publish a new release to a Fedora COPR repository using the `smemaster.spec` 
     ```
     
     *Note: Because our RPM build runs `npm ci` and Cargo, ensure **"Enable network in buildroot"** is turned on in your COPR project settings.*
+
+
+## Source reconciliation (2026-07-19)
+
+Several onboarding references were corrected against current source layout:
+- **Command registration** no longer happens in `src-tauri/src/lib.rs` directly. All `#[tauri::command]` functions are listed in the single `generate_handler!` macro inside `src-tauri/src/commands/mod.rs` (invoked by `commands::register()` from `lib.rs`). Updated the Rust guideline accordingly.
+- **Migrations** are Rust-side sequential `.sql` files in `src-tauri/src/db/migrations/` (`001_*.sql` … `032_*.sql`, 34 files), applied by `run_migrations`. There is no `src/services/db/migrations.ts` (that frontend path no longer exists); the Database guideline was corrected.
+- **Architecture doc link** pointed at `docs/architecture.md`, which was consolidated into `docs/01-ARCHITECTURE/`. Link corrected.
+- **Project Structure table** listed `src/components/` as "12 groups" (only `accounts/` exists), `src/services/` + `src/services/db/` (now `src/shared/services/db/`), `src/hooks/` (now `src/shared/hooks/`), and `src/utils/` (now `src/shared/utils/`). Corrected to the real tree.
 
 

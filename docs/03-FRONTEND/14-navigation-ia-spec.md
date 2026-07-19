@@ -225,13 +225,19 @@ references — this spec CONSOLIDATES and grounds them in source, not duplicates
 1. **Landing route is `/dashboard`, NOT email.** `src/router/routeTree.tsx:150` does
    `redirect({ to: "/dashboard" })`. This contradicts the owner's email-first priority AND
    the DESIGN spec intent. **Fix (N1):** change to `redirect({ to: "/mail/inbox" })`.
-2. **Duplicate `Bot` icon bug.** `navConfig.ts:125` (automation) and `:137` (ai-assistant)
-   both use `Bot` — two destinations, one glyph → rail scannability destroyed. **Fix (N2):**
-   give Automation `GitBranch`/`Workflow` and AI `Sparkles` (the registry already uses
-   `Sparkles` for AI).
-3. **`navConfig.ts` Settings group diverges from `SettingsTabRegistry`** (18 stale vs 24
-   real tabs; `workflows` orphaned; Appearance missing). **Fix (N3):** rail Settings flyout
-   must read the registry (single source of truth).
+2. **(RESOLVED in source) Duplicate `Bot` icon bug.** This spec previously claimed
+   `navConfig.ts` used `Bot` for both automation (`:125`) and ai-assistant (`:137`) — two
+   destinations, one glyph. **Current `src/shared/components/layout/shell/navConfig.ts` no
+   longer does this:** automation uses `GitBranch` and ai-assistant uses `Sparkles`
+   (confirmed by reading the file — there is no `Bot` import). The proposed config's
+   `// FIX: was Bot` comments are now historical only.
+3. **(RESOLVED in source) `navConfig.ts` Settings group divergence.** This spec claimed the
+   rail Settings flyout was a stale 18-item list diverging from `SettingsTabRegistry` (24
+   tabs). **Current `navConfig.ts` already reads the registry:** `buildSettingsItems()`
+   (`navConfig.ts:80`) `require`s `SettingsTabRegistry.tabGroups` and builds the flyout from
+   it, so the rail flyout is now a single source of truth. The "18 vs 24" drift no longer
+   exists in source. (Note: `10-rtl-audit.md` is referenced as MISSING in `00-INDEX` and does
+   not exist in `docs/03-FRONTEND/` — do not assume it exists.)
 
 ### 7.2 "Steal this" — top cross-wiring patterns (from prior art, cited)
 1. Unified inbox → CRM contact timeline (Front / HubSpot). 2. One-click email→contact
@@ -246,3 +252,26 @@ QuickBooks). 9. Snooze→Calendar (HEY).
 Fake back-button (HEY); burying daily tools in menus; duplicate/ambiguous icons (Bot/Bot);
 rail bloat >8; palette-as-graveyard; siloed Contacts vs Mail; mail-rules hidden in Settings;
 11 mobile tabs (use Hub); no density control; forgetting keyboard parity on mobile.
+
+## Source reconciliation (2026-07-19)
+
+Verified against `src/shared/components/layout/shell/navConfig.ts`,
+`src/router/routeTree.tsx`, `src/features/settings/components/SettingsTabRegistry.ts`,
+and `docs/navigation-redesign/proposed-navConfig.ts`.
+
+- **§7.1 #2 (Bot icon) — WRONG, now resolved in source.** `navConfig.ts` does **not** import
+  or use `Bot` for either group; automation uses `GitBranch` and ai-assistant uses `Sparkles`.
+  The spec's `navConfig.ts:125/:137` lines no longer match. Reworded §7.1 #2 as RESOLVED.
+- **§0 #4 / §7.1 #3 (Settings flyout stale 18 vs 24) — WRONG, now resolved in source.**
+  `navConfig.ts` already builds the rail Settings flyout from `SettingsTabRegistry` via
+  `buildSettingsItems()` (`navConfig.ts:80`), so there is no longer an 18-item stale list.
+  Reworded §7.1 #3 as RESOLVED.
+- **§0 #2 / #5 (orphaned Tasks/Calendar/Campaigns; empty Automation group) — STILL ACCURATE.**
+  Confirmed `NAV_GROUPS` contains no `tasks`/`calendar`/`campaigns` group and `automation`
+  has `items: []`.
+- **Landing route — STILL ACCURATE.** `src/router/routeTree.tsx:150` still does
+  `redirect({ to: "/dashboard" })`.
+- **`10-rtl-audit.md` MISSING — confirmed.** It is referenced as MISSING in `00-INDEX` and
+  does not exist under `docs/03-FRONTEND/` (not created during this audit).
+- Proposed reference files `docs/navigation-redesign/proposed-navConfig.ts` and
+  `proposed-mobile-nav.ts` both still exist.

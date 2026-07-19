@@ -57,4 +57,10 @@ The project uses a mixed approach:
 
 - `01-quickstart.md`
 - `../AGENTS.md` (agent contributor guide)
-- `../PRODUCTION-READINESS.md`
+- `../../PRODUCTION-READINESS.md`
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| `../PRODUCTION-READINESS.md` | PRODUCTION-READINESS.md lives at repo root → `../../PRODUCTION-READINESS.md` from `docs/05-DEVELOPMENT/` | `ls PRODUCTION-READINESS.md` |

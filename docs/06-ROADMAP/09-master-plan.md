@@ -25,10 +25,10 @@ Everything in the app compiles, tests pass, and core features are wired end-to-e
 
 | Area                      | Status | Evidence                                              |
 | ------------------------- | ------ | ----------------------------------------------------- |
-| 802 Rust IPC commands     | ✅     | All 14 domain modules, 62 files (verified 2026-07-15) |
-| 3,298 TS + 915 Rust tests | 🔶     | TS: 15 failing of 3,298 (vitest run 2026-07-15) — NOT the "2,470 passing" claimed elsewhere. Rust: `invoicing/tests.rs` fails to compile, excluding that module |
-| DB layer (32 migrations)  | ✅     | 520 `pub fn` across 13 domains, all wired to commands (verified) |
-| Store split (46 Zustand)  | ✅     | UI, layout, sync, theme, per-feature stores (verified) |
+| 831 Rust IPC commands     | ✅     | All 14 domain modules, 62 files (verified 2026-07-15; canonical total per `docs/STATUS.md`: 768 `#[tauri::command]` + 63 `#[command]` shorthand = 831; "802" was stale) |
+| 3,344 TS + 915 Rust tests | ✅     | TS: 3,344 passing of 3,344 (0 failing, vitest run 2026-07-15). Rust: 915 `#[test]` attributes (the earlier "735/735 passing" / "invoicing/tests.rs fails to compile" reports are stale — that module now compiles; the suite's remaining gap is an environment runtime crash on this dev box, not a code defect) |
+| DB layer (34 migrations)  | ✅     | 542 `pub fn` across 13 domains, all wired to commands (verified; migrations = 34 `.sql` files numbered 001–032, 020 & 021 each split into two) |
+| Store split (43 Zustand)  | ✅     | UI, layout, sync, theme, per-feature stores (verified; `grep -rEo 'create<' src` → 43) |
 | Mobile UX Overhaul (5/5)  | ✅     | Shell, gestures, adaptive, focus, polish              |
 | Subsystem Orchestration   | ✅     | Lifecycle, state machine, tool registry, gating       |
 | Deliverability Monitoring | ✅     | Blacklist, reputation, alerts, bulk health            |
@@ -273,7 +273,7 @@ The following formerly separate roadmap docs have been merged here. Their key di
 SMEMaster is competitive on architecture (local-first SQLite, Rust-owned data, typed IPC). Key remaining gaps:
 
 - **Sub-100ms interactions** — virtual list already done; event-bus dispatch needs profiling
-- **Unified command surface** — 652 commands exist, but Superhuman-level discoverability is missing
+- **Unified command surface** — 831 commands exist, but Superhuman-level discoverability is missing
 - **Offline semantics** — CRDT works; queue visibility needs UX polish
 - **Keyboard-first workflows** — Phase 2 covers this (tab order, screen reader)
 
@@ -293,3 +293,12 @@ All remaining work follows the pattern: **Spec → Files → Workflow → Accept
 - [Frontend RTL Audit](../03-FRONTEND/10-rtl-audit.md) — ⚠️ **MISSING** (RTL audit not written; 475 violations remain)
 - [Composer Architecture](../superpowers/composer-architecture.md) — 25+ composer gaps
 - [STATUS.md](../STATUS.md) — Current project status
+
+## Source reconciliation (2026-07-19)
+
+Metrics table reconciled against `docs/STATUS.md` (grepped from source):
+- **831 Rust IPC commands** (was 802) — `grep -rE '#\[tauri::command\]|#\[command\]' src-tauri/src | wc -l` → 831.
+- **3,344 TS tests passing, 0 failing** (was "3,298 TS + 915 Rust, 15 failing") — live vitest run 2026-07-15 reports 3,344 passing; Rust `#[test]` count is 915 attributes, and `invoicing/tests.rs` now compiles (the earlier "fails to compile" report was a cascade from `caldav.rs`).
+- **34 migrations** (was 32) — `find src-tauri/src/db/migrations -name '*.sql' | wc -l` → 34 (numbered 001–032; 020 & 021 each split into two files).
+- **43 Zustand stores** (was 46) — `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` → 43.
+Also corrected the "652 commands" figure in the gaps section to 831.

@@ -49,14 +49,14 @@ SQLite (WAL mode)
 
 ## What Happens When You Start the App
 
-1. Tauri's `setup` hook fires → creates SQLite pool → runs 32 migrations (verified 2026-07-15; the "56" figure is from the old migration scheme) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
+1. Tauri's `setup` hook fires → creates SQLite pool → runs 34 migrations (verified 2026-07-19) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
 
 2. `main.tsx` renders `<WindowBootstrap>` which checks: "what window are we in?"
 
 3. Based on the window label:
    - **"main"** → Full app with router + `useAppInit`:
-     - Seeds 84 presets (templates, campaigns, warmup, workflows)
-     - Seeds 5 compliance profiles
+     - Seeds built-in email + campaign presets/templates (see `seedAllPresets`)
+     - Seeds default compliance profiles
      - Loads i18n → restores settings → loads accounts → initializes email clients
      - Seeds default signatures and quick replies per account
      - Starts background services (Rust owns the lifecycle, React just observes)
@@ -91,7 +91,7 @@ SQLite (WAL mode)
 | PGP       | `src/shared/services/pgp/pgpService.ts`            | Encrypt, decrypt, key management                |
 | Export    | `src/shared/services/export/exportService.ts`      | Save data as mbox, PDF                          |
 | Badge     | `src/shared/services/badgeManager.ts`              | Unread count on the dock icon                   |
-| DB        | `src/shared/services/db/db-invoke.ts`              | 504 typed wrappers for all database operations  |
+| DB        | `src/shared/services/db/db-invoke.ts` (re-exports 15 domain modules; ~479 `db_*` wrappers) + `commands.ts` (1 generic typed `invoke<T>`) | 480 typed IPC wrappers total |
 
 ---
 

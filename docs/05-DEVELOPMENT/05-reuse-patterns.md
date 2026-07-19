@@ -6,13 +6,13 @@
 
 ## What you need to know
 
-The codebase went through a major architecture shift: **Rust now owns all database operations**. The old TypeScript service layer was removed. Frontend calls ~379 typed Rust `db_*` / `ai_*` commands through the `invoke/` wrapper layer (plus interfaces and `schema` re-exports), and the Rust DB layer reuses shared helpers from `db/common.rs` instead of copy-pasting CRUD boilerplate.
+The codebase went through a major architecture shift: **Rust now owns all database operations**. The old TypeScript service layer was removed. Frontend calls ~479 typed Rust `db_*` commands through the `invoke/` wrapper layer (plus interfaces and `schema` re-exports), and the Rust DB layer reuses shared helpers from `db/common.rs` instead of copy-pasting CRUD boilerplate.
 
 ---
 
 ## P1 — `invoke/` typed wrapper layer (was `db-invoke.ts`)
 
-**The problem:** Frontend needed type-safe access to ~379 Rust `db_*` / `ai_*` commands without manually writing `invoke()` calls.
+**The problem:** Frontend needed type-safe access to ~479 Rust `db_*` commands without manually writing `invoke()` calls.
 
 **The fix:** `src/shared/services/db/db-invoke.ts` used to be a single 139 KB file exporting one typed function per command. It has been **split** into a per-domain module tree under `src/shared/services/db/invoke/`, with a thin re-export shim left at `db-invoke.ts` so existing importers keep working unchanged.
 
@@ -86,7 +86,7 @@ const useMyStore = createAsyncStore<
 
 ## P1 — Generic tauriCommands Wrapper for IMAP (~200 lines saved)
 
-**The problem:** 19 one-liner `invoke()` wrappers in `src/shared/services/imap/tauriCommands.ts`.
+**The problem:** 19 one-liner `invoke()` wrappers in `src/features/mail/services/imap/tauriCommands.ts`.
 
 **The fix:** One generic `imapCmd<T>(cmd, args?)` function + typed exports.
 
@@ -165,7 +165,7 @@ src-tauri/src/db/common.rs                   ← fetch_or_not_found, delete_or_n
 
 **Key files:**
 - `src/shared/services/db/invoke/command.ts` — `invokeCommand<T>()` typed caller (IPC behavior lives here)
-- `src/shared/services/db/invoke/<domain>.ts` — ~379 `db_*` / `ai_*` typed wrappers, grouped by domain
+- `src/shared/services/db/invoke/<domain>.ts` — ~479 `db_*` typed wrappers, grouped by domain
 - `src/shared/services/db/db-invoke.ts` — backwards-compatible re-export shim
 - `src-tauri/src/commands/mod.rs` — single `generate_handler!` (all command registrations)
 - `src-tauri/src/commands/<domain>.rs` — command handlers (~330 `db_*` / `ai_*` commands)
@@ -194,3 +194,8 @@ src-tauri/src/db/common.rs                   ← fetch_or_not_found, delete_or_n
 - [Architecture Overview](../01-ARCHITECTURE/01-overview.md) — Three-layer diagram
 - [Backend Structure](../01-ARCHITECTURE/02-backend-structure.md) — Rust module layout
 - [STATUS.md](../STATUS.md) — Command counts, test status
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| "~379 typed `db_*`/`ai_*` commands"; imap wrappers at `src/shared/services/imap/tauriCommands.ts` | **479** `db_*` wrappers in `invoke/`; imap wrappers at `src/features/mail/services/imap/tauriCommands.ts` | `grep -rhoE 'export (const`/`async function`/`function) ...' src/shared/services/db/invoke/ \| wc -l` = 479; `ls src/features/mail/services/imap/tauriCommands.ts` |

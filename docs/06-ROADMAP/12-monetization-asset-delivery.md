@@ -165,7 +165,7 @@ Wondershare's Filmstock model: subscription catalog and individual-purchase cata
 | `EventBus` (15 events) | None — 1 new event added | No existing events modified |
 | `SubsystemRegistry` | None — sidecars add new entries | No existing subsystems modified |
 | `tauri.conf.json` bundle | None — `externalBin` can be added without changing existing entries | Existing MSI/NSIS/DMG/DEB unchanged |
-| 704 IPC commands | None — only ~6 new commands added | Zero existing commands modified |
+| 831 IPC commands | None — only ~6 new commands added | Zero existing commands modified |
 
 ---
 
@@ -177,3 +177,7 @@ Wondershare's Filmstock model: subscription catalog and individual-purchase cata
 - **Source analysis:** [`../analysis.md`](../analysis.md#81-concept-mapping), [`../monetization-style.md`](../monetization-style.md) §1.2–1.4
 - **Existing backup/SHA-256:** [`../02-BACKEND/07-key-management.md`](../02-BACKEND/07-key-management.md)
 - **Existing asset commands:** [`../02-BACKEND/06-commands-reference.md`](../02-BACKEND/06-commands-reference.md)
+
+## Source reconciliation (2026-07-19)
+
+The "704 IPC commands" figure (impact table) was stale; corrected to **831** to match `docs/STATUS.md` and the canonical `grep` count (768 `#[tauri::command]` + 63 `#[command]`). The plan remains unstarted/deferred — no command-count claim affects that status.
