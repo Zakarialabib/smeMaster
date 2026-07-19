@@ -1,4 +1,4 @@
-# Plugin Inventory (15 Tauri Plugins)
+# Plugin Inventory (14 Tauri Plugins)
 
 **What you need to know:** These are the Tauri plugins I'm currently using. Some are critical (deep-link, single-instance), some are nice-to-have (clipboard, window-state), and a few have caveats on mobile. I've removed several plugins that were either unused or replaced by Rust-native alternatives.
 
@@ -26,10 +26,14 @@
 
 ## Gotchas I learned the hard way
 
-- **Single instance** must be registered FIRST, before any other plugin. See `src-tauri/src/lib.rs:67`.
+- **Single instance** must be registered FIRST, before any other plugin. See `src-tauri/src/lib.rs:117`.
 - **Updater** is gated behind `cfg(feature = "updater")`. Not always enabled because I don't want to ship updates before they're ready.
 - **SQL plugin `preload`** must be an array: `["sqlite:smemaster.db"]`. NOT an object or map. Lost an afternoon to that.
 - **Emitter trait** — you need `use tauri::Emitter;` to call `.emit()` on windows. Easy to miss.
 - **Capabilities** — new plugins need explicit permissions in `src-tauri/capabilities/default.json`. It's not automatic.
 - **CSP whitelist** — googleapis, anthropic, openai, gemini, gravatar, localhost (Ollama, LM Studio). Update this if you add a new external API.
 - **Windows AUMID** — set explicitly to `com.smemaster.app`. Required for notifications on Windows.
+
+## Source reconciliation (2026-07-19)
+
+Title corrected from "15 Tauri Plugins" to **14**: `grep -ioE 'tauri-plugin-[a-z-]+' src-tauri/Cargo.toml | sort -u | wc -l` → 14 distinct crates (`log`, `notification`, `opener`, `dialog`, `fs`, `single-instance`, `deep-link`, `updater`, `persisted-scope`, `biometric`, `window-state`, `clipboard-manager`, `store`, `global-shortcut`). The "single-instance FIRST" gotcha line pointed at `lib.rs:67`; the actual first `.plugin()` call is `tauri_plugin_single_instance::init()` at `src-tauri/src/lib.rs:117`, so that reference was corrected to `:117`.

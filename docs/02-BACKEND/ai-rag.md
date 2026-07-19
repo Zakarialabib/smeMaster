@@ -19,7 +19,7 @@ The RAG backend is **100% offline Rust** (no server, no external calls) using `c
 | `indexer.rs`      | Load inbox from SQLite, chunk (512/80), embed, write to LanceDB; emit events                                                      |
 | `rag.rs`          | `query_rag()` → embed + search + format augmented prompt; `search_by_vector()`                                                    |
 
-Plus `src-tauri/src/commands/ai.rs` (command surface) and `src-tauri/src/events.rs` (AppEvent + `EmitEvent`).
+Plus `src-tauri/src/commands/ai.rs` (command surface) and `src-tauri/src/events/` (`AppEvent` enum + `EmitEvent` discriminator live in `events/mod.rs`).
 
 ## Model management
 
@@ -87,7 +87,7 @@ emit ai:indexing_completed (after, with count)
 
 ## Tauri commands (`commands/ai.rs`)
 
-All live-registered in `lib.rs` alongside the 802 existing commands (no breaking changes; verified 2026-07-15).
+All live-registered in the single `generate_handler!` in `src-tauri/src/commands/mod.rs` alongside the 831 existing commands (canonical total per `docs/STATUS.md`: 768 `#[tauri::command]` + 63 `#[command]` shorthand = 831; the "802" figure is stale).
 
 | Command                   | Params                           | Returns                     | Notes                                                                                        |
 | ------------------------- | -------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
@@ -124,7 +124,7 @@ pub async fn ai_query_rag(query: String) -> Result<String, String>
 pub async fn ai_search_by_vector(embedding: Vec<f32>, query: String) -> Result<String, String>
 ```
 
-## Events (`events.rs`)
+## Events (`events/`)
 
 ```rust
 pub enum AppEvent {
@@ -162,6 +162,12 @@ Frontend listens in `ragStore.ts` (see [Frontend doc](../03-FRONTEND/ai-rag.md))
 | ------------ | --------------------------------------------------------------------------------------------------------- |
 | AI module    | `src-tauri/src/ai/` (`models.rs`, `local_engine.rs`, `vector_db.rs`, `parser.rs`, `indexer.rs`, `rag.rs`) |
 | Commands     | `src-tauri/src/commands/ai.rs`                                                                            |
-| Events       | `src-tauri/src/events.rs`                                                                                 |
+| Events       | `src-tauri/src/events/`                                                                                  |
 | Registration | `src-tauri/src/lib.rs`                                                                                    |
 | Cargo deps   | `src-tauri/Cargo.toml` (`candle*, `lancedb`, `hf-hub`, `tokenizers`)                                      |
+
+## Source reconciliation (2026-07-19)
+
+Two path/metric corrections verified against source:
+- The "802 existing commands" figure was stale. The canonical total per `docs/STATUS.md` is **831** (`grep -rE '#\[tauri::command\]|#\[command\]' src-tauri/src | wc -l` → 831 = 768 + 63). The AI commands are registered in the single `generate_handler!` in `src-tauri/src/commands/mod.rs` (via `commands::register()` from `lib.rs`), not directly in `lib.rs`, so the wording was corrected accordingly.
+- `events.rs` does not exist at the crate root; `AppEvent` and the `EmitEvent` discriminator live in `src-tauri/src/events/mod.rs` (the `events` module directory). All three references were corrected to `src-tauri/src/events/`.
