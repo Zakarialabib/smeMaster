@@ -104,7 +104,7 @@ Rust-side groundwork for Gmail/Outlook-grade email UX (per `docs/plans/MVP_LAUNC
 5. **Entitlement / monetization engine:** `EntitlementEngine`, paywall gating, `owned_modules` are **not implemented** (deferred post-v1.0). Plans: `docs/06-ROADMAP/10-`→`13-monetization-*.md`.
 6. **CRDT multi-device sync hardening:** sync engine + offline queue exist; conflict-resolution UX/convergence still needs work per north-star goal.
 7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (831 / 34).
-8. **Stray/duplicate docs to archive:** `docs/analysis.md` + `docs/analysis/`, `docs/draft.md`, `docs/monetization-style.md`; `docs/plans/`, `docs/specs/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged.
+8. **Stray/duplicate docs:** `docs/analysis.md` and `docs/monetization-style.md` are archived working docs (content consumed into STATUS/roadmap); `docs/plans/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged. (Already removed: `docs/draft.md`, `docs/analysis/`, `docs/specs/`, `docs/UI_TEST_IMPROVE_PROMPT.md`, `docs/plans/UI_REFACTOR_2026-07-12.md` — 2026-07-19.)
 
 ---
 
