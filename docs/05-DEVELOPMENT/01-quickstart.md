@@ -29,7 +29,7 @@ npm run test
 npm run test:watch
 
 # Run a specific test file
-npx vitest run src/stores/uiStore.test.ts
+npx vitest run src/stores/core/uiStore.test.ts
 
 # Type-check the whole TypeScript codebase
 npx tsc --noEmit
@@ -84,3 +84,9 @@ Push a tag `v*` to trigger the release pipeline:
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| `npx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |
