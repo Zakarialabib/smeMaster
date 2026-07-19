@@ -27,7 +27,7 @@
 
 ### 0.1 Attack Surface Audit
 
-- [x] ≈800 `#[tauri::command]`/`#[command]` IPC commands across ~65 files audited (802 by attribute count)
+- [x] ~831 `#[tauri::command]`/`#[command]` IPC commands audited (768 `#[tauri::command]` + 63 `#[command]`)
 - [x] No command accepts raw SQL strings — all use `sqlx::query!`/`query_as!` with parameterized bindings
 - [x] No command writes to arbitrary file paths — all paths rooted at `app_data_dir()`
 - [x] PGP/crypto commands sanitize all inputs (uses `spawn_blocking`, no `unwrap()` in production paths)
@@ -46,7 +46,7 @@
 
 ### 0.3 Migration Safety
 
-- [x] 32 migrations (numbered 001–030; 020 and 021 each split into two files), each with `up` semantics
+- [x] 34 migrations (numbered 001–032; 020 and 021 each split into two files), each with `up` semantics
 - [x] All use `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE`, `CREATE INDEX` — no silent data loss
 - [x] Migration runner uses `RETURNING` with `sqlx::query_as`
 

@@ -51,8 +51,8 @@ Rust & Tauri — the native layer.
 | [02-smtp-client](02-BACKEND/02-smtp-client.md)               | lettre transport, OAuth2                      |
 | [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                 | PGP key gen, encrypt/decrypt                  |
 | [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                 | PKCE OAuth, localhost server, token refresh   |
-| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 15 Tauri plugins + mobile                      |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 802 IPC commands (35 invoicing + POS)         |
+| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 14 Tauri plugins + mobile                      |
+| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 831 IPC commands (35 invoicing + 12 POS)        |
 | [07-key-management](02-BACKEND/07-key-management.md)         | AES-256-GCM, PGP, security model              |
 | [08-mobile-build](02-BACKEND/08-mobile-build.md)             | APK generation, platform targets              |
 | [10-error-system](02-BACKEND/10-error-system.md)             | SerializedError type system                   |
