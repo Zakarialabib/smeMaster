@@ -1,7 +1,3 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { Workflow } from "lucide-react";
 import { EmptyState } from "@shared/components/ui/EmptyState";
 import { Button } from "@shared/components/ui/Button";

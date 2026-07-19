@@ -23,6 +23,7 @@
 - **Severity**: WARNING
 - **Issue**: The file is marked `@deprecated` ("This feature has been merged into @features/automation. Import from @features/automation instead."). It is still imported by `src/features/workflows/pages/WorkflowsPage.tsx` and `src/features/workflows/components/WorkflowEditor.tsx`, duplicating the automation feature's store (`automationStore`).
 - **Plan**: Migrate `WorkflowsPage` / `WorkflowEditor` to `@features/automation` and delete `src/features/workflows/stores/workflowStore.ts` (and its `.test.ts`) once consumers are cut over.
+- **Resolution (2026-07-19)**: DONE. `WorkflowsPage`, `WorkflowEditor`, `WorkflowStepCard`, `WorkflowList`, `WorkflowCard` now consume `useAutomationStore` from `@features/automation/stores/automationStore`; the deprecated `workflowStore.ts` + `workflowStore.test.ts` were deleted, and `WorkflowsPage.test.tsx` was repointed to mock `useAutomationStore`. `saveRule` serializes the step list only in `editorMode: "steps"`, so `WorkflowEditor.handleSave` now forces `editorMode: "steps"` before saving. Zustand store count dropped 43 → 42.
 - **Found during**: audit of duplicate/dead Zustand stores.
 
 ### 2026-07-16: `useNotificationsStore` is a re-export alias, not a separate store

@@ -1,7 +1,3 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { useEffect, useCallback } from "react";
 import { RefreshCw, Plus } from "lucide-react";
 import { usePlatform } from "@shared/hooks/usePlatform";
@@ -9,7 +5,7 @@ import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
 import { Button } from "@shared/components/ui/Button";
 import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useWorkflowStore } from "@features/workflows/stores/workflowStore";
+import { useAutomationStore } from "@features/automation/stores/automationStore";
 import { WorkflowList } from "@features/workflows/components/WorkflowList";
 import { WorkflowEditor } from "@features/workflows/components/WorkflowEditor";
 
@@ -18,20 +14,20 @@ export function WorkflowsPage() {
   const isMobileDevice = screen.isMobile;
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
-  const workflows = useWorkflowStore((s) => s.workflows);
-  const loading = useWorkflowStore((s) => s.isLoading);
-  const error = useWorkflowStore((s) => s.error);
-  const showEditor = useWorkflowStore((s) => s.showEditor);
-  const deleteTargetId = useWorkflowStore((s) => s.deleteTargetId);
-  const deleting = useWorkflowStore((s) => s.deleting);
+  const workflows = useAutomationStore((s) => s.rules);
+  const loading = useAutomationStore((s) => s.isLoading);
+  const error = useAutomationStore((s) => s.error);
+  const showEditor = useAutomationStore((s) => s.showEditor);
+  const deleteTargetId = useAutomationStore((s) => s.deleteTargetId);
+  const deleting = useAutomationStore((s) => s.deleting);
 
-  const loadWorkflows = useWorkflowStore((s) => s.loadWorkflows);
-  const toggleWorkflow = useWorkflowStore((s) => s.toggleWorkflow);
-  const openEditor = useWorkflowStore((s) => s.openEditor);
-  const openEditorForEdit = useWorkflowStore((s) => s.openEditorForEdit);
-  const requestDelete = useWorkflowStore((s) => s.requestDelete);
-  const cancelDelete = useWorkflowStore((s) => s.cancelDelete);
-  const confirmDelete = useWorkflowStore((s) => s.confirmDelete);
+  const loadWorkflows = useAutomationStore((s) => s.loadRules);
+  const toggleWorkflow = useAutomationStore((s) => s.toggleRule);
+  const openEditor = useAutomationStore((s) => s.openEditor);
+  const openEditorForEdit = useAutomationStore((s) => s.openEditorForEdit);
+  const requestDelete = useAutomationStore((s) => s.requestDelete);
+  const cancelDelete = useAutomationStore((s) => s.cancelDelete);
+  const confirmDelete = useAutomationStore((s) => s.confirmDelete);
 
   useEffect(() => {
     if (activeAccountId) {

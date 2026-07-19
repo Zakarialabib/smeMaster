@@ -1,19 +1,15 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 const baseState = {
-  workflows: [],
+  rules: [],
   isLoading: true,
   error: null,
   showEditor: false,
   deleteTargetId: null,
   deleting: false,
-  loadWorkflows: vi.fn(),
-  toggleWorkflow: vi.fn(),
+  loadRules: vi.fn(),
+  toggleRule: vi.fn(),
   openEditor: vi.fn(),
   openEditorForEdit: vi.fn(),
   requestDelete: vi.fn(),
@@ -26,8 +22,8 @@ vi.mock("@features/accounts/stores/accountStore", () => ({
     sel({ activeAccountId: "acc1" }),
 }));
 
-vi.mock("@features/workflows/stores/workflowStore", () => ({
-  useWorkflowStore: (sel: (s: typeof baseState) => unknown) => sel(baseState),
+vi.mock("@features/automation/stores/automationStore", () => ({
+  useAutomationStore: (sel: (s: typeof baseState) => unknown) => sel(baseState),
 }));
 
 vi.mock("@shared/hooks/useMobile", () => ({ useMobile: () => false }));

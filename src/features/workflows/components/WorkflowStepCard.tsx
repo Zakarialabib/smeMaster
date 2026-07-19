@@ -1,9 +1,5 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { Trash2, Pencil, ChevronUp, ChevronDown } from "lucide-react";
-import type { WorkflowStep } from "@features/workflows/stores/workflowStore";
+import type { WorkflowStep } from "@features/automation/stores/automationStore";
 
 const STEP_TYPE_LABELS: Record<string, string> = {
   apply_label: "Apply Label",

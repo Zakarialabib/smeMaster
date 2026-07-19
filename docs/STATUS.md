@@ -52,7 +52,7 @@
 | Metric | Verified value | How verified | Common stale values to ignore |
 | --- | --- | --- | --- |
 | Rust `#[tauri::command]`s | **831** (768 `#[tauri::command]` + 63 `#[command]`) | `grep -rE '#\\[tauri::command\\]|#\\[command\\]' src-tauri/src \\| wc -l` | 802, 773, 777, 764, 704, 652 |
-| Zustand stores | **43** (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) | `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` | 46, 38, 21 |
+| Zustand stores | **42** (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) | `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` | 43, 46, 38, 21 |
 | SQL migrations | **34** `.sql` files (numbered 001–032; 020 & 021 each split into two files) | `find src-tauri/src/db/migrations -name '*.sql' \\| wc -l` | 32, 60, 56, 22 |
 | db `pub fn` | **542** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 520, 586, 367 |
 | Frontend typed command wrappers | **479** `db_*` wrappers in `db-invoke.ts` (re-export of 15 domain modules under `src/shared/services/db/invoke/`) + 1 generic typed `invoke<T extends keyof TauriCommands>` in `commands.ts` | `grep -rhoE 'export (const|async function|function) [a-zA-Z0-9_]+' src/shared/services/db/invoke/ \\| wc -l` (=479) | 504, 470+ |

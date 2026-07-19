@@ -1,7 +1,3 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { RuleSummaryCard } from "@shared/components/rule";
 import { safeParseJson } from "@shared/utils/safeParseJson";
 import type { WorkflowRule } from "@features/workflows/db/workflows";

@@ -1,14 +1,10 @@
-/**
- * @deprecated This feature has been merged into @features/automation.
- * Import from @features/automation instead. Will be removed in a future version.
- */
 import { useCallback, useState } from "react";
 import { Save, X, Plus } from "lucide-react";
 import { Button } from "@shared/components/ui/Button";
 import { AutomationTriggerPicker } from "@features/automation/components/AutomationTriggerPicker";
-import { useWorkflowStore } from "@features/workflows/stores/workflowStore";
+import { useAutomationStore } from "@features/automation/stores/automationStore";
 import { WorkflowStepCard } from "./WorkflowStepCard";
-import type { WorkflowStep } from "@features/workflows/stores/workflowStore";
+import type { WorkflowStep } from "@features/automation/stores/automationStore";
 
 const STEP_TYPES = [
   { value: "apply_label", label: "Apply Label" },
@@ -41,13 +37,13 @@ export function WorkflowEditor({
   accountId,
   onSaveSuccess,
 }: WorkflowEditorProps) {
-  const editor = useWorkflowStore((s) => s.editor);
-  const setEditorField = useWorkflowStore((s) => s.setEditorField);
-  const closeEditor = useWorkflowStore((s) => s.closeEditor);
-  const createWorkflow = useWorkflowStore((s) => s.createWorkflow);
-  const updateWorkflow = useWorkflowStore((s) => s.updateWorkflow);
-  const loading = useWorkflowStore((s) => s.isLoading);
-  const error = useWorkflowStore((s) => s.error);
+  const editor = useAutomationStore((s) => s.editor);
+  const setEditorField = useAutomationStore((s) => s.setEditorField);
+  const closeEditor = useAutomationStore((s) => s.closeEditor);
+  const createWorkflow = useAutomationStore((s) => s.saveRule);
+  const updateWorkflow = useAutomationStore((s) => s.saveRule);
+  const loading = useAutomationStore((s) => s.isLoading);
+  const error = useAutomationStore((s) => s.error);
 
   const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
   const [addingStepType, setAddingStepType] = useState("");
@@ -147,6 +143,9 @@ export function WorkflowEditor({
 
   const handleSave = useCallback(async () => {
     let success: boolean;
+    // The workflows editor only models an ordered step list (never the flat
+    // `actions` list), so save in "steps" mode so saveRule serializes `steps`.
+    setEditorField("editorMode", "steps");
     if (isEditing) {
       success = await updateWorkflow(accountId);
     } else {
@@ -155,7 +154,7 @@ export function WorkflowEditor({
     if (success && onSaveSuccess) {
       onSaveSuccess();
     }
-  }, [isEditing, updateWorkflow, createWorkflow, accountId, onSaveSuccess]);
+  }, [isEditing, updateWorkflow, createWorkflow, accountId, onSaveSuccess, setEditorField]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
