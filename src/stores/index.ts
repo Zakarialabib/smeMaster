@@ -35,4 +35,4 @@ export { useVaultStore, type VaultFileItem, type VaultViewMode, type VaultSortFi
 
 // Shared stores - direct imports from canonical location
 export { useSyncStore, initSyncStoreEvents } from "@shared/stores/syncStore";
-export { useNotificationStore as useNotificationsStore, type NotificationItem } from "@shared/stores/notificationStore";
+export { useNotificationStore, type NotificationItem } from "@shared/stores/notificationStore";

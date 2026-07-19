@@ -23,6 +23,7 @@
 - **Severity**: WARNING
 - **Issue**: The file is marked `@deprecated` ("This feature has been merged into @features/automation. Import from @features/automation instead."). It is still imported by `src/features/workflows/pages/WorkflowsPage.tsx` and `src/features/workflows/components/WorkflowEditor.tsx`, duplicating the automation feature's store (`automationStore`).
 - **Plan**: Migrate `WorkflowsPage` / `WorkflowEditor` to `@features/automation` and delete `src/features/workflows/stores/workflowStore.ts` (and its `.test.ts`) once consumers are cut over.
+- **Resolution (2026-07-19)**: DONE. The entire `src/features/workflows/` tree (deprecated `workflowStore`, plus the now-orphaned `WorkflowsPage`/`WorkflowList`/`WorkflowCard`/`WorkflowStepCard`/`WorkflowEditor` UI and the duplicate `db/workflows.ts` layer) was removed. `WorkflowsPage` was never mounted — `src/router/routeTree.tsx` defines `workflowsRoute` as a redirect to `/automation`, and `automationStore`/`settings` use the canonical `src/features/settings/db/workflowRules.ts`. Consumers migrated to `useAutomationStore` (commit `a8ef782`); the dead UI + duplicate db layer were then deleted. Zustand store count dropped 43 → 42.
 - **Found during**: audit of duplicate/dead Zustand stores.
 
 ### 2026-07-16: `useNotificationsStore` is a re-export alias, not a separate store
@@ -31,6 +32,7 @@
 - **Severity**: INFO
 - **Issue**: `useNotificationsStore` is re-exported as an alias of `useNotificationStore` from `@shared/stores/notificationStore` (singular). There is no `src/stores/shared/notificationsStore.ts` file — callers importing `useNotificationsStore` resolve to the canonical `@shared/stores/notificationStore`. Avoid adding a second `notificationsStore` file; prefer the canonical name.
 - **Plan**: Standardize on `useNotificationStore` (canonical) and drop the `useNotificationsStore` alias when convenient.
+- **Resolution (2026-07-19)**: DONE. The `useNotificationsStore` alias was removed from `src/stores/index.ts`; `toastHelper.ts` now imports the canonical `useNotificationStore` directly. No other importers existed.
 - **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/stores/shared/notificationsStore.ts` path, which does not exist).
 
 ### 2026-07-16: `useUIStore` lives in `src/stores/core`, not `src/shared/stores`
