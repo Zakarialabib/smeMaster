@@ -1,5 +1,5 @@
 import { sendNotification } from "@tauri-apps/plugin-notification";
-import { useNotificationStore as useNotificationsStore } from "@shared/stores/notificationStore";
+import { useNotificationStore } from "@shared/stores/notificationStore";
 import { useToastStore } from "@shared/stores/toastStore";
 
 /**
@@ -8,7 +8,7 @@ import { useToastStore } from "@shared/stores/toastStore";
  */
 export function notify(title: string, body: string): void {
   // In-app notification center entry
-  useNotificationsStore.getState().addNotification({ title, body });
+  useNotificationStore.getState().addNotification({ title, body });
 
   // Visible toast via the globally-mounted ToastContainer (reads useToastStore)
   try {

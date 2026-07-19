@@ -32,6 +32,7 @@
 - **Severity**: INFO
 - **Issue**: `useNotificationsStore` is re-exported as an alias of `useNotificationStore` from `@shared/stores/notificationStore` (singular). There is no `src/stores/shared/notificationsStore.ts` file — callers importing `useNotificationsStore` resolve to the canonical `@shared/stores/notificationStore`. Avoid adding a second `notificationsStore` file; prefer the canonical name.
 - **Plan**: Standardize on `useNotificationStore` (canonical) and drop the `useNotificationsStore` alias when convenient.
+- **Resolution (2026-07-19)**: DONE. The `useNotificationsStore` alias was removed from `src/stores/index.ts`; `toastHelper.ts` now imports the canonical `useNotificationStore` directly. No other importers existed.
 - **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/stores/shared/notificationsStore.ts` path, which does not exist).
 
 ### 2026-07-16: `useUIStore` lives in `src/stores/core`, not `src/shared/stores`
