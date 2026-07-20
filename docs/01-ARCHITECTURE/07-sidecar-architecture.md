@@ -2,6 +2,7 @@
 
 > **Last updated:** 2026-07-20
 > **Status:** Implementation complete — runtime stubs pending real candle/LanceDB wiring
+> **Cross-reference:** Simple-Signage `AI_SIDECAR.md` v2 (aligned), `08-sidecar-gap-analysis.md` (improvement candidates)
 
 ## Overview
 
@@ -268,6 +269,11 @@ The sidecar is built as a separate step BEFORE the main Tauri build:
 
 The `externalBin` config in `tauri.conf.json` tells Tauri to bundle `binaries/ml-sidecar*` into the final installer. Tauri automatically appends the target triple so the correct binary is resolved at runtime.
 
+## Cross-Project Reference
+
+- **Simple-Signage AI Sidecar Spec:** `Simple-Signage/docs/specs/AI_SIDECAR.md` (draft v2, aligned with this implementation)
+- **Gap Analysis:** `docs/01-ARCHITECTURE/08-sidecar-gap-analysis.md` — improvement opportunities from Simple-Signage's forward-looking design
+
 ## Future Work
 
 ### Short-term
@@ -281,9 +287,15 @@ The `externalBin` config in `tauri.conf.json` tells Tauri to bundle `binaries/ml
 - **Batch processing**: Add async batch embedding with progress reporting (sidecar emits events via the `Vec<Vec<f32>>` response)
 - **Model warmup**: Pre-warm the embedding model on idle (first interaction gets instant results)
 - **Android bundle**: Build the sidecar as a native `.so` via JNI rather than a separate binary
+- **Memory limit enforcement**: RSS polling via `sysinfo`, graceful model unload on threshold (see gap analysis)
+- **HTTP debugging API**: Optional `/v1/health` and `/v1/metrics` endpoints (behind `http-debug` feature)
+- **MlSidecarService tests**: Unit + integration tests for spawn/restart/IPC/degradation (see gap analysis)
 
 ### Long-term
 
 - **GPU acceleration**: Offload candle to Vulkan/Metal via `candle-metal` or `candle-cuda` — the sidecar process makes GPU isolation trivial
 - **Multi-model**: Run embedding + ranking + LLM in separate sidecar threads
 - **Plugin model**: Third-party ML plugins register via JSON-RPC without modifying the main app
+- **AiRouter facade**: Unified local/cloud routing (adopted from Simple-Signage's design)
+- **Streaming support**: SSE for LLM text generation
+- **Independent sidecar updates**: Version-decoupled auto-updater

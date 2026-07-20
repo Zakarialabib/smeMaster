@@ -23,7 +23,8 @@
 
 use std::io::{self, BufRead, Write};
 use std::path::Path;
-use std::sync::Mutex;
+use std::process;
+use std::sync::{Mutex, OnceLock};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -137,7 +138,7 @@ impl MlResources {
             Ok(table) => Ok(table),
             Err(_) => {
                 let table =
-                    futures::executor::block_on(conn.create_empty_table(&table_name, schema))?;
+                    futures::executor::block_on(conn.create_empty_table(&table_name, schema).execute())?;
                 Ok(table)
             }
         }
@@ -170,9 +171,8 @@ impl MlResources {
         let tokenizer = Tokenizer::from_file(tokenizer_path).map_err(anyhow::Error::msg)?;
         let vb = unsafe { VarBuilder::from_mmaped_safetensors(&[model_path], DTYPE, &device)? };
         let model = BertModel::load(vb, &config)?;
-
-        self.model = Some((model, tokenizer, device));
         eprintln!("[ml-sidecar] Model loaded (device: {device:?})");
+        self.model = Some((model, tokenizer, device));
         Ok(())
     }
 
@@ -201,6 +201,58 @@ impl MlResources {
 
         Ok(embeddings.to_vec1::<f32>()?)
     }
+}
+
+// ── Sidecar process metrics ─────────────────────────────────────────────────
+// Lightweight counters for observability. Lock-free-enough: a single Mutex
+// around a small struct, only touched on load/embed/index — not on every
+// byte. Aggregate stats are reported via the `metrics` JSON-RPC method.
+
+#[derive(Clone, Default)]
+struct SidecarMetrics {
+    /// Total embeddings computed (one call may embed many texts).
+    embed_count: u64,
+    /// Total vectors inserted into the LanceDB index.
+    index_count: u64,
+    /// Total RAG queries executed.
+    query_count: u64,
+    /// Documents parsed.
+    parse_count: u64,
+    /// Last model load duration in milliseconds (0 = never loaded).
+    last_model_load_ms: u64,
+    /// Number of times a model had to be unloaded (memory breach / explicit).
+    unload_count: u64,
+}
+
+impl SidecarMetrics {
+    fn new() -> Self {
+        Self {
+            embed_count: 0,
+            index_count: 0,
+            query_count: 0,
+            parse_count: 0,
+            last_model_load_ms: 0,
+            unload_count: 0,
+        }
+    }
+}
+
+/// Process-global metrics handle. Wrapped in a Mutex; only the main loop
+/// touches it. Held as a `lazy_static`-style `OnceLock` so the `metrics`
+/// handler can read it without threading the value through `handle_request`.
+fn metrics() -> &'static Mutex<SidecarMetrics> {
+    static M: OnceLock<Mutex<SidecarMetrics>> = OnceLock::new();
+    M.get_or_init(|| Mutex::new(SidecarMetrics::new()))
+}
+
+/// Current process RSS in MB, or None if sysinfo can't read it.
+fn current_rss_mb() -> Option<u64> {
+    let pid = process::id();
+    let mut sys = sysinfo::System::new();
+    // Refresh only process list + memory (cheap, scoped refresh).
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[sysinfo::Pid::from_u32(pid)]), true);
+    sys.process(sysinfo::Pid::from_u32(pid))
+        .map(|p| p.memory() / 1024) // sysinfo returns bytes; /1024 → KiB→MiB approx
 }
 
 // ── Document parsers (from app codebase) ─────────────────────────────────────
@@ -243,7 +295,7 @@ impl DocParser {
         let docx = read_docx(&file).map_err(|e| anyhow::anyhow!("docx parse error: {e}"))?;
         let mut text = String::new();
         // Iterate over document elements to extract text
-        for child in docx.document.body.children {
+        for child in docx.document.children {
             extract_docx_text(&child, &mut text);
             text.push('\n');
         }
@@ -288,26 +340,39 @@ fn extract_docx_text(child: &docx_rs::DocumentChild, text: &mut String) {
     use docx_rs::DocumentChild::*;
     match child {
         Paragraph(paragraph) => {
-            for run in &paragraph.runs {
-                text.push_str(&run.text);
+            for pchild in &paragraph.children {
+                if let docx_rs::ParagraphChild::Run(run) = pchild {
+                    for rchild in &run.children {
+                        if let docx_rs::RunChild::Text(t) = rchild {
+                            text.push_str(&t.text);
+                        }
+                    }
+                }
             }
         }
         Table(table) => {
-            for row in &table.rows {
-                for cell in &row.cells {
-                    for c in &cell.children {
-                        extract_docx_text(c, text);
+            for tchild in &table.rows {
+                if let docx_rs::TableChild::TableRow(row) = tchild {
+                    for cell in &row.cells {
+                        if let docx_rs::TableRowChild::TableCell(tc) = cell {
+                            for c in &tc.children {
+                                if let docx_rs::TableCellContent::Paragraph(p) = c {
+                                    extract_docx_text(
+                                        &docx_rs::DocumentChild::Paragraph(p.clone()),
+                                        text,
+                                    );
+                                }
+                            }
+                            text.push_str(" | ");
+                        }
                     }
-                    text.push_str(" | ");
+                    text.push('\n');
                 }
-                text.push('\n');
             }
         }
         _ => {}
     }
 }
-
-// ── Method dispatcher ───────────────────────────────────────────────────────
 
 fn handle_request(req: Request, resources: &mut MlResources) -> Response {
     let id = req.id;
@@ -358,8 +423,13 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| "BAAI/bge-small-en-v1.5".to_string());
 
+            let start = std::time::Instant::now();
             match resources.load_embedding_model(&repo_id) {
                 Ok(()) => {
+                    let load_ms = start.elapsed().as_millis() as u64;
+                    if let Ok(mut m) = metrics().lock() {
+                        m.last_model_load_ms = load_ms;
+                    }
                     let dim = 384; // BGE-small dimension
                     ok(
                         id,
@@ -367,6 +437,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                             "status": "loaded",
                             "repo_id": repo_id,
                             "dimension": dim,
+                            "load_ms": load_ms,
                         }),
                     )
                 }
@@ -376,6 +447,9 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
 
         "unload_model" => {
             resources.model = None;
+            if let Ok(mut m) = metrics().lock() {
+                m.unload_count += 1;
+            }
             ok(id, serde_json::json!({ "status": "unloaded" }))
         }
 
@@ -391,7 +465,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                     return err(
                         id,
                         -32602,
-                        "Missing or invalid 'texts' parameter".into(),
+                        "Missing or invalid 'texts' parameter",
                         None,
                     )
                 }
@@ -401,7 +475,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 return err(
                     id,
                     -32002,
-                    "Model not loaded. Call load_embedding_model first.".into(),
+                    "Model not loaded. Call load_embedding_model first.",
                     None,
                 );
             }
@@ -421,6 +495,9 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
             } else {
                 embeddings[0].len()
             };
+            if let Ok(mut m) = metrics().lock() {
+                m.embed_count += texts.len() as u64;
+            }
             ok(
                 id,
                 serde_json::json!({
@@ -468,7 +545,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                     return err(
                         id,
                         -32602,
-                        "Missing or invalid 'vectors' parameter".into(),
+                        "Missing or invalid 'vectors' parameter",
                         None,
                     )
                 }
@@ -510,13 +587,15 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                         let chunk_id = meta
                             .and_then(|m| m.get("id"))
                             .and_then(|v| v.as_str())
-                            .unwrap_or(&format!("chunk_{i}"));
+                            .map(|s| s.to_string())
+                            .unwrap_or_else(|| format!("chunk_{i}"));
                         let chunk_text = meta
                             .and_then(|m| m.get("text"))
                             .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        id_vec.push(chunk_id.to_string());
-                        text_vec.push(chunk_text.to_string());
+                            .unwrap_or("")
+                            .to_string();
+                        id_vec.push(chunk_id);
+                        text_vec.push(chunk_text);
                         for x in &vectors[i] {
                             all_values.push(*x);
                         }
@@ -565,7 +644,12 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                         Box::new(RecordBatchIterator::new(vec![Ok(batch)], schema));
 
                     match futures::executor::block_on(table.add(reader).execute()) {
-                        Ok(_) => ok(id, serde_json::json!({ "indexed": count })),
+                        Ok(_) => {
+                            if let Ok(mut m) = metrics().lock() {
+                                m.index_count += count as u64;
+                            }
+                            ok(id, serde_json::json!({ "indexed": count }))
+                        }
                         Err(e) => err(id, -32014, format!("Failed to add vectors: {e}"), None),
                     }
                 }
@@ -587,7 +671,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 .unwrap_or(5) as usize;
 
             if query.is_empty() {
-                return err(id, -32602, "Missing 'query' parameter".into(), None);
+                return err(id, -32602, "Missing 'query' parameter", None);
             }
 
             // Compute the query embedding
@@ -595,7 +679,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 return err(
                     id,
                     -32002,
-                    "Model not loaded. Call load_embedding_model first.".into(),
+                    "Model not loaded. Call load_embedding_model first.",
                     None,
                 );
             }
@@ -608,8 +692,18 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
 
             match resources.ensure_table(dim) {
                 Ok(table) => {
-                    let search_results = match table.vector_search(vector) {
-                        Ok(q) => q.limit(top_k as u32),
+                    let mut stream = match table.vector_search(vector) {
+                        Ok(q) => match futures::executor::block_on(q.limit(top_k as usize).execute()) {
+                            Ok(s) => s,
+                            Err(e) => {
+                                return err(
+                                    id,
+                                    -32021,
+                                    format!("Failed to execute search: {e}"),
+                                    None,
+                                )
+                            }
+                        },
                         Err(e) => {
                             return err(
                                 id,
@@ -617,13 +711,6 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                                 format!("Failed to create vector search: {e}"),
                                 None,
                             )
-                        }
-                    };
-
-                    let mut stream = match search_results.execute() {
-                        Ok(s) => s,
-                        Err(e) => {
-                            return err(id, -32021, format!("Failed to execute search: {e}"), None)
                         }
                     };
 
@@ -660,6 +747,10 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                         }
                     }
 
+                    if let Ok(mut m) = metrics().lock() {
+                        m.query_count += 1;
+                    }
+
                     ok(
                         id,
                         serde_json::json!({
@@ -688,7 +779,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 .to_string();
 
             if path.is_empty() {
-                return err(id, -32602, "Missing 'path' parameter".into(), None);
+                return err(id, -32602, "Missing 'path' parameter", None);
             }
 
             let path = Path::new(&path);
@@ -697,17 +788,56 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
             }
 
             match DocParser::parse_file(path) {
-                Ok(text) => ok(
-                    id,
-                    serde_json::json!({
-                        "status": "parsed",
-                        "path": path.to_string_lossy(),
-                        "text": text,
-                        "length": text.len(),
-                    }),
-                ),
+                Ok(text) => {
+                    if let Ok(mut m) = metrics().lock() {
+                        m.parse_count += 1;
+                    }
+                    ok(
+                        id,
+                        serde_json::json!({
+                            "status": "parsed",
+                            "path": path.to_string_lossy(),
+                            "text": text,
+                            "length": text.len(),
+                        }),
+                    )
+                }
                 Err(e) => err(id, -32031, format!("Failed to parse document: {e}"), None),
             }
+        }
+
+        // ── Observability ───────────────────────────────────────────
+        "memory_usage" => {
+            // Reports the sidecar's own RSS so the orchestrator can enforce
+            // the configured memory limit (graceful model unload on breach).
+            let rss_mb = current_rss_mb().unwrap_or(0);
+            let model_loaded = resources.model.is_some();
+            ok(
+                id,
+                serde_json::json!({
+                    "rss_mb": rss_mb,
+                    "model_loaded": model_loaded,
+                    "pid": process::id(),
+                }),
+            )
+        }
+
+        "metrics" => {
+            // Aggregate operation counters for observability dashboards.
+            let m = metrics().lock().map(|g| g.clone()).unwrap_or_default();
+            ok(
+                id,
+                serde_json::json!({
+                    "embed_count": m.embed_count,
+                    "index_count": m.index_count,
+                    "query_count": m.query_count,
+                    "parse_count": m.parse_count,
+                    "last_model_load_ms": m.last_model_load_ms,
+                    "unload_count": m.unload_count,
+                    "model_loaded": resources.model.is_some(),
+                    "rss_mb": current_rss_mb().unwrap_or(0),
+                }),
+            )
         }
 
         _ => err(

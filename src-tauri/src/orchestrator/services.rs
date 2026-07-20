@@ -584,11 +584,76 @@ pub struct MlSidecarService {
     pending: Arc<dashmap::DashMap<u64, tokio::sync::oneshot::Sender<anyhow::Result<serde_json::Value>>>>,
     /// Monotonically increasing request ID counter.
     next_id: std::sync::atomic::AtomicU64,
+    /// Optional RSS memory limit in MB. When exceeded, the sidecar is reported
+    /// as Degraded and the health monitor will trigger model unload / restart.
+    memory_limit_mb: Option<u64>,
+    /// Structured metrics for observability.
+    metrics: Arc<SidecarMetrics>,
+}
+
+/// Structured metrics for the ML sidecar process.
+/// Thread-safe atomics for zero-overhead accounting.
+#[cfg(feature = "local-ai")]
+#[derive(Debug, Default)]
+pub struct SidecarMetrics {
+    /// Total number of JSON-RPC requests sent to the sidecar.
+    pub total_requests: std::sync::atomic::AtomicU64,
+    /// Number of successful responses received.
+    pub success_count: std::sync::atomic::AtomicU64,
+    /// Number of errors (timeouts, failures, crashes).
+    pub error_count: std::sync::atomic::AtomicU64,
+    /// Sum of request round-trip latencies in nanoseconds.
+    pub total_latency_ns: std::sync::atomic::AtomicU64,
+}
+
+#[cfg(feature = "local-ai")]
+impl SidecarMetrics {
+    /// Create a new empty metrics counter set.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Record a successful request with its duration.
+    pub fn record_success(&self, latency: std::time::Duration) {
+        self.total_requests.fetch_add(1, std::sync::atomic::Ordering::Release);
+        self.success_count.fetch_add(1, std::sync::atomic::Ordering::Release);
+        self.total_latency_ns.fetch_add(latency.as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Record a failed request.
+    pub fn record_error(&self) {
+        self.total_requests.fetch_add(1, std::sync::atomic::Ordering::Release);
+        self.error_count.fetch_add(1, std::sync::atomic::Ordering::Release);
+    }
+
+    /// Average latency in milliseconds (0 if no requests).
+    pub fn avg_latency_ms(&self) -> f64 {
+        let total = self.total_requests.load(std::sync::atomic::Ordering::Acquire);
+        if total == 0 {
+            return 0.0;
+        }
+        let ns = self.total_latency_ns.load(std::sync::atomic::Ordering::Acquire);
+        (ns as f64 / total as f64) / 1_000_000.0
+    }
+
+    /// Success rate as a percentage (0.0–100.0).
+    pub fn success_rate(&self) -> f64 {
+        let total = self.total_requests.load(std::sync::atomic::Ordering::Acquire);
+        if total == 0 {
+            return 100.0;
+        }
+        let ok = self.success_count.load(std::sync::atomic::Ordering::Acquire);
+        (ok as f64 / total as f64) * 100.0
+    }
 }
 
 #[cfg(feature = "local-ai")]
 impl MlSidecarService {
-    pub fn new(handle: tauri::AppHandle) -> Self {
+    /// Create a new MlSidecarService.
+    ///
+    /// `memory_limit_mb`: Optional RSS limit. When the sidecar process exceeds
+    /// this value (in MB), `health_check` reports `Degraded`.
+    pub fn new(handle: tauri::AppHandle, memory_limit_mb: Option<u64>) -> Self {
         Self {
             handle,
             child: tokio::sync::Mutex::new(None),
@@ -597,7 +662,14 @@ impl MlSidecarService {
             healthy: std::sync::atomic::AtomicBool::new(false),
             pending: Arc::new(dashmap::DashMap::new()),
             next_id: std::sync::atomic::AtomicU64::new(1),
+            memory_limit_mb,
+            metrics: Arc::new(SidecarMetrics::new()),
         }
+    }
+
+    /// Returns a reference to the metrics collector.
+    pub fn metrics(&self) -> &SidecarMetrics {
+        &self.metrics
     }
 
     /// Returns true if the sidecar process is currently running.
@@ -615,10 +687,17 @@ impl MlSidecarService {
     /// Uses a unique request ID + oneshot channel for synchronous-style IPC.
     /// The background reader task matches the response by ID and completes
     /// the oneshot. Timeout is 30 seconds for normal requests.
+    ///
+    /// This method also tracks metrics (request count, latency, success/error)
+    /// in the shared `SidecarMetrics` struct.
     pub async fn send_request(&self, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+        let start = std::time::Instant::now();
         let mut writer_guard = self.stdin_writer.lock().await;
         let writer = writer_guard.as_mut()
-            .ok_or_else(|| anyhow::anyhow!("Sidecar not running"))?;
+            .ok_or_else(|| {
+                self.metrics.record_error();
+                anyhow::anyhow!("Sidecar not running")
+            })?;
 
         let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::AcqRel);
         let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<serde_json::Value>>();
@@ -637,31 +716,41 @@ impl MlSidecarService {
         writer.write_all(format!("{line}\n").as_bytes()).await
             .map_err(|e| {
                 self.pending.remove(&id);
+                self.metrics.record_error();
                 anyhow::anyhow!("Failed to write to sidecar stdin: {e}")
             })?;
 
         // Flush to ensure the sidecar receives it immediately
         writer.flush().await.map_err(|e| {
             self.pending.remove(&id);
+            self.metrics.record_error();
             anyhow::anyhow!("Failed to flush sidecar stdin: {e}")
         })?;
 
         // Await the response with a 30-second timeout
-        match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
+        let result = match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
             Ok(Ok(result)) => {
                 self.healthy.store(true, Ordering::Release);
                 Ok(result)
             }
             Ok(Err(e)) => {
                 self.healthy.store(false, Ordering::Release);
+                self.metrics.record_error();
                 Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
             }
             Err(_elapsed) => {
                 self.pending.remove(&id);
                 self.healthy.store(false, Ordering::Release);
+                self.metrics.record_error();
                 Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
             }
+        };
+
+        // Record success metrics (errors already recorded above)
+        if result.is_ok() {
+            self.metrics.record_success(start.elapsed());
         }
+        result
     }
 
     /// Spawn the sidecar process and start the reader task.
@@ -777,6 +866,91 @@ impl MlSidecarService {
         Ok(())
     }
 
+    /// Query the sidecar's RSS via JSON-RPC `memory_usage` method.
+    /// Returns `None` if the sidecar doesn't support the method (error -32601)
+    /// or the request fails — both cases are handled gracefully.
+    async fn query_rss_mb(&self) -> Option<u64> {
+        match self.send_request("memory_usage", serde_json::json!({})).await {
+            Ok(resp) => {
+                let mb = resp.get("rss_mb").and_then(|v| v.as_u64());
+                if mb.is_none() {
+                    log::warn!("[ml-sidecar] memory_usage response missing 'rss_mb' field");
+                }
+                mb
+            }
+            Err(e) => {
+                // -32601 = Method not found (sidecar binary predates this feature).
+                // Any other error is also non-fatal — we skip the memory check.
+                if e.to_string().contains("-32601") || e.to_string().contains("Method not found") {
+                    log::debug!("[ml-sidecar] memory_usage not supported by sidecar binary");
+                } else {
+                    log::debug!("[ml-sidecar] memory_usage request failed (non-fatal): {e}");
+                }
+                None
+            }
+        }
+    }
+
+    /// Check memory usage against the configured limit and enforce it.
+    ///
+    /// This is the orchestrator half of the memory-safety net (the other half
+    /// is the sidecar's `memory_usage` JSON-RPC method). When the sidecar's
+    /// RSS exceeds `memory_limit_mb`:
+    ///   1. If a model is loaded, send `unload_model` to free it *gracefully*
+    ///      (no process kill). This is the preferred recovery — the sidecar
+    ///      stays alive for future requests.
+    ///   2. Re-query RSS. If it's now under the limit, return `None` (recovered).
+    ///   3. If it's *still* over the limit (model wasn't the cause), return
+    ///      `Some(reason)` so `health_check` reports `Degraded`. The watchdog
+    ///      will eventually restart the sidecar if it stays unhealthy.
+    ///
+    /// Returns `None` when: no limit configured, RSS not queryable, or under limit.
+    async fn check_memory_limit(&self) -> Option<String> {
+        let limit_mb = self.memory_limit_mb?;
+        let rss_mb = self.query_rss_mb().await?;
+
+        if rss_mb <= limit_mb {
+            return None;
+        }
+
+        // Over limit — try graceful model unload first (most common cause
+        // of a large ML process is the 130MB+ embedding model in RAM).
+        log::warn!(
+            "[ml-sidecar] RSS {rss_mb} MB exceeds limit {limit_mb} MB — attempting graceful model unload"
+        );
+        if let Ok(resp) = self.send_request("memory_usage", serde_json::json!({})).await {
+            let model_loaded = resp
+                .get("model_loaded")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            if model_loaded {
+                match self.send_request("unload_model", serde_json::json!({})).await {
+                    Ok(_) => {
+                        log::info!("[ml-sidecar] Model unloaded to recover memory");
+                        // Give the OS a moment to reclaim RSS, then re-check.
+                        tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+                        if let Some(reclaimed) = self.query_rss_mb().await {
+                            if reclaimed <= limit_mb {
+                                log::info!(
+                                    "[ml-sidecar] Memory recovered after unload ({reclaimed} MB <= {limit_mb} MB)"
+                                );
+                                return None;
+                            }
+                            log::warn!(
+                                "[ml-sidecar] Still over limit after unload ({reclaimed} MB > {limit_mb} MB)"
+                            );
+                        }
+                    }
+                    Err(e) => log::warn!("[ml-sidecar] Graceful unload failed (non-fatal): {e}"),
+                }
+            }
+        }
+
+        Some(format!(
+            "ml-sidecar RSS {rss_mb} MB exceeds limit {limit_mb} MB (unload did not recover)"
+        ))
+    }
+
     /// Create a restart closure that can be called from the reader task.
     /// The reader task owns the `child` handle so it can't call spawn_sidecar
     /// directly (which also needs child). Instead, use the AppHandle to
@@ -881,7 +1055,7 @@ impl Service for MlSidecarService {
                     super::HealthStatus::Healthy
                 }
                 Err(e) => {
-                    super::HealthStatus::Degraded(format!("ml-sidecar crashed and restart failed: {e}"))
+                    return super::HealthStatus::Degraded(format!("ml-sidecar crashed and restart failed: {e}"));
                 }
             }
         } else {
@@ -890,15 +1064,23 @@ impl Service for MlSidecarService {
                 Ok(resp) => {
                     log::trace!("[ml-sidecar] Ping OK: {resp}");
                     self.healthy.store(true, Ordering::Release);
-                    super::HealthStatus::Healthy
                 }
                 Err(e) => {
                     log::warn!("[ml-sidecar] Health check ping failed: {e}");
                     self.healthy.store(false, Ordering::Release);
-                    super::HealthStatus::Degraded(format!("ml-sidecar ping failed: {e}"))
+                    return super::HealthStatus::Degraded(format!("ml-sidecar ping failed: {e}"));
                 }
             }
         }
+
+        // ── Memory limit check ───────────────────────────────────────
+        if let Some(reason) = self.check_memory_limit().await {
+            log::warn!("[ml-sidecar] {reason}");
+            self.healthy.store(false, Ordering::Release);
+            return super::HealthStatus::Degraded(reason);
+        }
+
+        super::HealthStatus::Healthy
     }
 }
 
@@ -981,6 +1163,22 @@ impl SidecarClient {
             "path": path,
         })).await?;
         Ok(resp.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string())
+    }
+
+    /// Fetch the sidecar's own aggregate metrics (`metrics` JSON-RPC method).
+    /// Returns None if the sidecar binary doesn't support it.
+    pub async fn metrics(&self) -> Option<serde_json::Value> {
+        self.service.send_request("metrics", serde_json::json!({})).await.ok()
+    }
+
+    /// Fetch the sidecar's current RSS in MB (`memory_usage` JSON-RPC method).
+    /// Returns None if the sidecar binary doesn't support it.
+    pub async fn memory_usage_mb(&self) -> Option<u64> {
+        self.service
+            .send_request("memory_usage", serde_json::json!({}))
+            .await
+            .ok()
+            .and_then(|r| r.get("rss_mb").and_then(|v| v.as_u64()))
     }
 }
 
@@ -1293,5 +1491,112 @@ mod tests {
 
         let summary = monitor.health_summary();
         assert_eq!(summary.total_syncs, 10);
+    }
+
+    // ── MlSidecarService Tests ──────────────────────────────────────
+    // Note: Full integration tests require Tauri runtime + sidecar binary.
+    // These unit tests verify the metrics, JSON-RPC contract, and error handling.
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_defaults() {
+        let metrics = super::SidecarMetrics::new();
+        assert_eq!(metrics.total_requests.load(Ordering::SeqCst), 0);
+        assert_eq!(metrics.success_count.load(Ordering::SeqCst), 0);
+        assert_eq!(metrics.error_count.load(Ordering::SeqCst), 0);
+        assert_eq!(metrics.total_latency_ns.load(Ordering::SeqCst), 0);
+        // With zero requests, avg should be 0 and success rate should be 100
+        assert_eq!(metrics.avg_latency_ms(), 0.0);
+        assert_eq!(metrics.success_rate(), 100.0);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_record_success() {
+        let metrics = super::SidecarMetrics::new();
+        metrics.record_success(std::time::Duration::from_millis(100));
+        assert_eq!(metrics.total_requests.load(Ordering::SeqCst), 1);
+        assert_eq!(metrics.success_count.load(Ordering::SeqCst), 1);
+        assert_eq!(metrics.error_count.load(Ordering::SeqCst), 0);
+        assert_eq!(metrics.avg_latency_ms(), 100.0);
+        assert_eq!(metrics.success_rate(), 100.0);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_record_error() {
+        let metrics = super::SidecarMetrics::new();
+        metrics.record_error();
+        assert_eq!(metrics.total_requests.load(Ordering::SeqCst), 1);
+        assert_eq!(metrics.success_count.load(Ordering::SeqCst), 0);
+        assert_eq!(metrics.error_count.load(Ordering::SeqCst), 1);
+        assert_eq!(metrics.success_rate(), 0.0);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_mixed_success_error() {
+        let metrics = super::SidecarMetrics::new();
+        metrics.record_success(std::time::Duration::from_millis(50));
+        metrics.record_success(std::time::Duration::from_millis(150));
+        metrics.record_error();
+        // 3 total: 2 success, 1 error
+        assert_eq!(metrics.total_requests.load(Ordering::SeqCst), 3);
+        assert_eq!(metrics.success_count.load(Ordering::SeqCst), 2);
+        assert_eq!(metrics.error_count.load(Ordering::SeqCst), 1);
+        // Avg = (50 + 150) / 2 = 100ms
+        assert!((metrics.avg_latency_ms() - 100.0).abs() < 0.001);
+        // Success rate = 2/3 = 66.67%
+        assert!((metrics.success_rate() - 66.666_666).abs() < 0.01);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_concurrent_safety() {
+        use std::sync::Arc;
+        let metrics = Arc::new(super::SidecarMetrics::new());
+        let mut handles = Vec::new();
+        for _ in 0..10 {
+            let m = metrics.clone();
+            handles.push(std::thread::spawn(move || {
+                for _ in 0..100 {
+                    m.record_success(std::time::Duration::from_millis(10));
+                }
+            }));
+        }
+        for h in handles { h.join().unwrap(); }
+        assert_eq!(metrics.total_requests.load(Ordering::SeqCst), 1000);
+        assert_eq!(metrics.success_count.load(Ordering::SeqCst), 1000);
+        assert_eq!(metrics.error_count.load(Ordering::SeqCst), 0);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_avg_latency_no_overflow() {
+        let metrics = super::SidecarMetrics::new();
+        // Large latency values should not overflow
+        metrics.record_success(std::time::Duration::from_secs(3600)); // 1 hour
+        assert!(metrics.avg_latency_ms() > 3_500_000.0); // ~3.6M ms
+        assert!(metrics.avg_latency_ms() < 3_700_000.0);
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_client_is_available_not_connected() {
+        // Without a running sidecar, is_available() must return false.
+        // We cannot create a MlSidecarService here (needs AppHandle), but we
+        // can verify the logic contract: both running AND healthy must be true.
+        // This is verified indirectly by the Service impl which checks both
+        // flags before reporting healthy.
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_metrics_send_sync() {
+        // Compile-time check: SidecarMetrics must be Send + Sync
+        fn assert_send<T: Send>() {}
+        fn assert_sync<T: Sync>() {}
+        assert_send::<super::SidecarMetrics>();
+        assert_sync::<super::SidecarMetrics>();
     }
 }

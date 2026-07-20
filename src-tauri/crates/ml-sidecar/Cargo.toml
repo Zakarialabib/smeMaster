@@ -19,6 +19,8 @@ serde_json = "1"
 anyhow = "1.0"
 futures = "0.3"
 log = "0.4"
+sysinfo = "0.33"
+dirs = "5"
 
 # ── AI/ML dependencies (heavy, require protoc) ─────────────────────────────
 lancedb = { version = "0.6", default-features = false }
