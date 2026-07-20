@@ -11,6 +11,7 @@ import {
   RefreshCw,
   AlertCircle,
   FileText,
+  Sparkles,
 } from "lucide-react";
 
 // ── Error Boundary for tab content ────────────────────────────────────────
@@ -58,6 +59,7 @@ class TabErrorBoundary extends Component<
 const TABS: CardTabItem[] = [
   { id: "contacts", label: "Contacts", icon: Users },
   { id: "deals", label: "Deals", icon: FileText },
+  { id: "relationships", label: "Relationships", icon: Sparkles },
   { id: "tasks", label: "Tasks", icon: ListChecks },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "invoices", label: "Invoices", icon: ReceiptText },
@@ -94,11 +96,18 @@ const DealsContent = lazy(() =>
   })),
 );
 
+const RelationshipsContent = lazy(() =>
+  import("@features/crm/pages/PeopleRelationships").then((m) => ({
+    default: m.PeopleRelationships,
+  })),
+);
+
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
   contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   deals: DealsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  relationships: RelationshipsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
 
