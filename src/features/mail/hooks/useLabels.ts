@@ -18,7 +18,7 @@ function mapLabel(l: DbLabel): Label {
 
 export function useLabels(accountId: string | null) {
   return useQuery({
-    queryKey: queryKeys.labels.byAccount(accountId),
+    queryKey: queryKeys.labels.byAccount(accountId ?? ""),
     queryFn: async () => {
       if (!accountId) return [];
       const rows = await getLabelsForAccount(accountId);

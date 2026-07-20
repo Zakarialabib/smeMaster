@@ -28,7 +28,7 @@ const queryClient = new QueryClient({
       // Garbage-collect unused cache entries after 10 min to bound memory.
       gcTime: 1000 * 60 * 10,
       // Avoid abrupt loading flashes for cached data on param change.
-      placeholderData: (previousData) => previousData,
+      placeholderData: (previousData: unknown) => previousData,
     },
     mutations: {
       // Mutations are user-intent; let the optimistic-update layer own retries.

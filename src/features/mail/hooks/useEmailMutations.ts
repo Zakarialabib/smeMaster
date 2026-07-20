@@ -30,7 +30,9 @@ type ThreadSnapshot = [readonly unknown[], ThreadList][];
 function snapshotThreadLists(queryClient: ReturnType<typeof useQueryClient>): ThreadSnapshot {
   return queryClient.getQueriesData<ThreadList>({
     queryKey: queryKeys.threads.all,
-  });
+  }).filter(
+    (entry): entry is [readonly unknown[], ThreadList] => entry[1] !== undefined,
+  );
 }
 
 function restoreThreadLists(
