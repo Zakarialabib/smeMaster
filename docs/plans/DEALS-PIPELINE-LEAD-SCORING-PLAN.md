@@ -125,7 +125,7 @@ Commands (snake_case args, `CmdResult<_>`):
 `db_move_deal_stage`, `db_create_pipeline`, `db_list_pipelines`,
 `db_create_deal_stage`, `db_list_deal_stages`, `db_recompute_scores`.
 Register all in `commands/mod.rs` `generate_handler!`. Keep `#[command]` attributes counted
-in the 802 metric (verify grep after).
+in the 831 metric (verify grep after).
 
 ## 5. TS Service Layer — `src/shared/services/db/invoke/deals.ts` (NEW)
 
@@ -171,7 +171,7 @@ Zustand: `deals`, `pipelines`, `stages`, `activePipelineId`, `loading`,
 - `cd src-tauri && cargo check` → 0 errors (full compile; `cargo test` EXE is env-blocked
   per STATUS — compile is the gate).
 - `npx eslint src src-tauri` → 0 warnings (frontend; Rust via cargo check).
-- Re-grep IPC command count (should rise by ~11) to keep the 802 metric honest.
+- Re-grep IPC command count (should rise by ~11) to keep the 831 metric honest.
 
 ## 10. Execution Order (chunks)
 

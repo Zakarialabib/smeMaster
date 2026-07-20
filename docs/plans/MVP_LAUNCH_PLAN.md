@@ -35,7 +35,7 @@
 | Hover quick-actions | ✓ | ✓ | partial (`ThreadCard`) | denser action rail | P1 |
 | Bulk select + toolbar | ✓ | ✓ | ✓ `EmailList` | select-all, bulk move/label/archive | P1 |
 | Drag to label/folder | ✓ | ✓ | partial (email→folder DnD done) | drag-to-label | P2 |
-| Keyboard shortcuts | ✓ | ✓ | ✓ 25+ | **command-palette discoverability** for 802 cmds | P1 |
+| Keyboard shortcuts | ✓ | ✓ | ✓ 25+ | **command-palette discoverability** for 831 cmds | P1 |
 | Search + operators | ✓ | ✓ | ✓ search | `from:`, `to:`, `has:attachment`, `is:unread` | P2 |
 | Offline | PWA | ✓ | ✓ offline queue | — | done |
 | Templates | ✓ | ✓ | ✓ | — | done |
@@ -104,7 +104,7 @@ Leverage the existing embedded seed system (`src-tauri/seeds/*.json` + `db_resee
 ## 6. Phased Execution (intensive work order)
 
 - **Phase A — P0 (~1–2d):** both test suites green. cargo runtime loader crash + 12 vitest files. *Blocking.* — **DONE:** 12 vitest files fixed + committed; cargo compile fixed (runtime blocked by local VC++ runtime, env issue). See git log.
-- **Phase B — P1 (~3–4d): email UX parity:** priority/Focused inbox, hover action rail, bulk toolbar (select-all + bulk move/label/archive), undo-send duration preference, NL snooze, auto-categorize into bundles, command-palette discoverability for 802 commands.
+- **Phase B — P1 (~3–4d): email UX parity:** priority/Focused inbox, hover action rail, bulk toolbar (select-all + bulk move/label/archive), undo-send duration preference, NL snooze, auto-categorize into bundles, command-palette discoverability for 831 commands.
   - **DONE (2026-07-15):** Backend core SHIPPED (migration `031_thread_importance_score`; `threads::categorize_thread`/`derive_category` auto-classify on ingest; `db_set_thread_importance` + `db_categorize_thread` IPC commands registered). Frontend SHIPPED: hover action rail (ThreadCard: important/snooze/task/event), bulk selection toolbar (EmailList: select-all + bulk read/unread/archive/label/move), Focused/Primary toggle (persisted via configStore→SQLite), NL-snooze parser + SnoozeDialog input, command palette expanded (~50 actions, fuzzy, a11y, tokenized), undo-send duration quick-pick + settings helpers. Verified: tsc exit 0, vitest parseSnooze 8/8 + EmailList 2/2, eslint 0 warnings. Committed `7872a25`.
 - **Phase C — P1 (~2d): demo seeds** expansion + "Load demo data" in onboarding/settings + refresh screenshots.
   - **Seeds SHIPPED (2026-07-15):** expanded Rust demo data to 36 threads / 54 messages with realistic Promotions/Social/Updates/Primary distribution (thread_categories regenerated data-driven). NOTE: "Load demo data" UI trigger in onboarding/settings still needs wiring (db_reseed_demo exists).

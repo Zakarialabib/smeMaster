@@ -179,7 +179,7 @@ commands *and* settings — exactly Raycast's model ("Type Settings in Root Sear
 ### Why this beats the current sidebar filter
 Current filter matches **tab labels only** (`label.includes(q)`). A user searching "spf" or
 "unsubscribe" or "font" (when Appearance is hidden) gets nothing. Keyword + row search closes
-that gap and makes the entire 802-command surface reachable without scrolling.
+that gap and makes the entire 831-command surface reachable without scrolling.
 
 ---
 
