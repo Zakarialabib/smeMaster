@@ -27,6 +27,32 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// Polyfill localStorage for jsdom (some components call it directly, e.g. SavedViews).
+// jsdom may expose a localStorage whose methods are non-functional; override unconditionally.
+{
+  const store = new Map<string, string>();
+  const localStorageMock = {
+    getItem: (k: string) => (store.has(k) ? store.get(k)! : null),
+    setItem: (k: string, v: string) => void store.set(k, String(v)),
+    removeItem: (k: string) => void store.delete(k),
+    clear: () => store.clear(),
+    key: (i: number) => Array.from(store.keys())[i] ?? null,
+    get length() {
+      return store.size;
+    },
+  };
+  Object.defineProperty(globalThis, "localStorage", {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(window, "localStorage", {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en } },
   lng: "en",
