@@ -19,7 +19,7 @@ export const FOCUS_RING = "focus:outline-none focus:ring-1 focus:ring-accent foc
 export const INPUT_BASE = `w-full glass-input text-text-primary text-sm px-3 py-1.5 rounded-md ${FOCUS_RING} placeholder:text-text-tertiary`;
 
 /* ─── Button base ─── */
-export const BTN_BASE = "inline-flex items-center justify-center font-medium rounded-md transition-colors active:scale-[0.97] active:transition-transform disabled:opacity-50 disabled:cursor-not-allowed settings-focus-ring";
+export const BTN_BASE = "inline-flex items-center justify-center font-medium rounded-[--radius] transition-colors active:scale-[0.97] active:transition-transform disabled:opacity-50 disabled:cursor-not-allowed settings-focus-ring";
 export const BTN_PRIMARY = "text-white bg-accent hover:bg-accent-hover";
 export const BTN_SECONDARY = "text-text-secondary hover:text-text-primary hover:bg-bg-hover border border-border-primary";
 export const BTN_GHOST = "text-text-tertiary hover:text-text-primary hover:bg-bg-hover";
@@ -27,7 +27,7 @@ export const BTN_DANGER = "text-white bg-danger hover:bg-red-700";
 export const BTN_GLASS = "text-text-primary bg-white/20 dark:bg-white/5 backdrop-blur-[12px] border border-white/30 dark:border-white/10 hover:bg-white/30 dark:hover:bg-white/10 hover:border-white/50 dark:hover:border-white/20 transition-all duration-200";
 export const BTN_GLASS_PRIMARY = "text-white bg-accent/20 dark:bg-accent/15 backdrop-blur-[12px] border border-accent/30 hover:bg-accent/30 hover:border-accent/50 active:bg-accent/40 transition-all duration-200";
 export const BTN_GLASS_DANGER = "text-danger bg-danger/10 dark:bg-danger/10 backdrop-blur-[12px] border border-danger/20 hover:bg-danger/20 hover:border-danger/40 active:bg-danger/30 transition-all duration-200";
-export const BTN_GLASS_ICON = "inline-flex items-center justify-center w-7 h-7 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/20 dark:hover:bg-white/10 backdrop-blur-[8px] border border-transparent hover:border-white/30 dark:hover:border-white/10 transition-all duration-150";
+export const BTN_GLASS_ICON = "inline-flex items-center justify-center w-7 h-7 rounded-[--radius-sm] text-text-secondary hover:text-text-primary hover:bg-white/20 dark:hover:bg-white/10 backdrop-blur-[8px] border border-transparent hover:border-white/30 dark:hover:border-white/10 transition-all duration-150";
 
 /* ─── Flex row patterns ─── */
 export const ROW_BETWEEN = "flex items-center justify-between";
@@ -40,12 +40,23 @@ export const ROW_GAP_4 = "flex items-center gap-4";
 export const PANEL_HEADER = "px-4 py-3 border-b border-border-primary";
 
 /* ─── Card / panel surfaces ─── */
-export const CARD_BASE = "frost-surface rounded-[--frost-radius] p-6";
-export const CARD_SURFACE = "frost-surface rounded-[--frost-radius]";
+export const CARD_BASE = "frost-surface rounded-[--radius-lg] p-6";
+export const CARD_SURFACE = "frost-surface rounded-[--radius-lg]";
 export const CARD_HOVER = "hover:border-accent/25 transition-all";
 
 export const GLASS_SURFACE = "frost-surface";
 export const GLASS_SURFACE_ELEVATED = "frost-surface-strong";
+
+/* ─── Condensed elevation (border-based depth) ─── */
+export const ELEVATION_SM = "shadow-[var(--elevation-sm)]";
+export const ELEVATION_MD = "shadow-[var(--elevation-md)]";
+export const ELEVATION_LG = "shadow-[var(--elevation-lg)]";
+
+/* ─── Contextual Intelligence rail ─── */
+export const INSIGHT_RAIL =
+  "bg-[var(--insight-bg)] border border-[var(--insight-border)] rounded-[var(--insight-radius)]";
+export const INSIGHT_CARD =
+  "bg-[var(--color-ai-subtle)] border border-ai/20 rounded-[--radius-lg] p-4";
 
 /* ─── Modal / dialog ─── */
 export const MODAL_BACKDROP = "fixed inset-0 bg-black/20 backdrop-blur-md";

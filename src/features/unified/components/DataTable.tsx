@@ -54,7 +54,7 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "unified-table w-full overflow-hidden rounded-xl border border-border-secondary bg-bg-secondary",
+        "unified-table w-full overflow-hidden rounded-[--radius-lg] border border-border-secondary bg-bg-secondary shadow-[var(--elevation-sm)]",
         className,
       )}
       role="table"
