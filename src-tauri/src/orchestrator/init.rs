@@ -63,6 +63,22 @@ impl AppLifecycle {
         let tool_registry = Arc::new(ToolRegistry::new());
         crate::orchestrator::gating::set_global_tool_registry(tool_registry.clone());
 
+        // ── Runtime feature flags ─────────────────────────────────────────
+        // Enable the feature flags that are compiled in so that gating.rs
+        // can check them at runtime. Each subsystem's `feature_flag` (e.g.
+        // "ai", "pairing", "campaigns") must match an enabled flag or the
+        // subsystem will report SubsystemInactive.
+        //
+        // `local-ai` is a compile-time Cargo feature that gates the ML sidecar.
+        // All other flags are always-on at compile time (pure runtime flags).
+        #[cfg(feature = "local-ai")]
+        subsystem_registry.enable_feature("ai");
+        subsystem_registry.enable_feature("deliverability-dashboard");
+        subsystem_registry.enable_feature("device");
+        subsystem_registry.enable_feature("backup");
+        subsystem_registry.enable_feature("workflows");
+        log::info!("[init] Phase 3 — Runtime feature flags set");
+
         // ── Register subsystems ───────────────────────────────────────────
 
         // 1. Lazy: deliverability_sentinel (idle shutdown capable, 60s grace)
@@ -92,10 +108,11 @@ impl AppLifecycle {
 
         // 3. OnDemand: ml-sidecar (external ML/RAG process).
         //    Gated behind `local-ai` so the core build never needs protoc.
+        //    Default memory limit: 1024 MB (1 GB) for model weights.
         #[cfg(feature = "local-ai")]
         {
             use crate::orchestrator::services::MlSidecarService;
-            let ml_service = Arc::new(MlSidecarService::new(app.handle().clone()));
+            let ml_service = Arc::new(MlSidecarService::new(app.handle().clone(), Some(1024)));
             // Manage as Tauri state so AI commands can access the sidecar IPC
             app.manage(ml_service.clone());
             subsystem_registry.register_ondemand(
