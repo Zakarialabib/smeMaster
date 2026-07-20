@@ -57,6 +57,13 @@
   --color-accent-light: #d3e3fd;
   --color-accent-subtle: rgba(11, 87, 208, 0.08);
 
+  /* AI accent (purple) — used by AI callouts, suggestions, insights */
+  --color-ai: #9333ea;
+  --color-ai-hover: #7e22ce;
+  --color-ai-active: #6b21a8;
+  --color-ai-light: #f3e8ff;
+  --color-ai-subtle: rgba(147, 51, 234, 0.08);
+
   /* Semantic colors */
   --color-danger: #e11d48;
   --color-danger-hover: #be123c;
@@ -165,6 +172,13 @@
   --color-accent-active: #669df6;
   --color-accent-light: rgba(138, 180, 248, 0.15);
   --color-accent-subtle: rgba(138, 180, 248, 0.08);
+
+  /* AI accent (purple) — dark */
+  --color-ai: #c084fc;
+  --color-ai-hover: #d8b4fe;
+  --color-ai-active: #a855f7;
+  --color-ai-light: rgba(192, 132, 252, 0.15);
+  --color-ai-subtle: rgba(192, 132, 252, 0.08);
 
   --color-danger: #f28b82;
   --color-danger-hover: #e11d48;
