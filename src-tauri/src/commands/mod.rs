@@ -183,6 +183,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             onboarding_cmds::db_seed_demo_preset,
             onboarding_cmds::db_finalize_onboarding,
             onboarding_cmds::db_has_email_accounts,
+            onboarding_cmds::db_set_demo_data_enabled,
             onboarding_cmds::db_get_tool_status,
 
             // === pairing (3 commands) ===

@@ -422,6 +422,45 @@ async fn seed_demo_data(pool: &sqlx::SqlitePool) -> Result<(), String> {
         return Ok(());
     }
 
+    // ── Dynamic guard: do not auto-seed when real data already exists ──
+    // If the user has connected at least one real email account, demo data
+    // would only pollute their real dataset — skip it so real data is shown
+    // on its own. (Explicit seeding via db_seed_demo_preset still works.)
+    let real_accounts: i64 = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM accounts WHERE is_active = 1",
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("Cannot check accounts: {e}"))?;
+
+    if real_accounts > 0 {
+        log::info!("[seed] Real email accounts present — skipping auto demo seed");
+        // Still mark as seeded so we never auto-seed later once real data exists.
+        let _ = sqlx::query(
+            "INSERT OR IGNORE INTO settings (key, value) VALUES ('demo_full_seeded', '1')",
+        )
+        .execute(pool)
+        .await;
+        return Ok(());
+    }
+
+    // ── Allow/deny guard: respect an explicit opt-out setting ──
+    // A user (or admin) can set demo_data_enabled = 'false' to disable demo
+    // data entirely. When absent it defaults to enabled (first-run experience).
+    let demo_allowed: Option<(String,)> = sqlx::query_as(
+        "SELECT value FROM settings WHERE key = 'demo_data_enabled'",
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Cannot check demo_data_enabled: {e}"))?;
+
+    if let Some((val,)) = demo_allowed {
+        if val == "false" {
+            log::info!("[seed] demo_data_enabled = false — skipping demo seed");
+            return Ok(());
+        }
+    }
+
     // Check if already seeded (idempotency guard)
     let already_seeded: Option<(String,)> = sqlx::query_as(
         "SELECT value FROM settings WHERE key = 'demo_full_seeded'",

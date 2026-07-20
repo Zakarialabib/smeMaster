@@ -432,6 +432,123 @@ mod tests {
         run(&pool, false).await.expect("Second migration (idempotent)");
     }
 
+    // ── Migration registry integrity ───────────────────────────────────────
+    //
+    // Catches the class of bug where a .sql file exists on disk but is NOT
+    // registered in the MIGRATIONS array (orphaned → never applied), or where
+    // the array references a file that does not exist. Both silently desync
+    // the on-disk schema from the runtime schema.
+    #[test]
+    fn test_migration_files_match_registry() {
+        // Collect .sql files present on disk (relative to this source file).
+        let migrations_dir =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/db/migrations");
+        let mut on_disk: Vec<String> = std::fs::read_dir(&migrations_dir)
+            .expect("read migrations dir")
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name().to_string_lossy().to_string())
+            .filter(|n| n.ends_with(".sql"))
+            .collect();
+        on_disk.sort();
+
+        // Collect files referenced by the MIGRATIONS array.
+        let mut registered: Vec<String> = MIGRATIONS
+            .iter()
+            .map(|(name, _)| format!("{name}.sql"))
+            .collect();
+        registered.sort();
+
+        // Every on-disk migration must be registered.
+        for f in &on_disk {
+            assert!(
+                registered.contains(f),
+                "Migration file '{f}' exists on disk but is NOT registered in MIGRATIONS — it will never be applied. Add it to the array or remove the file.",
+            );
+        }
+
+        // Every registered migration must exist on disk.
+        for f in &registered {
+            assert!(
+                on_disk.contains(f),
+                "Migration '{f}' is registered in MIGRATIONS but the file is missing on disk.",
+            );
+        }
+    }
+
+    // ── Seed ↔ migration schema drift guard ─────────────────────────────────
+    //
+    // Every seed JSON file targets a table that must exist in the applied
+    // migrations. If a seed references a table that no migration creates, the
+    // seed silently fails (INSERT OR IGNORE) and the app ships with empty data.
+    #[test]
+    fn test_seed_tables_exist_in_migrations() {
+        let seeds_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("seeds");
+        if !seeds_dir.exists() {
+            return; // seeds are optional in some build configs
+        }
+
+        // Gather all CREATE TABLE names from migration SQL (once, up front).
+        let mut tables: std::collections::HashSet<String> = std::collections::HashSet::new();
+        {
+            let mig_dir =
+                std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/db/migrations");
+            for me in std::fs::read_dir(&mig_dir).expect("read migrations dir") {
+                let mp = match me {
+                    Ok(e) => e.path(),
+                    Err(_) => continue,
+                };
+                if mp.extension().and_then(|e| e.to_str()) != Some("sql") {
+                    continue;
+                }
+                let sql = match std::fs::read_to_string(&mp) {
+                    Ok(s) => s,
+                    Err(_) => continue,
+                };
+                for cap in sql.split("CREATE TABLE") {
+                    let name = cap
+                        .split(|c| c == '(' || c == ' ' || c == '\n' || c == '\t')
+                        .nth(0)
+                        .unwrap_or("")
+                        .trim_matches(|c| c == '"' || c == '`' || c == ' ' || c == '\n');
+                    let name = name.trim_start_matches("IF NOT EXISTS").trim();
+                    if !name.is_empty()
+                        && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    {
+                        tables.insert(name.to_string());
+                    }
+                }
+            }
+        }
+
+        for entry in std::fs::read_dir(&seeds_dir).expect("read seeds dir") {
+            let path = match entry {
+                Ok(e) => e.path(),
+                Err(_) => continue,
+            };
+            if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                continue;
+            }
+            let content = match std::fs::read_to_string(&path) {
+                Ok(c) => c,
+                Err(_) => continue,
+            };
+            let v: serde_json::Value = match serde_json::from_str(&content) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let table = match v.get("table").and_then(|t| t.as_str()) {
+                Some(t) => t.to_string(),
+                None => continue,
+            };
+            assert!(
+                tables.contains(&table),
+                "Seed file '{}' targets table '{}' which is NOT created by any migration.",
+                path.file_name().unwrap().to_string_lossy(),
+                table,
+            );
+        }
+    }
+
     #[tokio::test]
     async fn test_force_drop() {
         let pool = setup().await;
