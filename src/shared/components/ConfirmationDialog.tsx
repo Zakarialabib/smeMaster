@@ -1,4 +1,5 @@
 import React, { useState, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -30,13 +31,14 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   variant = 'danger',
   onConfirm,
   onCancel,
   children,
 }) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -68,7 +70,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             disabled={isLoading}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
           >
-            {cancelText}
+            {cancelText ?? t('common.cancel')}
           </button>
           <button
             type="button"
@@ -76,7 +78,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             disabled={isLoading}
             className={`px-4 py-2 text-white rounded ${VARIANT_BUTTON[variant]} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading ? t('common.processing') : (confirmText ?? t('common.confirm'))}
           </button>
         </div>
       </div>

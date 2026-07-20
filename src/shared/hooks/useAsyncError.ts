@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AsyncError {
   message: string;
@@ -14,6 +15,7 @@ interface UseAsyncErrorReturn {
 }
 
 export const useAsyncError = (): UseAsyncErrorReturn => {
+  const { t } = useTranslation();
   const [error, setErrorState] = useState<AsyncError | null>(null);
 
   const setError = (error: AsyncError | null) => {
@@ -33,7 +35,7 @@ export const useAsyncError = (): UseAsyncErrorReturn => {
       return await operation();
     } catch (err) {
       const error: AsyncError = {
-        message: err instanceof Error ? err.message : 'An unknown error occurred',
+        message: err instanceof Error ? err.message : t('common.unknownError'),
         code: err instanceof Error ? err.name : 'UNKNOWN_ERROR',
         details: err
       };

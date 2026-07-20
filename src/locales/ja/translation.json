@@ -1836,6 +1836,8 @@
     "checking": "Checking...",
     "refresh": "Refresh",
     "reset": "リセット",
+    "processing": "Processing...",
+    "unknownError": "An unknown error occurred",
     "notAvailable": "Not available",
     "recentSearches": "Recent searches",
     "nResults": "{{n}} results",

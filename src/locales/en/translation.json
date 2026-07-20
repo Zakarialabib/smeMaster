@@ -1782,6 +1782,8 @@
     "checking": "Checking...",
     "refresh": "Refresh",
     "reset": "Reset",
+    "processing": "Processing...",
+    "unknownError": "An unknown error occurred",
     "notAvailable": "Not available",
     "recentSearches": "Recent searches",
     "nResults": "{{n}} results",

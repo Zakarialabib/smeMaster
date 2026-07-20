@@ -1836,6 +1836,8 @@
     "checking": "Verifica in corso...",
     "refresh": "Aggiorna",
     "reset": "Reimposta",
+    "processing": "Elaborazione...",
+    "unknownError": "Si è verificato un errore sconosciuto",
     "notAvailable": "Not available",
     "recentSearches": "Recent searches",
     "nResults": "{{n}} results",

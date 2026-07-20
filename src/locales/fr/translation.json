@@ -1788,6 +1788,8 @@
     "checking": "Checking...",
     "refresh": "Refresh",
     "reset": "Réinitialiser",
+    "processing": "Traitement...",
+    "unknownError": "Une erreur inconnue s'est produite",
     "notAvailable": "Indisponible",
     "recentSearches": "Recherches récentes",
     "nResults": "{{n}} résultats",
