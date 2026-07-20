@@ -1,13 +1,13 @@
-# SMEMaster Docs
+﻿# SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 34 migrations (verified) · **Tests:** 2,470+ TS + 900+ Rust (verified via `npm run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 831 `#[tauri::command]` (verified) · **Stores:** 43 Zustand (verified)
-> **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
-> **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
-> **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
+> **Version:** 1.0.0-rc Â· **DB:** 34 migrations (verified) Â· **Tests:** 2,470+ TS + 900+ Rust (verified via `npm run test` / `cargo test`)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) Â· **Commands:** 831 `#[tauri::command]` (verified) Â· **Stores:** 43 Zustand (verified)
+> **Features Added:** Invoicing (Morocco DGI-compliant) âœ… Â· POS Hardware Integration âœ…
+> **Platforms:** Desktop (Windows Â· Linux Â· macOS) âœ… Â· Mobile (Android) âœ… Â· iOS (requires Mac) âš ï¸
+> **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` â€” remaining work phases
 >
-> ⚠️ **Ground-truth note (2026-07-15):** Several historical docs quote stale metrics (773/652/704 commands, 60/56/22 migrations, 38/21 stores). The numbers above are grepped directly from source and are canonical. See `docs/STATUS.md → Verified Ground Truth` for the single reconciled table.
+> âš ï¸ **Ground-truth note (2026-07-15):** Several historical docs quote stale metrics (773/652/704 commands, 60/56/22 migrations, 38/21 stores). The numbers above are grepped directly from source and are canonical. See `docs/STATUS.md â†’ Verified Ground Truth` for the single reconciled table.
 
 ---
 
@@ -15,7 +15,7 @@
 
 **New here?** Start with [01-overview](01-ARCHITECTURE/01-overview.md) to understand the architecture, then [01-quickstart](05-DEVELOPMENT/01-quickstart.md) to get it running.
 
-**Adding a feature?** Read [05-reuse-patterns](05-DEVELOPMENT/05-reuse-patterns.md) first — it has the gotchas that'll save you hours.
+**Adding a feature?** Read [05-reuse-patterns](05-DEVELOPMENT/05-reuse-patterns.md) first â€” it has the gotchas that'll save you hours.
 
 **Working on UI?** The [DESIGN_SYSTEM_GUIDE](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) is the source of truth for tokens, components, and visual patterns.
 
@@ -35,7 +35,7 @@ How the system is built.
 
 | Doc                                                                   | Covers                                            |
 | --------------------------------------------------------------------- | ------------------------------------------------- |
-| [01-overview](01-ARCHITECTURE/01-overview.md)                         | Three-layer architecture: React → Service → Rust  |
+| [01-overview](01-ARCHITECTURE/01-overview.md)                         | Three-layer architecture: React â†’ Service â†’ Rust  |
 | [02-backend-structure](01-ARCHITECTURE/02-backend-structure.md)       | Rust module layout, DB commands, plugins          |
 | [03-data-model](01-ARCHITECTURE/03-data-model.md)                     | Schema ownership, domains, consolidation patterns |
 | [05-mobile-architecture](01-ARCHITECTURE/05-mobile-architecture.md)   | 80/20 code reuse, platform detection              |
@@ -43,7 +43,7 @@ How the system is built.
 
 ## Backend
 
-Rust & Tauri — the native layer.
+Rust & Tauri â€” the native layer.
 
 | Doc                                                          | Covers                                        |
 | ------------------------------------------------------------ | --------------------------------------------- |
@@ -72,9 +72,10 @@ React 19, TypeScript, Tailwind, Zustand.
 | [07-event-bus](03-FRONTEND/07-event-bus.md)                   | App events and frontend bus usage |
 | [08-ui-ux-roadmap](03-FRONTEND/08-ui-ux-roadmap.md)           | Desktop + Mobile UI/UX plan       |
 | [09-state-split](03-FRONTEND/09-state-split.md)               | UI store split                    |
-| [10-rtl-audit](03-FRONTEND/10-rtl-audit.md) ⚠️ **MISSING** | RTL layout readiness audit — NOT YET WRITTEN (475 physical-direction violations remain in `src`; see `docs/STATUS.md` gaps) |
-| [11-typed-ipc](03-FRONTEND/11-typed-ipc.md)                   | Frontend ↔ Rust command boundary  |
+| [10-rtl-audit](03-FRONTEND/10-rtl-audit.md) âš ï¸ **MISSING** | RTL layout readiness audit â€” NOT YET WRITTEN (475 physical-direction violations remain in `src`; see `docs/STATUS.md` gaps) |
+| [11-typed-ipc](03-FRONTEND/11-typed-ipc.md)                   | Frontend â†” Rust command boundary  |
 | [12-ui-super-app-spec](03-FRONTEND/12-ui-super-app-spec.md)   | UI reorganization & design spec   |
+| [15-shared-components](03-FRONTEND/15-shared-components.md) | Reusable UI primitives + stability hooks/utils |
 
 ## Features
 
@@ -117,12 +118,12 @@ What the app does, grouped by functional area.
 | Doc                                                            | Covers                                                        |
 | -------------------------------------------------------------- | ------------------------------------------------------------- |
 | [AI](04-FEATURES/22-ai-integration.md)                         | Providers and AI-powered helpers                              |
-| [AI RAG — Overview](04-FEATURES/ai-rag.md)                     | Local semantic search & RAG architecture                      |
-| [AI RAG — Backend](02-BACKEND/ai-rag.md)                       | Rust: candle, LanceDB, parser, indexer                        |
-| [AI RAG — Commands](02-BACKEND/ai-rag.md)                      | Tauri IPC command reference                                   |
-| [AI RAG — Frontend](03-FRONTEND/ai-rag.md)                     | TS wrappers, store, components, routing                       |
-| [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md)     | **All AI prompts** — email, inbox, CRM, RAG, task extraction  |
-| [Context Engineering](03-FRONTEND/ai-context-engineering.md)   | **Context construction** — data sourcing, truncation, quality |
+| [AI RAG â€” Overview](04-FEATURES/ai-rag.md)                     | Local semantic search & RAG architecture                      |
+| [AI RAG â€” Backend](02-BACKEND/ai-rag.md)                       | Rust: candle, LanceDB, parser, indexer                        |
+| [AI RAG â€” Commands](02-BACKEND/ai-rag.md)                      | Tauri IPC command reference                                   |
+| [AI RAG â€” Frontend](03-FRONTEND/ai-rag.md)                     | TS wrappers, store, components, routing                       |
+| [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md)     | **All AI prompts** â€” email, inbox, CRM, RAG, task extraction  |
+| [Context Engineering](03-FRONTEND/ai-context-engineering.md)   | **Context construction** â€” data sourcing, truncation, quality |
 | [Contact Intelligence](04-FEATURES/30-contact-intelligence.md) | Scoring and insight layer for contacts                        |
 | [Shortcuts](04-FEATURES/31-keyboard-shortcuts.md)              | Keyboard workflow                                             |
 | [i18n](04-FEATURES/32-i18n-localization.md)                    | Locales and RTL                                               |
@@ -146,9 +147,9 @@ What the app does, grouped by functional area.
 
 | Doc                                                           | Covers                                        |
 | ------------------------------------------------------------- | --------------------------------------------- |
-| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) ⚠️ **MISSING** | Full-screen setup wizard replacing modal tour — spec not written yet (see gaps) |
-| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ✅ written 2026-07-15 | Settings IA regroup (9 groups), Appearance promotion, navConfig drift fix, global/per-account matrix |
-| [Navigation & IA Spec](03-FRONTEND/14-navigation-ia-spec.md) ✅ written 2026-07-15 | Email-first rail order, orphaned Tasks/Calendar/Campaigns fix, Customer-360 cross-wiring |
+| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) âš ï¸ **MISSING** | Full-screen setup wizard replacing modal tour â€” spec not written yet (see gaps) |
+| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) âœ… written 2026-07-15 | Settings IA regroup (9 groups), Appearance promotion, navConfig drift fix, global/per-account matrix |
+| [Navigation & IA Spec](03-FRONTEND/14-navigation-ia-spec.md) âœ… written 2026-07-15 | Email-first rail order, orphaned Tasks/Calendar/Campaigns fix, Customer-360 cross-wiring |
 
 ## Superpowers
 
@@ -156,7 +157,7 @@ Deep-dive guides for complex subsystems.
 
 | Doc                                                           | Covers                                           |
 | ------------------------------------------------------------- | ------------------------------------------------ |
-| [Composer Architecture](superpowers/composer-architecture.md) | Full-stack composer: Rust plugin → React UI → AI |
+| [Composer Architecture](superpowers/composer-architecture.md) | Full-stack composer: Rust plugin â†’ React UI â†’ AI |
 
 ## Development
 
@@ -167,7 +168,7 @@ For contributors and AI agents.
 | [Quickstart](05-DEVELOPMENT/01-quickstart.md)                | Setup, commands, Mailtrap         |
 | [Testing](05-DEVELOPMENT/02-testing.md)                      | Vitest patterns, Rust tests       |
 | [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)        | Component/hook/service reuse      |
-| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)    | Daily PR → Release Please → Build |
+| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)    | Daily PR â†’ Release Please â†’ Build |
 | [Manual Tests](05-DEVELOPMENT/03-manual-tests.md)            | Panic, WAL, watchdog, dev verify  |
 | [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)        | Logcat, WebView, Kotlin           |
 | [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | Tokens, components, patterns      |
@@ -177,7 +178,7 @@ For contributors and AI agents.
 | Doc                                                | Covers                                                   |
 | -------------------------------------------------- | -------------------------------------------------------- |
 | [STATUS.md](STATUS.md)                             | What's shipped, what's next                              |
-| [Master Plan — v1.0](06-ROADMAP/09-master-plan.md) | **Single canonical roadmap** — all remaining work merged |
+| [Master Plan â€” v1.0](06-ROADMAP/09-master-plan.md) | **Single canonical roadmap** â€” all remaining work merged |
 
 ---
 
@@ -188,7 +189,7 @@ For shipping v1.0.0.
 | Doc                                                | Covers                                                      |
 | -------------------------------------------------- | ----------------------------------------------------------- |
 | [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) | **Single source of truth for all 9 production gates**       |
-| [Privacy Policy](privacy-policy.md)                | Legal — all data is local, no telemetry                     |
+| [Privacy Policy](privacy-policy.md)                | Legal â€” all data is local, no telemetry                     |
 | [Beta Test Plan](beta-testing/plan.md)             | Recruitment, schedule, exit criteria (NPS, install success) |
 | [Beta Test Scenarios](beta-testing/scenarios.md)   | 8 test scenarios for beta testers                           |
 | [Beta Test Feedback](beta-testing/feedback.md)     | Feedback form template                                      |
