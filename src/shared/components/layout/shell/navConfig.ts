@@ -19,6 +19,8 @@ import {
   HelpCircle,
   LayoutDashboard,
   Calculator,
+  ListChecks,
+  CalendarDays,
 } from "lucide-react";
 import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/navigate";
 import { router } from "@/router";
@@ -142,6 +144,24 @@ export const NAV_GROUPS: NavRailGroup[] = [
     ],
   },
   {
+    id: "tasks",
+    icon: ListChecks,
+    label: "nav.tasks",
+    items: [
+      { id: "today", label: "nav.tasksToday", icon: ListChecks, path: "/tasks" },
+      { id: "upcoming", label: "nav.tasksUpcoming", icon: CalendarDays, path: "/tasks?view=upcoming" },
+    ],
+  },
+  {
+    id: "calendar",
+    icon: CalendarDays,
+    label: "nav.calendar",
+    items: [
+      { id: "month", label: "nav.calendarMonth", icon: CalendarDays, path: "/calendar" },
+      { id: "agenda", label: "nav.calendarAgenda", icon: ListChecks, path: "/calendar?view=agenda" },
+    ],
+  },
+  {
     id: "automation",
     icon: GitBranch,
     label: "nav.automation",
@@ -175,6 +195,41 @@ export const NAV_GROUPS: NavRailGroup[] = [
   },
 ];
 
+// ─── Contextual Intelligence ──────────────────────────────────────────────────
+// Describes what the right "Insights" rail surfaces per top-level section.
+// The shell consumes this to render the right context-aware widgets, so every
+// page shows "what matters now" for its domain — the unified UX principle.
+export type InsightWidget = "ai-tasks" | "today" | "hot-leads" | "upcoming" | "recent" | "ai-summary";
+
+export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
+  unified: ["ai-tasks", "today", "hot-leads", "upcoming"],
+  mail: ["ai-tasks", "today", "hot-leads"],
+  crm: ["hot-leads", "ai-summary", "upcoming"],
+  tasks: ["today", "upcoming", "ai-tasks"],
+  calendar: ["upcoming", "today", "hot-leads"],
+  automation: ["ai-summary", "recent"],
+  vault: ["recent"],
+  "ai-assistant": ["ai-summary", "recent"],
+  dashboard: ["today", "upcoming", "hot-leads"],
+  settings: ["recent"],
+  help: ["recent"],
+};
+
+/** Default insight rail title per section. */
+export const INSIGHT_TITLE: Record<string, string> = {
+  unified: "Insights",
+  mail: "Today",
+  crm: "Relationships",
+  tasks: "My day",
+  calendar: "Upcoming",
+  automation: "Activity",
+  vault: "Recent",
+  "ai-assistant": "AI",
+  dashboard: "Overview",
+  settings: "Recent",
+  help: "Recent",
+};
+
 /** Backward-compatible NAV_ITEMS derived from groups. */
 export const NAV_ITEMS: NavRailItem[] = NAV_GROUPS.map((g) => ({
   id: g.id,
@@ -191,6 +246,8 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/smart-folder")) return "mail";
   if (pathname.startsWith("/people")) return "crm";
   if (pathname.startsWith("/crm")) return "crm";
+  if (pathname.startsWith("/tasks")) return "tasks";
+  if (pathname.startsWith("/calendar")) return "calendar";
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/workflows")) return "automation";
   if (pathname.startsWith("/vault")) return "vault";
@@ -257,6 +314,12 @@ export function handleNavSelect(id: string): void {
       break;
     case "help":
       navigateToHelp();
+      break;
+    case "calendar":
+      router.navigate({ to: "/calendar" });
+      break;
+    case "tasks":
+      router.navigate({ to: "/tasks" });
       break;
     case "automation":
       navigateToLabel("automation");
