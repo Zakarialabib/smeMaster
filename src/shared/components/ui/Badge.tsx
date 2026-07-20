@@ -1,7 +1,7 @@
 import { memo, type ReactNode } from "react";
-import { BADGE_BASE, BADGE_ACCENT, BADGE_SUCCESS, BADGE_WARNING, BADGE_DANGER } from "@shared/styles/ui-tokens";
+import { BADGE_BASE, BADGE_ACCENT, BADGE_SUCCESS, BADGE_WARNING, BADGE_DANGER, BADGE_AI } from "@shared/styles/ui-tokens";
 
-export type BadgeVariant = "default" | "success" | "warning" | "danger" | "info";
+export type BadgeVariant = "default" | "success" | "warning" | "danger" | "info" | "ai";
 export type BadgeSize = "sm" | "md";
 
 export interface BadgeProps {
@@ -17,6 +17,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   warning: BADGE_WARNING,
   danger: BADGE_DANGER,
   info: BADGE_ACCENT,
+  ai: BADGE_AI,
 };
 
 const sizeClasses: Record<BadgeSize, string> = {

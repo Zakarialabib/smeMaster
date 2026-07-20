@@ -82,6 +82,7 @@ export const TEXT_HINT = "text-xs text-text-tertiary";
 /* ─── Badge / tag pills ─── */
 export const BADGE_BASE = "inline-flex items-center px-2 py-0.5 text-[0.625rem] font-medium rounded-full";
 export const BADGE_ACCENT = "bg-accent/15 text-accent";
+export const BADGE_AI = "bg-ai/15 text-ai";
 export const BADGE_SUCCESS = "bg-success/15 text-success";
 export const BADGE_WARNING = "bg-warning/15 text-warning";
 export const BADGE_DANGER = "bg-danger/15 text-danger";
