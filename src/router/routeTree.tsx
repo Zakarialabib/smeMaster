@@ -405,6 +405,21 @@ export const mobileDashboardRoute = createRoute({
   component: MobileDashboardWrapper,
 });
 
+// ---------- /unified (Unified Inbox — SMEMaster) ----------
+const UnifiedInboxPage = lazy(() =>
+  import("@features/unified/UnifiedInbox").then((m) => ({
+    default: m.UnifiedInbox,
+  })),
+);
+
+const UnifiedInboxWrapper = createPageWrapper("UnifiedInbox", UnifiedInboxPage as LazyComponent);
+
+export const unifiedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "unified",
+  component: UnifiedInboxWrapper,
+});
+
 // ---------- /pos ----------
 const POSPageWrapper = createPageWrapper("POS", POSPage as LazyComponent);
 
@@ -474,6 +489,7 @@ export const routeTree = rootRoute.addChildren([
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,
+  unifiedRoute,
   crmRoute,
   posRoute,
   helpIndexRoute,

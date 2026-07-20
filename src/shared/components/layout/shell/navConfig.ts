@@ -98,6 +98,12 @@ function buildSettingsItems(): NavRailSubItem[] {
 
 export const NAV_GROUPS: NavRailGroup[] = [
   {
+    id: "unified",
+    icon: LayoutDashboard,
+    label: "nav.unified",
+    items: [],
+  },
+  {
     id: "dashboard",
     label: "nav.dashboard",
     icon: LayoutDashboard,
@@ -191,6 +197,7 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith("/settings")) return "settings";
   if (pathname.startsWith("/help")) return "help";
   if (pathname.startsWith("/attachments")) return "mail";
+  if (pathname.startsWith("/unified")) return "unified";
   if (pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/invoicing")) return "dashboard";
   if (pathname.startsWith("/erp")) return "dashboard";
@@ -263,6 +270,9 @@ export function handleNavSelect(id: string): void {
     case "crm":
     case "people":
       router.navigate({ to: "/people" });
+      break;
+    case "unified":
+      router.navigate({ to: "/unified" });
       break;
     case "dashboard":
       router.navigate({ to: "/dashboard" });
