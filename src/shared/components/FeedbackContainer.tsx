@@ -1,5 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useAsyncError } from './useAsyncError';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 
 interface Feedback {
   id: string;

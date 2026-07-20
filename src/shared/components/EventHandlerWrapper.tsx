@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, ReactNode } from 'react';
-import { uiBus } from '@shared/services/events/uiBus';
+import { uiBus, UiBusEventName } from '@shared/services/events/uiBus';
 
 interface EventHandlerProps {
-  event: string;
+  event: UiBusEventName;
   handler: (...args: any[]) => void;
   dependencies?: any[];
   children?: ReactNode;

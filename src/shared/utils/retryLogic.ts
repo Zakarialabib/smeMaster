@@ -28,7 +28,7 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
   const [isRetrying, setIsRetrying] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [lastError, setLastError] = useState<any>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const calculateDelay = (attempt: number): number => {
     const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);

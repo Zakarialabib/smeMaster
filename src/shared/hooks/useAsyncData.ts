@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions, QueryKey } from '@tanstack/react-query';
+import { useQuery, QueryKey } from '@tanstack/react-query';
 
 interface UseAsyncDataOptions<T, TQueryFnData = T, TError = Error> {
   queryKey: QueryKey;

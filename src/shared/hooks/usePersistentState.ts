@@ -43,7 +43,7 @@ export const usePersistentState = <T,>(
 
     try {
       const storedValue = storageInstance?.getItem(key);
-      if (storedValue !== null) {
+      if (storedValue != null) {
         return deserializer(storedValue) as T;
       }
     } catch (error) {
@@ -55,8 +55,8 @@ export const usePersistentState = <T,>(
 
   const setPersistentState = useCallback(
     (value: T | ((prev: T) => T)) => {
-      const newValue = typeof value === 'function' ? value(state) : value;
-      
+      const newValue = typeof value === 'function' ? (value as (prev: T) => T)(state) : value;
+
       try {
         if (storage === 'memory') {
           setState(newValue);
