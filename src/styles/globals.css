@@ -138,7 +138,35 @@
   --ui-row-height: 40px;
   --desktop-nav-item-height: 36px;
   --desktop-toolbar-height: 44px;
-  --desktop-statusbar-height: 28px;
+  /* ─── Condensed design system (Unified / Stitch-aligned) ───
+     Single radius + spacing scale so every surface reads as one product. */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  /* Condensed spacing scale (4px base, app-wide rhythm) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* Surface elevation — border-based depth, no heavy shadows */
+  --surface-1: var(--color-bg-secondary);
+  --surface-2: var(--color-bg-primary);
+  --elevation-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --elevation-md: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --elevation-lg: 0 4px 16px rgba(16, 24, 40, 0.08);
+
+  /* Contextual Intelligence rail (right "Insights" surface) */
+  --insight-bg: var(--color-bg-secondary);
+  --insight-border: var(--color-border-secondary);
+  --insight-radius: var(--radius-lg);
+
+  /* AI subtle surface already provided by --color-ai-subtle */
 }
 
 /* UI density overrides — must live OUTSIDE @theme (Tailwind v4: @theme only
@@ -159,6 +187,10 @@
   --color-bg-hover: #22262e;
   --color-bg-selected: rgba(99, 133, 243, 0.18);
   --color-bg-elevated: #1a1d23;
+
+  /* Contextual Intelligence rail — dark */
+  --insight-bg: #15171c;
+  --insight-border: #242932;
 
   --color-text-primary: #e6e1e5;
   --color-text-secondary: #c4c0c8;
