@@ -748,6 +748,28 @@ impl MlSidecarService {
             *self.stdin_writer.lock().await = Some(stdin);
         }
 
+        // Send init with app data dir — the sidecar needs this to know
+        // where to store models, vector DB, etc. This is a notification
+        // (no response expected for init itself).
+        if let Ok(dir) = self.handle.path().app_data_dir() {
+            let init_params = serde_json::json!({
+                "app_data_dir": dir.to_string_lossy()
+            });
+            // Use a fresh write (not send_request) since the pending map
+            // and reader task are both set up and ready.
+            if let Some(writer) = self.stdin_writer.lock().await.as_mut() {
+                let init_req = serde_json::json!({
+                    "jsonrpc": "2.0",
+                    "id": 0u64,
+                    "method": "init",
+                    "params": init_params,
+                });
+                let line = serde_json::to_string(&init_req).unwrap_or_default();
+                let _ = writer.write_all(format!("{line}\n").as_bytes()).await;
+                let _ = writer.flush().await;
+            }
+        }
+
         self.running.store(true, Ordering::Release);
         self.healthy.store(true, Ordering::Release);
 
