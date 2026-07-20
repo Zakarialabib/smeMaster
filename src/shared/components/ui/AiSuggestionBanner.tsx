@@ -43,9 +43,9 @@ export interface AiSuggestionBannerProps {
 }
 
 const variantClasses = {
-  default: "border-accent/30",
+  default: "border-ai/30",
   success: "border-success/30",
-  info: "border-accent/30",
+  info: "border-ai/30",
   warning: "border-warning/30",
 };
 
@@ -81,7 +81,7 @@ export function AiSuggestionBanner({
     <div
       className={cn(
         "relative overflow-hidden rounded-2xl border backdrop-blur-[var(--glass-blur,14px)]",
-        "bg-accent/[0.06] shadow-[0_1px_2px_rgba(16,24,40,0.06)]",
+        "bg-ai/[0.06] shadow-[0_1px_2px_rgba(16,24,40,0.06)]",
         "animate-in fade-in slide-in-from-top-2 duration-300",
         variantClasses[variant],
         className,
@@ -91,12 +91,12 @@ export function AiSuggestionBanner({
       aria-label={`${suggestion.title} suggestion from AI`}
     >
       {/* Soft accent glow (frosted) */}
-      <div className="pointer-events-none absolute -left-8 -top-10 h-28 w-28 rounded-full bg-accent/15 blur-2xl" />
+      <div className="pointer-events-none absolute -left-8 -top-10 h-28 w-28 rounded-full bg-ai/15 blur-2xl" />
 
       <div className="relative p-4">
         <div className="flex items-start gap-3">
           {/* AI Icon */}
-          <div className="shrink-0 grid place-items-center w-9 h-9 rounded-xl bg-accent/15 text-accent">
+          <div className="shrink-0 grid place-items-center w-9 h-9 rounded-xl bg-ai/15 text-ai">
             <Sparkles
               size={18}
               className={cn("transition-colors", animatedIcon && "animate-pulse")}
@@ -109,7 +109,7 @@ export function AiSuggestionBanner({
             <div className="flex items-center gap-2">
               <p className="font-semibold text-sm text-text-primary">{suggestion.title}</p>
               {suggestion.count ? (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-ai/15 text-ai">
                   {suggestion.count}
                 </span>
               ) : null}
@@ -136,7 +136,7 @@ export function AiSuggestionBanner({
           <ul className="mt-3 space-y-1.5">
             {items!.map((item) => (
               <li key={item.id} className="flex items-center gap-2 text-sm">
-                <CheckCircle2 size={15} className="text-accent shrink-0" aria-hidden="true" />
+                <CheckCircle2 size={15} className="text-ai shrink-0" aria-hidden="true" />
                 <span className="text-text-primary truncate">{item.title}</span>
                 {item.source && (
                   <span className="text-xs text-text-tertiary shrink-0 ml-auto truncate max-w-[40%]">
@@ -156,8 +156,8 @@ export function AiSuggestionBanner({
               className={cn(
                 "inline-flex items-center gap-1.5",
                 "px-3.5 py-1.5 text-xs font-semibold rounded-lg",
-                "bg-accent text-white hover:bg-accent-hover",
-                "transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1",
+                "bg-ai text-white hover:bg-ai-hover",
+                "transition-colors focus:outline-none focus:ring-2 focus:ring-ai focus:ring-offset-1",
               )}
               aria-label={`Review ${suggestion.title}`}
             >
