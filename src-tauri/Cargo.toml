@@ -66,6 +66,7 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["ring",
 native-tls = { version = "0.2", optional = true }
 tokio-native-tls = { version = "0.3", optional = true }
 tauri-plugin-persisted-scope = "2.3.7"
+tauri-plugin-shell = "2.2.1"
 tauri-plugin-biometric = "2.3.2"
 tauri-plugin-window-state = "2.4.1"
 tauri-plugin-clipboard-manager = "2.3.2"

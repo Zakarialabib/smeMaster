@@ -94,13 +94,16 @@ impl AppLifecycle {
         //    Gated behind `local-ai` so the core build never needs protoc.
         #[cfg(feature = "local-ai")]
         {
-            let ml_handle = app.handle().clone();
+            use crate::orchestrator::services::MlSidecarService;
+            let ml_service = Arc::new(MlSidecarService::new(app.handle().clone()));
+            // Manage as Tauri state so AI commands can access the sidecar IPC
+            app.manage(ml_service.clone());
             subsystem_registry.register_ondemand(
                 orchestrator::SubsystemEntry::new_ondemand(
                     "ml-sidecar",
                     Some("ai"),
                     Box::new(move || -> Arc<dyn orchestrator::Service> {
-                        Arc::new(crate::orchestrator::services::MlSidecarService::new(ml_handle.clone()))
+                        ml_service.clone()
                     }),
                 )
             );

@@ -3,6 +3,9 @@ node_modules/
 
 # Build outputs
 dist/
+
+# Tauri sidecar binaries (built by CI, platform-specific)
+binaries/
 build/
 test-buildroot/
 .flatpak-builder/
@@ -91,3 +94,24 @@ issues.md
 tmp/*
 verification/
 src-tauri/gen/android/app/*
+wireframes/_render.mjs
+wireframes/_render2.mjs
+wireframes/_render3.mjs
+wireframes/_renderx.mjs
+wireframes/001-unified-inbox.png
+wireframes/002-contact-context-360.png
+wireframes/003-task-canvas.png
+wireframes/004-automation-builder.png
+wireframes/005-unified-inbox-stitch.png
+wireframes/006-email-list-stitch.png
+wireframes/README.md
+wireframes/stitich generated unified inbox 2.png
+wireframes/stitich generated unified inbox.png
+wireframes/001-unified-inbox/index.html
+wireframes/002-contact-context-360/index.html
+wireframes/003-task-canvas/index.html
+wireframes/004-automation-builder/index.html
+wireframes/005-unified-inbox-stitch/index.html
+wireframes/006-email-list-stitch/index.html
+wireframes/themes/stitch-tokens.css
+wireframes/themes/tokens.css

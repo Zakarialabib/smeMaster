@@ -172,6 +172,7 @@ pub fn run() {
     // ── More core plugins + custom module plugins ─────────────────────
     builder = builder
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(background::init())
         .plugin(notifications::init())
         .plugin(composer::init());

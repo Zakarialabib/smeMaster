@@ -12,6 +12,10 @@ This is a Tauri v2 desktop app — so you need both Node.js and Rust installed. 
 - **Rust** 1.77.2+ (stable channel)
 - **Tauri v2 system deps** — check the [official prerequisites](https://v2.tauri.app/start/prerequisites/)
 - **Windows (GNU toolchain):** Make sure `C:\msys64\ucrt64\bin` is in your PATH. That's where `dlltool.exe` lives.
+- **protoc (only for full RAG/AI build):** The `lancedb` crate (on-device vector database) requires the Protocol Buffers compiler at build time. If you're building without the `local-ai` feature (see below), protoc is **not** needed.
+  - **Windows:** Download `protoc-<version>-win64.zip` from [protobuf releases](https://github.com/protocolbuffers/protobuf/releases), extract `bin/protoc.exe` to a directory in your `PATH`.
+  - **Linux:** `sudo apt install protobuf-compiler` (or `brew install protobuf` on macOS).
+  - **macOS:** `brew install protobuf`.
 
 ## Commands you'll actually use
 
@@ -41,6 +45,10 @@ npm run tauri build
 cargo build
 cargo test
 cargo check
+
+# Skip the local RAG/AI engine (no protoc needed)
+cargo build --no-default-features -F rustls-tls        # core app only
+cargo test --no-default-features -F rustls-tls         # tests without ML deps
 ```
 
 ## Demo / Mailtrap
@@ -65,6 +73,7 @@ Drop API keys in Settings for whatever provider you want:
 ## Building for Production
 
 ### Windows Desktop
+
 ```bash
 cd src-tauri
 cargo tauri build --bundles msi
@@ -72,6 +81,7 @@ cargo tauri build --bundles msi
 ```
 
 ### Android
+
 ```bash
 cd src-tauri
 cargo tauri android build --apk
@@ -79,7 +89,9 @@ cargo tauri android build --apk
 ```
 
 ### CI/CD
+
 Push a tag `v*` to trigger the release pipeline:
+
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
@@ -87,6 +99,6 @@ git push origin v0.1.0
 
 ## Source reconciliation (2026-07-19)
 
-| Claim (before) | Verified reality | Evidence |
-| --- | --- | --- |
+| Claim (before)                              | Verified reality                         | Evidence                             |
+| ------------------------------------------- | ---------------------------------------- | ------------------------------------ |
 | `npx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |
