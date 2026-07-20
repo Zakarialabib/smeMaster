@@ -1,0 +1,9 @@
+Generate a desktop "SMEMaster App Shell" screen showing the overall layout + navigation, in the Frosted Glass design language (accent blue #0B57D0, AI purple #9333EA, Inter, white surfaces, 12px radius, soft shadows, backdrop blur). The shell must demonstrate "Contextual Intelligence" — the app surfaces the right info per context.
+
+LAYOUT:
+- LEFT icon rail (narrow, ~64px): app logo, then nav icons Mail / People / Tasks / Calendar / Automation / Vault / AI / Settings. Active item (Mail) highlighted with a blue pill background.
+- A slim secondary sidebar (next to rail): contextual — for Mail it shows "Folders" (Inbox[3], Starred, Sent, Drafts) and below "Quick filters" (Unread, AI tasks, Today). For other sections this area changes (e.g. People → All/Leads/Customers).
+- TOP bar: page title left, a wide rounded global search center, and a primary "Compose" button right.
+- MAIN content: a list (emails or people) with the SAME Frosted Glass table/card grammar.
+- RIGHT "Intelligence" rail (~280px): titled "Insights" — shows a purple AI card ("AI Task Detection — 3 items, Review & convert") and below compact contextual widgets: "Today" (2 agenda items), "Hot leads" (2 contacts), "Upcoming" (2 events). This right rail is the "Contextual Intelligence" surface — it always shows what matters now for the current section.
+- Everything calm, condensed, premium; one blue accent + one purple AI accent. No garbled text.
