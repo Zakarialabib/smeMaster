@@ -1,4 +1,5 @@
 export { AiSuggestionBanner, type AiSuggestion, type AiSuggestionBannerProps } from "./AiSuggestionBanner";
+export { Avatar, type AvatarProps } from "./Avatar";
 export { Badge, type BadgeProps, type BadgeVariant, type BadgeSize } from "./Badge";
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
 export { CardTabBar, type CardTabItem, type CardTabBarProps } from "./CardTabBar";
