@@ -1289,6 +1289,7 @@ mod tests {
             is_starred: false,
             is_important: false,
             has_attachments: false,
+            from_address: None,
         };
         let _ = format!("{:?}", thread);
     }

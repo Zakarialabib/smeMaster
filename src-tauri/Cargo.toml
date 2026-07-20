@@ -77,17 +77,20 @@ ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 dashmap = "6.1"
 automerge = "0.6"
 mdns-sd = "0.11"
-rig-core = { version = "0.3.0", default-features = false }
-lancedb = { version = "0.6", default-features = false }
-arrow = "51"
-candle-core = "0.8.1"
-candle-nn = "0.8.1"
-candle-transformers = "0.8.1"
-hf-hub = "0.4"
 lopdf = "0.34"
-docx-rs = "0.4"
-calamine = "0.26"
-tokenizers = "0.21"
+
+# ── local-ai (optional ML/RAG deps) ──────────────────────────────────────
+# Gated behind the "local-ai" feature so `cargo build` works without protoc.
+lancedb = { version = "0.6", default-features = false, optional = true }
+arrow = { version = "51", optional = true }
+candle-core = { version = "0.8.1", optional = true }
+candle-nn = { version = "0.8.1", optional = true }
+candle-transformers = { version = "0.8.1", optional = true }
+hf-hub = { version = "0.4", optional = true }
+tokenizers = { version = "0.21", optional = true }
+calamine = { version = "0.26", optional = true }
+docx-rs = { version = "0.4", optional = true }
+
 ring = "0.17.14"
 rust_decimal = { version = "1", features = ["macros"] }
 
@@ -108,15 +111,15 @@ devtools = ["tauri/devtools"]
 # ── local-ai ───────────────────────────────────────────────────────────────
 # Enables the on-device RAG / local LLM inference sidecar (candle + BGE-small
 # embedding engine, LanceDB vector store, HF Hub model downloads, document
-# parsers). It is ON by default so existing behaviour is preserved.
+# parsers). ON by default so existing behaviour is preserved.
 #
-# The heavy ML dependencies (rig-core, lancedb, arrow, candle-*, hf-hub,
-# tokenizers, calamine, docx-rs, lopdf) are only *initialised* on explicit
-# user action — `AiState` no longer constructs `LocalEngine` at app startup
-# (see src-tauri/src/commands/ai.rs). Turning this feature OFF is intended for
-# builds that ship without the local RAG engine; the AI Tauri commands remain
-# registered either way, but the model-loading path becomes a no-op stub.
-# (Full `#[cfg(feature = "local-ai")]` gating of the ML modules is a follow-up
-# that keeps the feature ON-compatible and is intentionally not done here to
-# avoid removing functionality when the feature is enabled.)
-local-ai = []
+# Turning this feature OFF builds only the core app — no protoc required.
+# AI Tauri commands remain registered, but the model-loading path becomes
+# a no-op stub via `#[cfg(not(feature = "local-ai"))]` stubs in commands/ai.rs.
+#
+# NOTE: `lopdf` stays unconditional — it is also used by invoicing/pdf.rs.
+local-ai = [
+  "dep:lancedb", "dep:arrow",
+  "dep:candle-core", "dep:candle-nn", "dep:candle-transformers",
+  "dep:hf-hub", "dep:tokenizers", "dep:calamine", "dep:docx-rs",
+]

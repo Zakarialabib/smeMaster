@@ -3,6 +3,7 @@
 // or from other modules. If any false positive appears, add #[allow(dead_code)]
 // locally, not here.
 
+#[cfg(feature = "local-ai")]
 mod ai;
 mod background;
 mod calendar;
@@ -207,14 +208,22 @@ pub fn run() {
         // ── Record app start time as early as possible for accurate uptime
         crate::commands::db::set_app_start_time();
 
-        // ── Reactive data layer: register + spawn SQLite change tracker ──
+        // ── Database pool – created synchronously (fast, <50ms). ─────
+        // Migration runs in background (non‑blocking) to avoid ANR.
+        // Moved early because change_tracker::spawn_tracker needs the pool.
+        let app_data_dir = app.path().app_data_dir()
+            .map_err(|e| format!("Cannot get app data dir: {e}"))?;
+        let pool = tauri::async_runtime::block_on(
+            db::create_pool(app_data_dir)
+        ).map_err(|e| format!("Failed to create DB pool: {e}"))?;
+
+        // ── Register + spawn SQLite change tracker ──
         // The tracker polls `PRAGMA data_version` and emits per-table
         // `db:change` events so the frontend's `useLiveQuery` stays reactive
         // without any native SQLite hooks.
-        let app_handle = app.handle().clone();
-        db::change_tracker::register(app_handle.clone());
+        db::change_tracker::register(app.handle().clone());
         db::change_tracker::spawn_tracker(
-            &app_handle,
+            app.handle(),
             pool.clone(),
             app.state::<events::EventBus>().inner().clone(),
         );
@@ -335,16 +344,6 @@ pub fn run() {
             let _ = window.show();
         }
 
-        // ═════════════════════════════════════════════════════════════
-        // Database pool – created synchronously (fast, <50ms).
-        // Migration runs in background (non‑blocking) to avoid ANR.
-        // ═════════════════════════════════════════════════════════════
-        let app_data_dir = app.path().app_data_dir()
-            .map_err(|e| format!("Cannot get app data dir: {e}"))?;
-        let pool = tauri::async_runtime::block_on(
-            db::create_pool(app_data_dir)
-        ).map_err(|e| format!("Failed to create DB pool: {e}"))?;
-
         // ── Note: The FFI change-tracker update_hook is installed on every
         //    new connection inside `db::create_pool` via
         //    `SqlitePoolOptions::after_connect(...)`. No additional wiring
@@ -433,11 +432,9 @@ pub fn run() {
         app.manage(sentinel.clone());
 
         // ── AI State (fully lazy / sidecar) ──────────────────────────
-        // Neither the LocalEngine (candle + BGE-small) nor the LanceDB vector
-        // store is created here. `AiState::new` is panic-free; the engine is
-        // built on the first `ai_load_embedding_model` call and the vector DB
-        // is opened on the first RAG/index request. App startup never touches
-        // the heavy ML deps.
+        // Guarded behind `local-ai` feature — the module and its types
+        // do not exist when the feature is off.
+        #[cfg(feature = "local-ai")]
         app.manage(crate::commands::ai::AiState::new(app.handle().clone()));
 
         // Bridge: EventBus → WebView `core-event`

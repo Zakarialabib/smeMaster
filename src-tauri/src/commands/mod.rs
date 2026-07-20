@@ -1,3 +1,4 @@
+#[cfg(feature = "local-ai")]
 pub mod ai;
 pub mod accounting;
 pub mod account_import;
@@ -226,26 +227,46 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::vault::ops::db_delete_vault_items_by_account,
             crate::vault::ops::db_count_vault_items,
 
-            // === commands::ai (9 commands) ===
+            // === commands::ai (20 commands, all gated behind local-ai) ===
+            #[cfg(feature = "local-ai")]
             ai::ai_download_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_load_embedding_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_index_emails,
+            #[cfg(feature = "local-ai")]
             ai::ai_query_rag,
+            #[cfg(feature = "local-ai")]
             ai::ai_search_by_vector,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_models_dir,
+            #[cfg(feature = "local-ai")]
             ai::ai_delete_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_vector_db_path,
+            #[cfg(feature = "local-ai")]
             ai::ai_reset_vector_db,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_email_chunks,
+            #[cfg(feature = "local-ai")]
             ai::ai_insert_provider_vectors,
+            #[cfg(feature = "local-ai")]
             ai::db_get_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_set_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_cache_by_thread,
+            #[cfg(feature = "local-ai")]
             ai::db_get_ai_config_by_type,
+            #[cfg(feature = "local-ai")]
             ai::db_upsert_ai_config,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_config,
+            #[cfg(feature = "local-ai")]
             ai::db_list_ai_configs,
+            #[cfg(feature = "local-ai")]
             ai::db_upsert_ai_cache,
 
             // === commands::calendar (15 commands) ===

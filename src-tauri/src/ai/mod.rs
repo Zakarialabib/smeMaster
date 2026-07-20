@@ -1,3 +1,5 @@
+#![cfg(feature = "local-ai")]
+
 pub mod models;
 pub mod local_engine;
 pub mod vector_db;

@@ -25,10 +25,11 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 use sqlx::SqlitePool;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 
 use crate::events::{AppEvent, EventBus};
 
+/// Macro: produce a `&[(&str, &str)]` — (table_name, COUNT query) — where
 /// Tables we track for row-count diffing. Keep this small — these are the
 /// tables the UI subscribes to via `useLiveQuery`.
 const TRACKED_TABLES: &[&str] = &[
@@ -73,19 +74,46 @@ async fn read_data_version(pool: &SqlitePool) -> Result<i64, sqlx::Error> {
         .await
 }
 
-/// Build a row-count snapshot for all tracked tables in a single transaction.
+/// Build a row-count snapshot for all tracked tables.
+///
+/// Each table gets its own inline string literal to satisfy sqlx 0.9.x's
+/// compile-time query checking (it rejects runtime `&str` references).
 async fn snapshot_counts(pool: &SqlitePool) -> Result<CountSnapshot, sqlx::Error> {
+    use sqlx::Row;
     let mut snap = CountSnapshot::with_capacity(TRACKED_TABLES.len());
-    for table in TRACKED_TABLES {
-        // Guard against tables that may not exist yet (pre-migration).
-        let count: i64 = sqlx::query_scalar(&format!(
-            "SELECT COUNT(*) FROM \"{table}\""
-        ))
-        .fetch_optional(pool)
-        .await?
-        .unwrap_or(0);
-        snap.insert((*table).to_string(), count);
+
+    macro_rules! count_table {
+        ($table:ident) => {{
+            let row = sqlx::query(concat!(
+                "SELECT COUNT(*) AS cnt FROM \"", stringify!($table), "\""
+            ))
+            .fetch_optional(pool)
+            .await?;
+            let count: i64 = row.as_ref().map(|r| r.get("cnt")).unwrap_or(0);
+            snap.insert(stringify!($table).to_string(), count);
+        }};
     }
+
+    count_table!(threads);
+    count_table!(messages);
+    count_table!(labels);
+    count_table!(accounts);
+    count_table!(contacts);
+    count_table!(contact_groups);
+    count_table!(contact_tags);
+    count_table!(tasks);
+    count_table!(task_tags);
+    count_table!(campaigns);
+    count_table!(campaign_recipients);
+    count_table!(calendars);
+    count_table!(calendar_events);
+    count_table!(signatures);
+    count_table!(templates);
+    count_table!(vault_items);
+    count_table!(deliverability_configs);
+    count_table!(workflow_rules);
+    count_table!(follow_up_reminders);
+
     Ok(snap)
 }
 
