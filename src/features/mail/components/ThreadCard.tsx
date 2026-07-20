@@ -9,6 +9,7 @@ import { Paperclip, Star, Check, Pin, BellRing, VolumeX, Archive, Trash2, Mail, 
 import type { DragData } from "@features/mail/components/dnd/DndProvider";
 import { LongPressMenu, type MenuAction } from "@shared/components/ui/LongPressMenu";
 import { HoverPreview } from "@shared/components/ui/HoverPreview";
+import { Avatar } from "@shared/components/ui/Avatar";
 import { useColumnConfigStore } from "@shared/stores/columnConfigStore";
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
@@ -159,12 +160,6 @@ export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick
   const showAttachments = visibleColumns.has("attachments");
   const showDate = visibleColumns.has("date");
 
-  const initial = (
-    thread.fromName?.[0] ??
-    thread.fromAddress?.[0] ??
-    "?"
-  ).toUpperCase();
-
   return (
     <>
     <HoverPreview
@@ -215,15 +210,19 @@ export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick
       <div className="flex items-start gap-3">
         {/* Avatar (sender column) */}
         {showSender && (
-          <div
-            className={`rounded-full flex items-center justify-center shrink-0 font-medium text-white ${
+          isMultiSelected ? (
+            <div className={`rounded-full grid place-items-center shrink-0 text-white bg-gradient-to-br from-accent to-accent-active ring-1 ring-white/60 shadow-[0_1px_2px_rgba(16,24,40,0.12)] ${
               emailDensity === "compact" ? "w-7 h-7 text-xs" : emailDensity === "spacious" ? "w-10 h-10 text-sm" : "w-9 h-9 text-sm"
-            } ${
-              isMultiSelected ? "bg-accent" : thread.isRead ? "bg-text-tertiary" : "bg-accent"
-            }`}
-          >
-            {isMultiSelected ? <Check size={emailDensity === "compact" ? 14 : 16} /> : initial}
-          </div>
+            }`}>
+              <Check size={emailDensity === "compact" ? 14 : 16} />
+            </div>
+          ) : (
+            <Avatar
+              name={thread.fromName ?? thread.fromAddress}
+              size={emailDensity === "compact" ? "sm" : emailDensity === "spacious" ? "lg" : "md"}
+              muted={thread.isRead}
+            />
+          )
         )}
 
         {/* Content */}

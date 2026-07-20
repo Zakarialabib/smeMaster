@@ -1273,10 +1273,15 @@ export function EmailList({
             suggestion={{
               id: "tasks-extract-001",
               title: "AI Task Detection",
-              description: "3 action items detected in your recent emails",
+              description: "We spotted action items in your recent emails — review and turn them into tasks in one tap.",
               count: 3,
               type: "task",
             }}
+            items={[
+              { id: "t1", title: "Send Q3 proposal draft", source: "from John Davis" },
+              { id: "t2", title: "Book demo with Best Foods", source: "from Mike Brown" },
+              { id: "t3", title: "Renew DGI VAT receipt", source: "from Automation alert" },
+            ]}
             onReview={() => {
               const targetThreadId = selectedThreadId ?? filteredThreads[0]?.id;
               if (targetThreadId) setShowTaskExtract(true);

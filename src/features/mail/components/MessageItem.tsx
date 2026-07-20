@@ -10,6 +10,7 @@ import type { DbAttachment } from "@shared/services/db/attachments";
 import { MailMinus } from "lucide-react";
 import { AuthBadge } from "./AuthBadge";
 import { AuthWarningBanner } from "./AuthWarningBanner";
+import { Avatar } from "@shared/components/ui/Avatar";
 import { isPgpMessage, extractPgpCiphertext } from "@shared/services/pgp/pgpService";
 
 interface MessageItemProps {
@@ -103,9 +104,7 @@ return (
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-accent/20 text-accent flex items-center justify-center shrink-0 text-xs font-medium">
-              {fromDisplay[0]?.toUpperCase()}
-            </div>
+            <Avatar name={fromDisplay} size="sm" className="mt-0.5" />
             <div className="min-w-0">
               <span className="text-sm font-medium text-text-primary truncate flex items-center gap-1">
                 {fromDisplay}
