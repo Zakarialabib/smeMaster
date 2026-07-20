@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SMEMaster - Unified Inbox</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: "#0B57D0",
+                            dark: "#8AB4F8",
+                            container: "#E8F0FE",
+                            onContainer: "#041E49"
+                        },
+                        surface: {
+                            DEFAULT: "#F8F9FA",
+                            variant: "#E3E3E3"
+                        },
+                        on: {
+                            surface: "#1F1F1F",
+                            surfaceVariant: "#444746"
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+                        'sm-glass': '0 2px 10px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F0F4F8; /* Light grayish-blue for frosted glass contrast */
+            /* Adding a subtle gradient background to enhance the glassmorphism effect */
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Custom scrollbar for panes */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="w-[64px] h-screen fixed left-0 top-0 border-r border-white/20 dark:border-white/10 shadow-sm flex flex-col items-center py-4 gap-6 bg-white/70 backdrop-blur-xl z-50">
+<!-- Logo -->
+<div class="mb-4">
+<span class="material-symbols-outlined font-display font-bold text-brand-light text-3xl" data-icon="hub">hub</span>
+</div>
+<!-- Main Tabs -->
+<div class="flex flex-col gap-2 w-full px-2">
+<!-- Active Tab: Inbox -->
+<button class="w-12 h-12 flex items-center justify-center text-brand-light bg-brand-light/10 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Inbox">
+<span class="material-symbols-outlined" data-icon="inbox" style="font-variation-settings: 'FILL' 1;">inbox</span>
+<!-- Tooltip -->
+<span class="absolute left-14 bg-on-surface text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Inbox</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Mail">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="People">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Calendar">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Tasks">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Automation">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Campaigns">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+</button>
+</div>
+<div class="mt-auto flex flex-col gap-2 w-full px-2">
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Settings">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center text-on-surfaceVariant hover:bg-black/5 rounded-xl group relative active:scale-95 transition-transform duration-200" title="Help">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<!-- User Avatar -->
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden mt-2 mx-auto cursor-pointer border border-white/50">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Professional headshot of a business assistant user in a clean, modern corporate setting, bright lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzR4kpACGZzw386BgF_qIWzePRsS56OmvNYKJB-KptWAX4iLtinZVUjgp0GQteLHE75nenWFw_zkfs4ceyLrzcLOUX7dAb_uKGm1ccbxRyz9Exjp4YCPMB8alHe-FeZBW7Y4pucsItjR59TmUUu_ewZW5SxiLmT_wIjrzp1i2Z4UnXucmbY8a6N-SXXafV0Bgr_gdAzLpq9V3miixLKfnDz_KBzy57N9by4sTFl9DpRa-F3b2PPqoOJO0wkRE2tO_vq5qYq_Cn4yTZ"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Area (Offset by SideNav) -->
+<div class="flex-1 ml-[64px] flex flex-col h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="h-16 flex items-center justify-between px-6 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm z-40 shrink-0">
+<!-- Search Bar -->
+<div class="flex-1 max-w-2xl flex items-center focus-within:ring-2 focus-within:ring-brand-light rounded-2xl bg-black/5 px-4 py-2 transition-all">
+<span class="material-symbols-outlined text-on-surfaceVariant mr-3" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none outline-none text-sm text-on-surface placeholder:text-on-surfaceVariant/60 focus:ring-0" placeholder="Search everything… (from: to: has:att)" type="text"/>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-6 ml-6">
+<!-- Sync Status -->
+<div class="flex items-center gap-2 text-xs font-medium text-on-surfaceVariant">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Synced
+                    <span class="material-symbols-outlined text-[18px] ml-1 text-on-surfaceVariant" data-icon="sync">sync</span>
+</div>
+<!-- CTA -->
+<button class="bg-brand-light text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm-glass flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                    Quick Add
+                </button>
+</div>
+</header>
+<!-- 3-Pane Layout -->
+<main class="flex-1 flex overflow-hidden p-2 gap-2">
+<!-- LEFT PANE: Feed (~300px) -->
+<aside class="w-[320px] shrink-0 flex flex-col glass-panel rounded-2xl overflow-hidden shadow-sm-glass">
+<!-- Segmented Control -->
+<div class="p-3 border-b border-white/30 shrink-0">
+<div class="flex bg-black/5 rounded-lg p-1">
+<button class="flex-1 py-1.5 text-xs font-medium bg-white shadow-sm rounded-md text-brand-light">All</button>
+<button class="flex-1 py-1.5 text-xs font-medium text-on-surfaceVariant hover:bg-black/5 rounded-md transition-colors">Mail</button>
+<button class="flex-1 py-1.5 text-xs font-medium text-on-surfaceVariant hover:bg-black/5 rounded-md transition-colors">Tasks</button>
+<button class="flex-1 py-1.5 text-xs font-medium text-on-surfaceVariant hover:bg-black/5 rounded-md transition-colors relative">
+                            Alerts
+                            <span class="absolute top-1.5 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+</button>
+</div>
+</div>
+<!-- Feed List -->
+<div class="flex-1 overflow-y-auto p-2 space-y-1">
+<!-- Selected Item (Email/Task hybrid) -->
+<div class="p-3 bg-brand-light/10 border border-brand-light/20 rounded-xl cursor-pointer group relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-light rounded-l-xl"></div>
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-brand-light/20 flex items-center justify-center shrink-0 text-brand-light">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail" style="font-variation-settings: 'FILL' 1;">mail</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="text-xs font-semibold text-brand-light">John Davis</span>
+<span class="text-[10px] text-brand-light/70 font-medium">10:42 AM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface truncate mb-1">Q3 proposal due Fri</h4>
+<div class="flex items-center gap-2 text-[11px] text-on-surfaceVariant/80">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-red-500" data-icon="flag">flag</span> High Priority</span>
+<span>•</span>
+<span>Email Thread</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Task Item -->
+<div class="p-3 hover:bg-white/50 border border-transparent rounded-xl cursor-pointer transition-colors group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 text-orange-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="task_alt">task_alt</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="text-xs font-medium text-on-surfaceVariant">System CRM</span>
+<span class="text-[10px] text-on-surfaceVariant/60">Yesterday</span>
+</div>
+<h4 class="text-sm font-semibold text-on-surface truncate mb-1">Update client billing details</h4>
+<div class="flex items-center gap-2 text-[11px] text-on-surfaceVariant/80">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span> Overdue</span>
+<span>•</span>
+<span>Task</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Alert Item -->
+<div class="p-3 hover:bg-white/50 border border-transparent rounded-xl cursor-pointer transition-colors group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications_active">notifications_active</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="text-xs font-medium text-on-surfaceVariant">Automation</span>
+<span class="text-[10px] text-on-surfaceVariant/60">Tuesday</span>
+</div>
+<h4 class="text-sm font-semibold text-on-surface truncate mb-1">Invoice sync failed (Stripe)</h4>
+<div class="flex items-center gap-2 text-[11px] text-on-surfaceVariant/80">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="error">error</span> Action Required</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Email Item -->
+<div class="p-3 hover:bg-white/50 border border-transparent rounded-xl cursor-pointer transition-colors group">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0 text-blue-500">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="text-xs font-medium text-on-surfaceVariant">Sarah Jenkins</span>
+<span class="text-[10px] text-on-surfaceVariant/60">Monday</span>
+</div>
+<h4 class="text-sm font-semibold text-on-surface truncate mb-1">Following up on the Q2 report</h4>
+<div class="flex items-center gap-2 text-[11px] text-on-surfaceVariant/80">
+<span>Email Thread</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- MIDDLE PANE: Context/Threads (~360px) -->
+<section class="w-[380px] shrink-0 flex flex-col gap-2">
+<!-- AI Insight Card -->
+<div class="glass-panel rounded-2xl p-4 shadow-sm-glass border-l-4 border-l-purple-500 relative overflow-hidden">
+<!-- Decorative background element for AI feel -->
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-3 mb-3 relative z-10">
+<div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 text-purple-600 shadow-inner">
+<span class="material-symbols-outlined text-[18px]" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">AI Task Detection</h3>
+<p class="text-xs text-on-surfaceVariant mt-0.5">3 action items detected in recent emails</p>
+</div>
+</div>
+<ul class="space-y-2 mb-4 relative z-10">
+<li class="flex items-start gap-2 text-sm bg-white/50 p-2 rounded-lg border border-white/60">
+<input class="mt-1 rounded text-purple-600 focus:ring-purple-500 border-gray-300 bg-white/50" type="checkbox"/>
+<div>
+<span class="text-on-surface font-medium block">Send Q3 proposal draft</span>
+<span class="text-[10px] text-on-surfaceVariant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[12px]" data-icon="mail">mail</span> from John Davis
+                                </span>
+</div>
+</li>
+<li class="flex items-start gap-2 text-sm bg-white/50 p-2 rounded-lg border border-white/60">
+<input class="mt-1 rounded text-purple-600 focus:ring-purple-500 border-gray-300 bg-white/50" type="checkbox"/>
+<div>
+<span class="text-on-surface font-medium block">Schedule sync meeting</span>
+<span class="text-[10px] text-on-surfaceVariant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[12px]" data-icon="mail">mail</span> from Sarah Jenkins
+                                </span>
+</div>
+</li>
+</ul>
+<button class="w-full bg-brand-light text-white text-xs font-medium py-2 rounded-xl hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-1 relative z-10">
+                        Review &amp; convert to tasks
+                        <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Threads List -->
+<div class="glass-panel rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm-glass">
+<!-- Tabs -->
+<div class="flex border-b border-white/40 px-2 pt-2 gap-4">
+<button class="px-3 py-2 text-sm font-semibold text-brand-light border-b-2 border-brand-light">Threads</button>
+<button class="px-3 py-2 text-sm font-medium text-on-surfaceVariant hover:text-on-surface transition-colors">Today</button>
+<button class="px-3 py-2 text-sm font-medium text-on-surfaceVariant hover:text-on-surface transition-colors">Starred</button>
+</div>
+<div class="flex-1 overflow-y-auto p-2 space-y-1">
+<!-- Thread Item 1 (Selected) -->
+<div class="p-3 bg-white/80 rounded-xl shadow-sm border border-brand-light/20 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-brand-light flex items-center justify-center text-white text-xs font-bold shadow-inner">J</div>
+<span class="text-sm font-bold text-on-surface">John Davis</span>
+</div>
+<span class="text-xs text-brand-light font-medium">10:42 AM</span>
+</div>
+<p class="text-xs text-on-surfaceVariant line-clamp-2 mt-1">Hey team, just a reminder that the Q3 proposal is due this Friday. I need everyone to review their sections before EOD Thursday so I can compile it.</p>
+<div class="mt-2 flex gap-1">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700">
+<span class="material-symbols-outlined text-[10px]" data-icon="sell">sell</span> High Priority
+                                </span>
+</div>
+</div>
+<!-- Thread Item 2 -->
+<div class="p-3 hover:bg-white/50 rounded-xl border border-transparent cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-inner">S</div>
+<span class="text-sm font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<span class="text-xs text-on-surfaceVariant">Yesterday</span>
+</div>
+<p class="text-xs text-on-surfaceVariant line-clamp-2 mt-1">Following up on the Q2 report numbers. There seems to be a discrepancy in the marketing spend column. Can we schedule a brief sync?</p>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT PANE: Reader -->
+<article class="flex-1 glass-panel rounded-2xl flex flex-col overflow-hidden shadow-sm-glass border border-white/60 relative">
+<!-- Reader Header -->
+<header class="h-14 border-b border-white/40 flex items-center justify-between px-6 bg-white/40 shrink-0">
+<div class="flex items-center gap-3">
+<h2 class="text-sm font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-brand-light text-[20px]" data-icon="all_inbox">all_inbox</span>
+                            Unified Inbox
+                        </h2>
+<span class="bg-brand-light text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">3 New</span>
+</div>
+<button class="flex items-center gap-1 text-xs font-medium text-on-surfaceVariant hover:text-brand-light transition-colors p-1.5 rounded-lg hover:bg-black/5">
+<span class="material-symbols-outlined text-[16px]" data-icon="tune">tune</span>
+                        Configure
+                    </button>
+</header>
+<!-- Reader Content Area -->
+<div class="flex-1 overflow-y-auto flex flex-col bg-white/70">
+<!-- Email Header Meta -->
+<div class="p-8 pb-4">
+<div class="flex items-start justify-between mb-6">
+<h1 class="text-2xl font-headline font-bold text-on-surface leading-tight">John — Q3 proposal due Fri</h1>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surfaceVariant transition-colors" title="Star">
+<span class="material-symbols-outlined text-[20px]" data-icon="star">star</span>
+</button>
+<button class="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surfaceVariant transition-colors" title="More">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between border-b border-black/5 pb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-brand-light flex items-center justify-center text-white text-lg font-bold shadow-sm">J</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-semibold text-sm text-on-surface">John Davis</span>
+<span class="text-xs text-on-surfaceVariant">&lt;jdavis@company.com&gt;</span>
+</div>
+<div class="text-xs text-on-surfaceVariant mt-0.5">To: Me, Design Team</div>
+</div>
+</div>
+<div class="text-xs text-on-surfaceVariant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span>
+                                Oct 24, 10:42 AM (2 hours ago)
+                            </div>
+</div>
+</div>
+<!-- Email Body -->
+<div class="px-8 py-4 text-sm text-on-surface leading-relaxed flex-1">
+<p class="mb-4">Hey team,</p>
+<p class="mb-4">Just a reminder that the Q3 proposal is due this Friday. I need everyone to review their sections before EOD Thursday so I can compile it and do a final pass on Friday morning.</p>
+<div class="bg-yellow-50/80 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4 text-yellow-900 shadow-sm">
+<strong>Action Required:</strong> Please ensure all asset links in section 3 are updated to the new shared drive location.
+                        </div>
+<p class="mb-4">Let me know if anyone is blocked on this.</p>
+<p>Best,<br/>John</p>
+</div>
+<!-- Reader Footer / Quick Actions -->
+<div class="p-6 bg-surface-variant/30 border-t border-black/5 mt-auto shrink-0 flex gap-3">
+<button class="px-5 py-2.5 bg-brand-light text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="reply">reply</span>
+                            Reply
+                        </button>
+<button class="px-4 py-2.5 bg-white text-on-surface text-sm font-medium rounded-xl hover:bg-black/5 border border-black/10 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_right_alt">arrow_right_alt</span>
+                            Task
+                        </button>
+<button class="px-4 py-2.5 bg-white text-on-surface text-sm font-medium rounded-xl hover:bg-black/5 border border-black/10 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="person">person</span>
+                            Contact
+                        </button>
+<button class="px-4 py-2.5 bg-white text-on-surface text-sm font-medium rounded-xl hover:bg-black/5 border border-black/10 transition-colors shadow-sm flex items-center gap-2 ml-auto">
+<span class="material-symbols-outlined text-[18px]" data-icon="snooze">snooze</span>
+                            Snooze
+                        </button>
+</div>
+</div>
+</article>
+</main>
+</div>
+</body></html>

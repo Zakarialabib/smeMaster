@@ -1,0 +1,10 @@
+Generate a desktop email client screen for the "SMEMaster" app, using the SAME unified shell and philosophy as a polished modern inbox (like the app's existing Unified Inbox reference):
+
+LAYOUT (left to right):
+1. A slim 72px icon rail on the far left with a rounded square logo at top, then vertical app icons (Mail active/highlighted, then a few others dimmed), and a settings gear at the bottom.
+2. A 240px contextual sidebar showing mail folders: Inbox (active, with a small count badge "3"), Starred, Snoozed, Sent, Drafts, Trash, Spam, then a divider, then All Mail, Attachments, Labels.
+3. The main content area:
+   - Top bar: page title "Mail" on the left, a wide rounded search field in the center showing "Search…  from:  to:  has:att", and a solid blue "Compose" button on the right.
+   - A tab row: Date (active, blue underline) · Priority · Attachments.
+   - An AI callout card at the very top of the list (the signature element): soft purple/lavender frosted background, a sparkle icon, title "AI Task Detection" with a small "3" pill, description "We spotted action items in your recent emails — review and turn them into tasks in one tap.", then three detected items each with a check icon and a muted source on the right ("Send Q3 proposal draft — from John Davis", "Book demo with Best Foods — from Mike Brown", "Renew DGI VAT receipt — from Automation alert"), and a purple "Review & convert to tasks →" button aligned right.
+   - Below it, three email list rows. Each row: a circular gradient avatar with initials (JD blue, MB green, AA purple), sender name (bold for unread), subject line, a short preview snippet, a colored category tag (Updates / Primary / Promotions), and a timestamp on the right (09:42 / 08:15 / Yesterday). Keep generous spacing, white surfaces, subtle 1px borders, 12px rounded cards, calm Inter typography, accent blue #0B57D0, AI purple #9333EA. Make it look like a premium, unified, condensed SaaS email client.

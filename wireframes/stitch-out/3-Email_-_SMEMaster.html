@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="h-full antialiased bg-gray-50 text-slate-900" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SMEMaster - Mail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: "#0B57D0",
+                            dark: "#8AB4F8",
+                        },
+                        surface: {
+                            DEFAULT: "#ffffff",
+                            variant: "#f3f4f6",
+                        },
+                        ai: {
+                            light: "#9333EA",
+                            bg: "#F3E8FF"
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="h-full flex overflow-hidden selection:bg-brand-light/20 selection:text-brand-light">
+<!-- JSON SideNavBar -->
+<nav class="w-[64px] h-screen fixed left-0 top-0 border-r border-white/20 dark:border-white/10 shadow-sm bg-surface/70 backdrop-blur-xl flex flex-col items-center py-4 gap-6 z-50">
+<!-- Brand Logo -->
+<div class="font-display font-bold text-[#0B57D0] dark:text-[#8AB4F8] shrink-0 mb-2">
+<div class="w-10 h-10 bg-brand-light/10 rounded-xl flex items-center justify-center text-brand-light text-xl">S</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex-1 flex flex-col items-center w-full gap-2 px-2 font-body text-label-sm font-medium">
+<button aria-label="Inbox" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">inbox</span>
+</button>
+<!-- Active Tab: Mail -->
+<button aria-label="Mail" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-[#0B57D0] dark:text-[#8AB4F8] bg-white/30 dark:bg-black/20 rounded-xl transition-colors active:scale-95 transition-transform duration-200 group">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">mail</span>
+</button>
+<button aria-label="People" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">group</span>
+</button>
+<button aria-label="Calendar" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">calendar_month</span>
+</button>
+<button aria-label="Tasks" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">task_alt</span>
+</button>
+<button aria-label="Automation" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">smart_toy</span>
+</button>
+<button aria-label="Campaigns" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">campaign</span>
+</button>
+</div>
+<!-- Footer Tabs -->
+<div class="flex flex-col items-center w-full gap-2 px-2 mt-auto">
+<button aria-label="Settings" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-300">settings</span>
+</button>
+<button aria-label="Help" class="w-full aspect-square flex flex-col items-center justify-center gap-1 text-on-surface-variant/70 dark:text-on-surface-variant/50 hover:bg-white/20 dark:hover:bg-black/10 transition-colors active:scale-95 transition-transform duration-200 rounded-xl group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">help</span>
+</button>
+</div>
+</nav>
+<!-- Contextual Sidebar (Folders) -->
+<aside class="w-[240px] h-screen ml-[64px] bg-white border-r border-slate-200 flex flex-col pt-4 z-40 relative">
+<div class="px-4 mb-4">
+<h2 class="text-sm font-semibold text-slate-800 px-3 tracking-tight">Mailboxes</h2>
+</div>
+<nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium bg-brand-light/10 text-brand-light rounded-lg" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">inbox</span>
+                    Inbox
+                </div>
+<span class="bg-brand-light text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-amber-400 transition-colors">star</span>
+                    Starred
+                </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">schedule</span>
+                    Snoozed
+                </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">send</span>
+                    Sent
+                </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">draft</span>
+                    Drafts
+                </div>
+</a>
+<div class="h-px bg-slate-200 my-3 mx-2"></div>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">all_inbox</span>
+                    All Mail
+                </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">attachment</span>
+                    Attachments
+                </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600 transition-colors">label</span>
+                    Labels
+                </div>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen min-w-0 bg-slate-50/50 relative">
+<!-- JSON TopNavBar -->
+<header class="docked full-width top-0 h-16 border-b border-white/20 dark:border-white/10 shadow-sm bg-surface/70 backdrop-blur-xl flex items-center justify-between px-6 z-30 sticky">
+<div class="flex items-center gap-4">
+<h1 class="font-display text-headline-sm font-bold text-slate-900 tracking-tight">Mail</h1>
+</div>
+<!-- Search Bar (Center/Leftish) -->
+<div class="flex-1 max-w-2xl px-6 relative group">
+<div class="absolute inset-y-0 left-9 flex items-center pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full bg-slate-100/80 hover:bg-slate-200/50 focus:bg-white text-sm rounded-full py-2.5 pl-11 pr-4 border-transparent focus:border-brand-light focus:ring-2 focus:ring-brand-light/20 transition-all placeholder:text-slate-500 shadow-sm text-slate-800" placeholder="Search… from: to: has:att" type="text"/>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-3">
+<button aria-label="Sync" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors focus:ring-2 focus:ring-[#0B57D0]">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="bg-brand-light hover:bg-brand-light/90 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm shadow-brand-light/20 transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                    Compose
+                </button>
+</div>
+</header>
+<!-- Scrollable Mail Content -->
+<div class="flex-1 overflow-y-auto p-6 lg:px-10 max-w-5xl mx-auto w-full flex flex-col gap-6">
+<!-- Filters / Tab Row -->
+<div class="flex items-center gap-6 border-b border-slate-200 px-1">
+<button class="pb-3 text-sm font-medium text-brand-light border-b-2 border-brand-light">Date</button>
+<button class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors border-b-2 border-transparent hover:border-slate-300">Priority</button>
+<button class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors border-b-2 border-transparent hover:border-slate-300">Attachments</button>
+</div>
+<!-- AI Task Detection Card -->
+<div class="bg-ai-bg/60 backdrop-blur-md border border-ai-light/20 rounded-xl p-5 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-ai-light/10 flex items-center justify-center text-ai-light">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">temp_preferences_custom</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 text-sm">AI Task Detection</h3>
+<span class="bg-ai-light text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none flex items-center justify-center h-4">3</span>
+</div>
+<p class="text-xs text-slate-600 mt-0.5">We spotted action items in your recent emails — review and turn them into tasks in one tap.</p>
+</div>
+</div>
+<button class="text-xs font-medium text-ai-light bg-white hover:bg-ai-light/5 px-3 py-1.5 rounded-md border border-ai-light/20 transition-colors shadow-sm flex items-center gap-1 group">
+                        Review &amp; convert to tasks
+                        <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+<ul class="space-y-2.5">
+<li class="flex items-start gap-3 bg-white/60 p-2.5 rounded-lg border border-white">
+<span class="material-symbols-outlined text-[18px] text-ai-light mt-0.5">check_circle</span>
+<div class="flex-1">
+<p class="text-sm text-slate-800 font-medium leading-tight">Send Q3 proposal draft</p>
+<p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">person</span> from John Davis
+                            </p>
+</div>
+</li>
+<li class="flex items-start gap-3 bg-white/60 p-2.5 rounded-lg border border-white">
+<span class="material-symbols-outlined text-[18px] text-ai-light mt-0.5">check_circle</span>
+<div class="flex-1">
+<p class="text-sm text-slate-800 font-medium leading-tight">Book demo with Best Foods</p>
+<p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">person</span> from Mike Brown
+                            </p>
+</div>
+</li>
+<li class="flex items-start gap-3 bg-white/60 p-2.5 rounded-lg border border-white">
+<span class="material-symbols-outlined text-[18px] text-ai-light mt-0.5">check_circle</span>
+<div class="flex-1">
+<p class="text-sm text-slate-800 font-medium leading-tight">Renew DGI VAT receipt</p>
+<p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">smart_toy</span> from Automation alert
+                            </p>
+</div>
+</li>
+</ul>
+</div>
+<!-- Email List -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+<!-- Row 1 -->
+<div class="flex items-start gap-4 p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-light rounded-r-full"></div>
+<div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 border border-blue-200">
+                        JD
+                    </div>
+<div class="flex-1 min-w-0 pt-0.5">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-slate-900 text-sm truncate pr-2">John Davis</span>
+<span class="text-xs font-medium text-brand-light whitespace-nowrap">09:42</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<h4 class="font-semibold text-slate-800 text-sm truncate">Q3 Proposal Draft</h4>
+<span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded font-medium border border-slate-200">Primary</span>
+</div>
+<p class="text-sm text-slate-500 truncate">Hey team, attached is the first pass at the Q3 proposal. Please review the budget section specifically before our call tomorrow.</p>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="flex items-start gap-4 p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200">
+                        MB
+                    </div>
+<div class="flex-1 min-w-0 pt-0.5">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-slate-700 text-sm truncate pr-2">Mike Brown</span>
+<span class="text-xs text-slate-500 whitespace-nowrap">08:15</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<h4 class="font-medium text-slate-700 text-sm truncate">Demo Booking</h4>
+<span class="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded font-medium border border-indigo-100">Updates</span>
+</div>
+<p class="text-sm text-slate-500 truncate">I'd like to schedule a demo for Best Foods next week. What times are you available on Tuesday or Wednesday afternoon?</p>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm shrink-0 border border-purple-200">
+                        AA
+                    </div>
+<div class="flex-1 min-w-0 pt-0.5">
+<div class="flex items-center justify-between mb-1">
+<span class="font-medium text-slate-700 text-sm truncate pr-2 flex items-center gap-1">Automation <span class="material-symbols-outlined text-[14px] text-slate-400">smart_toy</span></span>
+<span class="text-xs text-slate-500 whitespace-nowrap">Yesterday</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<h4 class="font-medium text-slate-700 text-sm truncate">VAT Receipt</h4>
+<span class="bg-orange-50 text-orange-600 text-[10px] px-2 py-0.5 rounded font-medium border border-orange-100">Promotions</span>
+</div>
+<p class="text-sm text-slate-500 truncate">Your automated receipt for the DGI renewal has been processed. A copy has been filed in your accounting folder.</p>
+</div>
+</div>
+</div>
+<div class="h-8"></div> <!-- Bottom spacer -->
+</div>
+</main>
+</body></html>

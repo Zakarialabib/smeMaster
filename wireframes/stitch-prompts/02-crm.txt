@@ -1,0 +1,10 @@
+Generate a desktop "CRM — unified people & relationships" screen for the "SMEMaster" app, following the EXACT SAME unified shell and philosophy as the app's email inbox (same icon rail, same sidebar style, same AI callout placement, same gradient-avatar list/card rows). This is the CRM counterpart of the unified inbox.
+
+LAYOUT (left to right):
+1. Slim 72px icon rail (far left): rounded square logo at top, vertical app icons with CRM active/highlighted and others dimmed, settings gear at bottom. Same as the inbox rail.
+2. 240px contextual sidebar: "CRM" section with All contacts (active, count "128"), Leads ("14"), Customers ("64"); a divider; then Deals ("9"), Segments, Imports. Same visual treatment as the inbox folders.
+3. Main content area:
+   - Top bar: title "CRM" on the left, the same wide rounded search field ("Search…  from:  to:  has:att"), and a solid blue "New contact" button on the right.
+   - A tab row: Contacts (active, blue underline) · Deals · Activity.
+   - An AI callout card at the top (same signature style as the inbox): soft purple/lavender frosted background, sparkle icon, title "AI found 2 hot leads" with a "2" pill, description "These contacts show buying intent — start a conversation now.", then two detected items with check icons and sources ("Sarah Douiri — opened 3 proposals", "Youssef Karam — replied to quote"), and a purple "Create deals →" button aligned right.
+   - Below it, a contacts grid/list: three contact rows (or cards) each with a circular gradient avatar and initials (SD blue, YK green, LM orange), the contact name (bold), a secondary line with role · company (e.g. "Lead · Best Foods"), and a small status tag (Hot / Won / Cold). Include hover-style action icons on the right (email, deal, more). Keep white surfaces, subtle 1px borders, 12px rounded cards, calm Inter typography, accent blue #0B57D0, AI purple #9333EA. It must feel like the SAME product family as the email inbox — unified, condensed, premium.
