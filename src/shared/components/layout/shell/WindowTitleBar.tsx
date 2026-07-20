@@ -8,6 +8,7 @@ import { usePlatform } from "@shared/hooks/usePlatform";
 import { useFocusModeStore } from "@shared/stores/focusModeStore";
 import { useThemeStore } from "@shared/theme/themeStore";
 import type { ThemeMode } from "@shared/theme/themeStore";
+import { uiBus } from "@shared/services/events/uiBus";
 import { changeLanguage, LOCALE_NAMES, LOCALE_DIRS, SUPPORTED_LOCALES } from "../../../../locales";
 import type { SupportedLocale } from "../../../../locales";
 import { COLOR_THEMES } from "@/constants/themes";
@@ -261,7 +262,7 @@ export function WindowTitleBar({
   const handleClose = useCallback(() => { try { getCurrentWindow().close(); } catch {} }, []);
 
   const handleToggleShortcuts = useCallback(() => {
-    window.dispatchEvent(new CustomEvent("smemaster-toggle-shortcuts-help"));
+    uiBus.emit("toggle:shortcuts-help");
   }, []);
 
   const handleToggleFocusMode = useCallback(() => { toggleFocusMode(); }, [toggleFocusMode]);

@@ -163,7 +163,7 @@ describe("executeQuickStep", () => {
   });
 
   it("dispatches event for reply action and does not remove from view", async () => {
-    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+    const emitSpy = vi.spyOn(uiBus, "emit");
 
     const step = createMockQuickStep({
       actions: [{ type: "reply" }],
@@ -172,15 +172,10 @@ describe("executeQuickStep", () => {
     const result = await executeQuickStep(step, ["t1"], "acct-1");
 
     expect(result.success).toBe(true);
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "smemaster-inline-reply",
-        detail: { threadId: "t1", accountId: "acct-1", mode: "reply" },
-      }),
-    );
+    expect(emitSpy).toHaveBeenCalledWith("inline-reply", { mode: "reply" });
     expect(useThreadStore.getState().removeThreads).not.toHaveBeenCalled();
 
-    dispatchSpy.mockRestore();
+    emitSpy.mockRestore();
   });
 
   it("executes pin and unpin actions", async () => {

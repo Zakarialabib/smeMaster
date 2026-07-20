@@ -47,6 +47,7 @@ import { ConflictResolutionPanel } from "@features/sync/components/ConflictResol
 import { useConflictStore } from "@features/sync/stores/conflictStore";
 import { SyncProgressIndicator } from "@features/sync/components/SyncProgressIndicator";
 import { GitCompareArrows } from "lucide-react";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Sync bridge: subscribes to router state changes and writes the selected
@@ -367,21 +368,20 @@ export default function App() {
     const togglePalette = () => setShowCommandPalette((p) => !p);
     const toggleHelp = () => setShowShortcutsHelp((p) => !p);
     const toggleAskInbox = () => setShowAskInbox((p) => !p);
-    const handleMoveToFolder = (e: Event) => {
-      const detail = (e as CustomEvent<{ threadIds: string[] }>).detail;
+    const handleMoveToFolder = (detail: { threadIds: string[] }) => {
       setMoveToFolderState({ open: true, threadIds: detail.threadIds });
     };
     const toggleDemo = () => setShowTemplateDemo((p) => !p);
     window.addEventListener("smemaster-toggle-command-palette", togglePalette);
     window.addEventListener("smemaster-toggle-shortcuts-help", toggleHelp);
     window.addEventListener("smemaster-toggle-ask-inbox", toggleAskInbox);
-    window.addEventListener("smemaster-move-to-folder", handleMoveToFolder);
+    uiBus.on("move-to-folder", handleMoveToFolder);
     window.addEventListener("smemaster-toggle-template-demo", toggleDemo);
     return () => {
       window.removeEventListener("smemaster-toggle-command-palette", togglePalette);
       window.removeEventListener("smemaster-toggle-shortcuts-help", toggleHelp);
       window.removeEventListener("smemaster-toggle-ask-inbox", toggleAskInbox);
-      window.removeEventListener("smemaster-move-to-folder", handleMoveToFolder);
+      uiBus.off("move-to-folder", handleMoveToFolder);
       window.removeEventListener("smemaster-toggle-template-demo", toggleDemo);
     };
   }, []);

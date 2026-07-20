@@ -532,7 +532,7 @@ function ThreadMenu({
       icon: FolderInput,
       shortcut: "v",
       action: () => {
-        window.dispatchEvent(new CustomEvent("smemaster-move-to-folder", { detail: { threadIds: [...targetIds] } }));
+        uiBus.emit("move-to-folder", { threadIds: [...targetIds] });
       },
     },
     {
@@ -713,11 +713,7 @@ function MessageMenu({
             label: "View Source",
             icon: Code,
             action: () => {
-              window.dispatchEvent(
-                new CustomEvent("smemaster-view-raw-message", {
-                  detail: { messageId, accountId },
-                }),
-              );
+              uiBus.emit("view-raw-message", { messageId });
             },
           },
         ]

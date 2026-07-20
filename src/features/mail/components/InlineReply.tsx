@@ -16,6 +16,7 @@ import { useAutoDraft } from "@features/mail/hooks/useAutoDraft";
 import { useUndoSend } from "@features/mail/hooks/useUndoSend";
 import type { DbMessage } from "@shared/services/db/messages";
 import type { Thread } from "@features/mail/stores/threadStore";
+import { uiBus } from "@shared/services/events/uiBus";
 
 type ReplyMode = "reply" | "replyAll" | "forward";
 
@@ -120,14 +121,13 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
 
   // Listen for inline reply events from keyboard shortcuts
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { mode: ReplyMode } | undefined;
+    const handler = (detail: { mode: ReplyMode }) => {
       if (detail?.mode) {
         activateMode(detail.mode);
       }
     };
-    window.addEventListener("smemaster-inline-reply", handler);
-    return () => window.removeEventListener("smemaster-inline-reply", handler);
+    uiBus.on("inline-reply", handler);
+    return () => uiBus.off("inline-reply", handler);
   }, [activateMode]);
 
   // Scroll into view when activated

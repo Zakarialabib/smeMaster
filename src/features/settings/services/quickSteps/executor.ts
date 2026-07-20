@@ -100,27 +100,15 @@ async function executeSingleAction(
       break;
 
     case "reply":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "reply" },
-        }),
-      );
+      uiBus.emit("inline-reply", { mode: "reply" });
       break;
 
     case "replyAll":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "replyAll" },
-        }),
-      );
+      uiBus.emit("inline-reply", { mode: "replyAll" });
       break;
 
     case "forward":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "forward" },
-        }),
-      );
+      uiBus.emit("inline-reply", { mode: "forward" });
       break;
 
     case "snooze":

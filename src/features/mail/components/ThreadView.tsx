@@ -27,6 +27,7 @@ import { RawMessageModal } from "./RawMessageModal";
 import { SwipeToDelete } from "@shared/components/ui/SwipeToDelete";
 import { usePlatform } from "@shared/hooks/usePlatform";
 import { useTranslation } from "react-i18next";
+import { uiBus } from "@shared/services/events/uiBus";
 
 interface ThreadViewProps {
   thread: Thread;
@@ -322,15 +323,11 @@ export function ThreadView({ thread }: ThreadViewProps) {
 
   // Listen for "View Source" event from context menu
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as {
-        messageId: string;
-        accountId: string;
-      };
+    const handler = (detail: { messageId: string; accountId?: string }) => {
       setRawMessageTarget(detail);
     };
-    window.addEventListener("smemaster-view-raw-message", handler);
-    return () => window.removeEventListener("smemaster-view-raw-message", handler);
+    uiBus.on("view-raw-message", handler);
+    return () => uiBus.off("view-raw-message", handler);
   }, []);
 
   // Listen for extract-task event from keyboard shortcut

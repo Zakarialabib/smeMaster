@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { X, Mail, Undo2 } from "lucide-react";
+import { uiBus } from "@shared/services/events/uiBus";
 
 interface PushNotification {
   title: string;
@@ -103,10 +104,6 @@ export function emitUndoableToast(
     const { emit } = require("@tauri-apps/api/event");
     emit("notification:received", { title, body, thread_id: undefined, undoLabel, onUndo });
   } catch {
-    window.dispatchEvent(
-      new CustomEvent("smemaster-toast", {
-        detail: { title, body, undoLabel },
-      }),
-    );
+    uiBus.emit("toast:show", { message: title });
   }
 }
