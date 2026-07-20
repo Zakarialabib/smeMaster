@@ -542,7 +542,7 @@ impl Service for WorkflowExecutorService {
 }
 
 // ── MlSidecarService ─────────────────────────────────────────────────────────
-/// Manages the ML sidecar subprocess lifecycle.
+/// Manages the ML sidecar subprocess lifecycle with proper JSON-RPC IPC.
 ///
 /// Architecture:
 ///   main app (MlSidecarService)
@@ -552,6 +552,13 @@ impl Service for WorkflowExecutorService {
 ///     │  JSON-RPC 2.0 over stdin/stdout
 ///     ▼
 ///   candle / lancedb / hf-hub / tokenizers / docx-rs / calamine
+///
+/// IPC design:
+///   Each request gets a unique ID (AtomicU64). `send_request()` writes to
+///   stdin, stores a oneshot::Sender in a DashMap keyed by ID, and awaits
+///   the receiver. A background reader task parses JSON-RPC responses from
+///   stdout, matches them by ID, and completes the corresponding oneshot.
+///   This gives synchronous-style await semantics for every RPC call.
 ///
 /// Benefits:
 ///   • **Build isolation** — ML deps (require protoc) live ONLY in the sidecar.
@@ -573,7 +580,10 @@ pub struct MlSidecarService {
     stdin_writer: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandStdin>>,
     running: std::sync::atomic::AtomicBool,
     healthy: std::sync::atomic::AtomicBool,
-    last_pong: tokio::sync::Mutex<Option<std::time::Instant>>,
+    /// Maps JSON-RPC request IDs to oneshot senders for response matching.
+    pending: Arc<dashmap::DashMap<u64, tokio::sync::oneshot::Sender<anyhow::Result<serde_json::Value>>>>,
+    /// Monotonically increasing request ID counter.
+    next_id: std::sync::atomic::AtomicU64,
 }
 
 #[cfg(feature = "local-ai")]
@@ -585,7 +595,8 @@ impl MlSidecarService {
             stdin_writer: tokio::sync::Mutex::new(None),
             running: std::sync::atomic::AtomicBool::new(false),
             healthy: std::sync::atomic::AtomicBool::new(false),
-            last_pong: tokio::sync::Mutex::new(None),
+            pending: Arc::new(dashmap::DashMap::new()),
+            next_id: std::sync::atomic::AtomicU64::new(1),
         }
     }
 
@@ -600,28 +611,61 @@ impl MlSidecarService {
     }
 
     /// Send a JSON-RPC request to the sidecar and await the response.
+    ///
+    /// Uses a unique request ID + oneshot channel for synchronous-style IPC.
+    /// The background reader task matches the response by ID and completes
+    /// the oneshot. Timeout is 30 seconds for normal requests.
     pub async fn send_request(&self, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let mut writer_guard = self.stdin_writer.lock().await;
         let writer = writer_guard.as_mut()
             .ok_or_else(|| anyhow::anyhow!("Sidecar not running"))?;
 
+        let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::AcqRel);
+        let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<serde_json::Value>>();
+
+        // Register the pending response before writing — no race possible
+        self.pending.insert(id, tx);
+
         let request = serde_json::json!({
             "jsonrpc": "2.0",
-            "id": 1,
+            "id": id,
             "method": method,
             "params": params,
         });
 
         let line = serde_json::to_string(&request)?;
         writer.write_all(format!("{line}\n").as_bytes()).await
-            .map_err(|e| anyhow::anyhow!("Failed to write to sidecar stdin: {e}"))?;
+            .map_err(|e| {
+                self.pending.remove(&id);
+                anyhow::anyhow!("Failed to write to sidecar stdin: {e}")
+            })?;
 
-        // Response is read asynchronously via the event receiver.
-        // The caller must use the sidecar event channel for the actual response.
-        // For synchronous-style calls, we use a oneshot channel pattern.
-        Ok(serde_json::json!({ "status": "request_sent" }))
+        // Flush to ensure the sidecar receives it immediately
+        writer.flush().await.map_err(|e| {
+            self.pending.remove(&id);
+            anyhow::anyhow!("Failed to flush sidecar stdin: {e}")
+        })?;
+
+        // Await the response with a 30-second timeout
+        match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
+            Ok(Ok(result)) => {
+                self.healthy.store(true, Ordering::Release);
+                Ok(result)
+            }
+            Ok(Err(e)) => {
+                self.healthy.store(false, Ordering::Release);
+                Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
+            }
+            Err(_elapsed) => {
+                self.pending.remove(&id);
+                self.healthy.store(false, Ordering::Release);
+                Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
+            }
+        }
     }
 
+    /// Spawn the sidecar process and start the reader task.
+    /// Returns Ok(()) on success, Err if binary is missing or spawn fails.
     async fn spawn_sidecar(&self) -> anyhow::Result<()> {
         let sidecar = self.handle.shell()
             .sidecar("ml-sidecar")
@@ -632,10 +676,12 @@ impl MlSidecarService {
 
         *self.child.lock().await = Some(child.clone());
 
-        // Read stdout for JSON-RPC responses (spawn a reader task)
+        // ── Shared state for the reader task ──────────────────────────
+        let pending = self.pending.clone();
         let healthy_flag = self.healthy.clone();
         let running_flag = self.running.clone();
         let handle_clone = self.handle.clone();
+        let restart_fn = self.make_restart_fn();
 
         tauri::async_runtime::spawn(async move {
             use tauri_plugin_shell::process::CommandEvent;
@@ -644,10 +690,26 @@ impl MlSidecarService {
                     CommandEvent::Stdout(line) => {
                         let text = String::from_utf8_lossy(&line);
                         let trimmed = text.trim();
-                        if trimmed == "pong" {
-                            healthy_flag.store(true, Ordering::Release);
+                        if trimmed.is_empty() {
+                            continue;
                         }
-                        log::trace!("[ml-sidecar] stdout: {trimmed}");
+                        // Parse JSON-RPC response
+                        if let Ok(resp) = serde_json::from_str::<serde_json::Value>(trimmed) {
+                            if let Some(resp_id) = resp.get("id").and_then(|v| v.as_u64()) {
+                                // Match response to pending request
+                                if let Some((_, tx)) = pending.remove(&resp_id) {
+                                    if let Some(err) = resp.get("error") {
+                                        let _ = tx.send(Err(anyhow::anyhow!(
+                                            "{}", err.get("message").and_then(|m| m.as_str()).unwrap_or("unknown error")
+                                        )));
+                                    } else {
+                                        let result = resp.get("result").cloned().unwrap_or(serde_json::Value::Null);
+                                        let _ = tx.send(Ok(result));
+                                    }
+                                    healthy_flag.store(true, Ordering::Release);
+                                }
+                            }
+                        }
                     }
                     CommandEvent::Stderr(line) => {
                         let text = String::from_utf8_lossy(&line);
@@ -658,6 +720,16 @@ impl MlSidecarService {
                             payload.code, payload.signal);
                         running_flag.store(false, Ordering::Release);
                         healthy_flag.store(false, Ordering::Release);
+                        // Drain all pending requests with error
+                        for item in pending.iter() {
+                            let (_, tx) = item.pair();
+                            let _ = tx.send(Err(anyhow::anyhow!("Sidecar terminated unexpectedly")));
+                        }
+                        pending.clear();
+                        // Watchdog: auto-restart after 2 seconds
+                        log::info!("[ml-sidecar] Watchdog: restarting in 2s...");
+                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                        restart_fn().await;
                         break;
                     }
                     CommandEvent::Error(err) => {
@@ -669,12 +741,6 @@ impl MlSidecarService {
                     _ => {}
                 }
             }
-            // Auto-restart watchdog: if the sidecar crashed, restart after 2s
-            if running_flag.load(Ordering::Acquire) == false {
-                log::info!("[ml-sidecar] Watchdog: scheduling restart in 2s...");
-                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                // Re-spawn is handled externally via health_check returning Degraded
-            }
         });
 
         // Store stdin writer for IPC
@@ -682,19 +748,51 @@ impl MlSidecarService {
             *self.stdin_writer.lock().await = Some(stdin);
         }
 
-        // Send init with app data dir
-        if let Ok(dir) = self.handle.path().app_data_dir() {
-            let init_params = serde_json::json!({
-                "app_data_dir": dir.to_string_lossy()
-            });
-            let _ = self.send_request("init", init_params).await;
-        }
-
         self.running.store(true, Ordering::Release);
         self.healthy.store(true, Ordering::Release);
 
         log::info!("[ml-sidecar] Process spawned successfully");
         Ok(())
+    }
+
+    /// Create a restart closure that can be called from the reader task.
+    /// The reader task owns the `child` handle so it can't call spawn_sidecar
+    /// directly (which also needs child). Instead, use the AppHandle to
+    /// get MlSidecarService from state and call restart on it.
+    fn make_restart_fn(&self) -> Box<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send> {
+        let handle = self.handle.clone();
+        Box::new(move || {
+            let h = handle.clone();
+            Box::pin(async move {
+                if let Some(svc) = h.try_state::<Arc<MlSidecarService>>() {
+                    log::info!("[ml-sidecar] Watchdog: executing restart...");
+                    if let Err(e) = svc.restart().await {
+                        log::error!("[ml-sidecar] Watchdog restart failed: {e}");
+                    } else {
+                        log::info!("[ml-sidecar] Watchdog: restart successful");
+                    }
+                }
+            })
+        })
+    }
+
+    /// Gracefully kill the current sidecar and spawn a new one.
+    async fn restart(&self) -> anyhow::Result<()> {
+        // Send graceful shutdown (best-effort)
+        if self.running.load(Ordering::Acquire) {
+            let _ = self.send_request("shutdown", serde_json::json!({})).await;
+        }
+
+        // Kill the old child
+        if let Some(mut old_child) = self.child.lock().await.take() {
+            let _ = old_child.kill().await;
+        }
+        *self.stdin_writer.lock().await = None;
+        self.running.store(false, Ordering::Release);
+        self.healthy.store(false, Ordering::Release);
+
+        // Reinitialize stdout writer handle
+        self.spawn_sidecar().await
     }
 }
 
@@ -707,13 +805,23 @@ impl Service for MlSidecarService {
 
     async fn init(&self) -> anyhow::Result<()> {
         log::info!("[ml-sidecar] Initializing service...");
-        // Try to spawn. If binary doesn't exist (e.g. not built yet), log warning
-        // and continue — AI will degrade gracefully.
         match self.spawn_sidecar().await {
-            Ok(()) => log::info!("[ml-sidecar] Sidecar process started"),
+            Ok(()) => {
+                // Verify with a ping after spawn
+                match self.send_request("ping", serde_json::json!({})).await {
+                    Ok(resp) => {
+                        log::info!("[ml-sidecar] Health check OK: {resp}");
+                        self.healthy.store(true, Ordering::Release);
+                    }
+                    Err(e) => {
+                        log::warn!("[ml-sidecar] Initial ping failed (sidecar may still be starting): {e}");
+                        // Non-fatal — health monitor will retry
+                    }
+                }
+                log::info!("[ml-sidecar] Sidecar process started");
+            }
             Err(e) => {
                 log::warn!("[ml-sidecar] Could not start sidecar (AI will use in-process fallback): {e}");
-                // Non-fatal: AI commands check running flag and fall back
             }
         }
         Ok(())
@@ -729,7 +837,7 @@ impl Service for MlSidecarService {
         self.running.store(false, std::sync::atomic::Ordering::Release);
         self.healthy.store(false, std::sync::atomic::Ordering::Release);
 
-        // Send graceful shutdown
+        // Send graceful shutdown (best-effort)
         let _ = self.send_request("shutdown", serde_json::json!({})).await;
 
         // Kill the child process
@@ -744,9 +852,8 @@ impl Service for MlSidecarService {
 
     async fn health_check(&self) -> HealthStatus {
         if !self.running.load(std::sync::atomic::Ordering::Acquire) {
-            // Attempt restart (watchdog)
             log::info!("[ml-sidecar] Health check: not running, attempting restart...");
-            match self.spawn_sidecar().await {
+            match self.restart().await {
                 Ok(()) => {
                     self.healthy.store(true, Ordering::Release);
                     super::HealthStatus::Healthy
@@ -755,10 +862,20 @@ impl Service for MlSidecarService {
                     super::HealthStatus::Degraded(format!("ml-sidecar crashed and restart failed: {e}"))
                 }
             }
-        } else if self.healthy.load(std::sync::atomic::Ordering::Acquire) {
-            super::HealthStatus::Healthy
         } else {
-            super::HealthStatus::Degraded("ml-sidecar running but unhealthy".into())
+            // Send an actual ping to verify the sidecar is responsive
+            match self.send_request("ping", serde_json::json!({})).await {
+                Ok(resp) => {
+                    log::trace!("[ml-sidecar] Ping OK: {resp}");
+                    self.healthy.store(true, Ordering::Release);
+                    super::HealthStatus::Healthy
+                }
+                Err(e) => {
+                    log::warn!("[ml-sidecar] Health check ping failed: {e}");
+                    self.healthy.store(false, Ordering::Release);
+                    super::HealthStatus::Degraded(format!("ml-sidecar ping failed: {e}"))
+                }
+            }
         }
     }
 }
@@ -779,21 +896,22 @@ impl SidecarClient {
     }
 
     pub fn is_available(&self) -> bool {
-        self.service.running.load(Ordering::Acquire)
-            && self.service.healthy.load(Ordering::Acquire)
+        self.service.is_running() && self.service.is_healthy()
     }
 
     pub async fn ping(&self) -> anyhow::Result<bool> {
-        self.service.send_request("ping", serde_json::json!({})).await?;
-        Ok(true)
+        let resp = self.service.send_request("ping", serde_json::json!({})).await?;
+        Ok(resp.get("pong").and_then(|v| v.as_bool()).unwrap_or(false))
     }
 
     pub async fn load_embedding_model(&self, repo_id: &str) -> anyhow::Result<()> {
         let resp = self.service.send_request("load_embedding_model", serde_json::json!({
             "repo_id": repo_id,
         })).await?;
-        if let Some(err) = resp.get("error") {
-            anyhow::bail!("Sidecar error: {}", err["message"]);
+        if let Some(status) = resp.get("status").and_then(|v| v.as_str()) {
+            if status != "loaded" {
+                anyhow::bail!("Sidecar load_embedding_model failed: {status}");
+            }
         }
         Ok(())
     }
@@ -802,11 +920,15 @@ impl SidecarClient {
         let resp = self.service.send_request("embed", serde_json::json!({
             "texts": texts,
         })).await?;
-        if let Some(err) = resp.get("error") {
-            anyhow::bail!("Sidecar error: {}", err["message"]);
-        }
-        Ok(resp.get("result").and_then(|r| serde_json::from_value(r.clone()).ok())
-            .unwrap_or_default())
+        resp.get("embeddings")
+            .ok_or_else(|| anyhow::anyhow!("Sidecar embed response missing 'embeddings'"))?
+            .as_array()
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| serde_json::from_value::<Vec<f32>>(v.clone()).ok())
+                    .collect()
+            })
+            .ok_or_else(|| anyhow::anyhow!("Sidecar embed response invalid format"))
     }
 
     pub async fn ensure_vector_db(&self, db_path: &str) -> anyhow::Result<()> {
@@ -817,27 +939,26 @@ impl SidecarClient {
     }
 
     pub async fn index_vectors(&self, vectors: Vec<Vec<f32>>, metadata: Vec<serde_json::Value>) -> anyhow::Result<()> {
-        self.service.send_request("index_vectors", serde_json::json!({
+        let resp = self.service.send_request("index_vectors", serde_json::json!({
             "vectors": vectors,
             "metadata": metadata,
         })).await?;
+        log::debug!("[sidecar-client] index_vectors: {resp}");
         Ok(())
     }
 
     pub async fn query_rag(&self, query: &str, top_k: u64) -> anyhow::Result<serde_json::Value> {
-        let resp = self.service.send_request("query_rag", serde_json::json!({
+        self.service.send_request("query_rag", serde_json::json!({
             "query": query,
             "top_k": top_k,
-        })).await?;
-        Ok(resp)
+        })).await
     }
 
     pub async fn parse_document(&self, path: &str) -> anyhow::Result<String> {
         let resp = self.service.send_request("parse_document", serde_json::json!({
             "path": path,
         })).await?;
-        Ok(resp.get("result").and_then(|r| r.as_str().map(String::from))
-            .unwrap_or_default())
+        Ok(resp.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string())
     }
 }
 
