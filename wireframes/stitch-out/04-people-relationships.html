@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SMEMaster - CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B57D0',
+                        'primary-dark': '#8AB4F8',
+                        ai: '#9333EA',
+                        surface: '#FFFFFF',
+                        'surface-variant': '#F3F4F6',
+                        'on-surface': '#1F2937',
+                        'on-surface-variant': '#4B5563',
+                        border: 'rgba(0, 0, 0, 0.1)',
+                        'border-dark': 'rgba(255, 255, 255, 0.1)'
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        '2xl': '1rem',
+                        full: "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .ai-panel {
+            background: linear-gradient(135deg, rgba(243, 232, 255, 0.7) 0%, rgba(255, 255, 255, 0.7) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(147, 51, 234, 0.15);
+        }
+    </style>
+</head>
+<body class="text-on-surface flex overflow-hidden h-screen antialiased bg-[#F9FAFB]">
+<!-- SideNavBar (from JSON) -->
+<nav class="bg-surface/70 backdrop-blur-xl w-[64px] h-screen fixed left-0 top-0 border-r border-black/5 shadow-sm flex flex-col items-center py-4 gap-6 z-50">
+<div class="font-display font-bold text-[#0B57D0] flex-shrink-0 mb-2 cursor-pointer w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-xl" title="SMEMaster Logo">S</div>
+<button class="w-10 h-10 rounded-full bg-[#0B57D0] text-white flex items-center justify-center shadow-sm hover:shadow-md transition-shadow mb-4" title="+ Quick Add">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+<div class="flex flex-col gap-2 w-full px-2">
+<!-- Tabs -->
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">inbox</span>
+<span class="text-[10px] font-medium mt-1">Inbox</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">mail</span>
+<span class="text-[10px] font-medium mt-1">Mail</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-[#0B57D0] bg-blue-50/50 rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-medium mt-1">People</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">calendar_month</span>
+<span class="text-[10px] font-medium mt-1">Calendar</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">task_alt</span>
+<span class="text-[10px] font-medium mt-1">Tasks</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">smart_toy</span>
+<span class="text-[10px] font-medium mt-1">Automation</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">campaign</span>
+<span class="text-[10px] font-medium mt-1">Campaigns</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-2 w-full px-2">
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">settings</span>
+<span class="text-[10px] font-medium mt-1">Settings</span>
+</a>
+<a class="w-full aspect-square flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-black/5 transition-colors rounded-xl group relative mb-2" href="#">
+<span class="material-symbols-outlined text-[22px] group-hover:scale-110 transition-transform">help</span>
+<span class="text-[10px] font-medium mt-1">Help</span>
+</a>
+</div>
+</nav>
+<!-- Main Wrapper -->
+<div class="ml-[64px] flex-1 flex flex-col min-w-0">
+<!-- TopNavBar (from JSON adapted) -->
+<header class="bg-surface/70 backdrop-blur-xl docked full-width top-0 h-16 border-b border-black/5 shadow-sm flex items-center justify-between px-6 z-40 sticky">
+<div class="flex items-center gap-4">
+<h1 class="font-display text-xl font-semibold text-on-surface">CRM</h1>
+<div class="hidden md:flex items-center bg-black/5 rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-[#0B57D0] focus-within:bg-white transition-all w-64">
+<span class="material-symbols-outlined text-on-surface-variant/50 text-sm mr-2">search</span>
+<input class="bg-transparent border-none p-0 text-sm focus:ring-0 w-full outline-none text-on-surface placeholder:text-on-surface-variant/50" placeholder="Search contacts, deals..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+</button>
+<button class="bg-[#0B57D0] hover:bg-blue-700 text-white text-sm font-medium py-1.5 px-4 rounded-full shadow-sm transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    New contact
+                </button>
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-100 to-blue-200 border border-black/5 ml-2 cursor-pointer flex items-center justify-center text-xs font-semibold text-blue-700">
+                    S
+                </div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Contextual Sidebar -->
+<aside class="w-[240px] flex-shrink-0 border-r border-black/5 flex flex-col bg-surface/40 backdrop-blur-md overflow-y-auto hidden md:flex">
+<div class="p-4 pt-6">
+<h2 class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-3 px-2">CRM</h2>
+<nav class="space-y-1">
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-[#0B57D0] bg-blue-50/50 rounded-lg group" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">group</span>
+                                All contacts
+                            </div>
+<span class="text-xs text-[#0B57D0] font-semibold bg-white/50 px-1.5 py-0.5 rounded-md">128</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-on-surface-variant hover:bg-black/5 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">target</span>
+                                Leads
+                            </div>
+<span class="text-xs text-on-surface-variant/70">14</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-on-surface-variant hover:bg-black/5 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">storefront</span>
+                                Customers
+                            </div>
+<span class="text-xs text-on-surface-variant/70">64</span>
+</a>
+</nav>
+</div>
+<div class="px-4 my-2"><div class="h-[1px] bg-black/5 w-full"></div></div>
+<div class="p-4 pt-2">
+<nav class="space-y-1">
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-on-surface-variant hover:bg-black/5 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">monetization_on</span>
+                                Deals
+                            </div>
+<span class="text-xs text-on-surface-variant/70">9</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-on-surface-variant hover:bg-black/5 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">pie_chart</span>
+                                Segments
+                            </div>
+</a>
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-on-surface-variant hover:bg-black/5 rounded-lg group transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+                                Imports
+                            </div>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Panel -->
+<main class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col gap-6 relative">
+<!-- Tab Row -->
+<div class="border-b border-black/5">
+<nav class="-mb-px flex space-x-8">
+<a class="border-[#0B57D0] text-[#0B57D0] whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href="#">
+                            Contacts
+                        </a>
+<a class="border-transparent text-on-surface-variant hover:text-on-surface hover:border-black/20 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                            Deals
+                        </a>
+<a class="border-transparent text-on-surface-variant hover:text-on-surface hover:border-black/20 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                            Activity
+                        </a>
+</nav>
+</div>
+<!-- AI Callout Card -->
+<div class="ai-panel rounded-[12px] p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm relative overflow-hidden">
+<!-- Subtle bg decoration -->
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-300/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-[#9333EA]">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface">AI found 2 hot leads</h3>
+<span class="bg-[#9333EA] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">2</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-3">These contacts show buying intent — start a conversation now.</p>
+<ul class="space-y-2 text-xs">
+<li class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-green-600">check_circle</span>
+<span class="font-medium">Sarah Douiri</span> — opened 3 proposals
+                                </li>
+<li class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-green-600">check_circle</span>
+<span class="font-medium">Youssef Karam</span> — replied to quote
+                                </li>
+</ul>
+</div>
+</div>
+<div class="relative z-10 self-end md:self-center mt-2 md:mt-0">
+<button class="bg-[#9333EA] hover:bg-purple-700 text-white text-xs font-semibold py-2 px-4 rounded-full shadow-sm transition-colors flex items-center gap-1.5">
+                            Create deals
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Contacts List Header/Controls -->
+<div class="flex items-center justify-between mt-2">
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-white border border-black/5 rounded-lg px-2 py-1 shadow-sm text-xs font-medium text-on-surface-variant hover:bg-gray-50 cursor-pointer">
+<span class="material-symbols-outlined text-[16px] mr-1">filter_list</span>
+                            Filter
+                        </div>
+<div class="flex items-center bg-white border border-black/5 rounded-lg px-2 py-1 shadow-sm text-xs font-medium text-on-surface-variant hover:bg-gray-50 cursor-pointer">
+<span class="material-symbols-outlined text-[16px] mr-1">sort</span>
+                            Sort
+                        </div>
+</div>
+<span class="text-xs text-on-surface-variant">Showing 1-20 of 128</span>
+</div>
+<!-- Contacts List -->
+<div class="glass-panel rounded-[12px] flex flex-col shadow-sm">
+<!-- Header Row -->
+<div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 border-b border-black/5 text-xs font-medium text-on-surface-variant uppercase tracking-wider bg-black/[0.02] rounded-t-[12px]">
+<div class="w-8"></div> <!-- Checkbox spacer -->
+<div>Name &amp; Company</div>
+<div class="w-24 text-center">Status</div>
+<div class="w-24 text-right">Actions</div>
+</div>
+<!-- Row 1 -->
+<div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 border-b border-black/5 hover:bg-black/[0.02] transition-colors group">
+<div class="w-8 flex justify-center">
+<input class="rounded border-gray-300 text-[#0B57D0] focus:ring-[#0B57D0] w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-400 to-blue-200 flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                SD
+                            </div>
+<div class="min-w-0">
+<h4 class="text-sm font-semibold text-on-surface truncate">Sarah Douiri</h4>
+<p class="text-xs text-on-surface-variant truncate">Lead · Best Foods</p>
+</div>
+</div>
+<div class="w-24 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700">Hot</span>
+</div>
+<div class="w-24 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Email">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Create Deal">
+<span class="material-symbols-outlined text-[16px]">monetization_on</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="More">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 border-b border-black/5 hover:bg-black/[0.02] transition-colors group">
+<div class="w-8 flex justify-center">
+<input class="rounded border-gray-300 text-[#0B57D0] focus:ring-[#0B57D0] w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-400 to-emerald-200 flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                YK
+                            </div>
+<div class="min-w-0">
+<h4 class="text-sm font-semibold text-on-surface truncate">Youssef Karam</h4>
+<p class="text-xs text-on-surface-variant truncate">Lead · Karam Logistix</p>
+</div>
+</div>
+<div class="w-24 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700">Hot</span>
+</div>
+<div class="w-24 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Email">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Create Deal">
+<span class="material-symbols-outlined text-[16px]">monetization_on</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="More">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 px-5 py-3 hover:bg-black/[0.02] transition-colors group rounded-b-[12px]">
+<div class="w-8 flex justify-center">
+<input class="rounded border-gray-300 text-[#0B57D0] focus:ring-[#0B57D0] w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-400 to-orange-200 flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                LM
+                            </div>
+<div class="min-w-0">
+<h4 class="text-sm font-semibold text-on-surface truncate">Liam Miller</h4>
+<p class="text-xs text-on-surface-variant truncate">Customer · Miller &amp; Co</p>
+</div>
+</div>
+<div class="w-24 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">Won</span>
+</div>
+<div class="w-24 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Email">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="Create Deal">
+<span class="material-symbols-outlined text-[16px]">monetization_on</span>
+</button>
+<button class="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-on-surface-variant" title="More">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom padding for scroll -->
+<div class="h-8"></div>
+</main>
+</div>
+</div>
+</body></html>
