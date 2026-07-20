@@ -318,7 +318,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
 
   const [rawMessageTarget, setRawMessageTarget] = useState<{
     messageId: string;
-    accountId: string;
+    accountId?: string;
   } | null>(null);
 
   // Listen for "View Source" event from context menu
@@ -540,7 +540,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
           isOpen={true}
           onClose={() => setRawMessageTarget(null)}
           messageId={rawMessageTarget.messageId}
-          accountId={rawMessageTarget.accountId}
+          accountId={rawMessageTarget.accountId ?? activeAccountId ?? ''}
         />
       )}
 

@@ -58,18 +58,47 @@ type Handler<K extends UiBusEventName> = (payload: UiBusEventMap[K]) => void;
 
 class UiBus {
   private target = new EventTarget();
+  private listeners = new Map<string, Set<{ original: (...args: any[]) => void; wrapped: EventListener }>>();
 
   /**
    * Subscribe to a UI event. Returns an unsubscribe function.
    */
   on<K extends UiBusEventName>(event: K, handler: Handler<K>): () => void {
-    const listener = (e: Event) => {
+    const type = this.typeOf(event);
+    const wrapped = ((e: Event) => {
       const detail = (e as CustomEvent).detail as UiBusEventMap[K];
       handler(detail);
-    };
+    }) as EventListener;
+
+    let set = this.listeners.get(type);
+    if (!set) {
+      set = new Set();
+      this.listeners.set(type, set);
+    }
+    set.add({ original: handler as (...args: any[]) => void, wrapped });
+
+    this.target.addEventListener(type, wrapped);
+    return () => this.off(event, handler);
+  }
+
+  /**
+   * Unsubscribe a previously registered handler.
+   */
+  off<K extends UiBusEventName>(event: K, handler: Handler<K>): void {
     const type = this.typeOf(event);
-    this.target.addEventListener(type, listener);
-    return () => this.target.removeEventListener(type, listener);
+    const set = this.listeners.get(type);
+    if (!set) return;
+
+    for (const entry of set) {
+      if (entry.original === (handler as (...args: any[]) => void)) {
+        this.target.removeEventListener(type, entry.wrapped);
+        set.delete(entry);
+        break;
+      }
+    }
+    if (set.size === 0) {
+      this.listeners.delete(type);
+    }
   }
 
   /**

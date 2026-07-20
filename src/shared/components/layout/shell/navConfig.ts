@@ -24,6 +24,7 @@ import { navigateToLabel, navigateToSettings, navigateToHelp } from "@/router/na
 import { router } from "@/router";
 import type { NavRailItem } from "./NavRail";
 import type { LucideIcon } from "lucide-react";
+import { tabGroups } from "@/features/settings/components/SettingsTabRegistry";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,16 +79,6 @@ const SETTINGS_NAV_LABELS: Record<string, string> = {
  * aligned with the single source of truth.
  */
 function buildSettingsItems(): NavRailSubItem[] {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { tabGroups } = require("@/features/settings/components/SettingsTabRegistry") as {
-    tabGroups: {
-      label: string;
-      icon?: LucideIcon;
-      description?: string;
-      tabs: { id: string; label: string; icon: LucideIcon }[];
-    }[];
-  };
-
   const items: NavRailSubItem[] = [];
   for (const group of tabGroups) {
     for (const tab of group.tabs) {
