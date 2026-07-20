@@ -1,0 +1,29 @@
+[package]
+name = "ml-sidecar"
+version = "1.0.0"
+description = "SMEMaster ML sidecar — on-device RAG / local LLM inference"
+edition = "2021"
+rust-version = "1.77.2"
+
+# This binary is launched as a Tauri sidecar subprocess.
+# It communicates with the main app over stdin/stdout JSON-RPC.
+# It is only built when the "local-ai" feature is enabled on the workspace.
+
+[[bin]]
+name = "ml-sidecar"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# ── AI/ML dependencies (heavy, require protoc) ─────────────────────────────
+lancedb = { version = "0.6", default-features = false }
+arrow = "51"
+candle-core = "0.8.1"
+candle-nn = "0.8.1"
+candle-transformers = "0.8.1"
+hf-hub = "0.4"
+tokenizers = "0.21"
+calamine = "0.26"
+docx-rs = "0.4"

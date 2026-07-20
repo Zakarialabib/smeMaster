@@ -90,19 +90,37 @@ impl AppLifecycle {
             )
         );
 
-        // 3. OnDemand: ai_inference (future AI assistant)
-        subsystem_registry.register_ondemand(
-            orchestrator::SubsystemEntry::new_ondemand(
-                "ai_inference",
-                Some("ai"),
-                Box::new(|| -> Arc<dyn orchestrator::Service> {
-                    Arc::new(crate::orchestrator::services::StubService::new(
-                        "ai_inference",
-                        "AI inference not yet implemented",
-                    ))
-                }),
-            )
-        );
+        // 3. OnDemand: ml-sidecar (external ML/RAG process).
+        //    Gated behind `local-ai` so the core build never needs protoc.
+        #[cfg(feature = "local-ai")]
+        {
+            let ml_handle = app.handle().clone();
+            subsystem_registry.register_ondemand(
+                orchestrator::SubsystemEntry::new_ondemand(
+                    "ml-sidecar",
+                    Some("ai"),
+                    Box::new(move || -> Arc<dyn orchestrator::Service> {
+                        Arc::new(crate::orchestrator::services::MlSidecarService::new(ml_handle.clone()))
+                    }),
+                )
+            );
+            log::info!("[init] Phase 3 — ml-sidecar registered (local-ai enabled)");
+        }
+        #[cfg(not(feature = "local-ai"))]
+        {
+            subsystem_registry.register_ondemand(
+                orchestrator::SubsystemEntry::new_ondemand(
+                    "ai_inference",
+                    Some("ai"),
+                    Box::new(|| -> Arc<dyn orchestrator::Service> {
+                        Arc::new(crate::orchestrator::services::StubService::new(
+                            "ai_inference",
+                            "local-ai feature disabled — AI inference not available",
+                        ))
+                    }),
+                )
+            );
+        }
 
         // 4. OnDemand: workflows_executor (workflow rule engine)
         //    Polls for pending operations and due follow-up reminders every 60s.

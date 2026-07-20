@@ -1,3 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ml-sidecar",
+]
+
 [package]
 name = "smemaster"
 version = "1.0.0" # x-release-please-version

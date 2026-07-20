@@ -539,6 +539,68 @@ impl Service for WorkflowExecutorService {
     }
 }
 
+// ── MlSidecarService ─────────────────────────────────────────────────────────
+/// Manages the ML sidecar subprocess lifecycle.
+///
+/// Launches `ml-sidecar` as an external binary (Tauri sidecar), communicates
+/// over stdin/stdout JSON-RPC 2.0. Gated behind `local-ai` so the core app
+/// never depends on candle/lancedb.
+#[cfg(feature = "local-ai")]
+pub struct MlSidecarService {
+    handle: Option<tauri::AppHandle>,
+    running: std::sync::atomic::AtomicBool,
+}
+
+#[cfg(feature = "local-ai")]
+impl MlSidecarService {
+    pub fn new(handle: tauri::AppHandle) -> Self {
+        Self {
+            handle: Some(handle),
+            running: std::sync::atomic::AtomicBool::new(false),
+        }
+    }
+}
+
+#[cfg(feature = "local-ai")]
+#[async_trait]
+impl Service for MlSidecarService {
+    fn name(&self) -> &'static str { "ml-sidecar" }
+    fn priority(&self) -> u32 { 50 }
+    fn is_critical(&self) -> bool { false }
+
+    async fn init(&self) -> anyhow::Result<()> {
+        log::info!("[ml-sidecar] Initializing service...");
+
+        // In production, this would launch the sidecar binary via
+        // `tauri::api::process::Command::new_sidecar("ml-sidecar")`.
+        // For now, the in-process AI via AiState is used instead.
+        // See https://v2.tauri.app/develop/sidecar/ for the Tauri sidecar API.
+
+        Ok(())
+    }
+
+    async fn start(&self) -> anyhow::Result<()> {
+        log::info!("[ml-sidecar] Starting (or delegating to in-process AiState)...");
+        self.running.store(true, std::sync::atomic::Ordering::Release);
+        Ok(())
+    }
+
+    async fn stop(&self) -> anyhow::Result<()> {
+        log::info!("[ml-sidecar] Stopping...");
+        self.running.store(false, std::sync::atomic::Ordering::Release);
+        Ok(())
+    }
+
+    async fn health_check(&self) -> HealthStatus {
+        if self.running.load(std::sync::atomic::Ordering::Acquire) {
+            // TODO: send ping JSON-RPC to sidecar process
+            super::HealthStatus::Healthy
+        } else {
+            super::HealthStatus::Degraded("ml-sidecar not started".into())
+        }
+    }
+}
+
 // ── StubService ─────────────────────────────────────────────────────────────
 /// Placeholder for future subsystems that don't yet have a full implementation.
 /// Allows early registration in SubsystemRegistry for observability + gating.

@@ -1,4 +1,5 @@
 // ── Domain table modules ────────────────────────────────────────────────────
+#[cfg(feature = "local-ai")]
 pub mod ai;
 pub mod accounting;
 pub mod wallet;
