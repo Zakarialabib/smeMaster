@@ -28,10 +28,10 @@ export interface AiSuggestionBannerProps {
   suggestion: AiSuggestion;
   /** Individual detected items to list (AI Task Detection). */
   items?: AiSuggestionItem[];
-  /** Called when user clicks Review/Approve */
-  onReview: () => void;
-  /** Called when user dismisses the banner */
-  onDismiss: () => void;
+  /** Called when user clicks Review/Approve (optional — omit for read-only summaries) */
+  onReview?: () => void;
+  /** Called when user dismisses the banner (optional) */
+  onDismiss?: () => void;
   /** Optional className */
   className?: string;
   /** Auto-dismiss after N milliseconds (0 = no auto-dismiss) */
@@ -63,7 +63,7 @@ export function AiSuggestionBanner({
 
   const handleDismiss = () => {
     setIsVisible(false);
-    onDismiss();
+    onDismiss?.();
   };
 
   // Auto-dismiss effect
@@ -120,13 +120,15 @@ export function AiSuggestionBanner({
           </div>
 
           {/* Dismiss */}
-          <button
-            onClick={handleDismiss}
-            className="p-1 rounded-md text-text-tertiary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-accent shrink-0"
-            aria-label={`Dismiss ${suggestion.title}`}
-          >
-            <X size={16} />
-          </button>
+          {onDismiss && (
+            <button
+              onClick={handleDismiss}
+              className="p-1 rounded-md text-text-tertiary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-accent shrink-0"
+              aria-label={`Dismiss ${suggestion.title}`}
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
 
         {/* Detected items list */}
@@ -147,21 +149,23 @@ export function AiSuggestionBanner({
         )}
 
         {/* Primary action */}
-        <div className="mt-3 flex justify-end">
-          <button
-            onClick={onReview}
-            className={cn(
-              "inline-flex items-center gap-1.5",
-              "px-3.5 py-1.5 text-xs font-semibold rounded-lg",
-              "bg-accent text-white hover:bg-accent-hover",
-              "transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1",
-            )}
-            aria-label={`Review ${suggestion.title}`}
-          >
-            {showItems ? "Review & convert to tasks" : "Review"}
-            <ChevronRight size={14} className="opacity-80" />
-          </button>
-        </div>
+        {onReview && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={onReview}
+              className={cn(
+                "inline-flex items-center gap-1.5",
+                "px-3.5 py-1.5 text-xs font-semibold rounded-lg",
+                "bg-accent text-white hover:bg-accent-hover",
+                "transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1",
+              )}
+              aria-label={`Review ${suggestion.title}`}
+            >
+              {showItems ? "Review & convert to tasks" : "Review"}
+              <ChevronRight size={14} className="opacity-80" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
