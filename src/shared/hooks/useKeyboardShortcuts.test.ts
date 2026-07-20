@@ -71,17 +71,18 @@ vi.mock("@features/mail/services/gmail/syncManager", () => ({ triggerSync: vi.fn
 
 import { renderHook } from "@testing-library/react";
 import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
+import { uiBus } from "@shared/services/events/uiBus";
 
 describe("useKeyboardShortcuts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("dispatches smemaster-toggle-ask-inbox when 'i' is pressed", () => {
+  it("dispatches toggle:ask-inbox when 'i' is pressed", () => {
     renderHook(() => useKeyboardShortcuts());
 
     const listener = vi.fn();
-    window.addEventListener("smemaster-toggle-ask-inbox", listener);
+    const off = uiBus.on("toggle:ask-inbox", listener);
 
     window.dispatchEvent(
       new KeyboardEvent("keydown", { key: "i", bubbles: true }),
@@ -89,14 +90,14 @@ describe("useKeyboardShortcuts", () => {
 
     expect(listener).toHaveBeenCalledTimes(1);
 
-    window.removeEventListener("smemaster-toggle-ask-inbox", listener);
+    off();
   });
 
-  it("dispatches smemaster-toggle-command-palette when '/' is pressed", () => {
+  it("dispatches toggle:command-palette when '/' is pressed", () => {
     renderHook(() => useKeyboardShortcuts());
 
     const listener = vi.fn();
-    window.addEventListener("smemaster-toggle-command-palette", listener);
+    const off = uiBus.on("toggle:command-palette", listener);
 
     window.dispatchEvent(
       new KeyboardEvent("keydown", { key: "/", bubbles: true }),
@@ -104,14 +105,14 @@ describe("useKeyboardShortcuts", () => {
 
     expect(listener).toHaveBeenCalledTimes(1);
 
-    window.removeEventListener("smemaster-toggle-command-palette", listener);
+    off();
   });
 
-  it("dispatches smemaster-toggle-shortcuts-help when '?' is pressed", () => {
+  it("dispatches toggle:shortcuts-help when '?' is pressed", () => {
     renderHook(() => useKeyboardShortcuts());
 
     const listener = vi.fn();
-    window.addEventListener("smemaster-toggle-shortcuts-help", listener);
+    const off = uiBus.on("toggle:shortcuts-help", listener);
 
     window.dispatchEvent(
       new KeyboardEvent("keydown", { key: "?", shiftKey: true, bubbles: true }),
@@ -119,7 +120,7 @@ describe("useKeyboardShortcuts", () => {
 
     expect(listener).toHaveBeenCalledTimes(1);
 
-    window.removeEventListener("smemaster-toggle-shortcuts-help", listener);
+    off();
   });
 });
 

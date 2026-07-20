@@ -38,6 +38,16 @@ export interface UiBusEventMap {
   "inline-reply": { mode: "reply" | "replyAll" | "forward" };
   /** Open the task-extract dialog for a thread. */
   "extract-task": { threadId: string };
+  /** View raw message. */
+  "view-raw-message": { messageId: string };
+  /** Navigate help. */
+  "navigate-help": { topic: string };
+  /** Calendar sync done. */
+  "calendar:sync:done": void;
+  /** Show toast notification. */
+  "toast:show": { message: string };
+  /** Edit template. */
+  "edit-template": { templateId: string };
 }
 
 export type UiBusEventName = keyof UiBusEventMap;

@@ -15,6 +15,7 @@ import { getMessagesForThread } from "@shared/services/db/messages";
 import { parseUnsubscribeUrl } from "@features/mail/components/MessageItem";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { triggerSync } from "@features/mail/services/gmail/syncManager";
+import { uiBus } from "@shared/services/events/uiBus";
 
 /**
  * Parse a key binding string and check if it matches a keyboard event.
@@ -127,7 +128,7 @@ export function useKeyboardShortcuts() {
           const paletteBinding = keyMap["app.commandPalette"];
           if (paletteBinding === "Ctrl+K" || paletteBinding === "/" || !paletteBinding) {
             e.preventDefault();
-            window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
+            uiBus.emit("toggle:command-palette");
             return;
           }
         }
@@ -294,18 +295,18 @@ async function executeAction(actionId: string): Promise<void> {
     case "action.reply": {
       if (selectedId) {
         const replyMode = useConfigStore.getState().defaultReplyMode;
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: replyMode } }));
+        uiBus.emit("inline-reply", { mode: replyMode });
       }
       break;
     }
     case "action.replyAll":
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: "replyAll" } }));
+        uiBus.emit("inline-reply", { mode: "replyAll" });
       }
       break;
     case "action.forward":
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: "forward" } }));
+        uiBus.emit("inline-reply", { mode: "forward" });
       }
       break;
     case "action.archive": {
@@ -459,7 +460,7 @@ async function executeAction(actionId: string): Promise<void> {
     }
     case "action.createTaskFromEmail": {
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-extract-task", { detail: { threadId: selectedId } }));
+        uiBus.emit("extract-task", { threadId: selectedId });
       }
       break;
     }
@@ -467,21 +468,21 @@ async function executeAction(actionId: string): Promise<void> {
       const multiMoveIds = useThreadsStore.getState().selectedThreadIds;
       const moveThreadIds = multiMoveIds.size > 0 ? [...multiMoveIds] : selectedId ? [selectedId] : [];
       if (moveThreadIds.length > 0) {
-        window.dispatchEvent(new CustomEvent("smemaster-move-to-folder", { detail: { threadIds: moveThreadIds } }));
+        uiBus.emit("move-to-folder", { threadIds: moveThreadIds });
       }
       break;
     }
     case "app.commandPalette":
-      window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
+      uiBus.emit("toggle:command-palette");
       break;
     case "app.toggleSidebar":
       useUIStore.getState().toggleSidebar();
       break;
     case "app.askInbox":
-      window.dispatchEvent(new Event("smemaster-toggle-ask-inbox"));
+      uiBus.emit("toggle:ask-inbox");
       break;
     case "app.help":
-      window.dispatchEvent(new Event("smemaster-toggle-shortcuts-help"));
+      uiBus.emit("toggle:shortcuts-help");
       break;
     case "app.syncFolder": {
       if (activeAccountId) {

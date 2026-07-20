@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useSyncStore } from "@/stores/shared";
+import { getAllLabelUnreadCounts } from "@shared/services/db/threads";
 
 vi.mock("@shared/services/db/threads", () => ({
   getAllLabelUnreadCounts: vi.fn(),
@@ -13,6 +14,11 @@ beforeEach(() => {
     pendingOpsCount: 0,
     isSyncingFolder: null,
     unreadCounts: {},
+    isHydrated: false,
+    isSyncing: false,
+    lastSyncAt: null,
+    lastError: null,
+    perAccount: {},
   });
   vi.clearAllMocks();
 });
@@ -25,6 +31,11 @@ describe("syncStore", () => {
       expect(state.pendingOpsCount).toBe(0);
       expect(state.isSyncingFolder).toBeNull();
       expect(state.unreadCounts).toEqual({});
+      expect(state.isHydrated).toBe(false);
+      expect(state.isSyncing).toBe(false);
+      expect(state.lastSyncAt).toBeNull();
+      expect(state.lastError).toBeNull();
+      expect(state.perAccount).toEqual({});
     });
   });
 
@@ -160,6 +171,60 @@ describe("syncStore", () => {
 
       expect(useSyncStore.getState().isSyncingFolder).toBe("__all__");
     });
+
+    it("should set perAccount status on sync:account-start", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {
+        host: "example.com",
+        username: "user",
+      });
+
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "user@example.com": {
+          status: "syncing",
+          lastSyncAt: null,
+          error: null,
+        },
+      });
+    });
+
+    it("should set perAccount status on sync:account-complete", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {
+        host: "example.com",
+        username: "user",
+      });
+      useSyncStore.getState().handleEvent("sync:account-complete", {
+        host: "example.com",
+        username: "user",
+      });
+
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "user@example.com": {
+          status: "idle",
+          lastSyncAt: expect.any(Number),
+          error: null,
+        },
+      });
+    });
+
+    it("should set perAccount status on sync:account-error", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {
+        host: "example.com",
+        username: "user",
+      });
+      useSyncStore.getState().handleEvent("sync:account-error", {
+        host: "example.com",
+        username: "user",
+        error: "Sync failed",
+      });
+
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "user@example.com": {
+          status: "error",
+          lastSyncAt: null,
+          error: "Sync failed",
+        },
+      });
+    });
   });
 
   describe("state isolation", () => {
@@ -169,6 +234,99 @@ describe("syncStore", () => {
       expect(state.pendingOpsCount).toBe(0);
       expect(state.isSyncingFolder).toBeNull();
       expect(state.unreadCounts).toEqual({});
+    });
+
+    it("should not affect other fields when setting pending ops count", () => {
+      useSyncStore.getState().setPendingOpsCount(5);
+      const state = useSyncStore.getState();
+      expect(state.isOnline).toBe(true);
+      expect(state.isSyncingFolder).toBeNull();
+      expect(state.unreadCounts).toEqual({});
+    });
+
+    it("should not affect other fields when setting syncing folder", () => {
+      useSyncStore.getState().setSyncingFolder("INBOX");
+      const state = useSyncStore.getState();
+      expect(state.isOnline).toBe(true);
+      expect(state.pendingOpsCount).toBe(0);
+      expect(state.unreadCounts).toEqual({});
+    });
+
+    it("should not affect other fields when setting unread counts", () => {
+      useSyncStore.getState().setUnreadCounts({ INBOX: 5 });
+      const state = useSyncStore.getState();
+      expect(state.isOnline).toBe(true);
+      expect(state.pendingOpsCount).toBe(0);
+      expect(state.isSyncingFolder).toBeNull();
+    });
+  });
+
+  describe("hydration", () => {
+    it("should set isHydrated to true after hydrate", async () => {
+      await useSyncStore.getState().hydrate();
+      expect(useSyncStore.getState().isHydrated).toBe(true);
+    });
+
+    it("should set isOnline from navigator.onLine", async () => {
+      await useSyncStore.getState().hydrate();
+      expect(useSyncStore.getState().isOnline).toBe(navigator.onLine);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle empty payload in handleEvent", () => {
+      useSyncStore.getState().handleEvent("sync:complete", null);
+      expect(useSyncStore.getState().isSyncing).toBe(false);
+    });
+
+    it("should handle undefined payload in handleEvent", () => {
+      useSyncStore.getState().handleEvent("sync:complete", undefined);
+      expect(useSyncStore.getState().isSyncing).toBe(false);
+    });
+
+    it("should handle sync:error with missing error in payload", () => {
+      useSyncStore.getState().handleEvent("sync:error", {});
+      expect(useSyncStore.getState().lastError).toBe("Sync error");
+    });
+
+    it("should handle sync:error with error in payload", () => {
+      useSyncStore.getState().handleEvent("sync:error", { last_error: "Custom error" });
+      expect(useSyncStore.getState().lastError).toBe("Custom error");
+    });
+
+    it("should handle sync:account-start with missing host/username", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {});
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "@": {
+          status: "syncing",
+          lastSyncAt: null,
+          error: null,
+        },
+      });
+    });
+
+    it("should handle sync:account-complete with missing host/username", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {});
+      useSyncStore.getState().handleEvent("sync:account-complete", {});
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "@": {
+          status: "idle",
+          lastSyncAt: expect.any(Number),
+          error: null,
+        },
+      });
+    });
+
+    it("should handle sync:account-error with missing host/username", () => {
+      useSyncStore.getState().handleEvent("sync:account-start", {});
+      useSyncStore.getState().handleEvent("sync:account-error", { error: "Account error" });
+      expect(useSyncStore.getState().perAccount).toEqual({
+        "@": {
+          status: "error",
+          lastSyncAt: null,
+          error: "Account error",
+        },
+      });
     });
   });
 });
