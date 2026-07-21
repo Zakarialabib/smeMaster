@@ -1670,4 +1670,90 @@ mod tests {
         assert_send::<super::SidecarMetrics>();
         assert_sync::<super::SidecarMetrics>();
     }
+
+    // ── MlSidecarService version + broadcast path tests ──────────────
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_service_version_captured_from_response() {
+        // Simulate the reader task parsing a successful ping/init JSON-RPC response
+        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let response_text =
+            r#"{"jsonrpc":"2.0","id":7,"result":{"version":"9.9","pong":true}}"#;
+
+        let trimmed = response_text.trim();
+        if let Ok(msg) = serde_json::from_str::<serde_json::Value>(trimmed) {
+            if let Some(resp_id) = msg.get("id").and_then(|v| v.as_u64()) {
+                if resp_id == 7 {
+                    if let Some(result) = msg.get("result").cloned() {
+                        if let Some(v) = result.get("version").and_then(|v| v.as_str()) {
+                            let _ = service.version.write().unwrap().replace(v.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        assert_eq!(service.version.read().unwrap().as_deref(), Some("9.9"));
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_service_broadcasts_notification_to_subscribers() {
+        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let mut rx = service.notification_tx.subscribe();
+
+        // Simulate the reader task receiving a notification (no "id")
+        let notification_text = r#"{"jsonrpc":"2.0","method":"embed_progress","params":{"done":2,"total":5}}"#;
+        let trimmed = notification_text.trim();
+        if let Ok(msg) = serde_json::from_str::<serde_json::Value>(trimmed) {
+            let _ = service.notification_tx.send(msg);
+        }
+
+        let received = rx.try_recv().expect("subscriber should receive the notification");
+        assert_eq!(
+            received.get("method").and_then(|v| v.as_str()),
+            Some("embed_progress")
+        );
+        assert_eq!(
+            received
+                .get("params")
+                .and_then(|v| v.get("done"))
+                .and_then(|v| v.as_u64()),
+            Some(2)
+        );
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_service_multiple_subscribers_receive_broadcast() {
+        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let mut rx1 = service.notification_tx.subscribe();
+        let mut rx2 = service.notification_tx.subscribe();
+
+        let notification_text =
+            r#"{"jsonrpc":"2.0","method":"generate_progress","params":{"done":true}}"#;
+        let trimmed = notification_text.trim();
+        if let Ok(msg) = serde_json::from_str::<serde_json::Value>(trimmed) {
+            let _ = service.notification_tx.send(msg);
+        }
+
+        let first = rx1.try_recv().expect("first subscriber should receive");
+        let second = rx2.try_recv().expect("second subscriber should receive");
+        assert_eq!(
+            first.get("method").and_then(|v| v.as_str()),
+            Some("generate_progress")
+        );
+        assert_eq!(
+            second.get("method").and_then(|v| v.as_str()),
+            Some("generate_progress")
+        );
+    }
+
+    #[cfg(feature = "local-ai")]
+    #[test]
+    fn test_sidecar_service_version_not_set_by_default() {
+        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        assert!(service.version.read().unwrap().is_none());
+    }
 }

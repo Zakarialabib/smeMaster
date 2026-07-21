@@ -86,6 +86,15 @@ export default function AiTab() {
   const [aiRouterRefreshing, setAiRouterRefreshing] = useState(false);
 
   useEffect(() => {
+    const refreshAi = async () => {
+      try {
+        setAiRouterRefreshing(true);
+        await refreshAiSidecarRuntime();
+      } finally {
+        setAiRouterRefreshing(false);
+      }
+    };
+
     async function load() {
       const provider = (await getSetting("ai_provider")) as AiProvider | null;
       if (provider) setAiProvider(provider);
@@ -142,22 +151,15 @@ export default function AiTab() {
       const aiAskInbox = await getSetting("ai_ask_inbox_enabled");
       setAiAskInboxEnabled(aiAskInbox !== "false");
 
-      
+
       const autoArchive = await getSetting("auto_archive_categories");
       if (autoArchive) {
         setAutoArchiveCategories(new Set(autoArchive.split(",").map((s) => s.trim()).filter(Boolean)));
       }
 
-      const refreshAi = async () => {
-        try {
-          setAiRouterRefreshing(true);
-          await refreshAiSidecarRuntime();
-        } finally {
-          setAiRouterRefreshing(false);
-        }
-      };
-      refreshAi();
+      await refreshAi();
     }
+
     load();
     const id = setInterval(refreshAi, 10000);
     return () => clearInterval(id);
