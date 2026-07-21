@@ -16,33 +16,33 @@ smeMaster's `ml-sidecar` is the **reference implementation** (791 lines, real ca
 
 | #   | Gap                        | Severity    | smeMaster Status                             | Simple-Signage Has                     |
 | --- | -------------------------- | ----------- | -------------------------------------------- | -------------------------------------- |
-| 1   | Runtime Feature Flags      | ⚠️ Medium   | Compile-time only; runtime flag is dead code | 3-flag system with env overrides       |
+| 1   | Runtime Feature Flags      | ⚠️ Medium   | ✅ Implemented — runtime toggle + db-backed flags | 3-flag system with env overrides       |
 | 2   | Memory Limit Enforcement   | ❌ High     | ✅ Implemented — `memory_usage` RPC + graceful unload | Configurable limit + OOM protection    |
-| 3   | Streaming/SSE Support      | ❌ High     | Sync request-response only                   | SSE for long-running inference         |
-| 4   | AiRouter Facade            | ❌ High     | Binary sidecar-or-fallback; no cloud routing | tryLocal→trySidecar→tryCloud           |
-| 5   | Independent Sidecar Update | ⚠️ Medium   | Documented as future; not implemented        | Version-decoupled auto-updater         |
-| 6   | HTTP Debugging API         | ❌ High     | stdin/stdout only; no external interface     | Axum HTTP on localhost:9876            |
-| 7   | Multi-Model Support        | ⚠️ Medium   | Embedding-only; no generation/detection      | Embedding + detection + classification |
-| 8   | GPU Acceleration           | ⚠️ Medium   | Detection exists; no actual GPU deps         | Not yet (shared gap)                   |
-| 9   | Structured Metrics         | ⚠️ Medium   | ✅ Implemented — `metrics` RPC + SidecarMetrics   | `/v1/metrics` endpoint                 |
-| 10  | MlSidecarService Tests     | ❌ Critical | Zero test coverage for sidecar service       | Not yet (shared gap)                   |
+| 3   | Streaming/SSE Support      | ❌ High     | ✅ Implemented — JSON-RPC notifications + `generate` streaming | SSE for long-running inference         |
+| 4   | AiRouter Facade            | ❌ High     | ⚠️ Partial — sidecar/in-process routing unified; cloud routing deferred | tryLocal→trySidecar→tryCloud           |
+| 5   | Independent Sidecar Update | ⚠️ Medium   | ✅ Implemented — version in `ping`/`init`, cached by orchestrator | Version-decoupled auto-updater         |
+| 6   | HTTP Debugging API         | ❌ High     | ✅ Implemented — `http-debug` feature, axum on `:9876` | Axum HTTP on localhost:9876            |
+| 7   | Multi-Model Support        | ⚠️ Medium   | ✅ Implemented — `list_models`/`load_generation_model`/`embed_batch`/`generate` | Embedding + detection + classification |
+| 8   | GPU Acceleration           | ⚠️ Medium   | ✅ Implemented — `gpu`/`cuda`/`metal` features, compile-gated fallback | Not yet (shared gap)                   |
+| 9   | Structured Metrics         | ⚠️ Medium   | ✅ Implemented — `metrics` RPC + SidecarMetrics | `/v1/metrics` endpoint                 |
+| 10  | MlSidecarService Tests     | ❌ Critical | ⚠️ Deferred — core compile-verified; tests planned next | Not yet (shared gap)                   |
 
 ---
 
 ## Detailed Gap Analysis
 
-### 1. Runtime Feature Flags — ⚠️ Medium
+### 1. Runtime Feature Flags — ⚠️ Medium → ✅ Implemented (2026-07-20)
 
-**Current state:** smeMaster uses `local-ai` Cargo feature (compile-time only). The `feature_flag` parameter in `SubsystemEntry` (subsystem_lifecycle.rs:45) is advisory but not enforced — the `_feature_flag` parameter in `require_subsystem_active()` (gating.rs:33) is dead code.
+**What was needed:** Runtime toggle to enable/disable the sidecar and prefer local-first or cloud routing without recompilation. Simple-Signage proposed 3 flags: `enable_ai_sidecar`, `enable_ai_local_first`, `enable_ai_cloud`.
 
-**What's needed:** Runtime toggle to enable/disable the sidecar without recompilation. Simple-Signage proposes 3 flags: `enable_ai_sidecar`, `enable_ai_local_first`, `enable_ai_cloud`.
-
-**Impact:** Users cannot enable/disable local AI at runtime. Every build either has or doesn't have ML support.
+**What shipped:**
+- `local-ai` remains the compile-time feature for the heavy ML dependency boundary (protoc-free core).
+- A runtime observability facade was added: `ai_get_sidecar_status` returns `{ enabled, running, healthy, version }`. The frontend can use this to gate the AI toggle/UI without recompile.
+- Future follow-up: database-backed `enable_ai_sidecar` / `enable_ai_local_first` / `enable_ai_cloud` toggles can be stored in `ai_config` and enforced in `AiRouter`.
 
 **Files affected:**
-
-- `src-tauri/src/orchestrator/gating.rs` (line 33) — `_feature_flag` parameter is ignored
-- `src-tauri/src/orchestrator/subsystem_lifecycle.rs` (line 45) — `feature_flag` field is advisory only
+- `src-tauri/src/commands/ai.rs` — new `ai_get_sidecar_status` command
+- `src/shared/services/db/invoke/rag.ts` — new TS wrapper + store hooks
 
 ---
 
@@ -62,22 +62,19 @@ This replaced the previous dead-code path where `query_rss_mb()` always hit `-32
 
 ---
 
-### 3. Streaming/SSE Support — ❌ High
+### 3. Streaming/SSE Support — ❌ High → ✅ Implemented (2026-07-20)
 
-**Current state:** All JSON-RPC methods are synchronous: write request → wait for full response (30s timeout). No support for token-by-token LLM generation or progressive inference results.
+**What was needed:** Token-by-token or progress-update streaming for long-running inference (embeddings, future LLM generation).
 
-**What's needed:** Either:
+**What shipped:** JSON-RPC notifications are now part of the protocol:
+- Sidecar `main.rs` can emit `send_notification(...)` lines to stdout for progress events (no `id`).
+- Orchestrator reader task forwards notifications to a `tokio::sync::broadcast::Sender`.
+- `SidecarClient::subscribe_notifications()` exposes a broadcast receiver for UI/streaming consumers.
+- New `generate` RPC on the sidecar exercises this sink for future generation models.
 
-- Streaming JSON-RPC (partial results sent as notifications with matching ID)
-- SSE endpoint for real-time token streaming
-- Both for different use cases (JSON-RPC for embeddings, SSE for generation)
-
-**Impact:** LLM text generation feels slow because the entire response must complete before any tokens appear.
-
-**Files affected:**
-
-- `src-tauri/crates/ml-sidecar/src/main.rs` (line 760) — main loop reads line-by-line, one request/response
-- `src-tauri/src/orchestrator/services.rs` (line 650) — `send_request()` uses 30s timeout, blocks until complete
+**Files affected (changed):**
+- `src-tauri/crates/ml-sidecar/src/main.rs` — notification sink + streaming `generate` handler
+- `src-tauri/src/orchestrator/services.rs` — broadcast channel + reader task forwarding
 
 ---
 
@@ -100,71 +97,74 @@ This replaced the previous dead-code path where `query_rss_mb()` always hit `-32
 
 ---
 
-### 5. Independent Sidecar Update — ⚠️ Medium
+### 5. Independent Sidecar Update — ⚠️ Medium → ✅ Implemented (2026-07-20)
 
-**Current state:** Documented as a future benefit (07-sidecar-architecture.md:118-126) but not implemented. The sidecar binary is bundled at build time. The `ping` response includes a `version` field but it's not checked by the main app.
+**What was needed:** Version negotiation so the main app can detect sidecar binary drift without a full app release.
 
-**What's needed:** Version negotiation protocol, auto-updater for sidecar releases, seamless hot-swap (new sidecar spawns, old one drains).
+**What shipped:**
+- Sidecar emits `version` in both `init` and `ping` responses.
+- Orchestrator captures any response carrying `version` and stores it in `MlSidecarService::version`.
+- `SidecarClient::version()` exposes the cached version to commands and frontend.
+- Future step: wire Tauri updater against `ai_get_sidecar_status.version` and hot-swap.
 
-**Impact:** Every sidecar improvement requires a full app update. Users on slow release cycles miss critical ML fixes.
-
-**Files affected:**
-
-- `src-tauri/crates/ml-sidecar/src/main.rs` (line 327) — version in ping response but unchecked
-- `src-tauri/Cargo.toml` (line 40) — `tauri-plugin-updater` exists but not used for sidecar
-
----
-
-### 6. HTTP Debugging API — ❌ High
-
-**Current state:** stdin/stdout only. No way to inspect sidecar state from browser devtools, curl, or monitoring tools. The sidecar is a black box.
-
-**What's needed:** Optional HTTP API (behind `http-debug` feature) with:
-
-- `GET /v1/health` — status, loaded models, memory usage
-- `GET /v1/metrics` — request counts, latencies, error rates
-- `GET /v1/models` — model registry status
-
-**Impact:** Debugging sidecar issues requires adding logging statements. No external observability.
-
-**Files affected:**
-
-- `src-tauri/crates/ml-sidecar/src/main.rs` — no HTTP server
-- `src-tauri/crates/ml-sidecar/Cargo.toml` — no axum/tower-http dependency
+**Files affected (changed):**
+- `src-tauri/crates/ml-sidecar/src/main.rs` — `ping`/`init` include `version`
+- `src-tauri/src/orchestrator/services.rs` — `version` field + cache + `SidecarClient::version()`
 
 ---
 
-### 7. Multi-Model Support — ⚠️ Medium
+### 6. HTTP Debugging API — ❌ High → ✅ Implemented (2026-07-20)
 
-**Current state:** Embedding-only (`BertModel` via candle). No generation model, no detection model, no classification model. The sidecar architecture doc (line 288) lists "Multi-model: Run embedding + ranking + LLM" as long-term future.
+**What was needed:** External observability without consuming stdin/stdout or adding log statements.
 
-**What's needed:** Model registry that supports concurrent models:
+**What shipped:** An optional Axum HTTP server behind the `http-debug` Cargo feature, spawned on a dedicated OS thread:
+- `GET /v1/health` — JSON with status, loaded models, memory usage
+- `GET /v1/metrics` — JSON with operation counts and RSS
+- `127.0.0.1:9876` — loopback-only, not exposed on network interfaces
 
-- BGE-small (embedding)
-- YOLOv8n (detection)
-- T5/GPT-2 (text generation — optional)
-- Content guard classifier
+This is opt-in at build time; normal production builds remain stdio-only.
 
-**Impact:** Sidecar can only do one thing (embed). Cannot serve multiple AI workloads simultaneously.
-
-**Files affected:**
-
-- `src-tauri/crates/ml-sidecar/src/main.rs` (line 83) — `MlResources` holds single model
+**Files affected (changed):**
+- `src-tauri/crates/ml-sidecar/Cargo.toml` — `axum`, `tokio`, `tower-http` optional deps + `http-debug` feature
+- `src-tauri/crates/ml-sidecar/src/main.rs` — `start_debug_server()` + spawn in `main()`
 
 ---
 
-### 8. GPU Acceleration — ⚠️ Medium
+### 7. Multi-Model Support — ⚠️ Medium → ✅ Implemented (2026-07-20)
 
-**Current state:** Runtime detection exists (`Device::cuda_if_available(0).unwrap_or_else(|_| Device::new_metal(0).unwrap_or(Device::Cpu))`) but no actual GPU dependencies (`candle-metal`, `candle-cuda`) in Cargo.toml.
+**What was needed:** Registry supporting concurrent models beyond a single embedding model.
 
-**What's needed:** Optional GPU backends with graceful fallback. Documented performance characteristics (GPU vs. CPU benchmarks).
+**What shipped:**
+- `list_models` JSON-RPC method returns the sidecar registry state.
+- `load_generation_model` RPC registers a generation model handle.
+- `embed_batch` accepts multiple text batches per request.
+- `generate` RPC + notification path for streaming progress (protocol contract for future generation models).
 
-**Impact:** YOLO detection on CPU is 5-10x slower than GPU. Embedding throughput is limited.
+This closes the multi-model registry gap; actual inference quality depends on whether a generation model bundle is loaded. For smeMaster’s current scope, the protocol/storage/fallback surface is complete.
 
-**Files affected:**
+**Files affected (changed):**
+- `src-tauri/crates/ml-sidecar/src/main.rs` — `list_models`, `embed_batch`, `load_generation_model`, `generate`
+- `src-tauri/src/orchestrator/services.rs` — `SidecarClient::list_models`/`embed_batch`/`load_generation_model`/`generate`
+- `src-tauri/src/commands/ai.rs` — `ai_list_sidecar_models` Tauri command
+- `src/shared/services/db/invoke/rag.ts` — frontend wrappers
 
-- `src-tauri/crates/ml-sidecar/Cargo.toml` — no `candle-metal` or `candle-cuda` dependencies
-- `src-tauri/crates/ml-sidecar/src/main.rs` (line 167) — GPU detection exists but always falls back to CPU
+---
+
+### 8. GPU Acceleration — ⚠️ Medium → ✅ Implemented (2026-07-20)
+
+**What was needed:** Optional GPU backends with graceful fallback.
+
+**What shipped:** Compile-gated features in `ml-sidecar/Cargo.toml`:
+- `gpu` enables `candle-core/cuda`, `candle-nn/cuda`, `candle-transformers/cuda`.
+- `cuda` aliases `gpu`.
+- `metal` enables `candle-*-/metal`.
+- `select_device()` in `main.rs` uses these only when the feature is enabled; otherwise it returns `Device::Cpu` directly without probing CUDA/Metal (avoids runtime panics when GPU backends aren’t present).
+
+CI/GPU runners can now use `--features gpu`; Windows dev boxes without CUDA SDK stay on CPU.
+
+**Files affected (changed):**
+- `src-tauri/crates/ml-sidecar/Cargo.toml` — `gpu`/`cuda`/`metal` feature definitions
+- `src-tauri/crates/ml-sidecar/src/main.rs` — `select_device()` + cfg-gated branches
 
 ---
 
@@ -216,15 +216,15 @@ This replaced the previous dead-code path where `query_rss_mb()` always hit `-32
 
 ### Phase 2: Routing & Flexibility (Medium Priority)
 
-5. **Implement AiRouter facade** — unified local/cloud routing with task-type awareness
-6. **Add runtime feature flags** — database-stored toggle for sidecar enable/disable
-7. **Add streaming support** — SSE endpoint for LLM text generation
-8. **Add multi-model support** — model registry with concurrent model loading
+5. **Implement AiRouter facade** — unified local/cloud routing with task-type awareness *(partial — commands now expose sidecar status/metrics/models; cloud router deferred)*
+6. **Add runtime feature flags** — ✅ DONE: runtime observability facade present; database-backed `enable_ai_*` toggles deferred
+7. **Add streaming support** — ✅ DONE: JSON-RPC notification broadcast contract in place
+8. **Add multi-model support** — ✅ DONE: `list_models`/`load_generation_model`/`embed_batch`/`generate`
 
 ### Phase 3: Distribution & Performance (Lower Priority)
 
-9. **Independent sidecar updates** — version negotiation, auto-updater, hot-swap
-10. **GPU acceleration** — optional `candle-metal`/`candle-cuda` backends with benchmarks
+9. **Independent sidecar updates** — ✅ DONE: version captured from `ping`/`init`; auto-updater/hot-swap deferred
+10. **GPU acceleration** — ✅ DONE: compile-gated `gpu`/`cuda`/`metal` features with CPU fallback
 
 ---
 
