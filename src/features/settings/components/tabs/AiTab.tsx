@@ -1047,6 +1047,49 @@ export default function AiTab() {
         </>
       )}
 
+      {/* ── Section B: AiRouter runtime observability ────────────── */}
+      {activeSubTab === "ai-router" && (
+        <>
+          <p className="text-xs text-text-tertiary mb-3">
+            Local AI runtime status, version, and process metrics provided by the Rust sidecar.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { label: t("settings.statusReady"), icon: Server, value: aiRouterHealthy },
+              { label: "RSS", value: aiRouterRss ? `${aiRouterRss} MB` : "--", icon: Cpu },
+              { label: "Model", value: aiRouterModelLoaded ? "Loaded" : "--", icon: Database },
+              { label: "Version", value: aiRouterVersion ?? "--", icon: CheckCircle2 },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="p-3 rounded-xl border border-border bg-bg-secondary"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{item.label}</p>
+                <div className="flex items-center gap-2">
+                  <item.icon size={14} className="text-text-tertiary" />
+                  <p className="text-xs font-semibold truncate">
+                    {item.value === null ? t("settings.statusLoading") : item.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button
+            className="mt-3"
+            size="sm"
+            variant="secondary"
+            disabled={aiRouterRefreshing}
+            onClick={async () => {
+              setAiRouterRefreshing(true);
+              try { await refreshAiSidecarRuntime(); } finally { setAiRouterRefreshing(false); }
+            }}
+          >
+            <RefreshCw size={13} className={cn(aiRouterRefreshing && "animate-spin")} />
+            <span className="ml-1">{t("commands.refresh")}</span>
+          </Button>
+        </>
+      )}
+
       {/* ── Section C: Knowledge Base ─────────────────────────────── */}
       {activeSubTab === "kb" && (
         <KnowledgeBaseSettings />
