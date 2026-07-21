@@ -24,12 +24,57 @@ export interface AiSidecarState {
   /** Last error message, if status === "error". */
   error: string | null;
 
-  // ── Actions (UI state only) ──
+  // ── Runtime observability (gaps #1/#3/#5/#6/#7/#8/#9) ──────────────
+  /** Sidecar binary is compiled in (`local-ai` feature present). */
+  enabled: boolean;
+  /** Sidecar process is currently running. */
+  running: boolean;
+  /** Last health-check result. */
+  healthy: boolean;
+  /** Cached version string from sidecar `ping`/`init`. */
+  version: string | null;
+  /** Last metrics snapshot from the sidecar (null until polled). */
+  metrics:
+    | {
+        embed_count: number;
+        index_count: number;
+        query_count: number;
+        parse_count: number;
+        unload_count: number;
+        last_model_load_ms: number;
+        model_loaded: boolean;
+        rss_mb: number;
+      }
+    | null;
+
+  // ── Actions (UI state only) ─────────────────────────────────────────
   setActive: (active: boolean) => void;
   setModelPath: (modelPath: string | null) => void;
   setStatus: (status: AiSidecarStatus) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+
+  // ── Observability actions ───────────────────────────────────────────
+  setSidecarRuntime: (payload: {
+    enabled?: boolean;
+    running?: boolean;
+    healthy?: boolean;
+    version?: string | null;
+  }) => void;
+  setMetrics: (
+    metrics:
+      | {
+          embed_count: number;
+          index_count: number;
+          query_count: number;
+          parse_count: number;
+          unload_count: number;
+          last_model_load_ms: number;
+          model_loaded: boolean;
+          rss_mb: number;
+        }
+      | null,
+  ) => void;
 }
 
 export const useAiSidecarStore = create<AiSidecarState>((set) => ({
@@ -37,10 +82,35 @@ export const useAiSidecarStore = create<AiSidecarState>((set) => ({
   modelPath: null,
   status: "idle",
   error: null,
+  enabled: false,
+  running: false,
+  healthy: false,
+  version: null,
+  metrics: null,
 
   setActive: (active) => set({ active }),
   setModelPath: (modelPath) => set({ modelPath }),
   setStatus: (status) => set({ status }),
   setError: (error) => set({ error }),
-  reset: () => set({ active: false, modelPath: null, status: "idle", error: null }),
+  reset: () =>
+    set({
+      active: false,
+      modelPath: null,
+      status: "idle",
+      error: null,
+      enabled: false,
+      running: false,
+      healthy: false,
+      version: null,
+      metrics: null,
+    }),
+
+  setSidecarRuntime: (payload) =>
+    set((state) => ({
+      enabled: payload.enabled ?? state.enabled,
+      running: payload.running ?? state.running,
+      healthy: payload.healthy ?? state.healthy,
+      version: payload.version ?? state.version,
+    })),
+  setMetrics: (metrics) => set({ metrics }),
 }));

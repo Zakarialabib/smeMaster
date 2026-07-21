@@ -15,6 +15,9 @@
 import {
   aiDownloadModel,
   aiLoadEmbeddingModel,
+  aiGetSidecarStatus,
+  aiGetSidecarMetrics,
+  aiListSidecarModels,
 } from "@shared/services/db/invoke/rag";
 import { useRagStore } from "@features/assistant/stores/ragStore";
 import {
@@ -36,13 +39,57 @@ function setStatus(status: AiSidecarStatus, error: string | null = null): void {
   store.setError(error);
 }
 
-/**
- * Whether the local AI sidecar is currently active (model loaded & ready).
- * Pure read of the UI store — safe to call anywhere, no side effects.
- */
+/** Whether the local AI sidecar is currently active (model loaded & ready). */
 export function isAiSidecarActive(): boolean {
   const { active, status } = useAiSidecarStore.getState();
   return active && status === "ready";
+}
+
+/** Refresh runtime observability from the backend into the UI store. */
+export async function refreshAiSidecarRuntime(): Promise<void> {
+  try {
+    const [status, metrics, models] = await Promise.all([
+      aiGetSidecarStatus().catch(() => ({
+        enabled: false,
+        running: false,
+        healthy: false,
+        version: null,
+      })),
+      aiGetSidecarMetrics().catch(() => null),
+      aiListSidecarModels().catch(() => null),
+    ]);
+
+    const store = useAiSidecarStore.getState();
+    store.setSidecarRuntime({
+      enabled: status.enabled,
+      running: status.running,
+      healthy: status.healthy,
+      version: status.version ?? null,
+    });
+    store.setMetrics(metrics);
+    // Future: expose `models` in store when UI for model picker is added.
+    void models;
+  } catch {
+    // Best-effort only.
+  }
+}
+
+let runtimePollHandle: ReturnType<typeof setInterval> | null = null;
+
+/** Start periodic refresh of runtime telemetry (sidecar metrics/version). */
+export function startAiSidecarRuntimePolling(intervalMs = 5000): void {
+  stopAiSidecarRuntimePolling();
+  refreshAiSidecarRuntime();
+  runtimePollHandle = setInterval(() => {
+    refreshAiSidecarRuntime();
+  }, intervalMs);
+}
+
+export function stopAiSidecarRuntimePolling(): void {
+  if (runtimePollHandle) {
+    clearInterval(runtimePollHandle);
+    runtimePollHandle = null;
+  }
 }
 
 /**
@@ -91,6 +138,9 @@ export async function activateAiSidecar(): Promise<string> {
     useAiSidecarStore.getState().setActive(true);
     useAiSidecarStore.getState().setModelPath(modelPath);
     setStatus("ready");
+
+    // Refresh runtime telemetry after activation.
+    await refreshAiSidecarRuntime();
 
     return modelPath;
   } catch (err) {
