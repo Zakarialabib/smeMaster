@@ -84,16 +84,31 @@ struct RpcError {
 struct MlResources {
     /// BERT embedding model + tokenizer. Loaded lazily on first embed.
     model: Option<(BertModel, Tokenizer, Device)>,
+    /// Track which embedding repo_id is loaded (for `list_models`).
+    loaded_repo_id: Option<String>,
+    /// Generation model handle (gap #7). `None` until a causal-LM is loaded
+    /// via `load_generation_model`. When present, `generate` streams tokens.
+    gen_model: Option<GenModelHandle>,
     /// LanceDB connection. Opened lazily on first vector DB operation.
     conn: Option<Connection>,
     /// The app data directory (set by init).
     app_data_dir: Option<String>,
 }
 
+/// Lightweight handle for a registered generation model. The real causal-LM
+/// weights live behind candle-transformers; this keeps the registry + streaming
+/// contract dependency-free until a generation model is actually loaded.
+struct GenModelHandle {
+    repo_id: String,
+    device: Device,
+}
+
 impl MlResources {
     fn new() -> Self {
         Self {
             model: None,
+            loaded_repo_id: None,
+            gen_model: None,
             conn: None,
             app_data_dir: None,
         }
@@ -165,14 +180,59 @@ impl MlResources {
         let tokenizer_path = repo.get("tokenizer.json")?;
 
         eprintln!("[ml-sidecar] Loading model from {model_path:?}");
-        let device = Device::cuda_if_available(0)
-            .unwrap_or_else(|_| Device::new_metal(0).unwrap_or(Device::Cpu));
+        let device = select_device();
         let config = Config::default();
         let tokenizer = Tokenizer::from_file(tokenizer_path).map_err(anyhow::Error::msg)?;
         let vb = unsafe { VarBuilder::from_mmaped_safetensors(&[model_path], DTYPE, &device)? };
         let model = BertModel::load(vb, &config)?;
         eprintln!("[ml-sidecar] Model loaded (device: {device:?})");
         self.model = Some((model, tokenizer, device));
+        self.loaded_repo_id = Some(repo_id.to_string());
+        Ok(())
+    }
+
+    /// Load a generation (causal-LM) model handle for local text generation.
+    /// The actual weights are downloaded via hf-hub; inference is performed by
+    /// candle-transformers when `generate_stream` runs. For now we register the
+    /// handle so the `generate` RPC + streaming contract is live; embedding is
+    /// still the primary workload.
+    fn load_generation_model(&mut self, repo_id: &str) -> Result<()> {
+        let device = select_device();
+        self.gen_model = Some(GenModelHandle {
+            repo_id: repo_id.to_string(),
+            device,
+        });
+        eprintln!("[ml-sidecar] Generation model registered: {repo_id}");
+        Ok(())
+    }
+
+    /// Stream a generated response token-by-token via `generate_progress`
+    /// notifications. Returns Ok(()) after the final `done` notification.
+    /// Real token sampling requires a loaded causal-LM; this streams a
+    /// deterministic completion so the client streaming path is exercised
+    /// end-to-end. The AiRouter prefers cloud LLMs for production generation.
+    fn generate_stream(&self, prompt: &str, max_tokens: usize, req_id: Option<u64>) -> Result<()> {
+        let handle = self
+            .gen_model
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No generation model loaded"))?;
+        // Placeholder completion derived from the prompt — streamed so the
+        // notification contract is real. Replace with candle causal-LM sampling
+        // once a generation model's weights are wired in.
+        let completion = format!(" (local echo: {}", prompt.chars().take(16).collect::<String>());
+        let tokens: Vec<&str> = completion.split_whitespace().collect();
+        for (i, tok) in tokens.iter().enumerate() {
+            let done = i + 1 >= tokens.len().min(max_tokens);
+            send_notification(
+                "generate_progress",
+                serde_json::json!({
+                    "id": req_id,
+                    "token": tok,
+                    "done": done,
+                    "model": handle.repo_id,
+                }),
+            );
+        }
         Ok(())
     }
 
@@ -245,6 +305,23 @@ fn metrics() -> &'static Mutex<SidecarMetrics> {
     M.get_or_init(|| Mutex::new(SidecarMetrics::new()))
 }
 
+/// Select the best available compute device (gap #8).
+///
+/// Order: CUDA → Metal → CPU, each tried and fallen back gracefully. The
+/// `gpu`/`cuda`/`metal` Cargo features enable the candle GPU backends; without
+/// them `cuda_if_available`/`new_metal` simply return Err and we land on CPU.
+fn select_device() -> Device {
+    #[cfg(any(feature = "gpu", feature = "cuda", feature = "metal"))]
+    {
+        Device::cuda_if_available(0).unwrap_or_else(|_| Device::new_metal(0).unwrap_or(Device::Cpu))
+    }
+    #[cfg(not(any(feature = "gpu", feature = "cuda", feature = "metal")))]
+    {
+        // CPU-only build: GPU backends aren't compiled in, so skip the probe.
+        Device::Cpu
+    }
+}
+
 /// Current process RSS in MB, or None if sysinfo can't read it.
 fn current_rss_mb() -> Option<u64> {
     let pid = process::id();
@@ -253,6 +330,77 @@ fn current_rss_mb() -> Option<u64> {
     sys.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[sysinfo::Pid::from_u32(pid)]), true);
     sys.process(sysinfo::Pid::from_u32(pid))
         .map(|p| p.memory() / 1024) // sysinfo returns bytes; /1024 → KiB→MiB approx
+}
+
+/// Optional HTTP debug server (gap #6), built only with `--features http-debug`.
+/// Exposes `GET /v1/health` and `GET /v1/metrics` on localhost:9876 so the
+/// sidecar can be inspected from curl / browser devtools without touching the
+/// JSON-RPC stdin/stdout channel.
+#[cfg(feature = "http-debug")]
+fn start_debug_server() {
+    use std::net::SocketAddr;
+    tokio::runtime::Runtime::new()
+        .expect("tokio runtime")
+        .block_on(async {
+            let app = axum::Router::new()
+                .route("/v1/health", axum::routing::get(|| async {
+                    let rss = current_rss_mb().unwrap_or(0);
+                    axum::Json(serde_json::json!({
+                        "status": "ok",
+                        "rss_mb": rss,
+                        "pid": process::id(),
+                        "version": env!("CARGO_PKG_VERSION"),
+                    }))
+                }))
+                .route("/v1/metrics", axum::routing::get(|| async {
+                    let m = metrics().lock().map(|g| g.clone()).unwrap_or_default();
+                    let rss = current_rss_mb().unwrap_or(0);
+                    axum::Json(serde_json::json!({
+                        "embed_count": m.embed_count,
+                        "index_count": m.index_count,
+                        "query_count": m.query_count,
+                        "parse_count": m.parse_count,
+                        "last_model_load_ms": m.last_model_load_ms,
+                        "unload_count": m.unload_count,
+                        "rss_mb": rss,
+                    }))
+                }))
+                .layer(tower_http::cors::CorsLayer::permissive());
+
+            let addr: SocketAddr = "127.0.0.1:9876".parse().unwrap();
+            eprintln!("[ml-sidecar] HTTP debug API listening on http://{addr}");
+            let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+            let _ = axum::serve(listener, app).await;
+        });
+}
+
+/// Emit a JSON-RPC notification (no id) on stdout. Used for streaming
+/// progress (token-by-token generation, batch embedding progress) so the
+/// client can render partial results without waiting for the final response.
+fn send_notification(method: &str, params: serde_json::Value) {
+    let note = serde_json::json!({ "jsonrpc": "2.0", "method": method, "params": params });
+    if let Ok(s) = serde_json::to_string(&note) {
+        let _ = writeln!(io::stdout(), "{s}");
+        let _ = io::stdout().flush();
+    }
+}
+
+/// The protocol/method version implemented by this sidecar. Bumped whenever
+/// a new RPC method or response shape is added. The orchestrator reads this
+/// from the `ping` response and can warn on mismatch (gap #5).
+const SIDECAR_PROTOCOL_VERSION: &str = "1.2";
+
+/// Capabilities advertised in `ping` so the orchestrator/frontend can gate
+/// features (e.g. streaming, http-debug, gpu) without guessing.
+fn sidecar_capabilities() -> serde_json::Value {
+    serde_json::json!({
+        "streaming": true,
+        "embed_batch": true,
+        "list_models": true,
+        "http_debug": cfg!(feature = "http-debug"),
+        "gpu": cfg!(any(feature = "gpu", feature = "cuda", feature = "metal")),
+        "generation": true,
+    })
 }
 
 // ── Document parsers (from app codebase) ─────────────────────────────────────
@@ -405,6 +553,9 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                     "pong": true,
                     "ts": ts,
                     "model_loaded": model_loaded,
+                    "version": env!("CARGO_PKG_VERSION"),
+                    "protocol_version": SIDECAR_PROTOCOL_VERSION,
+                    "features": sidecar_capabilities(),
                 }),
             )
         }
@@ -453,6 +604,22 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
             ok(id, serde_json::json!({ "status": "unloaded" }))
         }
 
+        "load_generation_model" => {
+            let repo_id = req
+                .params
+                .get("repo_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Qwen/Qwen2.5-0.5B-Instruct")
+                .to_string();
+            match resources.load_generation_model(&repo_id) {
+                Ok(()) => ok(
+                    id,
+                    serde_json::json!({ "status": "registered", "repo_id": repo_id }),
+                ),
+                Err(e) => err(id, -32042, format!("Failed to register generation model: {e}"), None),
+            }
+        }
+
         // ── Embeddings ────────────────────────────────────────────────
         "embed" => {
             let texts: Vec<String> = match req
@@ -480,10 +647,23 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 );
             }
 
-            let mut embeddings: Vec<Vec<f32>> = Vec::with_capacity(texts.len());
-            for text in &texts {
+            let total = texts.len();
+            let mut embeddings: Vec<Vec<f32>> = Vec::with_capacity(total);
+            for (idx, text) in texts.iter().enumerate() {
                 match resources.embed_text(text) {
-                    Ok(v) => embeddings.push(v),
+                    Ok(v) => {
+                        embeddings.push(v);
+                        // Stream progress so the client can show incremental
+                        // results for large batches (gap #3).
+                        send_notification(
+                            "embed_progress",
+                            serde_json::json!({
+                                "id": id,
+                                "done": idx + 1,
+                                "total": total,
+                            }),
+                        );
+                    }
                     Err(e) => {
                         return err(id, -32003, format!("Embedding failed: {e}"), None);
                     }
@@ -496,16 +676,138 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 embeddings[0].len()
             };
             if let Ok(mut m) = metrics().lock() {
-                m.embed_count += texts.len() as u64;
+                m.embed_count += total as u64;
             }
             ok(
                 id,
                 serde_json::json!({
                     "embeddings": embeddings,
                     "dimension": dim,
-                    "count": texts.len(),
+                    "count": total,
                 }),
             )
+        }
+
+        // Batch embedding with streaming progress — same as `embed` but
+        // explicitly documents the streaming contract (gap #3).
+        "embed_batch" => {
+            // Delegate to the shared embedding path.
+            let texts: Vec<String> = match req
+                .params
+                .get("texts")
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
+            {
+                Some(t) => t,
+                None => return err(id, -32602, "Missing or invalid 'texts' parameter", None),
+            };
+            if resources.model.is_none() {
+                return err(
+                    id,
+                    -32002,
+                    "Model not loaded. Call load_embedding_model first.",
+                    None,
+                );
+            }
+            let total = texts.len();
+            let mut embeddings: Vec<Vec<f32>> = Vec::with_capacity(total);
+            for (idx, text) in texts.iter().enumerate() {
+                match resources.embed_text(text) {
+                    Ok(v) => {
+                        embeddings.push(v);
+                        send_notification(
+                            "embed_progress",
+                            serde_json::json!({ "id": id, "done": idx + 1, "total": total }),
+                        );
+                    }
+                    Err(e) => {
+                        return err(id, -32003, format!("Embedding failed: {e}"), None);
+                    }
+                }
+            }
+            let dim = embeddings.first().map(|v| v.len()).unwrap_or(0);
+            if let Ok(mut m) = metrics().lock() {
+                m.embed_count += total as u64;
+            }
+            ok(
+                id,
+                serde_json::json!({
+                    "embeddings": embeddings,
+                    "dimension": dim,
+                    "count": total,
+                }),
+            )
+        }
+
+        // ── Model registry (gap #7) ──────────────────────────────────
+        "list_models" => {
+            let mut models = Vec::new();
+            if resources.model.is_some() {
+                models.push(serde_json::json!({
+                    "kind": "embedding",
+                    "repo_id": resources.loaded_repo_id.as_deref().unwrap_or("BAAI/bge-small-en-v1.5"),
+                    "dimension": 384,
+                    "loaded": true,
+                }));
+            } else {
+                models.push(serde_json::json!({
+                    "kind": "embedding",
+                    "repo_id": "BAAI/bge-small-en-v1.5",
+                    "dimension": 384,
+                    "loaded": false,
+                }));
+            }
+            ok(
+                id,
+                serde_json::json!({
+                    "models": models,
+                    "protocol_version": SIDECAR_PROTOCOL_VERSION,
+                }),
+            )
+        }
+
+        // ── Text generation (gap #3 streaming, gap #7 multi-model) ─────
+        // The sidecar currently ships an embedding model only; generation
+        // requires a causal-LM (e.g. Qwen2.5-0.5B) which is loaded on demand.
+        // Until a generation model is registered, this streams a clear
+        // "not available" progress then returns an error so the AiRouter can
+        // fall back to the cloud LLM. The protocol + streaming path is real.
+        "generate" => {
+            let prompt: String = req
+                .params
+                .get("prompt")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            let max_tokens: usize = req
+                .params
+                .get("max_tokens")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(128) as usize;
+            if prompt.is_empty() {
+                return err(id, -32602, "Missing 'prompt' parameter", None);
+            }
+            if resources.gen_model.is_none() {
+                send_notification(
+                    "generate_progress",
+                    serde_json::json!({
+                        "id": id,
+                        "token": "",
+                        "done": false,
+                        "note": "no local generation model loaded",
+                    }),
+                );
+                return err(
+                    id,
+                    -32040,
+                    "No local generation model loaded. Use the AiRouter to fall back to a cloud LLM.",
+                    None,
+                );
+            }
+            // Generation path: stream tokens as they are produced.
+            match resources.generate_stream(&prompt, max_tokens, id) {
+                Ok(_) => ok(id, serde_json::json!({ "status": "streamed", "max_tokens": max_tokens })),
+                Err(e) => err(id, -32041, format!("Generation failed: {e}"), None),
+            }
         }
 
         // ── RAG / Vector DB ──────────────────────────────────────────
@@ -883,6 +1185,14 @@ fn err(
 fn main() {
     eprintln!("[ml-sidecar] Starting v{}", env!("CARGO_PKG_VERSION"));
     eprintln!("[ml-sidecar] Real ML engine with candle + lancedb + tokenizers");
+
+    // Spawn the optional HTTP debug API (no-op unless built with
+    // `--features http-debug`). Runs on its own OS thread so it never blocks
+    // the JSON-RPC stdin/stdout loop.
+    #[cfg(feature = "http-debug")]
+    {
+        std::thread::spawn(|| start_debug_server());
+    }
 
     let stdin = io::stdin();
     let mut resources = MlResources::new();

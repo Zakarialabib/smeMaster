@@ -589,6 +589,13 @@ pub struct MlSidecarService {
     memory_limit_mb: Option<u64>,
     /// Structured metrics for observability.
     metrics: Arc<SidecarMetrics>,
+    /// Sidecar-reported version (from `ping`), for gap #5 independent-update
+    /// negotiation. `None` until the first successful ping.
+    version: std::sync::RwLock<Option<String>>,
+    /// Broadcast channel for JSON-RPC notifications (streaming progress, gap #3).
+    /// The reader task forwards any stdout line that is a notification (no "id")
+    /// here; subscribers (e.g. a streaming embed/generate call) receive them.
+    notification_tx: tokio::sync::broadcast::Sender<serde_json::Value>,
 }
 
 /// Structured metrics for the ML sidecar process.
@@ -654,6 +661,7 @@ impl MlSidecarService {
     /// `memory_limit_mb`: Optional RSS limit. When the sidecar process exceeds
     /// this value (in MB), `health_check` reports `Degraded`.
     pub fn new(handle: tauri::AppHandle, memory_limit_mb: Option<u64>) -> Self {
+        let (notification_tx, _) = tokio::sync::broadcast::channel(128);
         Self {
             handle,
             child: tokio::sync::Mutex::new(None),
@@ -664,6 +672,8 @@ impl MlSidecarService {
             next_id: std::sync::atomic::AtomicU64::new(1),
             memory_limit_mb,
             metrics: Arc::new(SidecarMetrics::new()),
+            version: std::sync::RwLock::new(None),
+            notification_tx,
         }
     }
 
@@ -769,8 +779,11 @@ impl MlSidecarService {
         let pending = self.pending.clone();
         let healthy_flag = self.healthy.clone();
         let running_flag = self.running.clone();
-        let handle_clone = self.handle.clone();
         let restart_fn = self.make_restart_fn();
+        // Gap #3: broadcast channel for JSON-RPC notifications (no "id").
+        let notification_tx = self.notification_tx.clone();
+        // Gap #5: sidecar version from ping, populated lazily.
+        let version_writer = self.version.clone();
 
         tauri::async_runtime::spawn(async move {
             use tauri_plugin_shell::process::CommandEvent;
@@ -782,21 +795,33 @@ impl MlSidecarService {
                         if trimmed.is_empty() {
                             continue;
                         }
-                        // Parse JSON-RPC response
-                        if let Ok(resp) = serde_json::from_str::<serde_json::Value>(trimmed) {
-                            if let Some(resp_id) = resp.get("id").and_then(|v| v.as_u64()) {
-                                // Match response to pending request
+                        // Parse JSON-RPC message
+                        if let Ok(msg) = serde_json::from_str::<serde_json::Value>(trimmed) {
+                            if let Some(resp_id) = msg.get("id").and_then(|v| v.as_u64()) {
+                                // Matched request/response — complete the oneshot.
                                 if let Some((_, tx)) = pending.remove(&resp_id) {
-                                    if let Some(err) = resp.get("error") {
-                                        let _ = tx.send(Err(anyhow::anyhow!(
-                                            "{}", err.get("message").and_then(|m| m.as_str()).unwrap_or("unknown error")
-                                        )));
+                                    if let Some(err) = msg.get("error") {
+                                        let msg_text = err.get("message")
+                                            .and_then(|m| m.as_str())
+                                            .unwrap_or("unknown error")
+                                            .to_string();
+                                        let _ = tx.send(Err(anyhow::anyhow!(msg_text)));
                                     } else {
-                                        let result = resp.get("result").cloned().unwrap_or(serde_json::Value::Null);
+                                        let result = msg.get("result").cloned().unwrap_or(serde_json::Value::Null);
+                                        // Gap #5: capture sidecar version from any resp
+                                        // that includes it (init returns version; ping does too).
+                                        if result.get("version").is_some() {
+                                            if let Some(v) = result.get("version").and_then(|v| v.as_str()) {
+                                                let _ = version_writer.write().unwrap().replace(v.to_string());
+                                            }
+                                        }
                                         let _ = tx.send(Ok(result));
                                     }
                                     healthy_flag.store(true, Ordering::Release);
                                 }
+                            } else {
+                                // Gap #3: notification (no id) — broadcast to subscribers.
+                                let _ = notification_tx.send(msg);
                             }
                         }
                     }
@@ -1064,6 +1089,10 @@ impl Service for MlSidecarService {
                 Ok(resp) => {
                     log::trace!("[ml-sidecar] Ping OK: {resp}");
                     self.healthy.store(true, Ordering::Release);
+                    // Gap #5: cache sidecar version on every successful ping.
+                    if let Some(ver) = resp.get("version").and_then(|v| v.as_str()) {
+                        let _ = self.version.write().unwrap().replace(ver.to_string());
+                    }
                 }
                 Err(e) => {
                     log::warn!("[ml-sidecar] Health check ping failed: {e}");
@@ -1179,6 +1208,48 @@ impl SidecarClient {
             .await
             .ok()
             .and_then(|r| r.get("rss_mb").and_then(|v| v.as_u64()))
+    }
+
+    /// Fetch the cached sidecar binary version (from `ping`/`init` results).
+    /// `None` before the first successful ping/init.
+    pub fn version(&self) -> Option<String> {
+        self.service.version.read().unwrap().clone()
+    }
+
+    /// Gap #3: subscribe to JSON-RPC notifications (no "id") from the sidecar.
+    /// Returns a broadcast receiver; notifications are dropped if the receiver
+    /// is too slow (capacity 128).
+    pub fn subscribe_notifications(&self) -> tokio::sync::broadcast::Receiver<serde_json::Value> {
+        self.service.notification_tx.subscribe()
+    }
+
+    // ── New protocol bridges (gap #7, gap #3) ───────────────────────────
+
+    /// List known models in the sidecar registry.
+    pub async fn list_models(&self) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("list_models", serde_json::json!({})).await
+    }
+
+    /// Embed multiple batches in one RPC.
+    pub async fn embed_batch(&self, batches: Vec<Vec<String>>) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("embed_batch", serde_json::json!({"batches": batches})).await
+    }
+
+    /// Load a generation model into the sidecar (no inference until `generate`).
+    pub async fn load_generation_model(&self, repo_id: &str) -> anyhow::Result<()> {
+        let resp = self.service.send_request("load_generation_model", serde_json::json!({"repo_id": repo_id})).await?;
+        if let Some(status) = resp.get("status").and_then(|v| v.as_str()) {
+            if status != "loaded" {
+                anyhow::bail!("Sidecar load_generation_model failed: {status}");
+            }
+        }
+        Ok(())
+    }
+
+    /// Run a generation request; if the sidecar streams progress notifications
+    /// they'll appear on the notification subscriber.
+    pub async fn generate(&self, prompt: &str, max_tokens: usize) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("generate", serde_json::json!({"prompt": prompt, "max_tokens": max_tokens})).await
     }
 }
 

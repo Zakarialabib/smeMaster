@@ -13,6 +13,13 @@ rust-version = "1.77.2"
 name = "ml-sidecar"
 path = "src/main.rs"
 
+[features]
+default = []
+http-debug = ["dep:axum", "dep:tokio", "dep:tower-http"]
+gpu = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
+cuda = ["gpu"]
+metal = ["candle-core/metal", "candle-nn/metal", "candle-transformers/metal"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -33,3 +40,10 @@ tokenizers = "0.21"
 calamine = "0.26"
 docx-rs = "0.4"
 lopdf = "0.34"
+
+# ── Optional / debug dependencies (behind features) ──────────────────────
+# `http-debug`: spawn an axum HTTP server on localhost:9876 exposing
+#   GET /v1/health and GET /v1/metrics for external observability.
+axum = { version = "0.7", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"], optional = true }
+tower-http = { version = "0.5", features = ["cors"], optional = true }
