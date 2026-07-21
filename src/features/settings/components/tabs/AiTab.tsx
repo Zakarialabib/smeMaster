@@ -8,16 +8,17 @@ import { Button } from "@shared/components/ui/Button";
 import { HelpCard } from "@features/settings/components/HelpCard";
 import { SettingGroup, SettingRow, ToggleRow, ButtonGroup } from "@features/settings/components/SettingsHelpers";
 import { cn } from "@shared/utils/cn";
-import { CheckCircle2, AlertCircle, Database, Cpu, Loader2, Server, Sparkles } from "lucide-react";
+import { CheckCircle2, AlertCircle, Database, Cpu, Loader2, Server, Sparkles, RefreshCw } from "lucide-react";
 import BundleSettings from "../BundleSettings";
 import KnowledgeBaseSettings from "../KnowledgeBaseSettings";
 import VoiceSettings from "../VoiceSettings";
 import { useRagStore } from "@features/assistant/stores/ragStore";
+import { refreshAiSidecarRuntime, type AiSidecarStatus } from "@features/assistant/services/aiSidecar";
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 
 interface SubTab {
-  id: "models" | "features" | "kb";
+  id: "models" | "features" | "kb" | "ai-router";
   labelKey: string;
   icon: typeof Server;
 }
@@ -26,6 +27,7 @@ const SUB_TABS: SubTab[] = [
   { id: "models", labelKey: "settings.subtabProviderModels", icon: Server },
   { id: "features", labelKey: "settings.subtabFeatures", icon: Sparkles },
   { id: "kb", labelKey: "settings.subtabKnowledgeBase", icon: Database },
+  { id: "ai-router", labelKey: "settings.subtabAiRouter", icon: Cpu },
 ];
 
 export default function AiTab() {
@@ -70,11 +72,18 @@ export default function AiTab() {
   const [autoArchiveCategories, setAutoArchiveCategories] = useState<Set<string>>(() => new Set());
 
   // ── Sub-navigation + status row ──
-  const [activeSubTab, setActiveSubTab] = useState<"models" | "features" | "kb">("models");
+  const [activeSubTab, setActiveSubTab] = useState<"models" | "features" | "kb" | "ai-router">("models");
   const [providerConnected, setProviderConnected] = useState<boolean | null>(null);
   const [embeddingSet, setEmbeddingSet] = useState<boolean | null>(null);
   const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
   const ragEmbeddingTest = useRagStore((s) => s.embeddingTest);
+
+  // ai-router observability
+  const [aiRouterVersion, setAiRouterVersion] = useState<string | null>(null);
+  const [aiRouterHealthy, setAiRouterHealthy] = useState<boolean | null>(null);
+  const [aiRouterRss, setAiRouterRss] = useState<number | null>(null);
+  const [aiRouterModelLoaded, setAiRouterModelLoaded] = useState<boolean | null>(null);
+  const [aiRouterRefreshing, setAiRouterRefreshing] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -133,27 +142,25 @@ export default function AiTab() {
       const aiAskInbox = await getSetting("ai_ask_inbox_enabled");
       setAiAskInboxEnabled(aiAskInbox !== "false");
 
+      
       const autoArchive = await getSetting("auto_archive_categories");
       if (autoArchive) {
         setAutoArchiveCategories(new Set(autoArchive.split(",").map((s) => s.trim()).filter(Boolean)));
       }
 
-      // ── Status row derivation ──
-      try {
-        const { isAiAvailable } = await import("@shared/services/ai/providerManager");
-        setProviderConnected(await isAiAvailable());
-      } catch {
-        setProviderConnected(false);
-      }
-      const embSource = await getSetting("rag_embedding_source");
-      const lmEmbedding = (await getSetting("lmstudio_embedding_model")) ?? "";
-      const activeProvider = (await getSetting("ai_provider")) ?? "claude";
-      const ragModelStatus = await getSetting("smemaster.rag.modelPath");
-      const isBge = embSource === "rust_bge";
-      const providerReady = activeProvider === "lmstudio" && !!lmEmbedding.trim();
-      setEmbeddingSet(isBge ? !!ragModelStatus : providerReady || (embSource !== "rust_bge" && ragModelStatus ? true : providerReady));
+      const refreshAi = async () => {
+        try {
+          setAiRouterRefreshing(true);
+          await refreshAiSidecarRuntime();
+        } finally {
+          setAiRouterRefreshing(false);
+        }
+      };
+      refreshAi();
     }
     load();
+    const id = setInterval(refreshAi, 10000);
+    return () => clearInterval(id);
   }, []);
 
   function isValidUrl(str: string): boolean {
