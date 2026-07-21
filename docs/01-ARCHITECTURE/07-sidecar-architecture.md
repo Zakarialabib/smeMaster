@@ -149,40 +149,54 @@ src-tauri/
 
 ## Protocol
 
-### JSON-RPC 2.0 over stdin/stdout
+### JSON-RPC 2.0 over stdin/stdout + optional HTTP debug API
 
 **Request:**
 
-```json
+```
 { "jsonrpc": "2.0", "id": 1, "method": "embed", "params": { "texts": ["Hello world"] } }
 ```
 
 **Response:**
 
-```json
+```
 {"jsonrpc":"2.0","id":1,"result":{"embeddings":[[0.001,0.002,...]],"dimension":384,"count":1}}
 ```
 
 **Error:**
 
-```json
+```
 { "jsonrpc": "2.0", "id": 1, "error": { "code": -32601, "message": "Method 'unknown' not found" } }
 ```
+
+**Notification:**
+
+```
+{"jsonrpc":"2.0","method":"progress","params":{"step":"generate","done":1,"total":12}}
+```
+
+Notifications carry no `id`. The main app reader task forwards them via a broadcast channel so UI consumers can stream progress without affecting request/response matching.
 
 ### Methods
 
 | Method                 | Params                  | Returns                     | Description                          |
 | ---------------------- | ----------------------- | --------------------------- | ------------------------------------ |
 | `init`                 | `{ app_data_dir }`      | `{ status, version }`       | Initialize with app data directory   |
-| `ping`                 | `{}`                    | `{ pong, ts }`              | Health check                         |
+| `ping`                 | `{}`                    | `{ pong, ts, version }`     | Health check                         |
 | `shutdown`             | `{}`                    | —                           | Graceful exit (process exits with 0) |
 | `load_embedding_model` | `{ repo_id }`           | `{ status, dimension }`     | Download + load embedding model      |
 | `unload_model`         | `{}`                    | `{ status }`                | Free model memory                    |
+| `list_models`          | `{}`                    | `{ models: [...] }`         | Registry of loaded models            |
 | `embed`                | `{ texts: [str] }`      | `{ embeddings, dimension }` | Compute text embeddings              |
+| `embed_batch`          | `{ batches: [[str]] }`  | `{ results: [...] }`        | Batch embedding with progress notes  |
 | `ensure_vector_db`     | `{ db_path }`           | `{ status }`                | Open/create LanceDB database         |
 | `index_vectors`        | `{ vectors, metadata }` | `{ indexed }`               | Insert vectors into index            |
 | `query_rag`            | `{ query, top_k }`      | `{ results }`               | Vector search + return context       |
 | `parse_document`       | `{ path }`              | `{ text }`                  | Extract text from docx/pdf/xlsx      |
+| `load_generation_model`| `{ repo_id }`           | `{ status }`                | Register a generation model handle   |
+| `generate`             | `{ prompt, max_tokens }`| `{ text }`                  | Run generation + stream progress     |
+| `memory_usage`         | `{}`                    | `{ rss_mb, model_loaded, pid }` | Sidecar self-memory report     |
+| `metrics`              | `{}`                    | `{ embed_count, ..., rss_mb }`| Sidecar self-metrics                |
 
 ## Lifecycle
 
