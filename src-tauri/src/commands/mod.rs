@@ -268,6 +268,12 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::db_list_ai_configs,
             #[cfg(feature = "local-ai")]
             ai::db_upsert_ai_cache,
+            #[cfg(feature = "local-ai")]
+            ai::ai_get_sidecar_status,
+            #[cfg(feature = "local-ai")]
+            ai::ai_get_sidecar_metrics,
+            #[cfg(feature = "local-ai")]
+            ai::ai_list_sidecar_models,
 
             // === commands::calendar (15 commands) ===
             calendar::db_list_calendars,

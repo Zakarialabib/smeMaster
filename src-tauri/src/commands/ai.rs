@@ -474,6 +474,7 @@ pub async fn db_list_ai_configs(
 }
 
 #[tauri::command]
+#[tauri::command]
 pub async fn db_upsert_ai_cache(
     pool: State<'_, SqlitePool>,
     entry: UpsertAiCacheRequest,
@@ -488,3 +489,80 @@ pub async fn db_upsert_ai_cache(
     .await
     .map_err(Into::into)
 }
+
+// ── Runtime AI / sidecar observability (gaps #1,#3,#5,#7,#9) ───────────
+
+/// Returns the current sidecar runtime status so the settings UI can disable
+/// the AI toggle when ML is unavailable (no binary, or `local-ai` is off).
+#[tauri::command]
+pub async fn ai_get_sidecar_status(app_handle: AppHandle) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        if let Some(service) = app_handle.try_state::<Arc<MlSidecarService>>() {
+            let svc = service.inner();
+            let running = svc.is_running();
+            let healthy = svc.is_healthy();
+            let version = svc.version();
+            Ok(serde_json::json!({
+                "enabled": true,
+                "running": running,
+                "healthy": healthy,
+                "version": version,
+            }))
+        } else {
+            Ok(serde_json::json!({
+                "enabled": true,
+                "running": false,
+                "healthy": false,
+                "version": None::<String>,
+            }))
+        }
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        Ok(serde_json::json!({
+            "enabled": false,
+            "running": false,
+            "healthy": false,
+            "version": None::<String>,
+        }))
+    }
+}
+
+/// Polls the sidecar for its embedded counter metrics (gap #9).
+/// Returns `null` when the sidecar binary predates the `metrics` method.
+#[tauri::command]
+pub async fn ai_get_sidecar_metrics(app_handle: AppHandle) -> CmdResult<Option<serde_json::Value>> {
+    #[cfg(feature = "local-ai")]
+    {
+        if let Some(service) = app_handle.try_state::<Arc<MlSidecarService>>() {
+            let client = SidecarClient::new(service.inner().clone());
+            Ok(client.metrics().await.ok())
+        } else {
+            Ok(None)
+        }
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        Ok(None)
+    }
+}
+
+/// Lists the models currently registered in the sidecar (gap #7).
+#[tauri::command]
+pub async fn ai_list_sidecar_models(app_handle: AppHandle) -> CmdResult<Option<serde_json::Value>> {
+    #[cfg(feature = "local-ai")]
+    {
+        if let Some(service) = app_handle.try_state::<Arc<MlSidecarService>>() {
+            let client = SidecarClient::new(service.inner().clone());
+            Ok(client.list_models().await.ok())
+        } else {
+            Ok(None)
+        }
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        Ok(None)
+    }
+}
+

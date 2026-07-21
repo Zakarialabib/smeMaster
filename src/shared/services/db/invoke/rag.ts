@@ -119,8 +119,8 @@ export async function aiResetVectorDb(): Promise<void> {
  * Fetch every chunked document (id + text) from emails, attachments,
  * and vault items — without embedding them. The frontend embeds each
  * chunk with a local provider (LM Studio / Ollama / …) and sends the
- * vectors back via `aiInsertProviderVectors`. This lets users build the
- * RAG index from a local provider without downloading BGE-small.
+ * vectors back via `aiInsertProviderVectors`. This lets users build
+ * the RAG index from a local provider without downloading BGE-small.
  */
 export async function aiGetEmailChunks(): Promise<{ id: string; text: string }[]> {
   return invokeCommand<{ id: string; text: string }[]>('ai_get_email_chunks');
@@ -145,3 +145,45 @@ export async function aiInsertProviderVectors(
   });
 }
 
+// ── Sidecar observability (gaps #1, #3, #5, #7, #9) ────────────────────────
+
+/** Sidecar runtime status: enabled, running, healthy, version. */
+export async function aiGetSidecarStatus(): Promise<{
+  enabled: boolean;
+  running: boolean;
+  healthy: boolean;
+  version: string | null;
+}> {
+  return invokeCommand('ai_get_sidecar_status');
+}
+
+/** Sidecar self-metrics: embed/index/query/parse counts, RSS, etc. */
+export async function aiGetSidecarMetrics(): Promise<{
+  embed_count: number;
+  index_count: number;
+  query_count: number;
+  parse_count: number;
+  unload_count: number;
+  last_model_load_ms: number;
+  model_loaded: boolean;
+  rss_mb: number;
+} | null> {
+  return invokeCommand<
+    | {
+        embed_count: number;
+        index_count: number;
+        query_count: number;
+        parse_count: number;
+        unload_count: number;
+        last_model_load_ms: number;
+        model_loaded: boolean;
+        rss_mb: number;
+      }
+    | null
+  >('ai_get_sidecar_metrics');
+}
+
+/** Models registered in the sidecar registry (gap #7). */
+export async function aiListSidecarModels(): Promise<any> {
+  return invokeCommand<any>('ai_list_sidecar_models');
+}
