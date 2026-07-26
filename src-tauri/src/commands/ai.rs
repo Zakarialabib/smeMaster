@@ -172,7 +172,9 @@ pub async fn ai_load_embedding_model(
     let engine = match engine_guard.as_mut() {
         Some(engine) => engine,
         None => {
-            let mut created = LocalEngine::new()
+            // `created` is moved into `engine_guard.insert(...)` below —
+            // never mutated on its own, so no `mut` binding.
+            let created = LocalEngine::new()
                 .map_err(|e| SerializedError::new("AI_LOAD_ERROR", format!("Failed to init AI engine: {e}")))?;
             engine_guard.insert(created)
         }
@@ -474,7 +476,6 @@ pub async fn db_list_ai_configs(
 }
 
 #[tauri::command]
-#[tauri::command]
 pub async fn db_upsert_ai_cache(
     pool: State<'_, SqlitePool>,
     entry: UpsertAiCacheRequest,
@@ -537,7 +538,12 @@ pub async fn ai_get_sidecar_metrics(app_handle: AppHandle) -> CmdResult<Option<s
     {
         if let Some(service) = app_handle.try_state::<Arc<MlSidecarService>>() {
             let client = SidecarClient::new(service.inner().clone());
-            Ok(client.metrics().await.ok())
+            // `client.metrics()` is `async fn(...) -> Option<serde_json::Value>`.
+            // Wrap the `Option` directly in `Ok` — `Option` has no `.ok()`
+            // method (that's on `Result`); calling `.ok()` on `Option` is a
+            // no-op-style typo that fails to compile. The return type
+            // `CmdResult<Option<serde_json::Value>>` is `Result<Option<_>, _>`.
+            Ok(client.metrics().await)
         } else {
             Ok(None)
         }
