@@ -85,8 +85,6 @@ repo/
 *.rpm
 *.src.rpm
 /.agents
-package-lock.json
-src-tauri/Cargo.lock
 opencode.json
 .opencode/skills/*
 .trae/documents/*

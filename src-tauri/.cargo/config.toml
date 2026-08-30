@@ -1,14 +1,3 @@
-[target.aarch64-linux-android]
-linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android24-clang.cmd"
-
-[target.armv7-linux-androideabi]
-linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\armv7a-linux-androideabi24-clang.cmd"
-
-[target.i686-linux-android]
-linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\i686-linux-android24-clang.cmd"
-
-[target.x86_64-linux-android]
-linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\x86_64-linux-android24-clang.cmd"
 
 # ── Environment variables for build scripts (cc crate, ring, etc.) ──
 # The `ring` crate uses the `cc` crate to compile C/assembly for crypto.
@@ -16,6 +5,19 @@ linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\too
 # Without these it tries to guess the cross-compiler name (e.g.
 # `arm-linux-androideabi-clang`) which does NOT match the NDK's actual
 # naming scheme (`armv7a-linux-androideabi24-clang.cmd`).
+#
+# LOCAL DEVELOPMENT (Windows):
+#   These paths point to your local Android SDK/NDK and vendored protoc.
+#   They work out of the box on the development machine.
+#
+# CI (GitHub Actions):
+#   The build workflows override these via environment variables:
+#   - CC_<target> / AR_<target> → set to NDK toolchain paths from ANDROID_HOME
+#   - PROTOC → set to system-installed protoc (choco/apt)
+#   - The `force = true` on PROTOC means env vars always win.
+#
+# To adapt for a different local machine, update the paths below.
+
 [env]
 CC_aarch64_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android24-clang.cmd"
 AR_aarch64_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\llvm-ar.exe"
@@ -28,3 +30,43 @@ AR_i686_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.
 
 CC_x86_64_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\x86_64-linux-android24-clang.cmd"
 AR_x86_64_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\llvm-ar.exe"
+
+
+# ── SMEMaster — vendored protoc (Protocol Buffers compiler) ──
+#
+# The `local-ai` feature (on by default) pulls in `lancedb` + `arrow`, which
+# transitively require `protoc` at build time. We vendor a pinned `protoc.exe`
+# (v25.1, ~3 MB) and the matching `include/` well-known proto types so the
+# Rust build is fully self-contained — no system install, no PATH fiddling,
+# no network download.
+#
+# How it works:
+#   1. The `protoc` binary lives at `tools/protoc/bin/protoc.exe`.
+#   2. The `include/` dir sits next to `bin/` (standard protoc distribution
+#      layout) so the `protoc` crate auto-discovers the well-known types
+#      (`google/protobuf/descriptor.proto` etc.) without `PROTOC_INCLUDE`.
+#   3. We set `PROTOC` env var here so `prost-build` (invoked by lancedb /
+#      arrow / parquet at build time) finds the vendored binary.
+#
+# If you move the repo to a different absolute path, update the `PROTOC`
+# line below. Relative paths don't work because each crate's build script
+# runs with its own CWD (smemaster vs. ml-sidecar), so the only path that
+# resolves the same in both contexts is an absolute one.
+#
+# To upgrade protoc: download `protoc-<ver>-win64.zip` from
+# https://github.com/protocolbuffers/protobuf/releases, replace the contents
+# of `tools/protoc/`, and bump the version comment below.
+# protoc v25.1 (pinned 2026-07-21) — works with lancedb 0.6 / arrow 51
+PROTOC = { value = "C:/laragon/www/smeMaster/src-tauri/tools/protoc/bin/protoc.exe", force = true }
+
+[target.aarch64-linux-android]
+linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android24-clang.cmd"
+
+[target.armv7-linux-androideabi]
+linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\armv7a-linux-androideabi24-clang.cmd"
+
+[target.i686-linux-android]
+linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\i686-linux-android24-clang.cmd"
+
+[target.x86_64-linux-android]
+linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\x86_64-linux-android24-clang.cmd"

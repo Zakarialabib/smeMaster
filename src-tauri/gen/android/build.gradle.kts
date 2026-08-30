@@ -2,13 +2,14 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven/google"); isAllowInsecureProtocol = true }
-        maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven/public"); isAllowInsecureProtocol = true }
     }
     dependencies {
         classpath(libs.android.gradle.plugin)
         classpath(libs.kotlin.gradle.plugin)
-        classpath(libs.google.services.plugin)
+        // NOTE: Google Services plugin disabled — no google-services.json configured.
+        // Re-enable when Firebase is set up: uncomment the line below and add
+        // google-services.json to app/ directory.
+        // classpath(libs.google.services.plugin)
     }
 }
 
@@ -16,8 +17,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven/google"); isAllowInsecureProtocol = true }
-        maven { url = uri("https://mirrors.cloud.tencent.com/repository/maven/public"); isAllowInsecureProtocol = true }
     }
 }
 

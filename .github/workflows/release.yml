@@ -12,8 +12,18 @@ on:
       release_id:
         required: false
         type: string
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
+  # ── Desktop: Windows ────────────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
     steps:
@@ -24,42 +34,188 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
+      - name: Install protoc
+        run: choco install protoc -y --no-progress
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2.0"
+      # Override vendored PROTOC path with system-installed protoc
+      - name: Set PROTOC env var
+        shell: pwsh
+        run: |
+          $protocPath = (Get-Command protoc).Source
+          echo "PROTOC=$protocPath" >> $env:GITHUB_ENV
 
-      # ▸▸▸ ML Sidecar: build first so externalBin is available ▸▸▸
-      - name: Install protoc (for sidecar)
-        run: choco install protoc
-
+      # Build ML sidecar first (required by externalBin)
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release
+        run: cargo build -p ml-sidecar --release --no-default-features
+        working-directory: src-tauri
+
+      - name: Copy sidecar to binaries/
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src-tauri/binaries
+          Copy-Item src-tauri/target/release/ml-sidecar.exe src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe -Force
+
+      # Build Tauri desktop (NSIS installer + MSI)
+      - name: Build Windows release
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tauriScript: npx tauri
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: 'SMEMaster v__VERSION__'
+          releaseBody: 'See the assets to download this version.'
+          releaseDraft: true
+          prerelease: false
+          args: '--no-default-features'
+
+  # ── Desktop: Linux ──────────────────────────────────────────────────────
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Override vendored PROTOC path with system-installed protoc
+      - name: Set PROTOC env var
+        run: echo "PROTOC=$(which protoc)" >> $GITHUB_ENV
+
+      # Build ML sidecar
+      - name: Build ML sidecar
+        run: cargo build -p ml-sidecar --release --no-default-features
         working-directory: src-tauri
 
       - name: Copy sidecar to binaries/
         run: |
           mkdir -p src-tauri/binaries
-          Copy-Item target/release/ml-sidecar.exe src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe -Force
+          cp src-tauri/target/release/ml-sidecar src-tauri/binaries/ml-sidecar-x86_64-unknown-linux-gnu
 
-      # ▸▸▸ Main Tauri build ▸▸▸
-      - name: Build Windows MSI
-        run: cargo tauri build --bundles msi
+      # Build Tauri desktop (AppImage, deb, rpm)
+      - name: Build Linux release
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tauriScript: npx tauri
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: 'SMEMaster v__VERSION__'
+          releaseBody: 'See the assets to download this version.'
+          releaseDraft: true
+          prerelease: false
+          args: '--no-default-features'
+
+  # ── Desktop: macOS (Intel + Apple Silicon) ──────────────────────────────
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin'
+          - target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: ${{ matrix.target }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install protoc
+        run: brew install protobuf
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Override vendored PROTOC path with system-installed protoc
+      - name: Set PROTOC env var
+        run: echo "PROTOC=$(which protoc)" >> $GITHUB_ENV
+
+      # Build ML sidecar
+      - name: Build ML sidecar
+        run: cargo build -p ml-sidecar --release --no-default-features ${{ matrix.args }}
         working-directory: src-tauri
 
-      - name: Upload MSI
-        uses: actions/upload-artifact@v4
-        with:
-          name: smemaster-windows
-          path: src-tauri/target/release/bundle/msi/*.msi
+      - name: Copy sidecar to binaries/
+        run: |
+          mkdir -p src-tauri/binaries
+          cp src-tauri/target/release/ml-sidecar src-tauri/binaries/ml-sidecar-${{ matrix.target }}
 
+      # Build Tauri desktop (DMG + app)
+      - name: Build macOS release
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tauriScript: npx tauri
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: 'SMEMaster v__VERSION__'
+          releaseBody: 'See the assets to download this version.'
+          releaseDraft: true
+          prerelease: false
+          args: '--no-default-features ${{ matrix.args }}'
+
+  # ── Android APK ─────────────────────────────────────────────────────────
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +224,12 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -85,45 +246,74 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android NDK and build tools
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-34"
+          sdkmanager "ndk;27.0.12077973"
+          sdkmanager "build-tools;35.0.0"
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2.0"
-
-      - name: Build Android APK
-        run: cargo tauri android build --apk
+      # Regenerate tauri.settings.gradle with correct CI paths
+      - name: Init Android project
+        run: cargo tauri android init
         working-directory: src-tauri
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: smemaster-android
-          path: src-tauri/gen/android/app/build/outputs/apk/release/app-release.apk
+      - name: Configure Rust for Android cross-compilation
+        shell: bash
+        run: |
+          NDK_BIN="$ANDROID_HOME/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          echo "CC_aarch64_linux_android=$NDK_BIN/aarch64-linux-android33-clang" >> "$GITHUB_ENV"
+          echo "AR_aarch64_linux_android=$NDK_BIN/llvm-ar" >> "$GITHUB_ENV"
+          echo "CC_armv7_linux_androideabi=$NDK_BIN/armv7a-linux-androideabi33-clang" >> "$GITHUB_ENV"
+          echo "AR_armv7_linux_androideabi=$NDK_BIN/llvm-ar" >> "$GITHUB_ENV"
+          echo "CC_i686_linux_android=$NDK_BIN/i686-linux-android33-clang" >> "$GITHUB_ENV"
+          echo "AR_i686_linux_android=$NDK_BIN/llvm-ar" >> "$GITHUB_ENV"
+          echo "CC_x86_64_linux_android=$NDK_BIN/x86_64-linux-android33-clang" >> "$GITHUB_ENV"
+          echo "AR_x86_64_linux_android=$NDK_BIN/llvm-ar" >> "$GITHUB_ENV"
+          echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
 
-  create-release:
-    needs: [build-windows, build-android]
+      # Build Android APK
+      - name: Build Android APK
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.12077973
+        with:
+          tauriScript: npx tauri
+          mobile: 'android'
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: 'SMEMaster v__VERSION__'
+          releaseBody: 'See the assets to download this version.'
+          releaseDraft: true
+          prerelease: false
+          args: '--no-default-features'
+
+  # ── Publish Release ─────────────────────────────────────────────────────
+  publish-release:
+    needs: [build-windows, build-linux, build-macos, build-android]
     runs-on: ubuntu-latest
+    if: always() && !contains(needs.*.result, 'failure')
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download Windows artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: smemaster-windows
-          path: artifacts/windows
+          path: artifacts
+          merge-multiple: true
 
-      - name: Download Android artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: smemaster-android
-          path: artifacts/android
+      - name: List artifacts
+        run: find artifacts -type f | head -50
 
-      - name: Create Release
+      # The tauri-action already uploads to the release for tag pushes.
+      # This job is a safety net for workflow_dispatch or if you want
+      # to manually manage the release.
+      - name: Create/Update Release (fallback)
+        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag_name }}
-          files: |
-            artifacts/windows/*.msi
-            artifacts/android/*.apk
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          files: artifacts/**
           generate_release_notes: true
+          draft: true
