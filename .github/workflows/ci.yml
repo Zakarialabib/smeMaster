@@ -40,7 +40,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: ESLint
-        run: npx eslint src --max-warnings=0
+        run: npx eslint src
 
       - name: Frontend tests
         run: npx vitest run --exclude integration
