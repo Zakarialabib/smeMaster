@@ -47,11 +47,11 @@ jobs:
 
       # Core app only — no ML sidecar (no protoc needed)
       - name: Rust check (core app only)
-        run: cargo check -p smemaster --no-default-features
+        run: cargo check -p smemaster --no-default-features --features rustls-tls
         working-directory: src-tauri
 
       - name: Rust tests (core app only)
-        run: cargo test -p smemaster --no-default-features
+        run: cargo test -p smemaster --no-default-features --features rustls-tls
         working-directory: src-tauri
 
       - name: Vite build

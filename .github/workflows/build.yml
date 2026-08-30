@@ -55,11 +55,11 @@ jobs:
           Set-Content -Path src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe -Value ""
 
       - name: Rust check (core app - no ML sidecar)
-        run: cargo check -p smemaster --no-default-features
+        run: cargo check -p smemaster --no-default-features --features rustls-tls
         working-directory: src-tauri
 
       - name: Rust tests (core app - no ML sidecar)
-        run: cargo test -p smemaster --no-default-features
+        run: cargo test -p smemaster --no-default-features --features rustls-tls
         working-directory: src-tauri
 
       - name: Vite build
