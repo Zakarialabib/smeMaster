@@ -44,7 +44,7 @@ jobs:
         run: npx eslint src
 
       - name: Frontend tests
-        run: npx vitest run --exclude integration
+        run: npx vitest run --project unit --reporter=default
 
       - name: Rust check (core app - no ML sidecar)
         run: cargo check -p smemaster --no-default-features
