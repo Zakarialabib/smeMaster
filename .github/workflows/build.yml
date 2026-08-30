@@ -46,6 +46,14 @@ jobs:
       - name: Frontend tests
         run: npx vitest run --project unit --reporter=default
 
+      # Tauri's build script validates externalBin paths even during cargo check.
+      # Create a placeholder so the core app compiles without the ML sidecar.
+      - name: Create ML sidecar placeholder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src-tauri/binaries
+          Set-Content -Path src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe -Value ""
+
       - name: Rust check (core app - no ML sidecar)
         run: cargo check -p smemaster --no-default-features
         working-directory: src-tauri
