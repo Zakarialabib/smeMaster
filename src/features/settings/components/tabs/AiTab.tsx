@@ -13,7 +13,7 @@ import BundleSettings from "../BundleSettings";
 import KnowledgeBaseSettings from "../KnowledgeBaseSettings";
 import VoiceSettings from "../VoiceSettings";
 import { useRagStore } from "@features/assistant/stores/ragStore";
-import { refreshAiSidecarRuntime, type AiSidecarStatus } from "@features/assistant/services/aiSidecar";
+import { refreshAiSidecarRuntime } from "@features/assistant/services/aiSidecar";
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 
@@ -73,16 +73,16 @@ export default function AiTab() {
 
   // ── Sub-navigation + status row ──
   const [activeSubTab, setActiveSubTab] = useState<"models" | "features" | "kb" | "ai-router">("models");
-  const [providerConnected, setProviderConnected] = useState<boolean | null>(null);
-  const [embeddingSet, setEmbeddingSet] = useState<boolean | null>(null);
+  const [providerConnected, _setProviderConnected] = useState<boolean | null>(null);
+  const [embeddingSet, _setEmbeddingSet] = useState<boolean | null>(null);
   const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
   const ragEmbeddingTest = useRagStore((s) => s.embeddingTest);
 
   // ai-router observability
-  const [aiRouterVersion, setAiRouterVersion] = useState<string | null>(null);
-  const [aiRouterHealthy, setAiRouterHealthy] = useState<boolean | null>(null);
-  const [aiRouterRss, setAiRouterRss] = useState<number | null>(null);
-  const [aiRouterModelLoaded, setAiRouterModelLoaded] = useState<boolean | null>(null);
+  const [aiRouterVersion, _setAiRouterVersion] = useState<string | null>(null);
+  const [aiRouterHealthy, _setAiRouterHealthy] = useState<boolean | null>(null);
+  const [aiRouterRss, _setAiRouterRss] = useState<number | null>(null);
+  const [aiRouterModelLoaded, _setAiRouterModelLoaded] = useState<boolean | null>(null);
   const [aiRouterRefreshing, setAiRouterRefreshing] = useState(false);
 
   useEffect(() => {
