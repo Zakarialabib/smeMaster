@@ -116,3 +116,162 @@ streaming FR zipformer + a Piper FR voice on our 4-vCPU box. Below the client's 
 peak, the tier is closed and nothing else in Gate 5 changes. Also adopt **TTS caching** for
 the greeting, the AI-disclosure line and confirmations — it is the cheapest lever on the
 line that is 88% of variable cost.
+
+---
+
+## Prompt F — docs / UX / mockup pass (fill gaps, don't rewrite)
+
+```
+Repo: C:\laragon\www\smeMaster · branch private/voice-agent-client
+
+You are improving an EXISTING documentation + design set. It is committed and
+internally consistent. Your job is to FILL GAPS and raise quality — NOT to
+restructure or rewrite it. Read these first, in order, and change nothing until
+you have:
+
+  docs/voice/README.md                  folder map (client/ dev/ design/) + gate map
+  docs/voice/design/WIREFRAMES.md       §13 = 9 gaps ⚠️ · §14 = 8 opportunities 💡
+  docs/voice/design/UX.md               §13 = 5 open UX questions
+  docs/voice/design/FRONTEND.md         mount point, speech abstraction, stores
+  docs/voice/design/BACKEND.md          topology, seams, data model, endpoints
+  docs/voice/dev/PERFORMANCE.md         editorial note at top = adjudicated claims
+  docs/voice/dev/CALL-FLOW.md · OPS-ASSISTANT.md · SELF-HOSTING.md
+  docs/voice/design/mockups/*.html      5 existing mockups — match their discipline
+  docs/01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md
+
+NON-NEGOTIABLE CONTEXT (violating any of these makes the work wrong, not bold)
+- No console code exists. This is design, not implementation. Do not invent
+  features that contradict settled decisions:
+    * no audio is retained anywhere  -> no play button, waveform or "listen" UI, ever
+    * no live-call barge-in           -> never add a control that implies one
+    * no provider SDK on the desktop  -> keys live only in agent-core
+    * no tenant id sent by the client -> tenant comes from the token, server-side
+    * no prompt editing in the console
+    * voice is FR/EN only. The UI ships 5 locales (en/fr/ar/ja/it).
+      UI locale is NOT voice locale — never imply Arabic voice support.
+- Mockups must stay: self-contained (no CDN, no external font/JS), JS-free
+  (use <details>/<summary> for disclosure), responsive, and driven by the REAL
+  token hexes from src/styles/globals.css (+ src/shared/styles/ui-tokens.ts).
+- Reuse the app's shared vocabulary — DataTable, Avatar, AiSuggestionBanner,
+  frost-surface, and --color-ai (#9333ea) for anything the assistant INFERRED.
+  A transcript is a FACT (neutral). A summary/judgement is an INFERENCE (purple).
+  Do not invent a new component, a new colour, or a second table.
+- RTL: logical properties only (ms-*/me-*, text-start/end, inset-inline-*).
+- Never promote an UNVERIFIED vendor number to a fact. Keep the existing markers.
+
+TASKS
+
+A. Broken links (mechanical — do this first, separately)
+   1. Repair these pre-existing broken links by finding the real target. They are
+      NOT voice-related: fix the link, do not restructure the other docs.
+        docs/01-ARCHITECTURE/03-data-model.md   -> 04-FEATURES/Invoicing-ERP/01-company-tenant.md
+        docs/03-FRONTEND/12-ui-super-app-spec.md-> ../../plans/DESIGN_UI_UX_SPEC.md
+        docs/03-FRONTEND/15-shared-components.md-> ../../05-DEVELOPMENT/05-reuse-patterns.md
+        docs/05-DEVELOPMENT/05-reuse-patterns.md-> ../../03-FRONTEND/15-shared-components.md
+      If a target genuinely does not exist, mark the reference
+      "MISSING — <reason>" the way 00-INDEX.md already marks
+      36-onboarding-reboot-plan.md. Do not silently delete a row.
+   2. Leave docs/00-INDEX.md -> 04-FEATURES/36-onboarding-reboot-plan.md alone —
+      it is an intentional "spec not written yet" placeholder.
+
+B. Wireframes — raise the uncovered surfaces to full depth
+   WIREFRAMES §0 lists 11 surfaces but 8–11 have no layout, no region→action and
+   no per-surface gaps. Write each at the SAME depth as surfaces 1–7, using the
+   repo's per-surface structure: Route·Source · ASCII layout (≤76 cols) ·
+   region→action table · entry/exit · gating · gaps ⚠️ · UX opportunities 💡.
+     - Agent config        (/agent/config)
+     - Knowledge scope     (/agent/knowledge)
+     - Cost                (/agent/cost)
+     - Mobile variants     (one-handed, 390px, thumb reach)
+
+C. Mockups — add the 4 missing screens
+   Same discipline as 01–05 (read 01 and 02 first and match them).
+     docs/voice/design/mockups/06-agent-config.html
+     docs/voice/design/mockups/07-knowledge.html
+     docs/voice/design/mockups/08-cost.html
+     docs/voice/design/mockups/09-mobile-digest.html   (its own width IS the viewport)
+   Each must render its own degraded states (UX.md §7), not only the happy path:
+   config -> offline model / capability unavailable · knowledge -> nothing
+   published yet · cost -> over model + which calls · mobile -> agent-core
+   unreachable, which must NEVER render as "no calls".
+   The cost screen carries the same UNVERIFIED marker as client/COST-MODEL.md.
+
+D. UX.md
+   - Take §13's 5 open questions and either RESOLVE the ones that are ours (write
+     the decision and its risk) or make the owner and the blocking gate explicit.
+   - Add a keyboard-interaction table (per surface, per control), the focus-order
+     spec, and the RTL/locale matrix for console strings.
+   - Add the notification-escalation design as an explicitly-marked PROPOSAL
+     (P1 unacknowledged -> escalate to whom, after how long), with the
+     thresholds marked as placeholders awaiting pilot data.
+
+E. FRONTEND.md
+   - Add the concrete type listing an implementer can copy, the store selector
+     list per surface, the WS reconnect state machine (states, transitions, and
+     exactly what the UI shows in each — a silently dead transcript looks like a
+     caller who stopped talking), and a concrete delta-coalescing rule.
+   - Confirm every structural claim against the real repo and cite path:line:
+     src/shared/components/layout/shell/navConfig.ts (NAV_GROUPS,
+     INSIGHT_WIDGETS, getActiveNavFromPath) and src/router/routeTree.tsx.
+     If a claim does not hold, correct it — do not keep it because it reads well.
+
+F. BACKEND.md
+   - Add a JSON payload schema per endpoint, a DDL sketch per table, and the
+     migration numbering convention.
+
+G. PERFORMANCE.md Parts 1–5 — all still vendor-sourced
+   - Add a source-class column: PRIMARY / VENDOR / COMPETITOR-BLOG / UNVERIFIED.
+   - Re-verify the three decision-relevant claims if you have web access:
+     the Deepgram EU endpoint hostname, the Cartesia TTFA figure, and integrated
+     end-of-turn detection. If you cannot verify one, KEEP the flag and write the
+     exact Gate 4 test that would settle it.
+   - Do not remove Part 6 and do not reopen the RAG fork or self-hosting
+     decisions — those are signed.
+
+H. Glossary (docs/glossary/glossary-voice-agent.md)
+   - Add every term the design set introduces: SpeechEngine, Capabilities,
+     ExecutionProvider, RTF, digest, containment, stage marks, ops snapshot,
+     transcript delta, self-hosted tier. Define each as used in THIS repo, not as
+     the vendor's page defines it.
+
+I. docs/voice/README.md
+   - Link the mockups as DIRECT file links (a bare directory link is not clickable
+     in most markdown renderers) and include the 4 new ones.
+
+VERIFY — paste the real output, never a summary of it
+  1. Every relative link in every docs/**/*.md:
+       python - <<'PY'
+       import os,re,glob,urllib.parse
+       bad=[];n=0
+       for f in glob.glob("docs/**/*.md",recursive=True):
+           b=os.path.dirname(f)
+           for m in re.finditer(r'\]\(([^)\s]+?)\)',open(f,encoding="utf-8").read()):
+               t=urllib.parse.unquote(m.group(1))
+               if t.startswith(("http","#","mailto:")) or not t: continue
+               t=t.split("#")[0]
+               if not t: continue
+               n+=1
+               if not os.path.exists(os.path.normpath(os.path.join(b,t))): bad.append(f"{f} -> {t}")
+       print(f"checked={n} broken={len(bad)}")
+       [print("  ",x) for x in bad]
+       PY
+     Target: only the intentional 36-onboarding placeholder remains.
+  2. Per mockup: balanced tags (ignoring void elements), zero mismatched closers,
+     zero duplicate ids, zero external local src/href, and the token hexes still
+     byte-identical to globals.css.
+  3. Paste the EMPTY result of the forbidden-list greps:
+       grep -rniE 'listen|playback|audio-player|<audio' docs/voice/design/mockups
+       grep -rniE 'href="[^"#]*\.(css|js|woff)' docs/voice/design/mockups
+       grep -rnE 'text-left|text-right|\bml-|\bmr-' docs/voice/design
+  4. git status --short   (expect only the files you touched)
+
+RULES
+- Run `git status --short` FIRST. Concurrent agents work in this tree. Never
+  modify a file that is already modified and is not yours from this pass.
+- Commit with EXPLICIT pathspecs — never `git add -A`, never a bare directory on a
+  shared branch (it absorbs other agents' in-flight work). No push.
+  Three commits: A · B-C · D-I.
+- No backwards-compat shims, no "interim" state, no TODOs left unowned.
+- Report: files changed (count + list), the verification output verbatim, and any
+  claim you could NOT verify. Say so plainly rather than smoothing it over.
+```
