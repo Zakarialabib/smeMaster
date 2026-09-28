@@ -231,6 +231,8 @@ change the spec's choice — it changes the expectation attached to it.
 | `asterisk/asterisk` | GPLv2-family — cannot reach `agent-core` or any shipped artifact |
 | `signalwire/freeswitch` | MPL-family, and self-hosting media is rejected for v1 on margin grounds (§5.3) |
 | `jinaai/jina-embeddings-v3` | CC-BY-NC-4.0 — non-commercial; unacceptable for a paid client product |
+| `ResembleAI/chatterbox` | **MIT** (HF API, re-verified 2026-09-28); 23 languages including `fr`, emotion control, ONNX-optimised. **The v1 self-hosted TTS default** — it is the fastest *commercially usable* open-weight French option once Voxtral TTS is disqualified. See [`OPEN-WEIGHT-SPEECH-VERIFIED.md`](../voice/dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) |
+| `hexgrad/Kokoro-82M` | Apache-2.0, but the HF card declares `language: ['en']` — the French voice is a separate per-language file. Budget/offline tier only until French is verified on our own audio |
 | `mistralai/Voxtral-4B-TTS-2603` | **CC-BY-NC-4.0** (HF registry, 2026-09-28) — non-commercial. A third-party draft recommended self-hosting it as a cost measure while calling it commercially licensed; both the recommendation and the label are wrong (`Voxtral-Mini-3B-2507` / `-Small-24B-2507` **are** Apache-2.0, but those are ASR models, not TTS) |
 | Edge TTS | Unofficial endpoint, gray ToS — already excluded in the spec; restated here |
 | Self-hosted media server (any) | Not a licence reject — a **margin/ops** reject for v1 (§5.3) |

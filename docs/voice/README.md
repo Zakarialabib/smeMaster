@@ -34,6 +34,9 @@ belongs in, ask: *who reads it, and does it leave the building?*
 
 | If you are… | Read |
 |---|---|
+| **Phase A closed** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) |
+| **Phase B (seams)** | [`dev/PHASE-B-SEAMS.md`](dev/PHASE-B-SEAMS.md) |
+| **Open-weight speech, licence-verified** | [`dev/OPEN-WEIGHT-SPEECH-VERIFIED.md`](dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) |
 | **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
 | **picking up where we stopped** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) — Phase A done, gates pasted, Phase B next |
 | **porting the screens** | [`dev/PROTOTYPE-HANDOVER.md`](dev/PROTOTYPE-HANDOVER.md) — file-by-file map from the running prototype to `src/` |
