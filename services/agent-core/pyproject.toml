@@ -1,0 +1,52 @@
+[project]
+name = "agent-core"
+version = "0.1.0"
+description = "Voice & messaging agent runtime. FR/EN. Inbound voice + WhatsApp."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+# Provider SDKs are OPTIONAL and are never imported by the desktop. Each seam has
+# a second implementation behind the same trait — that is the Gate 1 swap test.
+livekit = ["livekit-agents>=1.0"]
+llm = ["openai>=1.50"]          # OpenAI-compatible, so OpenRouter works unchanged
+tts = ["elevenlabs>=1.10"]
+stt = ["websockets>=13.0"]
+# The self-hosted tier pulls a native speech runtime. Optional on purpose: the
+# budget tier stays disabled until its RTF is measured (dev/SELF-HOSTING.md).
+local = ["sherpa-onnx>=1.10"]
+# Channels
+whatsapp-sandbox = ["baileys-wa>=4.0"]   # dev sandbox ONLY, never production
+db = ["asyncpg>=0.30", "sqlalchemy[asyncio]>=2.0"]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
+# Provider seams legitimately raise for unavailable vendors; the chain handles it.
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+disallow_any_generics = true
