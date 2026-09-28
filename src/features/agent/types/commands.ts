@@ -95,29 +95,59 @@ export interface StageMarks {
   turnGapMs: number | null;
 }
 
+/* ── Server → client frames ───────────────────────────────────────────────── */
+
+/**
+ * Named individually rather than left as an anonymous union, because the
+ * transcript socket dispatches on `frame.type` and needs to type each handler's
+ * parameter. `Extract<ServerFrame, {type:'delta'}>` would work and reads worse
+ * at every call site.
+ */
+export interface StateFrame {
+  type: 'state';
+  sessionId: string;
+  state: CallState;
+  at: string;
+}
+
+export interface TranscriptDelta {
+  type: 'delta';
+  callId: string;
+  turnId: number;
+  /** Monotonic per (callId, turnId). The client dedups on it, so a reconnect
+   *  replay cannot double-append. */
+  seq: number;
+  role: 'caller' | 'agent';
+  text: string;
+  final: boolean;
+  at: string;
+}
+
+/** Stage marks ride along with the `stages` frame, so it is a type not an interface. */
+export type StagesFrame = { type: 'stages'; callId: string; turnId: number; at: string } &
+  StageMarks;
+
+export interface MetaFrame {
+  type: 'meta';
+  callId: string;
+  locale: VoiceLocale;
+  fallbackActive: boolean;
+  chainTier: ProviderTier;
+}
+
+export interface ClosedFrame {
+  type: 'closed';
+  callId: string;
+  reason: string;
+  at: string;
+}
+
 export type ServerFrame =
-  | { type: 'state'; sessionId: string; state: CallState; at: string }
-  | {
-      type: 'delta';
-      callId: string;
-      turnId: number;
-      /** Monotonic per (callId, turnId). The client dedups on it, so a reconnect
-       *  replay cannot double-append. */
-      seq: number;
-      role: 'caller' | 'agent';
-      text: string;
-      final: boolean;
-      at: string;
-    }
-  | ({ type: 'stages'; callId: string; turnId: number; at: string } & StageMarks)
-  | {
-      type: 'meta';
-      callId: string;
-      locale: VoiceLocale;
-      fallbackActive: boolean;
-      chainTier: ProviderTier;
-    }
-  | { type: 'closed'; callId: string; reason: string; at: string };
+  | StateFrame
+  | TranscriptDelta
+  | StagesFrame
+  | MetaFrame
+  | ClosedFrame;
 
 /**
  * Client → server has exactly ONE variant.
