@@ -67,6 +67,30 @@
 | **`ProviderTier`** | budget / standard / premium — a fallback chain across the four seams. **Scope undecided**: per-tenant or per-session (`ADR-001` D4) |
 | **Ops assistant** | A *watcher/summariser* that talks to the operator, never to a caller. Distinguish from the **call-handling agent** (talks to callers) and the **supervisor** (barges into a live call — out of v1, and dangerous) |
 
+## Console design vocabulary (added 2026-09-28)
+
+Terms the design set (`design/**`) introduces. The vendor's definition of a
+speech runtime is almost never ours — these are what the code and the screens mean.
+
+| Term | Meaning here |
+|---|---|
+| **`SpeechEngine`** | The one interface over all three speech runtimes (desktop sidecar / mobile in-process / server). Selected by config, never by a build flag. Does not expose "call STT"/"call TTS" as loose functions — it exposes a streaming session. `FRONTEND.md` §3.2 |
+| **`Capabilities`** | What *this host* can actually do — `stt`/`tts`/`vad` booleans, available `ExecutionProvider`s, installed models. The point is per-host, not per-project: it lets the console render "offline model not installed" instead of failing at capture time. `FRONTEND.md` §3.2 |
+| **`ExecutionProvider`** | The compute backend a local speech runtime uses — `cpu`, `nnapi`, `xnnpack`, `qnn`, `cuda`, `metal`. Meaningful only for the `local` backend; a plain VPS reports `["cpu"]`. Explicit config, never a build flag |
+| **`SpeechStream`** | One streaming speech session: `writePcm` in, `partial`/`final`/`vad`/`audio` events out, `close()`. Pairs with the `on()` unsubscribe return, so a component can detach without leaking a listener |
+| **`ModelManager`** | Resumable model download with progress + integrity check, generalised from the repo's existing `aiDownloadModel` path. **Must not become a third download mechanism** — `FRONTEND.md` §3.3 |
+| **RTF (real-time factor)** | Processing time ÷ audio duration. RTF < 1 means the runtime keeps up with live audio. A local tier that runs at RTF 1.4 cannot serve a live call, however good its WER — the self-hosted tier is gated on this |
+| **Transcript delta** | One incremental append to the live transcript: `(callId, turnId, seq, role, text, final)`. Deltas are the *display* stream and are droppable; the recorded transcript is not. `FRONTEND.md` §12.2, §12.5 |
+| **Delta coalescing** | Batching many deltas into one render per animation frame, merging consecutive deltas within a `turnId`. Without it, a streaming UI re-renders per token — the classic failure |
+| **Digest** | The morning (or on-return) summary: P3/P2 rolled up, newest-first, grouped. `UX.md` §1 job 1 — "what happened while I was away", the product's most valuable single query |
+| **Ops snapshot** | The single round trip carrying tier, provider health, fallback-chain state, block-rate trend, alert counts and reachability. Exists so the digest needs no second fetch to be *understood*. `ADR-001` D4b |
+| **Stage mark** | One per-turn timestamp — VAD / STT final / LLM first token / TTS first byte. Not a metric: a *provenance* record that makes a latency miss attributable to a stage instead of an argument |
+| **`thresholdIsProvisional`** | A flag on every alert while its threshold is unmeasured. Required by `WIREFRAMES.md` G3: the UI shows a guess's provenance rather than presenting it as a measurement |
+| **Degraded state** | A specific rendered state for a specific failure — offline, provider down, chain exhausted, partial ingest. Never a bare empty list. The distinction that matters: **"cannot reach the agent" must not look like "no calls"** |
+| **Self-hosted tier** | The budget `ProviderTier` running local/offline speech (sherpa-onnx), gated on RTF and measured `turn_gap`. **Disabled in the console with a stated reason** until measured — see `dev/SELF-HOSTING.md` |
+| **Propose / dispose** | The console's core interaction law: the assistant surfaces a decision, a human takes it. It never acts on a caller and never acts on the owner's behalf. `OPS-ASSISTANT.md` §3 |
+| **UI locale ≠ voice locale** | The app ships en/fr/ar/ja/it; the agent speaks **FR/EN only**. The voice selector lists what the agent speaks, in every locale — including `ar` |
+
 ## Deliberately out of v1
 
 | Term | Why it is named, not built |

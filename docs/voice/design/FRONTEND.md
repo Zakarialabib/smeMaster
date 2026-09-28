@@ -250,7 +250,166 @@ Per `UX.md` §9, with the concrete mechanism:
 - A hardcoded model id or dimension (`ADR-001` D2 — the dimension is config, not a constant).
 - A third model-download path (§3.3).
 
-## 12. Open questions
+## 12. Implementer's working set — concrete, copyable
+
+### 12.1 Structural claims, verified against the repo (2026-09-28)
+
+| Claim | Verified | Cite |
+|---|---|---|
+| `NAV_GROUPS` is the nav source of truth | ✅ | `src/shared/components/layout/shell/navConfig.ts:101` |
+| `INSIGHT_WIDGETS` is keyed by route id, value is `InsightWidget[]` | ✅ | `src/shared/components/layout/shell/navConfig.ts:204` — existing keys: `unified`, `mail`, `crm`, `tasks`, `calendar`, `automation`, `vault`, `ai-assistant` |
+| `getActiveNavFromPath(pathname)` returns a nav id | ✅ | `navConfig.ts:242` |
+| `getActiveSubItem(pathname)` returns `string \| null` | ✅ | `navConfig.ts:266` |
+| Routes are built with `createRoute` from `@tanstack/react-router` | ✅ | `src/router/routeTree.tsx:2` (import), `:200` `mailRoute` as the shape to copy |
+| Nested routes use `getParentRoute()` + a **relative** `path` | ✅ | `routeTree.tsx:208-212` — `mailThreadRoute` is `path: "thread/$threadId"` under `mailRoute` |
+| The desktop already ships an `ml-sidecar` binary | ✅ | `src-tauri/tauri.conf.json:39` — **note: `externalBin` sits under `bundle`, not at the top level** |
+
+**Correction to §1:** the route list in §1 is written as absolute paths (`/calls/...`). Under
+`createRoute` the `path` field is **relative to the parent route**, as `mailThreadRoute` shows.
+A nested agent route (`calls/$callId`) declares `path: "$callId"`, not `"/calls/$callId"`. The
+spec's full paths remain the public contract; the `path` field does not repeat the prefix.
+
+**Adding the nav group** — one entry in `NAV_GROUPS` (`navConfig.ts:101`), one key in
+`INSIGHT_WIDGETS` (`:204`) if the right rail is wanted, and both `getActiveNavFromPath` and
+`getActiveSubItem` (`:242`, `:266`) must recognise the new prefixes. Missing either is the
+usual cause of "the page loads but nothing in the shell highlights it".
+
+### 12.2 The six command payload types (TypeScript, mirroring `BACKEND.md` §7)
+
+```ts
+// src/features/agent/types/commands.ts
+export type CallChannel = "voice" | "whatsapp";
+export type CallOutcome = "contained" | "transferred" | "voicemail" | "abandoned";
+export type CallState =
+  | "idle" | "connecting" | "greeting" | "listening"
+  | "thinking" | "speaking" | "closing" | "wrapup";
+
+/** NOTE: no tenantId field anywhere. It comes from the token, server-side (ADR-001 D4a). */
+export interface CallListItem {
+  id: string;
+  channel: CallChannel;
+  outcome: CallOutcome;
+  state: CallState;
+  startedAt: string;            // ISO 8601, UTC — format for display at the edge
+  durationSec: number;
+  callerMasked: string;         // "+33 6 •• •• 41 22" — full number is a separate field
+  flagged: string | null;       // e.g. "pricing" | null
+  costEur: number | null;       // null for WhatsApp service conversations
+}
+
+export interface StageMarks {
+  vadMs: number | null;         // speech end -> STT start
+  sttMs: number | null;         // -> final transcript
+  llmMs: number | null;         // -> first token
+  ttsMs: number | null;         // -> first byte
+  turnGapMs: number | null;     // VAD -> first agent audio byte
+}
+
+export interface OpsSnapshot {
+  generatedAt: string;
+  since: string;
+  p1: OpsAlert[];
+  p2Grouped: Record<string, OpsAlert[]>;
+  p3Count: number;
+  callCount: number;
+  containedPct: number;
+  reachable: boolean;           // false => render "cannot reach the agent", NEVER "no calls"
+  lastSeenAt: string | null;
+}
+
+export interface OpsAlert {
+  id: string;
+  severity: "P1" | "P2" | "P3";
+  rule: string;                 // e.g. "transfer_failed"
+  oneLiner: string;             // the decision, per OPS-ASSISTANT.md §5
+  decision: string;
+  evidence: { count: number; firstAt: string; lastAt: string; blastRadius: string };
+  acknowledgedAt: string | null;
+  acknowledgedBy: string | null;
+  /** PLACEHOLDER until pilot data exists — the UI must not present these as measurements. */
+  thresholdIsProvisional: true;
+}
+```
+
+`reachable` and `lastSeenAt` are **not optional** — omitting them is exactly how the
+"offline looks like no calls" failure returns.
+
+### 12.3 Store selectors, per surface
+
+Components subscribe to selectors, never to whole stores.
+
+| Surface | Store | Selectors |
+|---|---|---|
+| Call log | `callListStore` | `useCallRows()`, `useCallFilters()`, `useCallListStatus()` (`loading \| error \| ready`) |
+| Call detail | `callListStore` | `useCallById(id)` — derived, not a second store |
+| Live monitor | `liveCallStore` | `useLiveState()`, `useTurnWindow()` (ring buffer slice), `useCurrentStageMarks()`, `useWsStatus()` |
+| Digest | `opsStore` | `useDigestGroups()`, `useDigestPartial()`, `useReachable()` |
+| Alert list / detail | `opsStore` | `useAlertsBySeverity(s)`, `useUnacknowledgedCount()`, `useAlert(id)` |
+| Config | `agentConfigStore` | `useConfig()`, `useConfigDirty()`, `useTierAvailability()` |
+| Knowledge | `agentConfigStore` | `useKnowledgeScope()`, `useIngestState()` (`idle \| running \| failed`) |
+| Cost | `costStore` | `useCostSummary()`, `useCostByCallType()`, `useOverModelCalls()` |
+
+**`useReachable()` is read by every surface, not just the digest.** One store, one source of
+the offline state — a per-component "am I online" check is how two surfaces disagree.
+
+### 12.4 WebSocket reconnect state machine
+
+A silently dead transcript is indistinguishable from a caller who stopped talking. Every
+state is visible; none of them renders as an empty or stale list.
+
+```
+        connect()
+  ┌────────┴─────────┐
+  ▼                  │
+IDLE ──open──▶ CONNECTING ──open──▶ ● CONNECTED ──────────────┐
+  ▲                  │ timeout/error                          │ socket close
+  │                  ▼                                        │ (code 1000 also
+  │              BACKOFF ────attempt fails──▶ (delay ×1.8)     │  drops here:
+  │                  │            ▲                           │  the server
+  │            delay elapsed        │                           │  closed a call
+  │                  │            reset                        │  end)
+  │                  └────────────┘                           │
+  │                                                          ▼
+  │        open             ┌──────────────┐           STALE
+  └──────────────────────── │  RECONNECTING │ ◀─────────────┘
+                            └──────────────┘
+                                   │ retries exhausted (5)
+                                   ▼
+                              OFFLINE  ──manual retry──▶ CONNECTING
+```
+
+| State | What the UI shows | Never shows |
+|---|---|---|
+| `IDLE` | nothing yet | — |
+| `CONNECTING` | header chip `connecting…`, transcript area as *loading* | an empty transcript |
+| `CONNECTED` | live indicator, streaming deltas | — |
+| `STALE` (closed, retrying, data still displayed) | **banner: "connection lost 14:51 — showing data from 14:32"** + dimmed transcript | the frozen transcript with no marker |
+| `RECONNECTING` | banner: "reconnecting (3/5)", transcript still visible but dimmed | a blank panel |
+| `OFFLINE` (retries exhausted) | **"we cannot reach the agent · last seen 14:51"**, and the transcript is labelled as of that time | "no calls" |
+| Manual `Retry` | returns to `CONNECTING` | — |
+
+- Backoff: `delay = min(1000 * 1.8^n, 30_000)`, jitter ±20%, max 5 attempts → `OFFLINE`.
+- A **stale** stream must keep its last-arrived timestamp and show it. The data is real, just
+  old — discarding it is worse than labelling it.
+- On `OFFLINE`, poll the digest only (per §8.8), never call state.
+
+### 12.5 Delta-coalescing rule
+
+Concrete, not "batch on an animation frame" alone:
+
+1. WS deltas land in a module-level `pendingDeltaBuffer` (a plain array), **outside** React state.
+2. A `requestAnimationFrame` loop drains it. If a frame is already scheduled, do not schedule
+   another.
+3. Per drain, apply **one** store update appending a batch, even if the batch has 40 deltas.
+4. Coalesce *within* a turn: consecutive deltas for the same `turnId` merge into one append so
+   a half-spoken line re-renders once, not per token.
+5. Flush synchronously on `beforeunload` and on route change, so no text is lost in the last 16 ms.
+6. **Cap the buffer at 500 deltas.** On overflow, drop the oldest *display* deltas and set a
+   visible `truncatedDisplay` flag. Never drop what is recorded server-side (§8.7).
+7. Never apply deltas to the transcript when `wsStatus !== CONNECTED` — a reconnect replay and a
+   live stream must not double-append. Dedup on `(callId, turnId, seq)`.
+
+## 13. Open questions
 
 | # | Question | Owner | Blocks |
 |---|---|---|---|

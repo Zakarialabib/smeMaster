@@ -137,8 +137,9 @@ build item, not a polish item.
 | **P2** | in-app only | digest | grouped, with the stage breakdown where latency is the issue |
 | **P3** | in-app only | morning digest | rolled up; "surface in the morning" literally means the morning |
 
-**Quiet hours:** P1 pierces them; nothing else does. The escalation for an unacknowledged P1 is
-a product decision that has **not been made** — see §13.
+**Quiet hours:** P1 pierces them; nothing else does. The escalation ladder for an unacknowledged
+P1 is a product decision that has **not** been made by the client — the provisional design we
+build against is §8.1, with every duration marked as a placeholder.
 
 ## 9. Accessibility (WCAG AA, non-negotiable)
 
@@ -209,10 +210,134 @@ v1 capability, and a thumb-sized button that appears to allow it is a support ti
 
 ## 13. Open UX questions
 
-| # | Question | Owner | Blocks |
+**Resolution status is explicit per row.** Ours are decided here with their risk; the rest name
+the owner and the gate they block. No question is left ambiguously "open".
+
+| # | Question | Owner | Blocks | Status |
+|---|---|---|---|---|
+| 1 | Does an unacknowledged P1 escalate, and to whom? | client + us | alert delivery (Gate 7) | ⛔ **client** — but see §8.1 for the *provisional* design we ship against |
+| 2 | Is the operator one person or a rota? (decides whether acknowledgement state exists at all) | client | alerts UI | ✅ **RESOLVED (ours): acknowledgement state exists** — a single-operator deployment still needs it to suppress re-paging and to record that a human saw the alert. Risk: with one operator, escalation is self-directed and therefore noisy, so §8.1 defaults to *notify-only, never auto-escalate*. Revisit when a rota exists. |
+| 3 | Does the owner want the digest pushed to WhatsApp as well as in-app? (that is a template message — priced) | client + BSP | notification design, `COST-MODEL.md` Open #1 | ⛔ **client** — genuinely a commercial decision. Not pre-decided. Note: a template message is a *paid* category, unlike the free service conversation in `CALL-FLOW.md` §5.1. |
+| 4 | Can the owner edit the knowledge scope themselves, or is that our operation? | client | `/agent/knowledge` | ⚠️ **PARTIALLY RESOLVED (ours): default to "ours", labelled as such.** Until the client says otherwise, `Publish` is rendered as *our* operation ("request publish") rather than a self-service button, so the UI never implies a capability we may not grant (G8). Risk: if the client expected self-service, this reads as friction — cheap to change, and it is a label not a rebuild. |
+| 5 | Call-detail retention window shown in the UI (transcripts are retained; audio is not) | counsel | call detail | ⛔ **counsel** — and **the placeholder must not ship** (G5). The screen says "retention window pending" rather than a number. |
+
+### 8.1 Notification escalation — PROPOSAL, thresholds are placeholders
+
+> ⚠️ **PROVISIONAL.** Every duration below is a placeholder pending pilot data. No threshold here
+> is a measurement. `WIREFRAMES.md` G3 requires the UI to show a threshold's provenance, so the
+> alert detail surfaces `thresholdIsProvisional` (`FRONTEND.md` §12.2).
+
+Answers Open Q1 enough to build Gate 7, without pretending the client has decided.
+
+| Step | Condition | Action | Owner |
 |---|---|---|---|
-| 1 | Does an unacknowledged P1 escalate, and to whom? | client + us | alert delivery (Gate 7) |
-| 2 | Is the operator one person or a rota? (decides whether acknowledgement state exists at all) | client | alerts UI |
-| 3 | Does the owner want the digest pushed to WhatsApp as well as in-app? (that is a template message — priced) | client + BSP | notification design, `COST-MODEL.md` Open #1 |
-| 4 | Can the owner edit the knowledge scope themselves, or is that our operation? | client | `/agent/knowledge` |
-| 5 | Call-detail retention window shown in the UI (transcripts are retained; audio is not) | counsel | call detail |
+| 1 | P1 raised | push + WhatsApp to the operator, immediately, P1 pierces quiet hours | — |
+| 2 | unacknowledged after **PLACEHOLDER 5 min** | re-notify on the next surface the operator opens (in-app banner), **no second push** | — |
+| 3 | unacknowledged after **PLACEHOLDER 20 min** | **PROPOSED:** second push, marked "still unacknowledged" | — |
+| 4 | unacknowledged after **PLACEHOLDER 60 min** | **PROPOSED:** escalate to the on-call operator. **Blocked on Q2** — with a single operator there is no one to escalate to, so this step is a no-op until a rota exists | blocked |
+| — | any step | acknowledgement is terminal; it stops the ladder and is recorded with a timestamp and actor | — |
+
+**Why no auto-escalation in v1.** `OPS-ASSISTANT.md` §3's "never" column forbids the assistant
+acting on its own initiative. A silent auto-escalate is that behaviour with a different verb.
+Step 4 is therefore the *last* thing to build and only once a rota exists.
+
+**Why a digest never carries a P1.** A P1 that waited for the morning digest is a P1 that
+arrived too late to prevent the call it describes.
+
+## 14. Keyboard interaction
+
+Every surface is fully operable without a pointer. Controls listed here are the complete set —
+anything not listed is not a control.
+
+| Surface | Key | Action |
+|---|---|---|
+| Call log | `j` / `k` | next / previous row (roving tabindex) |
+| | `Enter` | open call detail |
+| | `/` | focus the filter bar |
+| | `f` | toggle "flagged only" |
+| | `Esc` | clear filters |
+| | `g` then `c` | go to Calls · `g` `l` Live · `g` `o` Ops · `g` `k` Config · `g` `$` Cost |
+| Live monitor | `Space` | pause auto-scroll (scroll-away must not fight the user) |
+| | `End` | jump to the live edge |
+| | `m` | toggle the metrics disclosure |
+| | `Esc` | leave the live view (**never** an action on the call) |
+| Call detail | `a` | acknowledge (only on an alert-linked call) |
+| | `p` | copy the masked number — never the full one, which is a deliberate extra step |
+| | `Esc` | back |
+| Digest | `j` / `k` | next / previous alert row |
+| | `Enter` | open alert detail |
+| | `x` | acknowledge the focused alert |
+| | `g` then `d` | go to the morning digest |
+| Alert detail | `x` | acknowledge |
+| | `o` | open the affected calls |
+| | `Esc` | back to the alert list |
+| Config | `Tab` | next control; `Shift+Tab` previous |
+| | `Ctrl+S` | save (guarded — see G11, unsaved-changes warning) |
+| | `Esc` | discard and leave, **with a confirm if dirty** |
+| Knowledge | `Ctrl+S` | publish (same guard) |
+| Cost | `d` | group by day · `c` group by call type |
+| | `o` | show the over-model calls |
+| Everywhere | `?` | keyboard shortcut sheet |
+
+**No keyboard shortcut acts on a live call.** There is no v1 action on a live call, so none
+exists. A shortcut that ends a call or transfers is a barge-in control wearing a disguise.
+
+## 15. Focus order
+
+Focus follows **reading order**, and it is stated per surface because a streaming UI and a
+static table need different answers.
+
+| Surface | Focus sequence |
+|---|---|
+| Call log | skip-to-content → app rail → console nav → range filter → outcome filter → flagged toggle → **table (single roving stop)** → pager |
+| Live monitor | skip-link → console nav → call state header → **transcript live region** → metrics disclosure → (no actions) |
+| Call detail | skip-link → console nav → call header → AI summary banner → transcript → stage marks → actions |
+| Digest | skip-link → console nav → **first P1 row** (roving) → P2 group headers → P3 disclosure |
+| Alert detail | skip-link → console nav → decision card → acknowledge → open-calls → evidence table |
+| Config | skip-link → console nav → each field in visual order → footer actions (pinned, last) |
+| Cost | skip-link → console nav → group-by controls → table → show-over-model |
+
+**Rules that apply everywhere:**
+- The transcript is **not** a tab stop per turn. It is one focusable region; a screen reader
+  follows the live region without focus moving.
+- On route change, focus moves to the page heading (`PageHeader`), not to `<body>`.
+- A modal traps focus and restores it to the trigger on close.
+- `:focus-visible` only — no focus ring on mouse click.
+
+## 16. RTL and locale matrix
+
+The console ships in the app's **5 locales**; the agent speaks **FR/EN only**. The matrix that
+matters is the interaction between the two.
+
+| | en | fr | **ar (RTL)** | ja | it |
+|---|---|---|---|---|---|
+| Direction | LTR | LTR | **RTL** | LTR | LTR |
+| Logical properties only | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `ms-`/`me-`, `text-start/end` | required | required | required | required | required |
+| Voice locales offered in the selector | FR · EN | FR · EN | **FR · EN only — never AR** | FR · EN | FR · EN |
+| Transcript alignment | start | start | **start (mirrors)** | start | start |
+| Numbers, currency € | `1,234.56` | `1 234,56` | locale form | locale form | locale form |
+| Durations `2:14` | invariant | invariant | invariant | invariant | invariant |
+| Timestamps | localised | localised | localised | localised | localised |
+| Emergency numbers in disclosure copy | 999 · 112 | **15 · 17 · 112** | FR numbers shown as-is | FR numbers shown as-is | FR numbers shown as-is |
+
+**The three traps this matrix exists to prevent:**
+
+1. **A mirrored UI in `ar` must not offer Arabic voice.** The selector lists what the *agent*
+   speaks, and in every locale that is FR/EN. Offering `ar` in the `ar` UI is the single most
+   likely bug here, because the locale makes it look correct.
+2. **Emergency numbers are copy, not locale.** The `ar` UI for a French tenant still says
+   15 · 17 · 112. Those numbers are locale-independent by design and must never be
+   locale-substituted.
+3. **Durations and currency are not translatable, only re-formatted.** `2:14` stays `2:14` in
+   every locale; a duration rendered as "2 min 14 s" in French but "2:14" in English breaks
+   cross-locale comparison for the operator, who may read both.
+
+**Verification:** render every console string in all 5 locales and check RTL mirroring with
+`dir="rtl"` before the console is considered done. A string that only fits LTR will clip.
+
+## 17. Open UX questions — resolution status
+
+The table above is the canonical list; the status column on it is the resolution.
+Summary: **2 resolved or partially resolved by us (Q2, Q4), 3 genuinely blocked on
+a human (Q1, Q3, Q5).** Nothing is left ambiguously open.

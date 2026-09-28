@@ -32,6 +32,77 @@
 
 # Optimizing Voice Agent Performance: A Blueprint for Low-Cost, Low-Latency, and EU-Compliant French AI Assistants
 
+## 0.1 Source-class column — added 2026-09-28
+
+**Parts 1–5 are an externally-drafted report, not a measurement of this system.** Every
+load-bearing claim in them is classified below. Nothing in Parts 1–5 may be quoted to a client,
+used in a pricing decision, or treated as a design input without a class of PRIMARY or
+MEASURED.
+
+| Class | Meaning |
+|---|---|
+| **PRIMARY** | From a vendor's own first-party technical documentation, API, or model card — read at the source, dated |
+| **VENDOR** | Vendor marketing or pricing page. Directionally useful, **not independently verified**, and a vendor's own number for their own product is the weakest form of vendor evidence |
+| **COMPETITOR-BLOG** | A vendor *blogging about a competitor*. A marketing artefact on both counts. Zero weight |
+| **UNVERIFIED** | Asserted in the draft with no source we could reach. Carries the same force as `COST-MODEL.md` §6's unchecked boxes |
+
+### 0.2 Decision-relevant claims, with their class
+
+The editorial note already adjudicated six claims. These are the remaining load-bearing ones,
+classified claim by claim.
+
+| # | Claim | Location | Class | Status 2026-09-28 |
+|---|---|---|---|---|
+| C1 | Deepgram has an **EU data-residency endpoint**, hostname unstated | Part 1 | **UNVERIFIED** | ⚠️ **Re-verification attempted and inconclusive.** `api.deepgram.com` and `api.eu.deepgram.com` both answer `404` to an unauthenticated probe and `api.deepgram.eu` fails TLS — so the `api.eu.` form *resolves and responds*, but an unauthenticated 404 cannot distinguish a real EU host from a wildcard, and the docs pages are JS-rendered and yielded no text. **The flag stays.** The exact hostname is a Gate 4 blocker, not a footnote: it decides whether we can claim EU residency for STT at all. |
+| C2 | **Cartesia TTFA "40–90 ms"** | Part 2, TTS table | **VENDOR** | Flag kept. A vendor's own latency figure, unreplicated, on unspecified hardware, with a warm/cold cache unstated. |
+| C3 | **Deepgram Flux saves 200–600 ms** on end-of-turn detection | Part 2 | **VENDOR** | Flag kept. Same shape as C2 — and it is the *integrated* turn-detection claim, which matters more because turn detection dominates perceived latency. |
+| C4 | **Integrated end-of-turn detection is available and worth using** | Part 2 | **UNVERIFIED** | ⚠️ **Not re-verifiable from documentation alone.** This is a *capability* claim, and a capability claim is settled by integration, not by a benchmark. |
+| C5 | STT per-hour and TTS per-character pricing rows | Parts 1–2 | **VENDOR** | Flag kept, and **decay fast**. `COST-MODEL.md` §6 remains the checklist; these rows are not a substitute for a dated screenshot. |
+| C6 | **Voxtral TTS is open-weight and commercially licensed** | Part 3, TTS table | ❌ **FALSE** | Adjudicated in the editorial note: CC-BY-NC-4.0. Hard reject. |
+| C7 | WebRTC/LiveKit is the correct media choice for this app | Part 2 | ❌ **FALSE** | Adjudicated: the caller is on the PSTN; no browser is in the media path. |
+| C8 | Cartesia as Phase-1 primary TTS | Part 2 | ⚠️ **CONTRADICTS A SIGNED DECISION** | ElevenLabs is primary; Cartesia is a candidate *behind the seam*. |
+| C9 | High-volume self-hosting economics | Part 4 | ⚠️ **INVERTED for our problem** | Our volume is pilot-scale, where fixed cost dominates. |
+
+**C1, C4 are the two that could change an architecture decision. Both stay flagged.** The rest
+are cost or marketing claims that the `COST-MODEL.md` §6 process already governs.
+
+### 0.3 The Gate 4 tests that would settle C1–C4
+
+Written now, so the pilot is not the first time anyone asks these questions. Each is a real
+experiment with a pass criterion, not a literature review.
+
+**C1 — Deepgram EU residency.** Settled in two steps, in order:
+1. *Cheap, do first:* authenticated request to the candidate host with a single short FR audio
+   clip, then read the **inbound Webhook/Request-URI region field** Deepgram returns, and
+   confirm the host in the response matches the EU one. If Deepgram echoes a region, that is the
+   answer; if not, the question is unanswerable from the API and must be answered by their
+   DPA.
+2. *Decisive:* written confirmation in the DPA or contract that STT audio for our traffic is
+   processed in the EU. This is the only evidence that survives an audit, and it belongs in
+   `VENDOR-QUOTE-REQUEST.md` question 6.
+   **Pass:** DPA names an EU region for audio. **Fail:** US-only processing → the EU-residency
+   pitch is no longer true for the voice channel, and the client must be told before signature.
+
+**C4 / C3 — integrated end-of-turn detection.** A/B on **our own audio**, never a vendor demo:
+take ≥ 30 FR calls' worth of recorded caller audio (transcripts only — the no-audio rule applies
+to *product* retention, not to a test fixture, and the fixture is deleted after the test).
+Measure, for each configuration, `turn_gap` p50 and p95:
+- **A:** our current endpointing (VAD + silence threshold)
+- **B:** Deepgram Flux end-of-turn, same audio, same TTS, same LLM
+**Pass:** B reduces `turn_gap` p50 by ≥ 200 ms **without** raising barge-in (a cut-off caller).
+**A latency win that raises barge-in is a regression** — a caller interrupted mid-sentence is
+worse than a half-second of silence, and that is a UX judgement, not a number.
+
+**C2 — Cartesia TTFA.** Only measured, only on the same fixture: p50/p95 TTFA for the actual FR
+voice at 8 kHz μ-law, cold and warm cache, ≥ 100 requests. **Pass:** ≤ 150 ms p95 warm, and a
+provider error rate under 0.5%. Cartesia stays *behind the seam* either way — the seam is what
+makes this a 30-minute test rather than a re-architecture.
+
+**A note on what no test here can settle:** whether Cartesia's *voice quality* is better for
+French is a listening test with the client, not a metric. Add it to the Gate 4 walkthrough
+rather than pretending a TTFA number answers it.
+
+
 ## Comparative Analysis of Speech-to-Text Providers for French Call Management
 
 The selection of a Speech-to-Text (STT) provider is a foundational decision that directly impacts the accuracy, latency, and overall cost-effectiveness of the AI voice assistant integrated into `smeMaster`. For a system handling French calls under strict EU compliance, the evaluation criteria extend beyond simple word error rate (WER) to encompass data residency, feature pricing, and real-world performance on noisy or accented audio. This section provides a detailed comparative analysis of leading STT providers, focusing on ElevenLabs, Deepgram, and viable alternatives, benchmarked against the specific needs of this project. The primary contenders are evaluated based on their core technology, pricing structures, support for the French language, and adherence to EU data governance frameworks. Each provider presents a unique set of trade-offs between raw model performance, architectural convenience, and total cost of ownership.

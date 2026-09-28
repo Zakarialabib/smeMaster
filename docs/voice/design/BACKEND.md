@@ -225,7 +225,251 @@ tempting wrong move.
 | Migrations | Existing convention; one migration per gate that adds tables |
 | Region | EU, and the DPA must name the region. Residency is a **selling point**, so it is a build constraint, not a footnote |
 
-## 13. Verification (real commands, per gate)
+## 13. Request/response schemas — one per endpoint
+
+Field names match `FRONTEND.md` §12.2 exactly. `agent-core` pydantic is the contract; Rust
+`models.rs` mirrors it with serde rename_all = "camelCase". **No endpoint accepts a tenant id.**
+
+### `GET /healthz`
+```json
+{ "ok": true, "version": "0.1.0", "startedAt": "2026-09-28T09:00:00Z",
+  "db": "ok", "providers": "ok" }
+```
+Unauthenticated. Returns **no tenant data** and no provider names.
+
+### `POST /session`
+Request:
+```json
+{ "channel": "voice", "purpose": "test_call",
+  "locale": "fr", "callerOverride": "+33612345678" }
+```
+`purpose` is `"test_call" | "live"`. Response `201`:
+```json
+{ "sessionId": "01JB8…", "state": "greeting", "openedAt": "2026-09-28T14:32:00Z",
+  "wsUrl": "wss://…/ws/transcript", "disclosure": "Cet appel est pris en charge…" }
+```
+`callerOverride` is accepted **only** when `purpose == "test_call"`; a live session gets the
+number from the carrier. Rejected with `403` otherwise — this is the one field that could turn
+a test endpoint into a call-placement primitive.
+
+### `WS /ws/transcript`
+Authenticated at the **upgrade handshake** (`Authorization` header or subprotocol). Never a query
+string — query strings land in access logs.
+
+Server → client frames:
+```json
+{ "type": "state",   "sessionId": "…", "state": "listening", "at": "…" }
+{ "type": "delta",   "callId": "…", "turnId": 42, "seq": 17, "role": "caller",
+  "text": "je voudrais prendre rendez-vous", "final": false, "at": "…" }
+{ "type": "stages",  "callId": "…", "turnId": 42,
+  "vadMs": 182, "sttMs": 341, "llmMs": 268, "ttsMs": 147, "turnGapMs": 1562, "at": "…" }
+{ "type": "meta",    "callId": "…", "locale": "fr", "fallbackActive": false, "chainTier": "standard" }
+{ "type": "closed",  "callId": "…", "reason": "normal", "at": "…" }
+```
+Client → server: only `{"type":"ping"}`. **There is no client frame that acts on a call** —
+no transfer, no hangup, no barge-in. The absence is deliberate and reviewable.
+
+`seq` is monotonic per `(callId, turnId)`; the client dedups on it (`FRONTEND.md` §12.5.7).
+
+### `GET /ops/snapshot`
+```json
+{ "generatedAt": "…", "since": "2026-09-28T08:00:00Z", "reachable": true,
+  "lastSeenAt": "2026-09-28T14:51:00Z",
+  "callCount": 128, "containedPct": 79,
+  "p1": [ { "id":"a_01", "severity":"P1", "rule":"transfer_failed",
+            "oneLiner":"Transfer failures — 6 in 20 min, target unreachable since 14:32 →",
+            "decision":"Take 3 of these back yourself",
+            "evidence": { "count":6, "firstAt":"14:32", "lastAt":"14:51",
+                          "blastRadius":"this tenant" },
+            "acknowledgedAt": null, "acknowledgedBy": null,
+            "thresholdIsProvisional": true } ],
+  "p2Grouped": { "latency_turn_gap": [ … ] },
+  "p3Count": 2,
+  "providerHealth": [ { "provider":"deepgram", "errorRate":0.004,
+                        "latencyP95Ms":410, "fallbackActive":false } ],
+  "blockRateTrend": [ { "at":"2026-09-27", "rate":0.002 } ] }
+```
+`thresholdIsProvisional: true` is required while any threshold is unmeasured — the console
+renders the provenance rather than presenting a guess as a measurement (`WIREFRAMES.md` G3).
+
+### `POST /kb/documents`
+```json
+{ "source": "https://…/pricing", "scope": "pricing",
+  "expectedChunks": 142 }
+```
+Response `202` (async): `{"jobId":"…","state":"queued"}`. Polled via `GET /kb/jobs/{jobId}`
+→ `{"state":"running|done|failed","chunks":142,"error":null}`. **A failed or partial job
+must be representable** — that is `WIREFRAMES.md` G12, and a schema that can only say "done"
+is what makes that gap unfixable later.
+
+### `POST /kb/search`
+```json
+{ "query": "remboursement sous 30 jours", "topK": 5 }
+```
+→ `{"chunks":[{"docId":"…","ordinal":12,"text":"…","score":0.87}],"embedder":"bge-m3","dims":1024}`
+The eval harness (`tests/rag/retrieval_eval.py`) calls this; the hit@3 gate is computed from it.
+
+### `GET /metering/rollup`
+`?from=&to=&groupBy=call_type|day`
+→ `{"from":"…","to":"…","groupBy":"call_type","rows":[{"key":"contained_pricing",
+"calls":38,"minutes":118.4,"actualEur":24.90,"modelEur":23.94,"overModel":false}],
+"totals":{"minutes":412,"actualEur":86.52,"modelEur":78.28}}`
+
+### Error envelope (all endpoints)
+```json
+{ "error": { "code": "unreachable_provider", "message": "…",
+             "retryable": true, "provider": "elevenlabs", "at": "…" } }
+```
+Stable `code` strings — the console branches on `code`, never on `message`.
+
+## 14. DDL sketch
+
+Postgres 16+, `pgvector`. Illustrative, not final — column types are the part that matters.
+
+```sql
+CREATE TABLE tenants (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name             text NOT NULL,
+  tz               text NOT NULL DEFAULT 'Europe/Paris',
+  business_hours   jsonb NOT NULL,           -- { "mon-fri": ["09:00","18:00"] }
+  transfer_target  text,                     -- E.164; required when answering in-hours
+  tier             text NOT NULL DEFAULT 'standard'
+                     CHECK (tier IN ('budget','standard','premium','selfhosted')),
+  after_hours_mode text NOT NULL DEFAULT 'take_message'
+                     CHECK (after_hours_mode IN ('take_message','transfer','announce_only')),
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE calls (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id     uuid NOT NULL REFERENCES tenants(id),
+  channel       text NOT NULL CHECK (channel IN ('voice','whatsapp')),
+  direction     text NOT NULL CHECK (direction IN ('inbound','outbound')),
+  from_e164     text NOT NULL,               -- stored normalised; masked at the edge
+  state         text NOT NULL,               -- CALL-FLOW.md §1 states
+  outcome       text,                        -- contained|transferred|voicemail|abandoned
+  containment   boolean,                     -- the pilot's headline metric
+  started_at    timestamptz NOT NULL,
+  ended_at      timestamptz
+);
+CREATE INDEX ON calls (tenant_id, started_at DESC);
+CREATE INDEX ON calls (tenant_id, outcome) WHERE outcome IS NOT NULL;
+
+CREATE TABLE turns (
+  call_id           uuid NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+  idx               int  NOT NULL,
+  role              text NOT NULL CHECK (role IN ('caller','agent')),
+  text              text NOT NULL,           -- transcript only. NO audio column, anywhere.
+  vad_at            timestamptz,
+  stt_final_at      timestamptz,
+  llm_first_token_at timestamptz,
+  tts_first_byte_at timestamptz,
+  PRIMARY KEY (call_id, idx)
+);
+
+CREATE TABLE call_metrics (
+  call_id             uuid PRIMARY KEY REFERENCES calls(id) ON DELETE CASCADE,
+  answer_latency_ms   int,   -- connect -> first greeting byte
+  turn_gap_p50_ms     int,
+  turn_gap_p95_ms     int,
+  wrapup_latency_ms   int    -- hangup -> WhatsApp summary delivered
+);
+
+CREATE TABLE transfer_attempts (
+  id            bigserial PRIMARY KEY,
+  call_id       uuid NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+  trigger       text NOT NULL,              -- keyword|llm|anger|emergency
+  target        text NOT NULL,
+  requested_at  timestamptz NOT NULL,
+  completed_at  timestamptz,
+  result        text,                       -- completed|failed|no_answer
+  failure_reason text
+);
+-- "no transfer succeeds silently" is enforced by the schema: an attempt is
+-- never finished without a result, and result != completed is queryable.
+
+CREATE TABLE metering_events (
+  id          bigserial PRIMARY KEY,
+  tenant_id   uuid NOT NULL REFERENCES tenants(id),
+  call_id     uuid REFERENCES calls(id),
+  ts          timestamptz NOT NULL,
+  kind        text NOT NULL CHECK (kind IN ('call_minute','whatsapp_message','tts_cache_hit')),
+  units       numeric(10,3) NOT NULL,
+  provider    text NOT NULL,
+  tier        text NOT NULL,
+  unit_cost   numeric(12,8) NOT NULL,        -- full precision: the invoice sums these
+  model_id    text NOT NULL,
+  context_tokens int                          -- see BACKEND.md §10: LLM cost is superlinear
+);
+CREATE INDEX ON metering_events (tenant_id, ts DESC);
+
+CREATE TABLE alerts (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id      uuid NOT NULL REFERENCES tenants(id),
+  rule_id        text NOT NULL,              -- OPS-ASSISTANT.md §3
+  severity       text NOT NULL CHECK (severity IN ('P1','P2','P3')),
+  opened_at      timestamptz NOT NULL,
+  cleared_at     timestamptz,
+  acknowledged_at timestamptz,
+  acknowledged_by text,
+  one_liner      text NOT NULL,              -- the decision, per §5
+  payload        jsonb NOT NULL,
+  threshold_is_provisional boolean NOT NULL DEFAULT true
+);
+CREATE INDEX ON alerts (tenant_id, opened_at DESC) WHERE cleared_at IS NULL;
+
+CREATE TABLE kb_documents (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id    uuid NOT NULL REFERENCES tenants(id),
+  source       text NOT NULL,
+  scope        text NOT NULL,
+  published_at timestamptz,
+  chunk_count  int NOT NULL DEFAULT 0
+);
+
+CREATE TABLE kb_chunks (
+  doc_id     uuid NOT NULL REFERENCES kb_documents(id) ON DELETE CASCADE,
+  ordinal    int NOT NULL,
+  text       text NOT NULL,
+  embedding  vector(1024) NOT NULL,   -- dims in the config, NOT hardcoded (ADR-001 D2)
+  tsvector   tsvector,                -- FR + EN dictionaries, for the lexical leg
+  PRIMARY KEY (doc_id, ordinal)
+);
+```
+
+**`vector(1024)` is written to make the ADR-001 D2 point concrete:** a hard-coded 384 here would
+be a latent query-time failure, not a compile error. The DDL is generated from config.
+
+## 15. Migration numbering convention
+
+The repo's existing convention: sequential numbered SQL files, applied in order
+(`docs/05-DEVELOPMENT/` migrations, `sqlx::migrate!`). The agent's migrations are
+**separate files in their own directory** — the agent's database is not the app's SQLite
+(§5), so it must not share the sequence.
+
+```
+services/agent-core/migrations/
+  0001_tenants.sql
+  0002_calls.sql
+  0003_turns_and_call_metrics.sql
+  0004_transfer_attempts.sql
+  0005_metering_events.sql
+  0006_alerts.sql
+  0007_kb_documents_and_chunks.sql      -- requires CREATE EXTENSION vector
+  0008_provider_health.sql
+```
+
+- One migration **per gate that adds tables**, matching the gate list — a reviewer can see which
+  gate introduced what.
+- Filenames are `NNNN_snake_case_description.sql`, zero-padded to 4, never reused or renumbered.
+- Forward-only. No down migrations: rolling back a metering schema is a restore-from-backup
+  decision, not a `git revert`.
+- `0007` must run `CREATE EXTENSION IF NOT EXISTS vector;` explicitly, or it fails on a fresh
+  host with a non-obvious error.
+- Destructive changes follow the **deprecate-fully** rule (spec invariant 6): a new column lands,
+  a backfill runs, the old column is dropped in a **later** migration. No compat shims.
+
+## 16. Verification (real commands, per gate)
 
 ```bash
 # Gate 1 — assert the SUMMARY LINE, not the exit code (pytest false-greens on this host)
