@@ -132,7 +132,13 @@ class SessionPurpose(StrEnum):
     LIVE = "live"
 
 
-class SessionRequest(BaseModel):
+class SessionRequest(Camel):
+    # NOT BaseModel. This class is INBOUND, so it must accept camelCase. Inheriting
+    # BaseModel here meant `callerOverride` was silently dropped on the way in —
+    # the field defaulted to None, `assert_caller_allowed` never fired, and a live
+    # session accepted a caller override. A guard that parses as present and
+    # enforces nothing is worse than no guard, and no unit test on the method
+    # would have found it: the method was correct, the wiring was not.
     channel: CallChannel
     purpose: SessionPurpose
     locale: Literal["fr", "en"] = "fr"
@@ -200,7 +206,10 @@ class StagesFrame(Camel):
 class MetaFrame(Camel):
     type: Literal["meta"] = "meta"
     call_id: str
-    locale: Literal["fr", "en"]
+    #: The SPOKEN locale. VoiceLocale, not the UI locale — the console ships 5
+    #: UI languages and the agent speaks 2, and conflating them is how a French
+    #: client ends up with an Arabic voice by accident.
+    locale: VoiceLocale
     fallback_active: bool
     chain_tier: ProviderTier
 
@@ -350,5 +359,5 @@ class ErrorBody(Camel):
     at: str
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(Camel):
     error: ErrorBody

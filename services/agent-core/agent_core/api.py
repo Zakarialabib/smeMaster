@@ -17,10 +17,11 @@ import os
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .api_v1 import router as v1_router
 from .contracts import ErrorBody, ErrorResponse, Health
 
 VERSION = "0.1.0"
@@ -80,3 +81,20 @@ async def healthz() -> dict[str, Any]:
         "db": "ok",
         "providers": "ok",
     }
+
+
+# The error envelope is the same shape whether an error came from a route
+# returning a response or from an HTTPException, so the console has exactly one
+# error parser.
+@app.exception_handler(HTTPException)
+async def http_error(_: Request, exc: HTTPException) -> JSONResponse:
+    if isinstance(exc.detail, dict) and "code" in exc.detail:
+        return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+    return JSONResponse(
+        status_code=exc.status_code, content={"error": exc.detail}, headers=exc.headers or None
+    )
+
+
+# Phase B2: /session, /ws/transcript, /ops/snapshot. Mounted after /healthz so the
+# liveness route keeps working even if a v1 route is broken.
+app.include_router(v1_router)
