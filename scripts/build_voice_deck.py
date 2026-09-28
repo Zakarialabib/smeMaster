@@ -2,7 +2,7 @@
 """Build the voice-agent client deck (FR/EN) from the Gate 0 docs.
 
 Run:  dekenv/Scripts/python.exe scripts/build_voice_deck.py
-Out:  docs/voice/VOICE-AGENT-DECK.pptx
+Out:  docs/voice/client/VOICE-AGENT-DECK.pptx
 """
 from __future__ import annotations
 

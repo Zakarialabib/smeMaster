@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Console — Live call</title>
+<style>
+  :root{
+    --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px;
+    --bg-primary:#ffffff; --bg-secondary:#f7f8fa; --bg-tertiary:#f0f1f3; --bg-hover:#eef0f3;
+    --bg-selected:rgba(11,87,208,.12);
+    --text-primary:#1c1b1f; --text-secondary:#49454f; --text-tertiary:#7a7680;
+    --border-primary:#e4e6ea; --border-secondary:#eceef1;
+    --accent:#0b57d0; --accent-hover:#0842a0; --accent-light:#d3e3fd; --accent-subtle:rgba(11,87,208,.08);
+    --ai:#9333ea; --ai-subtle:rgba(147,51,234,.08);
+    --danger:#e11d48; --warning:#d97706; --warning-light:#fef3c7;
+    --success:#059669; --success-light:#d1fae5; --info:#0284c7; --info-light:#e0f2fe;
+    --glass-blur:14px;
+    --elevation-sm:0 1px 2px rgba(16,24,40,.04);
+    --elevation-md:0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;line-height:1.45;color:var(--text-primary);
+    background:
+      radial-gradient(1200px 600px at 88% -10%, rgba(11,87,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 4% 110%, rgba(147,51,234,.07), transparent 60%),
+      var(--bg-secondary);
+    min-height:100vh;padding:var(--space-4)}
+  .frost{background:rgba(255,255,255,.72);backdrop-filter:blur(var(--glass-blur));
+    -webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border-primary)}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+  .rail{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-2) var(--space-3);
+    border-radius:var(--radius-lg);overflow-x:auto}
+  .rail .brand{font-weight:600;padding-inline-end:var(--space-3);white-space:nowrap}
+  .rail a{color:var(--text-secondary);text-decoration:none;padding:6px 10px;border-radius:var(--radius);white-space:nowrap}
+  .rail a.on{color:var(--accent);background:var(--bg-selected);font-weight:600}
+  .cnav{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);
+    border-radius:var(--radius-lg)}
+  .cnav button{font:inherit;border:0;background:transparent;color:var(--text-secondary);padding:7px 12px;
+    border-radius:var(--radius);cursor:pointer}
+  .cnav button.on{color:var(--accent);background:var(--accent-subtle);font-weight:600}
+  .cnav .spacer{flex:1}
+  .tenant{font-size:12px;color:var(--text-tertiary);padding-inline-end:var(--space-2)}
+
+  .panel{border-radius:var(--radius-lg);background:var(--bg-primary);border:1px solid var(--border-primary);
+    box-shadow:var(--elevation-sm);overflow:hidden}
+  .phead{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-primary)}
+  .phead h1{font-size:16px;margin:0;font-weight:600}
+  .phead .grow{flex:1}
+  .pbody{padding:var(--space-4)}
+  .btn{font:inherit;font-weight:500;border-radius:var(--radius);padding:7px 12px;cursor:pointer;
+    border:1px solid var(--border-primary);background:var(--bg-primary);color:var(--text-secondary)}
+  .sub{font-size:12px;color:var(--text-tertiary)}
+  .row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .num{font-variant-numeric:tabular-nums}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;
+    border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill.live{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.ok{background:var(--success-light);color:#065f46;border-color:rgba(5,150,105,.25)}
+  .pill.warn{background:var(--warning-light);color:#92400e;border-color:rgba(217,119,6,.3)}
+  .pill.neutral{background:var(--bg-tertiary);color:var(--text-secondary);border-color:var(--border-primary)}
+  .dot{width:6px;height:6px;border-radius:999px;background:var(--danger);display:inline-block}
+  .dot.ok{background:var(--success)}
+  .beat{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){.beat{animation:none}}
+
+  /* two-column: transcript | stage marks */
+  .live{display:grid;grid-template-columns:1fr 320px;gap:0}
+  .live>*{min-width:0}
+  .transcript{padding:var(--space-4);border-inline-end:1px solid var(--border-primary)}
+  .metrics{padding:var(--space-4);background:var(--bg-secondary)}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);
+    font-weight:600;margin:0 0 var(--space-3)}
+
+  /* transcript turns */
+  .turn{display:flex;gap:var(--space-3);margin-bottom:var(--space-3)}
+  .spk{flex:none;width:64px;font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.03em;padding-top:8px;color:var(--text-tertiary)}
+  .spk.agent{color:var(--accent)}
+  .bub{flex:1;min-width:0;background:var(--bg-secondary);border:1px solid var(--border-secondary);
+    border-radius:var(--radius-lg);padding:var(--space-3);color:var(--text-primary)}
+  .turn.agent .bub{background:var(--accent-subtle);border-color:rgba(11,87,208,.2)}
+  .bub .meta{margin-top:6px;font-size:11px;color:var(--text-tertiary)}
+  .caret{display:inline-block;width:8px;height:15px;vertical-align:-2px;background:var(--accent);
+    margin-inline-start:2px;animation:pulse 1.1s steps(1) infinite}
+  @media (prefers-reduced-motion:reduce){.caret{animation:none}}
+
+  /* stage marks */
+  .mark{display:grid;grid-template-columns:1fr auto auto;gap:6px var(--space-2);align-items:center}
+  .mark b{font-weight:500;color:var(--text-secondary);font-size:13px}
+  .mark .v{font-variant-numeric:tabular-nums;color:var(--text-primary);text-align:end;font-size:13px}
+  .mark .s{font-size:11px;font-weight:700}
+  .s.ok{color:var(--success)}
+  .s.miss{color:var(--danger)}
+  .hr{height:1px;background:var(--border-primary);margin:var(--space-3) 0}
+  .bar{height:6px;border-radius:999px;background:var(--bg-tertiary);overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%;background:var(--success)}
+  .bar>i.miss{background:var(--danger)}
+
+  .guard{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3) var(--space-4);
+    background:var(--info-light);border-top:1px solid var(--border-primary);color:#075985;font-size:12px}
+  .guard b{color:#0c4a6e}
+
+  @media (max-width:860px){
+    body{padding:var(--space-2)}
+    .live{grid-template-columns:1fr}
+    .transcript{border-inline-end:0;border-bottom:1px solid var(--border-primary)}
+    .rail a:nth-child(n+6){display:none}
+    .spk{width:52px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="rail frost" aria-label="App">
+    <span class="brand">SMEMaster</span>
+    <a href="#">Mail</a><a href="#">Today</a><a href="#">CRM</a>
+    <a href="#" class="on" aria-current="page">Calls</a>
+    <a href="#">Tasks</a><a href="#">Calendar</a><a href="#">AI</a><a href="#">Business</a>
+  </nav>
+
+  <nav class="cnav frost" aria-label="Voice console">
+    <button>Calls</button><button class="on" aria-current="page">Live</button>
+    <button>Ops</button><button>Config</button><button>Cost</button>
+    <span class="spacer"></span><span class="tenant">⟨client⟩ ▾</span>
+  </nav>
+
+  <section class="panel">
+    <div class="phead">
+      <a class="btn" href="#" style="text-decoration:none">◀ Calls</a>
+      <h1>Live call</h1>
+      <span class="pill live"><span class="dot beat"></span>LIVE · SPEAKING</span>
+      <span class="pill neutral num">⏱ 1:42</span>
+      <span class="pill neutral">Voice</span>
+      <span class="pill neutral">⟨fr⟩</span>
+      <span class="grow"></span>
+      <span class="sub">+33 6 •• •• 41 22</span>
+    </div>
+
+    <div class="live">
+      <!-- transcript: aria-live region, atomic=false so a delta is not a full re-read -->
+      <div class="transcript" aria-live="polite" aria-atomic="false" aria-label="Live transcript">
+        <p class="sec">Transcript</p>
+
+        <div class="turn agent">
+          <span class="spk agent">Agent</span>
+          <div class="bub">Cet appel est pris en charge par un assistant IA. Dites « agent » à
+            tout moment pour être transféré à un humain.
+            <div class="meta">disclosure · 0:02</div></div>
+        </div>
+
+        <div class="turn">
+          <span class="spk">Caller</span>
+          <div class="bub">Bonjour, je voudrais prendre rendez-vous pour une consultation.
+            <div class="meta">final · 0:09 · stt 0.21s</div></div>
+        </div>
+
+        <div class="turn agent">
+          <span class="spk agent">Agent</span>
+          <div class="bub">Avec plaisir. Nous avons des créneaux mardi à 10h00 et jeudi à 14h30.
+            Lequel vous conviendrait ?
+            <div class="meta">final · 0:14</div></div>
+        </div>
+
+        <div class="turn">
+          <span class="spk">Caller</span>
+          <div class="bub">Mardi 10h, ça me va. Est-ce qu'il y a un parking sur place<span class="caret" aria-hidden="true"></span>
+            <div class="meta">streaming…</div></div>
+        </div>
+      </div>
+
+      <!-- stage marks: the four per-turn marks from CALL-FLOW §3 -->
+      <aside class="metrics">
+        <p class="sec">This turn</p>
+        <div class="mark">
+          <b>VAD — speech end</b><span class="v num">0.00</span><span class="s ok">✔</span>
+          <b>STT — final</b><span class="v num">0.21s</span><span class="s ok">✔</span>
+          <b>LLM — 1st token</b><span class="v num">0.48s</span><span class="s ok">✔</span>
+          <b>TTS — 1st byte</b><span class="v num">0.72s</span><span class="s ok">✔</span>
+        </div>
+
+        <div class="hr"></div>
+
+        <p class="sec">Against the pilot bars</p>
+        <div class="mark">
+          <b>turn_gap</b><span class="v num">0.72s</span><span class="s ok">✔</span>
+          <b>answer_latency</b><span class="v num">1.84s</span><span class="s ok">✔</span>
+        </div>
+        <p class="sub" style="margin:6px 0 0">turn_gap p50 &lt; 1.0s · p95 &lt; 1.6s ·
+          answer_latency p95 &lt; 2.0s</p>
+
+        <div class="hr"></div>
+
+        <p class="sec">Providers</p>
+        <div class="mark">
+          <b><span class="dot ok"></span> Deepgram (STT)</b><span class="v">ok</span><span></span>
+          <b><span class="dot ok"></span> ElevenLabs (TTS)</b><span class="v">ok</span><span></span>
+          <b><span class="dot ok"></span> OpenRouter (LLM)</b><span class="v">ok</span><span></span>
+        </div>
+        <p class="sub" style="margin:6px 0 0">Fallback chain: not active.</p>
+
+        <div class="hr"></div>
+
+        <p class="sec">Turn gap across this call</p>
+        <div class="bar" role="img" aria-label="turn gap within target"><i style="width:72%"></i></div>
+        <p class="sub" style="margin:6px 0 0">8 turns · p50 0.71s · worst 0.94s — no misses.</p>
+      </aside>
+    </div>
+
+    <!-- the guard note: the UI must say what it cannot do -->
+    <div class="guard">
+      <span aria-hidden="true">ⓘ</span>
+      <span><b>Read-only in v1.</b> This console cannot interrupt a live call. No audio is
+        recorded or retained, so there is no playback — the transcript is the record.</span>
+    </div>
+  </section>
+
+  <p class="sub" style="text-align:center">
+    Static mockup · tokens from <code>src/styles/globals.css</code> · no JS ·
+    stage marks per <code>CALL-FLOW.md</code> §3.
+  </p>
+</div>
+</body>
+</html>

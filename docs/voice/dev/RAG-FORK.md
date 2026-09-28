@@ -2,7 +2,7 @@
 
 > **Status:** **DECIDED 2026-09-28 — Option A** (server-side pgvector + `bge-m3`).
 > One client-owned guardrail still open: agent knowledge scope. See §Decision record.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 
 ## The problem
 
@@ -62,7 +62,7 @@ config refactor, not a model decision. But its **dimension is not a constant** �
 assumes 384 must read the dimension from the index metadata instead. The Python side
 is unconstrained, which is why the server is not boxed into bge. **Consequence: the
 server embedder can be self-hosted, which is what keeps the EU-residency story clean
-(Q6).** See [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D2.
+(Q6).** See [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D2.
 
 ## Options
 
@@ -106,7 +106,7 @@ Agent answers from a curated, hand-written FAQ in the repo.
 - **Pros:** fastest path to a demo; zero retrieval risk; nothing to keep in sync.
 - **Cons:** containment will be poor on anything the client actually cares about,
   and containment is the pilot's headline success metric. Likely to fail the
-  ≥60–70% target in [`PILOT-CRITERIA.md`](PILOT-CRITERIA.md).
+  ≥60–70% target in [`PILOT-CRITERIA.md`](../client/PILOT-CRITERIA.md).
 - **Assessment:** viable only as a deliberate week-1 scope cut, not as the plan.
 
 ## Embedder decision — settled by eval, not by leaderboard
@@ -194,7 +194,7 @@ open and belongs to the client: *what content the agent is allowed to know*. Bui
 ingestion endpoint against a curated KB shape and treat "the full mail/contact corpus" as
 out of scope until the client says otherwise — that keeps the privacy story clean (Q6)
 and keeps `bge-m3` cheap. Recorded as Open item 2 in
-[`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md).
+[`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md).
 
 Once the knowledge scope is confirmed, tick the spec's Gate 0 checklist item and this
 file is closed. Do not start Gate 1 with the knowledge scope assumed.

@@ -191,7 +191,7 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 > **Grilled 2026-09-28:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`OSS landscape`](10-voice-agent-oss-landscape.md) ·
 > [`glossary`](../glossary/glossary-voice-agent.md) ·
-> **handoff prompts:** [`docs/voice/AGENT-PROMPTS.md`](../voice/AGENT-PROMPTS.md)
+> **handoff prompts:** [`docs/voice/dev/AGENT-PROMPTS.md`](../voice/dev/AGENT-PROMPTS.md)
 > **Reuses, does not rebuild:** provider abstraction (`src/shared/services/ai/`),
 > tool registry, invoicing, deliverability monitoring, i18n `fr`, orchestrator,
 > ml-sidecar architecture pattern.
@@ -208,7 +208,7 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 | 10.8 | Metering + provider tiers                  | 1–2d    | 10.7      | 🔲     | Reuses invoicing + deliverability. Was 4–5d before reuse pass         |
 | 10.9 | FR/EN voice enforcement                    | 1–2d    | 10.7      | 🔲     | FR UI already ships — voice config only. No Darija/Arabic             |
 | 10.10 | Production BSP swap + ops runbooks         | 4–5d    | 10.3,10.5 | 🔲     | Same `ChannelAdapter` signature; 24/7 monitoring                     |
-| 10.11 | 2-week pilot (≥ 100 calls)                 | 2w      | 10.10     | 🔲     | Go/no-go per `docs/voice/PILOT-CRITERIA.md`                           |
+| 10.11 | 2-week pilot (≥ 100 calls)                 | 2w      | 10.10     | 🔲     | Go/no-go per `docs/voice/client/PILOT-CRITERIA.md`                           |
 
 **Out of scope for v1:** cold outbound, outbound WhatsApp templates, CRM/calendar
 writes, native app (Android ships), >2 languages, audio recording.

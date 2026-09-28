@@ -213,7 +213,7 @@ self-hosting work at 200–600 min/month instead of only at scale), it covers ST
 projects it supersedes are permissive but quiet.
 
 **Not a v1 change.** It is a `ProviderTier` candidate for Gate 5, gated on a real measurement —
-see [`Optimizing Voice Agent Performance.md`](../voice/Optimizing%20Voice%20Agent%20Performance.md)
+see [`Optimizing Voice Agent Performance.md`](../voice/dev/PERFORMANCE.md)
 §6.7: max concurrent calls at RTF < 1.0 on our 4-vCPU box.
 
 **Momentum caveats the spec should carry.** Both OSS fallbacks are licence-clean and both

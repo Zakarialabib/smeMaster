@@ -1,7 +1,7 @@
 # Call Flow — Inbound Voice Agent (FR/EN, v1)
 
 > **Status:** DRAFT — the consent model and emergency policy below are BLOCKING for Gate 4.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Written:** 2026-09-28
 
 ## 0. Blocking items in this document
@@ -137,7 +137,7 @@ outbound templates out of v1 scope, which contradicts this path. Two ways out, a
 client must pick: the owner sends one message to the agent's number once (opening the
 24-hour service window, keeping it €0), or we accept a utility-template cost per missed
 call and price it. **Ask the BSP and confirm before signing** —
-[`VENDOR-QUOTE-REQUEST.md`](VENDOR-QUOTE-REQUEST.md) §1.3, and `ADR-001` Open #1.
+[`VENDOR-QUOTE-REQUEST.md`](../client/VENDOR-QUOTE-REQUEST.md) §1.3, and `ADR-001` Open #1.
 
 ```
 voicemail audio → STT (ElevenLabs Scribe, batch) → FR/EN summary via LLM

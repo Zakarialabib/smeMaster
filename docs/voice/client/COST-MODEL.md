@@ -1,7 +1,7 @@
 # Cost Model — Voice & WhatsApp Agent (FR/EN, v1 talk-only)
 
 > **Status:** DRAFT — requires client sign-off (Gate 0) and dated price verification.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Verified on:** 2026-09-28 · **Next re-verify:** on client signature, and monthly after
 > **Currency:** USD for vendor cost, EUR for client billing. +5% FX buffer applied to quotes.
 > **Client VAT:** TVA 20% (B2B, FR domestic) — added at invoicing, not modelled here.
@@ -112,5 +112,5 @@ provider change (BSP/carrier/TTS/STT), or a currency move beyond the +5% buffer.
 - [ ] Deepgram Nova FR price + FR in the language list — screenshot, dated
 - [ ] OpenRouter Gemini Flash price — screenshot, dated
 - [ ] Meta per-message vs service-conversation pricing — screenshot, dated
-- [ ] 2–3 BSP quotes (request template: [`docs/voice/VENDOR-QUOTE-REQUEST.md`](VENDOR-QUOTE-REQUEST.md))
+- [ ] 2–3 BSP quotes (request template: [`docs/voice/client/VENDOR-QUOTE-REQUEST.md`](VENDOR-QUOTE-REQUEST.md))
 - [ ] Expected monthly minutes from the client (this is the input that makes §1 real)

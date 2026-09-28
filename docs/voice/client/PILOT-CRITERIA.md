@@ -1,7 +1,7 @@
 # Pilot Success Criteria — Voice & WhatsApp Agent (FR/EN)
 
 > **Status:** PROPOSED — to be signed as part of Gate 0, before the pilot runs.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Defined:** 2026-09-28
 
 These are the numbers that decide whether phase 2 happens. They are proposed now,

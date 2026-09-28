@@ -2,7 +2,7 @@
 
 > **Status:** Accepted · **Date:** 2026-09-28 · **Decided by:** Zakaria (engineering)
 > **Supersedes:** nothing (first ADR). **Amends:** `docs/specs/2026-09-28-voice-agent.md`,
-> `docs/voice/RAG-FORK.md`, `docs/voice/OPS-ASSISTANT.md` (corrections applied in-place)
+> `docs/voice/dev/RAG-FORK.md`, `docs/voice/dev/OPS-ASSISTANT.md` (corrections applied in-place)
 > **Anchor spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Evidence read:** working tree @ `private/voice-agent-client` — `1c738db`, 2026-09-28
 

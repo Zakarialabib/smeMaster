@@ -2,10 +2,10 @@
 
 > **Purpose:** the copy-paste prompt for each gate, so the next agent starts from the
 > decided state instead of re-deriving it. One prompt per gate, self-contained.
-> **Read first (every gate):** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> [`spec`](../specs/2026-09-28-voice-agent.md) ·
-> [`OSS landscape`](../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
-> [`glossary`](../glossary/glossary-voice-agent.md)
+> **Read first (every gate):** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
+> [`spec`](../../specs/2026-09-28-voice-agent.md) ·
+> [`OSS landscape`](../../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
+> [`glossary`](../../glossary/glossary-voice-agent.md)
 > **Last updated:** 2026-09-28
 
 ## Rules that apply to every gate below
@@ -25,7 +25,7 @@
 
 ```
 Docs first. Repo: C:\laragon\www\smeMaster, branch private/voice-agent-client.
-Read docs/voice/CLIENT-QUESTIONNAIRE.md and docs/voice/VENDOR-QUOTE-REQUEST.md.
+Read docs/voice/client/CLIENT-QUESTIONNAIRE.md and docs/voice/client/VENDOR-QUOTE-REQUEST.md.
 
 Both are marked SEND-AS-IS and were corrected on 2026-09-28 (four corrupted French
 strings in the questionnaire; a non-word in the CALL-FLOW spoken script). Verify the
@@ -110,7 +110,7 @@ non-normalising allowlist is bypassable by formatting alone. Gate 3 must use
 
 **Gate 5 addition (2026-09-28):** add a `selfhosted` tier to the `ProviderTier` chain
 (sherpa-onnx, Apache-2.0 — see
-[`Optimizing Voice Agent Performance.md`](Optimizing%20Voice%20Agent%20Performance.md) §6.6).
+[`Optimizing Voice Agent Performance.md`](PERFORMANCE.md) §6.6).
 It is gated on one measurement first, §6.7: **max concurrent calls at RTF < 1.0** with the
 streaming FR zipformer + a Piper FR voice on our 4-vCPU box. Below the client's expected
 peak, the tier is closed and nothing else in Gate 5 changes. Also adopt **TTS caching** for

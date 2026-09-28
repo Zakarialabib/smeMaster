@@ -1,6 +1,6 @@
 # Ops Assistant — AI That Manages Live Call Operations
 
-> **Status:** Gate 0 design proposal. Not built. Feeds [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md).
+> **Status:** Gate 0 design proposal. Not built. Feeds [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md).
 > **Written:** 2026-09-28
 > **Scope note:** the "no AI" rule in our product roadmap applies to the **SME Master SaaS product**. This is a separate client engagement with AI as the deliverable. Different product, different rule.
 

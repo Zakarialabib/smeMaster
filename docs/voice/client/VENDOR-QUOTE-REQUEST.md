@@ -1,7 +1,7 @@
 # Vendor Quote Request — BSP + Telephony Carrier
 
 > **Status:** SEND-AS-IS. Nothing here commits us to anything.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Send to:** MessageBird · Twilio · 360dialog · Telnyx (all four, for comparison)
 > **Date sent:** ☐  **Quotes due:** ☐
 

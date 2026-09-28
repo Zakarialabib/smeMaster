@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Console — Ops digest</title>
+<style>
+  :root{
+    --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px;
+    --bg-primary:#ffffff; --bg-secondary:#f7f8fa; --bg-tertiary:#f0f1f3; --bg-hover:#eef0f3;
+    --bg-selected:rgba(11,87,208,.12);
+    --text-primary:#1c1b1f; --text-secondary:#49454f; --text-tertiary:#7a7680;
+    --border-primary:#e4e6ea; --border-secondary:#eceef1;
+    --accent:#0b57d0; --accent-hover:#0842a0; --accent-light:#d3e3fd; --accent-subtle:rgba(11,87,208,.08);
+    --ai:#9333ea; --ai-subtle:rgba(147,51,234,.08);
+    --danger:#e11d48; --warning:#d97706; --warning-light:#fef3c7;
+    --success:#059669; --success-light:#d1fae5; --info:#0284c7; --info-light:#e0f2fe;
+    --glass-blur:14px;
+    --elevation-sm:0 1px 2px rgba(16,24,40,.04);
+    --elevation-md:0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;
+    line-height:1.45;color:var(--text-primary);
+    background:
+      radial-gradient(1200px 600px at 88% -10%, rgba(11,87,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 4% 110%, rgba(147,51,234,.07), transparent 60%),
+      var(--bg-secondary);
+    min-height:100vh;padding:var(--space-4)}
+  .frost{background:rgba(255,255,255,.72);backdrop-filter:blur(var(--glass-blur));
+    -webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border-primary)}
+  .wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+  .rail{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-2) var(--space-3);
+    border-radius:var(--radius-lg);overflow-x:auto}
+  .rail .brand{font-weight:600;padding-inline-end:var(--space-3);white-space:nowrap}
+  .rail a{color:var(--text-secondary);text-decoration:none;padding:6px 10px;border-radius:var(--radius);white-space:nowrap}
+  .rail a.on{color:var(--accent);background:var(--bg-selected);font-weight:600}
+  .cnav{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-lg)}
+  .cnav button{font:inherit;border:0;background:transparent;color:var(--text-secondary);padding:7px 12px;
+    border-radius:var(--radius);cursor:pointer}
+  .cnav button.on{color:var(--accent);background:var(--accent-subtle);font-weight:600}
+  .cnav .spacer{flex:1}
+  .tenant{font-size:12px;color:var(--text-tertiary);padding-inline-end:var(--space-2)}
+
+  .panel{border-radius:var(--radius-lg);background:var(--bg-primary);border:1px solid var(--border-primary);
+    box-shadow:var(--elevation-sm);overflow:hidden}
+  .phead{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-primary)}
+  .phead h1{font-size:16px;margin:0;font-weight:600}
+  .phead .grow{flex:1}
+  .sub{font-size:12px;color:var(--text-tertiary)}
+  .row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .num{font-variant-numeric:tabular-nums}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;
+    border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill.p1{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.p2{background:var(--warning-light);color:#92400e;border-color:rgba(217,119,6,.3)}
+  .pill.ok{background:var(--success-light);color:#065f46;border-color:rgba(5,150,105,.25)}
+  .pill.neutral{background:var(--bg-tertiary);color:var(--text-secondary);border-color:var(--border-primary)}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);
+    font-weight:600;margin:0;padding:var(--space-3) var(--space-4) var(--space-2)}
+  .btn{font:inherit;font-weight:500;border-radius:var(--radius);padding:7px 12px;cursor:pointer;
+    border:1px solid var(--border-primary);background:var(--bg-primary);color:var(--text-secondary);text-decoration:none}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* P1 card — one line, then the fact, then the decision */
+  .p1{margin:0 var(--space-4) var(--space-3);border-radius:var(--radius-lg);overflow:hidden;
+    border:1px solid rgba(225,29,72,.3);background:#fff1f2}
+  .p1 .hbar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);
+    background:#ffe4e6;border-bottom:1px solid rgba(225,29,72,.2);font-size:12px;font-weight:700;color:#9f1239}
+  .p1 .b{padding:var(--space-3)}
+  .p1 .b .line{font-weight:600;font-size:14px}
+  .p1 .b .fact{color:var(--text-secondary);margin-top:3px}
+  .p1 .b .do{margin-top:var(--space-2);display:flex;gap:var(--space-2);flex-wrap:wrap}
+  .p1 .b .do a{font-size:12px;font-weight:600;color:#9f1239;text-decoration:none}
+
+  /* digest list */
+  .dig{padding:0 var(--space-4) var(--space-3)}
+  .item{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3) 0;
+    border-bottom:1px solid var(--border-secondary)}
+  .item:last-child{border-bottom:0}
+  .tm{flex:none;width:52px;font-size:12px;color:var(--text-tertiary);font-variant-numeric:tabular-nums;padding-top:2px}
+  .body{flex:1;min-width:0}
+  .body .t{font-weight:500}
+  .body .m{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+  .item a.open{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;white-space:nowrap}
+
+  details{border-top:1px solid var(--border-primary);background:var(--bg-secondary)}
+  summary{padding:var(--space-3) var(--space-4);cursor:pointer;font-weight:600;font-size:13px;color:var(--text-secondary)}
+  .dbody{padding:0 var(--space-4) var(--space-3);font-size:13px;color:var(--text-secondary)}
+  .dbody .item{padding:var(--space-2) 0}
+
+  .foot{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3) var(--space-4);
+    background:var(--info-light);border-top:1px solid var(--border-primary);color:#075985;font-size:12px}
+  .foot b{color:#0c4a6e}
+  @media (max-width:720px){body{padding:var(--space-2)}.rail a:nth-child(n+6){display:none}.tm{width:44px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="rail frost" aria-label="App">
+    <span class="brand">SMEMaster</span>
+    <a href="#">Mail</a><a href="#">Today</a><a href="#">CRM</a>
+    <a href="#" class="on" aria-current="page">Calls</a>
+    <a href="#">Tasks</a><a href="#">Calendar</a><a href="#">AI</a><a href="#">Business</a>
+  </nav>
+
+  <nav class="cnav frost" aria-label="Voice console">
+    <button>Calls</button><button>Live</button>
+    <button class="on" aria-current="page">Ops</button>
+    <button>Config</button><button>Cost</button>
+    <span class="spacer"></span><span class="tenant">⟨client⟩ ▾</span>
+  </nav>
+
+  <section class="panel">
+    <div class="phead">
+      <h1>What happened</h1>
+      <span class="grow"></span>
+      <span class="sub">Since yesterday 18:00 · refreshed 09:04</span>
+    </div>
+
+    <!-- headline numbers: the digest answers "how did it go" before any list -->
+    <div class="row" style="padding:var(--space-4) var(--space-4) var(--space-2)">
+      <span class="pill neutral num">14 calls</span>
+      <span class="pill ok num">11 contained · 79%</span>
+      <span class="pill neutral num">2 transferred</span>
+      <span class="pill neutral num">1 voicemail → WhatsApp</span>
+      <span class="pill neutral num">⏱ 41 min</span>
+    </div>
+
+    <p class="sec">What needs you</p>
+
+    <article class="p1">
+      <div class="hbar"><span class="pill p1">P1</span> TRANSFER FAILED · 14:32</div>
+      <div class="b">
+        <div class="line">6 transfer failures in 20 min — target line unreachable since 14:32</div>
+        <div class="fact">3 callers are still waiting for a human who is not coming. The target is the
+          client's own line, not ours. Each failure fell through to message-taking, so nothing was lost
+          — but the callers believe a person is on the way.</div>
+        <div class="do">
+          <a href="#">Take the 3 calls back yourself →</a>
+          <a href="#">Open the 3 calls</a>
+          <a href="#">Acknowledge</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="p1" style="border-color:rgba(217,119,6,.35);background:#fffbeb">
+      <div class="hbar" style="background:var(--warning-light);border-color:rgba(217,119,6,.25);color:#92400e">
+        <span class="pill p1" style="background:#fffbeb;color:#92400e;border-color:rgba(217,119,6,.35)">P1</span>
+        NUMBER REPUTATION DEGRADING
+      </div>
+      <div class="b">
+        <div class="line">Block rate 1.2% → 4.1% over 6 h on the sender number</div>
+        <div class="fact">Trend is rising, not flat. Source is carrier-side blocks, not our delivery.
+          Check the carrier before it affects the WhatsApp path too.</div>
+        <div class="do"><a href="#" style="color:#92400e">Check the carrier →</a><a href="#" style="color:var(--text-secondary)">Acknowledge</a></div>
+      </div>
+    </article>
+
+    <p class="sec">Overnight</p>
+    <div class="dig">
+      <div class="item">
+        <span class="tm num">23:10</span>
+        <div class="body"><div class="t">Appointment request — booked Tuesday 09:00</div>
+          <div class="m">Voice · 2:14 · contained · no transfer</div></div>
+        <a class="open" href="#">Open</a>
+      </div>
+      <div class="item">
+        <span class="tm num">22:41</span>
+        <div class="body"><div class="t">Voicemail → WhatsApp summary sent</div>
+          <div class="m">Voice · wrapup delivered in 3.1s · owner notified</div></div>
+        <a class="open" href="#">Open</a>
+      </div>
+      <div class="item">
+        <span class="tm num">21:05</span>
+        <div class="body">
+          <div class="t">Pricing question — not answered <span class="pill p2">⚑ knowledge gap</span></div>
+          <div class="m">Voice · 1:47 · caller asked for a price the knowledge base does not contain.
+            This is the same question as the 3 flagged calls in Calls — a gap, not a latency problem.</div>
+        </div>
+        <a class="open" href="#">Open</a>
+      </div>
+      <div class="item">
+        <span class="tm num">19:58</span>
+        <div class="body"><div class="t">After-hours call — message taken</div>
+          <div class="m">Voice · outside business hours · voicemail captured</div></div>
+        <a class="open" href="#">Open</a>
+      </div>
+    </div>
+
+    <details>
+      <summary>P2 · 3 resolved items — nothing to do</summary>
+      <div class="dbody">
+        <div class="item"><span class="tm num">14:50</span>
+          <div class="body"><div class="t">turn_gap p95 back within target (1.42s)</div>
+            <div class="m">Was 2.1s 14:20–14:38 · stage: LLM first-token · provider latency, self-resolved</div></div></div>
+        <div class="item"><span class="tm num">13:12</span>
+          <div class="body"><div class="t">Cost +8% against the signed model</div>
+            <div class="m">Within the ±20% pilot band · driven by 2 long calls</div></div></div>
+        <div class="item"><span class="tm num">09:30</span>
+          <div class="body"><div class="t">Transcript language misdetected once</div>
+            <div class="m">One sample · re-pinned mid-call · no action unless it recurs</div></div></div>
+      </div>
+    </details>
+
+    <div class="foot">
+      <span aria-hidden="true">ⓘ</span>
+      <span><b>Digest, not stream.</b> Only P1 pages you. Everything else waits until you look —
+        and the thresholds these alerts use are placeholders until the pilot produces data
+        (gap G3 in <code>WIREFRAMES.md</code> §13).</span>
+    </div>
+  </section>
+
+  <p class="sub" style="text-align:center">
+    Static mockup · tokens from <code>src/styles/globals.css</code> · no JS ·
+    rule set from <code>OPS-ASSISTANT.md</code> §3.
+  </p>
+</div>
+</body>
+</html>

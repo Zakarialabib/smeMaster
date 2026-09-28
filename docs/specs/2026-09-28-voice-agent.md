@@ -3,12 +3,12 @@
 > **Status:** Gate 0 — spec written, awaiting 4 client decisions. **No code written.**
 > **Written:** 2026-09-28 · **Author:** Hermes (spec-gated-delegation-loop)
 > **Repo:** `C:\laragon\www\smeMaster` @ `dev`
-> **Companion docs:** [`COST-MODEL.md`](../voice/COST-MODEL.md) ·
-> [`CALL-FLOW.md`](../voice/CALL-FLOW.md) · [`RAG-FORK.md`](../voice/RAG-FORK.md) ·
-> [`PILOT-CRITERIA.md`](../voice/PILOT-CRITERIA.md) ·
-> [`VENDOR-QUOTE-REQUEST.md`](../voice/VENDOR-QUOTE-REQUEST.md) ·
-> [`CLIENT-QUESTIONNAIRE.md`](../voice/CLIENT-QUESTIONNAIRE.md) ·
-> [`OPS-ASSISTANT.md`](../voice/OPS-ASSISTANT.md) (ops-assistant design + dev work matrix)
+> **Companion docs:** [`COST-MODEL.md`](../voice/client/COST-MODEL.md) ·
+> [`CALL-FLOW.md`](../voice/dev/CALL-FLOW.md) · [`RAG-FORK.md`](../voice/dev/RAG-FORK.md) ·
+> [`PILOT-CRITERIA.md`](../voice/client/PILOT-CRITERIA.md) ·
+> [`VENDOR-QUOTE-REQUEST.md`](../voice/client/VENDOR-QUOTE-REQUEST.md) ·
+> [`CLIENT-QUESTIONNAIRE.md`](../voice/client/CLIENT-QUESTIONNAIRE.md) ·
+> [`OPS-ASSISTANT.md`](../voice/dev/OPS-ASSISTANT.md) (ops-assistant design + dev work matrix)
 
 ---
 
@@ -116,7 +116,7 @@ Every one of them is a per-tenant config change, never a refactor:
 | `LLMProvider` | `google/gemini-3.x-flash` via OpenRouter | Groq Llama (lower TTFT), `gpt-4o-mini` fallback | Existing `providerFactory` is the model for this. |
 | `TTSProvider` | ElevenLabs (FR + EN) | Kokoro-82M (budget), Azure Neural (margin rescue) | **Edge TTS is excluded from every client tier** — unofficial endpoint, gray ToS. |
 | `STTProvider` | Deepgram Nova streaming (live) / ElevenLabs Scribe (batch, voicemail) | local faster-whisper (budget) | Scribe Realtime FR availability **unverified** — check before relying on it. |
-| `EmbeddingProvider` | self-hosted `bge-m3` (MIT) | `arctic-embed-l-v2.0` (Apache-2.0, same arch → config swap) | **4th seam, added 2026-09-28.** The embedder is exactly as swappable as the other three; leaving it out made the trait rule inconsistent. Config = model id, dims, prefix/instruction, normalize, distance. See [`RAG-FORK.md`](../voice/RAG-FORK.md). |
+| `EmbeddingProvider` | self-hosted `bge-m3` (MIT) | `arctic-embed-l-v2.0` (Apache-2.0, same arch → config swap) | **4th seam, added 2026-09-28.** The embedder is exactly as swappable as the other three; leaving it out made the trait rule inconsistent. Config = model id, dims, prefix/instruction, normalize, distance. See [`RAG-FORK.md`](../voice/dev/RAG-FORK.md). |
 
 `ChannelAdapter`: `inbound_events()` async iterator + `send_text()`.
 Telephony and WhatsApp implement it; the agent core never branches on channel.

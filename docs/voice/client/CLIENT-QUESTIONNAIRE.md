@@ -1,7 +1,7 @@
 # Client Questionnaire — Voice & WhatsApp Agent (FR)
 
 > **Status:** SEND-AS-IS. Four answers are required before engineering starts.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 
 ---
 
@@ -81,7 +81,7 @@ clients. Ce n'est pas une remise, c'est un service additionnel.
 
 > **Merci de choisir une formule (A, B ou C).**
 
-Le détail complet des coûts est dans `docs/voice/COST-MODEL.md`. **Les tarifs
+Le détail complet des coûts est dans `docs/voice/client/COST-MODEL.md`. **Les tarifs
 fournisseurs seront revérifiés et horodatés avant signature** — nous ne vous
 engageons pas sur des chiffres non vérifiés.
 

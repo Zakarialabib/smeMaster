@@ -26,9 +26,9 @@
 > and its React Native TurboModule binding
 > ([`XDcobra/react-native-sherpa-onnx`](https://github.com/XDcobra/react-native-sherpa-onnx), MIT).
 >
-> Related: [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> [`OSS landscape`](../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
-> [`COST-MODEL.md`](COST-MODEL.md)
+> Related: [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
+> [`OSS landscape`](../../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
+> [`COST-MODEL.md`](../client/COST-MODEL.md)
 
 # Optimizing Voice Agent Performance: A Blueprint for Low-Cost, Low-Latency, and EU-Compliant French AI Assistants
 
@@ -380,7 +380,7 @@ client before choosing the tier.
 | **Gate 1** | Add **`completion_tokens`/context growth** to the metering events: Part 5's context-compounding point means the per-minute LLM estimate in `COST-MODEL.md` §1 is a floor, and the model should say so |
 | **Desktop (separate)** | If offline French speech is ever wanted locally, the **Rust binding** + the existing `ml-sidecar` contract is the path — not the React Native wrapper |
 
-**Cross-references:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-[`OSS landscape`](../06-ROADMAP/10-voice-agent-oss-landscape.md) (sherpa-onnx added as a
-candidate under P2/P6/P7) · [`COST-MODEL.md`](COST-MODEL.md) · [`RAG-FORK.md`](RAG-FORK.md) ·
+**Cross-references:** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
+[`OSS landscape`](../../06-ROADMAP/10-voice-agent-oss-landscape.md) (sherpa-onnx added as a
+candidate under P2/P6/P7) · [`COST-MODEL.md`](../client/COST-MODEL.md) · [`RAG-FORK.md`](RAG-FORK.md) ·
 [`CALL-FLOW.md`](CALL-FLOW.md) §3 · [`AGENT-PROMPTS.md`](AGENT-PROMPTS.md)

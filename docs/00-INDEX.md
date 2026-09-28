@@ -91,15 +91,15 @@ What the app does, grouped by functional area.
 
 | Doc                                                                        | Covers                                                |
 | -------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [Email](04-FEATURES/Core/01-email-management.md) ⚠️ **MISSING**            | Inbox, threads, sync, triage — not yet written        |
-| [Accounts](04-FEATURES/Core/04-accounts.md) ⚠️ **MISSING**                 | Account setup, auth, providers — not yet written      |
-| [CRM](04-FEATURES/Core/03-crm-contacts.md) ⚠️ **MISSING**                  | Contacts, groups, segments — not yet written          |
+| [Email](04-FEATURES/01-email-management.md) ⚠️ **MISSING**            | Inbox, threads, sync, triage — not yet written        |
+| [Accounts](04-FEATURES/04-accounts.md) ⚠️ **MISSING**                 | Account setup, auth, providers — not yet written      |
+| [CRM](04-FEATURES/03-crm-contacts.md) ⚠️ **MISSING**                  | Contacts, groups, segments — not yet written          |
 | [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)                        | Campaign builder, block editor, mail merge            |
-| [Calendar](04-FEATURES/Core/07-calendar.md) ⚠️ **MISSING**                 | Calendars, events, views — not yet written            |
-| [Tasks](04-FEATURES/Core/08-tasks.md) ⚠️ **MISSING**                       | Priorities, recurrence, linked work — not yet written |
+| [Calendar](04-FEATURES/07-calendar.md) ⚠️ **MISSING**                 | Calendars, events, views — not yet written            |
+| [Tasks](04-FEATURES/08-tasks.md) ⚠️ **MISSING**                       | Priorities, recurrence, linked work — not yet written |
 | [Automation](04-FEATURES/Core/05-automation.md)                            | Trigger/action rules                                  |
-| [Account Cleaning](04-FEATURES/Core/06-account-cleaning.md) ⚠️ **MISSING** | Retention and cleanup workflows — not yet written     |
-| [Dashboard](04-FEATURES/Core/09-dashboard.md) ⚠️ **MISSING**               | Cross-feature overview widgets — not yet written      |
+| [Account Cleaning](04-FEATURES/06-account-cleaning.md) ⚠️ **MISSING** | Retention and cleanup workflows — not yet written     |
+| [Dashboard](04-FEATURES/09-dashboard.md) ⚠️ **MISSING**               | Cross-feature overview widgets — not yet written      |
 
 ### Messaging Layer
 
@@ -139,22 +139,36 @@ FR/EN AI receptionist: WhatsApp (text) + inbound voice on a dedicated FR number.
 Spec-gated delivery; **no code written — awaiting 4 client decisions.** RAG fork
 **signed off 2026-09-28 (Option A)**; Gate 1 is engineering-unblocked.
 
+**Entry point:** [`docs/voice/README.md`](voice/README.md) — routes **outbound** (`client/`) vs
+**internal** (`dev/`, `design/`). Never put an internal note in `client/`.
+
 | Doc                                                                              | Covers                                                                 |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | **[Voice Agent — SPEC](specs/2026-09-28-voice-agent.md)** 🔶                        | Full spec, ground truth, 8 gates, blocking decisions, risks            |
-| [Cost Model](voice/COST-MODEL.md)                                                  | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified** |
-| [Call Flow](voice/CALL-FLOW.md)                                                    | Call states, consent model, transfer ladder, voicemail, latency metrics |
-| [RAG Fork](voice/RAG-FORK.md) ✅ **Option A**                                        | Desktop-local vs server-side retrieval — **signed off: server pgvector + `bge-m3`** |
-| [Pilot Criteria](voice/PILOT-CRITERIA.md)                                          | Go/no-go bars for the 2-week pilot                                    |
-| [Vendor Quote Request](voice/VENDOR-QUOTE-REQUEST.md)                              | Send-as-is BSP + carrier RFQ (4 vendors)                              |
-| [Client Questionnaire](voice/CLIENT-QUESTIONNAIRE.md)                              | FR client email — 4 blocking questions                                |
-| [Ops Assistant](voice/OPS-ASSISTANT.md)                                            | AI ops design, alert matrix, dev work matrix                           |
-| [OSS Landscape](06-ROADMAP/10-voice-agent-oss-landscape.md) 🆕                      | Layer-by-layer OSS-vs-gated verdict, licence check, adapted scores     |
+| **[Voice Agent — README](voice/README.md)** 🆕                                      | Folder map, reading order per role, gate map                           |
+| **Outbound — `voice/client/`** *(these leave the building)*                         | |
+| [Client Questionnaire](voice/client/CLIENT-QUESTIONNAIRE.md)                        | FR email — 4 blocking questions + 6 unblocking ones                    |
+| [Cost Model](voice/client/COST-MODEL.md)                                            | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified** |
+| [Pilot Criteria](voice/client/PILOT-CRITERIA.md)                                    | Go/no-go bars for the 2-week pilot                                     |
+| [Vendor Quote Request](voice/client/VENDOR-QUOTE-REQUEST.md)                        | Send-as-is BSP + carrier RFQ (4 vendors) — **strip the internal footer** |
+| **[Client Deck](voice/client/VOICE-AGENT-DECK.pptx)**                               | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
+| **Internal — `voice/dev/`** *(engineering + ops)*                                    | |
+| [Call Flow](voice/dev/CALL-FLOW.md)                                                 | Call states, consent model, transfer ladder, voicemail, latency metrics |
+| [Ops Assistant](voice/dev/OPS-ASSISTANT.md)                                         | Alert→action matrix, dev work matrix                                   |
+| [RAG Fork](voice/dev/RAG-FORK.md) ✅ **Option A**                                    | Desktop-local vs server-side retrieval — **signed: pgvector + `bge-m3`** |
+| [Performance](voice/dev/PERFORMANCE.md) ⚠️                                           | External draft **adjudicated** + **Part 6: self-hosted speech (sherpa-onnx)** |
+| [Self-Hosting & Training](voice/dev/SELF-HOSTING.md) 🆕                              | The RTF gate, what is actually trainable, and the audio-retention conflict |
+| [Agent Prompts](voice/dev/AGENT-PROMPTS.md) 🆕                                       | Copy-paste handoff prompt per gate (packet send, Gate 1)               |
+| **Design — `voice/design/`** *(product · frontend · backend)*                        | |
+| [UX](voice/design/UX.md) 🆕                                                          | Personas, IA, surface inventory, states, notification + a11y design    |
+| [Frontend](voice/design/FRONTEND.md) 🆕                                              | Mount point, component tree, **speech abstraction**, stores, perf rules |
+| [Backend](voice/design/BACKEND.md) 🆕                                                | Topology, 4 seams, data model, endpoints, auth, deployment             |
+| [Wireframes](voice/design/WIREFRAMES.md) 🆕                                          | Per-surface ASCII, region→action, gaps ⚠️, UX opportunities 💡          |
+| [Mockups](voice/design/mockups/) 🆕                                                   | 5 HTML mockups on the **real** design tokens (call log, live, detail, digest, alert) |
+| **Cross-cutting**                                                                    | |
 | **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕 | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1** |
+| [OSS Landscape](06-ROADMAP/10-voice-agent-oss-landscape.md) 🆕                      | Layer-by-layer OSS-vs-gated verdict, licence check, adapted scores     |
 | [Glossary](glossary/glossary-voice-agent.md) 🆕                                     | Terms as used in this repo (spaces, gates, metrics, channel)           |
-| [Agent Prompts](voice/AGENT-PROMPTS.md) 🆕                                          | Copy-paste handoff prompt per gate (packet send, Gate 1)               |
-| [Voice Perf / Self-Hosted](voice/Optimizing%20Voice%20Agent%20Performance.md) ⚠️🆕  | External draft **adjudicated** + **Part 6: self-hosted speech (sherpa-onnx)** |
-| **[Client Deck](voice/VOICE-AGENT-DECK.pptx)**                                      | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
 
 **New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/INDEX.md)
 (created 2026-09-28 — the repo had none).
