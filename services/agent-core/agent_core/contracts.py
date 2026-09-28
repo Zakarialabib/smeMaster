@@ -68,6 +68,20 @@ class AfterHoursMode(StrEnum):
     ANNOUNCE_ONLY = "announce_only"
 
 
+class VoiceLocale(StrEnum):
+    """The agent speaks FR and EN.
+
+    **Not** the app's locale list. The repo ships en/fr/ar/ja/it interfaces; that
+    is a different fact from what the agent can speak. An enum rather than a
+    string is the point: there is no third value to reach for, so "we'll add
+    Darija next sprint" cannot happen by accident here — it needs a code change
+    and a deliberate review (`UX.md` section 12, `WIREFRAMES.md` G10).
+    """
+
+    FR = "fr"
+    EN = "en"
+
+
 # ── Primitives ──────────────────────────────────────────────────────────────
 
 E164 = Annotated[str, Field(pattern=r"^\+[1-9]\d{6,14}$", examples=["+33612345678"])]
