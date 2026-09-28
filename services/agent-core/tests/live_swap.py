@@ -13,7 +13,6 @@ Run against a dev server:
 from __future__ import annotations
 
 import argparse
-import asyncio
 import json
 import sys
 import urllib.error
@@ -61,8 +60,12 @@ def main() -> int:
 
     # 1. The server is up and the registry is populated.
     reg = _get("/providers/registry", p)
-    check("registry lists all four seams", set(reg["registered"]) == {"llm", "tts", "stt", "embedding"})
-    check("each seam has >= 2 implementations", all(len(v) >= 2 for v in reg["registered"].values()))
+    seams = set(reg["registered"])
+    check("registry lists all four seams", seams == {"llm", "tts", "stt", "embedding"})
+    check(
+        "each seam has >= 2 implementations",
+        all(len(v) >= 2 for v in reg["registered"].values()),
+    )
     check("data is labelled as fixture data", reg["fixture_data"] is True)
 
     # 2. A live session succeeds and returns the exact contract keys.
@@ -96,11 +99,12 @@ def main() -> int:
         kinds == ["state", "delta", "stages", "delta", "meta"],
         str(kinds),
     )
-    check("frames are camelCase on the wire", "callId" in json.dumps(frames) and "call_id" not in json.dumps(frames))
+    wire = json.dumps(frames)
+    check("frames are camelCase on the wire", "callId" in wire and "call_id" not in wire)
 
     # 5. Which provider answered — the field that makes a fallback visible.
     metas = [f for f in frames if f["type"] == "meta"]
-    check("meta reports fallback state", bool(metas) and "fallbackActive" in metas[0])
+    check("meta reports fallback state", bool(metas) and "fallbackActive" in metas[0])  # noqa: E501
 
     # 6. The snapshot is exactly the OpsSnapshot contract.
     snap = _get("/ops/snapshot", p)
