@@ -5,7 +5,8 @@
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 > **Decisions:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > **Glossary:** [`glossary-voice-agent.md`](../glossary/glossary-voice-agent.md) ·
-> **OSS landscape:** [`docs/06-ROADMAP/10-voice-agent-oss-landscape.md`](../06-ROADMAP/10-voice-agent-oss-landscape.md)
+> **OSS landscape:** [`docs/06-ROADMAP/10-voice-agent-oss-landscape.md`](../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
+> **WhatsApp channel landscape:** [`docs/06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md)
 
 An inbound AI receptionist for a French-speaking SME. Two channels, one agent: WhatsApp
 (text) + inbound voice on a dedicated FR number. Delivered as a **managed service** run by

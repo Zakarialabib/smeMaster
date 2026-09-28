@@ -39,6 +39,7 @@
 | **`Baileys`** | `WhiskeySockets/Baileys`, MIT, active. A **WhatsApp Web protocol client**, not an official API. Dev sandbox only; the E.164-normalised allowlist is the guard |
 | **E.164 normalisation** | Collapsing `+33…`, `0033…`, `0…`, and `…@c.us` to one canonical form. Runs **before** any allowlist comparison, otherwise formatting alone bypasses it |
 | **JID** | WhatsApp's address form (`33612345678@c.us`). One of the alias formats normalisation must collapse |
+| **Webview-shell client** | A "WhatsApp client" that loads `web.whatsapp.com` in an OS webview and wraps it in a desktop shell (`karem505/whatRust`, MIT). **Not an integration**: no protocol, no headless operation, no programmatic send. Distinct from `Baileys`, which reimplements the protocol. `../../06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md` |
 | **DID** | Direct Inward Dialling — the phone number itself |
 | **μ-law / PCMA** | The 8 kHz G.711 audio encodings carriers stream over WebSocket; resampling to 16 kHz is required for the model pipeline |
 | **Warm transfer** | Handing a live caller to a human with context carried over (SIP REFER or equivalent). **No warm transfer ⇒ no v1** |

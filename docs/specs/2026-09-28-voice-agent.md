@@ -29,6 +29,14 @@ missed call to the owner on WhatsApp. It does **not** write to CRM/calendar, doe
 no unofficial library does either. WhatsApp voice *notes* can be transcribed; live
 calls cannot be answered by an agent.
 
+*Corroborated from the opposite direction (2026-09-28):* the one open-source
+client that places in-app WhatsApp calls — `karem505/whatRust`, MIT — does so by
+loading `web.whatsapp.com` in an OS webview, and its own limitations note that
+calling only works *"where the system webview ships WebRTC"*. That is a human
+clicking "call" in a GUI: not an API, not server-side, not automatable. It
+confirms the constraint rather than qualifying it. See
+[`docs/06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md).
+
 So the voice channel is a **dedicated PSTN/SIP number**, not WhatsApp. This is
 stated in the client questionnaire and must be confirmed in writing before any
 engineering begins. If the client's actual expectation is AI voice *inside*
