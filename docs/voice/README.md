@@ -35,7 +35,7 @@ belongs in, ask: *who reads it, and does it leave the building?*
 | If you are… | Read |
 |---|---|
 | **Phase A closed** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) |
-| **Phase B (seams)** | [`dev/PHASE-B-SEAMS.md`](dev/PHASE-B-SEAMS.md) |
+| **Phase B (seams)** | [`dev/PHASE-B-COMPLETE.md`](dev/PHASE-B-COMPLETE.md) — CLOSED, gates measured, 3 defects caught |
 | **Open-weight speech, licence-verified** | [`dev/OPEN-WEIGHT-SPEECH-VERIFIED.md`](dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) |
 | **Running agent-core (dev mode)** | [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md) |
 | **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
