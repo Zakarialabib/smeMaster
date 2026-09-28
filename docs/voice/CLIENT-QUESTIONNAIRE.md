@@ -55,8 +55,8 @@ Ce que nous construisons :
 **Merci de nous confirmer que ce périmètre vous convient.**
 
 Si l'attente est un agent qui *parle* avec vos clients **dans** WhatsApp, dites-le
-nous maintenant — nous golfs le projet et vous proposedons une alternative, mais
-nous ne pouvons pas le construire.
+nous maintenant — nous examinerons le projet ensemble et vous proposerons une
+alternative, mais nous ne pouvons pas le construire.
 
 ---
 
@@ -89,7 +89,7 @@ engageons pas sur des chiffres non vérifiés.
 
 ## 4. Enregistrement des appels et mention de l'IA
 
-Nous Seasonsrecommandons de **n'enregistrer aucun audio**.
+Nous recommandons de **n'enregistrer aucun audio**.
 
 | Option | Conséquence |
 |---|---|
@@ -141,7 +141,7 @@ Ces réponses ne bloquent rien, mais elles nous font gagner une semaine :
    (latence, taux de transfert, taux de résolution sans intervention humaine),
    que nous vous présentons **avant** de commencer.
 
-Aucun de ces éléments n'engage financially à ce stade.
+Aucun de ces éléments ne vous engage financièrement à ce stade.
 
 ---
 

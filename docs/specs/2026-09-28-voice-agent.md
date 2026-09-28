@@ -107,8 +107,9 @@ Python runtime never enters the Tauri bundle or the Cargo build.
 
 ### 4.2 The provider seams
 
-Three traits, implemented before anything else. Every one of them is a
-per-tenant config change, never a refactor:
+Four seams, implemented before anything else (the 4th, `EmbeddingProvider`, was added
+2026-09-28 — see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D3).
+Every one of them is a per-tenant config change, never a refactor:
 
 | Seam | v1 default | Behind the seam | Why |
 |---|---|---|---|
@@ -127,7 +128,9 @@ detection, not by which LLM answers. (Re-verify at Gate 1; these numbers drift.)
 
 **Framework:** LiveKit Agents (Apache-2.0, 14.4k★, pushed 2026-09-28) primary;
 Pipecat (BSD-2, 15.9k★, pushed 2026-09-28) fallback. Same architectural pattern, so
-a swap is a port change. **Vocode is rejected** — repo 404, unmaintained.
+a swap is a port change. **Vocode is rejected** — abandoned, not missing: the repo
+resolves (`vocodedev/vocode-core`, MIT, 3.8k★) but its last push is **2024-11-15**
+(~22 months stale). See [`docs/06-ROADMAP/10-voice-agent-oss-landscape.md`](../06-ROADMAP/10-voice-agent-oss-landscape.md) §5.1.
 
 ## 5. Gates
 
@@ -137,17 +140,18 @@ Serial where gates touch shared files. G0 is the only gate that can start now.
 **Owns:** `docs/specs/2026-09-28-voice-agent.md`, `docs/voice/**`
 **Delivered:** this spec; `COST-MODEL.md`; `CALL-FLOW.md`; `RAG-FORK.md`;
 `PILOT-CRITERIA.md`; `VENDOR-QUOTE-REQUEST.md`; `CLIENT-QUESTIONNAIRE.md`.
-**Remaining:** client answers (4 blockers), dated price verification, RAG fork
-decision, index + roadmap registration.
+**Remaining:** client answers (4 blockers), dated price verification, RAG fork decision.
+Index + roadmap registration is **done** (`docs/00-INDEX.md`, master plan `10.1` ✅).
 **Verify:** every `docs/voice/**` link resolves from this file; every price in
 `COST-MODEL.md` carries an `UNVERIFIED` marker; `RAG-FORK.md` has an empty
 `Decided by` field — that is the correct state today.
 
-### GATE 1 — `agent-core` skeleton + three provider traits (3–4 days)
+### GATE 1 — `agent-core` skeleton + four provider traits (3–4 days)
 **Owns:** `services/agent-core/**` only. **Fence:** nothing under `src/` or `src-tauri/`.
 `pyproject.toml`: `livekit-agents`, `fastapi`, `uvicorn`, `httpx`, `asyncpg`,
-`pytest`, `pytest-asyncio`. `providers/base.py` with the three ABCs (async
-streaming). Impls: `openrouter.py`, `elevenlabs.py`, `deepgram.py`, `scribe.py`.
+`pytest`, `pytest-asyncio`. `providers/base.py` with the four ABCs (async
+streaming). Impls: `openrouter.py`, `elevenlabs.py`, `deepgram.py`, `scribe.py`,
+`local_embed.py`.
 `orchestrator.py` stub. API: `GET /healthz`, `POST /session`, `WS /ws/transcript`.
 Re-verify the OpenRouter figures on day 1; re-verify the embedder table in
 `RAG-FORK.md`.
@@ -256,9 +260,12 @@ voice · supervisor barge-in on a live call.
 
 ## 8. Honest risks
 
-- **The local embedder is English-only** (`bge-small-en-v1.5`, 6 call sites). Any
-  French retrieval silently fails until a multilingual embedder lands. Easy to
-  ship and easy to miss, because an English test passes.
+- **The local embedder is English-only *and its dimension is not fixed*** —
+  `bge-small-en-v1.5` (6 call sites) is the `rust_bge` source; the assistant can also
+  run on the active provider's embedding endpoint, which returns whatever the operator
+  pointed it at. Any French retrieval silently fails under `rust_bge`, and any code
+  assuming a fixed 384 dims is wrong under `provider`. Easy to ship and easy to miss,
+  because an English test passes. See `ADR-001` D2.
 - **The cost model's centre of gravity is the TTS tier**, which is volume-dependent.
   Signing one number is how a pilot becomes a 4× loss.
 - **Fixed costs dominate below ~2,000 min/month**, so flat-fee pricing is

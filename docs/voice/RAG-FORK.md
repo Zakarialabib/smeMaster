@@ -40,21 +40,28 @@ Any option below therefore requires either a multilingual embedder or a
 cloud/server-side one. `bge-m3` is the multilingual candidate (also handles `ar`
 should that ever open up).
 
-### Two embedding runtimes, not one
+### Three embedding spaces, not two
 
 The desktop and the server embed in **different runtimes**, and the "which model"
-question only applies to one of them:
+question only applies to one of them. But the desktop has **two** sources behind a
+user-facing toggle (`smemaster.rag.embeddingSource`, `rust_bge | provider | auto` —
+`src/shared/services/ai/embeddingService.ts`, `src/features/assistant/stores/ragStore.ts:36`),
+so there are three spaces in play, not two:
 
-| | Desktop sidecar (candle/Rust) | Server (`agent-core`, Python) |
-|---|---|---|
-| Model | `bge-small-en-v1.5` (existing) | **new embedder — no candle constraint** |
-| Runtimes available | candle only | sentence-transformers, FlagEmbedding, ONNX — anything |
-| In scope? | **No** — Option A leaves it alone | **Yes** — this is where the model choice lives |
+| | Desktop — `rust_bge` | Desktop — `provider` | Server (`agent-core`, Python) |
+|---|---|---|---|
+| Model | `bge-small-en-v1.5` | whatever the endpoint serves (LM Studio / Ollama / OpenAI-compatible) | **new embedder — no candle constraint** |
+| Dim | **384** (fixed) | **N — config-dependent** | **1024** |
+| Runtimes | candle only | provider HTTP | sentence-transformers, FlagEmbedding, ONNX — anything |
+| In scope? | **No** — Option A leaves both desktop spaces alone | No | **Yes** — this is where the model choice lives |
 
-The desktop's only problem is that `BGE_REPO_ID` is hard-coded in 6 places: a
-config refactor, not a model decision. The Python side is unconstrained, which is
-why the server is not boxed into bge. **Consequence: the server embedder can be
-self-hosted, which is what keeps the EU-residency story clean (Q6).**
+The desktop's only *hard-coding* problem is that `BGE_REPO_ID` appears in 6 places: a
+config refactor, not a model decision. But its **dimension is not a constant** — in
+`provider` mode the index carries whatever the endpoint returns, so any code that
+assumes 384 must read the dimension from the index metadata instead. The Python side
+is unconstrained, which is why the server is not boxed into bge. **Consequence: the
+server embedder can be self-hosted, which is what keeps the EU-residency story clean
+(Q6).** See [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D2.
 
 ## Options
 
@@ -70,13 +77,15 @@ Agent's knowledge lives on the VPS alongside the agent.
 - **New build:** ingestion endpoint, `EmbeddingProvider` impl, pgvector schema,
   sync job, and `tests/rag/retrieval_eval.py` (see §Embedder decision below).
 
-#### ⚠️ The two spaces can never be merged
+#### ⚠️ The three spaces can never be merged
 
-Desktop is **384-dim** (`bge-small-en-v1.5`); the server is **1024-dim**
-(`bge-m3` / `arctic-l-v2.0`). Different dimensions, different models, different
-spaces. **Write this down so nobody "unifies" them in phase 2** — a dimension
-mismatch is a hard failure at query time, and the tempting refactor is exactly the
-wrong move.
+Desktop-`rust_bge` is **384-dim** (`bge-small-en-v1.5`), desktop-`provider` is
+**N-dim** (config-dependent), and the server is **1024-dim** (`bge-m3` /
+`arctic-l-v2.0`). Different dimensions, different models, different spaces. **Write
+this down so nobody "unifies" them in phase 2** — a dimension mismatch is a hard
+failure at query time, and the tempting refactor is exactly the wrong move. Note that
+"desktop = 384" is only true in one of the desktop's two modes; the merge hazard is
+worse than the two-space version of this note suggests.
 
 ### Option B — Desktop publishes its index to the server
 Desktop keeps authoring knowledge; it pushes an update on a schedule or on change.

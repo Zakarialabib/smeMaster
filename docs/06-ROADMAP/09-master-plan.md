@@ -184,7 +184,13 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 > **Status:** 🔶 Gate 0 complete (spec + client packet written 2026-09-28) —
-> **blocked on 4 client decisions and the RAG fork.** No code written.
+> **blocked on 4 client decisions, the RAG fork, and the open items in
+> [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> (console auth model, `ProviderTier` scope, WhatsApp owner-notification pricing).**
+> No code written.
+> **Grilled 2026-09-28:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
+> [`OSS landscape`](10-voice-agent-oss-landscape.md) ·
+> [`glossary`](../glossary/glossary-voice-agent.md)
 > **Reuses, does not rebuild:** provider abstraction (`src/shared/services/ai/`),
 > tool registry, invoicing, deliverability monitoring, i18n `fr`, orchestrator,
 > ml-sidecar architecture pattern.

@@ -105,7 +105,7 @@ them, every miss becomes an argument.
 | Trigger | Action |
 |---|---|
 | Caller says "agent" / "humain" / "un humain" | Immediate transfer, no confirmation prompt |
-| LLM classifies intent as human-required | Confirm once: "Je vous mets en relation,remainez en ligne" → transfer |
+| LLM classifies intent as human-required | Confirm once: « Je vous mets en relation, restez en ligne » → transfer |
 | Caller asks to repeat twice | Offer transfer proactively |
 | `CALLER_ANGER` / distress signals | Immediate transfer, skip confirmation |
 | Transfer target unreachable | Apologise, take a message, §5 voicemail-summary path, close |
@@ -127,8 +127,17 @@ AFTER_HOURS  ─┬─ voicemail detected → §5.1 summary → WhatsApp to owne
 ### 5.1 Voicemail → WhatsApp (highest perceived value per line of code in v1)
 
 A missed call that produces a WhatsApp message the owner reads on their phone is the
-single feature a client notices most, and it is nearly free: it is an
-**inbound-initiated service conversation**, so **Meta charges €0**.
+single feature a client notices most, and it may be nearly free.
+
+⚠️ **UNVERIFIED — and internally contradictory as written (2026-09-28).** The €0 claim
+above rests on the conversation being *user-initiated*. Here **we** message the owner,
+so on a cold first contact it is a **business-initiated** message and needs an approved
+template, which is **priced** — the opposite of €0. `COST-MODEL.md` §4 explicitly puts
+outbound templates out of v1 scope, which contradicts this path. Two ways out, and the
+client must pick: the owner sends one message to the agent's number once (opening the
+24-hour service window, keeping it €0), or we accept a utility-template cost per missed
+call and price it. **Ask the BSP and confirm before signing** —
+[`VENDOR-QUOTE-REQUEST.md`](VENDOR-QUOTE-REQUEST.md) §1.3, and `ADR-001` Open #1.
 
 ```
 voicemail audio → STT (ElevenLabs Scribe, batch) → FR/EN summary via LLM

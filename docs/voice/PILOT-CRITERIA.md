@@ -30,7 +30,7 @@ while nothing is built, so neither side is negotiating them after the fact.
 | Voicemail → WhatsApp summary delivered | **≥ 95%** of voicemail calls | wrapup latency log |
 | Uptime, business hours | **99.5%** | health check + monitoring |
 | Realized cost per minute | **within ±20% of the signed cost model** | metered events vs `COST-MODEL.md` |
-| Disclosure line spoken | **100% of calls** | audio/transcript audit — non-negotiable, not a percentage |
+| Disclosure line spoken | **100% of calls** | **transcript** audit — no audio is retained (`CALL-FLOW.md` §2), so transcripts are the only evidence. Non-negotiable, not a percentage |
 | Emergency policy honoured | **100%** | any incident is a pilot failure |
 
 ## Go / no-go

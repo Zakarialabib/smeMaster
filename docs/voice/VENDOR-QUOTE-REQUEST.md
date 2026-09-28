@@ -18,6 +18,12 @@ invoice, single SLA, single support thread.
 2. Platform fee (subscription) + any Meta pass-through charges.
 3. Confirmation that **user-initiated service conversations inside the 24-hour
    window are free** (this is the basis of our v1 costing).
+3b. **Owner-notification path.** We send a missed-call summary from the agent's
+   WhatsApp number **to the business owner**. Is that message *user-initiated*
+   (free) or *business-initiated* (template, priced)? If it needs a template:
+   which category (utility?), the per-message price for France, and what
+   opt-in/opt-out the owner must complete. This decides whether the
+   voicemail→WhatsApp path is €0 or a per-call cost — see `CALL-FLOW.md` §5.1.
 4. Business verification requirements and **timeline for a French entity**
    (SIREN, domain email, proof of business) — end-to-end, not per-step.
 5. Number provisioning: can we get a FR WhatsApp display number, and can an

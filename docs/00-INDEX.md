@@ -148,7 +148,13 @@ Spec-gated delivery; **no code written — awaiting 4 client decisions.**
 | [Vendor Quote Request](voice/VENDOR-QUOTE-REQUEST.md)                              | Send-as-is BSP + carrier RFQ (4 vendors)                              |
 | [Client Questionnaire](voice/CLIENT-QUESTIONNAIRE.md)                              | FR client email — 4 blocking questions                                |
 | [Ops Assistant](voice/OPS-ASSISTANT.md)                                            | AI ops design, alert matrix, dev work matrix                           |
+| [OSS Landscape](06-ROADMAP/10-voice-agent-oss-landscape.md) 🆕                      | Layer-by-layer OSS-vs-gated verdict, licence check, adapted scores     |
+| **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕 | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1** |
+| [Glossary](glossary/glossary-voice-agent.md) 🆕                                     | Terms as used in this repo (spaces, gates, metrics, channel)           |
 | **[Client Deck](voice/VOICE-AGENT-DECK.pptx)**                                      | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
+
+**New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/INDEX.md)
+(created 2026-09-28 — the repo had none).
 
 **Hard constraint:** WhatsApp live voice calls are not exposed by any API. Voice
 runs on a dedicated number, not in WhatsApp.

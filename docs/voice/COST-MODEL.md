@@ -1,7 +1,7 @@
 # Cost Model — Voice & WhatsApp Agent (FR/EN, v1 talk-only)
 
 > **Status:** DRAFT — requires client sign-off (Gate 0) and dated price verification.
-> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](2026-09-28-voice-agent.md)
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 > **Verified on:** 2026-09-28 · **Next re-verify:** on client signature, and monthly after
 > **Currency:** USD for vendor cost, EUR for client billing. +5% FX buffer applied to quotes.
 > **Client VAT:** TVA 20% (B2B, FR domestic) — added at invoicing, not modelled here.

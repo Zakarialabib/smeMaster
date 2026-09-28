@@ -115,8 +115,9 @@ assumes reuse of what the repo already ships.
 | R4 | FR UI strings | — | 0 | G6 | `32-i18n` already ships `fr` |
 | R5 | Embeddings + vector store | — | 1d | retrieval | ⚠️ `bge-small-en` is **English-only** |
 
-**Total new build ≈ 27 engineer-days**, against a 6–10 week calendar that is
-mostly waiting on clients and vendors, not on us.
+**Total new build = 27.5 engineer-days** (sum of the A/C/U/O rows), plus **3d** of
+reuse-mapping (R rows) = **30.5 engineer-days of work**, against a 6–10 week calendar
+that is mostly waiting on clients and vendors, not on us.
 
 ## 5. How the assistant should talk to you
 
