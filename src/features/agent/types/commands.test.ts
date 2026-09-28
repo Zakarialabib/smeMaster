@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as T from './commands';
 
 /**
  * Contract-parity tests.
@@ -14,8 +13,12 @@ import * as T from './commands';
  * Python source: services/agent-core/agent_core/contracts.py
  */
 
-const PY_CONTRACTS = join(process.cwd(), '..', 'services', 'agent-core', 'agent_core', 'contracts.py');
+// `process.cwd()` is the REPO ROOT under vitest, not the test file's directory,
+// so the Python contract is a SIBLING of `src/`, reached with a single `..`.
+const PY_CONTRACTS = join(process.cwd(), 'services', 'agent-core', 'agent_core', 'contracts.py');
+const TS_COMMANDS = join(process.cwd(), 'src', 'features', 'agent', 'types', 'commands.ts');
 const py = readFileSync(PY_CONTRACTS, 'utf8');
+const ts = readFileSync(TS_COMMANDS, 'utf8');
 
 /** Pull the pydantic model bodies out of the Python source. */
 function pyModel(name: string): string {
@@ -51,8 +54,7 @@ function pyFields(name: string): string[] {
  * test, exact by the standards of a contract.
  */
 function tsInterfaceBody(name: string): string {
-  const src = readFileSync(join(process.cwd(), 'src', 'features', 'agent', 'types', 'commands.ts'), 'utf8');
-  const m = src.match(new RegExp(`export interface ${name} \\{([\\s\\S]*?)\\n\\}`));
+  const m = ts.match(new RegExp(`export interface ${name} \\{([\\s\\S]*?)\\n\\}`));
   if (!m) throw new Error(`no TS interface named ${name}`);
   return m[1];
 }
@@ -101,9 +103,8 @@ describe('interface field parity', () => {
 
 describe('invariants encoded as types', () => {
   it('no tenant field anywhere in the contract', () => {
-    const src = readFileSync(join(process.cwd(), 'src', 'features', 'agent', 'types', 'commands.ts'), 'utf8');
     // Strip comments so prose about tenantId is not a false positive.
-    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    const code = ts.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     const offenders = [...code.matchAll(/^\s*(?:export\s+)?(?:interface\s+)?([A-Za-z]*[Tt]enant[A-Za-z]*)\??:/gm)].map((m) => m[1]);
     expect(offenders).toEqual([]);
     // And the Python side agrees.
@@ -111,8 +112,7 @@ describe('invariants encoded as types', () => {
   });
 
   it('no audio field anywhere in the contract', () => {
-    const src = readFileSync(join(process.cwd(), 'src', 'features', 'agent', 'types', 'commands.ts'), 'utf8');
-    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    const code = ts.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     for (const banned of ['audioUrl', 'recordingId', 'audio_url', 'recording_path', 'blob']) {
       expect(code).not.toContain(banned);
     }
@@ -132,8 +132,7 @@ describe('invariants encoded as types', () => {
 
   it('voice locale is FR/EN only', () => {
     // The repo ships 5 UI locales; that is a separate fact from what the agent speaks.
-    const src = readFileSync(join(process.cwd(), 'src', 'features', 'agent', 'types', 'commands.ts'), 'utf8');
-    const m = src.match(/export type VoiceLocale =([^;]+);/);
+    const m = ts.match(/export type VoiceLocale =([^;]+);/);
     expect(m?.[1].replace(/\s/g, '')).toBe("'fr'|'en'");
   });
 });

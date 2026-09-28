@@ -181,6 +181,41 @@ export interface OpsSnapshot {
   lastSeenAt: string | null;
 }
 
+/* ── Call list ────────────────────────────────────────────────────────────── */
+
+/** One row in the call log. `callerMasked` is masked **by default** — the full
+ *  number is a deliberate extra step, not a rendering accident. */
+export interface CallListItem {
+  id: string;
+  channel: CallChannel;
+  outcome: CallOutcome;
+  state: CallState;
+  /** ISO 8601 UTC. Format for display at the edge, never in the store. */
+  startedAt: string;
+  durationSec: number;
+  callerMasked: string;
+  /** e.g. "pricing", or null. A flag is a judgement ⇒ renders in the AI purple. */
+  flagged: string | null;
+  /** `null` for WhatsApp service conversations — they cost €0 by policy. */
+  costEur: number | null;
+  containment: boolean;
+}
+
+/* ── WebSocket ────────────────────────────────────────────────────────────── */
+
+/**
+ * WS lifecycle (`FRONTEND.md` §12.4).
+ *
+ * `stale` and `reconnecting` exist so a frozen transcript is always *labelled*.
+ * A dead socket that renders as an empty or unchanged transcript is
+ * indistinguishable from a caller who stopped talking — the single most
+ * expensive confusion this console can have.
+ *
+ * Transitions: idle →connecting →connected; socket close →stale →
+ * reconnecting →(backoff)→ connected | offline; 5 failed retries → offline.
+ */
+export type WsStatus = 'idle' | 'connecting' | 'connected' | 'stale' | 'reconnecting' | 'offline';
+
 /* ── Knowledge ────────────────────────────────────────────────────────────── */
 
 export interface IngestRequest {
