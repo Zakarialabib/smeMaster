@@ -177,6 +177,41 @@ Items identified from codebase audit where features exist but have gaps.
 
 ---
 
+## Phase 10 — Voice & Messaging Agent (📋 Planned — client engagement)
+
+FR/EN AI receptionist: WhatsApp (text) + inbound voice on a dedicated FR number.
+Delivered as a **managed service** operated by us, not a desktop feature.
+
+> **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
+> **Status:** 🔶 Gate 0 complete (spec + client packet written 2026-09-28) —
+> **blocked on 4 client decisions and the RAG fork.** No code written.
+> **Reuses, does not rebuild:** provider abstraction (`src/shared/services/ai/`),
+> tool registry, invoicing, deliverability monitoring, i18n `fr`, orchestrator,
+> ml-sidecar architecture pattern.
+
+| #   | Task                                        | Effort  | Depends On | Status | Notes                                                                 |
+| --- | ------------------------------------------- | ------- | ---------- | ------ | --------------------------------------------------------------------- |
+| 10.1 | Spec + cost model + call flow + RFQ        | 1–2d    | —          | ✅     | `docs/voice/**` + `docs/specs/2026-09-28-voice-agent.md`               |
+| 10.2 | **Client decisions** (4) + RAG fork        | —       | client/us  | ⛔     | Vertical, cost sign-off, two-channel confirm, consent model           |
+| 10.3 | Vendor quotes (BSP + carrier)              | —       | vendors    | 🔲     | RFQ drafted, send-as-is. **Meta onboarding is the schedule risk**     |
+| 10.4 | `agent-core` skeleton + provider traits    | 3–4d    | 10.2      | 🔲     | `services/agent-core/`, outside the Tauri build. 3 traits + swaps     |
+| 10.5 | WhatsApp channel, sandbox via Baileys      | 3–4d    | 10.4      | 🔲     | **E.164-normalized sandbox allowlist — production use forbidden**     |
+| 10.6 | Console + Rust IPC bridge                  | 4–5d    | 10.4      | 🔲     | `src/features/agent/`, additive commands only                         |
+| 10.7 | Telephony, inbound FR number               | 5–7d    | 10.6      | 🔲     | **One writer.** Turn detection, transfer ladder, voicemail→WhatsApp   |
+| 10.8 | Metering + provider tiers                  | 1–2d    | 10.7      | 🔲     | Reuses invoicing + deliverability. Was 4–5d before reuse pass         |
+| 10.9 | FR/EN voice enforcement                    | 1–2d    | 10.7      | 🔲     | FR UI already ships — voice config only. No Darija/Arabic             |
+| 10.10 | Production BSP swap + ops runbooks         | 4–5d    | 10.3,10.5 | 🔲     | Same `ChannelAdapter` signature; 24/7 monitoring                     |
+| 10.11 | 2-week pilot (≥ 100 calls)                 | 2w      | 10.10     | 🔲     | Go/no-go per `docs/voice/PILOT-CRITERIA.md`                           |
+
+**Out of scope for v1:** cold outbound, outbound WhatsApp templates, CRM/calendar
+writes, native app (Android ships), >2 languages, audio recording.
+
+**Hard constraint:** WhatsApp live voice calls are exposed by **no** API. Voice runs
+on a dedicated PSTN number. If the client expects in-WhatsApp voice, that is a
+different conversation, not a different implementation.
+
+---
+
 ## Immediate Next Sprint (🎯 Phase 1 + 3 — ~8h)
 
 | Priority | Task                                | Effort    |

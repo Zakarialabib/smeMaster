@@ -133,6 +133,24 @@ What the app does, grouped by functional area.
 | [Shortcuts](04-FEATURES/31-keyboard-shortcuts.md)              | Keyboard workflow                                         |
 | [i18n](04-FEATURES/32-i18n-localization.md)                    | Locales and RTL                                           |
 
+### Voice & Messaging Agent (client engagement — Gate 0)
+
+FR/EN AI receptionist: WhatsApp (text) + inbound voice on a dedicated FR number.
+Spec-gated delivery; **no code written — awaiting 4 client decisions.**
+
+| Doc                                                                              | Covers                                                                 |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **[Voice Agent — SPEC](specs/2026-09-28-voice-agent.md)** 🔶                        | Full spec, ground truth, 8 gates, blocking decisions, risks            |
+| [Cost Model](voice/COST-MODEL.md)                                                  | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified** |
+| [Call Flow](voice/CALL-FLOW.md)                                                    | Call states, consent model, transfer ladder, voicemail, latency metrics |
+| [RAG Fork](voice/RAG-FORK.md) ⛔ OPEN                                              | Desktop-local vs server-side retrieval — **decision required at Gate 0** |
+| [Pilot Criteria](voice/PILOT-CRITERIA.md)                                          | Go/no-go bars for the 2-week pilot                                    |
+| [Vendor Quote Request](voice/VENDOR-QUOTE-REQUEST.md)                              | Send-as-is BSP + carrier RFQ (4 vendors)                              |
+| [Client Questionnaire](voice/CLIENT-QUESTIONNAIRE.md)                              | FR client email — 4 blocking questions                                |
+
+**Hard constraint:** WhatsApp live voice calls are not exposed by any API. Voice
+runs on a dedicated number, not in WhatsApp.
+
 ### Device And Mobile
 
 | Doc                                                       | Covers                                        |
