@@ -191,7 +191,7 @@ src-tauri/src/db/common.rs                   ← fetch_or_not_found, delete_or_n
 
 - [Architecture Overview](../01-ARCHITECTURE/01-overview.md) �?" Three-layer diagram
 - [Backend Structure](../01-ARCHITECTURE/02-backend-structure.md) �?" Rust module layout
-- [Shared Components API](../../03-FRONTEND/15-shared-components.md) �?" Component/hook library reference
+- [Shared Components API](../03-FRONTEND/15-shared-components.md) — Component/hook library reference
 - [STATUS.md](../STATUS.md) �?" Command counts, test status
 
 ---
@@ -225,7 +225,7 @@ src-tauri/src/db/common.rs                   ← fetch_or_not_found, delete_or_n
 
 **Adoption rule:** Before adding a new spinner/dialog/retry block in a feature, check this library. If the primitive is missing, add it here (typed, strict, no `any`) rather than inlining it in the feature.
 
-See [`15-shared-components.md`](../../03-FRONTEND/15-shared-components.md) for the full API reference.
+See [`15-shared-components.md`](../03-FRONTEND/15-shared-components.md) for the full API reference.
 
 ## Source reconciliation (2026-07-19)
 

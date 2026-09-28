@@ -8,7 +8,7 @@
 smeMaster presents as a single "super-app" shell (Desktop / Tablet / Phone) that hosts
 CRM, mail, invoicing, ERP, automation, calendar, campaigns, tasks, vault and settings
 under one adaptive navigation system. The unified design language is specified in
-[`DESIGN_UI_UX_SPEC.md`](../../plans/DESIGN_UI_UX_SPEC.md).
+[`DESIGN_UI_UX_SPEC.md`](../plans/DESIGN_UI_UX_SPEC.md).
 
 ## Direction (2026-07-13)
 - **Direction A — Glass surface layer** is the approved visual direction. Glass is a
