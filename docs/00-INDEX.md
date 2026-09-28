@@ -235,6 +235,7 @@ For contributors and AI agents.
 | [Monetization — Frontend Paywall](06-ROADMAP/11-monetization-frontend-paywall.md)     | Frontend paywall UI design                           |
 | [Monetization — Asset Delivery](06-ROADMAP/12-monetization-asset-delivery.md)         | Asset delivery design                                |
 | [Monetization — Mobile Strategy](06-ROADMAP/13-monetization-mobile-strategy.md)       | Mobile monetization strategy                         |
+| [AI Stack — Cross-Pollination](06-ROADMAP/14-ai-stack-cross-pollination.md) 🆕        | Bilateral AI-stack exchange with SignSync (doctor, slots, candle-only) |
 | [Simplified Core Spec](06-ROADMAP/smeMaster_Simplified_Core_Spec.md)                  | Simplified core product spec                         |
 | [Monetization Style](monetization-style.md)                                           | Monetization visual/voice style guide                |
 | [Navigation Redesign Recommendation](navigation-redesign/IA-RECOMMENDATION.md)        | IA recommendation for navigation redesign            |
