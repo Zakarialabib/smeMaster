@@ -40,6 +40,22 @@ Any option below therefore requires either a multilingual embedder or a
 cloud/server-side one. `bge-m3` is the multilingual candidate (also handles `ar`
 should that ever open up).
 
+### Two embedding runtimes, not one
+
+The desktop and the server embed in **different runtimes**, and the "which model"
+question only applies to one of them:
+
+| | Desktop sidecar (candle/Rust) | Server (`agent-core`, Python) |
+|---|---|---|
+| Model | `bge-small-en-v1.5` (existing) | **new embedder — no candle constraint** |
+| Runtimes available | candle only | sentence-transformers, FlagEmbedding, ONNX — anything |
+| In scope? | **No** — Option A leaves it alone | **Yes** — this is where the model choice lives |
+
+The desktop's only problem is that `BGE_REPO_ID` is hard-coded in 6 places: a
+config refactor, not a model decision. The Python side is unconstrained, which is
+why the server is not boxed into bge. **Consequence: the server embedder can be
+self-hosted, which is what keeps the EU-residency story clean (Q6).**
+
 ## Options
 
 ### Option A — Server-side index, pgvector + `bge-m3` (RECOMMENDED)
@@ -51,7 +67,16 @@ Agent's knowledge lives on the VPS alongside the agent.
 - **Cons:** a second index and a second embedding space in the product. Content
   that should reach the agent must be pushed to the server — which is a privacy
   decision, not just an engineering one.
-- **New build:** ingestion endpoint, `bge-m3` embedder, pgvector schema, sync job.
+- **New build:** ingestion endpoint, `EmbeddingProvider` impl, pgvector schema,
+  sync job, and `tests/rag/retrieval_eval.py` (see §Embedder decision below).
+
+#### ⚠️ The two spaces can never be merged
+
+Desktop is **384-dim** (`bge-small-en-v1.5`); the server is **1024-dim**
+(`bge-m3` / `arctic-l-v2.0`). Different dimensions, different models, different
+spaces. **Write this down so nobody "unifies" them in phase 2** — a dimension
+mismatch is a hard failure at query time, and the tempting refactor is exactly the
+wrong move.
 
 ### Option B — Desktop publishes its index to the server
 Desktop keeps authoring knowledge; it pushes an update on a schedule or on change.
@@ -73,6 +98,69 @@ Agent answers from a curated, hand-written FAQ in the repo.
   and containment is the pilot's headline success metric. Likely to fail the
   ≥60–70% target in [`PILOT-CRITERIA.md`](PILOT-CRITERIA.md).
 - **Assessment:** viable only as a deliberate week-1 scope cut, not as the plan.
+
+## Embedder decision — settled by eval, not by leaderboard
+
+> **Verified 2026-09-28** against the HuggingFace API (`/api/models/{id}`).
+> Licenses read from the model card, not the leaderboard. Re-verify inside Gate 1 —
+> this space moves quarterly.
+
+`bge-m3` is no longer the accuracy king, but it is still a defensible v1 default.
+**The more important point: at receptionist-KB scale the embedder is a small part of
+retrieval quality.** A 200–500-chunk curated KB with mediocre embeddings beats a
+top-ranked embedder over a badly chunked corpus. **Curation and chunking move the
+≥60–70% containment metric far more than any model swap.** Do not let a leaderboard
+argument delay the KB work.
+
+| Model | License | Dims | FR quality | Hybrid | Runtime | Verdict |
+|---|---|---|---|---|---|---|
+| **bge-m3** | **MIT** ✅ | 1024 | very good | ✅ native (dense+sparse+colbert) | Python, ONNX-friendly | **v1 default** — zero-risk, 8k ctx, cross-lingual |
+| **snowflake-arctic-embed-l-v2.0** | **Apache-2.0** ✅ | 1024 | better on BEIR/MIRACL-style retrieval | ❌ dense only | same XLM-R arch | **the drop-in upgrade** — identical deployment path, a bge-m3 fine-tune |
+| Qwen3-Embedding-0.6B | **Apache-2.0** ✅ | 1024 | top of MTEB-multilingual at release | ❌ dense only | sentence-transformers | newest leader, dense-only and young — **benchmark, don't bet v1** |
+| multilingual-e5-large-instruct | **MIT** ✅ | 1024 | very good | ❌ | Python | ⚠️ 512 ctx only; **requires `query:`/`passage:` prefixes — omitting them silently tanks retrieval** |
+| gte-multilingual-base | **Apache-2.0** ✅ | 768 | good | ❌ | light | CPU-latency option |
+| jina-embeddings-v3 | **CC-BY-NC-4.0** ⛔ | 1024 | very good | ❌ | Python | **REJECT — non-commercial license** |
+| Cohere embed-multilingual-v3/v4 | API | — | excellent | ✅ | API | EU residency available; acceptable API path |
+| OpenAI text-embedding-3-large | API | 3072 | very good | ❌ | API | ⚠️ US processing — **only via Azure OpenAI West Europe** for EU residency |
+| Gemini embedding-001 | API | 3072 | top-tier | ❌ | API | adds a Google dependency |
+
+**Recommendation: self-host, then choose between `bge-m3` and
+`arctic-embed-l-v2.0` — they deploy identically** (same XLM-R architecture, same
+1024 dims, so swapping is a config change).
+
+- `bge-m3` if you want the zero-risk default. Its native hybrid genuinely helps a KB
+  full of product names, prices, and opening hours — exact-term queries where
+  dense-only misses.
+- `arctic-embed-l-v2.0` if you want the measurable upgrade. Pair it with a Postgres
+  `tsvector` leg (French + English dictionaries) instead of bge-m3's native sparse —
+  `tsvector` + RRF is less fiddly than pgvector `sparsevec` plumbing, and Postgres
+  is already in the stack for metering.
+
+**Reject API embeddings on residency.** Q6 committed to EU managed inference.
+Sending the client's business KB to a US endpoint contradicts the pitch we are
+selling. Azure-West-Europe or Cohere-EU are the only acceptable API paths, and at
+this scale they add a vendor for near-zero quality gain.
+
+### Gate 1 addition: the retrieval eval
+
+Stop arguing from a leaderboard. `tests/rag/retrieval_eval.py`: **25–50 FR/EN
+questions → expected chunk, pytest gate at hit@3 ≥ 0.9.** Then "which embedder"
+becomes a 30-minute experiment on *our* KB. Same discipline as the latency
+instrumentation in Gate 4 — a number you measured beats an opinion about a chart
+someone else read.
+
+### Cross-lingual consequence — a real sales point
+
+With `bge-m3` / `arctic-l-v2.0`, **a French query retrieves English documents.** The
+client authors the KB once, and callers in either language are served from it. That
+is a selling point — and it means the "agent knowledge scope" decision in §0 below
+just got cheaper, because the curated scope is small.
+
+### Optional, probably v2
+
+`bge-reranker-v2-m3` (Apache-2.0 ✅), top-20 → top-5. At <1,000 chunks this is
+likely over-engineering for v1. Revisit only if the eval or the pilot transcripts
+show retrieval misses.
 
 ## Recommendation
 

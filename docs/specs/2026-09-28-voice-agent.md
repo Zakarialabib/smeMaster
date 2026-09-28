@@ -115,6 +115,7 @@ per-tenant config change, never a refactor:
 | `LLMProvider` | `google/gemini-3.x-flash` via OpenRouter | Groq Llama (lower TTFT), `gpt-4o-mini` fallback | Existing `providerFactory` is the model for this. |
 | `TTSProvider` | ElevenLabs (FR + EN) | Kokoro-82M (budget), Azure Neural (margin rescue) | **Edge TTS is excluded from every client tier** — unofficial endpoint, gray ToS. |
 | `STTProvider` | Deepgram Nova streaming (live) / ElevenLabs Scribe (batch, voicemail) | local faster-whisper (budget) | Scribe Realtime FR availability **unverified** — check before relying on it. |
+| `EmbeddingProvider` | self-hosted `bge-m3` (MIT) | `arctic-embed-l-v2.0` (Apache-2.0, same arch → config swap) | **4th seam, added 2026-09-28.** The embedder is exactly as swappable as the other three; leaving it out made the trait rule inconsistent. Config = model id, dims, prefix/instruction, normalize, distance. See [`RAG-FORK.md`](../voice/RAG-FORK.md). |
 
 `ChannelAdapter`: `inbound_events()` async iterator + `send_text()`.
 Telephony and WhatsApp implement it; the agent core never branches on channel.
@@ -148,7 +149,11 @@ decision, index + roadmap registration.
 `pytest`, `pytest-asyncio`. `providers/base.py` with the three ABCs (async
 streaming). Impls: `openrouter.py`, `elevenlabs.py`, `deepgram.py`, `scribe.py`.
 `orchestrator.py` stub. API: `GET /healthz`, `POST /session`, `WS /ws/transcript`.
-Re-verify the OpenRouter figures on day 1.
+Re-verify the OpenRouter figures on day 1; re-verify the embedder table in
+`RAG-FORK.md`.
+**Add `EmbeddingProvider` + `tests/rag/retrieval_eval.py`** — 25–50 FR/EN questions
+→ expected chunk, pytest gate at **hit@3 ≥ 0.9**. This settles bge-m3 vs
+arctic-l-v2.0 empirically in an afternoon instead of by leaderboard.
 **Verify:** `cd services/agent-core && python -m pytest -q` — **assert the summary
 line, not the exit code.** Plus a test proving a second implementation swaps in by
 config alone.

@@ -91,6 +91,7 @@ assumes reuse of what the repo already ships.
 | A3 | `TTSProvider` + ElevenLabs impl | us | 0.5d | A6 | FR + EN voices |
 | A4 | `STTProvider` + Deepgram + Scribe | us | 0.5d | A6 | Scribe Realtime FR unverified |
 | A5 | Provider-swap test (config-only) | us | 0.5d | Gate 1 exit | proves the seam is real |
+| A5b | `EmbeddingProvider` + retrieval eval (hit@3 ≥ 0.9) | us | 0.5d | A5 | `RAG-FORK.md` — picks bge-m3 vs arctic empirically |
 | A6 | Orchestrator turn loop | us | 2d | A7 | port LiveKit's pattern, own types |
 | A7 | Bilingual voice config + language pin | us | 1d | G6 | FR UI already ships |
 | **Build — channels** | | | | | |
