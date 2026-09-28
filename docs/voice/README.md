@@ -37,8 +37,9 @@ belongs in, ask: *who reads it, and does it leave the building?*
 | **Phase A closed** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) |
 | **Phase B (seams)** | [`dev/PHASE-B-SEAMS.md`](dev/PHASE-B-SEAMS.md) |
 | **Open-weight speech, licence-verified** | [`dev/OPEN-WEIGHT-SPEECH-VERIFIED.md`](dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) |
+| **Running agent-core (dev mode)** | [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md) |
 | **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
-| **picking up where we stopped** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) — Phase A done, gates pasted, Phase B next |
+| **picking up where we stopped** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) — Phase A done, gates pasted |
 | **porting the screens** | [`dev/PROTOTYPE-HANDOVER.md`](dev/PROTOTYPE-HANDOVER.md) — file-by-file map from the running prototype to `src/` |
 | **reviewing** | [`design/WIREFRAMES.md`](design/WIREFRAMES.md) §13 gaps, §14 opportunities |
 | **answering a client question** | [`client/`](client/) — but strip the internal footers first |
@@ -46,6 +47,11 @@ belongs in, ask: *who reads it, and does it leave the building?*
 **The prototype is the visual source of truth.** `prototype/voice-console/` is a running React app
 (2,040 lines) that implements every surface. Where it and a doc disagree, the prototype is newer
 and wins — it was written after the docs.
+
+**Phase status, 2026-09-28.** Phase A closed. Phase B complete: the four provider seams, the
+executed swap test, `/session` + `/ws/transcript` + `/ops/snapshot`, the licence gate, migrations
+0002-0004, and live-server drift checks. Still open before Gate 1 sign-off: one real provider per
+seam, real auth, and the `RAG-FORK` decision. Run it with [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md).
 
 **Never put an internal note in `client/`.** Two documents carry an internal footer today
 (`client/VENDOR-QUOTE-REQUEST.md` has an "Internal: what we do with the answers" table) —
