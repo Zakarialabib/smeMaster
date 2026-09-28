@@ -25,7 +25,14 @@ arrives. Porting the contract first means the screens port once.
 `agent-core` responds to the real `BACKEND.md` §13 shapes; only the provider calls are stubbed.
 The console is therefore never written against a shape that does not exist.
 
-## 2. PHASE A — Skeletons (1 day, and it de-risks everything)
+## 2. PHASE A — Skeletons (1 day, and it de-risks everything) ✅ **CLOSED**
+
+> Closed 2026-09-28. Evidence, gates and the three defects it caught:
+> [`PHASE-A-COMPLETE.md`](PHASE-A-COMPLETE.md). Commits `88c44e8`, `c2e1e15`,
+> `fb852a2`, `4837177`, `63b5c3c`.
+
+<details><summary>the four steps (done)</summary>
+
 
 Four directories, four commits, all compiling. **No behaviour.**
 
@@ -40,6 +47,8 @@ Four directories, four commits, all compiling. **No behaviour.**
 
 **Non-negotiable in A3/A4:** no `tenantId` field; no provider SDK; no files under `src/core` or
 `src/hooks`; derived arrays in `useMemo`, never in a store selector.
+
+</details>
 
 ## 3. PHASE B — The contract (2–3 days)
 

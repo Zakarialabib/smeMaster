@@ -35,6 +35,7 @@ belongs in, ask: *who reads it, and does it leave the building?*
 | If you are… | Read |
 |---|---|
 | **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
+| **picking up where we stopped** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) — Phase A done, gates pasted, Phase B next |
 | **porting the screens** | [`dev/PROTOTYPE-HANDOVER.md`](dev/PROTOTYPE-HANDOVER.md) — file-by-file map from the running prototype to `src/` |
 | **reviewing** | [`design/WIREFRAMES.md`](design/WIREFRAMES.md) §13 gaps, §14 opportunities |
 | **answering a client question** | [`client/`](client/) — but strip the internal footers first |
