@@ -147,6 +147,7 @@ Spec-gated delivery; **no code written — awaiting 4 client decisions.**
 | [Pilot Criteria](voice/PILOT-CRITERIA.md)                                          | Go/no-go bars for the 2-week pilot                                    |
 | [Vendor Quote Request](voice/VENDOR-QUOTE-REQUEST.md)                              | Send-as-is BSP + carrier RFQ (4 vendors)                              |
 | [Client Questionnaire](voice/CLIENT-QUESTIONNAIRE.md)                              | FR client email — 4 blocking questions                                |
+| [Ops Assistant](voice/OPS-ASSISTANT.md)                                            | AI ops design, alert matrix, dev work matrix                           |
 
 **Hard constraint:** WhatsApp live voice calls are not exposed by any API. Voice
 runs on a dedicated number, not in WhatsApp.

@@ -7,7 +7,8 @@
 > [`CALL-FLOW.md`](../voice/CALL-FLOW.md) · [`RAG-FORK.md`](../voice/RAG-FORK.md) ·
 > [`PILOT-CRITERIA.md`](../voice/PILOT-CRITERIA.md) ·
 > [`VENDOR-QUOTE-REQUEST.md`](../voice/VENDOR-QUOTE-REQUEST.md) ·
-> [`CLIENT-QUESTIONNAIRE.md`](../voice/CLIENT-QUESTIONNAIRE.md)
+> [`CLIENT-QUESTIONNAIRE.md`](../voice/CLIENT-QUESTIONNAIRE.md) ·
+> [`OPS-ASSISTANT.md`](../voice/OPS-ASSISTANT.md) (ops-assistant design + dev work matrix)
 
 ---
 
