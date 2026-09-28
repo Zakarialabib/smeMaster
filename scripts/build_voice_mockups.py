@@ -221,6 +221,30 @@ MOBILE_CSS = """
 """
 
 
+
+
+TOPOLOGY_CSS = """
+  /* Desktop: two nodes side by side with the connector between them.
+     Flex-basis rather than a media query, so the pairing does not depend on
+     the viewport the mockup happens to be rendered at. */
+  .topo{display:flex;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-4);
+    align-items:stretch}
+  .node{flex:1 1 320px;min-width:min(100%,320px);border:1px solid var(--border-primary);
+    border-radius:var(--radius-lg);background:var(--bg-primary);padding:var(--space-3);
+    display:flex;flex-direction:column;gap:var(--space-2)}
+  .node h3{margin:0;font-size:13px;font-weight:600}
+  .node .tag{font-size:11px;color:var(--text-tertiary)}
+  .node .cap{display:flex;flex-direction:column;gap:4px;margin-top:var(--space-1)}
+  .caprow{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary)}
+  .caprow .k{width:8px;height:8px;border-radius:999px;flex:none}
+  .k.ok{background:var(--success)} .k.off{background:var(--text-tertiary)}
+  .k.warn{background:var(--warning)} .k.key{background:var(--ai)}
+  .link{align-self:center;color:var(--text-tertiary);font-size:20px;
+    flex:0 0 auto;padding:0 var(--space-1)}
+  @media (max-width:720px){ .link{transform:rotate(90deg)} }
+"""
+
+
 def page(name, title, css, body, note):
     return f"""<!doctype html>
 <html lang="en">
@@ -667,3 +691,106 @@ mob_body = """
 
 for f in sorted(D.glob("0[6-9]-*.html")):
     print("wrote", f, f.stat().st_size, "bytes")
+
+
+# ── 10 Topology & capabilities ───────────────────────────────────────────────
+# The question "why do we need a VPS if the app runs on the desktop?" is answered
+# by a screen, not an argument. See docs/06-ROADMAP/12-voice-agent-topology-decision.md
+topo_body = rail() + cnav("Config") + """
+  <section class="panel">
+    <div class="phead"><h1>Topology &amp; capabilities</h1><span class="grow"></span>
+      <span class="pill ok"><span class="dot ok"></span>agent-core reachable</span></div>
+    <div class="note" style="border-radius:0;border-inline:0;margin:0">
+      Where each job actually runs, and what this device can do. The desktop is a
+      <b>client</b> of the agent — closing SMEMaster does not stop calls being answered.
+    </div>
+
+    <div class="topo">
+      <div class="node">
+        <h3>This desktop</h3>
+        <span class="tag">Tauri v2 · React 19 · SMEMaster</span>
+        <div class="cap">
+          <div class="caprow"><span class="k ok"></span> Console — digest, call log, live, config, cost</div>
+          <div class="caprow"><span class="k ok"></span> Local RAG — candle + LanceDB, offline (384-d)</div>
+          <div class="caprow"><span class="k ok"></span> <b>Provider keys — this tier only</b></div>
+          <div class="caprow"><span class="k off"></span> ml-sidecar — local tier, disabled (unmeasured)</div>
+          <div class="caprow"><span class="k off"></span> Answering calls if powered off</div>
+        </div>
+      </div>
+
+      <div class="link" aria-hidden="true">⇄</div>
+
+      <div class="node">
+        <h3>agent-core (EU VPS)</h3>
+        <span class="tag">Python · FastAPI · reachable wss://…</span>
+        <div class="cap">
+          <div class="caprow"><span class="k ok"></span> Carrier media stream — inbound FR DID</div>
+          <div class="caprow"><span class="k ok"></span> Turn loop — LLM · TTS · STT (cloud tier)</div>
+          <div class="caprow"><span class="k ok"></span> WhatsApp — official BSP (prod) / Baileys (dev)</div>
+          <div class="caprow"><span class="k ok"></span> Metering · ops snapshot · alerts</div>
+          <div class="caprow"><span class="k ok"></span> Answers calls when the office is shut</div>
+          <div class="caprow"><span class="k warn"></span> Compromising it exposes tenant transcripts,
+            <b>not</b> the speech-vendor accounts</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fset" style="border-top:1px solid var(--border-primary)">
+      <h2>Tier — decides where the keys live</h2>
+      <table class="data" style="min-width:0">
+        <thead><tr>
+          <th scope="col">Tier</th><th scope="col">Speech runs</th>
+          <th scope="col">Keys live on</th><th scope="col">State</th></tr></thead>
+        <tbody>
+          <tr><td class="who">Standard (cloud)</td><td>agent-core, cloud vendors</td>
+            <td>the VPS</td><td><span class="pill ok">● active</span></td></tr>
+          <tr><td class="who">Self-hosted (local)</td><td>this desktop, offline</td>
+            <td><b>this desktop</b></td><td><span class="pill flag">⛠ disabled — RTF unmeasured</span></td></tr>
+          <tr><td class="who">Premium</td><td>agent-core, ElevenLabs</td>
+            <td>the VPS</td><td><span class="pill off">○ available</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="margin:var(--space-3) 0 0">
+        ⚠️ <b>Only one tier is local at a time.</b> Whichever provider the agent calls must
+        have a key on the machine running it. Selecting a cloud tier moves the keys to the
+        VPS; selecting self-hosted keeps them here. The console never implies both are local.
+      </div>
+    </div>
+
+    <div class="ai">
+      <span class="mk" aria-hidden="true">⟡</span>
+      <div class="bd">
+        <b>Capability gaps this device cannot close</b>
+        <p>Inferred from a capability probe, not a config file: this device has no local
+           speech models installed, no GPU execution provider, and reports no microphone or
+           speaker capture permission. It can run the console; it cannot run the local tier
+           today.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="phead"><h1>Topology — agent-core unreachable</h1>
+      <span class="pill p1">offline</span></div>
+    <div class="down">
+      <span class="mk" aria-hidden="true">!</span>
+      <div class="bd">
+        <b>We cannot reach the agent — last seen 14:51</b>
+        <p>The desktop and its local features keep working: the console renders, the local
+           RAG searches, settings are still editable locally. What is <b>not</b> working is
+           anything that needs the agent — including <b>answering calls</b>. If the VPS is
+           down, inbound calls are going to the carrier's failover, not to voicemail.</p>
+      </div>
+    </div>
+    <div class="pbody"><div class="row">
+      <button class="btn primary">Retry connection</button>
+      <button class="btn">Check the agent's own health page</button>
+      <span class="sub">This is a P1: calls are currently unanswered.</span>
+    </div></div>
+  </section>
+"""
+(D / "10-topology-capabilities.html").write_text(page(
+    "10", "Topology & capabilities", FORM_CSS + TABLE_CSS + TOPOLOGY_CSS, topo_body,
+    "why the agent runs on the VPS and the desktop does not"), encoding="utf-8")
+print("wrote", D / "10-topology-capabilities.html")
+
