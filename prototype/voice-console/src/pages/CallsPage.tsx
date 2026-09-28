@@ -24,6 +24,8 @@ export function CallsPage() {
   const select = useCallListStore((s) => s.select);
   const selectedId = useCallListStore((s) => s.selectedId);
   const rows = useFilteredCalls();
+  const drill = useCallListStore((s) => s.drill);
+  const clearDrill = useCallListStore((s) => s.clearDrill);
   const go = useUiStore((s) => s.go);
   const callId = useLiveCallStore((s) => s.callId);
 
@@ -75,7 +77,21 @@ export function CallsPage() {
         }
       />
 
-      <div style={{ padding: '0 16px' }}>
+      {drill && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, margin: 16, padding: '10px 14px',
+          borderRadius: 'var(--radius-lg)', background: 'var(--accent-subtle)',
+          border: '1px solid rgba(11,87,208,.25)',
+        }}>
+          <strong style={{ fontSize: 13, color: 'var(--accent-hover)' }}>Filtered from an alert:</strong>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{drill.label}</span>
+          <span style={{ flex: 1 }} />
+          <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{rows.length} shown</span>
+          <Button size="sm" onClick={clearDrill}>Clear</Button>
+        </div>
+      )}
+
+      <div style={{ padding: drill ? '0 16px' : undefined }}>
         <div style={{
           display: 'flex', gap: 12, alignItems: 'flex-start', margin: '12px 0', padding: 12,
           borderRadius: 'var(--radius-lg)', background: 'var(--ai-subtle)', border: '1px solid rgba(147,51,234,.28)',

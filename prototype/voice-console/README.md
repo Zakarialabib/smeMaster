@@ -23,6 +23,7 @@ covering all nine surfaces from `docs/voice/design/WIREFRAMES.md`:
 | `5` | Knowledge (`/agent/knowledge`) |
 | `6` | Cost (`/agent/cost`) |
 | `7` | Topology & capabilities |
+| `8` | Settings — providers, local hardware, keys, about |
 | `?` | Shortcut help · `f` flagged-only · `Esc` back to Ops |
 
 ## Grounding — nothing here is invented
@@ -37,6 +38,8 @@ covering all nine surfaces from `docs/voice/design/WIREFRAMES.md`:
 | Alerts, matrix, digest rules | `docs/voice/dev/OPS-ASSISTANT.md` §3, §5 |
 | Call states, stage marks, metrics | `docs/voice/dev/CALL-FLOW.md` §1, §3 |
 | Keyboard map, focus order, RTL matrix | `docs/voice/design/UX.md` §14–16 |
+| Provider per seam, licences, key placement | `docs/voice/design/BACKEND.md` §3, §6 |
+| Local engine + RTF gate | `docs/voice/dev/SELF-HOSTING.md` |
 | Topology and the key-placement question | `docs/06-ROADMAP/12-voice-agent-topology-decision.md` |
 
 ## The invariants it demonstrates, not just describes

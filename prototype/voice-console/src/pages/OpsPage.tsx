@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import {
-  useOpsStore, useReachable, useUiStore,
+  useOpsStore, useReachable, useUiStore, useCallListStore,
 } from '../store';
 import {
   Panel, PanelHead, Pill, Button, DegradedBanner, ProvisionalTag, AckBadge, Note, SectionTitle,
@@ -186,10 +186,18 @@ function ProviderHealthPanel() {
 export function AlertDetailPage() {
   const alertId = useUiStore((s) => s.alertId);
   const go = useUiStore((s) => s.go);
+  const setDrill = useCallListStore((s) => s.setDrill);
   const p1 = useOpsStore((s) => s.p1);
   const p2Grouped = useOpsStore((s) => s.p2Grouped);
   const all = [...p1, ...Object.values(p2Grouped).flat()];
   const a = all.find((x) => x.id === alertId) ?? all[0];
+
+  /** The affected calls. Real payloads carry these ids; the fixture maps by rule. */
+  const affectedIds = a.rule === 'transfer_failed' ? ['c_01', 'c_02', 'c_05', 'c_08'] : ['c_01', 'c_05'];
+  const openAffected = () => {
+    setDrill({ label: `${a.rule.replace(/_/g, ' ')} — ${affectedIds.length} calls`, ids: affectedIds });
+    go('calls');
+  };
 
   return (
     <Panel>
@@ -234,7 +242,7 @@ export function AlertDetailPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Button primary onClick={() => go('calls')}>Open the {a.evidence.count} calls</Button>
+          <Button primary onClick={openAffected}>Open the {affectedIds.length} calls</Button>
           {!a.acknowledgedAt
             ? <Button onClick={() => useOpsStore.getState().acknowledge(a.id)}>Acknowledge (x)</Button>
             : <AckBadge at={a.acknowledgedAt} by={a.acknowledgedBy} />}

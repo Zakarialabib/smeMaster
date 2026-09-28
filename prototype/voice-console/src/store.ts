@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import type { CallListItem, OpsAlert, WsStatus } from './types';
 import { CALLS, P1_ALERT, P2_ALERTS, SNAPSHOT } from './data';
@@ -9,7 +10,7 @@ import { CALLS, P1_ALERT, P2_ALERTS, SNAPSHOT } from './data';
  * `reachable` is read by EVERY surface from opsStore, not just the digest —
  * a per-component online check is how two surfaces disagree about the truth.
  */
-export type Route = 'calls' | 'live' | 'ops' | 'alerts' | 'alert' | 'config' | 'knowledge' | 'cost' | 'topology';
+export type Route = 'calls' | 'live' | 'ops' | 'alerts' | 'alert' | 'config' | 'knowledge' | 'cost' | 'topology' | 'settings';
 
 interface CallListState {
   rows: CallListItem[];
@@ -17,10 +18,14 @@ interface CallListState {
   outcome: 'all' | CallListItem['outcome'];
   flaggedOnly: boolean;
   selectedId: string | null;
+  /** Alert drill-down, e.g. "show me the 6 transfer failures". Null = no filter. */
+  drill: { label: string; ids: string[] } | null;
   setRange: (r: CallListState['range']) => void;
   setOutcome: (o: CallListState['outcome']) => void;
   toggleFlagged: () => void;
   select: (id: string | null) => void;
+  setDrill: (d: CallListState['drill']) => void;
+  clearDrill: () => void;
 }
 
 export const useCallListStore = create<CallListState>((set) => ({
@@ -29,20 +34,39 @@ export const useCallListStore = create<CallListState>((set) => ({
   outcome: 'all',
   flaggedOnly: false,
   selectedId: 'c_01',
+  drill: null,
   setRange: (range) => set({ range }),
   setOutcome: (outcome) => set({ outcome }),
   toggleFlagged: () => set((s) => ({ flaggedOnly: !s.flaggedOnly })),
   select: (selectedId) => set({ selectedId }),
+  setDrill: (drill) => set({ drill }),
+  clearDrill: () => set({ drill: null }),
 }));
 
-export const useFilteredCalls = () =>
-  useCallListStore((s) =>
-    s.rows.filter(
-      (r) =>
-        (s.outcome === 'all' || r.outcome === s.outcome) &&
-        (!s.flaggedOnly || r.flagged !== null),
-    ),
+/**
+ * Filtered rows.
+ *
+ * The filter is done in a useMemo over primitive selector results rather than
+ * inside the zustand selector: a selector that builds a new array on every call
+ * re-renders forever under useSyncExternalStore (React error #185).
+ */
+export const useFilteredCalls = () => {
+  const rows = useCallListStore((s) => s.rows);
+  const outcome = useCallListStore((s) => s.outcome);
+  const flaggedOnly = useCallListStore((s) => s.flaggedOnly);
+  const drillIds = useCallListStore((s) => s.drill?.ids);
+
+  return useMemo(
+    () =>
+      rows.filter(
+        (r) =>
+          (drillIds === undefined || drillIds.includes(r.id)) &&
+          (outcome === 'all' || r.outcome === outcome) &&
+          (!flaggedOnly || r.flagged !== null),
+      ),
+    [rows, outcome, flaggedOnly, drillIds],
   );
+};
 
 interface LiveState {
   callId: string | null;

@@ -5,6 +5,7 @@ import { Toast } from './components/ui';
 import { OpsPage, AlertDetailPage } from './pages/OpsPage';
 import { CallsPage, LivePage } from './pages/CallsPage';
 import { ConfigPage, KnowledgePage, CostPage, TopologyPage } from './pages/ConfigPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 /**
  * Prototype shell. Routing is a switch, not a router: the point of this artifact
@@ -17,7 +18,6 @@ export function App() {
   const toast = useUiStore((s) => s.toast);
   const notify = useUiStore((s) => s.notify);
   const go = useUiStore((s) => s.go);
-  const select = useCallListStore((s) => s.select);
   const toggleFlagged = useCallListStore((s) => s.toggleFlagged);
 
   useEffect(() => {
@@ -40,6 +40,7 @@ export function App() {
         case '5': go('knowledge'); break;
         case '6': go('cost'); break;
         case '7': go('topology'); break;
+        case '8': go('settings'); break;
         case 'f': toggleFlagged(); break;
         case '?': notify('1–7 switch surface · f flagged-only · x acknowledge · Esc back · c+d cost grouping'); break;
         case 'Escape': go('ops'); break;
@@ -59,9 +60,9 @@ export function App() {
       {route === 'knowledge' && <KnowledgePage />}
       {route === 'cost' && <CostPage />}
       {route === 'topology' && <TopologyPage />}
+      {route === 'settings' && <SettingsPage />}
       {route === 'alerts' && <OpsPage />}
       {toast && <Toast message={toast} onClose={() => notify(null)} />}
-      <span style={{ display: 'none' }}>{select.length}</span>
     </Shell>
   );
 }
