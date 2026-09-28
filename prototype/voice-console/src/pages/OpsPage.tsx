@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ArrowRight } from 'lucide-react';
+import { ChevronDown, ArrowRight, ExternalLink, ShieldCheck, TrendingUp } from 'lucide-react';
 import {
   useOpsStore, useReachable, useUiStore, useCallListStore,
 } from '../store';
@@ -7,7 +7,8 @@ import {
   Panel, PanelHead, Pill, Button, DegradedBanner, ProvisionalTag, AckBadge, Note, SectionTitle,
   DataTable, type Column,
 } from '../components/ui';
-import type { OpsAlert } from '../types';
+import type { OpsAlert, PilotScorecard, ConsentReceipt } from '../types';
+import { CONSENT_RECEIPTS, PILOT_SCORECARD } from '../data';
 
 function fmtSince(iso: string) {
   return iso.slice(11, 16);
@@ -132,7 +133,11 @@ export function OpsPage() {
         </div>
       </Panel>
 
+      <PilotScorecardPanel />
+
       <ProviderHealthPanel />
+
+      <ConsentReceiptAudit />
     </>
   );
 }
@@ -144,6 +149,155 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       color: 'var(--text-tertiary)', fontWeight: 600, background: 'var(--bg-secondary)',
       borderBottom: '1px solid var(--border-primary)',
     }}>{children}</div>
+  );
+}
+
+function PilotScorecardPanel() {
+  const sc: PilotScorecard = PILOT_SCORECARD();
+  const goNoGoTone = sc.goNoGo === 'GO' ? 'ok' : sc.goNoGo === 'NO-GO' ? 'p1' : 'flag';
+  const goNoGoLabel = sc.goNoGo === 'GO' ? '✔ GO' : sc.goNoGo === 'NO-GO' ? '✘ NO-GO' : '👁 WATCH';
+
+  return (
+    <Panel>
+      <PanelHead
+        title={
+          <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
+            <TrendingUp size={16} color="var(--accent)" />
+            Pilot scorecard — Week {sc.week}
+          </span>
+        }
+        sub="§5 #8 · go / no-go gate before week 3 rollout"
+        right={<Pill tone={goNoGoTone}>{goNoGoLabel}</Pill>}
+      />
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{
+          borderInlineStart: '3px solid var(--accent)',
+          paddingInlineStart: 14,
+          fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.5,
+        }}>
+          {sc.narrative}
+        </div>
+
+        <div style={{ display: 'grid', gap: 10 }}>
+          {sc.bars.map((b) => {
+            const pct = Math.min(100, Math.round((b.value / b.target) * 100));
+            const passes = b.ownedByPersona === 'P1' && b.label.includes('no-show')
+              ? b.value <= b.target
+              : b.value >= b.target;
+            return (
+              <div key={b.label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5 }}>
+                  <Pill tone="off" style={{ fontSize: 10, padding: '1px 6px' }}>{b.ownedByPersona}</Pill>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{b.label}</span>
+                  <span style={{ flex: 1 }} />
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-secondary)' }}>
+                    <strong style={{ color: passes ? 'var(--success)' : 'var(--warning)' }}>{b.value}</strong>
+                    <span style={{ color: 'var(--text-tertiary)' }}> / {b.target}</span>
+                  </span>
+                  {b.provisional && <ProvisionalTag />}
+                </div>
+                <div style={{
+                  height: 6, background: 'var(--bg-secondary)', borderRadius: 999, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%', width: `${pct}%`,
+                    background: passes ? 'hsl(var(--success))' : 'hsl(var(--warning))',
+                    transition: 'width .3s ease',
+                  }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <Note>
+          Bars owned by <strong>P1</strong> = Patron (Marc) cares about it. <strong>P2</strong> = Caller
+          experience. <strong>P4</strong> = Staff (Julie) burden. <strong>P5</strong> = Operator (us) margin.{' '}
+          <strong>P6</strong> = Regulator (CNIL). Provisional bars use heuristic tagging — they harden once
+          we have 200+ scored calls.
+        </Note>
+      </div>
+    </Panel>
+  );
+}
+
+function ConsentReceiptAudit() {
+  const go = useUiStore((s) => s.go);
+  const setDrill = useCallListStore((s) => s.setDrill);
+  const receipts: ConsentReceipt[] = CONSENT_RECEIPTS;
+  const issued = receipts.length + 120; // SNAPSHOT.consentReceiptsIssued = 124 fixture
+
+  const optionCopy: Record<ConsentReceipt['option'], string> = {
+    A: 'A · announce, no recording',
+    B: 'B · opt-out recording',
+    C: 'C · opt-in recording',
+  };
+  const optionTone: Record<ConsentReceipt['option'], 'ok' | 'flag' | 'p1'> = {
+    A: 'ok', B: 'flag', C: 'p1',
+  };
+
+  const columns: Column<ConsentReceipt>[] = [
+    {
+      key: 'at', header: 'At (UTC)', render: (r) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-secondary)' }}>
+          {r.at.slice(5, 10)} {r.at.slice(11, 16)}
+        </span>
+      ),
+    },
+    { key: 'caller', header: 'Caller', render: (r) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.callerMasked}</span> },
+    {
+      key: 'opt', header: 'Consent', render: (r) => <Pill tone={optionTone[r.option]}>{optionCopy[r.option]}</Pill>,
+    },
+    {
+      key: 'txt', header: 'Disclosure played (CNIL audit)', width: '40%',
+      render: (r) => (
+        <span style={{ color: 'var(--text-secondary)', fontSize: 12.5, fontStyle: 'italic' }}>
+          {r.disclosureText.length > 120 ? r.disclosureText.slice(0, 120) + '…' : r.disclosureText}
+        </span>
+      ),
+    },
+    {
+      key: 'ok', header: 'Accepted', render: (r) => r.accepted
+        ? <Pill tone="ok">✔ receipt issued</Pill>
+        : <Pill tone="p1">✘ declined</Pill>,
+    },
+    {
+      key: 'call', header: 'Call', render: (r) => (
+        <button
+          onClick={() => { setDrill({ label: `Consent receipt ${r.id}`, ids: [r.callId] }); go('calls'); }}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4, font: 'inherit', fontSize: 12,
+            background: 'none', border: 0, color: 'var(--accent)', cursor: 'pointer', padding: 0,
+          }}
+          className="focus-ring"
+        >
+          {r.callId} <ExternalLink size={12} />
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <Panel>
+      <PanelHead
+        title={
+          <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
+            <ShieldCheck size={16} color="hsl(var(--success))" />
+            Consent receipt audit trail
+          </span>
+        }
+        sub={`§5 #7 · ${issued} receipts issued today · automatic CNIL-compliant proof of disclosure`}
+        right={<ProvisionalTag />}
+      />
+      <DataTable rows={receipts} columns={columns} rowKey={(r) => r.id} />
+      <div style={{ padding: 16 }}>
+        <Note>
+          <strong>Innovation #7</strong> — every call produces a timestamped receipt of <em>exactly</em> the
+          disclosure sentence that was synthesized, the caller ANI (masked), and the option chosen. CNIL
+          asks for proof that disclosure happened — this is it. No call audio is needed for the audit.
+        </Note>
+      </div>
+    </Panel>
   );
 }
 

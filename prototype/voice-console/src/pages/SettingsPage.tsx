@@ -276,8 +276,8 @@ export function SettingsPage() {
               Arabic voice.
             </Note>
             <AiBanner
-              title="Knowledge scope: 4 of 6 sources enabled"
-              body={`Currently ${Object.values(k.scope).filter(Boolean).length} scopes on, ${Object.values(k.scope).filter((v) => !v).length} off. Mail and contacts stay off in v1 — that is the privacy guardrail, not an oversight.`}
+              title="Knowledge scope: 4-tier client-owned guardrail"
+              body={`Currently ${k.scope.filter((x) => x.enabled).length} scopes on, ${k.scope.filter((x) => !x.enabled).length} off. T3 (confidential: payments/HR/legal) forced off by design. T2 internal requires client-local node.`}
             />
           </div>
         )}

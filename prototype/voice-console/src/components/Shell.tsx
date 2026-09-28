@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Mail, CalendarDays, LayoutDashboard, Users, CheckSquare, Bot, Briefcase, Settings as Gear, Phone, Radio, Activity, SlidersHorizontal, Coins, Database, Network, Cpu } from 'lucide-react';
+import { Mail, CalendarDays, LayoutDashboard, Users, CheckSquare, Bot, Briefcase, Settings as Gear, Phone, Radio, Activity, SlidersHorizontal, Coins, Database, Network, Cpu, FlaskConical } from 'lucide-react';
 import { useUiStore, useUnacknowledgedCount, useReachable, type Route } from '../store';
 import { Pill } from './ui';
 
@@ -23,6 +23,7 @@ const CONSOLE_NAV: { r: Route; l: string; i: typeof Phone }[] = [
   { r: 'knowledge', l: 'Knowledge', i: Database },
   { r: 'cost', l: 'Cost', i: Coins },
   { r: 'topology', l: 'Topology', i: Network },
+  { r: 'scenarios', l: 'Scenarios', i: FlaskConical },
   { r: 'settings', l: 'Settings', i: Cpu },
 ];
 

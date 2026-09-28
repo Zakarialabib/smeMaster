@@ -14,14 +14,14 @@ const PILL: Record<PillTone, React.CSSProperties> = {
   ai: { background: 'var(--ai-subtle)', color: 'var(--ai)', borderColor: 'rgba(147,51,234,.28)' },
 };
 
-export function Pill({ tone, children, title }: { tone: PillTone; children: ReactNode; title?: string }) {
+export function Pill({ tone, children, title, style }: { tone: PillTone; children: ReactNode; title?: string; style?: React.CSSProperties }) {
   return (
     <span
       title={title}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
         padding: '3px 9px', borderRadius: 999, borderWidth: 1, borderStyle: 'solid',
-        whiteSpace: 'nowrap', ...PILL[tone],
+        whiteSpace: 'nowrap', ...PILL[tone], ...style,
       }}
     >
       {children}
@@ -84,12 +84,13 @@ export function DegradedBanner({ title, body, tone = 'danger', action }: {
   );
 }
 
-export function Note({ children, icon = true }: { children: ReactNode; icon?: boolean }) {
+export function Note({ children, icon = true, style }: { children: ReactNode; icon?: boolean; style?: React.CSSProperties }) {
   return (
     <div style={{
       display: 'flex', gap: 8, alignItems: 'flex-start', padding: 12, margin: '12px 0',
       borderRadius: 'var(--radius-lg)', background: 'var(--bg-tertiary)',
       color: 'var(--text-secondary)', fontSize: 12.5, lineHeight: 1.5,
+      ...style,
     }}>
       {icon && <Info size={14} style={{ flex: 'none', marginTop: 2, color: 'var(--text-tertiary)' }} />}
       <div>{children}</div>
@@ -157,11 +158,12 @@ export function PanelHead({ title, sub, right }: { title: ReactNode; sub?: React
   );
 }
 
-export function SectionTitle({ children }: { children: ReactNode }) {
+export function SectionTitle({ children, style }: { children: ReactNode; style?: React.CSSProperties }) {
   return (
     <h2 style={{
       fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', margin: 0,
       color: 'var(--text-tertiary)', fontWeight: 600,
+      ...style,
     }}>{children}</h2>
   );
 }
@@ -201,7 +203,7 @@ export function Select({ value, onChange, options, disabled, ariaLabel }: {
 }
 
 export function Radio({ name, checked, label, disabled, onChange }: {
-  name: string; checked: boolean; label: string; disabled?: boolean; onChange?: () => void;
+  name: string; checked: boolean; label: ReactNode; disabled?: boolean; onChange?: () => void;
 }) {
   return (
     <label style={{
@@ -216,7 +218,7 @@ export function Radio({ name, checked, label, disabled, onChange }: {
 }
 
 export function Checkbox({ checked, label, disabled, onChange }: {
-  checked: boolean; label: string; disabled?: boolean; onChange?: () => void;
+  checked: boolean; label: ReactNode; disabled?: boolean; onChange?: () => void;
 }) {
   return (
     <label style={{

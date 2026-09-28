@@ -4,7 +4,9 @@ import { useUiStore, useCallListStore } from './store';
 import { Toast } from './components/ui';
 import { OpsPage, AlertDetailPage } from './pages/OpsPage';
 import { CallsPage, LivePage } from './pages/CallsPage';
-import { ConfigPage, KnowledgePage, CostPage, TopologyPage } from './pages/ConfigPage';
+import { ConfigPage, CostPage, TopologyPage } from './pages/ConfigPage';
+import { KnowledgePage } from './pages/KnowledgePage';
+import { ScenariosPage } from './pages/ScenariosPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 /**
@@ -41,8 +43,9 @@ export function App() {
         case '6': go('cost'); break;
         case '7': go('topology'); break;
         case '8': go('settings'); break;
+        case '9': go('scenarios'); break;
         case 'f': toggleFlagged(); break;
-        case '?': notify('1–7 switch surface · f flagged-only · x acknowledge · Esc back · c+d cost grouping'); break;
+        case '?': notify('1–9 switch surface · f flagged-only · x acknowledge · Esc back · c+d cost grouping'); break;
         case 'Escape': go('ops'); break;
       }
     };
@@ -60,6 +63,7 @@ export function App() {
       {route === 'knowledge' && <KnowledgePage />}
       {route === 'cost' && <CostPage />}
       {route === 'topology' && <TopologyPage />}
+      {route === 'scenarios' && <ScenariosPage />}
       {route === 'settings' && <SettingsPage />}
       {route === 'alerts' && <OpsPage />}
       {toast && <Toast message={toast} onClose={() => notify(null)} />}
