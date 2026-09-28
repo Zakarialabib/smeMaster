@@ -9,6 +9,8 @@
 > [`VENDOR-QUOTE-REQUEST.md`](../voice/client/VENDOR-QUOTE-REQUEST.md) ·
 > [`CLIENT-QUESTIONNAIRE.md`](../voice/client/CLIENT-QUESTIONNAIRE.md) ·
 > [`OPS-ASSISTANT.md`](../voice/dev/OPS-ASSISTANT.md) (ops-assistant design + dev work matrix)
+> **Build sequence:** [`BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) (phases, skeletons, verification) ·
+> **Prototype → product:** [`PROTOTYPE-HANDOVER.md`](../voice/dev/PROTOTYPE-HANDOVER.md)
 
 ---
 

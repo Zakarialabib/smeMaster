@@ -30,6 +30,19 @@ belongs in, ask: *who reads it, and does it leave the building?*
 | [`dev/`](dev/) | us — engineering + ops | **Internal.** Specs, call flows, retrieval decisions, performance, self-hosting |
 | [`design/`](design/) | us — product + frontend + backend | **Internal.** UX, frontend architecture, backend architecture, wireframes, HTML mockups |
 
+### Start here
+
+| If you are… | Read |
+|---|---|
+| **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
+| **porting the screens** | [`dev/PROTOTYPE-HANDOVER.md`](dev/PROTOTYPE-HANDOVER.md) — file-by-file map from the running prototype to `src/` |
+| **reviewing** | [`design/WIREFRAMES.md`](design/WIREFRAMES.md) §13 gaps, §14 opportunities |
+| **answering a client question** | [`client/`](client/) — but strip the internal footers first |
+
+**The prototype is the visual source of truth.** `prototype/voice-console/` is a running React app
+(2,040 lines) that implements every surface. Where it and a doc disagree, the prototype is newer
+and wins — it was written after the docs.
+
 **Never put an internal note in `client/`.** Two documents carry an internal footer today
 (`client/VENDOR-QUOTE-REQUEST.md` has an "Internal: what we do with the answers" table) —
 that section must be stripped before the document is sent.
@@ -109,6 +122,11 @@ at. Verified structurally (2 nodes, 1 connector, deterministic flex rule, tokens
 to 01) — **not** visually: the only headless renderer available on this host
 (LibreOffice → PDF) forces a portrait page, so the side-by-side pairing must be confirmed by
 opening the file in a browser at ≥ 900 px.
+
+> **Static mockups vs the prototype.** 01–10 are the static HTML reference; the React
+> prototype supersedes them wherever they differ, because it is interactive and is the thing you
+> can actually click. Keep the static files for the degraded-state inventory — that is what they
+> are still good for.
 
 **Mockups are design artifacts, not the implementation.** They exist to settle layout and
 copy before Gate 3 builds React. They use the locked Frosted-Glass + AI-purple language, the

@@ -5,6 +5,10 @@
 > [`UX.md`](UX.md), [`CALL-FLOW.md`](../dev/CALL-FLOW.md) or [`OPS-ASSISTANT.md`](../dev/OPS-ASSISTANT.md);
 > nothing is invented.
 > **Mockups:** [`mockups/`](mockups/) — HTML, on the real tokens. **Gaps:** §13. **UX opportunities:** §14.
+> **Prototype:** [`prototype/voice-console/`](../../../prototype/voice-console/) — a **running** React
+> implementation of every surface below. **Where it and this document disagree, the prototype wins:**
+> it was written later and is interactive, so it settles layout and copy questions this document can
+> only describe. Port map in [`../dev/PROTOTYPE-HANDOVER.md`](../dev/PROTOTYPE-HANDOVER.md).
 
 ## 0. Coverage matrix
 

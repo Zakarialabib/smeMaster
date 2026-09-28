@@ -151,7 +151,10 @@ Spec-gated delivery; **no code written — awaiting 4 client decisions.** RAG fo
 | [Cost Model](voice/client/COST-MODEL.md)                                            | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified** |
 | [Pilot Criteria](voice/client/PILOT-CRITERIA.md)                                    | Go/no-go bars for the 2-week pilot                                     |
 | [Vendor Quote Request](voice/client/VENDOR-QUOTE-REQUEST.md)                        | Send-as-is BSP + carrier RFQ (4 vendors) — **strip the internal footer** |
-| **[Client Deck](voice/client/VOICE-AGENT-DECK.pptx)**                               | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
+| **[Client Deck](voice/client/VOICE-AGENT-DECK.pptx)**                                      | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
+| **[Prototype — RUNNING](voice/../../prototype/voice-console/README.md)** 🔶                    | React 19 + Zustand console, all 9 surfaces · **visual source of truth** |
+| [Build Plan](voice/dev/BUILD-PLAN.md)                                                         | Phases, skeletons-first, verification, delegation brief                  |
+| [Prototype Handover](voice/dev/PROTOTYPE-HANDOVER.md)                                         | File-by-file port map prototype → `src/`, and the four invariants        |
 | **Internal — `voice/dev/`** *(engineering + ops)*                                    | |
 | [Call Flow](voice/dev/CALL-FLOW.md)                                                 | Call states, consent model, transfer ladder, voicemail, latency metrics |
 | [Ops Assistant](voice/dev/OPS-ASSISTANT.md)                                         | Alert→action matrix, dev work matrix                                   |

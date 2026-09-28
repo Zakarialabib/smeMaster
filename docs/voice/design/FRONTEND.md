@@ -352,6 +352,25 @@ Components subscribe to selectors, never to whole stores.
 **`useReachable()` is read by every surface, not just the digest.** One store, one source of
 the offline state — a per-component "am I online" check is how two surfaces disagree.
 
+⚠️ **A derived array belongs in `useMemo`, never inside the store selector.** The prototype hit
+this and it is worth writing down: a selector that calls `.filter()` returns a new array on every
+invocation, and `useSyncExternalStore` re-renders forever — **React error #185, "Maximum update
+depth exceeded"**. It is invisible until a navigation path actually reaches the screen, which is
+why it can sit undetected. Select the *primitives*, then memoise:
+
+```ts
+// ❌ new array identity every call — infinite re-render
+const rows = useCallListStore((s) => s.rows.filter((r) => s.outcome === 'all' || r.outcome === s.outcome));
+
+// ✅ primitives in, derived array memoised out
+const rows = useCallListStore((s) => s.rows);
+const outcome = useCallListStore((s) => s.outcome);
+const visible = useMemo(() => rows.filter(...), [rows, outcome]);
+```
+
+Keep the build unminified in any prototype used to debug behaviour: the minified bundle reported
+"React error #185" with a symbol name, the readable one named the store frame.
+
 ### 12.4 WebSocket reconnect state machine
 
 A silently dead transcript is indistinguishable from a caller who stopped talking. Every
