@@ -1,6 +1,7 @@
 # RAG Fork — Desktop Local vs Server-Side
 
-> **Status:** OPEN — decision required at Gate 0, before any Gate 1 code.
+> **Status:** **DECIDED 2026-09-28 — Option A** (server-side pgvector + `bge-m3`).
+> One client-owned guardrail still open: agent knowledge scope. See §Decision record.
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 
 ## The problem
@@ -183,11 +184,17 @@ privacy story clean and makes `bge-m3` cheap.
 
 | Field | Value |
 |---|---|
-| Decided by | ☐ pending |
-| Date | ☐ |
-| Chosen option | ☐ |
-| Agent knowledge scope (what content is allowed to reach the server) | ☐ |
+| Decided by | **Zakaria** (engineering) |
+| Date | **2026-09-28** |
+| Chosen option | **Option A — server-side index, pgvector + `bge-m3`** |
+| Agent knowledge scope (what content is allowed to reach the server) | ☐ **client — still pending** (the §Recommendation guardrail: a small curated KB — services, hours, pricing, booking rules — not the mail/contact corpus) |
 
-Once decided, this file is updated with the chosen option and the spec's Gate 0
-checklist is ticked. Do not start Gate 1 with this open — the ingestion path shapes
-the provider traits, and retrofitting it is more expensive than deciding now.
+**Signed off 2026-09-28.** Gate 1 may build the ingestion path. One guardrail is still
+open and belongs to the client: *what content the agent is allowed to know*. Build the
+ingestion endpoint against a curated KB shape and treat "the full mail/contact corpus" as
+out of scope until the client says otherwise — that keeps the privacy story clean (Q6)
+and keeps `bge-m3` cheap. Recorded as Open item 2 in
+[`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md).
+
+Once the knowledge scope is confirmed, tick the spec's Gate 0 checklist item and this
+file is closed. Do not start Gate 1 with the knowledge scope assumed.

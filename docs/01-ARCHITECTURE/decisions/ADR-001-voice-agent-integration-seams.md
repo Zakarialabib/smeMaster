@@ -74,28 +74,37 @@ replaced, migrated, or unified by this work.
 **Forbidden:** "unifying" the desktop source toggle with the server seam. They are in
 different runtimes on different machines and one is user-facing.
 
-### D4 — The console↔agent-core IPC surface needs a named read path and an auth invariant, and neither exists today
+### D4 — Console↔agent-core IPC: bearer token, server-derived tenant, one ops-read command ✅ **DECIDED**
 
-Gate 3 names five additive commands (`agent_start_session`, `agent_end_session`,
-`agent_list_calls`, `agent_get_transcript`, `agent_set_provider_tier`) — all sufficient
-for the *call log* UI, insufficient for `OPS-ASSISTANT.md` §6, which requires
-per-tenant **tier**, **provider health**, **fallback-chain state**, and **block-rate
-trend** to be readable by the console. No command covers those reads.
+Gate 3 named five additive commands (`agent_start_session`, `agent_end_session`,
+`agent_list_calls`, `agent_get_transcript`, `agent_set_provider_tier`) — sufficient for
+the *call log* UI, insufficient for `OPS-ASSISTANT.md` §6, which requires per-tenant
+**tier**, **provider health**, **fallback-chain state**, and **block-rate trend** to be
+readable by the console. No command covered those reads. Two further defects existed in
+the named surface. All three are resolved here rather than deferred, because renaming a
+Tauri command later is a break (invariant 7).
 
-Two further defects in the named surface:
+**a. Auth — per-tenant bearer token, tenant derived server-side only.**
 
-- **`agent_set_provider_tier` is ambiguously scoped.** Gate 5 defines `ProviderTier` as
-  **per-tenant** config; the command name implies **per-session**. One of the two must
-  be declared before the command is added (renaming a Tauri command later is a break,
-  per invariant 7).
-- **No auth invariant exists.** Nothing in the spec's 9 invariants covers how `POST
-  /session` and `WS /ws/transcript` authenticate, and the only stated position is "one
-  base URL from config". A console that can mutate a tenant's provider tier over an
-  unauthenticated socket is a multi-tenant escalation path.
+`agent-core` mints one bearer token per tenant at provisioning. The desktop stores it in
+the Tauri store (key added to `.env.example`, value never committed). Every HTTP and WS
+call carries it; **`WS /ws/transcript` is authenticated at the HTTP upgrade handshake and
+an unauthenticated upgrade is rejected before a single transcript byte is sent.**
 
-**To decide at Gate 3 (not here):** token model, tenant scoping of the read commands,
-and whether a *second* read command set is added or `/session` grows a query shape.
-Recorded here so it cannot be silently skipped.
+**Forbidden:** a tenant id in any Tauri command argument or HTTP body/query. Tenant
+identity is derived server-side from the token and is never a client-supplied value — a
+client-supplied tenant id on a multi-tenant console is an escalation path. Also forbidden:
+tokens in WS query strings (they land in access logs).
+
+**b. Ops reads — one command, not four.** `agent_get_ops_snapshot` returns the §6 minimum
+field list (tier, provider health, fallback-chain state, block-rate trend) for the token's
+tenant, in one round trip and one shape. This is the read path that was missing.
+
+**c. `agent_set_provider_tier` is per-tenant, and the name stands.** Gate 5 defines
+`ProviderTier` as per-tenant config; the command sets the **tenant's** tier and a running
+session reads it at session start. **A live call is never hot-swapped** — that matches
+`OPS-ASSISTANT.md` §3's "never change agent behaviour mid-shift". No rename is needed; the
+ambiguity was in the prose, not the name.
 
 ### D5 — The licence gate applies to `agent-core` as a **network-service** rule, not a binary-linking rule
 
@@ -134,14 +143,15 @@ Applied in place, same commit as this ADR:
   needed the third row.
 - The desktop's config-dependent dimension (D2) is a latent defect **independent of the
   voice agent**: any French query under `rust_bge` retrieves nothing today.
-- D4 leaves Gate 3 with one open decision. It is not a blocker for Gate 1.
+- D4 is **decided rather than deferred**, so Gate 3 can add its commands without a
+  later naming or re-scoping break (invariant 7).
+- The RAG fork is **signed off** — Option A, server-side pgvector + `bge-m3`
+  (`RAG-FORK.md` decision record, 2026-09-28). Gate 1 may proceed with the ingestion path.
 
 ## Open — must be closed before the gate that needs it
 
 | # | Open item | Owner | Blocks |
 |---|---|---|---|
 | 1 | WhatsApp voicemail→owner trigger direction and its €0 claim (D6 row 5) | vendor (BSP) | `COST-MODEL.md` sign-off |
-| 2 | Console auth model + tenant scoping of agent reads (D4) | us | Gate 3 exit |
-| 3 | `ProviderTier` scope: per-tenant or per-session | us | Gate 3 command name |
-| 4 | RAG fork sign-off (`RAG-FORK.md` Option A) | us | Gate 1 |
-| 5 | Desktop index written under `provider` mode will not match a later `rust_bge` switch | us | desktop RAG (pre-existing) |
+| 2 | Agent knowledge scope — what content is allowed to reach the server | **client** | RAG ingestion (Gate 1) — the guardrail in `RAG-FORK.md` §Recommendation |
+| 3 | Desktop index written under `provider` mode will not match a later `rust_bge` switch — **deferred by decision 2026-09-28, filed as debt** (`docs/03-FRONTEND/13-deprecations.md`, `docs/02-BACKEND/12-diagnostics.md`) | us | desktop RAG (pre-existing, not voice-agent scope) |

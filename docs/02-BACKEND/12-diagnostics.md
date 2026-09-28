@@ -40,3 +40,11 @@
 - **Issue**: The System Health dashboard now reads live orchestrator subsystem statuses from the real `db_status_snapshot` IPC command (returns `DbStatusSnapshot`), replacing the previous mock data. Two gaps were identified: (1) no public `restart_subsystem` IPC command; (2) contacts tag/group/segment filtering needed a backend join command (`db_filter_contacts`).
 - **Resolution (2026-07-16)**: Both gaps are now CLOSED. `db_restart_subsystem` was added (delegates to `SubsystemRegistry::restart_subsystem` — real force_shutdown + class-appropriate re-activation, returns the entry's `SubsystemStatusSnapshot`); the HealthDashboard restart control now calls it. `db_filter_contacts` was added in Rust with conditional INNER JOINs on `entity_pivots` / `contact_group_pivot` and segment SQL-query member intersection; `ContactsPage` now calls `filterContacts()` for real backend narrowing.
 - **Found during**: audit of frontend/backend wiring against actual source (verified `db_status_snapshot` exists; `restart_subsystem` and `db_filter_contacts` had no Rust definitions at audit time).
+
+### 2026-09-28: `bge-small-en-v1.5` hard-coded as the ml-sidecar default (4 Rust sites)
+
+- **File**: `src-tauri/crates/ml-sidecar/src/main.rs` (lines 575, 747, 754), `src-tauri/src/ai/models.rs` (line 37, `get_bge_small`)
+- **Severity**: WARNING
+- **Issue**: The sidecar's default `repo_id` and the downloader's model are hard-coded to `BAAI/bge-small-en-v1.5` (384-dim, **English-only**). Two sidecar sites are fallbacks that report the model name to the caller, so a swapped model would be **misreported**, not merely unconfigurable — line 747 uses `resources.loaded_repo_id` while line 754 returns the constant, so the two status paths can disagree. Same defect class as the frontend entry of the same date.
+- **Plan**: make the repo id a startup parameter/config with the current value as the default, and report the **loaded** `repo_id` in all three sidecar status sites (line 754 should read `loaded_repo_id`, not a constant).
+- **Found during**: grill of `docs/voice/**` (`RAG-FORK.md` call-site inventory). Deferred by decision 2026-09-28 — pre-existing, not voice-agent scope. Frontend half: `docs/03-FRONTEND/13-deprecations.md`.

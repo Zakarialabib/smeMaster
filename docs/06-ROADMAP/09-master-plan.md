@@ -190,7 +190,8 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 > No code written.
 > **Grilled 2026-09-28:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`OSS landscape`](10-voice-agent-oss-landscape.md) ·
-> [`glossary`](../glossary/glossary-voice-agent.md)
+> [`glossary`](../glossary/glossary-voice-agent.md) ·
+> **handoff prompts:** [`docs/voice/AGENT-PROMPTS.md`](../voice/AGENT-PROMPTS.md)
 > **Reuses, does not rebuild:** provider abstraction (`src/shared/services/ai/`),
 > tool registry, invoicing, deliverability monitoring, i18n `fr`, orchestrator,
 > ml-sidecar architecture pattern.
@@ -198,9 +199,9 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 | #   | Task                                        | Effort  | Depends On | Status | Notes                                                                 |
 | --- | ------------------------------------------- | ------- | ---------- | ------ | --------------------------------------------------------------------- |
 | 10.1 | Spec + cost model + call flow + RFQ        | 1–2d    | —          | ✅     | `docs/voice/**` + `docs/specs/2026-09-28-voice-agent.md`               |
-| 10.2 | **Client decisions** (4) + RAG fork        | —       | client/us  | ⛔     | Vertical, cost sign-off, two-channel confirm, consent model           |
+| 10.2 | **Client decisions** (4)                   | —       | client     | ⛔     | Vertical, cost sign-off, two-channel confirm, consent model. **RAG fork signed 2026-09-28 (Option A)** |
 | 10.3 | Vendor quotes (BSP + carrier)              | —       | vendors    | 🔲     | RFQ drafted, send-as-is. **Meta onboarding is the schedule risk**     |
-| 10.4 | `agent-core` skeleton + provider traits    | 3–4d    | 10.2      | 🔲     | `services/agent-core/`, outside the Tauri build. 3 traits + swaps     |
+| 10.4 | `agent-core` skeleton + provider traits    | 3–4d    | —          | 🔲     | **Eng. unblocked** (ADR-001 + RAG fork decided). `services/agent-core/`, outside the Tauri build. 4 traits + swaps |
 | 10.5 | WhatsApp channel, sandbox via Baileys      | 3–4d    | 10.4      | 🔲     | **E.164-normalized sandbox allowlist — production use forbidden**     |
 | 10.6 | Console + Rust IPC bridge                  | 4–5d    | 10.4      | 🔲     | `src/features/agent/`, additive commands only                         |
 | 10.7 | Telephony, inbound FR number               | 5–7d    | 10.6      | 🔲     | **One writer.** Turn detection, transfer ladder, voicemail→WhatsApp   |

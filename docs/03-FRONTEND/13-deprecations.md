@@ -50,3 +50,11 @@
 - **Issue**: The campaign store is the canonical `useCampaignsStore` under `src/features/campaigns/stores/`. There is no `src/stores/campaigns/campaignStore.ts` file (only `campaignStore.test.ts` and `index.ts` exist under `src/stores/campaigns/`). It is not a duplicate of another campaigns store.
 - **Plan**: No action — documented to correct the mistaken `src/stores/campaigns/campaignStore.ts` path from the audit.
 - **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/stores/campaigns/campaignStore.ts` path, which does not exist).
+
+### 2026-09-28: Desktop RAG embedding space is config-dependent, and the French case is broken
+
+- **File**: `src/shared/services/ai/embeddingService.ts`, `src/features/assistant/stores/ragStore.ts` (line 36 `RAG_EMBEDDING_SOURCE_KEY`; line 38 `BGE_REPO_ID`)
+- **Severity**: WARNING
+- **Issue**: The assistant has **two** selectable embedding sources behind `smemaster.rag.embeddingSource` (`rust_bge | provider | auto`). Under `rust_bge` the model is `BAAI/bge-small-en-v1.5` — **English-only**, so a French query retrieves nothing useful. Under `provider` the index carries whatever dimension the configured endpoint (LM Studio / Ollama / OpenAI-compatible) returns, so **the stored vector dimension is not a constant**. The repo id is hard-coded in two frontend sites, and no code reads the dimension from the index metadata — a source switch can therefore mismatch dimensions and score garbage rather than fail loudly.
+- **Plan**: (1) lift `BGE_REPO_ID` into config; (2) read the index dimension from index metadata and reject a query whose embedding length differs, instead of scoring it; (3) use a multilingual embedder if French retrieval is ever needed locally. Do **not** "unify" this space with the server-side one — see `docs/voice/RAG-FORK.md` and `ADR-001` D2/D3.
+- **Found during**: grill of `docs/voice/**` — `RAG-FORK.md` asserted "desktop = 384-dim", which holds only in `rust_bge` mode. Filed as debt by decision 2026-09-28 (pre-existing; not voice-agent scope). Rust half: `docs/02-BACKEND/12-diagnostics.md`.

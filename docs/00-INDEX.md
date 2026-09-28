@@ -136,14 +136,15 @@ What the app does, grouped by functional area.
 ### Voice & Messaging Agent (client engagement — Gate 0)
 
 FR/EN AI receptionist: WhatsApp (text) + inbound voice on a dedicated FR number.
-Spec-gated delivery; **no code written — awaiting 4 client decisions.**
+Spec-gated delivery; **no code written — awaiting 4 client decisions.** RAG fork
+**signed off 2026-09-28 (Option A)**; Gate 1 is engineering-unblocked.
 
 | Doc                                                                              | Covers                                                                 |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | **[Voice Agent — SPEC](specs/2026-09-28-voice-agent.md)** 🔶                        | Full spec, ground truth, 8 gates, blocking decisions, risks            |
 | [Cost Model](voice/COST-MODEL.md)                                                  | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified** |
 | [Call Flow](voice/CALL-FLOW.md)                                                    | Call states, consent model, transfer ladder, voicemail, latency metrics |
-| [RAG Fork](voice/RAG-FORK.md) ⛔ OPEN                                              | Desktop-local vs server-side retrieval — **decision required at Gate 0** |
+| [RAG Fork](voice/RAG-FORK.md) ✅ **Option A**                                        | Desktop-local vs server-side retrieval — **signed off: server pgvector + `bge-m3`** |
 | [Pilot Criteria](voice/PILOT-CRITERIA.md)                                          | Go/no-go bars for the 2-week pilot                                    |
 | [Vendor Quote Request](voice/VENDOR-QUOTE-REQUEST.md)                              | Send-as-is BSP + carrier RFQ (4 vendors)                              |
 | [Client Questionnaire](voice/CLIENT-QUESTIONNAIRE.md)                              | FR client email — 4 blocking questions                                |
@@ -151,6 +152,7 @@ Spec-gated delivery; **no code written — awaiting 4 client decisions.**
 | [OSS Landscape](06-ROADMAP/10-voice-agent-oss-landscape.md) 🆕                      | Layer-by-layer OSS-vs-gated verdict, licence check, adapted scores     |
 | **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕 | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1** |
 | [Glossary](glossary/glossary-voice-agent.md) 🆕                                     | Terms as used in this repo (spaces, gates, metrics, channel)           |
+| [Agent Prompts](voice/AGENT-PROMPTS.md) 🆕                                          | Copy-paste handoff prompt per gate (packet send, Gate 1)               |
 | **[Client Deck](voice/VOICE-AGENT-DECK.pptx)**                                      | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
 
 **New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/INDEX.md)
