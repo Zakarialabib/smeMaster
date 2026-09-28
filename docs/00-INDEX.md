@@ -153,6 +153,7 @@ Spec-gated delivery; **no code written — awaiting 4 client decisions.** RAG fo
 | **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕 | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1** |
 | [Glossary](glossary/glossary-voice-agent.md) 🆕                                     | Terms as used in this repo (spaces, gates, metrics, channel)           |
 | [Agent Prompts](voice/AGENT-PROMPTS.md) 🆕                                          | Copy-paste handoff prompt per gate (packet send, Gate 1)               |
+| [Voice Perf / Self-Hosted](voice/Optimizing%20Voice%20Agent%20Performance.md) ⚠️🆕  | External draft **adjudicated** + **Part 6: self-hosted speech (sherpa-onnx)** |
 | **[Client Deck](voice/VOICE-AGENT-DECK.pptx)**                                      | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`  |
 
 **New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/INDEX.md)

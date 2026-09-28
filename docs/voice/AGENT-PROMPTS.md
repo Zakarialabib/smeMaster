@@ -100,10 +100,19 @@ treat the mail/contact corpus as out of scope until told otherwise.
 
 ---
 
-## Prompt C — Gate 2 (WhatsApp sandbox) · Prompt D — Gate 3 (console + Rust IPC)
+## Prompt C — Gate 2 (WhatsApp sandbox) · Prompt D — Gate 3 (console + Rust IPC) · Prompt E — Gate 5 (tiers)
 
 Not written yet. Gate 2 needs **only** the sample-format normalisation test the spec
 already specifies (spec Gate 2) — write it before the sandbox path, because a
 non-normalising allowlist is bypassable by formatting alone. Gate 3 must use
 `agent_get_ops_snapshot` (ADR-001 D4b) for the ops reads and add its commands to
 `generate_handler![]` without reordering existing entries.
+
+**Gate 5 addition (2026-09-28):** add a `selfhosted` tier to the `ProviderTier` chain
+(sherpa-onnx, Apache-2.0 — see
+[`Optimizing Voice Agent Performance.md`](Optimizing%20Voice%20Agent%20Performance.md) §6.6).
+It is gated on one measurement first, §6.7: **max concurrent calls at RTF < 1.0** with the
+streaming FR zipformer + a Piper FR voice on our 4-vCPU box. Below the client's expected
+peak, the tier is closed and nothing else in Gate 5 changes. Also adopt **TTS caching** for
+the greeting, the AI-disclosure line and confirmations — it is the cheapest lever on the
+line that is 88% of variable cost.

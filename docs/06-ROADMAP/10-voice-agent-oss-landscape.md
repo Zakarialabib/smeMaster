@@ -107,6 +107,10 @@ better when the orchestration diverges from the framework's opinion.
 `livekit/livekit` (Apache-2.0, 21.2k★, pushed 2026-09-28) if media is self-hosted.
 `snakers4/silero-vad` (MIT, 10.3k★, pushed 2026-09-23) as the local VAD.
 
+**`k2-fsa/sherpa-onnx` (Apache-2.0, 15.0k★, pushed 2026-09-22) also ships VAD**, bundled
+with its STT/TTS — so choosing it for P6/P7 gets P2's VAD without a second dependency. Added
+2026-09-28 (see §5.6).
+
 **Reuse note:** the spec lists **LiveKit turn detection** for Gate 4. If the carrier's
 media-stream path is used directly instead of a LiveKit session, turn detection must be
 built on silero-vad, which is the pattern Pipecat ships. Decide at Gate 4, not Gate 1 —
@@ -188,8 +192,29 @@ false for data — phrase it that way or the first swap will be a half-migrated 
 | `SYSTRAN/faster-whisper` | MIT | 25.6k | **2025-11-19** | budget fallback; **~10 months since last push** |
 | `openai/whisper-large-v3` weights | Apache-2.0 (HF API) | — | — | the weights behind the fallback |
 | ElevenLabs Flash / Multilingual v2 | commercial | — | — | **PRIMARY** — the dominant cost line |
-| `hexgrad/Kokoro-82M` | Apache-2.0 | 9.1k | **2025-08-06** | budget fallback; **~13 months since last push** |
+| `hexgrad/kokoro` | Apache-2.0 | 9.1k | **2025-08-06** | budget fallback; **~13 months since last push** |
 | Azure Neural | commercial | — | — | margin-rescue tier |
+
+#### ⚠️ Added 2026-09-28 — this pillar's framing was wrong. `sherpa-onnx` reframes it.
+
+The table above treats "self-hosted" as a *budget fallback* whose projects are going stale.
+That framing missed the engine that makes self-hosting viable on **CPU at pilot volume**:
+
+| Candidate | Licence | ★ | Last push | FR STT | FR TTS | VAD | Score |
+|---|---|---|---|---|---|---|---|
+| **`k2-fsa/sherpa-onnx`** | **Apache-2.0** | 15.0k | 2026-09-22 | ✅ streaming `zipformer-fr-kroko` + NeMo/Canary FR | ✅ 13 FR Piper/VITS voices (`siwis-medium`, `upmc-medium`) | ✅ bundled | **9 — new primary for the self-hosted tier** |
+| `SYSTRAN/faster-whisper` | MIT | 25.6k | 2025-11-19 | ✅ (multilingual) | — | — | 6 — kept, but superseded |
+| `hexgrad/kokoro` | Apache-2.0 | 9.1k | 2025-08-06 | — | ✅ | — | 6 — **already servable *through* sherpa-onnx** |
+
+Why the score is 9 rather than 6: it is **CPU-capable** (no GPU line item, which is what makes
+self-hosting work at 200–600 min/month instead of only at scale), it covers STT **and** TTS
+**and** VAD in one dependency, it has **both a Python and a Rust binding** (`sherpa-onnx/rust/`
+→ `sherpa-onnx-sys` + safe wrapper; `rust-api-examples/`), and it is actively pushed. Both
+projects it supersedes are permissive but quiet.
+
+**Not a v1 change.** It is a `ProviderTier` candidate for Gate 5, gated on a real measurement —
+see [`Optimizing Voice Agent Performance.md`](../voice/Optimizing%20Voice%20Agent%20Performance.md)
+§6.7: max concurrent calls at RTF < 1.0 on our 4-vCPU box.
 
 **Momentum caveats the spec should carry.** Both OSS fallbacks are licence-clean and both
 have gone quiet (`faster-whisper` ~10 months, `Kokoro-82M` ~13 months). They remain
@@ -206,6 +231,7 @@ change the spec's choice — it changes the expectation attached to it.
 | `asterisk/asterisk` | GPLv2-family — cannot reach `agent-core` or any shipped artifact |
 | `signalwire/freeswitch` | MPL-family, and self-hosting media is rejected for v1 on margin grounds (§5.3) |
 | `jinaai/jina-embeddings-v3` | CC-BY-NC-4.0 — non-commercial; unacceptable for a paid client product |
+| `mistralai/Voxtral-4B-TTS-2603` | **CC-BY-NC-4.0** (HF registry, 2026-09-28) — non-commercial. A third-party draft recommended self-hosting it as a cost measure while calling it commercially licensed; both the recommendation and the label are wrong (`Voxtral-Mini-3B-2507` / `-Small-24B-2507` **are** Apache-2.0, but those are ASR models, not TTS) |
 | Edge TTS | Unofficial endpoint, gray ToS — already excluded in the spec; restated here |
 | Self-hosted media server (any) | Not a licence reject — a **margin/ops** reject for v1 (§5.3) |
 
@@ -248,3 +274,4 @@ Gate 3 additionally: `cd src-tauri && cargo check --workspace` (workspace, not `
 | 5 | Meta: voicemail→owner message trigger direction and its €0 claim | vendor (BSP) | `COST-MODEL.md` sign-off |
 | 6 | LiveKit Agents version to pin, and its telephony-media path stability | us, Gate 1 day 1 | Gate 1 |
 | 7 | bge-m3 vs arctic — by eval, not leaderboard | us, Gate 1 | Gate 1 exit |
+| 8 | **Max concurrent calls at RTF < 1.0** for sherpa-onnx ASR+TTS on our 4-vCPU VPS | us, Gate 5 entry | the `selfhosted` tier (§5.6) |
