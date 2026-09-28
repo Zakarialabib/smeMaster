@@ -15,6 +15,7 @@ mod update_tracker;
 use commands::IdleRegistry;
 use imap::session::SessionPoolManager;
 mod contacts;
+mod agent;
 mod deliverability;
 mod device;
 mod dns;
@@ -194,6 +195,7 @@ pub fn run() {
     builder = pgp::register(builder);
     builder = vault::register(builder);
     builder = export::register(builder);
+    builder = agent::register(builder);
     builder = deliverability::register(builder);
     builder = pairing::register(builder);
     builder = device::register(builder);

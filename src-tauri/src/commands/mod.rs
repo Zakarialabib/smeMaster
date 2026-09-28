@@ -109,6 +109,13 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             #[cfg(desktop)]
             system_desktop::open_devtools,
 
+            // === agent (voice + WhatsApp console) ===
+            // The desktop holds no provider key and sends no tenant id; the
+            // bearer token is read from the auth store, not from an argument.
+            crate::agent::client::agent_health,
+            crate::agent::client::agent_ops_snapshot,
+            crate::agent::client::agent_provider_health,
+            crate::agent::client::agent_create_session,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,
