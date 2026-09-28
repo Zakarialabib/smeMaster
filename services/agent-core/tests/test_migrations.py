@@ -15,11 +15,10 @@ from __future__ import annotations
 
 import os
 import pathlib
-from typing import Iterator
+from collections.abc import Iterator
 
 import pytest
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 MIGRATIONS = pathlib.Path(__file__).resolve().parents[1] / "migrations"
 ADMIN_URL = os.getenv("AGENT_CORE_TEST_DATABASE_URL")
