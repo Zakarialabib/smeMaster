@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Console — Mobile digest (390px)</title>
+<style>
+  /* ---- Tokens copied verbatim from src/styles/globals.css (@theme) ---- */
+  :root{
+    --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px; --radius-2xl:24px;
+    --bg-primary:#ffffff; --bg-secondary:#f7f8fa; --bg-tertiary:#f0f1f3; --bg-hover:#eef0f3;
+    --bg-selected:rgba(11,87,208,.12);
+    --text-primary:#1c1b1f; --text-secondary:#49454f; --text-tertiary:#7a7680;
+    --border-primary:#e4e6ea; --border-secondary:#eceef1;
+    --accent:#0b57d0; --accent-hover:#0842a0; --accent-light:#d3e3fd; --accent-subtle:rgba(11,87,208,.08);
+    --ai:#9333ea; --ai-subtle:rgba(147,51,234,.08);
+    --danger:#e11d48; --warning:#d97706; --warning-light:#fef3c7;
+    --success:#059669; --success-light:#d1fae5; --info:#0284c7; --info-light:#e0f2fe;
+    --glass-blur:14px;
+    --elevation-sm:0 1px 2px rgba(16,24,40,.04);
+    --elevation-md:0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --elevation-lg:0 4px 16px rgba(16,24,40,.08);
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px; line-height:1.45; color:var(--text-primary);
+    background:
+      radial-gradient(1200px 600px at 88% -10%, rgba(11,87,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 4% 110%, rgba(147,51,234,.07), transparent 60%),
+      var(--bg-secondary);
+    min-height:100vh; padding:var(--space-4);
+  }
+  .frost{background:rgba(255,255,255,.72);backdrop-filter:blur(var(--glass-blur));
+    -webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border-primary);
+    box-shadow:var(--elevation-sm)}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+
+  /* app rail */
+  .rail{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-2) var(--space-3);
+    border-radius:var(--radius-lg);overflow-x:auto}
+  .rail .brand{font-weight:600;padding-inline-end:var(--space-3);white-space:nowrap}
+  .rail a{color:var(--text-secondary);text-decoration:none;padding:6px 10px;border-radius:var(--radius);
+    white-space:nowrap}
+  .rail a.on{color:var(--accent);background:var(--bg-selected);font-weight:600}
+
+  /* console nav */
+  .cnav{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);
+    border-radius:var(--radius-lg)}
+  .cnav button{font:inherit;border:0;background:transparent;color:var(--text-secondary);
+    padding:7px 12px;border-radius:var(--radius);cursor:pointer}
+  .cnav button.on{color:var(--accent);background:var(--accent-subtle);font-weight:600}
+  .cnav .spacer{flex:1}
+  .tenant{font-size:12px;color:var(--text-tertiary);padding-inline-end:var(--space-2)}
+
+  /* panel */
+  .panel{border-radius:var(--radius-lg);background:var(--bg-primary);
+    border:1px solid var(--border-primary);box-shadow:var(--elevation-sm);overflow:hidden}
+  .phead{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-primary)}
+  .phead h1{font-size:16px;margin:0;font-weight:600}
+  .phead .grow{flex:1}
+  .pbody{padding:var(--space-4)}
+
+  /* controls */
+  .btn{font:inherit;font-weight:500;border-radius:var(--radius);padding:7px 12px;cursor:pointer;
+    border:1px solid var(--border-primary);background:var(--bg-primary);color:var(--text-secondary)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .sel{font:inherit;border:1px solid var(--border-primary);background:var(--bg-tertiary);
+    color:var(--text-primary);border-radius:var(--radius);padding:6px 10px}
+  .sel:disabled{opacity:.55}
+
+  /* AI banner — the app's AiSuggestionBanner shape */
+  .ai{display:flex;gap:var(--space-3);align-items:flex-start;margin:var(--space-3) var(--space-4);
+    padding:var(--space-3);border-radius:var(--radius-lg);
+    background:var(--ai-subtle);border:1px solid rgba(147,51,234,.28)}
+  .ai .mk{width:22px;height:22px;flex:none;border-radius:999px;background:var(--ai);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:700}
+  .ai .bd{flex:1;min-width:0}
+  .ai .bd b{display:block;color:var(--ai);font-weight:600;margin-bottom:2px}
+  .ai .bd p{margin:0;color:var(--text-secondary)}
+  .ai .act{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-2)}
+  .ai .act a{font-size:12px;font-weight:600;color:var(--ai);text-decoration:none}
+  .ai .act a.mut{color:var(--text-tertiary);font-weight:400}
+
+  /* degraded / offline banner — never a bare empty state */
+  .down{margin:var(--space-3) var(--space-4);padding:var(--space-3);border-radius:var(--radius-lg);
+    background:#fff1f2;border:1px solid rgba(225,29,72,.3);display:flex;gap:var(--space-3);
+    align-items:flex-start}
+  .down .mk{width:22px;height:22px;flex:none;border-radius:999px;background:var(--danger);
+    color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .down .bd b{display:block;color:#9f1239;margin-bottom:2px}
+  .down .bd p{margin:0;color:var(--text-secondary)}
+  .note{margin:var(--space-3) var(--space-4);padding:var(--space-3);border-radius:var(--radius-lg);
+    background:var(--bg-tertiary);color:var(--text-secondary);font-size:12.5px}
+
+  .sub{font-size:12px;color:var(--text-tertiary)}
+  .row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .num{font-variant-numeric:tabular-nums}
+  .end{text-align:end}
+  .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill.ok{background:var(--success-light);color:#065f46;border-color:rgba(5,150,105,.25)}
+  .pill.tr{background:var(--accent-light);color:var(--accent-hover);border-color:rgba(11,87,208,.25)}
+  .pill.vm{background:var(--info-light);color:#075985;border-color:rgba(2,132,199,.25)}
+  .pill.p1{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.flag{background:var(--warning-light);color:#92400e;border-color:rgba(217,119,6,.3)}
+  .pill.off{background:var(--bg-tertiary);color:var(--text-tertiary);border-color:var(--border-primary)}
+  .dot{width:6px;height:6px;border-radius:999px;background:var(--danger);display:inline-block}
+  .dot.ok{background:var(--success)}
+  .dot.warn{background:var(--warning)}
+
+  @media (max-width:720px){
+    body{padding:var(--space-2)}
+    .rail a:nth-child(n+6){display:none}
+  }
+
+  /* Fixed 390px phone frame. This mockup's width IS the viewport it is
+     designing for, so the body is constrained and centred rather than
+     fluid — that is the point of the artefact. */
+  body{width:390px;margin:0 auto;padding:var(--space-3);
+    border-inline:1px solid var(--border-primary);background:var(--bg-tertiary)}
+  @media (min-width:430px){
+    body{margin:24px auto;border:1px solid var(--border-primary);border-radius:var(--radius-2xl);
+      box-shadow:var(--elevation-lg)}
+  }
+  .wrap{max-width:none;gap:var(--space-3)}
+  .mhead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);
+    padding:var(--space-2) var(--space-3);border-radius:var(--radius-lg)}
+  .mhead .ttl{font-size:14px;font-weight:600}
+  .mbox{border-radius:var(--radius-lg);background:var(--bg-primary);
+    border:1px solid var(--border-primary);box-shadow:var(--elevation-sm);overflow:hidden}
+  .mitem{padding:var(--space-3);border-bottom:1px solid var(--border-secondary);
+    display:flex;flex-direction:column;gap:var(--space-1)}
+  .mitem:last-child{border-bottom:0}
+  .mitem .t{display:flex;justify-content:space-between;gap:var(--space-2);align-items:baseline}
+  .mitem .b{font-size:12.5px;color:var(--text-tertiary)}
+  .mfoot{padding:var(--space-3);display:flex;gap:var(--space-2);
+    border-top:1px solid var(--border-primary);background:var(--bg-secondary)}
+  .mfoot .btn{flex:1;text-align:center;padding:11px 12px}
+  /* the states that must never be confused with each other */
+  .state{padding:var(--space-4);border-radius:var(--radius-lg);display:flex;gap:var(--space-3);
+    align-items:flex-start;margin:0 0 var(--space-3)}
+  .state .mk{width:24px;height:24px;flex:none;border-radius:999px;color:#fff;
+    display:grid;place-items:center;font-size:13px;font-weight:700}
+  .state b{display:block;margin-bottom:2px}
+  .state p{margin:0;font-size:12.5px;color:var(--text-secondary)}
+  .state.off{background:#fff1f2;border:1px solid rgba(225,29,72,.3)}
+  .state.off .mk{background:var(--danger)}
+  .state.off b{color:#9f1239}
+  .state.empty{background:var(--bg-primary);border:1px solid var(--border-primary)}
+  .state.empty .mk{background:var(--text-tertiary)}
+  .state.empty b{color:var(--text-primary)}
+  /* thumb zone: the lower 40% of the viewport */
+  .thumbzone{border:1px dashed var(--border-primary);border-radius:var(--radius-lg);
+    padding:var(--space-3);background:repeating-linear-gradient(45deg,
+    transparent,transparent 7px,rgba(11,87,208,.04) 7px,rgba(11,87,208,.04) 14px)}
+  .thumbzone .lbl{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:var(--space-2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mhead frost">
+    <span class="ttl">Monday 14 Sep</span>
+    <span class="row"><span class="sub">⟨fr⟩ ▾</span><span class="pill p1">P1 · 1</span></span>
+  </div>
+
+  <div class="mbox">
+    <div class="mitem">
+      <div class="t"><strong>14 calls · 79% contained</strong>
+        <span class="sub num">since 08:00</span></div>
+      <div class="b">3 transfers · 2 voicemail sent to WhatsApp</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+             color:var(--text-tertiary);margin:var(--space-2) 0 var(--space-2)">
+    Needs you</h2>
+  <div class="mbox">
+    <div class="mitem" style="border-inline-start:3px solid var(--danger)">
+      <div class="t"><span class="pill p1">P1 · Transfers</span>
+        <span class="sub num">14:32</span></div>
+      <div class="b">6 failed, 3 callers still waiting for a human</div>
+      <div class="mfoot" style="margin:calc(var(--space-2) * -1) -1px -1px;
+                  border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+        <button class="btn primary">Open the 3</button>
+        <button class="btn">Acknowledge</button>
+      </div>
+    </div>
+    <div class="mitem">
+      <div class="t"><span class="pill vm">Voicemail → WhatsApp</span>
+        <span class="sub num">22:41</span></div>
+      <div class="b">"Rappelez-moi après 15h" — sent ✓</div>
+    </div>
+    <div class="mitem">
+      <div class="t"><span class="pill flag">⚑ Pricing</span>
+        <span class="sub num">21:05</span></div>
+      <div class="b">knowledge gap — no chunk cited</div>
+    </div>
+  </div>
+
+  <details style="margin-top:var(--space-3)">
+    <summary class="sub" style="cursor:pointer;padding:var(--space-2) 0">2 more (P3)</summary>
+    <div class="mbox" style="margin-top:var(--space-2)">
+      <div class="mitem"><div class="b">09:15 WhatsApp text · contained</div></div>
+      <div class="mitem"><div class="b">08:40 WhatsApp text · contained</div></div>
+    </div>
+  </details>
+
+  <!-- DEGRADED STATE — agent-core unreachable. This must NEVER render as
+       "no calls": an operator would read it as a quiet day and stand down. -->
+  <h2 style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+             color:var(--text-tertiary);margin:var(--space-4) 0 var(--space-2)">
+    Degraded states — not interchangeable</h2>
+
+  <div class="state off">
+    <span class="mk" aria-hidden="true">!</span>
+    <div><b>We cannot reach the agent</b>
+      <p>Last seen 14:51. The digest below is <b>stale data</b>, not today's calls.
+         Do not treat the absence of P1 alerts as an absence of problems.</p></div>
+  </div>
+
+  <div class="state empty">
+    <span class="mk" aria-hidden="true">·</span>
+    <div><b>No calls yet</b>
+      <p>This tenant is set up but has not received a call. Two things must finish
+         first: the phone number is provisioned, and Meta verification is complete.</p></div>
+  </div>
+
+  <div class="thumbzone" style="margin-top:var(--space-4)">
+    <div class="lbl">THUMB ZONE — primary actions</div>
+    <div class="mfoot" style="border:0;background:none;padding:0">
+      <button class="btn primary">Open the 3</button>
+      <button class="btn">Acknowledge</button>
+    </div>
+    <p class="sub" style="margin:var(--space-2) 0 0">
+      Both primary actions sit in the lower part of the viewport, never the top-right.
+      Nothing here implies a mid-call intervention — a live call on a phone is
+      read-only in v1.
+    </p>
+  </div>
+
+  <p class="sub" style="text-align:center">
+    Static mockup · tokens from <code>src/styles/globals.css</code> · no JS ·
+    390px by definition · offline vs no-calls are distinct states
+  </p>
+</div>
+</body>
+</html>
