@@ -9,7 +9,7 @@
 agent-core   ruff clean · mypy clean (10 files) · 156 passed, 5 skipped
 frontend     tsc TSC_EXIT=0 · eslint clean · vitest 5 files, 60 passed
 live server  :8788 up · live_swap 15/15 · fixture drift 4/4
-rust         FIRST FULL COMPILE DONE — 43 errors, 32 of them OURS (being fixed)
+rust         src/agent/ COMPILES CLEAN (was 32 errors, now 0). 11 pre-existing errors elsewhere remain
 ```
 
 ## Phase status
@@ -23,7 +23,7 @@ rust         FIRST FULL COMPILE DONE — 43 errors, 32 of them OURS (being fixed
 | B4 — migrations 0002-0004 | ✅ | structural tests; real PG still skipped |
 | B5 — console HTTP client + captured fixtures | ✅ | tested against the **live** server |
 | B6 — transcript WebSocket | ✅ | fixed an infinite-reconnect bug |
-| B7 — Rust IPC client | 🔴 IN PROGRESS | first compile just ran; 32 errors ours |
+| B7 — Rust IPC client | ✅ compiles | 32 errors found on first compile, all fixed |
 | C — console screens wired to real data | ⬜ | |
 | D — channels (PSTN + WhatsApp) | ⬜ | **7–11 d, SINGLE WRITER** — do not parallelise |
 | E — real data (reuse invoicing module, §6) | ⬜ | |
@@ -61,7 +61,55 @@ These cost most of the session. Recorded so nobody repeats them.
 | 4 | **`rustup component remove` was a mistake** | I misread a 45-file `rust-std` dir as truncated. The official tarball has exactly 45 files. The real `E0463` cause was almost certainly the full disk | ⚠️ **I broke the toolchain**; repaired by hand (see below) |
 | 5 | `rustup component add` fails, TLS `cannot decrypt peer's message` | rustup's HTTP client, not the network — `curl` fetched the same URL fine (HTTP 200) | ✅ worked around with `curl -C -` resume loop, then manual extract |
 | 6 | rustup proxy: *"rustc.exe … is not applicable to the toolchain"* | rustup bookkeeping broken by #4 | ⚠️ **workaround, not a fix** — see below |
-| 7 | 43 compile errors in `smemaster` | 32 in `src/agent/client.rs` (**ours**), 10 in `src/orchestrator/services.rs`, 1 in `src/commands/ai.rs` | 🔴 ours being fixed now; the other 11 are **pre-existing, not ours** |
+| 7 | 43 compile errors in `smemaster` | 32 in `src/agent/client.rs` (**ours**), 10 in `src/orchestrator/services.rs`, 1 in `src/commands/ai.rs` | ✅ ours 32→**0**; the other 11 are **pre-existing, not ours** |
+
+## What the first Rust compile found (32 errors, all ours)
+
+`src/agent/client.rs` had never been through `rustc`. Three distinct mistakes,
+none visible by reading:
+
+1. **`State<'_, dyn TokenSource>` (32 errors).** Tauri v2 requires
+   `State<'_, T>` with `T: Send + Sync + 'static`; a `dyn Trait` is neither
+   sized nor shareable. The diagnostics are a wall of `CommandArg` / `Send` /
+   `Sync` complaints pointing at the `State`, which is a confusing way to be
+   told "a trait object is not a state type". Replaced with a concrete
+   `AgentAuth` newtype, matching the app's existing `AiState` pattern, and
+   registered via `app.manage(...)` in `lib.rs`.
+
+   The *intent* survived the rewrite: the token is still not a command
+   argument. A token that crosses the IPC boundary is a token the frontend can
+   log and get wrong.
+
+2. **`send()` was not `async`.** It returned `Result<Response, _>` and callers
+   did `.await` on it — a mistake that compiles in most other languages.
+
+3. **`.send().map_err(...)`** — the future must be awaited *before* `map_err`,
+   not after.
+
+Two tests were added while fixing: sign-out must clear the token, and a missing
+token must be a typed `AgentError::NoSession` the console can render as "sign
+in", not a panic.
+
+**This is the argument for compiling rather than reading.** The design was sound
+in every review; the trait-object state type was wrong in a way only the
+compiler could say.
+
+## Pre-existing errors NOT ours
+
+`cargo check --workspace` does not go green, and did not before this work:
+
+- `src/orchestrator/services.rs` — 10 errors (`child.kill().await` on a
+  non-future; `HealthStatus` returned where `()` expected)
+- `src/commands/ai.rs` — 1 error
+
+These are outside the agent feature. **Do not attribute them to Phase B**, and
+do not let them hide a regression in `src/agent/` — check the per-file error
+counts, not the exit code:
+
+```bash
+$TC/bin/cargo.exe check --workspace -j1 --message-format=short 2>&1 \
+  | grep -E "^src" | sed 's/:.*//' | sort | uniq -c | sort -rn
+```
 
 ## ⚠️ TOOLCHAIN WARNING — read before running cargo
 

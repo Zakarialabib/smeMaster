@@ -93,7 +93,10 @@ fn client() -> Result<reqwest::Client, AgentError> {
         .map_err(|e| AgentError::Unreachable(e.to_string()))
 }
 
-fn send(
+/// Build and send one request. `async` so the caller awaits a `Response`
+/// rather than a `Result` — a sync fn returning Result here is the kind of
+/// thing that compiles in every other language.
+async fn send(
     method: reqwest::Method,
     path: &str,
     token: &str,
@@ -107,7 +110,9 @@ fn send(
     if let Some(b) = body {
         req = req.body(b.to_string());
     }
+    // `.send()` returns a Future; it must be awaited BEFORE map_err, not after.
     req.send()
+        .await
         .map_err(|e| AgentError::Unreachable(e.to_string()))
 }
 
