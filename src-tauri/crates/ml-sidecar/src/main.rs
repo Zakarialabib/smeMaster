@@ -52,6 +52,11 @@ use lopdf::Document;
 
 #[derive(Deserialize)]
 struct Request {
+    /// Required by JSON-RPC 2.0 and echoed on every response. Not decoration:
+    /// `handle_request` rejects a request whose version is not "2.0", so a
+    /// client speaking the wrong protocol gets a protocol error rather than a
+    /// confusing downstream failure.
+    #[serde(default)]
     jsonrpc: String,
     #[serde(default)]
     id: Option<u64>,
@@ -100,6 +105,10 @@ struct MlResources {
 /// contract dependency-free until a generation model is actually loaded.
 struct GenModelHandle {
     repo_id: String,
+    /// Kept for the streaming path, which reads it when weights are actually
+    /// bound. `select_device()` is the only thing that knows whether this host
+    /// has a GPU, so the choice is recorded here rather than recomputed.
+    #[allow(dead_code)]
     device: Device,
 }
 
@@ -500,22 +509,25 @@ fn extract_docx_text(child: &docx_rs::DocumentChild, text: &mut String) {
         }
         Table(table) => {
             for tchild in &table.rows {
-                if let docx_rs::TableChild::TableRow(row) = tchild {
-                    for cell in &row.cells {
-                        if let docx_rs::TableRowChild::TableCell(tc) = cell {
-                            for c in &tc.children {
-                                if let docx_rs::TableCellContent::Paragraph(p) = c {
-                                    extract_docx_text(
-                                        &docx_rs::DocumentChild::Paragraph(p.clone()),
-                                        text,
-                                    );
-                                }
-                            }
-                            text.push_str(" | ");
+                // `TableChild` and `TableRowChild` each have a single variant in
+                // docx-rs 0.4, so these `if let`s always matched. Written as
+                // plain `let` bindings, which is what they actually are — the
+                // old form read as a filter and would silently skip everything
+                // if a second variant were ever added.
+                let docx_rs::TableChild::TableRow(row) = tchild;
+                for cell in &row.cells {
+                    let docx_rs::TableRowChild::TableCell(tc) = cell;
+                    for c in &tc.children {
+                        if let docx_rs::TableCellContent::Paragraph(p) = c {
+                            extract_docx_text(
+                                &docx_rs::DocumentChild::Paragraph(p.clone()),
+                                text,
+                            );
                         }
                     }
-                    text.push('\n');
+                    text.push_str(" | ");
                 }
+                text.push('\n');
             }
         }
         _ => {}
@@ -524,6 +536,19 @@ fn extract_docx_text(child: &docx_rs::DocumentChild, text: &mut String) {
 
 fn handle_request(req: Request, resources: &mut MlResources) -> Response {
     let id = req.id;
+
+    // JSON-RPC 2.0 requires the version on every request. Rejecting it here
+    // means a client speaking 1.0 gets a protocol error instead of a confusing
+    // downstream failure — and it gives the `jsonrpc` field a real reader
+    // rather than silencing a dead-code warning.
+    if req.jsonrpc != "2.0" {
+        return err(
+            id,
+            -32600,
+            format!("Invalid Request: expected jsonrpc \"2.0\", got {:?}", req.jsonrpc),
+            None,
+        );
+    }
 
     match req.method.as_str() {
         // ── Lifecycle ──────────────────────────────────────────────────

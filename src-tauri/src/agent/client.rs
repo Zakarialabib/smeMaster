@@ -42,6 +42,12 @@ pub struct AgentAuth {
 
 impl AgentAuth {
     /// Store the token after a successful sign-in.
+    ///
+    /// `#[allow(dead_code)]` on the METHOD, not on a module const: `set` and
+    /// `clear` are public API with no caller until the sign-in flow lands in
+    /// Phase C. The unit tests below exercise them, which is the real
+    /// justification — deleting them would mean re-adding them in a week.
+    #[allow(dead_code)]
     pub fn set(&self, token: impl Into<String>) {
         if let Ok(mut guard) = self.token.write() {
             *guard = Some(token.into());
@@ -50,6 +56,7 @@ impl AgentAuth {
 
     /// Clear it on sign-out. Leaving a token behind after logout is how a
     /// session outlives the user who created it.
+    #[allow(dead_code)]
     pub fn clear(&self) {
         if let Ok(mut guard) = self.token.write() {
             *guard = None;

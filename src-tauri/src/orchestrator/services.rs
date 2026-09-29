@@ -877,10 +877,25 @@ impl MlSidecarService {
                             payload.code, payload.signal);
                         running_flag.store(false, Ordering::Release);
                         healthy_flag.store(false, Ordering::Release);
-                        // Drain all pending requests with error
-                        for item in pending.iter() {
-                            let (_, tx) = item.pair();
-                            let _ = tx.send(Err(anyhow::anyhow!("Sidecar terminated unexpectedly")));
+                        // Drain all pending requests with error.
+                        //
+                        // `DashMap::iter()` yields (&K, &V) — a REFERENCE to the
+                        // sender, not an owned one. `oneshot::Sender::send`
+                        // consumes `self`, so it cannot be called through that
+                        // reference. Previously the code did `if let Some((_,
+                        // tx)) = pending.remove(&id)`, which DID yield an owned
+                        // value. Restoring that: remove each entry to take
+                        // ownership, then send.
+                        //
+                        // Collecting the ids first avoids holding a DashMap
+                        // shard lock while calling into the channel.
+                        let pending_ids: Vec<u64> = pending.iter().map(|item| *item.key()).collect();
+                        for id in pending_ids {
+                            if let Some((_, tx)) = pending.remove(&id) {
+                                let _ = tx.send(Err(anyhow::anyhow!(
+                                    "Sidecar terminated unexpectedly"
+                                )));
+                            }
                         }
                         pending.clear();
                         // Watchdog: auto-restart after 2 seconds
