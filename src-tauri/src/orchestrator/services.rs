@@ -577,9 +577,22 @@ impl Service for WorkflowExecutorService {
 pub struct MlSidecarService {
     handle: tauri::AppHandle,
     child: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
-    stdin_writer: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandStdin>>,
-    running: std::sync::atomic::AtomicBool,
-    healthy: std::sync::atomic::AtomicBool,
+    // NOTE: there is deliberately no `stdin_writer` field any more.
+    //
+    // tauri-plugin-shell 2.3 merged the separate `CommandStdin` handle back into
+    // `CommandChild::write(&mut self, &[u8])`. The old code kept the child and a
+    // second stdin handle in two mutexes, which was only possible when the crate
+    // handed out a `stdin()` that returned an independent writer. Keeping two
+    // mutexes over one pipe was also a latent deadlock: `send_request` held the
+    // writer lock across a 30s await for the response.
+    //
+    // One mutex over the child, and the lock is released as soon as the bytes
+    // are written — not held across the response wait.
+    // Arc, matching the other three services in this file: the reader task
+    // writes these and `is_running()`/`is_healthy()` read them, so they must be
+    // shared rather than copied.
+    running: Arc<std::sync::atomic::AtomicBool>,
+    healthy: Arc<std::sync::atomic::AtomicBool>,
     /// Maps JSON-RPC request IDs to oneshot senders for response matching.
     pending: Arc<dashmap::DashMap<u64, tokio::sync::oneshot::Sender<anyhow::Result<serde_json::Value>>>>,
     /// Monotonically increasing request ID counter.
@@ -591,7 +604,7 @@ pub struct MlSidecarService {
     metrics: Arc<SidecarMetrics>,
     /// Sidecar-reported version (from `ping`), for gap #5 independent-update
     /// negotiation. `None` until the first successful ping.
-    version: std::sync::RwLock<Option<String>>,
+    version: Arc<std::sync::RwLock<Option<String>>>,
     /// Broadcast channel for JSON-RPC notifications (streaming progress, gap #3).
     /// The reader task forwards any stdout line that is a notification (no "id")
     /// here; subscribers (e.g. a streaming embed/generate call) receive them.
@@ -665,14 +678,13 @@ impl MlSidecarService {
         Self {
             handle,
             child: tokio::sync::Mutex::new(None),
-            stdin_writer: tokio::sync::Mutex::new(None),
-            running: std::sync::atomic::AtomicBool::new(false),
-            healthy: std::sync::atomic::AtomicBool::new(false),
+            running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            healthy: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             pending: Arc::new(dashmap::DashMap::new()),
             next_id: std::sync::atomic::AtomicU64::new(1),
             memory_limit_mb,
             metrics: Arc::new(SidecarMetrics::new()),
-            version: std::sync::RwLock::new(None),
+            version: Arc::new(std::sync::RwLock::new(None)),
             notification_tx,
         }
     }
@@ -692,6 +704,17 @@ impl MlSidecarService {
         self.healthy.load(Ordering::Acquire)
     }
 
+    /// The version the sidecar reported at `ping`/init time, if it has reported
+    /// one yet (gap #5, independent-update support).
+    ///
+    /// This accessor existed only as the private `version` field before
+    /// `commands/ai.rs` called `svc.version()`. A method is the right shape
+    /// here: the lock and the `Option` stay inside this module, so a caller
+    /// cannot lock it wrong.
+    pub fn version(&self) -> Option<String> {
+        self.version.read().ok().and_then(|g| g.clone())
+    }
+
     /// Send a JSON-RPC request to the sidecar and await the response.
     ///
     /// Uses a unique request ID + oneshot channel for synchronous-style IPC.
@@ -702,8 +725,8 @@ impl MlSidecarService {
     /// in the shared `SidecarMetrics` struct.
     pub async fn send_request(&self, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let start = std::time::Instant::now();
-        let mut writer_guard = self.stdin_writer.lock().await;
-        let writer = writer_guard.as_mut()
+        let mut child_guard = self.child.lock().await;
+        let child = child_guard.as_mut()
             .ok_or_else(|| {
                 self.metrics.record_error();
                 anyhow::anyhow!("Sidecar not running")
@@ -723,38 +746,48 @@ impl MlSidecarService {
         });
 
         let line = serde_json::to_string(&request)?;
-        writer.write_all(format!("{line}\n").as_bytes()).await
+        // `write` is SYNC in tauri-plugin-shell 2.3 and takes `&mut self`. The
+        // lock is dropped at the end of this block, well before the 30s wait
+        // below — holding it across the response would serialise every caller
+        // behind the slowest one.
+        let write_result = child
+            .write(format!("{line}\n").as_bytes())
             .map_err(|e| {
                 self.pending.remove(&id);
                 self.metrics.record_error();
                 anyhow::anyhow!("Failed to write to sidecar stdin: {e}")
-            })?;
+            });
+        drop(child_guard);
+        write_result?;
 
-        // Flush to ensure the sidecar receives it immediately
-        writer.flush().await.map_err(|e| {
-            self.pending.remove(&id);
-            self.metrics.record_error();
-            anyhow::anyhow!("Failed to flush sidecar stdin: {e}")
-        })?;
-
-        // Await the response with a 30-second timeout
-        let result = match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
-            Ok(Ok(result)) => {
-                self.healthy.store(true, Ordering::Release);
-                Ok(result)
-            }
-            Ok(Err(e)) => {
-                self.healthy.store(false, Ordering::Release);
-                self.metrics.record_error();
-                Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
-            }
-            Err(_elapsed) => {
-                self.pending.remove(&id);
-                self.healthy.store(false, Ordering::Release);
-                self.metrics.record_error();
-                Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
-            }
-        };
+        // Await the response with a 30-second timeout.
+        //
+        // The oneshot carries `anyhow::Result<Value>`, so the received value is
+        // `Result<anyhow::Result<Value>, RecvError>` — TWO layers. The inner
+        // `Ok(Ok(v))` arm must return `v` directly, not `Ok(v)`, or the match
+        // yields `Result<Result<Value, _>, _>` and the `?` below tries to
+        // unwrap the outer one. That double-wrap was a real pre-existing bug:
+        // a sidecar-level error was being reported as a nested Result instead
+        // of propagating.
+        let result: anyhow::Result<serde_json::Value> =
+            match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
+                Ok(Ok(result)) => {
+                    self.healthy.store(true, Ordering::Release);
+                    // `result` is already the inner Result — hand it straight on.
+                    result
+                }
+                Ok(Err(e)) => {
+                    self.healthy.store(false, Ordering::Release);
+                    self.metrics.record_error();
+                    Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
+                }
+                Err(_elapsed) => {
+                    self.pending.remove(&id);
+                    self.healthy.store(false, Ordering::Release);
+                    self.metrics.record_error();
+                    Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
+                }
+            };
 
         // Record success metrics (errors already recorded above)
         if result.is_ok() {
@@ -773,17 +806,27 @@ impl MlSidecarService {
         let (mut rx, child) = sidecar.spawn()
             .map_err(|e| anyhow::anyhow!("Failed to spawn ml-sidecar: {e}"))?;
 
-        *self.child.lock().await = Some(child.clone());
+        // `CommandChild` is not `Clone` in tauri-plugin-shell 2.3 — the child
+        // owns its stdin pipe, so there is exactly one handle to it.
+        *self.child.lock().await = Some(child);
 
         // ── Shared state for the reader task ──────────────────────────
         let pending = self.pending.clone();
-        let healthy_flag = self.healthy.clone();
-        let running_flag = self.running.clone();
+        // `running`/`healthy` on this struct were bare `AtomicBool`, and the code
+        // called `.clone()` on them — which is Copy-not-Clone and never compiled.
+        //
+        // Both are now `Arc<AtomicBool>`, matching the other three services in
+        // THIS FILE (lines 89/158/419 already do exactly this). That is the fix:
+        // the reader task genuinely needs to write the same flags the service
+        // reads, so they must be shared, and a copied AtomicBool would be written
+        // by the task and never observed again.
+        let healthy_flag = Arc::clone(&self.healthy);
+        let running_flag = Arc::clone(&self.running);
         let restart_fn = self.make_restart_fn();
         // Gap #3: broadcast channel for JSON-RPC notifications (no "id").
         let notification_tx = self.notification_tx.clone();
         // Gap #5: sidecar version from ping, populated lazily.
-        let version_writer = self.version.clone();
+        let version_writer = Arc::clone(&self.version);
 
         tauri::async_runtime::spawn(async move {
             use tauri_plugin_shell::process::CommandEvent;
@@ -857,10 +900,6 @@ impl MlSidecarService {
             }
         });
 
-        // Store stdin writer for IPC
-        if let Some(stdin) = child.stdin() {
-            *self.stdin_writer.lock().await = Some(stdin);
-        }
 
         // Send init with app data dir — the sidecar needs this to know
         // where to store models, vector DB, etc. This is a notification
@@ -871,7 +910,7 @@ impl MlSidecarService {
             });
             // Use a fresh write (not send_request) since the pending map
             // and reader task are both set up and ready.
-            if let Some(writer) = self.stdin_writer.lock().await.as_mut() {
+            if let Some(child) = self.child.lock().await.as_mut() {
                 let init_req = serde_json::json!({
                     "jsonrpc": "2.0",
                     "id": 0u64,
@@ -879,8 +918,10 @@ impl MlSidecarService {
                     "params": init_params,
                 });
                 let line = serde_json::to_string(&init_req).unwrap_or_default();
-                let _ = writer.write_all(format!("{line}\n").as_bytes()).await;
-                let _ = writer.flush().await;
+                // `CommandChild::write` writes straight to the pipe; there is no
+                // separate writer to flush. The old `.flush().await` referred to
+                // a `CommandStdin` handle that tauri-plugin-shell 2.3 removed.
+                let _ = child.write(format!("{line}\n").as_bytes());
             }
         }
 
@@ -1005,10 +1046,12 @@ impl MlSidecarService {
         }
 
         // Kill the old child
-        if let Some(mut old_child) = self.child.lock().await.take() {
-            let _ = old_child.kill().await;
+        // `kill(self)` takes the child BY VALUE and is sync in 2.3 — the child
+        // is consumed, which is why `.take()` is required and why this cannot
+        // be `.await`ed.
+        if let Some(old_child) = self.child.lock().await.take() {
+            let _ = old_child.kill();
         }
-        *self.stdin_writer.lock().await = None;
         self.running.store(false, Ordering::Release);
         self.healthy.store(false, Ordering::Release);
 
@@ -1062,10 +1105,9 @@ impl Service for MlSidecarService {
         let _ = self.send_request("shutdown", serde_json::json!({})).await;
 
         // Kill the child process
-        if let Some(mut child) = self.child.lock().await.take() {
-            let _ = child.kill().await;
+        if let Some(child) = self.child.lock().await.take() {
+            let _ = child.kill();
         }
-        *self.stdin_writer.lock().await = None;
 
         log::info!("[ml-sidecar] Stopped");
         Ok(())
@@ -1077,7 +1119,11 @@ impl Service for MlSidecarService {
             match self.restart().await {
                 Ok(()) => {
                     self.healthy.store(true, Ordering::Release);
-                    super::HealthStatus::Healthy
+                    // `return` is required: without it this arm evaluates to
+                    // `HealthStatus` while the other arm `return`s early, so the
+                    // match's value type is inferred as `()` and the function's
+                    // `-> HealthStatus` no longer matches. Return the value.
+                    return super::HealthStatus::Healthy;
                 }
                 Err(e) => {
                     return super::HealthStatus::Degraded(format!("ml-sidecar crashed and restart failed: {e}"));
