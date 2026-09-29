@@ -10,6 +10,7 @@ agent-core   ruff clean · mypy clean (10 files) · 156 passed, 5 skipped
 frontend     tsc TSC_EXIT=0 · eslint clean · vitest 5 files, 60 passed
 live server  :8788 up · live_swap 15/15 · fixture drift 4/4
 rust         ✅ cargo check --workspace CLEAN — 0 errors, 0 warnings
+           ⚠️ test binary LINKS but will not EXECUTE on this host (see below)
 frontend     tsc 0 · eslint 0 · vitest 6 files, 64 passed + 6 skipped (live tests; server was down at run time)
 ```
 
@@ -171,3 +172,44 @@ how a real conflict happens, and this was luck rather than design.
 
 **Recommendation:** one writer for the Rust side until Phase D. Same rule
 already agreed for D. I have stopped editing those files pending direction.
+
+## ⚠️ Rust test binary will not launch on THIS host
+
+`cargo test -p smemaster --lib` now **compiles and links cleanly** (0 errors,
+0 warnings, `Finished test profile`). The produced binary
+(`target/debug/deps/app_lib-*.exe`, 47 MB) then fails to start:
+
+```
+STATUS_ENTRYPOINT_NOT_FOUND (0xc0000139)
+```
+
+That is a **Windows DLL / entry-point problem, not a code problem** — the
+binary exists, is well-formed, and returns 0 when run directly with no output.
+Most likely a missing or mismatched system DLL, possibly aggravated by the
+rustup-proxy workaround (the toolchain is being invoked directly, so its
+`PATH` setup is not what rustup would normally provide).
+
+**What this means:** the ~200 Rust unit tests in this crate are written and
+compile, but they have **not been executed**. Do not report them as passing.
+They should run in CI on a machine with a normal toolchain install.
+
+To verify them here, someone needs to either repair the Windows DLL situation or
+reinstall the toolchain cleanly — see the TOOLCHAIN WARNING above. That is the
+same underlying problem and fixing it once likely fixes both.
+
+### Tests added while fixing the warnings
+
+The dead-code warnings were not silenced, they were **used** — the fixtures
+already existed and were clearly written for tests that were never written:
+
+- `health_monitor.rs` — `HealthyService` / `DegradedService` were never
+  constructed. Three tests now exercise the `Service` trait through them.
+- `service.rs` — `MockService::with_health` was never called. Three tests now
+  use the builder, which is the only way a mock can express a specific state.
+
+**A real gap the new test exposed:** `health_label()` matches
+`HealthStatus::Degraded(_)` and **discards the reason**. An operator reading
+the log sees "Degraded" with nothing to act on, which is the one thing a
+Degraded status exists to convey. The test asserts today's behaviour and
+documents the gap rather than silently changing an operator-visible log format.
+**This should be fixed deliberately.**
