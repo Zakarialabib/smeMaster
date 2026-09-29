@@ -1074,12 +1074,24 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute_actions_log() {
-        let actions = r#"[{"action": "log"}]"#;
         // We can't easily test pool-based actions without a DB,
         // but we can test the log action which doesn't touch the DB
         let pool = create_test_pool().await;
 
-        // We'll test that a malformed JSON returns an error
+        // The log action is the one action that needs no DB, so this is the
+        // positive case the test was NAMED for. It was declared and never
+        // passed, leaving a test called `_log` that only checked malformed
+        // JSON — a test whose name lies about what it checks.
+        let actions = r#"[{"action": "log"}]"#;
+        let result = execute_actions(actions, &pool, &AppEvent::InitComplete).await;
+        assert!(result.is_ok(), "a log action must not need a DB: {result:?}");
+        assert!(
+            result.unwrap().is_empty(),
+            "log produces no follow-up actions",
+        );
+
+        // And the malformed case, which is what this test actually asserted
+        // before.
         let result = execute_actions("not json", &pool, &AppEvent::InitComplete).await;
         assert!(result.is_err());
     }

@@ -574,8 +574,13 @@ impl Service for WorkflowExecutorService {
 ///
 /// Gated behind `local-ai` so the core app never depends on candle/lancedb.
 #[cfg(feature = "local-ai")]
-pub struct MlSidecarService {
-    handle: tauri::AppHandle,
+/// Generic over `R: Runtime` so it can be constructed with
+/// `AppHandle<MockRuntime>` in unit tests. Hardcoding `AppHandle` (i.e. `Wry`)
+/// made this struct impossible to test at all — the four sidecar tests were
+/// written against an `AppHandle::mock()` that does not exist, and could not
+/// have worked even with the right feature enabled.
+pub struct MlSidecarService<R: tauri::Runtime = tauri::Wry> {
+    handle: tauri::AppHandle<R>,
     child: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
     // NOTE: there is deliberately no `stdin_writer` field any more.
     //
@@ -668,12 +673,12 @@ impl SidecarMetrics {
 }
 
 #[cfg(feature = "local-ai")]
-impl MlSidecarService {
+impl<R: tauri::Runtime> MlSidecarService<R> {
     /// Create a new MlSidecarService.
     ///
     /// `memory_limit_mb`: Optional RSS limit. When the sidecar process exceeds
     /// this value (in MB), `health_check` reports `Degraded`.
-    pub fn new(handle: tauri::AppHandle, memory_limit_mb: Option<u64>) -> Self {
+    pub fn new(handle: tauri::AppHandle<R>, memory_limit_mb: Option<u64>) -> Self {
         let (notification_tx, _) = tokio::sync::broadcast::channel(128);
         Self {
             handle,
@@ -1077,7 +1082,7 @@ impl MlSidecarService {
 
 #[cfg(feature = "local-ai")]
 #[async_trait]
-impl Service for MlSidecarService {
+impl<R: tauri::Runtime> Service for MlSidecarService<R> {
     fn name(&self) -> &'static str { "ml-sidecar" }
     fn priority(&self) -> u32 { 50 }
     fn is_critical(&self) -> bool { false }
@@ -1738,7 +1743,11 @@ mod tests {
     #[test]
     fn test_sidecar_service_version_captured_from_response() {
         // Simulate the reader task parsing a successful ping/init JSON-RPC response
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        // `AppHandle::mock()` does not exist in Tauri 2.11 — the real entry
+        // point is `tauri::test::mock_app().handle()`, which needs the `test`
+        // feature (a dev-dependency in Cargo.toml, so it never reaches a
+        // shipped binary). The previous spelling never compiled.
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let response_text =
             r#"{"jsonrpc":"2.0","id":7,"result":{"version":"9.9","pong":true}}"#;
 
@@ -1761,7 +1770,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_broadcasts_notification_to_subscribers() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let mut rx = service.notification_tx.subscribe();
 
         // Simulate the reader task receiving a notification (no "id")
@@ -1788,7 +1797,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_multiple_subscribers_receive_broadcast() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let mut rx1 = service.notification_tx.subscribe();
         let mut rx2 = service.notification_tx.subscribe();
 
@@ -1814,7 +1823,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_version_not_set_by_default() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         assert!(service.version.read().unwrap().is_none());
     }
 }
