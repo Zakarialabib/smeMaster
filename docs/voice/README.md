@@ -38,6 +38,7 @@ belongs in, ask: *who reads it, and does it leave the building?*
 | **Phase B (seams)** | [`dev/PHASE-B-COMPLETE.md`](dev/PHASE-B-COMPLETE.md) — CLOSED, gates measured, 3 defects caught |
 | **Open-weight speech, licence-verified** | [`dev/OPEN-WEIGHT-SPEECH-VERIFIED.md`](dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) |
 | **Running agent-core (dev mode)** | [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md) |
+| **⚠️ Build status & known issues** | [`dev/BUILD-LOG.md`](dev/BUILD-LOG.md) — read FIRST; toolchain warning inside |
 | **implementing** | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) — phases, skeletons, verification, delegation brief |
 | **picking up where we stopped** | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md) — Phase A done, gates pasted |
 | **porting the screens** | [`dev/PROTOTYPE-HANDOVER.md`](dev/PROTOTYPE-HANDOVER.md) — file-by-file map from the running prototype to `src/` |

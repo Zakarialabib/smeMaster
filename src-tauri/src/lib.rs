@@ -440,6 +440,11 @@ pub fn run() {
         #[cfg(feature = "local-ai")]
         app.manage(crate::commands::ai::AiState::new(app.handle().clone()));
 
+        // Agent (voice + WhatsApp) console. Holds the bearer token for
+        // agent-core calls so the token is never a #[tauri::command] argument —
+        // a token that crosses the IPC boundary is one the frontend can log.
+        app.manage(agent::client::AgentAuth::default());
+
         // Bridge: EventBus → WebView `core-event`
         orchestrator::init::AppLifecycle::spawn_event_bridge(app.handle(), bus_rx);
 
