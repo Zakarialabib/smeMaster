@@ -138,11 +138,29 @@ export function useAgentResource<T>(
   return { state, refresh };
 }
 
-/** Convenience: is this state showing a skeleton? */
-export const isLoading = <T,>(s: LoadState<T>): boolean => s.kind === 'loading';
+/**
+ * Type PREDICATES, not plain booleans.
+ *
+ * Returning `boolean` left TypeScript unable to narrow the union, so a caller
+ * doing `if (isUnreachable(s)) s.message` failed to compile. The whole point of
+ * a discriminated union is that the check narrows; a helper that throws that
+ * away is worse than inline `s.kind === '...'`.
+ */
+export const isLoading = <T,>(
+  s: LoadState<T>,
+): s is Extract<LoadState<T>, { kind: 'loading' }> => s.kind === 'loading';
 
-/** Convenience: is this state a "cannot reach the agent" screen? */
-export const isUnreachable = <T,>(s: LoadState<T>): boolean => s.kind === 'unreachable';
+export const isUnreachable = <T,>(
+  s: LoadState<T>,
+): s is Extract<LoadState<T>, { kind: 'unreachable' }> => s.kind === 'unreachable';
+
+export const isError = <T,>(
+  s: LoadState<T>,
+): s is Extract<LoadState<T>, { kind: 'error' }> => s.kind === 'error';
+
+export const isReady = <T,>(
+  s: LoadState<T>,
+): s is Extract<LoadState<T>, { kind: 'ready' }> => s.kind === 'ready';
 
 /**
  * The value, or a safe default while loading/failed.
