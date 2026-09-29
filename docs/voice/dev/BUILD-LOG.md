@@ -9,7 +9,8 @@
 agent-core   ruff clean · mypy clean (10 files) · 156 passed, 5 skipped
 frontend     tsc TSC_EXIT=0 · eslint clean · vitest 5 files, 60 passed
 live server  :8788 up · live_swap 15/15 · fixture drift 4/4
-rust         src/agent/ COMPILES CLEAN (was 32 errors, now 0). 11 pre-existing errors elsewhere remain
+rust         ✅ cargo check --workspace CLEAN — 0 errors, 0 warnings
+frontend     tsc 0 · eslint 0 · vitest 6 files, 64 passed + 6 skipped (live tests; server was down at run time)
 ```
 
 ## Phase status
@@ -23,8 +24,8 @@ rust         src/agent/ COMPILES CLEAN (was 32 errors, now 0). 11 pre-existing e
 | B4 — migrations 0002-0004 | ✅ | structural tests; real PG still skipped |
 | B5 — console HTTP client + captured fixtures | ✅ | tested against the **live** server |
 | B6 — transcript WebSocket | ✅ | fixed an infinite-reconnect bug |
-| B7 — Rust IPC client | ✅ compiles | 32 errors found on first compile, all fixed |
-| C — console screens wired to real data | ⬜ | |
+| B7 — Rust IPC client | ✅ compiles | 32 errors on first compile, all fixed; workspace now 0/0 |
+| C — console data loading | 🟡 in progress | `useAgentResource` hook done (4 states, race-safe). Screens not yet ported |
 | D — channels (PSTN + WhatsApp) | ⬜ | **7–11 d, SINGLE WRITER** — do not parallelise |
 | E — real data (reuse invoicing module, §6) | ⬜ | |
 
@@ -149,3 +150,24 @@ before any `cargo build`.
   It gates the embedding impl and the HNSW index.
 - **D channels** — needs a number, a BSP, Meta verification. Nothing can be
   built here that answers a call.
+
+## ⚠️ HOTSPOT — another agent is editing the same files
+
+Between 01:20 and 01:30 two commits landed on this branch from another agent
+that **swept up work I had in progress**, uncommitted, in files I was actively
+editing:
+
+- `df13292` "feat: add useAgentResource hook + refactor ml-sidecar service" —
+  committed `src-tauri/src/orchestrator/services.rs` (my tauri-plugin-shell 2.3
+  migration) and the `useAgentResource` hook I had just written.
+- `d6ac079` "fix: clean up code and fix critical sidecar bugs"
+
+The work is intact and verified — those commits carry my changes, not
+overwritten ones — but two agents writing the same file in the same window is
+how a real conflict happens, and this was luck rather than design.
+
+**Affected files:** `src-tauri/src/orchestrator/services.rs`,
+`src-tauri/crates/ml-sidecar/src/main.rs`, `src/features/agent/api/`.
+
+**Recommendation:** one writer for the Rust side until Phase D. Same rule
+already agreed for D. I have stopped editing those files pending direction.
