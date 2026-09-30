@@ -55,6 +55,24 @@ vi.mock("@shared/services/db/db-invoke", async (importOriginal) => {
 });
 
 vi.mock("@shared/hooks/useMobile", () => ({ useMobile: () => false }));
+// SectionCard renders a TanStack Router <Link>; provide a plain <a> stand-in.
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    children,
+    ...rest
+  }: {
+    to: string;
+    children?: React.ReactNode;
+    className?: string;
+    "aria-labelledby"?: string;
+    onClick?: () => void;
+  }) => (
+    <a href={`#${to}`} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("@shared/services/events/eventBus", () => ({
   eventBus: {
     emit: vi.fn(),

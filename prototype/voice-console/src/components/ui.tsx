@@ -1,10 +1,13 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, CSSProperties } from 'react';
 import { Sparkles, AlertTriangle, ShieldAlert, Info, X, Check } from 'lucide-react';
 
-/* ── Pills ────────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   PILLS + BADGES
+   ══════════════════════════════════════════════════════════════════════════ */
+
 export type PillTone = 'ok' | 'tr' | 'vm' | 'p1' | 'flag' | 'off' | 'ai';
 
-const PILL: Record<PillTone, React.CSSProperties> = {
+const PILL: Record<PillTone, CSSProperties> = {
   ok: { background: 'var(--success-light)', color: '#065f46', borderColor: 'rgba(5,150,105,.25)' },
   tr: { background: 'var(--accent-light)', color: 'var(--accent-hover)', borderColor: 'rgba(11,87,208,.25)' },
   vm: { background: 'var(--info-light)', color: '#075985', borderColor: 'rgba(2,132,199,.25)' },
@@ -14,7 +17,7 @@ const PILL: Record<PillTone, React.CSSProperties> = {
   ai: { background: 'var(--ai-subtle)', color: 'var(--ai)', borderColor: 'rgba(147,51,234,.28)' },
 };
 
-export function Pill({ tone, children, title, style }: { tone: PillTone; children: ReactNode; title?: string; style?: React.CSSProperties }) {
+export function Pill({ tone, children, title, style }: { tone: PillTone; children: ReactNode; title?: string; style?: CSSProperties }) {
   return (
     <span
       title={title}
@@ -29,9 +32,10 @@ export function Pill({ tone, children, title, style }: { tone: PillTone; childre
   );
 }
 
-/* ── AiSuggestionBanner ──────────────────────────────────────────────────────
-   The app's shared component shape. Purple means THE ASSISTANT INFERRED THIS.
-   A transcript is a fact (neutral). A summary or judgement is an inference.   */
+/* ══════════════════════════════════════════════════════════════════════════
+   BANNERS (Ai / Degraded / Note)
+   ══════════════════════════════════════════════════════════════════════════ */
+
 export function AiBanner({ title, body, actions }: { title: string; body: string; actions?: ReactNode }) {
   return (
     <div style={{
@@ -54,9 +58,6 @@ export function AiBanner({ title, body, actions }: { title: string; body: string
   );
 }
 
-/* ── Degraded / offline banner ────────────────────────────────────────────────
-   NEVER renders as an empty list. "Cannot reach the agent" and "no calls" are
-   different facts and an operator conflating them stands down during an outage. */
 export function DegradedBanner({ title, body, tone = 'danger', action }: {
   title: string; body: string; tone?: 'danger' | 'warning'; action?: ReactNode;
 }) {
@@ -84,7 +85,7 @@ export function DegradedBanner({ title, body, tone = 'danger', action }: {
   );
 }
 
-export function Note({ children, icon = true, style }: { children: ReactNode; icon?: boolean; style?: React.CSSProperties }) {
+export function Note({ children, icon = true, style }: { children: ReactNode; icon?: boolean; style?: CSSProperties }) {
   return (
     <div style={{
       display: 'flex', gap: 8, alignItems: 'flex-start', padding: 12, margin: '12px 0',
@@ -98,11 +99,20 @@ export function Note({ children, icon = true, style }: { children: ReactNode; ic
   );
 }
 
-/* ── Buttons ────────────────────────────────────────────────────────────────
-   Token classes from src/shared/styles/ui-tokens.ts: BTN_BASE, BTN_PRIMARY.  */
-export function Button({ children, primary, onClick, disabled, type = 'button', size = 'md' }: {
-  children: ReactNode; primary?: boolean; onClick?: () => void; disabled?: boolean;
-  type?: 'button' | 'submit'; size?: 'sm' | 'md';
+/* ══════════════════════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function Button({
+  children, primary, onClick, onClickWithEvent, disabled, type = 'button', size = 'md',
+}: {
+  children: ReactNode;
+  primary?: boolean;
+  onClick?: () => void;
+  onClickWithEvent?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+  type?: 'button' | 'submit';
+  size?: 'sm' | 'md';
 }) {
   return (
     <button
@@ -128,55 +138,100 @@ export function Button({ children, primary, onClick, disabled, type = 'button', 
   );
 }
 
-/* ── Panel / section chrome ───────────────────────────────────────────────── */
-export function Panel({ children, style }: { children: ReactNode; style?: React.CSSProperties }) {
+/* ── IconButton — a square, icon-only button.
+   Sizes: 'sm' = 24px (trash/refresh inline), 'md' = 32px (toolbar). */
+export type IconButtonTone = 'neutral' | 'accent' | 'danger' | 'ai';
+
+export function IconButton({
+  icon, onClick, title, disabled, tone = 'neutral', size = 'sm', ariaLabel,
+}: {
+  icon: ReactNode;
+  onClick?: () => void;
+  title?: string;
+  disabled?: boolean;
+  tone?: IconButtonTone;
+  size?: 'sm' | 'md';
+  ariaLabel?: string;
+}) {
+  const color =
+    tone === 'danger' ? 'var(--danger)' :
+      tone === 'accent' ? 'var(--accent)' :
+        tone === 'ai' ? 'var(--ai)' :
+          'var(--text-secondary)';
+  const dim = size === 'sm' ? 26 : 34;
+  const pad = size === 'sm' ? 5 : 8;
+
   return (
-    <section
-      className="frost-surface"
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-label={ariaLabel ?? title}
+      className="focus-ring"
       style={{
-        borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)',
-        border: '1px solid var(--border-primary)', boxShadow: 'var(--elevation-sm)',
-        overflow: 'hidden', ...style,
+        display: 'inline-grid', placeItems: 'center',
+        width: dim, height: dim, padding: pad,
+        font: 'inherit', cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
+        borderRadius: 'var(--radius)',
+        border: '1px solid var(--border-primary)',
+        background: 'var(--bg-primary)',
+        color,
+        transition: 'background .12s, border-color .12s, color .12s',
       }}
     >
-      {children}
-    </section>
+      {icon}
+    </button>
   );
 }
 
-export function PanelHead({ title, sub, right }: { title: ReactNode; sub?: ReactNode; right?: ReactNode }) {
-  return (
-    <header style={{
-      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-      padding: '12px 16px', borderBottom: '1px solid var(--border-primary)',
-    }}>
-      <h1 style={{ fontSize: 16, margin: 0, fontWeight: 600 }}>{title}</h1>
-      {sub && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{sub}</span>}
-      <span style={{ flex: 1 }} />
-      {right}
-    </header>
-  );
-}
+/* ══════════════════════════════════════════════════════════════════════════
+   INPUTS
+   ══════════════════════════════════════════════════════════════════════════ */
 
-export function SectionTitle({ children, style }: { children: ReactNode; style?: React.CSSProperties }) {
+export function Input({
+  value, onChange, placeholder, type = 'text', ariaLabel,
+  autoFocus, monospace, disabled, onKeyDown, width, fullWidth,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: 'text' | 'password' | 'number' | 'email';
+  ariaLabel?: string;
+  autoFocus?: boolean;
+  monospace?: boolean;
+  disabled?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  /** Fixed pixel width (used for compact numeric fields). */
+  width?: number;
+  /** Take all available space (default when width is not set). */
+  fullWidth?: boolean;
+}) {
   return (
-    <h2 style={{
-      fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', margin: 0,
-      color: 'var(--text-tertiary)', fontWeight: 600,
-      ...style,
-    }}>{children}</h2>
-  );
-}
-
-export function Labeled({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 12, alignItems: 'center', padding: '8px 0' }}>
-      <label style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{label}</label>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {children}
-        {hint && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{hint}</span>}
-      </div>
-    </div>
+    <input
+      type={type}
+      value={value}
+      disabled={disabled}
+      autoFocus={autoFocus}
+      aria-label={ariaLabel}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
+      className="focus-ring"
+      style={{
+        font: 'inherit',
+        fontFamily: monospace ? 'ui-monospace, SFMono-Regular, monospace' : 'inherit',
+        fontSize: 12.5,
+        width: width ? `${width}px` : (fullWidth === false ? 'auto' : '100%'),
+        padding: '6px 10px',
+        border: '1px solid var(--border-primary)',
+        borderRadius: 'var(--radius)',
+        background: 'var(--bg-tertiary)',
+        color: 'var(--text-primary)',
+        opacity: disabled ? 0.55 : 1,
+      }}
+    />
   );
 }
 
@@ -232,10 +287,407 @@ export function Checkbox({ checked, label, disabled, onChange }: {
   );
 }
 
-/* ── DataTable ──────────────────────────────────────────────────────────────
-   The app's shared table. Columns are config objects (see the real DataTable)
-   so it is themeable without forking — a console-specific table would be a
-   design-system bug.                                                              */
+/* ── Slider — the range input with label + value + bounds.
+   Used by the Cost simulator for volume and outcome mix. */
+export function Slider({
+  label, value, min, max, step, unit, onChange, tone = 'ok', showBounds = true,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit?: string;
+  onChange: (v: number) => void;
+  tone?: PillTone;
+  showBounds?: boolean;
+}) {
+  const toneColor =
+    tone === 'ok' ? 'var(--success)' :
+      tone === 'flag' ? 'var(--warning)' :
+        tone === 'p1' ? 'var(--danger)' :
+          tone === 'ai' ? 'var(--ai)' :
+            tone === 'tr' ? 'var(--accent)' :
+              tone === 'vm' ? '#0891b2' :
+                'var(--accent)';
+
+  const fmt = (v: number) => (Number.isInteger(step) ? v.toString() : v.toFixed(1));
+
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: toneColor }}>
+          {fmt(value)}{unit && ` ${unit}`}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        aria-label={label}
+        style={{ width: '100%', accentColor: toneColor }}
+      />
+      {showBounds && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>
+          <span>{fmt(min)}{unit && ` ${unit}`}</span>
+          <span>{fmt(max)}{unit && ` ${unit}`}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PANEL + SECTION CHROME
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function Panel({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <section
+      className="frost-surface"
+      style={{
+        borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)',
+        border: '1px solid var(--border-primary)', boxShadow: 'var(--elevation-sm)',
+        overflow: 'hidden', ...style,
+      }}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function PanelHead({ title, sub, right }: { title: ReactNode; sub?: ReactNode; right?: ReactNode }) {
+  return (
+    <header style={{
+      display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+      padding: '12px 16px', borderBottom: '1px solid var(--border-primary)',
+    }}>
+      <h1 style={{ fontSize: 16, margin: 0, fontWeight: 600 }}>{title}</h1>
+      {sub && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{sub}</span>}
+      <span style={{ flex: 1 }} />
+      {right}
+    </header>
+  );
+}
+
+export function SectionTitle({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <h2 style={{
+      fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', margin: 0,
+      color: 'var(--text-tertiary)', fontWeight: 600,
+      ...style,
+    }}>{children}</h2>
+  );
+}
+
+/** Full-width labeled section header used above DataTable groups (Ops page). */
+export function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <div style={{
+      padding: '10px 16px 6px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em',
+      color: 'var(--text-tertiary)', fontWeight: 600, background: 'var(--bg-secondary)',
+      borderBottom: '1px solid var(--border-primary)',
+    }}>{children}</div>
+  );
+}
+
+/** Horizontal rule. With a label it becomes a labeled divider. */
+export function Divider({ label }: { label?: string }) {
+  if (!label) {
+    return <hr style={{ border: 0, borderTop: '1px solid var(--border-secondary)', margin: '12px 0' }} />;
+  }
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0',
+      color: 'var(--text-tertiary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', fontWeight: 600,
+    }}>
+      <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--border-secondary)' }} />
+      {label}
+      <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--border-secondary)' }} />
+    </div>
+  );
+}
+
+/** Inline monospace snippet — for model IDs, env vars, config values. */
+export function Code({ children }: { children: ReactNode }) {
+  return (
+    <code style={{
+      fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+      fontSize: '0.92em',
+      padding: '1px 6px',
+      borderRadius: 'var(--radius-sm)',
+      background: 'var(--bg-tertiary)',
+      color: 'var(--text-primary)',
+    }}>{children}</code>
+  );
+}
+
+/* ── Labeled row — the layout used by Settings + Config for form rows. */
+export function Labeled({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 12, alignItems: 'center', padding: '8px 0' }}>
+      <label style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {children}
+        {hint && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{hint}</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ── KeyValueRow — the label / value display used in the About tab and
+   anywhere a compact read-only fact needs to be shown. */
+export function KeyValueRow({ k, v, labelWidth = 170 }: {
+  k: string; v: ReactNode; labelWidth?: number;
+}) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `${labelWidth}px 1fr`, gap: 12, fontSize: 13, padding: '4px 0' }}>
+      <span style={{ color: 'var(--text-tertiary)' }}>{k}</span>
+      <span style={{ color: 'var(--text-secondary)' }}>{v}</span>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CARD — the clickable option surface
+   Used by: vertical templates (Config), tier picker (Config),
+   stat cards (Cost), wizard questions (Knowledge).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function Card({
+  children, active, disabled, onClick, style, interactive,
+}: {
+  children: ReactNode;
+  active?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  style?: CSSProperties;
+  /** Sets cursor + hover affordance. Auto-enabled when onClick is provided. */
+  interactive?: boolean;
+}) {
+  const isInteractive = interactive ?? !!onClick;
+  return (
+    <div
+      onClick={disabled ? undefined : onClick}
+      role={isInteractive && !disabled ? 'button' : undefined}
+      tabIndex={isInteractive && !disabled ? 0 : undefined}
+      onKeyDown={
+        isInteractive && !disabled && onClick
+          ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }
+          : undefined
+      }
+      className={isInteractive ? 'focus-ring' : undefined}
+      style={{
+        padding: 14,
+        borderRadius: 'var(--radius-lg)',
+        border: `1px solid ${active ? 'var(--accent)' : 'var(--border-primary)'}`,
+        background: active ? 'var(--accent-subtle)' : 'var(--bg-primary)',
+        cursor: disabled ? 'not-allowed' : (isInteractive ? 'pointer' : 'default'),
+        opacity: disabled ? 0.6 : 1,
+        transition: 'border-color .12s, background .12s',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ── Stat — the small numeric display used in the Cost results column.
+   Layout 'card': centred, big number, colored label. Used inline in a grid.
+   Layout 'inline': label above small value, no chrome. Used below the fold. */
+export function Stat({
+  label, value, sub, tone = 'ai', highlight, layout = 'card', style,
+}: {
+  label: string;
+  value: ReactNode;
+  sub?: ReactNode;
+  tone?: PillTone;
+  highlight?: boolean;
+  layout?: 'card' | 'inline';
+  style?: CSSProperties;
+}) {
+  const toneColor =
+    tone === 'ok' ? 'var(--success)' :
+      tone === 'flag' ? 'var(--warning)' :
+        tone === 'p1' ? 'var(--danger)' :
+          tone === 'ai' ? 'var(--ai)' :
+            tone === 'tr' ? 'var(--accent)' :
+              tone === 'vm' ? '#0891b2' :
+                'var(--text-tertiary)';
+
+  if (layout === 'inline') {
+    return (
+      <div style={{
+        padding: '8px 10px', borderRadius: 'var(--radius)',
+        background: 'var(--bg-primary)', border: '1px solid var(--border-primary)',
+        ...style,
+      }}>
+        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      padding: 12,
+      borderRadius: 'var(--radius-lg)',
+      background: highlight ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+      border: `1px solid ${highlight ? toneColor : 'var(--border-primary)'}33`,
+      textAlign: 'center',
+      ...style,
+    }}>
+      <div style={{
+        fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em',
+        color: toneColor, fontWeight: 600, marginBottom: 2,
+      }}>{label}</div>
+      <div style={{
+        fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+        color: 'var(--text-primary)', marginBottom: 2,
+      }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{sub}</div>}
+    </div>
+  );
+}
+
+/* ── ProgressBar — the horizontal bar used in the pilot scorecard and the
+   scenario play progress. */
+export function ProgressBar({
+  value, max = 100, tone = 'ok', height = 6, style,
+}: {
+  value: number;
+  max?: number;
+  tone?: PillTone;
+  height?: number;
+  style?: CSSProperties;
+}) {
+  const pct = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
+  const toneColor =
+    tone === 'ok' ? 'var(--success)' :
+      tone === 'flag' ? 'var(--warning)' :
+        tone === 'p1' ? 'var(--danger)' :
+          tone === 'ai' ? 'var(--ai)' :
+            'var(--accent)';
+  return (
+    <div style={{
+      height, background: 'var(--border-primary)', borderRadius: 999, overflow: 'hidden',
+      ...style,
+    }}>
+      <div style={{
+        width: `${pct}%`, height: '100%', background: toneColor,
+        transition: 'width .2s',
+      }} />
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TABS — segmented control. Replaces the inline tab bars in
+   Settings, Config, and Knowledge.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface TabItem<T extends string = string> {
+  id: T;
+  label: ReactNode;
+  icon?: ReactNode;
+  disabled?: boolean;
+  /** Optional numeric counter shown as a small pill. */
+  count?: number;
+}
+
+export function Tabs<T extends string>({
+  tabs, value, onChange, size = 'md', variant = 'pill', ariaLabel,
+}: {
+  tabs: TabItem<T>[];
+  value: T;
+  onChange: (id: T) => void;
+  size?: 'sm' | 'md';
+  variant?: 'pill' | 'underline';
+  ariaLabel?: string;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label={ariaLabel}
+      style={{ display: 'inline-flex', gap: variant === 'pill' ? 4 : 0, alignItems: 'center' }}
+    >
+      {tabs.map((t) => {
+        const active = t.id === value;
+        const disabled = !!t.disabled;
+        const common: CSSProperties = {
+          font: 'inherit',
+          fontSize: size === 'sm' ? 12 : 12.5,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          padding: size === 'sm' ? '4px 8px' : '6px 10px',
+          borderRadius: variant === 'pill' ? 'var(--radius)' : 0,
+          border: 0,
+          background: active && variant === 'pill' ? 'var(--accent-subtle)' : 'transparent',
+          color: active ? 'var(--accent)' : (disabled ? 'var(--text-tertiary)' : 'var(--text-secondary)'),
+          fontWeight: active ? 600 : 400,
+          display: 'inline-flex', gap: 6, alignItems: 'center',
+          opacity: disabled ? 0.5 : 1,
+          borderBottom: variant === 'underline'
+            ? `2px solid ${active ? 'var(--accent)' : 'transparent'}`
+            : undefined,
+        };
+        return (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={active}
+            disabled={disabled}
+            onClick={() => !disabled && onChange(t.id)}
+            className="focus-ring"
+            style={common}
+          >
+            {t.icon}
+            {t.label}
+            {t.count !== undefined && (
+              <Pill tone="off" style={{ fontSize: 10, padding: '0 6px' }}>{t.count}</Pill>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EMPTY STATE — a consistent placeholder for "nothing here yet".
+   Used when a list is empty, not when it failed (that is a DegradedBanner).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function EmptyState({
+  icon, title, body, action, style,
+}: {
+  icon?: ReactNode;
+  title: string;
+  body: ReactNode;
+  action?: ReactNode;
+  style?: CSSProperties;
+}) {
+  return (
+    <div style={{
+      padding: 40, display: 'grid', placeItems: 'center',
+      color: 'var(--text-tertiary)', textAlign: 'center',
+      ...style,
+    }}>
+      <div style={{ maxWidth: 420 }}>
+        {icon && <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>}
+        <div style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 6 }}>{title}</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.55 }}>{body}</div>
+        {action && <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center', gap: 8 }}>{action}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DATATABLE
+   ══════════════════════════════════════════════════════════════════════════ */
+
 export interface Column<T> {
   key: string;
   header: string;
@@ -247,7 +699,6 @@ export interface Column<T> {
 export function DataTable<T>({ rows, columns, onRowClick, selectedId, caption, rowKey }: {
   rows: T[]; columns: Column<T>[]; onRowClick?: (id: string) => void; selectedId?: string | null;
   caption?: string;
-  /** Identity for React keys and row clicks. Defaults to `row.id` when present. */
   rowKey?: (row: T) => string;
 }) {
   const keyOf = rowKey ?? ((r: T) => (r as unknown as { id?: string }).id ?? JSON.stringify(r).slice(0, 40));
@@ -309,7 +760,10 @@ export function DataTable<T>({ rows, columns, onRowClick, selectedId, caption, r
   );
 }
 
-/* ── Provisional-threshold marker (WIREFRAMES G3) ─────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   SMALL MARKERS
+   ══════════════════════════════════════════════════════════════════════════ */
+
 export function ProvisionalTag() {
   return (
     <Pill tone="flag" title="Threshold not yet measured. Awaiting pilot data.">
@@ -322,6 +776,10 @@ export function AckBadge({ at, by }: { at: string | null; by: string | null }) {
   if (!at) return null;
   return <Pill tone="ok" title={`Acknowledged by ${by}`}><Check size={11} /> ack {at.slice(11, 16)}</Pill>;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOAST
+   ══════════════════════════════════════════════════════════════════════════ */
 
 export function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   return (

@@ -7,6 +7,7 @@ import type {
   ShadowSession, CallbackPromise, LocalNodeHealth, VoiceExperiment,
   WizardAnswer, RetentionPolicy, ErasureRequest, BreachLogEntry,
   PilotCriterion, ScopeMatrix, AfterHoursPolicy, SpamFilterSettings,
+  TaskRoute, EmbeddingSpace, ProviderCredential, ProviderMixPreset
 } from './types';
 
 /** Fixtures shaped exactly like the BACKEND.md §13 payloads.
@@ -96,24 +97,176 @@ export const P2_ALERTS: OpsAlert[] = [
   { id: 'a_13', severity: 'P2', rule: 'cost_over_model', oneLiner: 'Realised €0.21/min vs €0.19 signed — +11%, inside the ±20% band →', decision: 'No action this week; re-check at 3,000 min/month', evidence: { count: 4, firstAt: '00:00', lastAt: '23:59', blastRadius: 'this tenant' }, acknowledgedAt: null, acknowledgedBy: null, thresholdIsProvisional: true },
   { id: 'a_14', severity: 'P2', rule: 'emotion_escalation', oneLiner: '3 calls escalated via anger in 4h — all pricing-related →', decision: 'Review the price-range copy; the caller hears it as non-answer', evidence: { count: 3, firstAt: '10:10', lastAt: '13:47', blastRadius: 'T1 pricing tier' }, acknowledgedAt: null, acknowledgedBy: null, thresholdIsProvisional: true },
   { id: 'a_15', severity: 'P2', rule: 'spam_detected', oneLiner: '11 robocalls blocked since 08:00 — same +7 prefix pattern →', decision: 'Add +7 495 prefix to the carrier blocklist; confirmed not a client', evidence: { count: 11, firstAt: '08:02', lastAt: '14:28', blastRadius: 'inbound DID' }, acknowledgedAt: null, acknowledgedBy: null, thresholdIsProvisional: true },
+  {
+    id: 'a_16',
+    severity: 'P2',
+    rule: 'provider_stt_fallback',
+    oneLiner: 'Voxtral handling STT for 6 calls — OpenAI GPT-Live-Transcribe 5xx since 14:32 →',
+    decision: 'No action yet — fallback is working. Rotate to Deepgram if p95 crosses 600ms',
+    evidence: { count: 6, firstAt: '14:32', lastAt: '14:51', blastRadius: 'all voice calls' },
+    acknowledgedAt: null,
+    acknowledgedBy: null,
+    thresholdIsProvisional: true,
+    providerRef: { provider: 'openai', model: 'gpt-live-transcribe' },
+  },
+];
+export const TASK_ROUTES: TaskRoute[] = [
+  {
+    task: 'voice.stt',
+    primary: { provider: 'openai', model: 'gpt-live-transcribe' },
+    fallback: [
+      { provider: 'mistral', model: 'voxtral-mini-transcribe-realtime' },
+      { provider: 'gemini', model: 'gemini-3.5-transcribe' },
+    ],
+  },
+  {
+    task: 'voice.llm',
+    primary: { provider: 'openai', model: 'gpt-6-sol' },
+    fallback: [
+      { provider: 'gemini', model: 'gemini-3.8-flash' },
+      { provider: 'mistral', model: 'mistral-medium-3-5' },
+      { provider: 'openrouter', model: 'openai/gpt-6-sol' },
+    ],
+  },
+  {
+    task: 'voice.tts',
+    primary: { provider: 'openai', model: 'gpt-4o-mini-tts' },
+    fallback: [
+      { provider: 'gemini', model: 'gemini-3.8-flash-tts' },
+      { provider: 'mistral', model: 'voxtral-tts' },
+    ],
+  },
+  {
+    task: 'voice.realtime',
+    primary: { provider: 'openai', model: 'gpt-realtime' },
+    fallback: [
+      { provider: 'gemini', model: 'gemini-3.8-live' },
+    ],
+  },
+  {
+    task: 'email.classify',
+    primary: { provider: 'openai', model: 'gpt-6-luna' },
+    fallback: [
+      { provider: 'gemini', model: 'gemini-3.8-flash-lite' },
+      { provider: 'mistral', model: 'mistral-small-4' },
+    ],
+  },
+  {
+    task: 'email.compose',
+    primary: { provider: 'openai', model: 'gpt-6-sol' },
+    fallback: [
+      { provider: 'claude', model: 'claude-sonnet-5-5' },
+      { provider: 'gemini', model: 'gemini-3.8-flash' },
+    ],
+  },
+  {
+    task: 'email.summarize',
+    primary: { provider: 'openai', model: 'gpt-6-sol' },
+    fallback: [
+      { provider: 'gemini', model: 'gemini-3.8-flash' },
+    ],
+  },
+  {
+    task: 'rag.embedQuery',
+    primary: { provider: 'openai', model: 'text-embedding-3-small' },
+    fallback: [],
+    pinned: true,
+  },
+  {
+    task: 'rag.embedDocument',
+    primary: { provider: 'openai', model: 'text-embedding-3-small' },
+    fallback: [],
+    pinned: true,
+  },
+];
+
+export const PROVIDER_CREDENTIALS: ProviderCredential[] = [
+  { provider: 'openai', configured: true, lastTestedAt: '2026-09-30T08:14:00Z', state: 'ok' },
+  { provider: 'gemini', configured: true, lastTestedAt: '2026-09-30T08:14:30Z', state: 'ok' },
+  { provider: 'mistral', configured: true, lastTestedAt: '2026-09-30T08:15:00Z', state: 'ok' },
+  { provider: 'byteplus', configured: false, lastTestedAt: null, state: 'unconfigured' },
+  { provider: 'claude', configured: true, lastTestedAt: '2026-09-30T08:16:00Z', state: 'ok' },
+  { provider: 'copilot', configured: false, lastTestedAt: null, state: 'unconfigured' },
+  { provider: 'openrouter', configured: true, lastTestedAt: '2026-09-30T08:17:30Z', state: 'auth_failed', errorMessage: 'Invalid API key (401)' },
+  { provider: 'ollama', configured: true, lastTestedAt: '2026-09-30T08:18:00Z', state: 'untested' },
+  { provider: 'lmstudio', configured: true, lastTestedAt: '2026-09-30T08:18:30Z', state: 'untested' },
+  { provider: 'custom', configured: false, lastTestedAt: null, state: 'unconfigured' },
+];
+
+export const PROVIDER_RATES: Record<string, { perMin: number; unit: string }> = {
+  'deepgram/nova-3': { perMin: 0.0059, unit: 'per_minute' },
+  'elevenlabs/flash': { perMin: 0.0210, unit: 'per_minute' },
+  'openai/gpt-6-sol': { perMin: 0.0184, unit: 'per_minute' },
+  'mistral/voxtral-realtime': { perMin: 0.0011, unit: 'per_minute' },
+  // ...
+};
+
+export const PROVIDER_MIX_PRESETS: ProviderMixPreset[] = [
+  {
+    id: 'openai-primary',
+    label: 'OpenAI-primary (current)',
+    overrides: {},
+  },
+  {
+    id: 'gemini-primary',
+    label: 'Gemini-primary',
+    overrides: {
+      'voice.llm': { provider: 'gemini', model: 'gemini-3.8-flash' },
+      'voice.realtime': { provider: 'gemini', model: 'gemini-3.8-live' },
+      'email.classify': { provider: 'gemini', model: 'gemini-3.8-flash-lite' },
+      'email.compose': { provider: 'gemini', model: 'gemini-3.8-flash' },
+    },
+  },
+  {
+    id: 'mistral-lean',
+    label: 'Mistral-lean (cost-optimised)',
+    overrides: {
+      'voice.stt': { provider: 'mistral', model: 'voxtral-mini-transcribe-realtime' },
+      'voice.llm': { provider: 'mistral', model: 'mistral-medium-3-5' },
+      'voice.tts': { provider: 'mistral', model: 'voxtral-tts' },
+      'email.classify': { provider: 'mistral', model: 'mistral-small-4' },
+    },
+  },
+  {
+    id: 'selfhosted',
+    label: 'Self-hosted floor',
+    overrides: {
+      'voice.stt': { provider: 'mistral', model: 'voxtral-mini-transcribe-realtime' },
+      'voice.llm': { provider: 'ollama', model: 'llama3.2' },
+      'voice.tts': { provider: 'lmstudio', model: 'kokoro' },
+      'email.classify': { provider: 'ollama', model: 'llama3.2' },
+    },
+  },
 ];
 
 export const SNAPSHOT: OpsSnapshot = {
   generatedAt: '2026-09-28T14:51:00Z',
   since: '2026-09-28T08:00:00Z',
   p1: [P1_ALERT],
-  p2Grouped: { latency: [P2_ALERTS[0]], knowledge: [P2_ALERTS[1]], cost: [P2_ALERTS[2]], emotion: [P2_ALERTS[3]], spam: [P2_ALERTS[4]] },
+  p2Grouped: {
+    latency: [P2_ALERTS[0]],
+    knowledge: [P2_ALERTS[1]],
+    cost: [P2_ALERTS[2]],
+    emotion: [P2_ALERTS[3]],
+    spam: [P2_ALERTS[4]],
+    provider: [P2_ALERTS[5]],
+  },
   p3Count: 2,
   callCount: 128,
   containedPct: 79,
   reachable: true,
   lastSeenAt: '2026-09-28T14:51:00Z',
   providerHealth: [
-    { provider: 'Deepgram Nova', role: 'STT', errorRate: 0.004, latencyP95Ms: 410, fallbackActive: false, state: 'ok' },
-    { provider: 'ElevenLabs', role: 'TTS', errorRate: 0.002, latencyP95Ms: 147, fallbackActive: false, state: 'ok' },
-    { provider: 'Gemini 3.5 Flash', role: 'LLM', errorRate: 0.001, latencyP95Ms: 268, fallbackActive: false, state: 'ok' },
+    { provider: 'OpenAI GPT-Live-Transcribe', aiProvider: 'openai', role: 'STT', errorRate: 0.041, latencyP95Ms: 892, fallbackActive: true, state: 'degraded' },
+    { provider: 'Mistral Voxtral', aiProvider: 'mistral', role: 'STT', errorRate: 0.002, latencyP95Ms: 340, fallbackActive: false, state: 'ok' },
+    { provider: 'OpenAI GPT-6 Sol', aiProvider: 'openai', role: 'LLM', errorRate: 0.001, latencyP95Ms: 268, fallbackActive: false, state: 'ok' },
+    { provider: 'Gemini 3.8 Flash', aiProvider: 'gemini', role: 'LLM', errorRate: 0.001, latencyP95Ms: 412, fallbackActive: false, state: 'ok' },
+    { provider: 'ElevenLabs Flash', role: 'TTS', errorRate: 0.002, latencyP95Ms: 147, fallbackActive: false, state: 'ok' },
+    { provider: 'Deepgram Nova 3', role: 'STT', errorRate: 0.088, latencyP95Ms: 1240, fallbackActive: true, state: 'degraded' },
     { provider: 'Telnyx', role: 'telephony', errorRate: 0, latencyP95Ms: null, fallbackActive: false, state: 'degraded' },
     { provider: 'BSP (prod)', role: 'whatsapp', errorRate: 0, latencyP95Ms: null, fallbackActive: false, state: 'ok' },
+    { provider: 'BytePlus Seed Speech', aiProvider: 'byteplus', role: 'STT', errorRate: 0, latencyP95Ms: null, fallbackActive: false, state: 'ok' },
+    { provider: 'OpenRouter (gateway)', aiProvider: 'openrouter', role: 'LLM', errorRate: 1, latencyP95Ms: null, fallbackActive: false, state: 'down' },
   ],
   pilotScorecard: PILOT_SCORECARD(),
   consentReceiptsIssued: 124,
@@ -355,20 +508,22 @@ export const VOICE_PERSONAS: VoicePersona[] = [
    PILOT SCORECARD — §5 innovation #8 + PILOT-CRITERIA.md
    ══════════════════════════════════════════════════════════════════════════ */
 
-export function PILOT_SCORECARD(): PilotScorecard { return {
-  week: 2,
-  goNoGo: 'WATCH',
-  narrative: 'Containment is good (79%) and P5 (operator) sees no silent failures. The two WATCH items: booking-conversion rate (68% vs 80% target — the price-range copy needs tightening after the c_05 flag) and P2 caller-satisfaction transcript tagging, which is still provisional because 40% of transfers lack a brief. Week 3 must close both before any client-facing GO.',
-  bars: [
-    { label: 'Appointment booking rate (calls → booked)', value: 68, target: 80, ownedByPersona: 'P1', provisional: false },
-    { label: 'Caller perceived speed (<2s turn gap)', value: 91, target: 90, ownedByPersona: 'P2', provisional: false },
-    { label: 'False booking (no-show) rate', value: 4, target: 8, ownedByPersona: 'P1', provisional: true },
-    { label: 'Operator silent-failure events', value: 0, target: 0, ownedByPersona: 'P5', provisional: false },
-    { label: 'Transfer warm-brief present', value: 61, target: 90, ownedByPersona: 'P4', provisional: false },
-    { label: 'Knowledge retrieval hit@3', value: 94, target: 90, ownedByPersona: 'P5', provisional: true },
-    { label: 'GDPR disclosure rate (call count)', value: 100, target: 100, ownedByPersona: 'P6', provisional: false },
-  ],
-}; }
+export function PILOT_SCORECARD(): PilotScorecard {
+  return {
+    week: 2,
+    goNoGo: 'WATCH',
+    narrative: 'Containment is good (79%) and P5 (operator) sees no silent failures. The two WATCH items: booking-conversion rate (68% vs 80% target — the price-range copy needs tightening after the c_05 flag) and P2 caller-satisfaction transcript tagging, which is still provisional because 40% of transfers lack a brief. Week 3 must close both before any client-facing GO.',
+    bars: [
+      { label: 'Appointment booking rate (calls → booked)', value: 68, target: 80, ownedByPersona: 'P1', provisional: false },
+      { label: 'Caller perceived speed (<2s turn gap)', value: 91, target: 90, ownedByPersona: 'P2', provisional: false },
+      { label: 'False booking (no-show) rate', value: 4, target: 8, ownedByPersona: 'P1', provisional: true },
+      { label: 'Operator silent-failure events', value: 0, target: 0, ownedByPersona: 'P5', provisional: false },
+      { label: 'Transfer warm-brief present', value: 61, target: 90, ownedByPersona: 'P4', provisional: false },
+      { label: 'Knowledge retrieval hit@3', value: 94, target: 90, ownedByPersona: 'P5', provisional: true },
+      { label: 'GDPR disclosure rate (call count)', value: 100, target: 100, ownedByPersona: 'P6', provisional: false },
+    ],
+  };
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    WHATSAPP SUMMARIES — §5 innovation #3
@@ -437,3 +592,65 @@ export const AFTER_HOURS_POLICY: AfterHoursPolicy = {
 export const SPAM_FILTER_DEFAULTS: SpamFilterSettings = {
   threshold: 0.75, blockKnownRobocalls: true, tagSuspected: true, quarantineOver: 0.92,
 } as unknown as SpamFilterSettings;
+
+
+/**
+ * Embedding spaces. This is the vector-space map: where every tier's chunks
+ * are indexed, with which model, and what a swap would cost.
+ *
+ * The one thing this table exists to make impossible to miss: bge-m3 and
+ * arctic-embed-l are the SAME SHAPE (1024-d) and DIFFERENT SPACES. Swapping
+ * one for the other is a config change for the agent and a full re-embed for
+ * the corpus. The table spells both halves out.
+ */
+export const EMBEDDING_SPACES: EmbeddingSpace[] = [
+  {
+    id: 'bge-m3-1024-server',
+    tiers: ['T0', 'T1'],
+    modelId: 'BAAI/bge-m3',
+    modelLabel: 'bge-m3',
+    dimensions: 1024,
+    host: 'server',
+    docCount: 186,
+    licence: 'MIT',
+    note:
+      'Public and semi-public content, indexed on our EU server. Hours, brands, ' +
+      'services, price ranges, booking rules, and staff first names all live here.',
+    swapWarning:
+      'Moving to arctic-embed-l-v2.0 (Apache-2.0, also 1024-d) requires re-embedding ' +
+      'all 186 chunks. Same shape, different space — a config swap without a ' +
+      're-embed silently returns garbage.',
+  },
+  {
+    id: 'bge-m3-1024-node',
+    tiers: ['T2'],
+    modelId: 'BAAI/bge-m3',
+    modelLabel: 'bge-m3',
+    dimensions: 1024,
+    host: 'local_node',
+    docCount: 0,
+    licence: 'MIT',
+    note:
+      'Internal content. Same model as T0/T1, but runs on the client\'s premises — ' +
+      'the vectors never leave the building. Empty until the client enrols a node.',
+    swapWarning:
+      'A separate index from T0/T1 by design. Swapping the embedder here does not ' +
+      'affect the server index. The two spaces never intersect, which is exactly the point.',
+  },
+  {
+    id: 'none',
+    tiers: ['T3'],
+    modelId: '—',
+    modelLabel: 'not indexed',
+    dimensions: 0,
+    host: 'not_indexed',
+    docCount: 0,
+    licence: '—',
+    note:
+      'Confidential content is never embedded. It never reaches our server, our ' +
+      'models, or our logs. The agent has no retrieval path to it.',
+    swapWarning:
+      'There is no space to migrate. Enabling T3 would be a change request, not a ' +
+      'config edit.',
+  },
+];

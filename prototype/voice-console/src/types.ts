@@ -31,7 +31,21 @@
  * - Scope matrix (§6)
  * - Call replay: "why did it say that?" (§5 #20)
  * - Spam filter (§5 #16)
+ *
+ * EXTENDED 2026-09-30 — third pass:
+ * - AiProvider union + model catalog (multi-provider abstraction)
+ * - Task routing types (voice/email/rag slots → provider chains)
+ * - Provider credential + stage-attribution types
+ *
+ * NOTE on AiProvider: this file is the SINGLE SOURCE OF TRUTH for the
+ * prototype's provider vocabulary. The real app imports AiProvider from
+ * the AI service (`@shared/services/ai/types`); the prototype inlines it
+ * here so the whole design artifact stays self-contained.
  */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CALLS — core surface
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 export type CallChannel = 'voice' | 'whatsapp';
 export type CallOutcome = 'contained' | 'transferred' | 'voicemail' | 'abandoned';
@@ -87,6 +101,11 @@ export interface CallListItem {
   overflow?: MultilingualOverflow | null;
   /** EXT §5 #16: the reasons behind the spam score */
   spamReasons?: string[];
+
+  /* ── third-pass extension ──────────────────────────────────────────── */
+
+  /** EXT: per-stage provider attribution — who handled STT/LLM/TTS for this call */
+  providerMix?: CallProviderMix;
 }
 
 export interface Turn {
@@ -117,6 +136,8 @@ export interface TurnProvenance {
   chunks: { id: string; tier: KnowledgeTier; score: number; snippet: string }[];
   promptSnippet: string;
   guardrailsChecked: GuardrailId[];
+  /** EXT: which provider handled this turn (LLM) — optional for old fixtures */
+  providerUsed?: ProviderRef;
 }
 
 /** Personas, §1 P4: the warm-transfer brief handed to Julie */
@@ -133,8 +154,12 @@ export type WsStatus =
   | 'idle' | 'connecting' | 'connected'
   | 'stale' | 'reconnecting' | 'offline';
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPS — alerts and provider health
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 export interface OpsAlert {
-  id: string;
+ id: string;
   severity: 'P1' | 'P2' | 'P3';
   rule: string;
   oneLiner: string;
@@ -142,17 +167,18 @@ export interface OpsAlert {
   evidence: { count: number; firstAt: string; lastAt: string; blastRadius: string };
   acknowledgedAt: string | null;
   acknowledgedBy: string | null;
-  /** PLACEHOLDER until pilot data exists. The UI must show provenance, not a guess as fact. */
   thresholdIsProvisional: true;
+  providerRef?: ProviderRef;
 }
 
 export interface ProviderHealth {
   provider: string;
-  role: 'STT' | 'TTS' | 'LLM' | 'telephony' | 'whatsapp';
+  role: 'STT' | 'TTS' | 'LLM' | 'telephony' | 'whatsapp' | 'embeddings';
   errorRate: number;
   latencyP95Ms: number | null;
   fallbackActive: boolean;
   state: 'ok' | 'degraded' | 'down';
+  aiProvider?: AiProvider;
 }
 
 export interface OpsSnapshot {
@@ -242,7 +268,7 @@ export interface ConsentReceipt {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   GUARDRAIL SCENARIOS — §4 + §3.1 capability matrix
+   GUARDRAILS — §3.1 & §4
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /** Personas, §3.1 & §4: every guardrail the agent must enforce */
@@ -424,7 +450,7 @@ export interface Persona {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CLIENT DECISIONS — §4 + doc set "What the client is being asked to decide"
+   CLIENT DECISIONS — §4 + doc set
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export type DecisionId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
@@ -465,7 +491,7 @@ export interface LeadTime {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   VERTICAL METRICS — §2 killer outcome, made measurable
+   VERTICAL METRICS — §2
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export interface VerticalMetricPoint {
@@ -763,4 +789,179 @@ export interface SpamHit {
   callId: string;
   score: number;
   reasons: string[];
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ═══════════════════════════════════════════════════════════════════════════
+   THIRD PASS — AI PROVIDERS + MULTI-PROVIDER ROUTING
+   Everything below is additive on the block above. This section is what
+   surfaces the OpenAI / Gemini / Mistral / BytePlus / OpenRouter strategy
+   in the prototype — it is NOT a new page, it is new shapes on existing
+   ones (Live sidebar, Config route table, Settings credentials, Cost sim).
+   ═══════════════════════════════════════════════════════════════════════════
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Every AI backend the console can route to.
+ *
+ * Kept in lock-step with the real app's `AiProvider` union — but inlined
+ * here so the prototype has zero runtime imports. If the real union grows,
+ * this list grows with it. Order is stable; do not sort.
+ *
+ *   claude      → Anthropic           (email compose, long-form drafting)
+ *   openai      → OpenAI              (primary: LLM + embeddings + realtime)
+ *   gemini      → Google              (multimodal embeddings, Live voice)
+ *   mistral     → Mistral AI          (Voxtral STT, cheap LLM tier)
+ *   byteplus    → ByteDance ModelArk  (Seed Speech ASR, cost floor)
+ *   ollama      → local daemon        (offline tier, dev-only)
+ *   copilot     → GitHub Copilot      (through-org billing)
+ *   custom      → any OpenAI-compatible base URL (BYO)
+ *   lmstudio    → LM Studio desktop   (local embeddings + chat)
+ *   openrouter  → unified gateway     (dev experimentation, free tiers)
+ */
+export type AiProvider =
+  | 'claude'
+  | 'openai'
+  | 'gemini'
+  | 'mistral'
+  | 'byteplus'
+  | 'ollama'
+  | 'copilot'
+  | 'custom'
+  | 'lmstudio'
+  | 'openrouter';
+
+/**
+ * Which capability slot a route targets. Each slot resolves independently,
+ * so the same call can mix providers: e.g. Deepgram STT + GPT-6 Sol LLM +
+ * ElevenLabs TTS — that is the whole point of the multi-provider layer.
+ */
+export type AiCapabilitySlot =
+  | 'voice.stt'
+  | 'voice.llm'
+  | 'voice.tts'
+  | 'voice.realtime'
+  | 'email.classify'
+  | 'email.compose'
+  | 'email.summarize'
+  | 'rag.embedQuery'
+  | 'rag.embedDocument';
+
+/**
+ * A concrete provider + model pair. This is the atomic unit a route resolves to.
+ * The `provider` is the union above; `model` is the API model id as it is
+ * written in the real request body (see the model catalog in the AI service).
+ */
+export interface ProviderRef {
+  provider: AiProvider;
+  model: string;
+}
+
+/**
+ * One row of the task router. `primary` wins; `fallback` is an ORDERED pool
+ * (first match wins, advancing on failure). `pinned` marks routes whose
+ * embedding space cannot be silently swapped — see the RAG caveat: bge-m3
+ * and arctic-embed-l are different vector spaces, so a config swap without
+ * re-embedding corrupts the index.
+ */
+export interface TaskRoute {
+  task: AiCapabilitySlot;
+  primary: ProviderRef;
+  fallback: ProviderRef[];
+  pinned?: boolean;
+}
+
+/**
+ * Client-entered credential state per provider. BYOK story: the client pays
+ * their own subscription; the console only stores and tests the key.
+ *
+ *   ok            → last testConnection() returned 200
+ *   untested      → configured but never verified
+ *   auth_failed   → last test returned 401
+ *   rate_limited  → last test returned 429
+ *   unconfigured  → no key on file
+ */
+export interface ProviderCredential {
+  provider: AiProvider;
+  configured: boolean;
+  lastTestedAt: string | null;
+  state: 'ok' | 'untested' | 'auth_failed' | 'rate_limited' | 'unconfigured';
+  errorMessage?: string;
+}
+
+/**
+ * Per-stage attribution for a single call. One entry per capability slot the
+ * call touched. `fellBack: true` means the primary failed and a fallback
+ * was used; `fallbackReason` records why.
+ */
+export interface ProviderStageAttribution {
+  slot: AiCapabilitySlot;
+  used: ProviderRef;
+  fellBack: boolean;
+  fallbackReason?: 'rate_limit' | 'timeout' | 'error' | 'cost';
+  ms: number;
+  costEur: number;
+}
+
+/**
+ * Aggregate provider mix for one call — the stacked bar in the Calls detail
+ * panel. `totalCostEur` should equal the sum of the stage costs, but is
+ * stored explicitly so a future line item (carrier, BSP) does not silently
+ * get lost from the per-call cost display.
+ */
+export interface CallProviderMix {
+  stages: ProviderStageAttribution[];
+  totalCostEur: number;
+}
+
+/**
+ * Cost-simulator preset: "what if we swapped to X" in one click. `overrides`
+ * is a sparse map — only the slots listed are changed; everything else keeps
+ * the current route. This is how the Cost page answers the CEO question
+ * "what does a Mistral-lean stack actually save us" without a spreadsheet.
+ */
+export interface ProviderMixPreset {
+  id: string;
+  label: string;
+  overrides: Partial<Record<AiCapabilitySlot, ProviderRef>>;
+}
+
+/* ── Embedding spaces — additive ─────────────────────────────────────── */
+
+/** Where a vector space physically lives. */
+export type EmbeddingHost =
+  | 'server'        // on our EU VPS, encrypted at rest
+  | 'local_node'    // on the client's premises, never reaches us
+  | 'not_indexed';  // content is never embedded at all
+
+/**
+ * One embedding space. Two spaces are not comparable even when the
+ * dimensions match — bge-m3 and arctic-embed-l are both 1024-d and they
+ * are different vector spaces. This is the fact that makes "swap the
+ * embedder" a re-embed decision, not a config value.
+ */
+export interface EmbeddingSpace {
+  /** Stable id, e.g. "bge-m3-1024-server". Used as the spaceId to pin
+   *  vectors against a KB, per ADR-001 D5. */
+  id: string;
+  /** Which knowledge tiers this space holds. Multiple tiers can share. */
+  tiers: KnowledgeTier[];
+  /** HF model id or vendor id — the thing you would change in config. */
+  modelId: string;
+  /** Short display name. */
+  modelLabel: string;
+  /** Vector dimensions. 0 when host === 'not_indexed'. */
+  dimensions: number;
+  host: EmbeddingHost;
+  /** Chunks currently in this space. */
+  docCount: number;
+  /** Licence of the weights or of the vendor's embedding endpoint. */
+  licence: string;
+  /** Prose note: what lives here and why. */
+  note: string;
+  /** Prose warning: what "swap the embedder" actually costs here. */
+  swapWarning: string;
+  /** When the embedder maps to a catalog entry, set this so the page can
+   *  render a ProviderBadge. Absent when the space is self-hosted. */
+  provider?: AiProvider;
 }

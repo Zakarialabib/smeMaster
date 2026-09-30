@@ -12,6 +12,11 @@ import type {
   ScopeMatrix, AfterHoursPolicy, MultilingualOverflow, CallReplay,
   SpamFilterSettings, ConsentReceipt, DetectedLanguage,
   PersonaId, DecisionId, LeadTimeId,
+  // third pass — AI provider layer
+  AiProvider,
+  AiCapabilitySlot,
+  ProviderCredential,
+  TaskRoute,
 } from './types';
 import {
   CALLS, P1_ALERT, P2_ALERTS, SNAPSHOT, KNOWLEDGE_SCOPE, SCOPE_VERSIONS,
@@ -21,6 +26,10 @@ import {
   WIZARD_ANSWERS, CONSENT_RECEIPTS, RETENTION_POLICY, ERASURE_REQUESTS,
   BREACH_LOG, PILOT_CRITERIA, SCOPE_MATRIX, AFTER_HOURS_POLICY,
   SPAM_FILTER_DEFAULTS,
+  // third pass — AI provider layer fixtures
+  PROVIDER_CREDENTIALS,
+  TASK_ROUTES,
+  PROVIDER_MIX_PRESETS,
 } from './data';
 
 /**
@@ -314,6 +323,9 @@ export const GUARDRAIL_SCENARIO_LIST = GUARDRAIL_SCENARIOS;
 interface CostSimState {
   input: CostSimulationInput;
   set: <K extends keyof CostSimulationInput>(k: K, v: CostSimulationInput[K]) => void;
+  /** Which provider-mix preset is currently applied in the sim (id of a ProviderMixPreset). */
+  providerPreset: string;
+  setProviderPreset: (id: string) => void;
 }
 
 export const useCostSimStore = create<CostSimState>((set) => ({
@@ -328,6 +340,8 @@ export const useCostSimStore = create<CostSimState>((set) => ({
     whatsappTextPct: 1,
   },
   set: (k, v) => set((s) => ({ input: { ...s.input, [k]: v } })),
+  providerPreset: 'openai-primary',
+  setProviderPreset: (providerPreset) => set({ providerPreset }),
 }));
 
 export function runCostSim(input: CostSimulationInput): CostSimulationResult {
@@ -480,12 +494,6 @@ export const useDecisionStore = create<DecisionState>((set) => ({
 
 export const useOpenDecisionCount = () =>
   useDecisionStore((s) => s.decisions.filter((d) => d.state === 'open').length);
-
-/* useDefaultedDecisions disabled — stub fixture lacks isDefaulted discriminator
-/** The one defaulted decision (D4) — a default, not a question. *\/
-export const useDefaultedDecisions = () =>
-  useDecisionStore((s) => s.decisions.filter((d) => d.isDefaulted));
-*/
 
 /* ══════════════════════════════════════════════════════════════════════════
    LEAD TIMES — doc set
@@ -1040,3 +1048,97 @@ export const useSpamHits = () => {
     [rows, threshold],
   );
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ══════════════════════════════════════════════════════════════════════════
+   THIRD PASS — AI PROVIDER LAYER
+   Routing + credentials. Both are the read-side of the multi-provider story:
+   Config renders the routes, Settings renders the credentials, and the Live
+   page's per-stage badges read from routes to show what SHOULD be handling
+   each slot vs what actually did (from CallListItem.providerMix).
+   ══════════════════════════════════════════════════════════════════════════
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Task router state. Editable in the prototype: the Config page's route table
+ * writes here, and the Live/Cost/Knowledge pages read from here. In the real
+ * app this is a persisted settings blob keyed by task slot; here it is
+ * in-memory only — reload resets to the fixture.
+ */
+interface RoutingState {
+  routes: TaskRoute[];
+  /** Replace the route for one slot; other slots are untouched. */
+  setRoute: (task: AiCapabilitySlot, route: TaskRoute) => void;
+  /** Restore the fixture defaults — the "revert all changes" affordance. */
+  reset: () => void;
+}
+
+export const useRoutingStore = create<RoutingState>((set) => ({
+  routes: TASK_ROUTES,
+  setRoute: (task, route) =>
+    set((s) => ({
+      routes: s.routes.map((r) => (r.task === task ? route : r)),
+    })),
+  reset: () => set({ routes: TASK_ROUTES }),
+}));
+
+/** Convenience selector: the route for one slot, or undefined. */
+export const useRouteFor = (task: AiCapabilitySlot) =>
+  useRoutingStore((s) => s.routes.find((r) => r.task === task));
+
+/**
+ * BYOK credentials. `test()` is a fake async in the prototype — in the real
+ * app it calls provider.testConnection() through the four seams.
+ *
+ * WARNING: never store a key value in this store. The prototype stores only
+ * "configured: boolean". The real app puts the key in the Tauri keychain
+ * (or an encrypted DB column) and keeps only the metadata here.
+ */
+interface CredentialsState {
+  credentials: ProviderCredential[];
+  /** Run a connection test; mutates lastTestedAt + state on success. */
+  test: (provider: AiProvider) => Promise<void>;
+  /** Mark a provider as configured. Does NOT store the key value. */
+  set: (provider: AiProvider, key: string) => void;
+}
+
+export const useCredentialsStore = create<CredentialsState>((set) => ({
+  credentials: PROVIDER_CREDENTIALS,
+  // fake async — in the real app, calls testConnection() on the provider
+  test: async (provider) => {
+    await new Promise((r) => setTimeout(r, 800));
+    set((s) => ({
+      credentials: s.credentials.map((c) =>
+        c.provider === provider
+          ? { ...c, lastTestedAt: new Date().toISOString(), state: 'ok' }
+          : c,
+      ),
+    }));
+  },
+  set: (provider, _key) =>
+    set((s) => ({
+      credentials: s.credentials.map((c) =>
+        c.provider === provider ? { ...c, configured: true, state: 'untested' } : c,
+      ),
+    })),
+}));
+
+/** Credential row for one provider, or undefined. */
+export const useCredentialFor = (provider: AiProvider) =>
+  useCredentialsStore((s) => s.credentials.find((c) => c.provider === provider));
+
+/** Count of providers in a bad state (auth_failed or rate_limited). */
+export const useBrokenCredentialCount = () =>
+  useCredentialsStore(
+    (s) =>
+      s.credentials.filter(
+        (c) => c.state === 'auth_failed' || c.state === 'rate_limited',
+      ).length,
+  );
+
+/** All provider-mix presets, available to the Cost page. */
+export const useProviderPresets = () => PROVIDER_MIX_PRESETS;
+
+/** The currently selected preset id from the cost sim. */
+export const useSelectedProviderPreset = () =>
+  useCostSimStore((s) => s.providerPreset);

@@ -37,6 +37,7 @@ import { AutomationRulesWidget } from '@features/dashboard/components/Automation
 import { QuickActionsWidget } from '@features/dashboard/components/QuickActionsWidget';
 import { EntityNetworkGraph } from '@features/dashboard/components/EntityNetworkGraph';
 import { BusinessHealthWidget } from '@features/dashboard/components/BusinessHealthWidget';
+import { SectionConsole } from '@features/dashboard/components/SectionConsole';
 
 // ─── Customization Modal ───────────────────────────────────────────────────
 
@@ -456,6 +457,9 @@ export function DashboardPage() {
       </div>
 
       <HeroMetrics rangeDays={rangeDays} density={density} />
+
+      {/* Menu console — reusable section cards (landing surface above the widget grid) */}
+      <SectionConsole refreshKey={refreshNonce} />
 
       <div
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${gridGap} auto-rows-min`}

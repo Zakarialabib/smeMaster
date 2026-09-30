@@ -1,4 +1,6 @@
 export { DashboardPage } from "./pages/DashboardPage";
+export { SectionCard, type SectionStat, type SectionCardProps, type SectionAccent } from "./components/SectionCard";
+export { SectionConsole } from "./components/SectionConsole";
 export { StatBox } from "./components/StatBox";
 export { WidgetHeader, WidgetSkeleton, WidgetError } from "./components/WidgetHelpers";
 export { ContactsStatsWidget } from "./components/ContactsStatsWidget";

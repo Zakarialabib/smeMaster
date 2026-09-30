@@ -35,7 +35,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: 12, padding: 16 }}>
-      <nav aria-label="App" className="frost-surface" style={{
+      {/* <nav aria-label="App" className="frost-surface" style={{
         display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px',
         borderRadius: 'var(--radius-lg)', overflowX: 'auto',
       }}>
@@ -53,7 +53,7 @@ export function Shell({ children }: { children: ReactNode }) {
         ))}
         <span style={{ flex: 1 }} />
         <Gear size={15} color="var(--text-tertiary)" />
-      </nav>
+      </nav> */}
 
       <nav aria-label="Voice console" className="frost-surface" style={{
         display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',

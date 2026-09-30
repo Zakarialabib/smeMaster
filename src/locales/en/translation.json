@@ -1916,7 +1916,56 @@
     "refresh": "Refresh",
     "updatedSeconds": "Updated {{count}}s ago",
     "updatedMinutes": "Updated {{count}}m ago",
-    "updatedHours": "Updated {{count}}h ago"
+    "updatedHours": "Updated {{count}}h ago",
+    "sections": {
+      "consoleTitle": "Sections",
+      "consoleDescription": "Jump straight into a section — each card shows live stats and a quick overview.",
+      "emails": {
+        "title": "Emails",
+        "description": "Read, reply, and organize your inbox — labels, smart folders, and unread triage all live here."
+      },
+      "people": {
+        "title": "People",
+        "description": "Your contacts and CRM: segments, groups, follow-ups, and the full relationship history for everyone you work with."
+      },
+      "tasks": {
+        "title": "Tasks & Schedule",
+        "description": "Plan your day with due dates, priorities, and the calendar schedule for everything on your plate."
+      },
+      "invoicing": {
+        "title": "Invoicing",
+        "description": "Create and track invoices, delivery bills, and payments — and see what is still unpaid at a glance."
+      },
+      "campaigns": {
+        "title": "Campaigns",
+        "description": "Email campaigns with open and click tracking, managed together with your automation rules."
+      },
+      "automation": {
+        "title": "Automation",
+        "description": "Workflow rules that run automatically — triggered by emails, contacts, or schedules."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Your events and schedule for today and the week ahead, in the schedule view."
+      }
+    },
+    "cards": {
+      "openSection": "Open section",
+      "aboutSection": "About {{section}}",
+      "stat": {
+        "unread": "Unread",
+        "threads": "Threads",
+        "total": "Total",
+        "newWeek": "New this week",
+        "dueToday": "Due today",
+        "overdue": "Overdue",
+        "unpaid": "Unpaid",
+        "sent": "Sent",
+        "rules": "Rules",
+        "active": "Active",
+        "eventsToday": "Today"
+      }
+    }
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
