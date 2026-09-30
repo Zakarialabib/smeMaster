@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import type { z } from "zod";
-import type { AiProviderClient, AiCompletionRequest } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
 import { createProviderFactory } from "../providerFactory";
 import { buildSystemPrompt } from "../utils";
 import type {
@@ -10,16 +10,27 @@ import type {
   VisionCapable,
   ContextCachingCapable,
   BatchProcessingCapable,
+  StreamingCapable,
+  SpeechToTextCapable,
+  TextToSpeechCapable,
+  RealtimeVoiceCapable,
+  ModelDiscoveryCapable,
+  EmbeddingCapable,
   ReasoningEffort,
   ToolDefinition,
   ToolCallResult,
+  SttOptions,
+  TtsOptions,
+  RealtimeOptions,
+  RealtimeVoiceSession,
+  EmbeddingResult,
 } from "../capabilities";
 
 const factory = createProviderFactory(
   (apiKey) => new GoogleGenAI({ apiKey }),
 );
 
-export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable {
+export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -116,7 +127,7 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
     async completeWithImage(
       req: AiCompletionRequest,
       image: Blob,
-      options?: { detail?: "low" | "high" },
+      _options?: { detail?: "low" | "high" },
     ): Promise<string> {
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
       const base64 = await blobToBase64(image);
@@ -174,6 +185,70 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
       }
 
       return results;
+    },
+
+    async *streamComplete(req: AiCompletionRequest): AsyncIterable<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const stream = await client.models.generateContentStream({
+        model: modelId,
+        contents: req.userContent,
+        config: systemPrompt ? { systemInstruction: systemPrompt } : undefined,
+      });
+      for await (const chunk of stream) {
+        if (chunk.text) {
+          yield chunk.text;
+        }
+      }
+    },
+
+    async transcribe(audio: Blob, _options?: SttOptions): Promise<string> {
+      const base64 = await blobToBase64(audio);
+      const response = await client.models.generateContent({
+        model: modelId,
+        contents: [
+          { text: "Transcribe this audio" },
+          { inlineData: { mimeType: "audio/webm", data: base64.split(",")[1] ?? "" } },
+        ],
+      });
+      return response.text ?? "";
+    },
+
+    async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
+      throw new Error("TTS not supported by this provider");
+    },
+
+    async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+      throw new Error("Realtime voice not supported by this provider");
+    },
+
+    async listModels(): Promise<ModelOption[]> {
+      const models: ModelOption[] = [];
+      const response = await client.models.list();
+      for await (const model of response) {
+        if (model.name) {
+          models.push({ id: model.name, label: model.name });
+        }
+      }
+      return models;
+    },
+
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      try {
+        const response = await client.models.embedContent({
+          model: "gemini-embedding-2",
+          contents: Array.isArray(req.input) ? req.input : [req.input],
+        });
+        const vectors = response.embeddings?.map((e) => e.values ?? []) ?? [];
+        const dimensions = vectors[0]?.length ?? 0;
+        return {
+          vectors,
+          spaceId: `gemini-embedding-2-${dimensions}`,
+          dimensions,
+          modelId: "gemini-embedding-2",
+        };
+      } catch {
+        return null;
+      }
     },
   };
 }

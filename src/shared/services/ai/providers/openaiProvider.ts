@@ -272,7 +272,7 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
       return new Blob([await response.arrayBuffer()], { type: "audio/mpeg" });
     },
 
-    async startRealtimeSession(options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+    async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
       // OpenAI Realtime API requires WebSocket connection
       // This is a simplified implementation — production would use the realtime SDK
       const ws = new WebSocket("wss://api.openai.com/v1/realtime");
