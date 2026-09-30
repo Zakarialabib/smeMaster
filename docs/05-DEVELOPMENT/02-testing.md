@@ -107,3 +107,71 @@ The project uses a mixed approach:
 | Claim (before)               | Verified reality                                                                                         | Evidence                     |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `../PRODUCTION-READINESS.md` | PRODUCTION-READINESS.md lives at repo root → `../../PRODUCTION-READINESS.md` from `docs/05-DEVELOPMENT/` | `ls PRODUCTION-READINESS.md` |
+
+## Ground-truth metrics + summary-gated runs (2026-09-30)
+
+Owner: **qa-guardian**. Shipped with `.github/workflows/ground-truth.yml`.
+
+| File                             | Purpose                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| `scripts/check-ground-truth.mjs` | Counts the three canonical metrics, gates them, cross-checks `docs/00-INDEX.md` |
+| `scripts/ground-truth.json`      | Expected counts + the date/owner they were verified + the counting rules        |
+| `scripts/run-tests-gated.ps1`    | Local Windows gate: summary-gated vitest, then tsc + eslint (trusted codes)     |
+| `scripts/assert-summary.mjs`     | Summary-line parser used by CI (also understands pytest `=== N passed ===`)     |
+
+### The checker
+
+```bash
+node scripts/check-ground-truth.mjs                        # exit 0 = PASS, exit 1 = mismatch
+node scripts/check-ground-truth.mjs path/to/baseline.json  # optional baseline override
+```
+
+It prints a `metric | expected | actual | status` table plus a `docs/00-INDEX.md`
+header cross-check, and exits non-zero if either side disagrees — that is the
+automated docs-rot detector.
+
+| metric            | expected (2026-09-30) | counting rule                                                                                                                                                                                                                           |
+| ----------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IPC commands      | **841**               | literal `#[tauri::command]` (777) + `#[command]` (64) occurrences in `src-tauri/src` (recursive); parameterised forms such as `#[tauri::command(rename_all = ...)]` (7) are not counted                                                 |
+| SQLite migrations | **32**                | `*.sql` files in `src-tauri/src/db/migrations/` (`001_core.sql` … `032_deals_pipeline.sql`, sequential, no gaps)                                                                                                                        |
+| Zustand stores    | **44**                | non-test (excludes `*.test.*`, `*.spec.*`, `__tests__/`) `.ts`/`.tsx` under `src/shared/stores/**`, `src/stores/**`, `src/features/*/stores/**` containing the token `create` → 39 `create<` stores + 5 `create*` slice-factory modules |
+
+### Re-baselining `scripts/ground-truth.json`
+
+Only after a _verified_ change (new migration, new IPC command, new store):
+
+1. Run the checker and read the `actual` column.
+2. Update `commands` / `migrations` / `stores` + `verifiedOn` in
+   `scripts/ground-truth.json` (and `countingRules` if the rule itself changed).
+3. Update the same numbers in the `docs/00-INDEX.md` header — plus
+   `docs/06-ROADMAP/09-master-plan.md` and `AGENTS.md` when they cite them.
+4. Re-run the checker until it PASSes, then commit baseline + docs together.
+
+Never edit only one side: the checker fails whenever the JSON baseline and the
+docs header disagree with the source.
+
+### Summary-line gating rule
+
+**Do not trust a test runner's exit code on this host.** vitest (and pytest)
+have false-greened here — exit 0 while tests fail. The verdict comes from the
+runner's own summary line:
+
+- vitest — `Tests  N failed | M passed …`: any `failed` > 0 = FAIL, and a
+  missing summary line (runner crashed / no tests) = FAIL.
+- pytest — `=== N failed, M passed in T ===`: same rule.
+
+Local run (logs land in `%TEMP%\smemaster-gate\`):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-tests-gated.ps1           # vitest + tsc + eslint
+powershell -ExecutionPolicy Bypass -File scripts\run-tests-gated.ps1 -WithRust # + cargo check only
+```
+
+`tsc --noEmit` and `eslint src --max-warnings=0` still gate on their exit codes
+(those are trustworthy), `cargo test` is never run on this host (the binaries
+link but do not launch — see the traps above), and the script ends with a
+GATE PASS/FAIL block exiting 0/1.
+
+In CI, `.github/workflows/ground-truth.yml` runs the metrics job and pipes
+vitest output through `scripts/assert-summary.mjs <log>`; typecheck, lint, and
+cargo stay in `ci.yml` (`lint-and-test`) and are deliberately not duplicated.

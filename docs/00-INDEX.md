@@ -2,7 +2,7 @@
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
 > **Version:** 1.0.0-rc · **DB:** 32 migrations (001–032, re-verified 2026-09-30) · **Tests:** ~3,529 TS + 969 Rust (via `npm run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 841 (777 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-09-30) · **Stores:** 48 Zustand store modules (non-test)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 841 (777 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-09-30) · **Stores:** 44 Zustand store modules (non-test, checker-verified 2026-09-30 via `scripts/check-ground-truth.mjs`)
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
