@@ -56,11 +56,10 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
         <div className="flex items-center gap-0.5 bg-bg-tertiary rounded-lg p-0.5">
           <button
             onClick={() => setChartMode("bar")}
-            className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "bar"
+            className={`p-1.5 rounded-md transition-colors ${chartMode === "bar"
                 ? "bg-bg-secondary shadow-sm text-text-primary"
                 : "text-text-tertiary hover:text-text-primary"
-            }`}
+              }`}
             title="Bar chart"
             aria-label="Switch to bar chart"
           >
@@ -68,11 +67,10 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
           </button>
           <button
             onClick={() => setChartMode("line")}
-            className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "line"
+            className={`p-1.5 rounded-md transition-colors ${chartMode === "line"
                 ? "bg-bg-secondary shadow-sm text-text-primary"
                 : "text-text-tertiary hover:text-text-primary"
-            }`}
+              }`}
             title="Line chart"
             aria-label="Switch to line chart"
           >
@@ -111,11 +109,11 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  labelFormatter={(label: string) => {
-                    const d = new Date(label);
+                  labelFormatter={(label) => {
+                    const d = new Date(String(label));
                     return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
                   }}
-                  formatter={(value: number) => [value, "Emails"]}
+                  formatter={(value) => [String(value ?? 0), "Emails"]}
                 />
                 <Bar dataKey="score" fill="var(--color-accent)" radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -141,11 +139,11 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  labelFormatter={(label: string) => {
-                    const d = new Date(label);
+                  labelFormatter={(label) => {
+                    const d = new Date(String(label));
                     return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
                   }}
-                  formatter={(value: number) => [value, "Emails"]}
+                  formatter={(value) => [String(value ?? 0), "Emails"]}
                 />
                 <Line
                   type="monotone"

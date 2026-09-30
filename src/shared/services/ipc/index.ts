@@ -15,6 +15,7 @@ export {
   hasCommand,
   listCommands,
   isTauriEnvironment,
+  safeListen,
   TauriUnavailableError,
   type InvokeOptions,
   type CommandName,

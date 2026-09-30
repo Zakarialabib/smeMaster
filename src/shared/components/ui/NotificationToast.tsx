@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { safeListen } from "@shared/services/ipc";
 import { X, Mail, Undo2 } from "lucide-react";
 import { uiBus } from "@shared/services/events/uiBus";
 
@@ -34,7 +34,7 @@ export function NotificationToast() {
   }, [removeToast]);
 
   useEffect(() => {
-    const unlisten = listen<PushNotification & { undoLabel?: string }>("notification:received", (event) => {
+    const unlisten = safeListen<PushNotification & { undoLabel?: string }>("notification:received", (event) => {
       const payload = event.payload;
       const newToast: UndoableToast = {
         id: ++toastId,

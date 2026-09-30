@@ -89,11 +89,10 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
         <div className="flex items-center gap-0.5 bg-bg-tertiary rounded-lg p-0.5">
           <button
             onClick={() => setChartMode("area")}
-            className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "area"
+            className={`p-1.5 rounded-md transition-colors ${chartMode === "area"
                 ? "bg-bg-secondary shadow-sm text-text-primary"
                 : "text-text-tertiary hover:text-text-primary"
-            }`}
+              }`}
             title="Area chart"
             aria-label="Switch to area chart"
           >
@@ -101,11 +100,10 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
           </button>
           <button
             onClick={() => setChartMode("bar")}
-            className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "bar"
+            className={`p-1.5 rounded-md transition-colors ${chartMode === "bar"
                 ? "bg-bg-secondary shadow-sm text-text-primary"
                 : "text-text-tertiary hover:text-text-primary"
-            }`}
+              }`}
             title="Bar chart"
             aria-label="Switch to bar chart"
           >
@@ -147,8 +145,8 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  labelFormatter={formatTooltipLabel}
-                  formatter={(value: number) => [value, "New Contacts"]}
+                  labelFormatter={(label) => formatTooltipLabel(String(label))}
+                  formatter={(value) => [String(value ?? 0), "New Contacts"]}
                 />
                 <Area
                   type="monotone"
@@ -177,8 +175,8 @@ export function ContactGrowthWidget({ rangeDays = 30 }: { rangeDays?: number }) 
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  labelFormatter={formatTooltipLabel}
-                  formatter={(value: number) => [value, "New Contacts"]}
+                  labelFormatter={(label) => formatTooltipLabel(String(label))}
+                  formatter={(value) => [String(value ?? 0), "New Contacts"]}
                 />
                 <Bar dataKey="score" fill="var(--color-success)" radius={[2, 2, 0, 0]} />
               </BarChart>

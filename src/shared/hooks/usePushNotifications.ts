@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { safeListen } from "@shared/services/ipc";
 
 interface PushNotification {
   title: string;
@@ -17,12 +17,12 @@ export function usePushNotifications() {
     const unlisteners: Array<() => void> = [];
 
     // Token registration event
-    listen<string>("push:token-registered", (event) => {
+    safeListen<string>("push:token-registered", (event) => {
       console.log("Push token registered:", event.payload.substring(0, 16) + "...");
     }).then((fn) => unlisteners.push(fn));
 
     // Incoming push notification
-    listen<PushNotification>("notification:received", (event) => {
+    safeListen<PushNotification>("notification:received", (event) => {
       const { title, body } = event.payload;
       // Show browser notification as fallback (works in PWA/Tauri WebView)
       if ("Notification" in window && Notification.permission === "granted") {

@@ -74,9 +74,9 @@ export function BusinessHealthWidget() {
       const nextRun =
         backups.status === "fulfilled"
           ? backups.value
-              .filter((b) => b.is_enabled === 1 && b.next_run_at)
-              .map((b) => b.next_run_at as number)
-              .sort((a, b) => a - b)[0] ?? null
+            .filter((b) => b.is_enabled === 1 && b.next_run_at)
+            .map((b) => b.next_run_at as number)
+            .sort((a, b) => a - b)[0] ?? null
           : null;
 
       setComplianceIssues(issueCount);
