@@ -37,7 +37,7 @@ loading `web.whatsapp.com` in an OS webview, and its own limitations note that
 calling only works *"where the system webview ships WebRTC"*. That is a human
 clicking "call" in a GUI: not an API, not server-side, not automatable. It
 confirms the constraint rather than qualifying it. See
-[`docs/06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/11-voice-agent-whatsapp-oss-landscape.md).
+[`docs/06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md).
 
 So the voice channel is a **dedicated PSTN/SIP number**, not WhatsApp. This is
 stated in the client questionnaire and must be confirmed in writing before any
@@ -140,7 +140,7 @@ detection, not by which LLM answers. (Re-verify at Gate 1; these numbers drift.)
 Pipecat (BSD-2, 15.9k★, pushed 2026-09-28) fallback. Same architectural pattern, so
 a swap is a port change. **Vocode is rejected** — abandoned, not missing: the repo
 resolves (`vocodedev/vocode-core`, MIT, 3.8k★) but its last push is **2024-11-15**
-(~22 months stale). See [`docs/06-ROADMAP/10-voice-agent-oss-landscape.md`](../06-ROADMAP/10-voice-agent-oss-landscape.md) §5.1.
+(~22 months stale). See [`docs/06-ROADMAP/15-voice-agent-oss-landscape.md`](../06-ROADMAP/15-voice-agent-oss-landscape.md) §5.1.
 
 ## 5. Gates
 

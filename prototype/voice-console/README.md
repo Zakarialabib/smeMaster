@@ -40,7 +40,7 @@ covering all nine surfaces from `docs/voice/design/WIREFRAMES.md`:
 | Keyboard map, focus order, RTL matrix | `docs/voice/design/UX.md` §14–16 |
 | Provider per seam, licences, key placement | `docs/voice/design/BACKEND.md` §3, §6 |
 | Local engine + RTF gate | `docs/voice/dev/SELF-HOSTING.md` |
-| Topology and the key-placement question | `docs/06-ROADMAP/12-voice-agent-topology-decision.md` |
+| Topology and the key-placement question | `docs/06-ROADMAP/17-voice-agent-topology-decision.md` |
 
 ## The invariants it demonstrates, not just describes
 
