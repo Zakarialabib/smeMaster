@@ -21,7 +21,7 @@ import {
 import { HelpCard } from "@features/settings/components/HelpCard";
 import { Button } from "@shared/components/ui/Button";
 import { TextField } from "@shared/components/ui/TextField";
-import { getSetting, setSetting, getSecureSetting, setSecureSetting } from "@features/settings/db/settings";
+import { setSetting, setSecureSetting } from "@features/settings/db/settings";
 import { getVoiceConfig, getVoiceCapabilities, type VoiceProviderType } from "@shared/services/ai/voiceService";
 
 type VoiceProvider = VoiceProviderType;

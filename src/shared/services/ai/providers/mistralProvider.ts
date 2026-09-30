@@ -1,4 +1,4 @@
-import Mistral from "@mistralai/mistralai";
+import { Mistral } from "@mistralai/mistralai";
 import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
 import { createProviderFactory } from "../providerFactory";
 import { buildSystemPrompt } from "../utils";
@@ -44,7 +44,7 @@ export function createMistralProvider(apiKey: string, model: string, aiLanguage 
           model: req.model ?? "mistral-embed",
           input: req.input,
         });
-        return response.data.map((e) => e.embedding);
+        return response.data.map((e: { embedding: number[] }) => e.embedding);
       } catch {
         return null;
       }

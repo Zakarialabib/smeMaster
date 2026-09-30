@@ -11,8 +11,6 @@
 
 import { getSetting, getSecureSetting } from "@features/settings/db/settings";
 import type {
-  SpeechToTextCapable,
-  TextToSpeechCapable,
   SttOptions,
   TtsOptions,
 } from "./capabilities";

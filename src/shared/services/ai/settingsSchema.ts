@@ -125,7 +125,7 @@ export function validateSetting(key: string, value: string): boolean {
       }
     case "string":
       if ("options" in config && config.options) {
-        return (config.options as string[]).includes(value);
+        return (config.options as readonly string[]).includes(value);
       }
       return true;
     default:
