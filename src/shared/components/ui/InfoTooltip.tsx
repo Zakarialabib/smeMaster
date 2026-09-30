@@ -18,6 +18,9 @@ interface InfoTooltipProps {
   delay?: number;
 }
 
+// NOTE: `left-1/2 -translate-x-1/2` centering is intentionally physical — it is
+// geometrically symmetric, so it renders identically under RTL. Converting it to
+// `start-1/2` would break centering because `translate-x` does not flip.
 const SIDE_STYLES: Record<TooltipSide, string> = {
   top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
   bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
@@ -26,10 +29,10 @@ const SIDE_STYLES: Record<TooltipSide, string> = {
 };
 
 const ARROW_STYLES: Record<TooltipSide, string> = {
-  top: "top-full left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-border-primary",
-  bottom: "bottom-full left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-border-primary",
-  left: "end-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-l-4 border-transparent border-l-border-primary",
-  right: "start-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-r-4 border-transparent border-r-border-primary",
+  top: "top-full left-1/2 -translate-x-1/2 border-s-4 border-e-4 border-t-4 border-transparent border-t-border-primary",
+  bottom: "bottom-full left-1/2 -translate-x-1/2 border-s-4 border-e-4 border-b-4 border-transparent border-b-border-primary",
+  left: "end-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-s-4 border-transparent border-s-border-primary",
+  right: "start-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-e-4 border-transparent border-e-border-primary",
 };
 
 export function InfoTooltip({

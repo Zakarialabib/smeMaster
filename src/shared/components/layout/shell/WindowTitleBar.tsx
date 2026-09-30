@@ -68,11 +68,11 @@ function getBreadcrumb(pathname: string, t: (key: string) => string): string {
 function Dropdown({
   trigger,
   children,
-  align = "right",
+  align = "end",
 }: {
   trigger: React.ReactNode;
   children: React.ReactNode;
-  align?: "left" | "right";
+  align?: "start" | "end";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -103,7 +103,7 @@ function Dropdown({
       </button>
       {open && (
         <div
-          className={`absolute top-full ${align === "right" ? "right-0" : "left-0"} mt-1.5 min-w-[160px] bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 py-1.5 overflow-hidden animate-[fadeIn_150ms_ease-out]`}
+          className={`absolute top-full ${align === "end" ? "inset-inline-end-0" : "inset-inline-start-0"} mt-1.5 min-w-[160px] bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 py-1.5 overflow-hidden animate-[fadeIn_150ms_ease-out]`}
         >
           {children}
         </div>
@@ -133,7 +133,7 @@ function DropdownItem({
       }`}
     >
       <Icon size={15} />
-      <span className="flex-1 text-left">{label}</span>
+      <span className="flex-1 text-start">{label}</span>
       {selected && <Check size={13} className="text-accent" />}
     </button>
   );
@@ -325,7 +325,7 @@ export function WindowTitleBar({
         {/* Sync indicator (desktop: hidden on smallest screens) */}
         <span
           data-tauri-drag-region
-          className="hidden sm:flex items-center ml-1"
+          className="hidden sm:flex items-center ms-1"
           title={isSyncing ? t("common.syncing", "Syncing...") : t("common.synced", "Synced")}
         >
           {isSyncing ? (
@@ -356,7 +356,7 @@ export function WindowTitleBar({
                 <button
                   key={acct.id}
                   onClick={() => handleAccountSelect(acct.id)}
-                  className={`w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
+                  className={`w-full text-start px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
                     acct.id === activeAccountId
                       ? "text-accent bg-accent/10"
                       : "text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover"
@@ -386,7 +386,7 @@ export function WindowTitleBar({
             <Palette size={15} />
           </button>
           {colorsOpen && (
-            <div className="absolute right-0 top-full mt-1.5 flex items-center gap-1.5 px-2.5 py-1.5 bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 animate-[fadeIn_150ms_ease-out]">
+            <div className="absolute inset-inline-end-0 top-full mt-1.5 flex items-center gap-1.5 px-2.5 py-1.5 bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 animate-[fadeIn_150ms_ease-out]">
               {accentColors.map((ct) => (
                 <ColorDot
                   key={ct.id}
@@ -410,7 +410,7 @@ export function WindowTitleBar({
         </button>
 
         {/* Language dropdown */}
-        <Dropdown trigger={<Globe size={15} />} align="right">
+        <Dropdown trigger={<Globe size={15} />} align="end">
           {(SUPPORTED_LOCALES as readonly string[]).map((l) => {
             const locale = l as SupportedLocale;
             return (
@@ -440,7 +440,7 @@ export function WindowTitleBar({
         </button>
 
         {/* ── Desktop-only controls (hidden on small screens) ──── */}
-        <span className="hidden md:flex items-center gap-0.5 ml-1 pl-1.5 border-l border-white/10 dark:border-white/5">
+        <span className="hidden md:flex items-center gap-0.5 ms-1 ps-1.5 border-s border-white/10 dark:border-white/5">
           {/* Focus mode */}
           <button
             onClick={handleToggleFocusMode}

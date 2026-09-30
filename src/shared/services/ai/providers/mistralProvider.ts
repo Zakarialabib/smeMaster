@@ -1,62 +1,36 @@
-import { Mistral } from "@mistralai/mistralai";
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
-import { createProviderFactory } from "../providerFactory";
-import { buildSystemPrompt } from "../utils";
+// providers/mistralProvider.ts
+/**
+ * Mistral Provider — Mistral AI's API.
+ *
+ * Base URL: https://api.mistral.ai/v1
+ * Docs: https://docs.mistral.ai
+ *
+ * Uses the OpenAI-compatible endpoint for chat completions.
+ * Native Mistral SDK could replace this later for Mistral-specific features
+ * (e.g. Voxtral realtime STT), but the OpenAI-compatible path keeps the
+ * provider-agnostic contract clean.
+ */
 
-const factory = createProviderFactory(
-  (apiKey) => new Mistral({ apiKey }),
-);
+import type { AiProviderClient } from "../types";
+import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 
-export function createMistralProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient {
-  const client = factory.getClient(apiKey);
+const MISTRAL_BASE_URL = "https://api.mistral.ai";
 
-  return {
-    async complete(req: AiCompletionRequest): Promise<string> {
-      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
-      const response = await client.chat.complete({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: req.userContent },
-        ],
-        maxTokens: req.maxTokens ?? 1024,
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (typeof content === "string") return content;
-      if (Array.isArray(content)) {
-        return content.map((chunk) => ("text" in chunk ? chunk.text : "")).join("");
-      }
-      return "";
-    },
-
-    async testConnection(): Promise<boolean> {
-      try {
-        await client.chat.complete({
-          model,
-          messages: [{ role: "user", content: "Say hi" }],
-          maxTokens: 10,
-        });
-        return true;
-      } catch {
-        return false;
-      }
-    },
-
-    async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
-      try {
-        const response = await client.embeddings.create({
-          model: req.model ?? "mistral-embed",
-          inputs: req.input,
-        });
-        return response.data.map((e) => e.embedding ?? []);
-      } catch {
-        return null;
-      }
-    },
-  };
+export function createMistralProvider(
+  apiKey: string,
+  model: string,
+  aiLanguage = "auto",
+  embeddingModel = "mistral-embed",
+): AiProviderClient {
+  return createOpenAICompatibleProvider(
+    MISTRAL_BASE_URL,
+    apiKey,
+    model,
+    aiLanguage,
+    embeddingModel,
+  );
 }
 
 export function clearMistralProvider(): void {
-  factory.clear();
+  // No-op — stateless
 }

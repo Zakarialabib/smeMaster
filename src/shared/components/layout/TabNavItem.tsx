@@ -30,14 +30,14 @@ export function TabNavItem({
         disabled={disabled}
         className={`flex w-full items-center px-3 py-2 text-sm font-medium transition-colors duration-150 ${
           active
-            ? "bg-accent/10 text-accent border-l-2 border-accent"
+            ? "bg-accent/10 text-accent border-s-2 border-accent"
             : "hover:bg-bg-secondary/50"
         } ${disabled ? "text-text-tertiary/50 cursor-not-allowed" : ""}`}
       >
         {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
-        <span className="ml-2">{label}</span>
+        <span className="ms-2">{label}</span>
         {badge !== undefined && badge > 0 && (
-          <span className="ml-auto flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-accent text-xs text-white">
+          <span className="ms-auto flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-accent text-xs text-white">
             {badge}
           </span>
         )}
@@ -58,9 +58,9 @@ export function TabNavItem({
       } ${disabled ? "text-text-tertiary/50 cursor-not-allowed" : ""}`}
     >
       {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
-      <span className="ml-2">{label}</span>
+      <span className="ms-2">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="ml-auto flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-accent text-xs text-white">
+        <span className="ms-auto flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-accent text-xs text-white">
           {badge}
         </span>
       )}

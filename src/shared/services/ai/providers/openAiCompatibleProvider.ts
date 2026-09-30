@@ -1,5 +1,6 @@
+// providers/openAiCompatibleProvider.ts (enhanced)
 /**
- * Factory for OpenAI-compatible providers (custom, lmstudio, ollama).
+ * Factory for OpenAI-compatible providers (custom, lmstudio, ollama, byteplus, mistral).
  * Consolidates the common chat completion pattern with configurable baseURL and auth.
  */
 import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
@@ -23,10 +24,6 @@ interface EmbeddingResponse {
   model: string;
 }
 
-/**
- * Validates that a URL uses http or https protocol.
- * Used by both custom and lmstudio providers.
- */
 export function validateUrl(url: string): string {
   try {
     const parsed = new URL(url);
@@ -39,15 +36,12 @@ export function validateUrl(url: string): string {
   }
 }
 
-/**
- * Creates an OpenAI-compatible provider client.
- * Used by customProvider, lmstudioProvider, and ollamaProvider (via SDK).
- */
 export function createOpenAICompatibleProvider(
   baseUrl: string,
   apiKey: string,
   model: string,
   aiLanguage = "auto",
+  embeddingModel?: string,
 ): AiProviderClient {
   const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
 
@@ -63,25 +57,32 @@ export function createOpenAICompatibleProvider(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`AI provider error (${response.status}): ${errorText}`);
+      throw new Error(
+        `AI provider error (${response.status}) [model=${model}]: ${errorText}`,
+      );
     }
 
     return response.json();
   }
 
-  async function embeddingsRequest(input: string | string[]): Promise<EmbeddingResponse> {
+  async function embeddingsRequest(
+    input: string | string[],
+    embModel: string,
+  ): Promise<EmbeddingResponse> {
     const response = await fetch(`${normalizedBaseUrl}/v1/embeddings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ model, input }),
+      body: JSON.stringify({ model: embModel, input }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Embeddings error (${response.status}): ${errorText}`);
+      throw new Error(
+        `Embeddings error (${response.status}) [model=${embModel}]: ${errorText}`,
+      );
     }
 
     return response.json();
@@ -120,25 +121,13 @@ export function createOpenAICompatibleProvider(
     },
 
     async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
+      const embModel = req.model ?? embeddingModel ?? model;
       try {
-        const response = await embeddingsRequest(req.input);
+        const response = await embeddingsRequest(req.input, embModel);
         return response.data.map((d) => d.embedding);
       } catch {
         return null;
       }
     },
   };
-}
-
-/**
- * Shared test helper for provider connection tests.
- * Wraps a callable and returns true on success, false on any error.
- */
-export async function runTest(callable: () => Promise<unknown>): Promise<boolean> {
-  try {
-    await callable();
-    return true;
-  } catch {
-    return false;
-  }
 }

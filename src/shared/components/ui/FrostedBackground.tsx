@@ -30,7 +30,7 @@ export function FrostedBackground({
           width: "560px",
           height: "560px",
           top: "-10%",
-          left: "-4%",
+          insetInlineStart: "-4%",
           background:
             "radial-gradient(circle at 30% 40%, #0B57D0 0%, #1557B0 30%, #1A5CFF 50%, transparent 70%)",
           animationDuration: "26s",
@@ -44,8 +44,8 @@ export function FrostedBackground({
           width: "480px",
           height: "480px",
           top: "15%",
-          right: "-6%",
-          left: "auto",
+          insetInlineEnd: "-6%",
+          insetInlineStart: "auto",
           background:
             "radial-gradient(circle at 60% 30%, #C4B5FD 0%, #8B5CF6 30%, #6D28D9 50%, transparent 68%)",
           animationDuration: "22s",
@@ -59,7 +59,7 @@ export function FrostedBackground({
           width: "440px",
           height: "440px",
           bottom: "-6%",
-          left: "30%",
+          insetInlineStart: "30%",
           top: "auto",
           background:
             "radial-gradient(circle at 40% 60%, #FBCFE8 0%, #F472B6 30%, #E11D48 50%, transparent 68%)",
@@ -74,7 +74,7 @@ export function FrostedBackground({
           width: "400px",
           height: "400px",
           bottom: "18%",
-          left: "-5%",
+          insetInlineStart: "-5%",
           top: "auto",
           background:
             "radial-gradient(circle at 50% 50%, #CCFBF1 0%, #2DD4BF 30%, #0D9488 50%, transparent 68%)",
@@ -89,7 +89,7 @@ export function FrostedBackground({
           width: "360px",
           height: "360px",
           top: "5%",
-          left: "55%",
+          insetInlineStart: "55%",
           background:
             "radial-gradient(circle at 50% 40%, #FEF3C7 0%, #FBBF24 30%, #D97706 50%, transparent 68%)",
           animationDuration: "26s",
@@ -103,7 +103,7 @@ export function FrostedBackground({
           width: "680px",
           height: "680px",
           top: "35%",
-          left: "38%",
+          insetInlineStart: "38%",
           background:
             "radial-gradient(circle at 50% 50%, #E0E7FF 0%, #C4B5FD 20%, #6366F1 40%, transparent 60%)",
           animation: "orbitalDrift 32s ease-in-out infinite alternate",

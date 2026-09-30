@@ -228,7 +228,7 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                 )}
 
                 {item.shortcut && !hasSubmenu && (
-                  <span className="text-text-tertiary ml-4 shrink-0">{item.shortcut}</span>
+                  <span className="text-text-tertiary ms-4 shrink-0">{item.shortcut}</span>
                 )}
               </button>
             </div>
