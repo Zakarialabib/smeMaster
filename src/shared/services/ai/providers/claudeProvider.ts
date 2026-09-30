@@ -1,6 +1,6 @@
 // providers/claudeProvider.ts
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiProviderClient, AiCompletionRequest, ModelOption } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
 import { createProviderFactory } from "../providerFactory";
 import { buildSystemPrompt } from "../utils";
 import type {
@@ -9,6 +9,8 @@ import type {
   TextToSpeechCapable,
   RealtimeVoiceCapable,
   ModelDiscoveryCapable,
+  EmbeddingCapable,
+  EmbeddingResult,
   SttOptions,
   TtsOptions,
   RealtimeOptions,
@@ -23,7 +25,7 @@ export function createClaudeProvider(
   apiKey: string,
   model: string,
   aiLanguage = "auto",
-): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
+): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -94,6 +96,10 @@ export function createClaudeProvider(
       } catch {
         return [];
       }
+    },
+
+    async getEmbeddings(_req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      throw new Error("Embeddings not supported by Claude");
     },
   };
 }

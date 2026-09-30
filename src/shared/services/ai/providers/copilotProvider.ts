@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { AiProviderClient, AiCompletionRequest, ModelOption } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
 import { createProviderFactory } from "../providerFactory";
 import type {
   StreamingCapable,
@@ -7,6 +7,8 @@ import type {
   TextToSpeechCapable,
   RealtimeVoiceCapable,
   ModelDiscoveryCapable,
+  EmbeddingCapable,
+  EmbeddingResult,
   SttOptions,
   TtsOptions,
   RealtimeOptions,
@@ -38,7 +40,7 @@ function buildSystemPrompt(basePrompt: string, aiLanguage: string): string {
   return `${basePrompt}\n\nRespond in ${langName}.`;
 }
 
-export function createCopilotProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
+export function createCopilotProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -108,6 +110,10 @@ export function createCopilotProvider(apiKey: string, model: string, aiLanguage 
       } catch {
         return [];
       }
+    },
+
+    async getEmbeddings(_req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      throw new Error("Embeddings not supported by Copilot");
     },
   };
 }

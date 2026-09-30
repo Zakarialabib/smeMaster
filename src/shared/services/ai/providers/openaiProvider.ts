@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { z } from "zod";
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
 import { createProviderFactory } from "../providerFactory";
 import { buildSystemPrompt } from "../utils";
 import type {
@@ -14,6 +14,7 @@ import type {
   SpeechToTextCapable,
   TextToSpeechCapable,
   RealtimeVoiceCapable,
+  ModelDiscoveryCapable,
   ReasoningEffort,
   EmbeddingResult,
   ToolDefinition,
@@ -28,7 +29,7 @@ const factory = createProviderFactory(
   (apiKey) => new OpenAI({ apiKey, dangerouslyAllowBrowser: true }),
 );
 
-export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable {
+export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -270,6 +271,15 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
       });
 
       return new Blob([await response.arrayBuffer()], { type: "audio/mpeg" });
+    },
+
+    async listModels(): Promise<ModelOption[]> {
+      try {
+        const response = await client.models.list();
+        return response.data.map((m) => ({ id: m.id, label: m.id }));
+      } catch {
+        return [];
+      }
     },
 
     async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {

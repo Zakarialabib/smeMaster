@@ -339,16 +339,86 @@ export function createMistralProvider(
       }
     },
 
-    async transcribe(_audio: Blob, _options?: SttOptions): Promise<string> {
-      throw new Error("STT not supported by this provider");
+    async transcribe(audio: Blob, options?: SttOptions): Promise<string> {
+      const formData = new FormData();
+      formData.append("file", audio, "audio.webm");
+      formData.append("model", options?.model ?? "voxtral-realtime");
+      if (options?.language) {
+        formData.append("language", options.language);
+      }
+
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/audio/transcriptions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral STT error (${response.status})`);
+      }
+
+      const data = await response.json() as { text?: string };
+      return data.text ?? "";
     },
 
-    async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
-      throw new Error("TTS not supported by this provider");
+    async synthesize(text: string, options?: TtsOptions): Promise<Blob> {
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/audio/speech`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: options?.model ?? "voxtral-tts",
+          input: text,
+          voice: options?.voice,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral TTS error (${response.status})`);
+      }
+
+      return response.blob();
     },
 
-    async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
-      throw new Error("Realtime voice not supported by this provider");
+    async startRealtimeSession(options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+      const ws = new WebSocket(`wss://api.mistral.ai/v1/realtime?model=${encodeURIComponent(options?.model ?? "voxtral-realtime")}&voice=${encodeURIComponent(options?.voice ?? "default")}`);
+
+      let transcriptCb: ((text: string) => void) | null = null;
+      let responseCb: ((text: string) => void) | null = null;
+
+      ws.onmessage = (event: MessageEvent) => {
+        try {
+          const msg = JSON.parse(event.data as string) as { type?: string; text?: string };
+          if (msg.type === "transcript" && msg.text && transcriptCb) {
+            transcriptCb(msg.text);
+          } else if (msg.type === "response" && msg.text && responseCb) {
+            responseCb(msg.text);
+          }
+        } catch {
+          // skip malformed messages
+        }
+      };
+
+      return {
+        sendAudio(audio: Blob) {
+          audio.arrayBuffer().then((buf) => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(buf);
+            }
+          });
+        },
+        onTranscript(cb: (text: string) => void) {
+          transcriptCb = cb;
+        },
+        onResponse(cb: (text: string) => void) {
+          responseCb = cb;
+        },
+        close() {
+          ws.close();
+        },
+      };
     },
 
     async listModels(): Promise<ModelOption[]> {

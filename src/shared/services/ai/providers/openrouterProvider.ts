@@ -9,7 +9,7 @@
  * No native embeddings, STT, or TTS — text generation only.
  */
 
-import type { AiProviderClient, AiCompletionRequest, ModelOption } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
 import { buildSystemPrompt } from "../utils";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 import type {
@@ -18,6 +18,8 @@ import type {
   TextToSpeechCapable,
   RealtimeVoiceCapable,
   ModelDiscoveryCapable,
+  EmbeddingCapable,
+  EmbeddingResult,
   SttOptions,
   TtsOptions,
   RealtimeOptions,
@@ -30,7 +32,7 @@ export function createOpenRouterProvider(
   apiKey: string,
   model: string,
   aiLanguage = "auto",
-): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
+): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
   const baseProvider = createOpenAICompatibleProvider(
     OPENROUTER_BASE_URL,
     apiKey,
@@ -115,6 +117,10 @@ export function createOpenRouterProvider(
       } catch {
         return [];
       }
+    },
+
+    async getEmbeddings(_req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      throw new Error("Embeddings not supported by OpenRouter");
     },
   };
 }
