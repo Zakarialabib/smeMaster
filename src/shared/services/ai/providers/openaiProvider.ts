@@ -7,6 +7,9 @@ import type {
   StructuredOutputCapable,
   ToolCallingCapable,
   ReasoningCapable,
+  VisionCapable,
+  ContextCachingCapable,
+  BatchProcessingCapable,
   ReasoningEffort,
   EmbeddingResult,
   ToolDefinition,
@@ -17,7 +20,7 @@ const factory = createProviderFactory(
   (apiKey) => new OpenAI({ apiKey, dangerouslyAllowBrowser: true }),
 );
 
-export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable {
+export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -142,7 +145,90 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
 
       return response.choices[0]?.message?.content ?? "";
     },
+
+    async completeWithImage(
+      req: AiCompletionRequest,
+      image: Blob,
+      options?: { detail?: "low" | "high" },
+    ): Promise<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const base64 = await blobToBase64(image);
+      const response = await client.chat.completions.create({
+        model,
+        max_tokens: req.maxTokens ?? 1024,
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: req.userContent },
+              { type: "image_url", image_url: { url: base64, detail: options?.detail ?? "auto" } },
+            ],
+          },
+        ],
+      });
+
+      return response.choices[0]?.message?.content ?? "";
+    },
+
+    async completeWithCachedContext(
+      req: AiCompletionRequest,
+      cachedContext: string,
+    ): Promise<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const response = await client.chat.completions.create({
+        model,
+        max_tokens: req.maxTokens ?? 1024,
+        messages: [
+          { role: "system", content: `${systemPrompt}\n\n${cachedContext}` },
+          { role: "user", content: req.userContent },
+        ],
+      });
+
+      return response.choices[0]?.message?.content ?? "";
+    },
+
+    async completeBatch(
+      requests: AiCompletionRequest[],
+      options?: { maxConcurrent?: number },
+    ): Promise<string[]> {
+      const maxConcurrent = options?.maxConcurrent ?? 5;
+      const results: string[] = [];
+
+      for (let i = 0; i < requests.length; i += maxConcurrent) {
+        const batch = requests.slice(i, i + maxConcurrent);
+        const batchResults = await Promise.all(
+          batch.map(async (req) => {
+            const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+            const response = await client.chat.completions.create({
+              model,
+              max_tokens: req.maxTokens ?? 1024,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: req.userContent },
+              ],
+            });
+            return response.choices[0]?.message?.content ?? "";
+          }),
+        );
+        results.push(...batchResults);
+      }
+
+      return results;
+    },
   };
+}
+
+/**
+ * Convert a Blob to a base64 data URL for the OpenAI API.
+ */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 /**

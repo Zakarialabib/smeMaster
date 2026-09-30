@@ -8,6 +8,12 @@ import {
   isTextToSpeechCapable,
   isRealtimeVoiceCapable,
   isModelDiscoveryCapable,
+  isStructuredOutputCapable,
+  isToolCallingCapable,
+  isReasoningCapable,
+  isVisionCapable,
+  isContextCachingCapable,
+  isBatchProcessingCapable,
 } from "../capabilities";
 import {
   MODEL_REGISTRY,
@@ -18,7 +24,7 @@ import {
   getEmbeddingSpaceId,
   getEmbeddingDimensions,
 } from "../modelRegistry";
-import { DEFAULT_TASK_ROUTES, getAllTasks, getProvidersForTask } from "../taskRouter";
+import { DEFAULT_TASK_ROUTES, getAllTasks, getProvidersForTask, scoreProviderForTask, getBestProviderForTask } from "../taskRouter";
 import type { AiProvider } from "../types";
 
 describe("capability type guards", () => {
@@ -63,11 +69,41 @@ describe("capability type guards", () => {
     expect(isModelDiscoveryCapable({ listModels: async () => [] })).toBe(true);
     expect(isModelDiscoveryCapable({})).toBe(false);
   });
+
+  it("isStructuredOutputCapable returns true for object with completeStructured()", () => {
+    expect(isStructuredOutputCapable({ completeStructured: async () => ({}) })).toBe(true);
+    expect(isStructuredOutputCapable({})).toBe(false);
+  });
+
+  it("isToolCallingCapable returns true for object with completeWithTools()", () => {
+    expect(isToolCallingCapable({ completeWithTools: async () => ({ content: "", toolCalls: [] }) })).toBe(true);
+    expect(isToolCallingCapable({})).toBe(false);
+  });
+
+  it("isReasoningCapable returns true for object with completeWithReasoning()", () => {
+    expect(isReasoningCapable({ completeWithReasoning: async () => "text" })).toBe(true);
+    expect(isReasoningCapable({})).toBe(false);
+  });
+
+  it("isVisionCapable returns true for object with completeWithImage()", () => {
+    expect(isVisionCapable({ completeWithImage: async () => "text" })).toBe(true);
+    expect(isVisionCapable({})).toBe(false);
+  });
+
+  it("isContextCachingCapable returns true for object with completeWithCachedContext()", () => {
+    expect(isContextCachingCapable({ completeWithCachedContext: async () => "text" })).toBe(true);
+    expect(isContextCachingCapable({})).toBe(false);
+  });
+
+  it("isBatchProcessingCapable returns true for object with completeBatch()", () => {
+    expect(isBatchProcessingCapable({ completeBatch: async () => [] })).toBe(true);
+    expect(isBatchProcessingCapable({})).toBe(false);
+  });
 });
 
 describe("model registry", () => {
   it("contains models for all providers", () => {
-    const providers: AiProvider[] = ["claude", "openai", "gemini", "mistral", "openrouter"];
+    const providers: AiProvider[] = ["claude", "openai", "gemini", "mistral", "byteplus", "openrouter"];
     for (const provider of providers) {
       const models = getModelsForProvider(provider);
       expect(models.length).toBeGreaterThan(0);
@@ -127,6 +163,13 @@ describe("model registry", () => {
     const uniqueSpaceIds = new Set(spaceIds);
     expect(spaceIds.length).toBe(uniqueSpaceIds.size);
   });
+
+  it("contains BytePlus models", () => {
+    const byteplusModels = getModelsForProvider("byteplus");
+    expect(byteplusModels.length).toBeGreaterThan(0);
+    expect(byteplusModels.some((m) => m.id === "doubao-pro-32k")).toBe(true);
+    expect(byteplusModels.some((m) => m.id === "doubao-lite-32k")).toBe(true);
+  });
 });
 
 describe("task router", () => {
@@ -137,19 +180,23 @@ describe("task router", () => {
       expect(DEFAULT_TASK_ROUTES[task]).toBeDefined();
       expect(DEFAULT_TASK_ROUTES[task].provider).toBeDefined();
       expect(DEFAULT_TASK_ROUTES[task].model).toBeDefined();
+      expect(DEFAULT_TASK_ROUTES[task].fallbacks).toBeDefined();
+      expect(Array.isArray(DEFAULT_TASK_ROUTES[task].fallbacks)).toBe(true);
     }
   });
 
-  it("email.classify routes to openai:gpt-4.1-nano", () => {
+  it("email.classify routes to openai:gpt-4.1-nano with fallbacks", () => {
     const route = DEFAULT_TASK_ROUTES["email.classify"];
     expect(route.provider).toBe("openai");
     expect(route.model).toBe("gpt-4.1-nano");
+    expect(route.fallbacks.length).toBeGreaterThan(0);
   });
 
-  it("email.compose routes to claude:claude-sonnet-4-20250514", () => {
+  it("email.compose routes to claude with fallbacks", () => {
     const route = DEFAULT_TASK_ROUTES["email.compose"];
     expect(route.provider).toBe("claude");
     expect(route.model).toBe("claude-sonnet-4-20250514");
+    expect(route.fallbacks.length).toBeGreaterThan(0);
   });
 
   it("rag.query routes to openai:text-embedding-3-small", () => {
@@ -169,5 +216,16 @@ describe("task router", () => {
     expect(providers).toContain("openai");
     expect(providers).toContain("gemini");
     expect(providers).toContain("mistral");
+  });
+
+  it("scoreProviderForTask returns positive scores for capable providers", () => {
+    const score = scoreProviderForTask("openai", "email.classify");
+    expect(score).toBeGreaterThan(0);
+  });
+
+  it("getBestProviderForTask returns a valid provider", () => {
+    const provider = getBestProviderForTask("email.classify");
+    expect(provider).toBeDefined();
+    expect(typeof provider).toBe("string");
   });
 });

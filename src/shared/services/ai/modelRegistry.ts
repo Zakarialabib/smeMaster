@@ -222,6 +222,24 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
     embeddingSpaceId: "mistral-embed-1024",
   },
 
+  // ── BytePlus ────────────────────────────────────────────────────────────
+  {
+    id: "doubao-pro-32k",
+    provider: "byteplus",
+    label: "Doubao Pro 32K",
+    tier: "flagship",
+    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true },
+    contextWindow: 32_000,
+  },
+  {
+    id: "doubao-lite-32k",
+    provider: "byteplus",
+    label: "Doubao Lite 32K",
+    tier: "fast",
+    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true },
+    contextWindow: 32_000,
+  },
+
   // ── OpenRouter ──────────────────────────────────────────────────────────
   {
     id: "openai/gpt-4o-mini",
