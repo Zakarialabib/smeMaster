@@ -308,16 +308,34 @@ impl CalendarDriver for CalDavDriver {
     /// List all CalDAV calendars for the account.
     ///
     /// For CalDAV, this queries the local DB for calendars with
-    /// `provider = 'caldav'` and the matching account_id.
+    /// `provider = 'caldav'` and the matching company. Callers may pass an
+    /// account id (frontend) or a company id (sync), so an account id is
+    /// resolved to its owning company first; the raw input is used as a
+    /// company id when no account matches.
     async fn list_calendars(
         &self,
         account_id: &str,
     ) -> Result<Vec<Calendar>, CalendarDriverError> {
+        // `calendars` has no `account_id` column — ownership is `company_id`
+        // (009_calendar.sql, FK → companies.id).
+        let company_id: Option<String> =
+            sqlx::query_scalar("SELECT company_id FROM accounts WHERE id = ?1")
+                .bind(account_id)
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(|e| {
+                    CalendarDriverError::new(
+                        "DB_ERROR",
+                        format!("Failed to resolve account {account_id}: {e}"),
+                    )
+                })?;
+        let company_id = company_id.unwrap_or_else(|| account_id.to_string());
+
         let calendars = sqlx::query_as::<_, Calendar>(
-            "SELECT * FROM calendars WHERE provider = 'caldav' AND account_id = ?1 \
+            "SELECT * FROM calendars WHERE provider = 'caldav' AND company_id = ?1 \
              ORDER BY display_name ASC",
         )
-        .bind(account_id)
+        .bind(&company_id)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| {
