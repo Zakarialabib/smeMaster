@@ -6,6 +6,9 @@
  * selection. Config is persisted via the settings store; no audio engine is
  * bundled yet, so this section manages provider connection details.
  *
+ * Integrates with the capability system: shows which providers support
+ * which voice capabilities, and allows reusing AI provider API keys.
+ *
  * @module
  */
 
@@ -19,8 +22,9 @@ import { HelpCard } from "@features/settings/components/HelpCard";
 import { Button } from "@shared/components/ui/Button";
 import { TextField } from "@shared/components/ui/TextField";
 import { getSetting, setSetting, getSecureSetting, setSecureSetting } from "@features/settings/db/settings";
+import { getVoiceConfig, getVoiceCapabilities, type VoiceProviderType } from "@shared/services/ai/voiceService";
 
-type VoiceProvider = "browser" | "openai" | "elevenlabs" | "lmstudio" | "custom";
+type VoiceProvider = VoiceProviderType;
 
 export default function VoiceSettings() {
   const [provider, setProvider] = useState<VoiceProvider>("browser");
@@ -31,21 +35,19 @@ export default function VoiceSettings() {
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [sttEnabled, setSttEnabled] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [capabilities, setCapabilities] = useState<{ stt: boolean; tts: boolean }>({ stt: false, tts: false });
 
   useEffect(() => {
     (async () => {
-      const p = await getSetting("voice_provider");
-      if (p === "openai" || p === "elevenlabs" || p === "lmstudio" || p === "custom") setProvider(p);
-      const url = await getSetting("voice_base_url");
-      if (url) setBaseUrl(url);
-      const key = await getSecureSetting("voice_api_key");
-      if (key) setApiKey(key);
-      const voice = await getSetting("voice_tts_voice");
-      if (voice) setTtsVoice(voice);
-      const model = await getSetting("voice_stt_model");
-      if (model) setSttModel(model);
-      setTtsEnabled((await getSetting("voice_tts_enabled")) !== "false");
-      setSttEnabled((await getSetting("voice_stt_enabled")) !== "false");
+      const config = await getVoiceConfig();
+      setProvider(config.provider);
+      setBaseUrl(config.baseUrl);
+      setApiKey(config.apiKey);
+      setTtsVoice(config.ttsVoice);
+      setSttModel(config.sttModel);
+      setTtsEnabled(config.ttsEnabled);
+      setSttEnabled(config.sttEnabled);
+      setCapabilities(getVoiceCapabilities(config));
     })();
   }, []);
 
@@ -94,8 +96,18 @@ export default function VoiceSettings() {
             <option value="elevenlabs">ElevenLabs</option>
             <option value="lmstudio">LM Studio (local)</option>
             <option value="custom">Custom (OpenAI-compatible)</option>
+            <option value="agent-core">Agent Core (Python)</option>
           </select>
         </SettingRow>
+
+        <div className="flex gap-2 text-xs">
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded ${capabilities.stt ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+            {capabilities.stt ? "✓" : "✗"} STT
+          </span>
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded ${capabilities.tts ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+            {capabilities.tts ? "✓" : "✗"} TTS
+          </span>
+        </div>
 
         <p className="text-xs text-text-tertiary">
           {provider === "browser"

@@ -1725,6 +1725,19 @@
     "createdLabel": "Created",
     "algorithms": "Algorithms"
   },
+  "columns": {
+    "title": "Columns",
+    "reset": "Reset to defaults",
+    "ids": {
+      "checkbox": "Selection",
+      "star": "Star",
+      "attachments": "Attachments",
+      "priority": "Priority",
+      "subtasks": "Subtasks",
+      "actions": "Actions",
+      "avatar": "Avatar"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

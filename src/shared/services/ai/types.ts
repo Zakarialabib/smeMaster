@@ -2,6 +2,7 @@ export type AiProvider =
   | "claude"
   | "openai"
   | "gemini"
+  | "mistral"
   | "ollama"
   | "copilot"
   | "custom"
@@ -49,6 +50,7 @@ export const DEFAULT_MODELS: Record<AiProvider, string> = {
   claude: "claude-haiku-4-5-20251001",
   openai: "gpt-4o-mini",
   gemini: "gemini-2.5-flash-preview-05-20",
+  mistral: "mistral-small",
   ollama: "llama3.2",
   copilot: "openai/gpt-4o-mini",
   custom: "gpt-4o-mini",
@@ -81,6 +83,11 @@ export const PROVIDER_MODELS: Record<
     { id: "gemini-2.5-flash-preview-05-20", label: "Gemini 2.5 Flash" },
     { id: "gemini-2.5-pro-preview-05-06", label: "Gemini 2.5 Pro" },
   ],
+  mistral: [
+    { id: "mistral-small", label: "Mistral Small" },
+    { id: "mistral-large-3", label: "Mistral Large 3" },
+    { id: "mistral-embed", label: "Mistral Embed" },
+  ],
   copilot: [
     { id: "openai/gpt-4o-mini", label: "GPT-4o Mini (Low)" },
     { id: "openai/gpt-4.1-nano", label: "GPT-4.1 Nano (Low)" },
@@ -106,6 +113,7 @@ export const MODEL_SETTINGS: Record<
   claude: "claude_model",
   openai: "openai_model",
   gemini: "gemini_model",
+  mistral: "mistral_model",
   copilot: "copilot_model",
   openrouter: "openrouter_model",
 };

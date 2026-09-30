@@ -45,6 +45,7 @@ export default function AiTab() {
   const [claudeApiKey, setClaudeApiKey] = useState("");
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [mistralApiKey, setMistralApiKey] = useState("");
   const [copilotApiKey, setCopilotApiKey] = useState("");
   const [ollamaServerUrl, setOllamaServerUrl] = useState("http://localhost:11434");
   const [ollamaModel, setOllamaModel] = useState("llama3.2");
@@ -54,6 +55,7 @@ export default function AiTab() {
   const [claudeModel, setClaudeModel] = useState("claude-haiku-4-5-20251001");
   const [openaiModel, setOpenaiModel] = useState("gpt-4o-mini");
   const [geminiModel, setGeminiModel] = useState("gemini-2.5-flash-preview-05-20");
+  const [mistralModel, setMistralModel] = useState("mistral-small");
   const [copilotModel, setCopilotModel] = useState("openai/gpt-4o-mini");
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiLanguage, setAiLanguage] = useState("auto");
@@ -114,12 +116,16 @@ export default function AiTab() {
       if (openaiModelVal) setOpenaiModel(openaiModelVal);
       const geminiModelVal = await getSetting("gemini_model");
       if (geminiModelVal) setGeminiModel(geminiModelVal);
+      const mistralModelVal = await getSetting("mistral_model");
+      if (mistralModelVal) setMistralModel(mistralModelVal);
       const aiKey = await getSecureSetting("claude_api_key");
       setClaudeApiKey(aiKey ?? "");
       const oaiKey = await getSecureSetting("openai_api_key");
       setOpenaiApiKey(oaiKey ?? "");
       const gemKey = await getSecureSetting("gemini_api_key");
       setGeminiApiKey(gemKey ?? "");
+      const mistralKey = await getSecureSetting("mistral_api_key");
+      setMistralApiKey(mistralKey ?? "");
       const copKey = await getSecureSetting("copilot_api_key");
       setCopilotApiKey(copKey ?? "");
       const copilotModelVal = await getSetting("copilot_model");
@@ -312,6 +318,7 @@ export default function AiTab() {
                 <option value="claude">{t('settings.providerClaude')}</option>
                 <option value="openai">{t('settings.providerOpenai')}</option>
                 <option value="gemini">{t('settings.providerGemini')}</option>
+                <option value="mistral">{t('settings.providerMistral')}</option>
                 <option value="ollama">{t('settings.providerOllama')}</option>
                 <option value="copilot">{t('settings.providerCopilot')}</option>
                 <option value="custom">{t('settings.customProvider')}</option>
@@ -323,6 +330,7 @@ export default function AiTab() {
               {aiProvider === "claude" && t('settings.usesModel', { model: PROVIDER_MODELS.claude.find((m) => m.id === claudeModel)?.label ?? claudeModel })}
               {aiProvider === "openai" && t('settings.usesModel', { model: PROVIDER_MODELS.openai.find((m) => m.id === openaiModel)?.label ?? openaiModel })}
               {aiProvider === "gemini" && t('settings.usesModel', { model: PROVIDER_MODELS.gemini.find((m) => m.id === geminiModel)?.label ?? geminiModel })}
+              {aiProvider === "mistral" && t('settings.usesModel', { model: PROVIDER_MODELS.mistral.find((m) => m.id === mistralModel)?.label ?? mistralModel })}
               {aiProvider === "ollama" && t('settings.providerOllamaDescription')}
               {aiProvider === "copilot" && t('settings.usesModelCopilot', { model: PROVIDER_MODELS.copilot.find((m) => m.id === copilotModel)?.label ?? copilotModel })}
               {aiProvider === "custom" && t('settings.providerCustomDescription')}
@@ -783,12 +791,14 @@ export default function AiTab() {
                         claude: "claude_model",
                         openai: "openai_model",
                         gemini: "gemini_model",
+                        mistral: "mistral_model",
                         copilot: "copilot_model",
                       } as const;
-                      const modelKey = modelSettingMap[aiProvider as "claude" | "openai" | "gemini" | "copilot"];
+                      const modelKey = modelSettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"];
                       if (aiProvider === "claude") setClaudeModel(val);
                       else if (aiProvider === "openai") setOpenaiModel(val);
                       else if (aiProvider === "copilot") setCopilotModel(val);
+                      else if (aiProvider === "mistral") setMistralModel(val);
                       else setGeminiModel(val);
                       await setSetting(modelKey, val);
                       const { clearProviderClients } = await import("@shared/services/ai/providerManager");
@@ -796,7 +806,7 @@ export default function AiTab() {
                     }}
                     className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
                   >
-                    {PROVIDER_MODELS[aiProvider as "claude" | "openai" | "gemini" | "copilot"].map((m) => (
+                    {PROVIDER_MODELS[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"].map((m) => (
                       <option key={m.id} value={m.id}>{m.label}</option>
                     ))}
                   </select>
@@ -810,15 +820,17 @@ export default function AiTab() {
                         claude: "claude_api_key",
                         openai: "openai_api_key",
                         gemini: "gemini_api_key",
+                        mistral: "mistral_api_key",
                         copilot: "copilot_api_key",
                       } as const;
                       const keyValue =
                         aiProvider === "claude" ? claudeApiKey.trim()
                         : aiProvider === "openai" ? openaiApiKey.trim()
                         : aiProvider === "copilot" ? copilotApiKey.trim()
+                        : aiProvider === "mistral" ? mistralApiKey.trim()
                         : geminiApiKey.trim();
                       if (keyValue) {
-                        const keyName = keySettingMap[aiProvider as "claude" | "openai" | "gemini" | "copilot"];
+                        const keyName = keySettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"];
                         await setSecureSetting(keyName, keyValue);
                         const { clearProviderClients } = await import("@shared/services/ai/providerManager");
                         clearProviderClients();
@@ -830,6 +842,7 @@ export default function AiTab() {
                       !(aiProvider === "claude" ? claudeApiKey.trim()
                       : aiProvider === "openai" ? openaiApiKey.trim()
                       : aiProvider === "copilot" ? copilotApiKey.trim()
+                      : aiProvider === "mistral" ? mistralApiKey.trim()
                       : geminiApiKey.trim())
                     }
                   >
