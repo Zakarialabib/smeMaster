@@ -22,7 +22,12 @@ export function createMistralProvider(apiKey: string, model: string, aiLanguage 
         maxTokens: req.maxTokens ?? 1024,
       });
 
-      return response.choices[0]?.message?.content ?? "";
+      const content = response.choices[0]?.message?.content;
+      if (typeof content === "string") return content;
+      if (Array.isArray(content)) {
+        return content.map((chunk) => ("text" in chunk ? chunk.text : "")).join("");
+      }
+      return "";
     },
 
     async testConnection(): Promise<boolean> {
@@ -42,9 +47,9 @@ export function createMistralProvider(apiKey: string, model: string, aiLanguage 
       try {
         const response = await client.embeddings.create({
           model: req.model ?? "mistral-embed",
-          input: req.input,
+          inputs: req.input,
         });
-        return response.data.map((e: { embedding: number[] }) => e.embedding);
+        return response.data.map((e) => e.embedding ?? []);
       } catch {
         return null;
       }

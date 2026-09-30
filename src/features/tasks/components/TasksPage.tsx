@@ -234,7 +234,6 @@ export function TasksPage() {
     },
     pageSize: 50,
     deps: [accountId, includeCompleted, hasActiveFilter, filterPriority, dateFilter, searchQuery, sortField, sortDirection],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [accountId, includeCompleted, hasActiveFilter, filterPriority, dateFilter, searchQuery, sortField, sortDirection]);
 
   const {
@@ -430,7 +429,7 @@ export function TasksPage() {
     } else {
       notify(t('tasks.failedToCreate'), result.error);
     }
-  }, [accountId, resetTasks]);
+  }, [accountId, resetTasks, t]);
 
   const handleModalCreate = useCallback(async (_taskId: string) => {
     await resetTasks();
@@ -463,7 +462,7 @@ export function TasksPage() {
       useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 0 : 1 });
       notify(t('tasks.failedToUpdateTask'), result.error);
     }
-  }, [tasks, resetTasks]);
+  }, [tasks, resetTasks, t]);
 
   const handleDelete = useCallback(async (id: string) => {
     // Optimistic UI — remove from store immediately
@@ -479,7 +478,7 @@ export function TasksPage() {
       notify(t('tasks.failedToUpdateTask'), result.error);
       await resetTasks();
     }
-  }, [resetTasks]);
+  }, [resetTasks, t]);
 
   const handleArchiveCompleted = useCallback(async () => {
     const completedTasks = tasks.filter((t) => t.is_completed);
@@ -508,7 +507,7 @@ export function TasksPage() {
     }
 
     await resetTasks();
-  }, [tasks, resetTasks]);
+  }, [tasks, resetTasks, t]);
 
   const handleTogglePriority = useCallback(async (id: string) => {
     const task = tasks.find((t) => t.id === id);
@@ -527,7 +526,7 @@ export function TasksPage() {
       useTaskStore.getState().updateTaskInStore(id, { priority: task.priority });
       notify(t('tasks.failedToUpdateTask'), result.error);
     }
-  }, [tasks, resetTasks]);
+  }, [tasks, resetTasks, t]);
 
   const handleOpenDetail = useCallback((id: string) => {
     setSelectedTaskId(id);
@@ -597,7 +596,7 @@ export function TasksPage() {
       notify(t('tasks.someFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
-  }, [selectedIds, resetTasks]);
+  }, [selectedIds, resetTasks, t]);
 
   const handleBulkDelete = useCallback(async () => {
     let deletedCount = 0;
@@ -618,7 +617,7 @@ export function TasksPage() {
       notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
-  }, [selectedIds, resetTasks]);
+  }, [selectedIds, resetTasks, t]);
 
   const handleMobileCardTap = useCallback((taskId: string) => {
     setMobileExpandedId((prev) => (prev === taskId ? null : taskId));
@@ -650,7 +649,7 @@ export function TasksPage() {
     } else {
       notify(t('tasks.failedToReschedule'), result.error);
     }
-  }, [resetTasks]);
+  }, [resetTasks, t]);
 
   const handleKanbanTaskMove = useCallback(async (taskId: string, newColumn: string) => {
     if (newColumn === "completed") {
