@@ -75,12 +75,12 @@ export default function ItemList() {
       {/* Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search size={16} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or SKU..."
-            className="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
+            className="w-full glass-input rounded-xl ps-9 pe-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
           />
         </div>
         <Button icon={<Plus size={16} />} onClick={openNew}>
@@ -96,13 +96,13 @@ export default function ItemList() {
           <EmptyState hasItems={items.length > 0} onNew={openNew} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Name</th>
                   <th className="px-5 py-3 font-semibold">Type</th>
                   <th className="px-5 py-3 font-semibold hidden lg:table-cell">SKU</th>
-                  <th className="px-5 py-3 font-semibold text-right">Unit Price</th>
+                  <th className="px-5 py-3 font-semibold text-end">Unit Price</th>
                   <th className="px-5 py-3 font-semibold text-center">Stock</th>
                   <th className="px-5 py-3" />
                 </tr>
@@ -130,7 +130,7 @@ export default function ItemList() {
                     <td className="px-5 py-3.5 text-text-tertiary font-mono text-xs hidden lg:table-cell">
                       {it.sku ?? '—'}
                     </td>
-                    <td className="px-5 py-3.5 text-right font-semibold text-text-primary">
+                    <td className="px-5 py-3.5 text-end font-semibold text-text-primary">
                       {formatMoney(it.sell_price)}
                     </td>
                     <td className="px-5 py-3.5 text-center">
@@ -142,7 +142,7 @@ export default function ItemList() {
                         <span className="text-text-secondary text-sm">{it.stock_qty}</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-5 py-3.5 text-end">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <IconBtn
                           title="Delete"

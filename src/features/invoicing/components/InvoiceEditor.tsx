@@ -278,7 +278,7 @@ export default function InvoiceEditor() {
                 <button
                   type="button"
                   onClick={() => setClientOpen((o) => !o)}
-                  className="w-full glass-input rounded-xl px-3.5 py-2.5 flex items-center justify-between text-left"
+                  className="w-full glass-input rounded-xl px-3.5 py-2.5 flex items-center justify-between text-start"
                 >
                   <span className={selectedClient ? 'text-text-primary' : 'text-text-tertiary'}>
                     {selectedClient ? selectedClient.display_name : 'Select a client'}
@@ -319,7 +319,7 @@ export default function InvoiceEditor() {
             <div className="mt-4 flex items-center justify-between gap-4 border-t border-border-primary pt-4">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-text-tertiary uppercase">Discount</span>
-                <input type="number" min={0} value={discount} onChange={(e) => { setDiscount(Math.max(0, Number(e.target.value))); markDirty(); }} className="glass-input rounded-lg px-2.5 py-1.5 w-28 text-right text-text-primary tabular-nums" />
+                <input type="number" min={0} value={discount} onChange={(e) => { setDiscount(Math.max(0, Number(e.target.value))); markDirty(); }} className="glass-input rounded-lg px-2.5 py-1.5 w-28 text-end text-text-primary tabular-nums" />
               </div>
               <InvoiceTotals subtotal={subtotal} taxTotal={taxTotal} discount={discount} total={total} currency={currency} />
             </div>
@@ -353,7 +353,7 @@ export default function InvoiceEditor() {
                 );
               })}
               {status !== 'cancelled' && (
-                <button type="button" onClick={() => handleStatus('cancelled')} className="ml-2 flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-text-tertiary hover:text-danger hover:bg-danger/10 whitespace-nowrap">
+                <button type="button" onClick={() => handleStatus('cancelled')} className="ms-2 flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-text-tertiary hover:text-danger hover:bg-danger/10 whitespace-nowrap">
                   <X size={15} /> Cancel
                 </button>
               )}
@@ -423,7 +423,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function DocTypeCard({ active, onClick, icon, title, desc }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <button type="button" onClick={onClick} className={`p-4 rounded-2xl border text-left flex items-start gap-3.5 transition-all ${
+    <button type="button" onClick={onClick} className={`p-4 rounded-2xl border text-start flex items-start gap-3.5 transition-all ${
       active ? 'bg-accent/5 border-accent ring-1 ring-accent' : 'bg-bg-secondary/60 border-border-primary hover:bg-bg-hover/50'
     }`}>
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-accent text-white' : 'bg-bg-tertiary text-text-tertiary'}`}>{icon}</div>
@@ -440,12 +440,12 @@ function ClientPicker({ clients, selectedId, onPick, onNew }: { clients: { id: s
     <div className="absolute z-30 mt-1.5 w-full rounded-xl border border-border-primary bg-bg-elevated backdrop-blur-2xl shadow-xl p-1.5 max-h-64 overflow-auto">
       {clients.length === 0 && <p className="text-xs text-text-tertiary px-3 py-3">No clients yet.</p>}
       {clients.map((c) => (
-        <button key={c.id} type="button" onClick={() => onPick(c.id)} className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between gap-2 ${c.id === selectedId ? 'bg-accent/10 text-accent' : 'hover:bg-bg-hover/60 text-text-primary'}`}>
+        <button key={c.id} type="button" onClick={() => onPick(c.id)} className={`w-full text-start px-3 py-2 rounded-lg flex items-center justify-between gap-2 ${c.id === selectedId ? 'bg-accent/10 text-accent' : 'hover:bg-bg-hover/60 text-text-primary'}`}>
           <span className="text-sm truncate">{c.display_name}</span>
           {c.id === selectedId && <Check size={14} />}
         </button>
       ))}
-      <button type="button" onClick={onNew} className="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 text-accent text-sm font-medium hover:bg-accent/5 border-t border-border-primary mt-1">
+      <button type="button" onClick={onNew} className="w-full text-start px-3 py-2 rounded-lg flex items-center gap-2 text-accent text-sm font-medium hover:bg-accent/5 border-t border-border-primary mt-1">
         <Plus size={14} /> New client
       </button>
     </div>

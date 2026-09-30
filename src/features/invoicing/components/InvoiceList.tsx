@@ -95,12 +95,12 @@ export default function InvoiceList() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search size={16} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by number or client..."
-              className="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
+              className="w-full glass-input rounded-xl ps-9 pe-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
             />
           </div>
           <Button icon={<Plus size={16} />} onClick={() => navigate({ to: '/invoicing/new' })}>
@@ -109,13 +109,13 @@ export default function InvoiceList() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mr-1">Type</span>
+          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide me-1">Type</span>
           {TYPE_FILTERS.map((f) => (
             <Chip key={f.label} active={filters.type === f.value} onClick={() => setFilters({ type: f.value })}>
               {f.label}
             </Chip>
           ))}
-          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide ml-3 mr-1">Status</span>
+          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide ms-3 me-1">Status</span>
           {STATUS_FILTERS.map((f) => (
             <Chip key={f.label} active={filters.status === f.value} onClick={() => setFilters({ status: f.value })}>
               {f.label}
@@ -134,14 +134,14 @@ export default function InvoiceList() {
           <EmptyState hasInvoices={invoices.length > 0} onNew={() => navigate({ to: '/invoicing/new' })} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Document</th>
                   <th className="px-5 py-3 font-semibold">Client</th>
                   <th className="px-5 py-3 font-semibold hidden md:table-cell">Issued</th>
                   <th className="px-5 py-3 font-semibold hidden lg:table-cell">Due</th>
-                  <th className="px-5 py-3 font-semibold text-right">Amount</th>
+                  <th className="px-5 py-3 font-semibold text-end">Amount</th>
                   <th className="px-5 py-3 font-semibold text-center">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
@@ -186,13 +186,13 @@ export default function InvoiceList() {
                           <span className="text-text-tertiary text-xs">—</span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-text-primary">
+                      <td className="px-5 py-3.5 text-end font-semibold text-text-primary">
                         {formatMoney(inv.total_amount, { currency: inv.currency })}
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         <InvoiceStatusPill status={inv.status} size="sm" />
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="px-5 py-3.5 text-end">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           {inv.pdf_path && (
                             <IconBtn title="Preview" onClick={(e) => { e.stopPropagation(); openEditor(inv.id); }}>

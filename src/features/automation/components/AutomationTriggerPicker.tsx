@@ -69,7 +69,7 @@ export function AutomationTriggerPicker({
       </div>
 
       {event === "email_received" && (
-        <div className="space-y-1.5 pl-2">
+        <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24 shrink-0">
               From domain
@@ -100,7 +100,7 @@ export function AutomationTriggerPicker({
       )}
 
       {event === "no_reply_after_days" && (
-        <div className="flex items-center gap-2 pl-2">
+        <div className="flex items-center gap-2 ps-2">
           <span className="text-xs text-text-secondary w-24 shrink-0">
             Days without reply
           </span>
@@ -118,7 +118,7 @@ export function AutomationTriggerPicker({
       )}
 
       {event === "time_based" && (
-        <div className="space-y-1.5 pl-2">
+        <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24 shrink-0">
               Cron expression
@@ -131,14 +131,14 @@ export function AutomationTriggerPicker({
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent"
             />
           </div>
-          <p className="text-[0.625rem] text-text-tertiary pl-24">
+          <p className="text-[0.625rem] text-text-tertiary ps-24">
             Format: minute hour day-of-month month day-of-week (* = any)
           </p>
         </div>
       )}
 
       {(event === "label_applied" || event === "starred") && (
-        <p className="text-xs text-text-tertiary pl-2">
+        <p className="text-xs text-text-tertiary ps-2">
           This trigger fires when the event occurs on any email in the account.
         </p>
       )}

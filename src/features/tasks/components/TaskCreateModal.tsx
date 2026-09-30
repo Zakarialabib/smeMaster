@@ -455,7 +455,7 @@ export function TaskCreateModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-text-secondary block mb-1">
-              <Calendar size={11} className="inline mr-1" />
+              <Calendar size={11} className="inline me-1" />
               Due date
             </label>
             <input
@@ -467,7 +467,7 @@ export function TaskCreateModal({
           </div>
           <div>
             <label className="text-xs text-text-secondary block mb-1">
-              <AlertCircle size={11} className="inline mr-1" />
+              <AlertCircle size={11} className="inline me-1" />
               Priority
             </label>
             <select
@@ -499,7 +499,7 @@ export function TaskCreateModal({
         {/* Contact picker */}
         <div>
           <label className="text-xs text-text-secondary block mb-1">
-            <User size={11} className="inline mr-1" />
+            <User size={11} className="inline me-1" />
             Linked contact / company
           </label>
           {contactId && contactName ? (
@@ -534,7 +534,7 @@ export function TaskCreateModal({
         {/* Tags */}
         <div>
           <label className="text-xs text-text-secondary block mb-1">
-            <Tag size={11} className="inline mr-1" />
+            <Tag size={11} className="inline me-1" />
             Tags
           </label>
           <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
@@ -579,7 +579,7 @@ export function TaskCreateModal({
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-text-secondary">
-              <Bell size={11} className="inline mr-1" />
+              <Bell size={11} className="inline me-1" />
               Reminder
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -662,14 +662,14 @@ export function TaskCreateModal({
           <div className="relative w-full max-w-sm mx-4 bg-bg-primary border border-border-primary rounded-xl shadow-2xl overflow-hidden animate-[fadeIn_150ms_ease-out]">
             <div className="p-3 border-b border-border-primary">
               <div className="relative">
-                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <Search size={13} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
                 <input
                   ref={contactSearchRef}
                   type="text"
                   value={contactQuery}
                   onChange={(e) => setContactQuery(e.target.value)}
                   placeholder="Search contacts..."
-                  className={`${INPUT_BASE} pl-8`}
+                  className={`${INPUT_BASE} ps-8`}
                 />
               </div>
             </div>
@@ -687,7 +687,7 @@ export function TaskCreateModal({
                       key={contact.id}
                       type="button"
                       onClick={() => handleSelectContact(contact)}
-                      className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-bg-hover transition-colors text-left"
+                      className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-bg-hover transition-colors text-start"
                     >
                       <span className="w-8 h-8 rounded-full bg-accent/15 text-accent flex items-center justify-center text-sm font-semibold shrink-0">
                         {(contact.display_name ?? contact.email).charAt(0).toUpperCase()}

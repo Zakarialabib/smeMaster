@@ -470,19 +470,19 @@ export function ContactsPage() {
       toolbar={
         isMobile && showSearch ? (
           <div className="relative w-full">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search size={14} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('contacts.searchPlaceholder')}
               autoFocus
-              className="w-full pl-10 pr-10 py-2.5 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
+              className="w-full ps-10 pe-10 py-2.5 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
+                className="absolute inset-inline-end-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
                 aria-label={t('contacts.clearSearch')}
               >
                 <X size={14} />
@@ -521,18 +521,18 @@ export function ContactsPage() {
           {isMobile && !showSearch && (
             <div className="px-4 py-2 border-b border-border-primary bg-bg-primary/30 shrink-0">
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <Search size={14} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('contacts.searchPlaceholder')}
-                  className="w-full pl-10 pr-10 py-2 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
+                  className="w-full ps-10 pe-10 py-2 bg-bg-tertiary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
+                    className="absolute inset-inline-end-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
                     aria-label="Clear search"
                   >
                     <X size={14} />
@@ -558,13 +558,13 @@ export function ContactsPage() {
                 </div>
                 <div className="flex-1" />
                 <div className="relative w-64">
-                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                  <Search size={14} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder={t('contacts.searchPlaceholder')}
-                    className="w-full pl-8 pr-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
+                    className="w-full ps-8 pe-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -798,7 +798,7 @@ export function ContactsPage() {
                     <button
                       type="button"
                       onClick={() => setTagFilter(tag.id)}
-                      className="block text-xs font-medium text-text-primary truncate hover:text-accent transition-colors text-left w-full"
+                      className="block text-xs font-medium text-text-primary truncate hover:text-accent transition-colors text-start w-full"
                     >
                       {tag.name}
                     </button>

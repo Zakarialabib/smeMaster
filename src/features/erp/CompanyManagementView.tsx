@@ -241,7 +241,7 @@ export default function CompanyManagementView() {
       {/* Toast notification */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium backdrop-blur-xl border transition-all ${
+          className={`fixed top-4 inset-inline-end-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium backdrop-blur-xl border transition-all ${
             toast.type === "success"
               ? "bg-success/10 text-success border-success/20"
               : "bg-danger/10 text-danger border-danger/20"
@@ -376,11 +376,11 @@ export default function CompanyManagementView() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-primary text-text-tertiary text-[11px] font-semibold uppercase tracking-wider">
-                  <th className="text-left px-4 py-3">Name</th>
-                  <th className="text-left px-4 py-3">ICE</th>
-                  <th className="text-left px-4 py-3">City</th>
-                  <th className="text-left px-4 py-3">Industry</th>
-                  <th className="text-right px-4 py-3">Actions</th>
+                  <th className="text-start px-4 py-3">Name</th>
+                  <th className="text-start px-4 py-3">ICE</th>
+                  <th className="text-start px-4 py-3">City</th>
+                  <th className="text-start px-4 py-3">Industry</th>
+                  <th className="text-end px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -415,7 +415,7 @@ export default function CompanyManagementView() {
                     <td className="px-4 py-3 text-text-secondary">
                       {c.industry ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <Button
                         variant="ghost"
                         size="xs"

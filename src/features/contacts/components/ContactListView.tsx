@@ -219,14 +219,14 @@ export function ContactListView({
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right tabular-nums`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end tabular-nums`}
         >
           {contact.frequency > 0 ? contact.frequency : "—"}
         </div>
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end`}
         >
           {contact.last_contacted_at ? (
             <span>{formatRelativeDate(contact.last_contacted_at)}</span>
@@ -237,7 +237,7 @@ export function ContactListView({
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end`}
         >
           <div className="flex items-center justify-end gap-1.5 min-w-0">
             <span
@@ -286,7 +286,7 @@ export function ContactListView({
       <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div
         role="row"
-        className="grid border-b border-border-primary text-left sticky top-0 z-10 bg-bg-primary"
+        className="grid border-b border-border-primary text-start sticky top-0 z-10 bg-bg-primary"
         style={gridStyle}
       >
         {COLUMNS.map((col) => {
@@ -294,10 +294,10 @@ export function ContactListView({
           const isSorted = sortable && col.id === sortField;
           const align =
             col.align === "right"
-              ? "text-right"
+              ? "text-end"
               : col.align === "center"
                 ? "text-center"
-                : "text-left";
+                : "text-start";
           return (
             <div
               key={col.id}

@@ -255,7 +255,7 @@ export function NavRail({
       >
         {/* Active accent bar */}
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-r bg-accent" />
+          <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-e bg-accent" />
         )}
 
         <button
@@ -287,7 +287,7 @@ export function NavRail({
 
         {/* Tooltip — positioned right, visible on hover */}
         <div
-          className="absolute left-full ml-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary"
+          className="absolute inset-inline-start-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary"
         >
           {t(group.label)}
         </div>
@@ -363,7 +363,7 @@ export function NavRail({
                   </span>
                 )}
 
-                <span className="truncate flex-1 text-left">{t(item.label)}</span>
+                <span className="truncate flex-1 text-start">{t(item.label)}</span>
 
                 {item.badge !== undefined && item.badge > 0 && (
                   <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] font-medium text-white bg-danger rounded-full leading-none shrink-0">

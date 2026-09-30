@@ -18,9 +18,10 @@ interface InfoTooltipProps {
   delay?: number;
 }
 
-// NOTE: `left-1/2 -translate-x-1/2` centering is intentionally physical — it is
-// geometrically symmetric, so it renders identically under RTL. Converting it to
-// `start-1/2` would break centering because `translate-x` does not flip.
+// NOTE: the centered `left` + `translate-x` pairing below is intentionally
+// physical — it is geometrically symmetric, so it renders identically under
+// RTL. Anchoring it to the inline start instead would break centering because
+// `translate-x` does not flip.
 const SIDE_STYLES: Record<TooltipSide, string> = {
   top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
   bottom: "top-full left-1/2 -translate-x-1/2 mt-2",

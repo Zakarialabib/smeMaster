@@ -71,8 +71,8 @@ export function SlidePanel({
 
   const panelClasses =
     effectiveSide === "right"
-      ? `fixed right-0 top-0 h-full w-full ${widthClass ?? "max-w-md"} bg-bg-primary border-l border-border-primary shadow-xl z-50 flex flex-col`
-      : "fixed bottom-0 left-0 right-0 max-h-[85vh] bg-bg-primary border-t border-border-primary rounded-t-2xl shadow-xl z-50 flex flex-col bottom-sheet";
+      ? `fixed inset-inline-end-0 top-0 h-full w-full ${widthClass ?? "max-w-md"} bg-bg-primary border-s border-border-primary shadow-xl z-50 flex flex-col`
+      : "fixed bottom-0 inset-inline-start-0 inset-inline-end-0 max-h-[85vh] bg-bg-primary border-t border-border-primary rounded-t-2xl shadow-xl z-50 flex flex-col bottom-sheet";
 
   const transitionName = effectiveSide === "right" ? "slide-in-right" : "slide-up";
 

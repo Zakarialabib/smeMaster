@@ -193,7 +193,7 @@ export function CampaignList({ accountId }: CampaignListProps) {
                   >
                     <button
                       onClick={() => handleCardTap(c)}
-                      className="w-full liquid-glass rounded-xl p-4 text-left active:scale-[0.98] active:bg-bg-hover transition-all duration-150"
+                      className="w-full liquid-glass rounded-xl p-4 text-start active:scale-[0.98] active:bg-bg-hover transition-all duration-150"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <span className="text-sm font-medium text-text-primary truncate">{c.name}</span>
@@ -224,7 +224,7 @@ export function CampaignList({ accountId }: CampaignListProps) {
                             </button>
                           </>
                         )}
-                        <span className="ml-auto">{new Date(c.created_at * 1000).toLocaleDateString()}</span>
+                        <span className="ms-auto">{new Date(c.created_at * 1000).toLocaleDateString()}</span>
                       </div>
                     </button>
                   </div>
@@ -265,7 +265,7 @@ export function CampaignList({ accountId }: CampaignListProps) {
                   <div className="liquid-glass rounded-lg overflow-hidden">
                     <button
                       onClick={() => handleToggle(c)}
-                      className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors"
+                      className="flex items-center gap-2 w-full px-4 py-3 text-start hover:bg-bg-hover transition-colors"
                     >
                       {isExpanded ? <ChevronDown size={14} className="text-text-tertiary shrink-0" /> : <ChevronRight size={14} className="text-text-tertiary shrink-0" />}
                       <div className="flex-1 min-w-0">

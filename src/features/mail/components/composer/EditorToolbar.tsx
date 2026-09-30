@@ -213,7 +213,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
         {tableMenuOpen && (
           <div
             ref={tableMenuRef}
-            className="absolute left-0 top-full mt-1 w-48 bg-bg-secondary border border-border-primary rounded-lg shadow-xl z-50 py-1"
+            className="absolute inset-inline-start-0 top-full mt-1 w-48 bg-bg-secondary border border-border-primary rounded-lg shadow-xl z-50 py-1"
           >
             {!editor.isActive("table") ? (
               <button
@@ -222,7 +222,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                   editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
                   setTableMenuOpen(false);
                 }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
               >
                 <Plus size={12} className="shrink-0" />
                 Insert Table (3x3)
@@ -235,7 +235,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().addColumnBefore().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Columns3 size={12} className="shrink-0" />
                   Add Column Before
@@ -246,7 +246,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().addColumnAfter().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Columns3 size={12} className="shrink-0" />
                   Add Column After
@@ -257,7 +257,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().deleteColumn().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Minus size={12} className="shrink-0" />
                   Delete Column
@@ -269,7 +269,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().addRowBefore().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Rows3 size={12} className="shrink-0" />
                   Add Row Before
@@ -280,7 +280,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().addRowAfter().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Rows3 size={12} className="shrink-0 rotate-180" />
                   Add Row After
@@ -291,7 +291,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().deleteRow().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Minus size={12} className="shrink-0" />
                   Delete Row
@@ -303,7 +303,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                     editor.chain().focus().deleteTable().run();
                     setTableMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <Trash2 size={12} className="shrink-0" />
                   Delete Table
@@ -362,7 +362,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
         {quickReplyOpen && (
           <div
             ref={qrMenuRef}
-            className="absolute right-0 top-full mt-1 w-56 bg-bg-secondary border border-border-primary rounded-lg shadow-xl z-50 py-1 max-h-60 overflow-y-auto"
+            className="absolute inset-inline-end-0 top-full mt-1 w-56 bg-bg-secondary border border-border-primary rounded-lg shadow-xl z-50 py-1 max-h-60 overflow-y-auto"
           >
             {quickReplies.length === 0 ? (
               <p className="px-3 py-2 text-xs text-text-tertiary">{t("quickReply.noReplies")}</p>
@@ -371,7 +371,7 @@ export function EditorToolbar({ editor, onToggleAiAssist, aiAssistOpen, onToggle
                 <button
                   key={qr.id}
                   onClick={() => handleInsertQuickReply(qr)}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-left transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover text-start transition-colors"
                 >
                   <MessageSquarePlus size={12} className="text-accent shrink-0" />
                   <span className="flex-1 truncate">{qr.title}</span>

@@ -198,7 +198,7 @@ export default function WalletView() {
       <SectionCard className="overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border-primary flex items-center gap-2 text-text-secondary text-sm font-medium">
           <ArrowRightLeft size={16} className="text-accent" /> Wallet movements
-          <span className="ml-auto text-[11px] font-normal text-text-tertiary">{moves.length} entries</span>
+          <span className="ms-auto text-[11px] font-normal text-text-tertiary">{moves.length} entries</span>
         </div>
 
         {loading ? (
@@ -211,13 +211,13 @@ export default function WalletView() {
           <>
             {/* Desktop list */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full text-start text-sm">
                 <thead>
                   <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                     <th className="px-5 py-3 font-semibold">Date</th>
                     <th className="px-5 py-3 font-semibold">Movement</th>
                     <th className="px-5 py-3 font-semibold">Reference</th>
-                    <th className="px-5 py-3 font-semibold text-right">Amount</th>
+                    <th className="px-5 py-3 font-semibold text-end">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary/60">
@@ -235,7 +235,7 @@ export default function WalletView() {
                         </div>
                       </td>
                       <td className="px-5 py-3 font-mono text-xs text-text-tertiary">{m.reference ?? '—'}</td>
-                      <td className={`px-5 py-3 text-right font-semibold tabular-nums ${
+                      <td className={`px-5 py-3 text-end font-semibold tabular-nums ${
                         m.amount > 0 ? 'text-success' : 'text-warning'
                       }`}>
                         {m.amount > 0 ? '+' : '−'}{formatMoney(Math.abs(m.amount), { currency, sign: false })}
@@ -370,9 +370,9 @@ function WalletActionModal({
               value={amount}
               placeholder="0.00"
               onChange={(e) => setAmount(e.target.value)}
-              className="glass-input rounded-xl pl-3.5 pr-12 py-3 text-2xl font-bold text-text-primary w-full tabular-nums"
+              className="glass-input rounded-xl ps-3.5 pe-12 py-3 text-2xl font-bold text-text-primary w-full tabular-nums"
             />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-text-tertiary">
+            <span className="absolute inset-inline-end-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-text-tertiary">
               {currency}
             </span>
           </div>

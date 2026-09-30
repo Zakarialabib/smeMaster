@@ -173,7 +173,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
               onChange={(e) => store.setSplitRatio(Number(e.target.value))}
               className="flex-1 accent-accent"
             />
-            <span className="w-16 text-right text-text-secondary">{store.splitRatio}% / {100 - store.splitRatio}%</span>
+            <span className="w-16 text-end text-text-secondary">{store.splitRatio}% / {100 - store.splitRatio}%</span>
           </div>
         </div>
       )}
@@ -192,7 +192,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
                   <button
                     key={st.key}
                     onClick={() => store.loadBlocks(st.build())}
-                    className="text-left p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 transition-all"
+                    className="text-start p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 transition-all"
                   >
                     <div className="text-sm font-medium text-text-primary capitalize">{t(`campaign.editor.${st.label}`)}</div>
                     <div className="text-xs text-text-tertiary mt-1">{st.build().length} blocks</div>
@@ -215,7 +215,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
                       <button
                         key={tmpl.id}
                         onClick={() => handleUseTemplate(tmpl)}
-                        className="text-left p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 transition-all"
+                        className="text-start p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 transition-all"
                       >
                         <div className="text-sm font-medium text-text-primary truncate">{tmpl.name}</div>
                         <div className="text-xs text-text-tertiary mt-1 line-clamp-2">{tmpl.subject || t("campaign.noTemplate")}</div>
@@ -232,19 +232,19 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
         </div>
 
         {store.configOpenBlockId && (
-          <div className="w-72 shrink-0 border-l border-border-primary bg-bg-secondary/30 overflow-y-auto">
+          <div className="w-72 shrink-0 border-s border-border-primary bg-bg-secondary/30 overflow-y-auto">
             <BlockConfigPanel />
           </div>
         )}
 
         {showPreview && (
-          <div className="w-80 shrink-0 border-l border-border-primary bg-bg-tertiary/30 overflow-y-auto">
+          <div className="w-80 shrink-0 border-s border-border-primary bg-bg-tertiary/30 overflow-y-auto">
             <EmailPreview />
           </div>
         )}
 
         {showAi && (
-          <div className="w-80 shrink-0 border-l border-border-primary bg-bg-secondary/30 overflow-y-auto">
+          <div className="w-80 shrink-0 border-s border-border-primary bg-bg-secondary/30 overflow-y-auto">
             <AIPanel
               context={store.subject ? `Campaign subject: ${store.subject}` : undefined}
               onApplySubject={(s) => store.setSubject(s)}

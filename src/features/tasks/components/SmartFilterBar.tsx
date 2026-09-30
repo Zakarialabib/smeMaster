@@ -273,7 +273,7 @@ export function SmartFilterBar({
                 role="option"
                 aria-selected={filterPriority === "all"}
                 onClick={() => handlePrioritySelect("all")}
-                className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover flex items-center gap-2 ${
+                className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover flex items-center gap-2 ${
                   filterPriority === "all" ? "text-accent" : "text-text-primary"
                 }`}
               >
@@ -285,7 +285,7 @@ export function SmartFilterBar({
                   role="option"
                   aria-selected={filterPriority === priority}
                   onClick={() => handlePrioritySelect(priority)}
-                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover flex items-center gap-2 ${
+                  className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover flex items-center gap-2 ${
                     filterPriority === priority ? "text-accent" : "text-text-primary"
                   }`}
                 >
@@ -329,7 +329,7 @@ export function SmartFilterBar({
                   role="option"
                   aria-selected={groupBy === option.value}
                   onClick={() => handleGroupBySelect(option.value)}
-                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover ${
+                  className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover ${
                     groupBy === option.value ? "text-accent" : "text-text-primary"
                   }`}
                 >
@@ -366,7 +366,7 @@ export function SmartFilterBar({
             {sortOpen && (
               <div
                 role="listbox"
-                className="absolute left-0 top-full mt-1 bg-bg-primary border border-border-primary rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
+                className="absolute inset-inline-start-0 top-full mt-1 bg-bg-primary border border-border-primary rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
               >
                 {SORT_OPTIONS.map((option) => (
                   <button
@@ -374,7 +374,7 @@ export function SmartFilterBar({
                     role="option"
                     aria-selected={sortBy === option.value}
                     onClick={() => handleSortSelect(option.value)}
-                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover ${
+                    className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover ${
                       sortBy === option.value ? "text-accent" : "text-text-primary"
                     }`}
                   >

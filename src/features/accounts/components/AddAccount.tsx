@@ -419,7 +419,7 @@ addAccount(acc2);
                 <button
                   key={option.value}
                   onClick={() => setSyncSchedule(option.value as QueueSchedulePreset)}
-                  className={`w-full p-3 rounded-lg border text-left transition-colors ${
+                  className={`w-full p-3 rounded-lg border text-start transition-colors ${
                     syncSchedule === option.value
                       ? "border-accent bg-accent/5"
                       : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
@@ -483,7 +483,7 @@ addAccount(acc2);
           <div className="space-y-3 mb-6">
             <button
               onClick={() => dispatch({ type: "GO_TO", step: "gmail-easy" })}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
             >
               <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-accent" />
@@ -500,7 +500,7 @@ addAccount(acc2);
 
             <button
               onClick={() => dispatch({ type: "GO_TO", step: "gmail-fast-sync" })}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
             >
               <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -743,12 +743,12 @@ addAccount(acc2);
               value={emailInput}
               onChange={handleEmailChange}
               placeholder="you@example.com"
-              className="w-full px-3 py-2.5 pr-12 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors"
+              className="w-full px-3 py-2.5 pe-12 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors"
               autoFocus
               autoComplete="email"
             />
             {isDetected && detectedProvider && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <div className="absolute inset-inline-end-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <span
                   className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold leading-none ${detectedProvider.color} ${detectedProvider.textColor}`}
                   aria-label={`Detected provider: ${detectedProvider.label}`}
@@ -769,10 +769,10 @@ addAccount(acc2);
               </span>
               Detected: {detectedProvider.label}
               {detectedProvider.type === "gmail_api" && (
-                <span className="text-success ml-1">Recommended</span>
+                <span className="text-success ms-1">Recommended</span>
               )}
               {detectedProvider.type === "microsoft_graph" && (
-                <span className="text-success ml-1">Recommended</span>
+                <span className="text-success ms-1">Recommended</span>
               )}
             </p>
           )}
@@ -788,7 +788,7 @@ addAccount(acc2);
           {/* Always show Gmail option */}
           <button
             onClick={() => dispatch({ type: "GO_TO", step: "gmail-method" })}
-            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
+            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
               detectedProvider?.type === "gmail_api"
                 ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
                 : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
@@ -836,7 +836,7 @@ addAccount(acc2);
           {/* IMAP/SMTP option — always shown but highlighted for imap/jmap */}
           <button
             onClick={() => dispatch({ type: "GO_TO", step: "imap" })}
-            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
+            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
               detectedProvider?.type === "imap" || detectedProvider?.type === "jmap"
                 ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
                 : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
@@ -874,7 +874,7 @@ addAccount(acc2);
               onClick={() => {
                 dispatch({ type: "GO_TO", step: "microsoft-fast-sync" });
               }}
-              className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
+              className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
                 detectedProvider?.type === "microsoft_graph"
                   ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
                   : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
@@ -913,7 +913,7 @@ addAccount(acc2);
           {/* CalDAV option — always shown */}
           <button
             onClick={() => dispatch({ type: "GO_TO", step: "caldav" })}
-            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
               <Calendar className="w-5 h-5 text-text-secondary" />
@@ -933,7 +933,7 @@ addAccount(acc2);
           {/* Import from System option — discover Thunderbird, Apple Mail, Outlook, etc. */}
           <button
             onClick={() => dispatch({ type: "GO_TO", step: "import-scanner" })}
-            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
               <Search className="w-5 h-5 text-text-secondary" />

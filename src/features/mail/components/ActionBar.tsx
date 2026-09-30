@@ -400,7 +400,7 @@ export function ActionBar({ thread, messages, noReply, defaultReplyMode = "reply
                   aria-label={ariaLabels.moveToFolder}
                   className="w-full justify-start px-3 py-1.5 text-xs"
                 >
-                  <FolderInput size={14} className="mr-2" />
+                  <FolderInput size={14} className="me-2" />
                   Move to folder
                 </Button>
                 <Button
@@ -431,7 +431,7 @@ export function ActionBar({ thread, messages, noReply, defaultReplyMode = "reply
                     aria-label={ariaLabels.followUp}
                     className="w-full justify-start px-3 py-1.5 text-xs text-accent"
                   >
-                    <BellRing size={14} className="mr-2 fill-current" />
+                    <BellRing size={14} className="me-2 fill-current" />
                     Cancel follow-up
                   </Button>
                 ) : (
@@ -469,7 +469,7 @@ export function ActionBar({ thread, messages, noReply, defaultReplyMode = "reply
                   aria-label={ariaLabels.print}
                   className="w-full justify-start px-3 py-1.5 text-xs"
                 >
-                  <Printer size={14} className="mr-2" />
+                  <Printer size={14} className="me-2" />
                   Print
                 </Button>
                 <Button
@@ -490,7 +490,7 @@ export function ActionBar({ thread, messages, noReply, defaultReplyMode = "reply
                     aria-label={ariaLabels.popOut}
                     className="w-full justify-start px-3 py-1.5 text-xs"
                   >
-                    <ExternalLink size={14} className="mr-2" />
+                    <ExternalLink size={14} className="me-2" />
                     Open in new window
                   </Button>
                 )}
@@ -598,7 +598,7 @@ export function ActionBar({ thread, messages, noReply, defaultReplyMode = "reply
                 <MailMinus size={16} />
               </Button>
             )}
-            <div className="ml-auto" />
+            <div className="ms-auto" />
             <Button variant="secondary" onClick={onPrint} title={ariaLabels.print} aria-label={ariaLabels.print} className="p-1.5 min-h-[40px] min-w-[40px]"><Printer size={16} /></Button>
             <Button variant="secondary" onClick={onExport} title={ariaLabels.export} aria-label={ariaLabels.export} className="p-1.5 min-h-[40px] min-w-[40px]"><Download size={16} /></Button>
             <Button variant="secondary" onClick={onToggleTaskSidebar} title={ariaLabels.taskSidebar} aria-label={ariaLabels.taskSidebar} className={`p-1.5 min-h-[40px] min-w-[40px] ${taskSidebarVisible ? "text-accent" : ""}`}>

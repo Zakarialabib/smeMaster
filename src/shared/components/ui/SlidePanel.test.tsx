@@ -255,10 +255,10 @@ describe("SlidePanel", () => {
     );
 
     const dialog = screen.getByRole("dialog");
-    expect(dialog.className).toContain("right-0");
+    expect(dialog.className).toContain("inset-inline-end-0");
     expect(dialog.className).toContain("top-0");
     expect(dialog.className).toContain("max-w-md");
-    expect(dialog.className).toContain("border-l");
+    expect(dialog.className).toContain("border-s");
   });
 
   it("applies bottom-sheet panel classes on mobile", () => {
@@ -271,7 +271,7 @@ describe("SlidePanel", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(dialog.className).toContain("bottom-0");
-    expect(dialog.className).toContain("left-0");
+    expect(dialog.className).toContain("inset-inline-start-0");
     expect(dialog.className).toContain("max-h-[85vh]");
     expect(dialog.className).toContain("bottom-sheet");
   });
@@ -301,7 +301,7 @@ describe("SlidePanel", () => {
     // On desktop, effectiveSide is always "right" when isMobile=false
     // because isMobile check uses innerWidth < 768
     const dialog = screen.getByRole("dialog");
-    expect(dialog.className).toContain("right-0");
+    expect(dialog.className).toContain("inset-inline-end-0");
     expect(dialog.className).not.toContain("bottom-sheet");
   });
 

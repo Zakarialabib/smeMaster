@@ -55,7 +55,7 @@ export function NotificationToast() {
   if (toasts.length === 0) return null;
 
   return (
-    <div role="status" aria-live="polite" aria-atomic="true" className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0 z-9999 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-full pointer-events-none">
+    <div role="status" aria-live="polite" aria-atomic="true" className="fixed top-4 inset-inline-start-0 inset-inline-end-0 mx-auto sm:inset-inline-start-auto sm:inset-inline-end-4 sm:mx-0 z-9999 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-full pointer-events-none">
       {toasts.map((toast) => (
         <div
           key={toast.id}

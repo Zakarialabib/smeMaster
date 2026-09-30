@@ -108,7 +108,7 @@ export const StyledSelect = forwardRef<HTMLSelectElement, StyledSelectProps>(
             }
             className={cn(
               INPUT_BASE,
-              "appearance-none pr-8 glass-select",
+              "appearance-none pe-8 glass-select",
               // Size
               sizeClasses[size],
               // Error state
@@ -132,7 +132,7 @@ export const StyledSelect = forwardRef<HTMLSelectElement, StyledSelectProps>(
           </select>
 
           {/* Chevron icon */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <div className="pointer-events-none absolute inset-y-0 inset-inline-end-0 flex items-center pe-2">
             <ChevronDown
               size={compact ? 14 : 16}
               className={cn(

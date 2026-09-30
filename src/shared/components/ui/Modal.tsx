@@ -197,7 +197,7 @@ export function Modal({
             renderHeader
           ) : (
             <div className={MODAL_HEADER}>
-              <h3 id="modal-title" className="text-sm font-semibold text-text-primary pr-7">
+              <h3 id="modal-title" className="text-sm font-semibold text-text-primary pe-7">
                 {title}
               </h3>
             </div>

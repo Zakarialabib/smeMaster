@@ -120,7 +120,7 @@ function DroppableNavItem({
       onClick={onClick}
       onContextMenu={onContextMenu}
       title={title}
-      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${collapsed ? "justify-center px-0" : "gap-3 px-3 text-left"
+      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${collapsed ? "justify-center px-0" : "gap-3 px-3 text-start"
         } ${isOver
           ? "glass-accent-tint ring-1 ring-accent"
           : isActive
@@ -695,7 +695,7 @@ export function PremiumSidebar({
         className="relative group flex items-center justify-center w-full"
       >
         {isActive && (
-          <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-r bg-accent" />
+          <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-e bg-accent" />
         )}
 
         <button
@@ -935,7 +935,7 @@ export function PremiumSidebar({
                         onClick={() => {
                           navigateToLabel("inbox", { category: cat.id });
                         }}
-                        className={`flex items-center gap-2 w-full py-1.5 pl-7 pr-3 text-left text-[0.8125rem] transition-all duration-150 ${isCatActive
+                        className={`flex items-center gap-2 w-full py-1.5 ps-7 pe-3 text-start text-[0.8125rem] transition-all duration-150 ${isCatActive
                             ? "text-accent font-medium glass-accent-tint"
                             : "text-text-tertiary/70 hover:text-text-tertiary hover:glass-accent-tint"
                           }`}

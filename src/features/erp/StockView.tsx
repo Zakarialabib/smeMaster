@@ -104,15 +104,15 @@ export default function StockView() {
       {/* Desktop table */}
       <SectionCard className="overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-start text-sm">
             <thead>
               <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                 <th className="px-5 py-3 font-semibold">Product</th>
                 <th className="px-5 py-3 font-semibold">SKU</th>
                 <th className="px-5 py-3 font-semibold hidden lg:table-cell">Unit</th>
-                <th className="px-5 py-3 font-semibold text-right">On hand</th>
-                <th className="px-5 py-3 font-semibold text-right">Alert at</th>
-                <th className="px-5 py-3 font-semibold text-right">Value</th>
+                <th className="px-5 py-3 font-semibold text-end">On hand</th>
+                <th className="px-5 py-3 font-semibold text-end">Alert at</th>
+                <th className="px-5 py-3 font-semibold text-end">Value</th>
                 <th className="px-5 py-3 font-semibold text-center">Status</th>
               </tr>
             </thead>
@@ -131,9 +131,9 @@ export default function StockView() {
                     </td>
                     <td className="px-5 py-3.5 font-mono text-xs text-text-tertiary">{p.sku ?? '—'}</td>
                     <td className="px-5 py-3.5 text-text-secondary hidden lg:table-cell">{p.unit}</td>
-                    <td className="px-5 py-3.5 text-right font-semibold text-text-primary tabular-nums">{p.stock_qty}</td>
-                    <td className="px-5 py-3.5 text-right text-text-tertiary tabular-nums">{p.stock_alert}</td>
-                    <td className="px-5 py-3.5 text-right font-medium text-text-primary tabular-nums">
+                    <td className="px-5 py-3.5 text-end font-semibold text-text-primary tabular-nums">{p.stock_qty}</td>
+                    <td className="px-5 py-3.5 text-end text-text-tertiary tabular-nums">{p.stock_alert}</td>
+                    <td className="px-5 py-3.5 text-end font-medium text-text-primary tabular-nums">
                       {formatMoney(p.stock_qty * (p.sell_price || 0))}
                     </td>
                     <td className="px-5 py-3.5 text-center">

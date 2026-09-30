@@ -56,7 +56,7 @@ function renderInput(field: FieldDefinition, onChange: (val: string | number | b
           role="switch"
           aria-checked={Boolean(field.value)}
         >
-          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-4' : 'translate-x-0'}`} />
+          <span className={`absolute top-0.5 inset-inline-start-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'}`} />
         </button>
       );
     default:

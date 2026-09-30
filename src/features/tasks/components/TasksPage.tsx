@@ -822,13 +822,13 @@ export function TasksPage() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
           <div className="relative">
-            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search size={12} className="absolute inset-inline-start-2 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('tasks.search')}
-              className="w-24 sm:w-48 pl-7 pr-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
+              className="w-24 sm:w-48 ps-7 pe-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
             />
           </div>
 
@@ -935,7 +935,7 @@ export function TasksPage() {
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-text-tertiary hover:text-text-primary ml-auto"
+            className="text-xs text-text-tertiary hover:text-text-primary ms-auto"
           >
             {t('tasks.clearSelection')}
           </button>
@@ -1196,7 +1196,7 @@ export function TasksPage() {
       {isMobile && (
         <button
           onClick={() => setShowMobileQuickAdd((v) => !v)}
-          className={`fixed bottom-6 right-4 z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-accent/30 transition-all duration-200 active:scale-85 ${
+          className={`fixed bottom-6 inset-inline-end-4 z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-accent/30 transition-all duration-200 active:scale-85 ${
             showMobileQuickAdd
               ? "bg-accent rotate-45"
               : "bg-accent"

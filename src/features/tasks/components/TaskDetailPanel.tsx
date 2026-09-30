@@ -482,7 +482,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleNavigateToContact}
-                  className="flex items-center gap-2 flex-1 min-w-0 p-2 rounded-lg border border-border-primary hover:bg-bg-hover transition-colors text-left"
+                  className="flex items-center gap-2 flex-1 min-w-0 p-2 rounded-lg border border-border-primary hover:bg-bg-hover transition-colors text-start"
                 >
                   <span className="w-7 h-7 rounded-full bg-accent/15 text-accent flex items-center justify-center text-xs font-semibold shrink-0">
                     {(contactName.charAt(0).toUpperCase())}
@@ -709,7 +709,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className={`${BTN_DANGER} px-4 py-2 text-xs gap-1.5 flex items-center rounded-md ml-auto`}
+            className={`${BTN_DANGER} px-4 py-2 text-xs gap-1.5 flex items-center rounded-md ms-auto`}
           >
             <Trash2 size={13} />
             {deleting ? t("Deleting...") : t("common.delete")}
@@ -729,13 +729,13 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     >
       <div className="p-4 space-y-3">
         <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search size={13} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
           <input
             type="text"
             value={contactSearch}
             onChange={(e) => setContactSearch(e.target.value)}
             placeholder={t("Search contacts...")}
-            className={`${INPUT_BASE} pl-8`}
+            className={`${INPUT_BASE} ps-8`}
             autoFocus
           />
         </div>
@@ -752,7 +752,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
               <button
                 key={contact.id}
                 onClick={() => handleSelectContact(contact)}
-                className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-bg-hover transition-colors text-left"
+                className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-bg-hover transition-colors text-start"
               >
                 <span className="w-8 h-8 rounded-full bg-accent/15 text-accent flex items-center justify-center text-sm font-semibold shrink-0">
                   {(contact.display_name ?? contact.email).charAt(0).toUpperCase()}
@@ -786,7 +786,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
           onClick={onClose}
         />
         {/* Panel */}
-        <div className="fixed top-0 right-0 h-full w-full max-w-lg z-50 bg-bg-primary border-l border-border-primary shadow-2xl flex flex-col animate-[slideInRight_250ms_cubic-bezier(0.16,1,0.3,1)]">
+        <div className="fixed top-0 inset-inline-end-0 h-full w-full max-w-lg z-50 bg-bg-primary border-s border-border-primary shadow-2xl flex flex-col animate-[slideInRight_250ms_cubic-bezier(0.16,1,0.3,1)]">
           {/* Panel header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-primary shrink-0">
             <h2 className="text-sm font-semibold text-text-primary">{t("common.taskDetails")}</h2>

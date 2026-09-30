@@ -292,7 +292,7 @@ export function TaskAgendaView({
               )}
               {!isOverdueGroup && <Calendar size={14} className="text-accent shrink-0" />}
               <span
-                className={`text-xs font-semibold uppercase tracking-wider flex-1 text-left ${
+                className={`text-xs font-semibold uppercase tracking-wider flex-1 text-start ${
                   isOverdueGroup ? "text-danger" : "text-text-tertiary"
                 }`}
               >
@@ -433,14 +433,14 @@ export function TaskAgendaView({
                 <button
                   key={option.label}
                   onClick={() => handleQuickReschedule(option.date)}
-                  className="w-full px-3 py-2.5 text-sm text-left text-text-primary hover:bg-bg-hover rounded-md transition-colors"
+                  className="w-full px-3 py-2.5 text-sm text-start text-text-primary hover:bg-bg-hover rounded-md transition-colors"
                 >
                   {option.label}
                 </button>
               ))}
               <button
                 onClick={() => setRescheduleTaskId(null)}
-                className="w-full px-3 py-2.5 text-sm text-left text-text-tertiary hover:bg-bg-hover rounded-md transition-colors"
+                className="w-full px-3 py-2.5 text-sm text-start text-text-tertiary hover:bg-bg-hover rounded-md transition-colors"
               >
                 Pick a date...
               </button>

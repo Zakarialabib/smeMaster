@@ -53,11 +53,11 @@ export function AutomationRuleList({
       <table className="w-full text-sm" role="grid" aria-label="Automation rules">
         <thead>
           <tr className="bg-bg-tertiary text-text-secondary text-xs uppercase tracking-wider">
-            <th className="text-left px-4 py-2.5 font-medium">Name</th>
-            <th className="text-left px-4 py-2.5 font-medium">Trigger</th>
-            <th className="text-left px-4 py-2.5 font-medium">Actions</th>
+            <th className="text-start px-4 py-2.5 font-medium">Name</th>
+            <th className="text-start px-4 py-2.5 font-medium">Trigger</th>
+            <th className="text-start px-4 py-2.5 font-medium">Actions</th>
             <th className="text-center px-4 py-2.5 font-medium w-20">Active</th>
-            <th className="text-right px-4 py-2.5 font-medium w-24">Actions</th>
+            <th className="text-end px-4 py-2.5 font-medium w-24">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-primary">
@@ -104,7 +104,7 @@ export function AutomationRuleList({
                     }
                   />
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-end">
                   <div className="flex items-center justify-end gap-1">
                     <button
                       type="button"

@@ -85,7 +85,7 @@ function ResizableEmailLayout() {
       {/* Reading pane with smooth expand/collapse via CSS grid column */}
       <div
         className={`flex flex-1 min-w-0 transition-all duration-200 ease-out ${
-          readingPaneExpanded ? "ml-0" : ""
+          readingPaneExpanded ? "ms-0" : ""
         }`}
       >
         <ReadingPane />

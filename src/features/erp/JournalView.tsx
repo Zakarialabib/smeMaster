@@ -188,14 +188,14 @@ export default function JournalView() {
         </div>
         {recent.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Date</th>
                   <th className="px-5 py-3 font-semibold">Account</th>
                   <th className="px-5 py-3 font-semibold">Reference</th>
-                  <th className="px-5 py-3 font-semibold text-right">Debit</th>
-                  <th className="px-5 py-3 font-semibold text-right">Credit</th>
+                  <th className="px-5 py-3 font-semibold text-end">Debit</th>
+                  <th className="px-5 py-3 font-semibold text-end">Credit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-primary/60">
@@ -204,10 +204,10 @@ export default function JournalView() {
                     <td className="px-5 py-3 text-text-tertiary whitespace-nowrap">{formatDate(e.entry_date, 'short')}</td>
                     <td className="px-5 py-3 text-text-primary">{accountLabel(e.account_id)}</td>
                     <td className="px-5 py-3 font-mono text-xs text-text-tertiary">{e.reference ?? '—'}</td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums text-text-primary">
+                    <td className="px-5 py-3 text-end font-medium tabular-nums text-text-primary">
                       {e.debit > 0 ? formatMoney(e.debit, { currency: e.currency }) : <span className="text-text-tertiary">—</span>}
                     </td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums text-text-secondary">
+                    <td className="px-5 py-3 text-end font-medium tabular-nums text-text-secondary">
                       {e.credit > 0 ? formatMoney(e.credit, { currency: e.currency }) : <span className="text-text-tertiary">—</span>}
                     </td>
                   </tr>

@@ -1389,7 +1389,7 @@ export function EmailList({
                     <button
                       key={l.id}
                       onClick={() => handleBulkAddLabel(l.id)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text-primary hover:bg-accent/10 transition-colors"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-start text-xs text-text-primary hover:bg-accent/10 transition-colors"
                     >
                       <span
                         className="h-2.5 w-2.5 rounded-full shrink-0"
@@ -1706,7 +1706,7 @@ export function EmailList({
                                   style={{
                                     position: "absolute",
                                     top: 0,
-                                    left: 0,
+                                    insetInlineStart: 0,
                                     width: "100%",
                                     height: `${virtualItem.size}px`,
                                     transform: `translateY(${virtualItem.start}px)`,
@@ -1783,7 +1783,7 @@ export function EmailList({
                           style={{
                             position: "absolute",
                             top: 0,
-                            left: 0,
+                            insetInlineStart: 0,
                             width: "100%",
                             height: `${virtualItem.size}px`,
                             transform: `translateY(${virtualItem.start}px)`,

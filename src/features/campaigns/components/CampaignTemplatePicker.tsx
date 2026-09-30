@@ -199,20 +199,20 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
     <div className="space-y-3">
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+        <Search size={14} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("campaign.searchTemplates")}
-          className="w-full pl-8 pr-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent transition-colors"
+          className="w-full ps-8 pe-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent transition-colors"
         />
         {searching ? (
-          <Loader2 size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary animate-spin" />
+          <Loader2 size={14} className="absolute inset-inline-end-2 top-1/2 -translate-y-1/2 text-text-tertiary animate-spin" />
         ) : search ? (
           <button
             onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+            className="absolute inset-inline-end-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
             aria-label={t("common.clear")}
           >
             <X size={14} />
@@ -460,12 +460,12 @@ export function CampaignTemplatePicker({ selectedTemplateId, onSelect }: Campaig
 
       {/* Template grid */}
       {!selectedTemplate && (
-        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pe-1">
           {filtered.map((template) => (
             <button
               key={template.id}
               onClick={() => setPreviewTemplate(template)}
-              className="text-left p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm transition-all group"
+              className="text-start p-3 rounded-lg border border-border-primary hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm transition-all group"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-medium text-text-primary truncate flex items-center gap-1.5">

@@ -177,7 +177,7 @@ export function ReadingPane() {
                   {!isMedium && <ChevronDown size={10} />}
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-50 glass-dropdown rounded-md py-1 min-w-[140px] animate-in fade-in duration-100">
+                  <div className="absolute inset-inline-end-0 top-full mt-1 z-50 glass-dropdown rounded-md py-1 min-w-[140px] animate-in fade-in duration-100">
                     {(["right", "bottom", "hidden", "expanded"] as const).map((pos) => {
                       const isActive = pos === "expanded"
                         ? readingPaneExpanded
@@ -186,7 +186,7 @@ export function ReadingPane() {
                         <button
                           key={pos}
                           onClick={() => handlePositionSelect(pos)}
-                          className={`w-full text-left px-3 py-1.5 text-xs transition-all duration-150 flex items-center justify-between ${
+                          className={`w-full text-start px-3 py-1.5 text-xs transition-all duration-150 flex items-center justify-between ${
                             isActive
                               ? "text-accent glass-accent-tint"
                               : "text-text-primary hover:glass-accent-tint hover:text-accent"

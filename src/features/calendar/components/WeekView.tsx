@@ -86,11 +86,11 @@ export function WeekView({ currentDate, events, integratedItems, calendars, onEv
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* Day headers */}
       <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border-primary shrink-0">
-        <div className="border-r border-border-secondary" />
+        <div className="border-e border-border-secondary" />
         {days.map((day, i) => {
           const isToday = day.toDateString() === todayStr;
           return (
-            <div key={i} className="px-2 py-2 text-center border-r border-border-secondary">
+            <div key={i} className="px-2 py-2 text-center border-e border-border-secondary">
               <div className="text-xs text-text-tertiary">{DAY_NAMES[day.getDay()]}</div>
               <div className={`text-sm font-medium mt-0.5 w-7 h-7 flex items-center justify-center mx-auto rounded-full ${
                 isToday ? "bg-accent text-white" : "text-text-primary"
@@ -104,11 +104,11 @@ export function WeekView({ currentDate, events, integratedItems, calendars, onEv
 
       {/* All-day events row */}
       <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border-primary shrink-0">
-        <div className="border-r border-border-secondary px-1 py-1 text-[0.625rem] text-text-tertiary">all-day</div>
+        <div className="border-e border-border-secondary px-1 py-1 text-[0.625rem] text-text-tertiary">all-day</div>
         {days.map((day, i) => {
           const allDay = allDayByDay.get(day.getDate()) ?? [];
           return (
-            <div key={i} className="border-r border-border-secondary px-1 py-1 space-y-0.5">
+            <div key={i} className="border-e border-border-secondary px-1 py-1 space-y-0.5">
               {allDay.map(({ item, type }) => (
                 <EventCard
                   key={`${type}-${item.id}`}
@@ -129,7 +129,7 @@ export function WeekView({ currentDate, events, integratedItems, calendars, onEv
         <div className="grid grid-cols-[60px_repeat(7,1fr)]">
           {HOURS.map((hour) => (
             <div key={hour} className="contents">
-              <div className="border-r border-b border-border-secondary h-12 px-1 flex items-start justify-end">
+              <div className="border-e border-b border-border-secondary h-12 px-1 flex items-start justify-end">
                 <span className="text-[0.625rem] text-text-tertiary -mt-1.5">
                   {hour === 0 ? "" : `${hour % 12 || 12}${hour < 12 ? "am" : "pm"}`}
                 </span>
@@ -137,7 +137,7 @@ export function WeekView({ currentDate, events, integratedItems, calendars, onEv
               {days.map((day, di) => {
                 const hourItems = dayHourItems.get(`${day.getDate()}-${hour}`) ?? [];
                 return (
-                  <div key={di} className="border-r border-b border-border-secondary h-12 relative px-0.5 overflow-hidden">
+                  <div key={di} className="border-e border-b border-border-secondary h-12 relative px-0.5 overflow-hidden">
                     <div className="flex flex-col gap-0.5">
                       {hourItems.map(({ item, type }) => (
                         <EventCard

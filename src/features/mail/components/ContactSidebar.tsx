@@ -286,7 +286,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   const domain = email.includes("@") ? email.split("@")[1] : null;
 
   return (
-    <div className="w-72 h-full border-l border-border-primary bg-bg-secondary overflow-y-auto shrink-0">
+    <div className="w-72 h-full border-s border-border-primary bg-bg-secondary overflow-y-auto shrink-0">
       <div className="p-4">
         {/* Close button */}
         <div className="flex justify-end -mt-1 -mr-1 mb-1">
@@ -466,7 +466,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                   <button
                     type="button"
                     onClick={() => navigateToLabel("company")}
-                    className="text-xs text-accent hover:underline shrink-0 ml-2"
+                    className="text-xs text-accent hover:underline shrink-0 ms-2"
                   >
                     {t('contact.viewCompany')}
                   </button>
@@ -491,7 +491,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                         <div className="text-sm text-text-primary truncate">{inv.invoice_number}</div>
                         <div className="text-[0.625rem] text-text-tertiary">{inv.status}</div>
                       </div>
-                      <span className="text-xs text-text-secondary shrink-0 ml-2">
+                      <span className="text-xs text-text-secondary shrink-0 ms-2">
                         {inv.total_amount.toFixed(2)} {inv.currency}
                       </span>
                     </div>
@@ -515,7 +515,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                     <div key={rel.campaign_id} className="rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-text-primary truncate">{rel.campaign_name}</span>
-                        <span className="text-[0.625rem] text-text-tertiary shrink-0 ml-2">{rel.recipient_status}</span>
+                        <span className="text-[0.625rem] text-text-tertiary shrink-0 ms-2">{rel.recipient_status}</span>
                       </div>
                       {rel.opened_at != null && (
                         <div className="text-[0.625rem] text-success mt-0.5">{t('contact.opened')}</div>
@@ -602,7 +602,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                   key={`${att.filename}-${att.date}-${i}`}
                   onClick={() => handleFilePreview(att)}
                   title={t('contact.previewFile', { filename: att.filename })}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
                 >
                   <span className="shrink-0">{getFileIcon(att.mime_type)}</span>
                   <div className="min-w-0 flex-1">
@@ -633,7 +633,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                   key={c.email}
                   onClick={() => handleDomainContactClick(c.email)}
                   title={t('contact.viewPerson', { name: c.display_name ?? c.email })}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
                 >
                   {c.avatar_url ? (
                     <img src={c.avatar_url} alt="" className="w-5 h-5 rounded-full shrink-0" />
@@ -665,7 +665,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                 <button
                   key={thread.thread_id}
                   onClick={() => handleThreadClick(thread.thread_id)}
-                  className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors group"
+                  className="w-full text-start px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors group"
                 >
                   <div className="text-text-secondary group-hover:text-text-primary truncate">
                     {thread.subject ?? "(No subject)"}

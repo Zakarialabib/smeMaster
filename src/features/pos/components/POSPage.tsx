@@ -160,12 +160,12 @@ export const POSPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-text-primary">Point of Sale</h1>
           <div className="flex items-center gap-3">
             <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" size={18} />
+              <Search className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" size={18} />
               <input
                 type="text"
                 placeholder="Search products..."
                 aria-label="Search products"
-                className="w-full pl-10 pr-4 py-2 border border-border-primary rounded-xl bg-bg-secondary/60 text-text-primary placeholder:text-text-tertiary glass-input"
+                className="w-full ps-10 pe-4 py-2 border border-border-primary rounded-xl bg-bg-secondary/60 text-text-primary placeholder:text-text-tertiary glass-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -182,7 +182,7 @@ export const POSPage: React.FC = () => {
         </div>
 
         <div
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto pr-2"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto pe-2"
           role="list"
           aria-label="Products"
         >
@@ -192,7 +192,7 @@ export const POSPage: React.FC = () => {
               role="listitem"
               onClick={() => addToCart(product)}
               aria-label={`Add ${product.name} to cart`}
-              className="p-4 border border-border-primary rounded-xl bg-bg-secondary/60 hover:border-accent hover:bg-bg-hover/60 transition-colors text-left space-y-2"
+              className="p-4 border border-border-primary rounded-xl bg-bg-secondary/60 hover:border-accent hover:bg-bg-hover/60 transition-colors text-start space-y-2"
             >
               <div className="w-full aspect-square bg-accent/10 rounded-xl flex items-center justify-center">
                 <Package className="text-text-tertiary" size={32} />
@@ -211,7 +211,7 @@ export const POSPage: React.FC = () => {
       </div>
 
       {/* Cart Section */}
-      <div className="w-96 border-l border-border-primary bg-bg-secondary/60 flex flex-col" role="region" aria-label="Shopping cart">
+      <div className="w-96 border-s border-border-primary bg-bg-secondary/60 flex flex-col" role="region" aria-label="Shopping cart">
         <div className="p-6 border-b border-border-primary flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ShoppingCart size={20} className="text-text-primary" />
