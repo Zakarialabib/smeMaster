@@ -87,7 +87,7 @@ import { AddAccount } from "@features/accounts/components/AddAccount";
 import { Button } from "@shared/components/ui/Button";
 import { SwipeableRow } from "@shared/components/ui/SwipeableRow";
 import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import { FilterBar, ViewModeToggle, AiSuggestionBanner } from "@shared/components/ui";
+import { FilterBar, ViewModeToggle, AiSuggestionBanner, ColumnPicker } from "@shared/components/ui";
 import { SavedViews } from "@features/mail/components/search/SavedViews";
 import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
 import { triggerHaptic } from "@shared/hooks/useHaptics";
@@ -1264,6 +1264,7 @@ export function EmailList({
         />
         <span className="w-px h-5 bg-border-primary shrink-0" />
         <ViewModeToggle activeMode={viewMode} onChange={setViewMode} compact showLabels={false} />
+        <ColumnPicker configKey="email" compact />
       </div>
 
       {/* AI Suggestion Banner — only shown when AI feature is not locked */}

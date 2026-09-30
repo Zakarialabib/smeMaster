@@ -56,6 +56,7 @@ import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
 import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
 import { useNavigate } from "@tanstack/react-router";
 import { SkeletonPage, GlassPanel } from "@shared/components/ui";
+import { ColumnPicker } from "@shared/components/ui";
 import { PageScaffold } from "@shared/components/layout";
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
@@ -862,13 +863,16 @@ export function TasksPage() {
 
           {/* Desktop: Columns + ViewToggle */}
           {!isMobile && (
-            <ViewToggle
-              viewMode={viewMode}
-              density={density}
-              onViewModeChange={setViewMode}
-              onDensityChange={setDensity}
-              taskCount={filteredTasks.length}
-            />
+            <>
+              <ColumnPicker configKey="tasks" compact />
+              <ViewToggle
+                viewMode={viewMode}
+                density={density}
+                onViewModeChange={setViewMode}
+                onDensityChange={setDensity}
+                taskCount={filteredTasks.length}
+              />
+            </>
           )}
 
           {/* Mobile filter toggle */}

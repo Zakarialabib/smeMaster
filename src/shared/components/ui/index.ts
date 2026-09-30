@@ -4,6 +4,7 @@ export { Badge, type BadgeProps, type BadgeVariant, type BadgeSize } from "./Bad
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
 export { CardTabBar, type CardTabItem, type CardTabBarProps } from "./CardTabBar";
 export { CenteredLoader, type CenteredLoaderProps, type CenteredLoaderSize } from "./CenteredLoader";
+export { ColumnPicker, type ColumnPickerProps } from "./ColumnPicker";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { ContextMenu, type ContextMenuItem } from "./ContextMenu";
 export { ContextMenuPortal } from "./ContextMenuPortal";
