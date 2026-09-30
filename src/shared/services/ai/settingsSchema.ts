@@ -96,7 +96,7 @@ export function getSecureSettingKeys(): string[] {
  */
 export function getProviderSettingKeys(provider: string): string[] {
   const keys: string[] = [];
-  for (const [key, config] of Object.entries(AI_SETTINGS_SCHEMA)) {
+  for (const [key] of Object.entries(AI_SETTINGS_SCHEMA)) {
     if (key.startsWith(`${provider}_`)) {
       keys.push(key);
     }
