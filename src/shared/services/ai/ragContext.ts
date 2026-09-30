@@ -97,6 +97,9 @@ export async function buildFusedContext(
  * Search the knowledge base using a provider-generated embedding (LM Studio / Ollama / etc.).
  * Useful for testing RAG without downloading the BGE-small model.
  *
+ * Space-aware: the embedding result carries a `spaceId` that identifies the vector space.
+ * The knowledge base stores its `spaceId`. The router refuses to embed into a KB whose space doesn't match.
+ *
  * @param query - The search query
  * @returns relevant context string, or empty string if unavailable
  */
@@ -111,7 +114,7 @@ export async function fetchRagContextWithProviderEmbedding(query: string): Promi
     }
 
     const { aiSearchByVector } = await import("@shared/services/db/invoke/rag");
-    const result = await aiSearchByVector(providerEmbedding.vector, query);
+    const result = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
     return result || "";
   } catch {
     return "";

@@ -6,29 +6,20 @@
  * 2. Falls back to the Rust candle-based BGE-small model if the provider doesn't support embeddings
  * 3. Returns null if neither source is available
  *
- * This enables testing RAG without downloading BGE-small — just point LM Studio or Ollama at
- * any model with an embeddings endpoint.
+ * Space pinning: every embedding result carries a `spaceId` that identifies the vector space.
+ * The knowledge base stores its `spaceId`. The router refuses to embed into a KB whose space doesn't match.
  *
  * @module
  */
 
 import { getActiveProvider } from "./providerManager";
 import type { AiProviderClient } from "./types";
-
-/**
- * Result of an embedding request.
- */
-export interface EmbeddingResult {
-  /** The embedding vector as a flat float array */
-  vector: number[];
-  /** Which source produced the embedding */
-  source: "provider" | "rust_backend" | null;
-}
+import type { EmbeddingResult } from "./capabilities";
 
 /**
  * Attempt to get an embedding vector from the active AI provider (LM Studio, Ollama, etc.).
  *
- * @returns The embedding vector + source info, or null if provider has no embeddings support
+ * @returns The embedding result with space info, or null if provider has no embeddings support
  */
 export async function getProviderEmbedding(text: string): Promise<EmbeddingResult | null> {
   try {
@@ -43,10 +34,15 @@ export async function getProviderEmbedding(text: string): Promise<EmbeddingResul
       input: text,
     });
 
-    if (result && result.length > 0) {
-      const vec = result[0];
+    if (result && result.vectors && result.vectors.length > 0) {
+      const vec = result.vectors[0];
       if (vec && vec.length > 0) {
-        return { vector: vec, source: "provider" };
+        return {
+          vectors: result.vectors,
+          spaceId: result.spaceId,
+          dimensions: result.dimensions,
+          modelId: result.modelId,
+        };
       }
     }
 

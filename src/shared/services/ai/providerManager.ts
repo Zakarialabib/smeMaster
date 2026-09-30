@@ -12,6 +12,14 @@ import { createCopilotProvider, clearCopilotProvider } from "./providers/copilot
 import { createCustomProvider } from "./providers/customProvider";
 import { createLMStudioProvider, clearLMStudioProvider, testEmbedding } from "./providers/lmstudioProvider";
 import { createOpenRouterProvider, clearOpenRouterProvider } from "./providers/openrouterProvider";
+import {
+  isTextCapable,
+  isEmbeddingCapable,
+  isStructuredOutputCapable,
+  isToolCallingCapable,
+  isReasoningCapable,
+  type AiCapability,
+} from "./capabilities";
 
 const API_KEY_SETTINGS: Record<Exclude<AiProvider, "ollama" | "custom" | "lmstudio">, string> = {
   claude: "claude_api_key",
@@ -194,4 +202,40 @@ export async function testLMStudioEmbedding(): Promise<TestEmbeddingResult> {
   const serverUrl = (await getSetting("lmstudio_server_url")) ?? "http://localhost:1234";
   const embeddingModel = (await getSetting("lmstudio_embedding_model")) ?? "";
   return testEmbedding(serverUrl, embeddingModel || undefined);
+}
+
+// ── Capability-Aware Resolution ───────────────────────────────────────────
+
+/**
+ * Check if the active provider supports a specific capability.
+ */
+export async function isCapabilityAvailable(cap: AiCapability): Promise<boolean> {
+  try {
+    const provider = await getActiveProvider();
+    switch (cap) {
+      case "text": return isTextCapable(provider);
+      case "embedding": return isEmbeddingCapable(provider);
+      case "structured_output": return isStructuredOutputCapable(provider);
+      case "tool_calling": return isToolCallingCapable(provider);
+      case "reasoning": return isReasoningCapable(provider);
+      default: return false;
+    }
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get the active provider if it supports the required capability.
+ * Throws AiError if the provider doesn't support the capability.
+ */
+export async function getProviderForCapability<T extends AiCapability>(
+  cap: T,
+): Promise<AiProviderClient> {
+  const provider = await getActiveProvider();
+  const available = await isCapabilityAvailable(cap);
+  if (!available) {
+    throw new AiError("NOT_CONFIGURED", `Active provider does not support ${cap}`);
+  }
+  return provider;
 }

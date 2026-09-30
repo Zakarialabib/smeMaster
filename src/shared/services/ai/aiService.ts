@@ -5,6 +5,7 @@ import { AiError } from "./errors";
 import type { DbMessage } from "@shared/services/db/messages";
 import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
 import { fetchRagContext, buildFusedContext } from "./ragContext";
+import { withRetry } from "./taskRouter";
 import {
   SUMMARIZE_PROMPT,
   COMPOSE_PROMPT,
@@ -108,10 +109,11 @@ function sanitizeErrorMessage(raw: string): string {
 }
 
 export async function callAi(systemPrompt: string, userContent: string): Promise<string> {
-  try {
-    const provider = await getActiveProvider();
-    return await provider.complete({ systemPrompt, userContent });
-  } catch (err) {
+  return withRetry(async () => {
+    try {
+      const provider = await getActiveProvider();
+      return await provider.complete({ systemPrompt, userContent });
+    } catch (err) {
     if (err instanceof AiError) throw err;
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("401") || message.includes("authentication")) {
@@ -121,7 +123,13 @@ export async function callAi(systemPrompt: string, userContent: string): Promise
       throw new AiError("RATE_LIMITED", "Rate limited â€” please try again shortly");
     }
     throw new AiError("NETWORK_ERROR", sanitizeErrorMessage(message));
-  }
+    }
+  }, {
+    maxRetries: 3,
+    baseDelayMs: 1000,
+    maxDelayMs: 10000,
+    retryableStatuses: [429, 500, 502, 503, 504],
+  });
 }
 
 function formatMessageForSummary(msg: DbMessage): string {
