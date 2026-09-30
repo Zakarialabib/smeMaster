@@ -9,7 +9,7 @@
 > project changes it.
 > **Related:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`BACKEND.md`](../voice/design/BACKEND.md) · [`WIREFRAMES.md`](../voice/design/WIREFRAMES.md) ·
-> [WhatsApp landscape](11-voice-agent-whatsapp-oss-landscape.md)
+> [WhatsApp landscape](16-voice-agent-whatsapp-oss-landscape.md)
 
 ---
 
@@ -134,7 +134,7 @@ Pick one per tenant, explicitly, and never pretend both are local. `ADR-001` D1 
 | [`pheonix-delta/axiom-voice-agent`](https://github.com/pheonix-delta/axiom-voice-agent) | **Apache-2.0** | ❌ **The closest match, and it confirms the constraint.** 147★, last push 2026-05-24, "<400 ms on 4 GB VRAM, fully offline, no API keys" — real, and the best latency-per-euro evidence we have. But it is a **robotics/edge** agent: FastAPI + Kokoro + sherpa + SetFit, a WebGL UI, and **no telephony at all**. It proves the *local tier* is viable; it does nothing for PSTN ingress. |
 | [`off-grid-ai/OGAM`](https://github.com/off-grid-ai/OGAM) | **MIT** | 3.2k★, pushed 2026-09-28, local LLM + Whisper + STT on phone/Mac. **Pattern worth stealing:** the *orchestrator* is local; the *providers* are pluggable and federated. That is our §4 shape. Still no telephony. |
 | [`k2-fsa/sherpa-onnx`](https://github.com/k2-fsa/sherpa-onnx) | **Apache-2.0** | 15k★, C++, pushed 2026-09-22. **The engine** for the self-hosted tier — STT/TTS/VAD/diarization offline. Already the basis of `SELF-HOSTING.md`. |
-| `karem505/whatRust` | MIT | ❌ not an integration — see [the landscape doc](11-voice-agent-whatsapp-oss-landscape.md) |
+| `karem505/whatRust` | MIT | ❌ not an integration — see [the landscape doc](16-voice-agent-whatsapp-oss-landscape.md) |
 
 **Every project that answers a phone call runs it on a server.** None moves PSTN ingress onto
 a laptop. That is not a gap in the ecosystem; it is the telephone network.
