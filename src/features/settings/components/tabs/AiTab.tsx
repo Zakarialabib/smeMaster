@@ -46,6 +46,7 @@ export default function AiTab() {
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [mistralApiKey, setMistralApiKey] = useState("");
+  const [byteplusApiKey, setByteplusApiKey] = useState("");
   const [copilotApiKey, setCopilotApiKey] = useState("");
   const [ollamaServerUrl, setOllamaServerUrl] = useState("http://localhost:11434");
   const [ollamaModel, setOllamaModel] = useState("llama3.2");
@@ -56,6 +57,7 @@ export default function AiTab() {
   const [openaiModel, setOpenaiModel] = useState("gpt-4o-mini");
   const [geminiModel, setGeminiModel] = useState("gemini-2.5-flash-preview-05-20");
   const [mistralModel, setMistralModel] = useState("mistral-small");
+  const [byteplusModel] = useState("doubao-pro-32k");
   const [copilotModel, setCopilotModel] = useState("openai/gpt-4o-mini");
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiLanguage, setAiLanguage] = useState("auto");
@@ -118,6 +120,8 @@ export default function AiTab() {
       if (geminiModelVal) setGeminiModel(geminiModelVal);
       const mistralModelVal = await getSetting("mistral_model");
       if (mistralModelVal) setMistralModel(mistralModelVal);
+      const byteplusModelVal = await getSetting("byteplus_model");
+      // byteplusModel is read-only (no setter needed)
       const aiKey = await getSecureSetting("claude_api_key");
       setClaudeApiKey(aiKey ?? "");
       const oaiKey = await getSecureSetting("openai_api_key");
@@ -126,6 +130,8 @@ export default function AiTab() {
       setGeminiApiKey(gemKey ?? "");
       const mistralKey = await getSecureSetting("mistral_api_key");
       setMistralApiKey(mistralKey ?? "");
+      const byteplusKey = await getSecureSetting("byteplus_api_key");
+      setByteplusApiKey(byteplusKey ?? "");
       const copKey = await getSecureSetting("copilot_api_key");
       setCopilotApiKey(copKey ?? "");
       const copilotModelVal = await getSetting("copilot_model");
@@ -319,6 +325,7 @@ export default function AiTab() {
                 <option value="openai">{t('settings.providerOpenai')}</option>
                 <option value="gemini">{t('settings.providerGemini')}</option>
                 <option value="mistral">{t('settings.providerMistral')}</option>
+                <option value="byteplus">{t('settings.providerByteplus')}</option>
                 <option value="ollama">{t('settings.providerOllama')}</option>
                 <option value="copilot">{t('settings.providerCopilot')}</option>
                 <option value="custom">{t('settings.customProvider')}</option>
@@ -755,6 +762,7 @@ export default function AiTab() {
                     : aiProvider === "openai" ? t('settings.openaiApiKey')
                     : aiProvider === "copilot" ? t('settings.githubPat')
                     : aiProvider === "mistral" ? t('settings.mistralApiKey')
+                    : aiProvider === "byteplus" ? t('settings.byteplusApiKey')
                     : t('settings.googleAiApiKey')
                   }
                   size="md"
@@ -764,6 +772,7 @@ export default function AiTab() {
                     : aiProvider === "openai" ? openaiApiKey
                     : aiProvider === "copilot" ? copilotApiKey
                     : aiProvider === "mistral" ? mistralApiKey
+                    : aiProvider === "byteplus" ? byteplusApiKey
                     : geminiApiKey
                   }
                   onChange={(e) => {
@@ -771,6 +780,7 @@ export default function AiTab() {
                     else if (aiProvider === "openai") setOpenaiApiKey(e.target.value);
                     else if (aiProvider === "copilot") setCopilotApiKey(e.target.value);
                     else if (aiProvider === "mistral") setMistralApiKey(e.target.value);
+                    else if (aiProvider === "byteplus") setByteplusApiKey(e.target.value);
                     else setGeminiApiKey(e.target.value);
                   }}
                   placeholder={
@@ -778,6 +788,7 @@ export default function AiTab() {
                     : aiProvider === "openai" ? t('settings.customApiKeyPlaceholder')
                     : aiProvider === "copilot" ? t('settings.copilotKeyPlaceholder')
                     : aiProvider === "mistral" ? t('settings.mistralKeyPlaceholder')
+                    : aiProvider === "byteplus" ? t('settings.byteplusKeyPlaceholder')
                     : t('settings.geminiKeyPlaceholder')
                   }
                 />
@@ -788,6 +799,7 @@ export default function AiTab() {
                       : aiProvider === "openai" ? openaiModel
                       : aiProvider === "copilot" ? copilotModel
                       : aiProvider === "mistral" ? mistralModel
+                      : aiProvider === "byteplus" ? byteplusModel
                       : geminiModel
                     }
                     onChange={async (e) => {
@@ -797,13 +809,15 @@ export default function AiTab() {
                         openai: "openai_model",
                         gemini: "gemini_model",
                         mistral: "mistral_model",
+                        byteplus: "byteplus_model",
                         copilot: "copilot_model",
                       } as const;
-                      const modelKey = modelSettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"];
+                      const modelKey = modelSettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "byteplus" | "copilot"];
                       if (aiProvider === "claude") setClaudeModel(val);
                       else if (aiProvider === "openai") setOpenaiModel(val);
                       else if (aiProvider === "copilot") setCopilotModel(val);
                       else if (aiProvider === "mistral") setMistralModel(val);
+                      else if (aiProvider === "byteplus") setByteplusModel(val);
                       else setGeminiModel(val);
                       await setSetting(modelKey, val);
                       const { clearProviderClients } = await import("@shared/services/ai/providerManager");
@@ -811,7 +825,7 @@ export default function AiTab() {
                     }}
                     className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
                   >
-                    {PROVIDER_MODELS[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"].map((m) => (
+                    {PROVIDER_MODELS[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "byteplus" | "copilot"].map((m) => (
                       <option key={m.id} value={m.id}>{m.label}</option>
                     ))}
                   </select>
@@ -826,6 +840,7 @@ export default function AiTab() {
                         openai: "openai_api_key",
                         gemini: "gemini_api_key",
                         mistral: "mistral_api_key",
+                        byteplus: "byteplus_api_key",
                         copilot: "copilot_api_key",
                       } as const;
                       const keyValue =
@@ -833,9 +848,10 @@ export default function AiTab() {
                         : aiProvider === "openai" ? openaiApiKey.trim()
                         : aiProvider === "copilot" ? copilotApiKey.trim()
                         : aiProvider === "mistral" ? mistralApiKey.trim()
+                        : aiProvider === "byteplus" ? byteplusApiKey.trim()
                         : geminiApiKey.trim();
                       if (keyValue) {
-                        const keyName = keySettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "copilot"];
+                        const keyName = keySettingMap[aiProvider as "claude" | "openai" | "gemini" | "mistral" | "byteplus" | "copilot"];
                         await setSecureSetting(keyName, keyValue);
                         const { clearProviderClients } = await import("@shared/services/ai/providerManager");
                         clearProviderClients();
@@ -874,6 +890,7 @@ export default function AiTab() {
                       : aiProvider === "openai" ? openaiApiKey.trim()
                       : aiProvider === "copilot" ? copilotApiKey.trim()
                       : aiProvider === "mistral" ? mistralApiKey.trim()
+                      : aiProvider === "byteplus" ? byteplusApiKey.trim()
                       : geminiApiKey.trim()) || aiTesting
                     }
                     className="bg-bg-tertiary text-text-primary border border-border-primary"

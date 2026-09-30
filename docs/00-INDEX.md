@@ -45,20 +45,24 @@ How the system is built.
 
 Rust & Tauri — the native layer.
 
-| Doc                                                          | Covers                                        |
-| ------------------------------------------------------------ | --------------------------------------------- |
-| [01-imap-engine](02-BACKEND/01-imap-engine.md)               | async-imap, MIME parsing, delta sync          |
-| [02-smtp-client](02-BACKEND/02-smtp-client.md)               | lettre transport, OAuth2                      |
-| [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                 | PGP key gen, encrypt/decrypt                  |
-| [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                 | PKCE OAuth, localhost server, token refresh   |
-| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)   | 14 Tauri plugins + mobile                     |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md) | 831 IPC commands (35 invoicing + 12 POS)      |
-| [07-key-management](02-BACKEND/07-key-management.md)         | AES-256-GCM, PGP, security model              |
-| [08-mobile-build](02-BACKEND/08-mobile-build.md)             | APK generation, platform targets              |
-| [10-error-system](02-BACKEND/10-error-system.md)             | SerializedError type system                   |
-| [11-event-system](02-BACKEND/11-event-system.md)             | EventBus, AppEvent enum, DomainEventProcessor |
-| [12-diagnostics](02-BACKEND/12-diagnostics.md)               | Backend tech-debt & diagnostics tracking      |
-| [ai-rag](02-BACKEND/ai-rag.md)                               | Rust: candle, LanceDB, parser, indexer        |
+| Doc                                                                          | Covers                                                         |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [01-imap-engine](02-BACKEND/01-imap-engine.md)                               | async-imap, MIME parsing, delta sync                           |
+| [02-smtp-client](02-BACKEND/02-smtp-client.md)                               | lettre transport, OAuth2                                       |
+| [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                                 | PGP key gen, encrypt/decrypt                                   |
+| [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                                 | PKCE OAuth, localhost server, token refresh                    |
+| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)                   | 14 Tauri plugins + mobile                                      |
+| [06-commands-reference](02-BACKEND/06-commands-reference.md)                 | 831 IPC commands (35 invoicing + 12 POS)                       |
+| [07-key-management](02-BACKEND/07-key-management.md)                         | AES-256-GCM, PGP, security model                               |
+| [08-mobile-build](02-BACKEND/08-mobile-build.md)                             | APK generation, platform targets                               |
+| [10-error-system](02-BACKEND/10-error-system.md)                             | SerializedError type system                                    |
+| [11-event-system](02-BACKEND/11-event-system.md)                             | EventBus, AppEvent enum, DomainEventProcessor                  |
+| [12-diagnostics](02-BACKEND/12-diagnostics.md)                               | Backend tech-debt & diagnostics tracking                       |
+| [ai-rag](02-BACKEND/ai-rag.md)                                               | Rust: candle, LanceDB, parser, indexer                         |
+| [13-ai-capability-architecture](02-BACKEND/13-ai-capability-architecture.md) | Capability interfaces, type guards, provider composition       |
+| [14-ai-task-router](02-BACKEND/14-ai-task-router.md)                         | Per-task provider+model routing, fallback chains, cost scoring |
+| [15-ai-model-registry](02-BACKEND/15-ai-model-registry.md)                   | Data-driven model definitions, embedding space pinning         |
+| [16-ai-rag-dimensions](02-BACKEND/16-ai-rag-dimensions.md)                   | Multi-dimension RAG, three embedding spaces, migration guide   |
 
 ## Frontend
 
@@ -103,13 +107,14 @@ What the app does, grouped by functional area.
 
 ### Messaging Layer
 
-| Doc                                                | Covers                            |
-| -------------------------------------------------- | --------------------------------- |
-| [Composer](04-FEATURES/34-mail-composer.md)        | Drafting, send, schedule, aliases |
-| [Templates](04-FEATURES/24-templates.md)           | Reusable template content         |
-| [Quick Replies](04-FEATURES/29-quick-replies.md)   | Fast reply snippets               |
-| [Filters](04-FEATURES/28-filters.md)               | Rule-based filtering and testing  |
-| [Deliverability](04-FEATURES/21-deliverability.md) | DNS, blacklist, bounce health     |
+| Doc                                                   | Covers                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| [Composer](04-FEATURES/34-mail-composer.md)           | Drafting, send, schedule, aliases                            |
+| [Templates](04-FEATURES/24-templates.md)              | Reusable template content                                    |
+| [Quick Replies](04-FEATURES/29-quick-replies.md)      | Fast reply snippets                                          |
+| [Filters](04-FEATURES/28-filters.md)                  | Rule-based filtering and testing                             |
+| [Deliverability](04-FEATURES/21-deliverability.md)    | DNS, blacklist, bounce health                                |
+| [38-voice-settings](04-FEATURES/38-voice-settings.md) | Desktop voice settings, STT/TTS providers, capability badges |
 
 ### Security And Data
 
@@ -223,21 +228,23 @@ Deep-dive guides for complex subsystems.
 | [Ops Commands Tables Refactor](superpowers/specs/2026-07-09-ops-commands-tables-refactor-design.md) | Design spec for ops command/table refactor       |
 | [AI RAG LM Studio](superpowers/specs/2026-07-12-ai-rag-lmstudio-design.md)                          | Design spec for LM Studio RAG integration        |
 | [AI Settings Refactor](superpowers/specs/2026-07-13-ai-settings-refactor-design.md)                 | Design spec for AI settings refactor             |
+| [AI Provider Capability Architecture](plans/AI-PROVIDER-CAPABILITY-ARCHITECTURE-PLAN.md)            | Implementation plan for capability architecture  |
 
 ## Development
 
 For contributors and AI agents.
 
-| Doc                                                          | Covers                              |
-| ------------------------------------------------------------ | ----------------------------------- |
-| [Quickstart](05-DEVELOPMENT/01-quickstart.md)                | Setup, commands, Mailtrap           |
-| [Testing](05-DEVELOPMENT/02-testing.md)                      | Vitest patterns, Rust tests         |
-| [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)        | Component/hook/service reuse        |
-| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)    | Daily PR → Release Please → Build   |
-| [Manual Tests](05-DEVELOPMENT/03-manual-tests.md)            | Panic, WAL, watchdog, dev verify    |
-| [WAL Deletion](05-DEVELOPMENT/04-wal-deletion.md)            | WAL file handling and safe deletion |
-| [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)        | Logcat, WebView, Kotlin             |
-| [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | Tokens, components, patterns        |
+| Doc                                                              | Covers                              |
+| ---------------------------------------------------------------- | ----------------------------------- |
+| [Quickstart](05-DEVELOPMENT/01-quickstart.md)                    | Setup, commands, Mailtrap           |
+| [Testing](05-DEVELOPMENT/02-testing.md)                          | Vitest patterns, Rust tests         |
+| [08-ai-provider-adding](05-DEVELOPMENT/08-ai-provider-adding.md) | Guide for adding new AI providers   |
+| [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)            | Component/hook/service reuse        |
+| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)        | Daily PR → Release Please → Build   |
+| [Manual Tests](05-DEVELOPMENT/03-manual-tests.md)                | Panic, WAL, watchdog, dev verify    |
+| [WAL Deletion](05-DEVELOPMENT/04-wal-deletion.md)                | WAL file handling and safe deletion |
+| [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)            | Logcat, WebView, Kotlin             |
+| [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md)     | Tokens, components, patterns        |
 
 ## Roadmap
 

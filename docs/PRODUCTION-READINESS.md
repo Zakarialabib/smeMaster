@@ -2,7 +2,7 @@
 
 > **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup.
 
-> **Last updated:** 2026-07-15 (command/migration counts reconciled against source this pass)
+> **Last updated:** 2026-09-30 (command/migration counts reconciled against source this pass)
 
 ## Status Summary
 
@@ -27,7 +27,7 @@
 
 ### 0.1 Attack Surface Audit
 
-- [x] ~831 `#[tauri::command]`/`#[command]` IPC commands audited (768 `#[tauri::command]` + 63 `#[command]`)
+- [x] ~841 `#[tauri::command]`/`#[command]` IPC commands audited (768 `#[tauri::command]` + 73 `#[command]`)
 - [x] No command accepts raw SQL strings — all use `sqlx::query!`/`query_as!` with parameterized bindings
 - [x] No command writes to arbitrary file paths — all paths rooted at `app_data_dir()`
 - [x] PGP/crypto commands sanitize all inputs (uses `spawn_blocking`, no `unwrap()` in production paths)
@@ -46,7 +46,7 @@
 
 ### 0.3 Migration Safety
 
-- [x] 34 migrations (numbered 001–032; 020 and 021 each split into two files), each with `up` semantics
+- [x] 32 migrations (numbered 001–032; 020 and 021 each split into two files), each with `up` semantics
 - [x] All use `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE`, `CREATE INDEX` — no silent data loss
 - [x] Migration runner uses `RETURNING` with `sqlx::query_as`
 
@@ -389,7 +389,7 @@ All under [user-guide/](user-guide/):
 - Dogfooding: 7 consecutive days with no critical bugs
 - Beta testing: NPS ≥ 30, install success ≥ 90%, zero P0 bugs
 - All platform installers smoke-tested
-- All automated tests green (3,205 tests)
+- All automated tests green (~3,529 TS tests, 969 Rust tests)
 - Privacy policy live and linked from app
 - Code signing certificates acquired and configured
 

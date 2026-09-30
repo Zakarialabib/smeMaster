@@ -9,10 +9,21 @@
  * Native Mistral SDK could replace this later for Mistral-specific features
  * (e.g. Voxtral realtime STT), but the OpenAI-compatible path keeps the
  * provider-agnostic contract clean.
+ *
+ * Extended with StructuredOutputCapable, ToolCallingCapable, and ReasoningCapable.
  */
 
+import type { z } from "zod";
 import type { AiProviderClient } from "../types";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
+import type {
+  StructuredOutputCapable,
+  ToolCallingCapable,
+  ReasoningCapable,
+  ReasoningEffort,
+  ToolDefinition,
+  ToolCallResult,
+} from "../capabilities";
 
 const MISTRAL_BASE_URL = "https://api.mistral.ai";
 
@@ -21,14 +32,197 @@ export function createMistralProvider(
   model: string,
   aiLanguage = "auto",
   embeddingModel = "mistral-embed",
-): AiProviderClient {
-  return createOpenAICompatibleProvider(
+): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable {
+  const baseProvider = createOpenAICompatibleProvider(
     MISTRAL_BASE_URL,
     apiKey,
     model,
     aiLanguage,
     embeddingModel,
   );
+
+  return {
+    ...baseProvider,
+
+    async completeStructured<T>(
+      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      schema: z.ZodSchema<T>,
+      options?: { strict?: boolean },
+    ): Promise<T> {
+      const { buildSystemPrompt } = await import("../utils");
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: req.userContent },
+          ],
+          max_tokens: req.maxTokens ?? 1024,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error (${response.status})`);
+      }
+
+      const data = await response.json() as { choices: { message: { content: string } }[] };
+      const content = data.choices[0]?.message?.content ?? "{}";
+      return schema.parse(JSON.parse(content));
+    },
+
+    async completeWithTools(
+      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      tools: ToolDefinition[],
+      options?: { toolChoice?: "auto" | "required" | "none" | { name: string } },
+    ): Promise<ToolCallResult> {
+      const { buildSystemPrompt } = await import("../utils");
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: req.userContent },
+          ],
+          max_tokens: req.maxTokens ?? 1024,
+          tools: tools.map((t) => ({
+            type: "function" as const,
+            function: {
+              name: t.name,
+              description: t.description,
+              parameters: zodToJsonSchema(t.parameters),
+            },
+          })),
+          tool_choice: options?.toolChoice,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error (${response.status})`);
+      }
+
+      const data = await response.json() as {
+        choices: {
+          message: {
+            content: string;
+            tool_calls?: { function: { name: string; arguments: string } }[];
+          };
+        }[];
+      };
+
+      const toolCalls = data.choices[0]?.message?.tool_calls?.map((tc) => ({
+        name: tc.function.name,
+        arguments: JSON.parse(tc.function.arguments) as Record<string, unknown>,
+      })) ?? [];
+
+      return {
+        content: data.choices[0]?.message?.content ?? "",
+        toolCalls,
+      };
+    },
+
+    async completeWithReasoning(
+      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      effort: ReasoningEffort,
+    ): Promise<string> {
+      const { buildSystemPrompt } = await import("../utils");
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const reasoningPrompt = getReasoningPrompt(effort);
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: `${systemPrompt}\n\n${reasoningPrompt}` },
+            { role: "user", content: req.userContent },
+          ],
+          max_tokens: req.maxTokens ?? 1024,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error (${response.status})`);
+      }
+
+      const data = await response.json() as { choices: { message: { content: string } }[] };
+      return data.choices[0]?.message?.content ?? "";
+    },
+  };
+}
+
+function getReasoningPrompt(effort: ReasoningEffort): string {
+  switch (effort) {
+    case "none":
+      return "Respond directly without reasoning.";
+    case "low":
+      return "Think briefly before responding.";
+    case "medium":
+      return "Think through the problem step by step before responding.";
+    case "high":
+      return "Think deeply and thoroughly about this problem. Consider multiple approaches, evaluate trade-offs, and provide a well-reasoned response.";
+  }
+}
+
+function zodToJsonSchema(schema: z.ZodSchema): Record<string, unknown> {
+  const def = schema._def as Record<string, unknown>;
+  const typeName = def.typeName as string;
+  switch (typeName) {
+    case "ZodObject": {
+      const shape = def.shape as () => Record<string, z.ZodSchema>;
+      const s = shape();
+      return {
+        type: "object",
+        properties: Object.fromEntries(
+          Object.entries(s).map(([key, value]) => [
+            key,
+            zodToJsonSchema(value),
+          ]),
+        ),
+        required: Object.keys(s),
+        additionalProperties: false,
+      };
+    }
+    case "ZodString":
+      return { type: "string" };
+    case "ZodNumber":
+      return { type: "number" };
+    case "ZodBoolean":
+      return { type: "boolean" };
+    case "ZodArray": {
+      const itemType = def.type as z.ZodSchema;
+      return { type: "array", items: zodToJsonSchema(itemType) };
+    }
+    case "ZodEnum": {
+      const values = def.values as string[];
+      return { type: "string", enum: values };
+    }
+    case "ZodOptional": {
+      const innerType = def.innerType as z.ZodSchema;
+      return zodToJsonSchema(innerType);
+    }
+    case "ZodNullable": {
+      const innerType = def.innerType as z.ZodSchema;
+      return { ...zodToJsonSchema(innerType), nullable: true };
+    }
+    default:
+      return { type: "object" };
+  }
 }
 
 export function clearMistralProvider(): void {
