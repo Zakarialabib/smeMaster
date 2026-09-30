@@ -4,7 +4,7 @@
 > decided state instead of re-deriving it. One prompt per gate, self-contained.
 > **Read first (every gate):** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`spec`](../../specs/2026-09-28-voice-agent.md) ·
-> [`OSS landscape`](../../06-ROADMAP/10-voice-agent-oss-landscape.md) ·
+> [`OSS landscape`](../../06-ROADMAP/15-voice-agent-oss-landscape.md) ·
 > [`glossary`](../../glossary/glossary-voice-agent.md)
 > **Last updated:** 2026-09-28
 
@@ -52,7 +52,7 @@ split · §3 → `COST-MODEL.md` §3 shape · §4 → `CALL-FLOW.md` §2 consent
 ```
 Repo: C:\laragon\www\smeMaster, branch private/voice-agent-client. Read these first, in
 order: docs/01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md,
-docs/specs/2026-09-28-voice-agent.md (Gate 1), docs/06-ROADMAP/10-voice-agent-oss-landscape.md
+docs/specs/2026-09-28-voice-agent.md (Gate 1), docs/06-ROADMAP/15-voice-agent-oss-landscape.md
 (§5.1, §5.5, §7), docs/glossary/glossary-voice-agent.md.
 
 Build GATE 1 only.
@@ -110,7 +110,7 @@ non-normalising allowlist is bypassable by formatting alone. Gate 3 must use
 
 **Gate 5 addition (2026-09-28):** add a `selfhosted` tier to the `ProviderTier` chain
 (sherpa-onnx, Apache-2.0 — see
-[`Optimizing Voice Agent Performance.md`](PERFORMANCE.md) §6.6).
+[`PERFORMANCE.md`](PERFORMANCE.md) §6.6).
 It is gated on one measurement first, §6.7: **max concurrent calls at RTF < 1.0** with the
 streaming FR zipformer + a Piper FR voice on our 4-vCPU box. Below the client's expected
 peak, the tier is closed and nothing else in Gate 5 changes. Also adopt **TTS caching** for
@@ -130,7 +130,7 @@ restructure or rewrite it. Read these first, in order, and change nothing until
 you have:
 
   docs/voice/README.md                  folder map (client/ dev/ design/) + gate map
-  docs/voice/design/WIREFRAMES.md       §13 = 9 gaps ⚠️ · §14 = 8 opportunities 💡
+  docs/voice/design/WIREFRAMES.md       §13 = 17 gaps ⚠️ · §14 = 13 opportunities 💡
   docs/voice/design/UX.md               §13 = 5 open UX questions
   docs/voice/design/FRONTEND.md         mount point, speech abstraction, stores
   docs/voice/design/BACKEND.md          topology, seams, data model, endpoints

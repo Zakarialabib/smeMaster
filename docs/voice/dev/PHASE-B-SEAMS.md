@@ -23,12 +23,12 @@ It is worth being precise about what B is and is not:
 
 ## The four seams
 
-| Seam | Trait | What it abstracts | v1 candidates (unverified prices) |
-|---|---|---|---|
-| LLM | `LLMProvider` | completion + streaming | OpenRouter (any model), or a direct key |
-| TTS | `TTSProvider` | streaming audio out, FR/EN voices | ElevenLabs, Cartesia |
-| STT | `STTProvider` | streaming audio in, VAD events | Deepgram Nova, Mistral Voxtral |
-| Embedding | `EmbeddingProvider` | vectors + dimensions | `bge-m3`, arctic-embed-l-v2.0 |
+| Seam      | Trait               | What it abstracts                 | v1 candidates (unverified prices)       |
+| --------- | ------------------- | --------------------------------- | --------------------------------------- |
+| LLM       | `LLMProvider`       | completion + streaming            | OpenRouter (any model), or a direct key |
+| TTS       | `TTSProvider`       | streaming audio out, FR/EN voices | ElevenLabs, Cartesia                    |
+| STT       | `STTProvider`       | streaming audio in, VAD events    | Deepgram Nova, Mistral Voxtral          |
+| Embedding | `EmbeddingProvider` | vectors + dimensions              | `bge-m3`, arctic-embed-l-v2.0           |
 
 `EmbeddingProvider` is the fourth seam, added after the desktop RAG review. It
 carries `dimensions` in its capabilities, and **1024 (server) and 384 (desktop)
@@ -37,7 +37,7 @@ are different vector spaces that must never be merged** — see
 
 ### Capabilities are a property of the host
 
-`Capabilities` exists because "supported" is a property of *this machine*, not
+`Capabilities` exists because "supported" is a property of _this machine_, not
 of the project. A VPS reports `cpu` and no `gpu`; the desktop may report
 `gpu=rtx4070` and a local model. The console renders that difference instead of
 the app failing at capture time.
@@ -88,7 +88,7 @@ cargo    agent module compiles; 4 commands registered
 The 5 skips need Postgres, which this host does not have. They run in CI with
 `AGENT_CORE_TEST_DATABASE_URL` set.
 
-## Still open before Gate 1 can be *signed off*
+## Still open before Gate 1 can be _signed off_
 
 B proves the seams swap with **fixtures**. Three things remain, and none are
 optional:
@@ -97,5 +97,6 @@ optional:
    environment and never from the desktop.
 2. **Metering that survives a real swap** — a token count from a real provider is
    the first honest number for `COST-MODEL.md`.
-3. **The RAG-FORK decision** — `bge-m3` vs arctic-embed-l-v2.0 is still
-   `☐ pending`, and it gates the embedding implementation.
+3. **The embedding implementation** — the RAG fork is ✅ **signed 2026-09-28
+   (Option A: server pgvector + `bge-m3`)**; building against it, plus the
+   retrieval eval, remains.

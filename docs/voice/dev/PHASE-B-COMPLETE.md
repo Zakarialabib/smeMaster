@@ -26,7 +26,7 @@ value alone.** It is now executable rather than aspirational.
 - `providers/fixtures.py` — **two** real implementations per seam (`alpha`,
   `beta`) plus a `down` that always raises. Two, because one cannot demonstrate
   a swap. Not stubs: real trait implementations making no network call.
-- `providers/chain.py` — `run_chain` returns which provider *actually* answered,
+- `providers/chain.py` — `run_chain` returns which provider _actually_ answered,
   what was attempted, and whether a fallback engaged. A silent failover is a
   "Never" in `BACKEND.md` §8; this is what prevents it.
 - `tests/test_swap.py` **is** the Gate 1 exit criterion, executed. Alpha and beta
@@ -45,7 +45,7 @@ carrier, no microphone and no vendor key, and `/providers/registry` says
 ## Three defects this phase caught
 
 **1. A security guard that was silently inert.** `SessionRequest` inherited
-`BaseModel` instead of `Camel`. `BaseModel` accepts snake_case and *ignores*
+`BaseModel` instead of `Camel`. `BaseModel` accepts snake_case and _ignores_
 camelCase, so `callerOverride` was dropped on the way in, defaulted to `None`, and
 `assert_caller_allowed` — itself correct — never fired. A live session accepted a
 caller override through the one endpoint whose purpose was to refuse it.
@@ -65,7 +65,7 @@ Verified at the HF API: `license: cc-by-nc-4.0`. **Non-commercial**, and this
 project bills a client. The fastest option on the list is the one we cannot ship.
 
 `providers/licensing.py` is the response, and the reasoning matters: the failure
-was not reading the licence, it was that a *summary* is what people act on. So
+was not reading the licence, it was that a _summary_ is what people act on. So
 the summary is what gets gated. An allowlist, not a blocklist, so unknown fails
 closed. Voxtral stays in `catalogue.py` under `DISQUALIFIED` with its rejection
 written down, and `test_voxtral_stays_out_of_the_allowlist` fails if someone
@@ -113,6 +113,7 @@ Two things worth remembering:
 2. **One real provider per seam.** Phase B proves the swap with fixtures.
 3. **Real auth.** The WS accepts any non-empty bearer token. This is the gating
    item before anything is exposed beyond loopback.
-4. **`RAG-FORK` decision** — `bge-m3` vs arctic-embed-l-v2.0 is still
-   `☐ pending`, and it gates the embedding implementation and the HNSW index.
+4. **`RAG-FORK` decision** — ✅ **signed 2026-09-28, Option A** (server pgvector +
+   `bge-m3`). It gates the embedding implementation and the HNSW index, which
+   are still to be built.
 5. **Postgres.** Nothing persists; 5 migration tests skip.

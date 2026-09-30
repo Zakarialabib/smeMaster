@@ -1,39 +1,40 @@
 # Build log — SMEMaster agent (voice + WhatsApp)
 
-> Living document. Last updated **2026-09-28**. Read this first when picking the
-> work up; it records what is *verified*, what is *not*, and what broke.
+> Living document. Last updated **2026-09-30** (status rows re-verified; content
+> otherwise from the 2026-09-28 session). Read this first when picking the
+> work up; it records what is _verified_, what is _not_, and what broke.
 
 ## Current state
 
 ```
 agent-core   ruff clean · mypy clean (10 files) · 156 passed, 5 skipped
-frontend     tsc TSC_EXIT=0 · eslint clean · vitest 5 files, 60 passed
+frontend     tsc 0 · eslint clean · vitest 6 files, 64 passed + 6 skipped (live tests; server was down at run time)
+             (an earlier run with the server up: 5 files, 60 passed)
 live server  :8788 up · live_swap 15/15 · fixture drift 4/4
 rust         ✅ cargo check --workspace CLEAN — 0 errors, 0 warnings
            ⚠️ test binary LINKS but will not EXECUTE on this host (see below)
-frontend     tsc 0 · eslint 0 · vitest 6 files, 64 passed + 6 skipped (live tests; server was down at run time)
 ```
 
 ## Phase status
 
-| Phase | State | Note |
-|---|---|---|
-| A — contracts, migrations, TS types, stores | ✅ CLOSED | [`PHASE-A-COMPLETE.md`](PHASE-A-COMPLETE.md) |
-| B1 — four provider seams + swap test | ✅ | `test_swap.py` **is** the Gate 1 exit criterion |
-| B2 — `/session`, `/ws/transcript`, `/ops/snapshot` | ✅ | plus a real security bug fixed |
-| B3 — licence gate (Voxtral TTS rejection) | ✅ | [`OPEN-WEIGHT-SPEECH-VERIFIED.md`](OPEN-WEIGHT-SPEECH-VERIFIED.md) |
-| B4 — migrations 0002-0004 | ✅ | structural tests; real PG still skipped |
-| B5 — console HTTP client + captured fixtures | ✅ | tested against the **live** server |
-| B6 — transcript WebSocket | ✅ | fixed an infinite-reconnect bug |
-| B7 — Rust IPC client | ✅ compiles | 32 errors on first compile, all fixed; workspace now 0/0 |
-| C — console data loading | 🟡 in progress | `useAgentResource` hook done (4 states, race-safe). Screens not yet ported |
-| D — channels (PSTN + WhatsApp) | ⬜ | **7–11 d, SINGLE WRITER** — do not parallelise |
-| E — real data (reuse invoicing module, §6) | ⬜ | |
+| Phase                                              | State          | Note                                                                                                                           |
+| -------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| A — contracts, migrations, TS types, stores        | ✅ CLOSED      | [`PHASE-A-COMPLETE.md`](PHASE-A-COMPLETE.md)                                                                                   |
+| B1 — four provider seams + swap test               | ✅             | `test_swap.py` **is** the Gate 1 exit criterion                                                                                |
+| B2 — `/session`, `/ws/transcript`, `/ops/snapshot` | ✅             | plus a real security bug fixed                                                                                                 |
+| B3 — licence gate (Voxtral TTS rejection)          | ✅             | [`OPEN-WEIGHT-SPEECH-VERIFIED.md`](OPEN-WEIGHT-SPEECH-VERIFIED.md)                                                             |
+| B4 — migrations 0002-0004                          | ✅             | structural tests; real PG still skipped                                                                                        |
+| B5 — console HTTP client + captured fixtures       | ✅             | tested against the **live** server                                                                                             |
+| B6 — transcript WebSocket                          | ✅             | fixed an infinite-reconnect bug                                                                                                |
+| B7 — Rust IPC client                               | ✅ compiles    | 32 errors on first compile, all fixed; workspace now 0/0                                                                       |
+| C — console data loading                           | 🟡 in progress | `useAgentResource` hook done (4 states, race-safe). C1: console state primitives + Ops screen ported; rest of §4 order not yet |
+| D — channels (PSTN + WhatsApp)                     | ⬜             | **7–11 d, SINGLE WRITER** — do not parallelise                                                                                 |
+| E — real data (reuse invoicing module, §6)         | ⬜             |                                                                                                                                |
 
 ## The three defects found (all by executing, not reading)
 
 **1. Security guard silently inert.** `SessionRequest` inherited `BaseModel`,
-which takes snake_case and *ignores* camelCase — so `callerOverride` was dropped
+which takes snake*case and \_ignores* camelCase — so `callerOverride` was dropped
 in, defaulted `None`, and `assert_caller_allowed` (correct) never fired. A live
 session accepted a caller override through the endpoint built to refuse it.
 Invisible because every test posted snake_case — what the broken class accepts.
@@ -41,7 +42,7 @@ Fixed; `test_camel_acceptance.py` now fails if any inbound contract stops being
 a `Camel` subclass.
 
 **2. A licence that would have shipped.** DeepSeek's brief recommended
-`mistralai/Voxtral-4B-TTS-2603` in its summary, diagram *and* recommendation,
+`mistralai/Voxtral-4B-TTS-2603` in its summary, diagram _and_ recommendation,
 while its own §4 noted the licence. HF API: `license: cc-by-nc-4.0` —
 **non-commercial**, and this project bills a client. v1 self-hosted TTS is
 **Chatterbox (MIT)**. `providers/licensing.py` allowlists commercial licences so
@@ -55,15 +56,15 @@ completed the handshake then died was retried forever (measured: 13 sockets from
 
 These cost most of the session. Recorded so nobody repeats them.
 
-| # | Issue | Cause | Status |
-|---|---|---|---|
-| 1 | `Could not find protoc` | `.cargo/config.toml` pointed `PROTOC` at a **vendored binary that is not in the repo** (`src-tauri/tools/protoc/` does not exist) | ✅ fixed → WinGet protoc. **TODO: vendor it properly or require it on PATH** |
-| 2 | Disk hit 100% (1.5 G free) twice | Building `ml-sidecar` on a full disk | ✅ `ml-sidecar` built; disk freed |
-| 3 | `ml-sidecar` missing | `tauri.conf.json` declares `externalBin: ['binaries/ml-sidecar']`; main crate will not compile without it | ✅ built + copied to `binaries/ml-sidecar-x86_64-pc-windows-msvc.exe` |
-| 4 | **`rustup component remove` was a mistake** | I misread a 45-file `rust-std` dir as truncated. The official tarball has exactly 45 files. The real `E0463` cause was almost certainly the full disk | ⚠️ **I broke the toolchain**; repaired by hand (see below) |
-| 5 | `rustup component add` fails, TLS `cannot decrypt peer's message` | rustup's HTTP client, not the network — `curl` fetched the same URL fine (HTTP 200) | ✅ worked around with `curl -C -` resume loop, then manual extract |
-| 6 | rustup proxy: *"rustc.exe … is not applicable to the toolchain"* | rustup bookkeeping broken by #4 | ⚠️ **workaround, not a fix** — see below |
-| 7 | 43 compile errors in `smemaster` | 32 in `src/agent/client.rs` (**ours**), 10 in `src/orchestrator/services.rs`, 1 in `src/commands/ai.rs` | ✅ ours 32→**0**; the other 11 are **pre-existing, not ours** |
+| #   | Issue                                                             | Cause                                                                                                                                                 | Status                                                                       |
+| --- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 1   | `Could not find protoc`                                           | `.cargo/config.toml` pointed `PROTOC` at a **vendored binary that is not in the repo** (`src-tauri/tools/protoc/` does not exist)                     | ✅ fixed → WinGet protoc. **TODO: vendor it properly or require it on PATH** |
+| 2   | Disk hit 100% (1.5 G free) twice                                  | Building `ml-sidecar` on a full disk                                                                                                                  | ✅ `ml-sidecar` built; disk freed                                            |
+| 3   | `ml-sidecar` missing                                              | `tauri.conf.json` declares `externalBin: ['binaries/ml-sidecar']`; main crate will not compile without it                                             | ✅ built + copied to `binaries/ml-sidecar-x86_64-pc-windows-msvc.exe`        |
+| 4   | **`rustup component remove` was a mistake**                       | I misread a 45-file `rust-std` dir as truncated. The official tarball has exactly 45 files. The real `E0463` cause was almost certainly the full disk | ⚠️ **I broke the toolchain**; repaired by hand (see below)                   |
+| 5   | `rustup component add` fails, TLS `cannot decrypt peer's message` | rustup's HTTP client, not the network — `curl` fetched the same URL fine (HTTP 200)                                                                   | ✅ worked around with `curl -C -` resume loop, then manual extract           |
+| 6   | rustup proxy: _"rustc.exe … is not applicable to the toolchain"_  | rustup bookkeeping broken by #4                                                                                                                       | ⚠️ **workaround, not a fix** — see below                                     |
+| 7   | 43 compile errors in `smemaster`                                  | 32 in `src/agent/client.rs` (**ours**), 10 in `src/orchestrator/services.rs`, 1 in `src/commands/ai.rs`                                               | ✅ ours 32→**0**; the other 11 are **pre-existing, not ours**                |
 
 ## What the first Rust compile found (32 errors, all ours)
 
@@ -78,14 +79,14 @@ none visible by reading:
    `AgentAuth` newtype, matching the app's existing `AiState` pattern, and
    registered via `app.manage(...)` in `lib.rs`.
 
-   The *intent* survived the rewrite: the token is still not a command
+   The _intent_ survived the rewrite: the token is still not a command
    argument. A token that crosses the IPC boundary is a token the frontend can
    log and get wrong.
 
 2. **`send()` was not `async`.** It returned `Result<Response, _>` and callers
    did `.await` on it — a mistake that compiles in most other languages.
 
-3. **`.send().map_err(...)`** — the future must be awaited *before* `map_err`,
+3. **`.send().map_err(...)`** — the future must be awaited _before_ `map_err`,
    not after.
 
 Two tests were added while fixing: sign-out must clear the token, and a missing
@@ -98,7 +99,12 @@ compiler could say.
 
 ## Pre-existing errors NOT ours
 
-`cargo check --workspace` does not go green, and did not before this work:
+> **Update 2026-09-30:** since this section was written the workspace **does**
+> go green — `cargo check --workspace` is 0 errors / 0 warnings (commit
+> `b05272d`), and the 11 pre-existing errors below were repaired
+> (`d052433`). The per-file drill stays worth knowing when it regresses.
+
+`cargo check --workspace` did not go green, and did not before this work:
 
 - `src/orchestrator/services.rs` — 10 errors (`child.kill().await` on a
   non-future; `HealthStatus` returned where `()` expected)
@@ -116,7 +122,7 @@ $TC/bin/cargo.exe check --workspace -j1 --message-format=short 2>&1 \
 ## ⚠️ TOOLCHAIN WARNING — read before running cargo
 
 `cargo`/`rustc` via `~/.cargo/bin` (the rustup proxies) currently **fail** with
-*"rustc.exe is not applicable to the toolchain"*. The toolchain's real binaries
+_"rustc.exe is not applicable to the toolchain"_. The toolchain's real binaries
 work. Use this until rustup is repaired:
 
 ```bash
@@ -147,8 +153,9 @@ before any `cargo build`.
   anything leaves loopback.
 - **Persistence.** No Postgres here; 5 migration tests skip. The structural
   tests run, the real ones don't.
-- **`RAG-FORK` decision** — `bge-m3` vs arctic-embed-l-v2.0 still `☐ pending`.
-  It gates the embedding impl and the HNSW index.
+- **`RAG-FORK` decision** — ✅ **signed 2026-09-28, Option A** (server pgvector +
+  `bge-m3`). No longer open; it gates the embedding impl and the HNSW index,
+  which are still to be built.
 - **D channels** — needs a number, a BSP, Meta verification. Nothing can be
   built here that answers a call.
 
