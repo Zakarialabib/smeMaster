@@ -3,6 +3,7 @@ export type AiProvider =
   | "openai"
   | "gemini"
   | "mistral"
+  | "byteplus"
   | "ollama"
   | "copilot"
   | "custom"
@@ -51,6 +52,7 @@ export const DEFAULT_MODELS: Record<AiProvider, string> = {
   openai: "gpt-4o-mini",
   gemini: "gemini-2.5-flash-preview-05-20",
   mistral: "mistral-small",
+  byteplus: "doubao-pro-32k",
   ollama: "llama3.2",
   copilot: "openai/gpt-4o-mini",
   custom: "gpt-4o-mini",
@@ -88,6 +90,10 @@ export const PROVIDER_MODELS: Record<
     { id: "mistral-large-3", label: "Mistral Large 3" },
     { id: "mistral-embed", label: "Mistral Embed" },
   ],
+  byteplus: [
+    { id: "doubao-pro-32k", label: "Doubao Pro 32K" },
+    { id: "doubao-lite-32k", label: "Doubao Lite 32K" },
+  ],
   copilot: [
     { id: "openai/gpt-4o-mini", label: "GPT-4o Mini (Low)" },
     { id: "openai/gpt-4.1-nano", label: "GPT-4.1 Nano (Low)" },
@@ -114,6 +120,7 @@ export const MODEL_SETTINGS: Record<
   openai: "openai_model",
   gemini: "gemini_model",
   mistral: "mistral_model",
+  byteplus: "byteplus_model",
   copilot: "copilot_model",
   openrouter: "openrouter_model",
 };

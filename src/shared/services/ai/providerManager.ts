@@ -6,6 +6,7 @@ import { createClaudeProvider, clearClaudeProvider } from "./providers/claudePro
 import { createOpenAIProvider, clearOpenAIProvider } from "./providers/openaiProvider";
 import { createGeminiProvider, clearGeminiProvider } from "./providers/geminiProvider";
 import { createMistralProvider, clearMistralProvider } from "./providers/mistralProvider";
+import { createBytePlusProvider, clearBytePlusProvider } from "./providers/byteplusProvider";
 import { createOllamaProvider, clearOllamaProvider } from "./providers/ollamaProvider";
 import { createCopilotProvider, clearCopilotProvider } from "./providers/copilotProvider";
 import { createCustomProvider } from "./providers/customProvider";
@@ -17,6 +18,7 @@ const API_KEY_SETTINGS: Record<Exclude<AiProvider, "ollama" | "custom" | "lmstud
   openai: "openai_api_key",
   gemini: "gemini_api_key",
   mistral: "mistral_api_key",
+  byteplus: "byteplus_api_key",
   copilot: "copilot_api_key",
   openrouter: "openrouter_api_key",
 };
@@ -29,6 +31,7 @@ export async function getActiveProviderName(): Promise<AiProvider> {
     setting === "openai" ||
     setting === "gemini" ||
     setting === "mistral" ||
+    setting === "byteplus" ||
     setting === "ollama" ||
     setting === "copilot" ||
     setting === "lmstudio" ||
@@ -125,6 +128,9 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
     case "mistral":
       client = createMistralProvider(apiKey, model, aiLanguage);
       break;
+    case "byteplus":
+      client = createBytePlusProvider(apiKey, model, aiLanguage);
+      break;
     case "copilot":
       client = createCopilotProvider(apiKey, model, aiLanguage);
       break;
@@ -172,6 +178,7 @@ export function clearProviderClients(): void {
   clearOpenAIProvider();
   clearGeminiProvider();
   clearMistralProvider();
+  clearBytePlusProvider();
   clearOllamaProvider();
   clearLMStudioProvider();
   clearCopilotProvider();
