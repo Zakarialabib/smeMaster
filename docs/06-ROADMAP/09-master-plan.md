@@ -16,7 +16,7 @@
 | ------ | ----------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **0**  | Foundation              | ✅ DONE                          | 841 commands · 32 migrations · 44 store modules · 3,480 TS + 969 Rust tests (re-grepped 2026-09-30)                                                                                                                                                                                                                                      |
 | **1**  | Pre-Release Polish      | 🔶 IN PROGRESS                   | Manual tests (panic/WAL/watchdog/dev-verify) + code signing + dogfood/beta left. Gates 1/3/9 in `docs/PRODUCTION-READINESS.md` are the only non-PASS gates                                                                                                                                                                               |
-| **2**  | Desktop Power User      | ✅ DONE (14/15)                  | ⚠️ **2.8 Column config**: `columnConfigStore.ts` exists but **no `ColumnPicker` component and no consumer found** — store may be dead code                                                                                                                                                                                               |
+| **2**  | Desktop Power User      | ✅ DONE (15/15)                  | **2.8 Column config closed 2026-09-30**: `ColumnPicker.tsx` built + mounted in EmailList & TasksPage toolbars; consumers were `ThreadCard`/`TaskListView` all along                                                                                                                                                                      |
 | **3**  | Accessibility & i18n    | 🔶 ~60%                          | RTL audit **written** (`10-rtl-audit.md`) but **421 physical-direction violations remain**; `ja`/`it` each have **51 `TODO` occurrences** (was ~215/211)                                                                                                                                                                                 |
 | **4**  | Visual & UX             | ✅ DONE (8/8)                    | Onboarding is `OnboardingScreen.tsx` + `useOnboarding.ts` (the old "OnboardingWizard.tsx" name never existed in the tree)                                                                                                                                                                                                                |
 | **5**  | Data Viz & Dashboard    | ✅ DONE                          | **10** widget components (docs said 8), incl. `EntityNetworkGraph.tsx` + `EmailHeatmapWidget.tsx`                                                                                                                                                                                                                                        |
@@ -72,12 +72,12 @@
 
 ### ⚠️ What's bad (drift, rot, hazards)
 
-1. **Docs lie about completion — this document did too.** Caught by today's audit: it claimed `ColumnPicker.tsx` and `OnboardingWizard.tsx` (neither exists), `packaging.yml` (doesn't exist — it's `build.yml`), "RTL audit not written" (it is written), and wrong metrics (831/34/43). `docs/STATUS.md`'s "canonical" table has the same rot. **Trust the greps, not the tables.**
+1. **Docs lie about completion — this document did too.** Caught by today's audit: it claimed `ColumnPicker.tsx` (didn't exist then; built 2026-09-30), `OnboardingWizard.tsx` (never existed — it's `OnboardingScreen.tsx`), `packaging.yml` (doesn't exist — it's `build.yml`), "RTL audit not written" (it is written), and wrong metrics (831/34/43). `docs/STATUS.md`'s "canonical" table has the same rot. **Trust the greps, not the tables.**
 2. **TS strictness is aspirational.** 129 `: any`/`as any` survive despite the strict rules in `AGENTS.md`.
 3. **RTL is unfinished business.** 421 physical-direction violation lines remain; Arabic layout will visibly break until the `10-rtl-audit.md` remediation lands.
 4. **`ja`/`it` are not releasable-quality** — 51 `TODO` occurrences each (auto-stub debt).
 5. **Host hazards are real and documented:** `cargo test` binaries link but won't launch on this dev box (`STATUS_ENTRYPOINT_NOT_FOUND`), and both `vitest` and `pytest` have false-greened (exit 0 with failures). **Gate on summary lines, not exit codes** — see `docs/05-DEVELOPMENT/02-testing.md`.
-6. **Dead-code risk:** `columnConfigStore.ts` has no consumer I could find — either the Phase 2.8 UI was never built or it was renamed beyond recognition.
+6. ~~**Dead-code risk:** `columnConfigStore.ts` has no consumer~~ — **resolved 2026-09-30**: `ThreadCard.tsx` (email) and `TaskListView.tsx` (tasks) already honoured visibility; the missing `ColumnPicker` toggle UI was built and mounted.
 
 ### 🔲 What's missing (honestly not started)
 
@@ -135,23 +135,23 @@ Gate items from `docs/PRODUCTION-READINESS.md` (Gates 1, 3, 9 are the only non-P
 
 ## Phase 2 — Desktop Power User Features (✅ 14/15 — one claim failed)
 
-| #    | Task                                 | Status         | Evidence                                                                                                                      |
-| ---- | ------------------------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 2.1  | Full keyboard navigation (tab order) | ✅             | SkipLink, FocusOrderManager, `role="search"`                                                                                  |
-| 2.2  | Screen reader support (WCAG AA)      | ✅             | ARIA labels, live regions, landmark roles                                                                                     |
-| 2.3  | Rich context menus                   | ✅             | `src/shared/hooks/useContextMenu.ts` + `ContextMenu.tsx`                                                                      |
-| 2.4  | Drag-and-drop (email→folder/task)    | ✅             | sidebar drop target + `insertTask`                                                                                            |
-| 2.5  | Split-pane resizing                  | ✅             | `src/features/mail/components/layout/MailLayout.tsx` (⚠️ old path `features/mail/components/MailLayout.tsx` was wrong)        |
-| 2.6  | VirtualList optimization             | ✅             | EmailList, ThreadView, ContactListView, CampaignList, TaskListView                                                            |
-| 2.7  | Desktop focus modes (DND, minimal)   | ✅             | `focusModeStore.ts` + `ZenMode.tsx`                                                                                           |
-| 2.8  | Column customization                 | ⚠️ **PARTIAL** | `columnConfigStore.ts` exists — **no `ColumnPicker.tsx`, no consumer found.** Verify intent: build the UI or delete the store |
-| 2.9  | Quick preview (hover popup)          | ✅             | `src/shared/components/ui/HoverPreview.tsx` (portal, 500ms)                                                                   |
-| 2.10 | System tray / menu bar               | ✅             | `TrayIconBuilder` at `lib.rs:278`                                                                                             |
-| 2.11 | Auto-launch on startup               | ✅             | `lib.rs:44 mod auto_launch` + UI toggle                                                                                       |
-| 2.12 | Desktop icon badges                  | ✅             | `window.setBadgeCount()`                                                                                                      |
-| 2.13 | Global hotkeys                       | ✅             | `useKeyboardShortcuts.ts`                                                                                                     |
-| 2.14 | Clipboard manager                    | ✅             | `useClipboard.ts` (Tauri + web fallback)                                                                                      |
-| 2.15 | Responsive email rendering           | ✅             | `useBreakpoint.ts` + `FocusReader.tsx`                                                                                        |
+| #    | Task                                 | Status | Evidence                                                                                                                 |
+| ---- | ------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| 2.1  | Full keyboard navigation (tab order) | ✅     | SkipLink, FocusOrderManager, `role="search"`                                                                             |
+| 2.2  | Screen reader support (WCAG AA)      | ✅     | ARIA labels, live regions, landmark roles                                                                                |
+| 2.3  | Rich context menus                   | ✅     | `src/shared/hooks/useContextMenu.ts` + `ContextMenu.tsx`                                                                 |
+| 2.4  | Drag-and-drop (email→folder/task)    | ✅     | sidebar drop target + `insertTask`                                                                                       |
+| 2.5  | Split-pane resizing                  | ✅     | `src/features/mail/components/layout/MailLayout.tsx` (⚠️ old path `features/mail/components/MailLayout.tsx` was wrong)   |
+| 2.6  | VirtualList optimization             | ✅     | EmailList, ThreadView, ContactListView, CampaignList, TaskListView                                                       |
+| 2.7  | Desktop focus modes (DND, minimal)   | ✅     | `focusModeStore.ts` + `ZenMode.tsx`                                                                                      |
+| 2.8  | Column customization                 | ✅     | `ColumnPicker.tsx` (2026-09-30) mounted in EmailList + TasksPage toolbars; store consumed by `ThreadCard`/`TaskListView` |
+| 2.9  | Quick preview (hover popup)          | ✅     | `src/shared/components/ui/HoverPreview.tsx` (portal, 500ms)                                                              |
+| 2.10 | System tray / menu bar               | ✅     | `TrayIconBuilder` at `lib.rs:278`                                                                                        |
+| 2.11 | Auto-launch on startup               | ✅     | `lib.rs:44 mod auto_launch` + UI toggle                                                                                  |
+| 2.12 | Desktop icon badges                  | ✅     | `window.setBadgeCount()`                                                                                                 |
+| 2.13 | Global hotkeys                       | ✅     | `useKeyboardShortcuts.ts`                                                                                                |
+| 2.14 | Clipboard manager                    | ✅     | `useClipboard.ts` (Tauri + web fallback)                                                                                 |
+| 2.15 | Responsive email rendering           | ✅     | `useBreakpoint.ts` + `FocusReader.tsx`                                                                                   |
 
 ---
 
@@ -388,7 +388,7 @@ Preserved for context; the tables above are authoritative.
 
 Greps run this date; see **Ground truth** above for the table. Superseded claims fixed in this
 revision: 831→841 commands · 34→32 migrations · 43→44 stores · 915→969 Rust tests ·
-"ColumnPicker.tsx exists"→no · "OnboardingWizard.tsx exists"→renamed `OnboardingScreen.tsx` ·
+"ColumnPicker.tsx exists"→was no, built 2026-09-30 (`ColumnPicker.tsx` + EmailList/TasksPage mounts) · "OnboardingWizard.tsx exists"→renamed `OnboardingScreen.tsx` ·
 "packaging.yml"→`build.yml` · "RTL audit not written"→written, 421 violations remain ·
 "No code written" (voice)→Phases A–B closed, C in progress · widget count 8→10 ·
 ja/it TODO 215/211→51/51. The 2026-07-19 reconciliation block below this line is **archive**:

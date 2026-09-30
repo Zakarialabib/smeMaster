@@ -218,7 +218,7 @@
 
 ### 5.1 First-Run Onboarding
 
-- [x] 4-step modal wizard (`OnboardingWizard.tsx`)
+- [x] 4-step modal wizard (`OnboardingScreen.tsx` + `useOnboarding.ts`)
 - [x] Keyboard navigation (ArrowLeft/ArrowRight)
 - [x] State persisted: `useLocalStorage("smemaster.onboarding.done")` + Rust `onboarding.json`
 - [x] Auto-open AddAccount if no accounts configured
