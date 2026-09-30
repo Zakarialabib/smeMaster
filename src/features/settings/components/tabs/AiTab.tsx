@@ -754,6 +754,7 @@ export default function AiTab() {
                     aiProvider === "claude" ? t('settings.anthropicApiKey')
                     : aiProvider === "openai" ? t('settings.openaiApiKey')
                     : aiProvider === "copilot" ? t('settings.githubPat')
+                    : aiProvider === "mistral" ? t('settings.mistralApiKey')
                     : t('settings.googleAiApiKey')
                   }
                   size="md"
@@ -762,18 +763,21 @@ export default function AiTab() {
                     aiProvider === "claude" ? claudeApiKey
                     : aiProvider === "openai" ? openaiApiKey
                     : aiProvider === "copilot" ? copilotApiKey
+                    : aiProvider === "mistral" ? mistralApiKey
                     : geminiApiKey
                   }
                   onChange={(e) => {
                     if (aiProvider === "claude") setClaudeApiKey(e.target.value);
                     else if (aiProvider === "openai") setOpenaiApiKey(e.target.value);
                     else if (aiProvider === "copilot") setCopilotApiKey(e.target.value);
+                    else if (aiProvider === "mistral") setMistralApiKey(e.target.value);
                     else setGeminiApiKey(e.target.value);
                   }}
                   placeholder={
                     aiProvider === "claude" ? t('settings.claudeKeyPlaceholder')
                     : aiProvider === "openai" ? t('settings.customApiKeyPlaceholder')
                     : aiProvider === "copilot" ? t('settings.copilotKeyPlaceholder')
+                    : aiProvider === "mistral" ? t('settings.mistralKeyPlaceholder')
                     : t('settings.geminiKeyPlaceholder')
                   }
                 />
@@ -783,6 +787,7 @@ export default function AiTab() {
                       aiProvider === "claude" ? claudeModel
                       : aiProvider === "openai" ? openaiModel
                       : aiProvider === "copilot" ? copilotModel
+                      : aiProvider === "mistral" ? mistralModel
                       : geminiModel
                     }
                     onChange={async (e) => {
@@ -868,6 +873,7 @@ export default function AiTab() {
                       !(aiProvider === "claude" ? claudeApiKey.trim()
                       : aiProvider === "openai" ? openaiApiKey.trim()
                       : aiProvider === "copilot" ? copilotApiKey.trim()
+                      : aiProvider === "mistral" ? mistralApiKey.trim()
                       : geminiApiKey.trim()) || aiTesting
                     }
                     className="bg-bg-tertiary text-text-primary border border-border-primary"
