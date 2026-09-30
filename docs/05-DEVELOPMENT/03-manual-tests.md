@@ -18,6 +18,18 @@ Run these after a fresh `npm run tauri dev` before tagging a release:
 
 > Detailed step-by-step procedures and acceptance criteria follow below.
 
+### Host caveats before you start (2026-09-28)
+
+- **`npm run tauri dev` needs a working Rust toolchain.** On this host the rustup proxies
+  are broken (`rustc.exe is not applicable to the toolchain`) — use the direct-toolchain
+  workaround in [`01-quickstart.md`](01-quickstart.md) → "Toolchain warning", and read
+  **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** before touching `cargo`.
+- **Free 15+ GB of disk before any Rust build.** The machine sits at 95–99% full during
+  builds, which has already caused an `E0463` and a 59-minute killed build.
+- **None of the five manual tests below has been executed** as of the last status pass —
+  they are `📋 Planned` in [`../06-ROADMAP/09-master-plan.md`](../06-ROADMAP/09-master-plan.md)
+  (items 1.3, 1.4, 1.6, 1.7). Treat a green checklist as _not yet claimed_.
+
 ---
 
 ## Table of Contents
@@ -405,11 +417,11 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 | Watchdog log shows poll cycle start                 | **PASS** |
 | DevTools Console has zero uncaught errors           | **PASS** |
 | UI renders main layout with sidebar + content       | **PASS** |
-| `db_health_stats` returns `{ status: "ok", ... }`         | **PASS** |
+| `db_health_stats` returns `{ status: "ok", ... }`   | **PASS** |
 | Any compilation error or panic during startup       | **FAIL** |
 | DevTools shows red uncaught errors                  | **FAIL** |
 | UI shows blank screen or persistent loading spinner | **FAIL** |
-| `db_health_stats` returns error or times out              | **FAIL** |
+| `db_health_stats` returns error or times out        | **FAIL** |
 
 ---
 
