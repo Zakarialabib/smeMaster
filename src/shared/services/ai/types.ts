@@ -1,3 +1,5 @@
+import type { EmbeddingResult } from "./capabilities";
+
 export type AiProvider =
   | "claude"
   | "openai"
@@ -27,10 +29,10 @@ export interface AiProviderClient {
 
   /**
    * Generate embeddings for the given text input.
-   * Returns an array of vectors (each vector is an array of floats).
+   * Returns an EmbeddingResult with space pinning info.
    * If the provider does not support embeddings, returns null.
    */
-  getEmbeddings?(req: AiEmbeddingRequest): Promise<number[][] | null>;
+  getEmbeddings?(req: AiEmbeddingRequest): Promise<EmbeddingResult | null>;
 }
 
 /** Options for the LM Studio provider. `embeddingModel` is the model loaded in

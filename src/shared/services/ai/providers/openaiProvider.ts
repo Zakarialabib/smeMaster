@@ -108,13 +108,16 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
             parameters: zodToJsonSchema(t.parameters),
           },
         })),
-        tool_choice: options?.toolChoice,
+        tool_choice: options?.toolChoice as "auto" | "required" | "none" | undefined,
       });
 
-      const toolCalls = response.choices[0]?.message?.tool_calls?.map((tc) => ({
-        name: tc.function.name,
-        arguments: JSON.parse(tc.function.arguments) as Record<string, unknown>,
-      })) ?? [];
+      const toolCalls = response.choices[0]?.message?.tool_calls?.map((tc) => {
+        const fn = "function" in tc ? tc.function : null;
+        return {
+          name: fn?.name ?? "",
+          arguments: fn?.arguments ? JSON.parse(fn.arguments) as Record<string, unknown> : {},
+        };
+      }) ?? [];
 
       return {
         content: response.choices[0]?.message?.content ?? "",
@@ -149,43 +152,55 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
 function zodToJsonSchema(schema: z.ZodSchema): Record<string, unknown> {
   // Basic Zod to JSON Schema conversion
   // For production, use zod-to-json-schema package
-  const def = schema._def;
-  switch (def.typeName) {
-    case "ZodObject":
+  const def = schema._def as Record<string, unknown>;
+  const typeName = def.typeName as string;
+  switch (typeName) {
+    case "ZodObject": {
+      const shape = def.shape as () => Record<string, z.ZodSchema>;
+      const s = shape();
       return {
         type: "object",
         properties: Object.fromEntries(
-          Object.entries(def.shape()).map(([key, value]) => [
+          Object.entries(s).map(([key, value]) => [
             key,
-            zodToJsonSchema(value as z.ZodSchema),
+            zodToJsonSchema(value),
           ]),
         ),
-        required: Object.keys(def.shape()),
+        required: Object.keys(s),
         additionalProperties: false,
       };
+    }
     case "ZodString":
       return { type: "string" };
     case "ZodNumber":
       return { type: "number" };
     case "ZodBoolean":
       return { type: "boolean" };
-    case "ZodArray":
+    case "ZodArray": {
+      const itemType = def.type as z.ZodSchema;
       return {
         type: "array",
-        items: zodToJsonSchema(def.type as z.ZodSchema),
+        items: zodToJsonSchema(itemType),
       };
-    case "ZodEnum":
+    }
+    case "ZodEnum": {
+      const values = def.values as string[];
       return {
         type: "string",
-        enum: def.values as string[],
+        enum: values,
       };
-    case "ZodOptional":
-      return zodToJsonSchema(def.innerType as z.ZodSchema);
-    case "ZodNullable":
+    }
+    case "ZodOptional": {
+      const innerType = def.innerType as z.ZodSchema;
+      return zodToJsonSchema(innerType);
+    }
+    case "ZodNullable": {
+      const innerType = def.innerType as z.ZodSchema;
       return {
-        ...zodToJsonSchema(def.innerType as z.ZodSchema),
+        ...zodToJsonSchema(innerType),
         nullable: true,
       };
+    }
     default:
       return { type: "object" };
   }

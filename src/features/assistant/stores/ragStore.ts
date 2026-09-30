@@ -257,7 +257,7 @@ export const useRagStore = create<RagState>((set, get) => ({
       const vectors: number[][] = [];
       for (const chunk of chunks) {
         const emb = await getProviderEmbedding(chunk.text);
-        if (emb) vectors.push(emb.vector);
+        if (emb) vectors.push(emb.vectors[0] ?? []);
         else vectors.push([]);
       }
       const valid = vectors.filter((v) => v.length > 0);
@@ -301,13 +301,13 @@ export const useRagStore = create<RagState>((set, get) => ({
           );
         }
         set({ embeddingSource: "provider" });
-        response = await aiSearchByVector(providerEmbedding.vector, query);
+        response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
       } else {
         // Auto: prefer provider, fall back to local BGE-small
         const providerEmbedding = await getProviderEmbedding(query);
         if (providerEmbedding) {
           set({ embeddingSource: "provider" });
-          response = await aiSearchByVector(providerEmbedding.vector, query);
+          response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
         } else {
           set({ embeddingSource: "rust_bge" });
           response = await aiQueryRag(query);

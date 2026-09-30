@@ -5,6 +5,7 @@ import type {
   LMStudioProviderOptions,
   TestEmbeddingResult,
 } from "../types";
+import type { EmbeddingResult } from "../capabilities";
 import { buildSystemPrompt } from "../utils";
 import { validateUrl } from "./openAiCompatibleProvider";
 
@@ -114,11 +115,18 @@ export function createLMStudioProvider(
       }
     },
 
-    async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
       try {
         const model = resolveEmbeddingModel(req.model);
         const response = await embeddingsRequest(safeUrl, model, req.input);
-        return response.data.map((d) => d.embedding);
+        const vectors = response.data.map((d) => d.embedding);
+        const dimensions = vectors[0]?.length ?? 0;
+        return {
+          vectors,
+          spaceId: `lmstudio-${model}-${dimensions}`,
+          dimensions,
+          modelId: model,
+        };
       } catch {
         // LM Studio may not have embeddings endpoint loaded
         return null;

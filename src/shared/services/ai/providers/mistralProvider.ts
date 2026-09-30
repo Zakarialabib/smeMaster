@@ -14,7 +14,7 @@
  */
 
 import type { z } from "zod";
-import type { AiProviderClient } from "../types";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 import type {
   StructuredOutputCapable,
@@ -47,7 +47,7 @@ export function createMistralProvider(
     async completeStructured<T>(
       req: { systemPrompt: string; userContent: string; maxTokens?: number },
       schema: z.ZodSchema<T>,
-      options?: { strict?: boolean },
+      _options?: { strict?: boolean },
     ): Promise<T> {
       const { buildSystemPrompt } = await import("../utils");
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
@@ -78,9 +78,9 @@ export function createMistralProvider(
     },
 
     async completeWithTools(
-      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      req: AiCompletionRequest,
       tools: ToolDefinition[],
-      options?: { toolChoice?: "auto" | "required" | "none" | { name: string } },
+      _options?: { toolChoice?: "auto" | "required" | "none" | { name: string } },
     ): Promise<ToolCallResult> {
       const { buildSystemPrompt } = await import("../utils");
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
@@ -105,7 +105,7 @@ export function createMistralProvider(
               parameters: zodToJsonSchema(t.parameters),
             },
           })),
-          tool_choice: options?.toolChoice,
+          tool_choice: _options?.toolChoice,
         }),
       });
 

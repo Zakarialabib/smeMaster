@@ -120,8 +120,7 @@ export default function AiTab() {
       if (geminiModelVal) setGeminiModel(geminiModelVal);
       const mistralModelVal = await getSetting("mistral_model");
       if (mistralModelVal) setMistralModel(mistralModelVal);
-      const byteplusModelVal = await getSetting("byteplus_model");
-      // byteplusModel is read-only (no setter needed)
+      // byteplus model is read-only (no setter needed)
       const aiKey = await getSecureSetting("claude_api_key");
       setClaudeApiKey(aiKey ?? "");
       const oaiKey = await getSecureSetting("openai_api_key");
@@ -817,7 +816,7 @@ export default function AiTab() {
                       else if (aiProvider === "openai") setOpenaiModel(val);
                       else if (aiProvider === "copilot") setCopilotModel(val);
                       else if (aiProvider === "mistral") setMistralModel(val);
-                      else if (aiProvider === "byteplus") setByteplusModel(val);
+                      // byteplus model is read-only
                       else setGeminiModel(val);
                       await setSetting(modelKey, val);
                       const { clearProviderClients } = await import("@shared/services/ai/providerManager");

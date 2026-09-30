@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
+import type { EmbeddingResult } from "../capabilities";
 import { buildSystemPrompt } from "../utils";
 import { validateUrl } from "./openAiCompatibleProvider";
 
@@ -77,9 +78,17 @@ export function createOllamaProvider(serverUrl: string, model: string, aiLanguag
       }
     },
 
-    async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
       try {
-        return await ollamaEmbeddings(req.input);
+        const vectors = await ollamaEmbeddings(req.input);
+        if (!vectors || vectors.length === 0) return null;
+        const dimensions = vectors[0]?.length ?? 0;
+        return {
+          vectors,
+          spaceId: `ollama-${req.model ?? "default"}-${dimensions}`,
+          dimensions,
+          modelId: req.model ?? "default",
+        };
       } catch {
         return null;
       }

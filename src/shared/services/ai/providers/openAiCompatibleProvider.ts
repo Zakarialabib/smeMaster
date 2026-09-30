@@ -4,6 +4,7 @@
  * Consolidates the common chat completion pattern with configurable baseURL and auth.
  */
 import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
+import type { EmbeddingResult } from "../capabilities";
 import { buildSystemPrompt } from "../utils";
 
 interface ChatCompletionRequest {
@@ -120,11 +121,18 @@ export function createOpenAICompatibleProvider(
       }
     },
 
-    async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
       const embModel = req.model ?? embeddingModel ?? model;
       try {
         const response = await embeddingsRequest(req.input, embModel);
-        return response.data.map((d) => d.embedding);
+        const vectors = response.data.map((d) => d.embedding);
+        const dimensions = vectors[0]?.length ?? 0;
+        return {
+          vectors,
+          spaceId: `openai-compatible-${embModel}-${dimensions}`,
+          dimensions,
+          modelId: embModel,
+        };
       } catch {
         return null;
       }
