@@ -14,7 +14,7 @@
  */
 
 import type { z } from "zod";
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
+import type { AiProviderClient, AiCompletionRequest } from "../types";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 import type {
   StructuredOutputCapable,

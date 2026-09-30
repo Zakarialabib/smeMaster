@@ -26,6 +26,7 @@ import { DEMO_FOLLOW_UP } from "./features/mail/constants/templateDemos";
 import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
 import { SkipLink } from "@shared/components/ui/SkipLink";
 import { OnboardingScreen } from "@features/onboarding/OnboardingScreen";
+import { useOnboarding } from "@features/onboarding/hooks/useOnboarding";
 import { useLicenseStore } from "@shared/stores/licenseStore";
 import { SinglePageLayout } from "@shared/components/layout";
 import { useAccountStore } from "@features/accounts/stores/accountStore";
@@ -304,6 +305,7 @@ export default function App() {
   const [onboardingDone, setOnboardingDone] = useLocalStorage("smemaster.onboarding.done", false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [hasData, setHasData] = useState<boolean | null>(null); // null = loading, true = accounts/demo exist
+  const { isSystemInitialized } = useOnboarding();
 
   // Check if email accounts or demo data already exist — skip onboarding if they do
   useEffect(() => {
@@ -319,7 +321,7 @@ export default function App() {
             setOnboardingDone(true);
           } else {
             // No accounts — check if system was initialized (e.g. demo data seeded)
-            const sysInit = await invokeCommand<boolean>("is_system_initialized", {}).catch(() => false);
+            const sysInit = await isSystemInitialized();
             if (!cancelled) {
               setHasData(sysInit);
               if (sysInit) setOnboardingDone(true);
@@ -331,7 +333,7 @@ export default function App() {
       }
     })();
     return () => { cancelled = true; };
-  }, [initialized, setOnboardingDone]);
+  }, [initialized, setOnboardingDone, isSystemInitialized]);
 
   // Restore onboarding progress from sessionStorage on tab crash / close
   useEffect(() => {

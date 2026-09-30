@@ -172,7 +172,7 @@ export function Composer() {
         class:
           "prose prose-sm max-w-none px-4 py-3 min-h-[200px] focus:outline-none text-text-primary",
       },
-      handleDrop: (_view, event) => {
+      handleDrop: (_view: unknown, event: DragEvent) => {
         // Prevent TipTap from handling file drops as inline content.
         // Returning true stops TipTap's Image extension from intercepting the drop,
         // allowing the event to bubble up to the composer's onDrop for attachment handling.
@@ -181,7 +181,7 @@ export function Composer() {
         }
         return false;
       },
-      handlePaste: (_view, event) => {
+      handlePaste: (_view: unknown, event: ClipboardEvent) => {
         const items = event.clipboardData?.items;
         if (!items) return false;
 
