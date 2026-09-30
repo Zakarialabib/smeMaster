@@ -15,7 +15,6 @@ export {
   hasCommand,
   listCommands,
   isTauriEnvironment,
-  safeListen,
   TauriUnavailableError,
   type InvokeOptions,
   type CommandName,
@@ -23,3 +22,9 @@ export {
   type CommandResult,
   TauriCommands,
 } from "./invoke";
+
+/**
+ * Environment-safe Tauri event subscription (no-op outside a Tauri shell).
+ * Lives in its own module so importing it never pulls in the invoke stack.
+ */
+export { safeListen } from "./safeListen";

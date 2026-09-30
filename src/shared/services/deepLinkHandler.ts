@@ -1,6 +1,7 @@
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { isTauriEnvironment } from "@shared/services/ipc/environment";
 import { parseMailtoUrl } from "@shared/utils/mailtoParser";
 import { useComposerStore } from "@features/mail/stores/composerStore";
 import { escapeHtml } from "@shared/utils/sanitize";
@@ -27,6 +28,11 @@ async function handleUrl(url: string): Promise<void> {
 }
 
 export async function initDeepLinkHandler(): Promise<() => void> {
+  // Deep links (`onOpenUrl`) and single-instance args are Tauri-only APIs —
+  // outside a Tauri shell both throw the `transformCallback` TypeError. The
+  // browser dev server has no OS integration to subscribe to, so no-op.
+  if (!isTauriEnvironment()) return () => {};
+
   const cleanups: Array<() => void> = [];
 
   try {

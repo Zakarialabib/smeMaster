@@ -8,7 +8,8 @@
  */
 
 import { create } from "zustand";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import type { UnlistenFn } from "@tauri-apps/api/event";
+import { safeListen } from "@shared/services/ipc";
 import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
 import {
   aiDownloadModel,
@@ -160,11 +161,11 @@ export const useRagStore = create<RagState>((set, get) => ({
     }
 
     // Listen for Tauri indexing events
-    const unlistenStart = await listen<unknown>("ai:indexing_started", () => {
+    const unlistenStart = await safeListen<unknown>("ai:indexing_started", () => {
       set({ indexingStatus: "indexing", indexingError: null });
     });
 
-    const unlistenComplete = await listen<unknown>("ai:indexing_completed", () => {
+    const unlistenComplete = await safeListen<unknown>("ai:indexing_completed", () => {
       const now = new Date().toISOString();
       set({ indexingStatus: "completed", lastIndexedAt: now });
       void tauriStoreStorage.setItem(RAG_LAST_INDEXED_KEY, now);

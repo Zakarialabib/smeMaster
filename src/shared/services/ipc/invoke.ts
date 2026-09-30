@@ -173,25 +173,36 @@ export async function invoke<C extends CommandName>(
     const elapsed = Math.round(performance.now() - startTime);
     const errorMessage = extractErrorMessage(err);
 
-    // Always log errors to the backend (even when shouldLog=false for other levels)
-    // This is critical for the Logs tab in Developer settings.
-    logger.error(
-      `IPC ✗ ${command} (${elapsed}ms): ${errorMessage}`,
-      "ipc",
-      {
-        command,
-        params: redactedParams,
-        elapsed,
-        error: err instanceof Error
-          ? { name: err.name, message: err.message, stack: err.stack }
-          : typeof err === 'object' && err !== null
-            ? Object.fromEntries(Object.entries(err as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)]))
-            : { value: String(err) },
-      },
-    );
+    // Expected condition outside a Tauri shell (browser dev server / web
+    // build): callers already handle TauriUnavailableError with their own
+    // fallbacks, and the backend Logs tab only exists inside Tauri — where
+    // this branch can never fire. Skipping the log avoids flooding the dev
+    // console with false ERROR lines and a futile `log_error_command`
+    // round-trip that would itself fail.
+    const isUnavailable =
+      typeof err === "object" && err !== null && "isTauriUnavailable" in err;
 
-    if (!silent) {
-      console.error(`[IPC] ${command} failed:`, err);
+    if (!isUnavailable) {
+      // Always log errors to the backend (even when shouldLog=false for other levels)
+      // This is critical for the Logs tab in Developer settings.
+      logger.error(
+        `IPC ✗ ${command} (${elapsed}ms): ${errorMessage}`,
+        "ipc",
+        {
+          command,
+          params: redactedParams,
+          elapsed,
+          error: err instanceof Error
+            ? { name: err.name, message: err.message, stack: err.stack }
+            : typeof err === 'object' && err !== null
+              ? Object.fromEntries(Object.entries(err as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)]))
+              : { value: String(err) },
+        },
+      );
+
+      if (!silent) {
+        console.error(`[IPC] ${command} failed:`, err);
+      }
     }
 
     throw err;

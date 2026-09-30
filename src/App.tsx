@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { invokeCommand } from "@shared/services/db/invoke/command";
+import { isTauriEnvironment } from "@shared/services/ipc";
 import { AddAccount } from "@features/accounts/components/AddAccount";
 import { Composer } from "./features/mail/components/composer/Composer";
 import { UndoSendToast } from "./features/mail/components/composer/UndoSendToast";
@@ -72,6 +73,7 @@ function useRouterSyncBridge() {
  */
 function useTrayCheckMail() {
   useEffect(() => {
+    if (!isTauriEnvironment()) return;
     let unlisten: (() => void) | undefined;
     import("@tauri-apps/api/event").then(({ listen }) => {
       listen("tray-check-mail", () => {
@@ -94,6 +96,7 @@ function useTrayCheckMail() {
  */
 function useResetCompleteReload() {
   useEffect(() => {
+    if (!isTauriEnvironment()) return;
     let unlisten: (() => void) | undefined;
     import("@tauri-apps/api/event").then(({ listen }) => {
       listen("app:reset-complete", () => {

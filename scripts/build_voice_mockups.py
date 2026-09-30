@@ -695,7 +695,7 @@ for f in sorted(D.glob("0[6-9]-*.html")):
 
 # ── 10 Topology & capabilities ───────────────────────────────────────────────
 # The question "why do we need a VPS if the app runs on the desktop?" is answered
-# by a screen, not an argument. See docs/06-ROADMAP/12-voice-agent-topology-decision.md
+# by a screen, not an argument. See docs/06-ROADMAP/17-voice-agent-topology-decision.md
 topo_body = rail() + cnav("Config") + """
   <section class="panel">
     <div class="phead"><h1>Topology &amp; capabilities</h1><span class="grow"></span>

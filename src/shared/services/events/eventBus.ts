@@ -1,4 +1,5 @@
-﻿import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+﻿import type { UnlistenFn } from "@tauri-apps/api/event";
+import { safeListen } from "@shared/services/ipc";
 
 // ── Core event type ─────────────────────────────────────────────────────────
 /**
@@ -291,7 +292,9 @@ class EventBus {
         this._initTime = Date.now();
 
         try {
-            const unlisten = await listen<CoreEvent>("core-event", (event) => {
+            // safeListen no-ops outside a Tauri shell (browser dev server),
+            // so init() succeeds without a warn-level TypeError there.
+            const unlisten = await safeListen<CoreEvent>("core-event", (event) => {
                 this.dispatch(event.payload.kind, event.payload);
             });
             this.unlisteners.push(unlisten);
