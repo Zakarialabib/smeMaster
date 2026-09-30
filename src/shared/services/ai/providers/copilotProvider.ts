@@ -1,6 +1,17 @@
 import OpenAI from "openai";
-import type { AiProviderClient, AiCompletionRequest } from "../types";
+import type { AiProviderClient, AiCompletionRequest, ModelOption } from "../types";
 import { createProviderFactory } from "../providerFactory";
+import type {
+  StreamingCapable,
+  SpeechToTextCapable,
+  TextToSpeechCapable,
+  RealtimeVoiceCapable,
+  ModelDiscoveryCapable,
+  SttOptions,
+  TtsOptions,
+  RealtimeOptions,
+  RealtimeVoiceSession,
+} from "../capabilities";
 
 const factory = createProviderFactory(
   (apiKey) =>
@@ -27,7 +38,7 @@ function buildSystemPrompt(basePrompt: string, aiLanguage: string): string {
   return `${basePrompt}\n\nRespond in ${langName}.`;
 }
 
-export function createCopilotProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient {
+export function createCopilotProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -55,6 +66,47 @@ export function createCopilotProvider(apiKey: string, model: string, aiLanguage 
         return true;
       } catch {
         return false;
+      }
+    },
+
+    async *streamComplete(req: AiCompletionRequest): AsyncIterable<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const stream = await client.chat.completions.create({
+        model,
+        max_tokens: req.maxTokens ?? 1024,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: req.userContent },
+        ],
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      }
+    },
+
+    async transcribe(_audio: Blob, _options?: SttOptions): Promise<string> {
+      throw new Error("STT not supported by this provider");
+    },
+
+    async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
+      throw new Error("TTS not supported by this provider");
+    },
+
+    async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+      throw new Error("Realtime voice not supported by this provider");
+    },
+
+    async listModels(): Promise<ModelOption[]> {
+      try {
+        const response = await client.models.list();
+        return response.data.map((m) => ({ id: m.id, label: m.id }));
+      } catch {
+        return [];
       }
     },
   };

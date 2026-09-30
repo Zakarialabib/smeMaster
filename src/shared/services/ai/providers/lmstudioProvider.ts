@@ -4,8 +4,9 @@ import type {
   AiEmbeddingRequest,
   LMStudioProviderOptions,
   TestEmbeddingResult,
+  ModelOption,
 } from "../types";
-import type { EmbeddingResult } from "../capabilities";
+import type { EmbeddingResult, StreamingCapable, SpeechToTextCapable, TextToSpeechCapable, RealtimeVoiceCapable, ModelDiscoveryCapable, SttOptions, TtsOptions, RealtimeOptions, RealtimeVoiceSession } from "../capabilities";
 import { buildSystemPrompt } from "../utils";
 import { validateUrl } from "./openAiCompatibleProvider";
 
@@ -70,7 +71,7 @@ export function createLMStudioProvider(
   serverUrl: string,
   options: LMStudioProviderOptions,
   aiLanguage = "auto",
-): AiProviderClient {
+): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
   const safeUrl = validateUrl(serverUrl);
   const { chatModel, embeddingModel } = options;
   const cacheKey = `${safeUrl}|${chatModel}|${embeddingModel ?? ""}`;
@@ -128,8 +129,87 @@ export function createLMStudioProvider(
           modelId: model,
         };
       } catch {
-        // LM Studio may not have embeddings endpoint loaded
         return null;
+      }
+    },
+
+    async *streamComplete(req: AiCompletionRequest): AsyncIterable<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const messages: { role: string; content: string }[] = [];
+
+      if (systemPrompt) {
+        messages.push({ role: "system", content: systemPrompt });
+      }
+      messages.push({ role: "user", content: req.userContent });
+
+      const normalizedUrl = safeUrl.replace(/\/+$/, "");
+      const response = await fetch(`${normalizedUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: chatModel,
+          messages,
+          max_tokens: req.maxTokens ?? 1024,
+          stream: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`LMStudio streaming error (${response.status})`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") return;
+            try {
+              const parsed = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
+              const content = parsed.choices[0]?.delta?.content;
+              if (content) yield content;
+            } catch {
+              // skip malformed JSON
+            }
+          }
+        }
+      }
+    },
+
+    async transcribe(_audio: Blob, _options?: SttOptions): Promise<string> {
+      throw new Error("STT not supported by this provider");
+    },
+
+    async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
+      throw new Error("TTS not supported by this provider");
+    },
+
+    async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+      throw new Error("Realtime voice not supported by this provider");
+    },
+
+    async listModels(): Promise<ModelOption[]> {
+      try {
+        const normalizedUrl = safeUrl.replace(/\/+$/, "");
+        const response = await fetch(`${normalizedUrl}/v1/models`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) return [];
+        const data = await response.json() as { data: { id: string; name?: string }[] };
+        return (data.data ?? []).map((m) => ({ id: m.id, label: m.name ?? m.id }));
+      } catch {
+        return [];
       }
     },
   };
