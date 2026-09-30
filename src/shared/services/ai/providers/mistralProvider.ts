@@ -14,12 +14,15 @@
  */
 
 import type { z } from "zod";
-import type { AiProviderClient, AiCompletionRequest } from "../types";
+import type { AiProviderClient } from "../types";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 import type {
   StructuredOutputCapable,
   ToolCallingCapable,
   ReasoningCapable,
+  VisionCapable,
+  ContextCachingCapable,
+  BatchProcessingCapable,
   ReasoningEffort,
   ToolDefinition,
   ToolCallResult,
@@ -32,7 +35,7 @@ export function createMistralProvider(
   model: string,
   aiLanguage = "auto",
   embeddingModel = "mistral-embed",
-): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable {
+): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable {
   const baseProvider = createOpenAICompatibleProvider(
     MISTRAL_BASE_URL,
     apiKey,
@@ -163,7 +166,127 @@ export function createMistralProvider(
       const data = await response.json() as { choices: { message: { content: string } }[] };
       return data.choices[0]?.message?.content ?? "";
     },
+
+    async completeWithImage(
+      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      image: Blob,
+      options?: { detail?: "low" | "high" },
+    ): Promise<string> {
+      const { buildSystemPrompt } = await import("../utils");
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const base64 = await blobToBase64(image);
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: req.userContent },
+                { type: "image_url", image_url: { url: base64, detail: options?.detail ?? "auto" } },
+              ],
+            },
+          ],
+          max_tokens: req.maxTokens ?? 1024,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error (${response.status})`);
+      }
+
+      const data = await response.json() as { choices: { message: { content: string } }[] };
+      return data.choices[0]?.message?.content ?? "";
+    },
+
+    async completeWithCachedContext(
+      req: { systemPrompt: string; userContent: string; maxTokens?: number },
+      cachedContext: string,
+    ): Promise<string> {
+      const { buildSystemPrompt } = await import("../utils");
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: `${systemPrompt}\n\n${cachedContext}` },
+            { role: "user", content: req.userContent },
+          ],
+          max_tokens: req.maxTokens ?? 1024,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Mistral API error (${response.status})`);
+      }
+
+      const data = await response.json() as { choices: { message: { content: string } }[] };
+      return data.choices[0]?.message?.content ?? "";
+    },
+
+    async completeBatch(
+      requests: { systemPrompt: string; userContent: string; maxTokens?: number }[],
+      options?: { maxConcurrent?: number },
+    ): Promise<string[]> {
+      const { buildSystemPrompt } = await import("../utils");
+      const maxConcurrent = options?.maxConcurrent ?? 5;
+      const results: string[] = [];
+
+      for (let i = 0; i < requests.length; i += maxConcurrent) {
+        const batch = requests.slice(i, i + maxConcurrent);
+        const batchResults = await Promise.all(
+          batch.map(async (req) => {
+            const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+            const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model,
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: req.userContent },
+                ],
+                max_tokens: req.maxTokens ?? 1024,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Mistral API error (${response.status})`);
+            }
+
+            const data = await response.json() as { choices: { message: { content: string } }[] };
+            return data.choices[0]?.message?.content ?? "";
+          }),
+        );
+        results.push(...batchResults);
+      }
+
+      return results;
+    },
   };
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 function getReasoningPrompt(effort: ReasoningEffort): string {

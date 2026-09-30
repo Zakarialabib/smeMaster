@@ -7,6 +7,9 @@ import type {
   StructuredOutputCapable,
   ToolCallingCapable,
   ReasoningCapable,
+  VisionCapable,
+  ContextCachingCapable,
+  BatchProcessingCapable,
   ReasoningEffort,
   ToolDefinition,
   ToolCallResult,
@@ -16,7 +19,7 @@ const factory = createProviderFactory(
   (apiKey) => new GoogleGenAI({ apiKey }),
 );
 
-export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable {
+export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -109,7 +112,79 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
       });
       return response.text ?? "";
     },
+
+    async completeWithImage(
+      req: AiCompletionRequest,
+      image: Blob,
+      options?: { detail?: "low" | "high" },
+    ): Promise<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const base64 = await blobToBase64(image);
+      const response = await client.models.generateContent({
+        model: modelId,
+        contents: [
+          { text: req.userContent },
+          { inlineData: { mimeType: "image/png", data: base64.split(",")[1] ?? "" } },
+        ],
+        config: {
+          systemInstruction: systemPrompt,
+        },
+      });
+      return response.text ?? "";
+    },
+
+    async completeWithCachedContext(
+      req: AiCompletionRequest,
+      cachedContext: string,
+    ): Promise<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const response = await client.models.generateContent({
+        model: modelId,
+        contents: req.userContent,
+        config: {
+          systemInstruction: `${systemPrompt}\n\n${cachedContext}`,
+        },
+      });
+      return response.text ?? "";
+    },
+
+    async completeBatch(
+      requests: AiCompletionRequest[],
+      options?: { maxConcurrent?: number },
+    ): Promise<string[]> {
+      const maxConcurrent = options?.maxConcurrent ?? 5;
+      const results: string[] = [];
+
+      for (let i = 0; i < requests.length; i += maxConcurrent) {
+        const batch = requests.slice(i, i + maxConcurrent);
+        const batchResults = await Promise.all(
+          batch.map(async (req) => {
+            const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+            const response = await client.models.generateContent({
+              model: modelId,
+              contents: req.userContent,
+              config: {
+                systemInstruction: systemPrompt,
+              },
+            });
+            return response.text ?? "";
+          }),
+        );
+        results.push(...batchResults);
+      }
+
+      return results;
+    },
   };
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 function getThinkingConfig(effort: ReasoningEffort): Record<string, unknown> {

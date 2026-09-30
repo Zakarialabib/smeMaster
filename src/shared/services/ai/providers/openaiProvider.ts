@@ -10,17 +10,25 @@ import type {
   VisionCapable,
   ContextCachingCapable,
   BatchProcessingCapable,
+  StreamingCapable,
+  SpeechToTextCapable,
+  TextToSpeechCapable,
+  RealtimeVoiceCapable,
   ReasoningEffort,
   EmbeddingResult,
   ToolDefinition,
   ToolCallResult,
+  SttOptions,
+  TtsOptions,
+  RealtimeOptions,
+  RealtimeVoiceSession,
 } from "../capabilities";
 
 const factory = createProviderFactory(
   (apiKey) => new OpenAI({ apiKey, dangerouslyAllowBrowser: true }),
 );
 
-export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable {
+export function createOpenAIProvider(apiKey: string, model: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -215,6 +223,87 @@ export function createOpenAIProvider(apiKey: string, model: string, aiLanguage =
       }
 
       return results;
+    },
+
+    async *streamComplete(req: AiCompletionRequest): AsyncIterable<string> {
+      const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
+      const stream = await client.chat.completions.create({
+        model,
+        max_tokens: req.maxTokens ?? 1024,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: req.userContent },
+        ],
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      }
+    },
+
+    async transcribe(audio: Blob, options?: SttOptions): Promise<string> {
+      const formData = new FormData();
+      formData.append("file", audio, "audio.webm");
+      formData.append("model", options?.model ?? "whisper-1");
+      if (options?.language) {
+        formData.append("language", options.language);
+      }
+
+      const response = await client.audio.transcriptions.create({
+        file: audio as unknown as File,
+        model: options?.model ?? "whisper-1",
+        language: options?.language,
+      });
+
+      return response.text;
+    },
+
+    async synthesize(text: string, options?: TtsOptions): Promise<Blob> {
+      const response = await client.audio.speech.create({
+        model: options?.model ?? "tts-1",
+        voice: (options?.voice ?? "alloy") as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer",
+        input: text,
+      });
+
+      return new Blob([await response.arrayBuffer()], { type: "audio/mpeg" });
+    },
+
+    async startRealtimeSession(options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
+      // OpenAI Realtime API requires WebSocket connection
+      // This is a simplified implementation — production would use the realtime SDK
+      const ws = new WebSocket("wss://api.openai.com/v1/realtime");
+
+      return {
+        sendAudio(audio: Blob) {
+          // Send audio data via WebSocket
+          audio.arrayBuffer().then((buffer) => {
+            ws.send(buffer);
+          });
+        },
+        onTranscript(cb: (text: string) => void) {
+          ws.addEventListener("message", (event) => {
+            const data = JSON.parse(event.data as string) as { type?: string; transcript?: string };
+            if (data.type === "transcript" && data.transcript) {
+              cb(data.transcript);
+            }
+          });
+        },
+        onResponse(cb: (text: string) => void) {
+          ws.addEventListener("message", (event) => {
+            const data = JSON.parse(event.data as string) as { type?: string; text?: string };
+            if (data.type === "response" && data.text) {
+              cb(data.text);
+            }
+          });
+        },
+        close() {
+          ws.close();
+        },
+      };
     },
   };
 }
