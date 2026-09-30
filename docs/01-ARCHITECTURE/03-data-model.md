@@ -1,22 +1,12 @@
 # Data Model
 
-
-
 > Current source of truth for SMEMaster persistence: SQLite, Rust-owned schema, additive repairs, and domain-based tables.
-
-
 
 ## Scope
 
-
-
 This page replaces the older split between "data model", "schema design", and "graph connections".
 
-
-
 It covers:
-
-
 
 - where schema ownership lives
 
@@ -26,19 +16,11 @@ It covers:
 
 - the consolidation patterns that matter for contributors
 
-
-
 ## Ownership
-
-
 
 The database is owned by the Rust backend.
 
-
-
 Primary locations:
-
-
 
 - `src-tauri/src/db/`
 
@@ -46,15 +28,9 @@ Primary locations:
 
 - `src-tauri/src/db/tables/`
 
-
-
 Frontend code mirrors the data model through typed IPC and TypeScript interfaces, but it does not own schema evolution.
 
-
-
 Related frontend locations:
-
-
 
 - `src/shared/services/db/schema.ts`
 
@@ -62,15 +38,9 @@ Related frontend locations:
 
 - `src/shared/services/db/db-invoke.ts`
 
-
-
 ### Rust DB module layout
 
-
-
 The Rust side is organized as:
-
-
 
 - `src-tauri/src/db/tables/<domain>/<table>.rs` — one module per table owning its CRUD + query ops, each `pub fn`/`pub struct` carrying `///` docs (purpose, params, returns, `AppDbError::NotFound` cases, and `AssertSqlSafe` notes where dynamic SQL is built).
 
@@ -84,15 +54,9 @@ The Rust side is organized as:
 
 - `src-tauri/src/commands/<domain>.rs` — `#[tauri::command]` handlers exposing DB ops to the frontend; all registered in the single `generate_handler!` in `src-tauri/src/commands/mod.rs`.
 
-
-
 ## Core Rules
 
-
-
 The current data model follows a few practical rules:
-
-
 
 1. Rust owns schema and migrations.
 
@@ -104,19 +68,11 @@ The current data model follows a few practical rules:
 
 5. Frontend code consumes records through typed commands, not handwritten SQL.
 
-
-
 ## Migration Model
-
-
 
 Schema upkeep is not a long linear chain of fragile frontend migrations.
 
-
-
 The current model is:
-
-
 
 1. apply current schema definitions
 
@@ -126,23 +82,13 @@ The current model is:
 
 4. keep deprecated tables until explicit cleanup says they can be removed
 
-
-
 That means the system prefers idempotent repair and compatibility over risky destructive migration-by-default behavior.
-
-
 
 ## Domain Layout
 
-
-
 The active schema is organized by domain rather than one flat table list.
 
-
-
 ### Core
-
-
 
 - accounts
 
@@ -160,11 +106,7 @@ The active schema is organized by domain rather than one flat table list.
 
 - full-text search tables where applicable
 
-
-
 ### CRM
-
-
 
 - contacts
 
@@ -182,11 +124,7 @@ The active schema is organized by domain rather than one flat table list.
 
 - legacy compatibility tables that still exist until cleanup
 
-
-
 ### Communications
-
-
 
 - filter rules and conditions
 
@@ -202,11 +140,7 @@ The active schema is organized by domain rather than one flat table list.
 
 - scheduled email support tables
 
-
-
 ### Campaigns
-
-
 
 - campaigns
 
@@ -216,31 +150,19 @@ The active schema is organized by domain rather than one flat table list.
 
 - campaign-adjacent schedules or supporting data where still active
 
-
-
 ### Calendar
-
-
 
 - calendars
 
 - calendar events
 
-
-
 ### Tasks
-
-
 
 - tasks
 
 - task tags
 
-
-
 ### Automation And Operations
-
-
 
 - workflow rules
 
@@ -250,17 +172,13 @@ The active schema is organized by domain rather than one flat table list.
 
 - cleanup-related tables where applicable
 
-
 **Tenant scoping (`company_id`).** Almost every business table (contacts,
 invoices, workflow rules, ERP ledger/stock/wallet) carries a `company_id` and is
 queried by it. The active company is resolved through `useCompanyStore` and the
 shared `ACTIVE_COMPANY_ID` constant; new business tables must add the column and
 scope every query by it. See [Company & ERP](../04-FEATURES/Invoicing-ERP/01-company-tenant.md).
 
-
 ### Security And Compliance
-
-
 
 - PGP keys
 
@@ -270,11 +188,7 @@ scope every query by it. See [Company & ERP](../04-FEATURES/Invoicing-ERP/01-com
 
 - compliance checks
 
-
-
 ### AI And Deliverability
-
-
 
 - AI cache and AI config
 
@@ -282,47 +196,25 @@ scope every query by it. See [Company & ERP](../04-FEATURES/Invoicing-ERP/01-com
 
 - remaining deliverability support tables, including compatibility tables not yet dropped
 
-
-
 ## Consolidation Patterns
-
-
 
 A few schema patterns matter more than raw table counts.
 
-
-
 ### Generic pivots
-
-
 
 `entity_pivots` is the important relationship pattern for cross-domain links. It replaces older one-off pivot behavior and supports connected records across contacts, mail, campaigns, tasks, and related entities.
 
-
-
 ### Typed config tables
-
-
 
 Several areas use a discriminator-style table instead of many tiny tables. This keeps the schema flatter and easier to evolve while still allowing typed behavior in Rust and TypeScript.
 
-
-
 ### Explicit compatibility paths
-
-
 
 Some older tables still exist because cleanup is opt-in or because compatibility remains useful during migration windows. Docs should describe those as compatibility paths, not as the preferred current model.
 
-
-
 ## Practical Guidance
 
-
-
 When changing data behavior:
-
-
 
 - start in `src-tauri/src/db/`
 
@@ -332,11 +224,31 @@ When changing data behavior:
 
 - avoid documenting deprecated tables as first-class features
 
+## A second index — server-side pgvector (voice agent)
 
+The voice agent's knowledge base does **not** live in SQLite. Per
+[`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D2/D3 and
+[`RAG-FORK.md`](../voice/dev/RAG-FORK.md) (**decided 2026-09-28 — Option A**), agent
+retrieval runs server-side on Postgres + `pgvector` inside `services/agent-core/`, at
+**1024 dims** (`bge-m3` / `arctic-embed-l-v2.0`).
+
+### ⚠️ Invariant: three embedding spaces, never merged
+
+| Space | Runtime                                                            | Dim                                 |
+| ----- | ------------------------------------------------------------------ | ----------------------------------- |
+| A     | desktop, candle `bge-small-en-v1.5` (`embeddingSource = rust_bge`) | **384** fixed                       |
+| B     | desktop, provider endpoint (`embeddingSource = provider`)          | **N — read it from index metadata** |
+| C     | server, `agent-core` `EmbeddingProvider`                           | **1024**                            |
+
+Different models, different dimensions, different machines. **Never "unify" them** — a
+dimension mismatch is a hard failure at query time, and it is the most tempting wrong
+refactor in this codebase. Consequently the desktop index dimension is **not a constant**;
+any code assuming `384` must read it from index metadata instead.
+
+Desktop-local RAG (mail/contacts, LanceDB via `ml-sidecar`) is untouched by this and keeps
+its offline "no data leaves the device" promise.
 
 ## Related Docs
-
-
 
 - `01-overview.md` for architecture
 
@@ -345,4 +257,3 @@ When changing data behavior:
 - `../02-BACKEND/06-commands-reference.md` for command-surface guidance
 
 - feature docs under `../04-FEATURES/` for user-facing behavior
-

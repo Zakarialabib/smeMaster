@@ -8,6 +8,16 @@
 
 SMEMaster uses a **sidecar process architecture** for all on-device ML/AI workloads: embeddings, vector search (RAG), document parsing, and model management. The sidecar is a **separate OS process** (`ml-sidecar`) that communicates with the main app over **stdin/stdout JSON-RPC 2.0**.
 
+> **⚠️ Two different "sidecars" — do not conflate them.**
+> `ml-sidecar` (this document) is a **Tauri-managed child process**: spawned by
+> `MlSidecarService`, supervised by the watchdog, bundled via `externalBin`, workspace member
+> `crates/ml-sidecar`. It runs **on the user's machine**.
+> `services/agent-core/` (voice agent) is a **network sidecar**: Python/FastAPI, 24/7 on our
+> VPS, **not** a Cargo workspace member and **not** supervised by Tauri. It shares only the
+> _contract shape_ (health/watchdog semantics) with `ml-sidecar`. See
+> [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D1 — adding `agent-core`
+> to `Cargo.toml` `members` or wrapping it in a Tauri child process is explicitly forbidden.
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Main Process (smemaster)                           │
@@ -179,24 +189,24 @@ Notifications carry no `id`. The main app reader task forwards them via a broadc
 
 ### Methods
 
-| Method                 | Params                  | Returns                     | Description                          |
-| ---------------------- | ----------------------- | --------------------------- | ------------------------------------ |
-| `init`                 | `{ app_data_dir }`      | `{ status, version }`       | Initialize with app data directory   |
-| `ping`                 | `{}`                    | `{ pong, ts, version }`     | Health check                         |
-| `shutdown`             | `{}`                    | —                           | Graceful exit (process exits with 0) |
-| `load_embedding_model` | `{ repo_id }`           | `{ status, dimension }`     | Download + load embedding model      |
-| `unload_model`         | `{}`                    | `{ status }`                | Free model memory                    |
-| `list_models`          | `{}`                    | `{ models: [...] }`         | Registry of loaded models            |
-| `embed`                | `{ texts: [str] }`      | `{ embeddings, dimension }` | Compute text embeddings              |
-| `embed_batch`          | `{ batches: [[str]] }`  | `{ results: [...] }`        | Batch embedding with progress notes  |
-| `ensure_vector_db`     | `{ db_path }`           | `{ status }`                | Open/create LanceDB database         |
-| `index_vectors`        | `{ vectors, metadata }` | `{ indexed }`               | Insert vectors into index            |
-| `query_rag`            | `{ query, top_k }`      | `{ results }`               | Vector search + return context       |
-| `parse_document`       | `{ path }`              | `{ text }`                  | Extract text from docx/pdf/xlsx      |
-| `load_generation_model`| `{ repo_id }`           | `{ status }`                | Register a generation model handle   |
-| `generate`             | `{ prompt, max_tokens }`| `{ text }`                  | Run generation + stream progress     |
-| `memory_usage`         | `{}`                    | `{ rss_mb, model_loaded, pid }` | Sidecar self-memory report     |
-| `metrics`              | `{}`                    | `{ embed_count, ..., rss_mb }`| Sidecar self-metrics                |
+| Method                  | Params                   | Returns                         | Description                          |
+| ----------------------- | ------------------------ | ------------------------------- | ------------------------------------ |
+| `init`                  | `{ app_data_dir }`       | `{ status, version }`           | Initialize with app data directory   |
+| `ping`                  | `{}`                     | `{ pong, ts, version }`         | Health check                         |
+| `shutdown`              | `{}`                     | —                               | Graceful exit (process exits with 0) |
+| `load_embedding_model`  | `{ repo_id }`            | `{ status, dimension }`         | Download + load embedding model      |
+| `unload_model`          | `{}`                     | `{ status }`                    | Free model memory                    |
+| `list_models`           | `{}`                     | `{ models: [...] }`             | Registry of loaded models            |
+| `embed`                 | `{ texts: [str] }`       | `{ embeddings, dimension }`     | Compute text embeddings              |
+| `embed_batch`           | `{ batches: [[str]] }`   | `{ results: [...] }`            | Batch embedding with progress notes  |
+| `ensure_vector_db`      | `{ db_path }`            | `{ status }`                    | Open/create LanceDB database         |
+| `index_vectors`         | `{ vectors, metadata }`  | `{ indexed }`                   | Insert vectors into index            |
+| `query_rag`             | `{ query, top_k }`       | `{ results }`                   | Vector search + return context       |
+| `parse_document`        | `{ path }`               | `{ text }`                      | Extract text from docx/pdf/xlsx      |
+| `load_generation_model` | `{ repo_id }`            | `{ status }`                    | Register a generation model handle   |
+| `generate`              | `{ prompt, max_tokens }` | `{ text }`                      | Run generation + stream progress     |
+| `memory_usage`          | `{}`                     | `{ rss_mb, model_loaded, pid }` | Sidecar self-memory report           |
+| `metrics`               | `{}`                     | `{ embed_count, ..., rss_mb }`  | Sidecar self-metrics                 |
 
 ## Lifecycle
 

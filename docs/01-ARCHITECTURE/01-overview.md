@@ -49,7 +49,7 @@ SQLite (WAL mode)
 
 ## What Happens When You Start the App
 
-1. Tauri's `setup` hook fires → creates SQLite pool → runs 34 migrations (verified 2026-07-19) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
+1. Tauri's `setup` hook fires → creates SQLite pool → runs **32 migrations** (⚠️ re-grepped 2026-09-30: `src-tauri/src/db/migrations/` holds exactly 32 `.sql` files, 001–032. Older text said "34 migrations (verified 2026-07-19)", which counted a "020 & 021 each split into two" split that does not exist on disk. `docs/STATUS.md` still says 34 — see its Verified Ground Truth table. **Re-grep before trusting any migration count.**) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
 
 2. `main.tsx` renders `<WindowBootstrap>` which checks: "what window are we in?"
 
@@ -85,13 +85,32 @@ SQLite (WAL mode)
 
 ## IPC at a Glance
 
-| Channel   | Wrapper                                            | What it does                                    |
-| --------- | -------------------------------------------------- | ----------------------------------------------- |
-| IMAP/SMTP | `src/shared/services/imap/tauriCommands.ts` (19 wrappers) | Send, receive, sync email                       |
-| PGP       | `src/shared/services/pgp/pgpService.ts`            | Encrypt, decrypt, key management                |
-| Export    | `src/shared/services/export/exportService.ts`      | Save data as mbox, PDF                          |
-| Badge     | `src/shared/services/badgeManager.ts`              | Unread count on the dock icon                   |
-| DB        | `src/shared/services/db/db-invoke.ts` (re-exports 15 domain modules; ~479 `db_*` wrappers) + `commands.ts` (1 generic typed `invoke<T>`) | 480 typed IPC wrappers total |
+| Channel   | Wrapper                                                                                                                                  | What it does                     |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| IMAP/SMTP | `src/shared/services/imap/tauriCommands.ts` (19 wrappers)                                                                                | Send, receive, sync email        |
+| PGP       | `src/shared/services/pgp/pgpService.ts`                                                                                                  | Encrypt, decrypt, key management |
+| Export    | `src/shared/services/export/exportService.ts`                                                                                            | Save data as mbox, PDF           |
+| Badge     | `src/shared/services/badgeManager.ts`                                                                                                    | Unread count on the dock icon    |
+| DB        | `src/shared/services/db/db-invoke.ts` (re-exports 15 domain modules; ~479 `db_*` wrappers) + `commands.ts` (1 generic typed `invoke<T>`) | 480 typed IPC wrappers total     |
+
+---
+
+## The Second Runtime: `services/agent-core/` (voice agent)
+
+A **separate product surface**, not part of the three layers above. The voice &
+messaging agent runs as a 24/7 **network sidecar** on our VPS:
+
+- `services/agent-core/` — Python (FastAPI), **not** a Cargo workspace member, **not**
+  launched or supervised by Tauri. The desktop being closed must not stop a phone from ringing.
+- Console ↔ agent-core IPC is a **per-tenant bearer token**; tenant identity is derived
+  server-side and never comes from a client argument.
+- Its migrations (`services/agent-core/migrations/`, Postgres + pgvector) are **separate**
+  from the SQLite migrations above.
+
+**Read first:** [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) —
+integration seams (4 provider ABCs), the three embedding spaces, and the IPC auth model.
+Dev-mode run instructions: [`docs/voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md);
+⚠️ build status: [`docs/voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md).
 
 ---
 
