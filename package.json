@@ -13,8 +13,8 @@
     "lint:ci": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0 && prettier --check \"src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
@@ -29,7 +29,9 @@
     "generate-icons": "tauri icon src-tauri/icons/icon.png",
     "windows:build": "cargo tauri build --target x86_64-pc-windows-msvc",
     "windows:portable": "cargo tauri build --bundles nsis --target x86_64-pc-windows-msvc",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:integration": "vitest run --project integration",
+    "test:all": "vitest run"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

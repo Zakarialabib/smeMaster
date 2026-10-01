@@ -70,7 +70,15 @@ class UiBus {
     const type = this.typeOf(event);
     const wrapped = ((e: Event) => {
       const detail = (e as CustomEvent).detail as UiBusEventMap[K];
-      handler(detail);
+      // Isolate handler failures: a throwing subscriber must not abort
+      // dispatch to the remaining subscribers, nor surface as an uncaught
+      // exception on the window (which vitest reports as an unhandled error
+      // and turns into a non-zero exit).
+      try {
+        handler(detail);
+      } catch (error) {
+        console.error(`[uiBus] handler for "${event}" threw:`, error);
+      }
     }) as EventListener;
 
     let set = this.listeners.get(type);
