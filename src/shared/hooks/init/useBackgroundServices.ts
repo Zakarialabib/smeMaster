@@ -47,6 +47,11 @@ export function useBackgroundServices(): {
         );
       } catch (err) {
         if (cancelled) return;
+        // Outside a Tauri shell there are no Rust-owned background services
+        // to start — skip the warn and don't surface an error state.
+        if (typeof err === "object" && err !== null && "isTauriUnavailable" in err) {
+          return;
+        }
         const msg = err instanceof Error ? err.message : String(err);
         console.warn("[init] Failed to init background services:", msg);
         setError(msg);

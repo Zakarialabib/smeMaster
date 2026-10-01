@@ -228,7 +228,7 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
     provider: "byteplus",
     label: "Doubao Pro 32K",
     tier: "flagship",
-    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true },
+    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true, embeddings: { dimensions: 1536 } },
     contextWindow: 32_000,
   },
   {
@@ -236,7 +236,7 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
     provider: "byteplus",
     label: "Doubao Lite 32K",
     tier: "fast",
-    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true },
+    capabilities: { text: true, streaming: true, vision: false, jsonMode: true, toolCalling: true, embeddings: { dimensions: 1024 } },
     contextWindow: 32_000,
   },
 

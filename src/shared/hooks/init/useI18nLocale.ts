@@ -26,6 +26,11 @@ export function useI18nLocale(): void {
           useConfigStore.getState().setLocale(locale);
         }
       } catch (err) {
+        // Outside a Tauri shell there is no settings table to read the
+        // persisted locale from — fall back to the i18n default (en).
+        if (typeof err === "object" && err !== null && "isTauriUnavailable" in err) {
+          return;
+        }
         console.warn("[init] Failed to restore locale:", err);
       }
     }

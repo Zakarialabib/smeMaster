@@ -28,6 +28,13 @@ export async function updateBadgeCount(): Promise<void> {
       await useSyncStore.getState().refreshUnreadCounts(activeAcct);
     }
   } catch (err) {
+    // Outside a Tauri shell (browser dev server) there is no tray/dock badge
+    // to update and the underlying count commands reject with
+    // TauriUnavailableError — expected, not an error.
+    if (typeof err === "object" && err !== null && "isTauriUnavailable" in err) {
+      console.debug("[badge] update skipped (Tauri backend unavailable)");
+      return;
+    }
     console.error("Failed to update badge count:", err);
   }
 }

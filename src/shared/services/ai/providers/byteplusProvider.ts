@@ -15,7 +15,7 @@
  */
 
 import type { z } from "zod";
-import type { AiProviderClient, ModelOption } from "../types";
+import type { AiProviderClient, ModelOption, AiEmbeddingRequest } from "../types";
 import { buildSystemPrompt } from "../utils";
 import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
 import type {
@@ -30,6 +30,7 @@ import type {
   TextToSpeechCapable,
   RealtimeVoiceCapable,
   ModelDiscoveryCapable,
+  EmbeddingCapable,
   ReasoningEffort,
   ToolDefinition,
   ToolCallResult,
@@ -37,6 +38,7 @@ import type {
   TtsOptions,
   RealtimeOptions,
   RealtimeVoiceSession,
+  EmbeddingResult,
 } from "../capabilities";
 
 // International BytePlus endpoint (ap-southeast-1)
@@ -60,7 +62,7 @@ export function createBytePlusProvider(
   model: string,
   aiLanguage = "auto",
   region: "international" | "china" = "international",
-): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable {
+): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
   const baseUrl = region === "china" ? VOLCENGINE_BASE_URL : BYTEPLUS_BASE_URL;
   const baseProvider = createOpenAICompatibleProvider(baseUrl, apiKey, model, aiLanguage);
 
@@ -424,6 +426,44 @@ export function createBytePlusProvider(
           ws.close();
         },
       };
+    },
+
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      // BytePlus supports OpenAI-compatible /embeddings endpoint with Seed embedding models
+      const embeddingModel = req.model ?? "text-embedding-3-small";
+      try {
+        const response = await fetch(`${baseUrl}/embeddings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: embeddingModel,
+            input: req.input,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`BytePlus embedding error (${response.status})`);
+        }
+
+        const data = await response.json() as {
+          data: { embedding: number[] }[];
+        };
+
+        const vectors = (data.data ?? []).map((d) => d.embedding);
+        const dimensions = vectors[0]?.length ?? 0;
+
+        return {
+          vectors,
+          spaceId: `byteplus-${embeddingModel}-${dimensions}`,
+          dimensions,
+          modelId: embeddingModel,
+        };
+      } catch {
+        return null;
+      }
     },
 
     async listModels(): Promise<ModelOption[]> {

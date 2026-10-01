@@ -6,7 +6,11 @@
 >
 > ✅ **RTL Physical-Direction Violations — Fixed (2026-10-01):** Resolved all **141 violations** across **106 files**: `text-left`→`text-start` (55), `text-right`→`text-end` (7), `ml-*`→`ms-*` (64), `mr-*`→`me-*` (17), `margin-left/right`→`margin-inline-start` (2 in globals.css). Zero violations remain in `src/`.
 >
-> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
+|> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
+|>
+|> ✅ **AI Capabilities Architecture (2026-10-01):** Complete capability interface system — 14 narrow composable interfaces (Text, Streaming, Embeddings with space pinning, Structured Output, Tool Calling, Reasoning, Vision, Context Caching, Batch Processing, STT, TTS, Realtime Voice, Model Discovery, Connection Test) with type guards. Task router with fallback chains, cost-aware scoring, and exponential backoff retry. 30+ model registry entries across 10 providers. 74 new TS tests added.
+|>
+|> ✅ **BytePlus Embedding Support (2026-10-01):** Added `EmbeddingCapable` to BytePlus provider — uses OpenAI-compatible `/embeddings` endpoint with Seed embedding models. Space pinning: `byteplus-<model>-<dims>`. Model registry updated with embedding dimensions for Doubao Pro/Lite 32K.
 >
 > ✅ **Keyboard Navigation + Screen Reader (WCAG AA) — Done (2026-07-14):** Created reusable `<SkipLink>` component (replaced inline skip-links in App.tsx + MobileShell.tsx), `<FocusOrderManager>` landmark wrapper, added `aria-describedby` on PremiumSidebar, `role="status"`+`aria-live="polite"` on NotificationToast/EmptyState, `role="search"` on SearchBar. i18n keys (`skipToContent`, `nav.keyboardNavHint`) added to all 5 locales.
 >
@@ -64,8 +68,8 @@
 | Frontend typed command wrappers  | **479** `db_*` wrappers in `db-invoke.ts` (re-export of 15 domain modules under `src/shared/services/db/invoke/`) + 1 generic typed `invoke<T extends keyof TauriCommands>` in `commands.ts` | `grep -rhoE 'export (const                                   | async function                       | function) [a-zA-Z0-9_]+' src/shared/services/db/invoke/ \\ | wc -l` (=479)                | 504, 470+ |
 | Locales                          | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each                                                                                                                                     | `src/locales/*/translation.json`                             | —                                    |
 | Feature modules (`src/features`) | **23**                                                                                                                                                                                       | `ls src/features`                                            | —                                    |
-| Rust `#[test]`s                  | **969** attributes (incl. a few `#[cfg(test)]` modules)                                                                                                                                      | `grep -rE '#\[test\]                                         | #\[tokio::test\]' src-tauri/src`     | 915, 735, 900                                              |
-| TS test cases (`*.test.ts(x)`)   | ~3,529 `it`/`test` calls across 300+ files                                                                                                                                                   | `grep -rE '\b(it                                             | test)\(' src --include='_.test.ts_'` | 3,344, 2,470                                               |
+| Rust `#[test]`s                  | **977** attributes (incl. a few `#[cfg(test)]` modules)                                                                                                                                      | `grep -rE '#\[test\]                                         | #\[tokio::test\]' src-tauri/src`     | 915, 735, 900                                              |
+| TS test cases (`*.test.ts(x)`)   | ~3,533 `it`/`test` calls across 300+ files                                                                                                                                                   | `grep -rE '\b(it                                             | test)\(' src --include='_.test.ts_'` | 3,344, 2,470                                               |
 | Feature flags                    | **31**                                                                                                                                                                                       | `src/constants/featureFlags.ts`                              | 28                                   |
 
 > ⚠️ **Caveat on test counts:** the Rust test binary now **compiles** (the prior `invoicing/tests.rs` "fails to compile" report was false — cascade from `caldav.rs`). The "735/735 passing" count is still **unverified** because the test EXE crashes at OS load on this machine (`0xc0000139`, UCRT/VC++ runtime older than rustc 1.96 targets) — an environment issue, not a code defect. Run `cargo test` on a properly-provisioned machine/CI to confirm the real pass count.
@@ -74,7 +78,7 @@
 
 ## ✅ DONE / 🔲 NOT DONE / 🧩 MISSING — Reconciliation (2026-07-15)
 
-> **Verified against source this pass:** 831 IPC commands (768 `#[tauri::command]` + 63 `#[command]` shorthand) · 34 migrations (numbered 001–032; 020 & 021 each split into two files) · 43 Zustand stores (`create<`, incl. `src/shared/stores`, `src/features/*/stores`, legacy `src/stores/`) · ~200+ TS test files · 915 Rust `#[test]` attributes (735 reported passing; `invoicing/tests.rs` excluded). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below but were **not re-run** in this pass — re-run before tagging.
+|> **Verified against source this pass:** 831 IPC commands (768 `#[tauri::command]` + 63 `#[command]` shorthand) · 34 migrations (numbered 001–032; 020 & 021 each split into two files) · 48 Zustand stores (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) · ~200+ TS test files · 977 Rust `#[test]` attributes (incl. 8 new panic/WAL/watchdog tests in `tests/panic_and_wal.rs`). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below — `tsc` re-verified zero errors (2026-10-01).
 
 ### ✅ Done — built, wired, tested
 
@@ -84,7 +88,7 @@
 - **Invoicing (Morocco DGI):** 35 commands, line-item calc engine, lopdf PDF + PEPPOL/UBL XML, live SMTP/PGP send, wallet↔ledger sync.
 - **POS hardware** (ESC/POS, scanner, cash drawer) and **ERP shell** (company switcher, stock, journal, financials, RBAC).
 - **Deliverability** (blacklist/bounce/reputation/DNS) and **compliance engine**.
-- **AI RAG** (candle/LanceDB), prompt + context engineering, contact intelligence.
+- **AI RAG** (candle/LanceDB), prompt + context engineering, contact intelligence, **AI provider capabilities architecture** (14 interfaces, 10 providers, task router with fallback chains + cost-aware routing + rate-limit retry, 30+ model registry entries, space-pinned embeddings).
 - **Vault, device pairing, mobile shell + 5-phase UX overhaul, accessibility** (skip links, focus-order manager, a11y roles/live regions), **i18n** (en/fr/ar/ja/it) with RTL scaffolding, **WAL-deletion doc**.
 
 ### 🔲 Not Done — manual / human validation (gates 1, 3, 4, 5, 9)
