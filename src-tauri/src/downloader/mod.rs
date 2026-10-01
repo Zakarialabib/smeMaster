@@ -25,7 +25,7 @@ pub mod types;
 use anyhow::{anyhow, Result};
 use engine::{EngineContext, ExecuteOutcome};
 use sqlx::{Pool, Sqlite};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 use tauri::{Emitter, Manager};
 use types::{DownloadJob, DownloadJobOptions, DownloadJobProgress, JobStatus};
@@ -160,7 +160,12 @@ pub fn spawn_job(state: &DownloaderState, job: DownloadJob) {
     tokio::spawn(async move {
         match engine::execute_download_job(&state.engine, &job).await {
             Ok(ExecuteOutcome::Completed) => {
-                finalize_hf_ref(&state, &job);
+                if let Some(app) = state.engine.app.as_ref() {
+                    match models_dir(app) {
+                        Ok(cache) => finalize_hf_ref(&job, &cache),
+                        Err(e) => log::warn!("[downloader] models_dir unavailable: {e}"),
+                    }
+                }
                 log::info!("[downloader] job {} completed", job.id);
             }
             Ok(ExecuteOutcome::Interrupted) => {
@@ -175,21 +180,16 @@ pub fn spawn_job(state: &DownloaderState, job: DownloadJob) {
 }
 
 /// Write `refs/<revision>` after a successful HF download (idempotent).
-fn finalize_hf_ref(state: &DownloaderState, job: &DownloadJob) {
+/// `cache` is the hf-hub cache root (`<app_data>/models` in production).
+fn finalize_hf_ref(job: &DownloadJob, cache: &Path) {
     let opts = parse_options(job);
     let (Some(repo_id), Some(revision), Some(commit)) =
         (opts.hf_repo_id, opts.hf_revision, opts.hf_commit_hash)
     else {
         return;
     };
-    let Some(app) = state.engine.app.as_ref() else { return };
-    match models_dir(app) {
-        Ok(cache) => {
-            if let Err(e) = hf::publish_ref(&cache, &repo_id, &revision, &commit) {
-                log::warn!("[downloader] publish_ref failed for {}: {e}", job.id);
-            }
-        }
-        Err(e) => log::warn!("[downloader] models_dir unavailable: {e}"),
+    if let Err(e) = hf::publish_ref(cache, &repo_id, &revision, &commit) {
+        log::warn!("[downloader] publish_ref failed for {}: {e}", job.id);
     }
 }
 
@@ -230,16 +230,26 @@ pub async fn download_hf_file(
     repo_id: &str,
     filename: &str,
 ) -> Result<String, String> {
-    let state = app
-        .state::<DownloaderState>()
-        .inner()
-        .clone();
+    let state = app.state::<DownloaderState>().inner().clone();
+    let cache = models_dir(app).map_err(|e| e.to_string())?;
+    download_hf_file_cached(&state, &cache, repo_id, filename).await
+}
+
+/// AppHandle-free core of [`download_hf_file`] — also driven by the
+/// `hf_smoke` example, which verifies real-model downloads without a
+/// running Tauri app. `cache` is the hf-hub cache root
+/// (`<app_data>/models` in production, a temp dir in the example).
+pub async fn download_hf_file_cached(
+    state: &DownloaderState,
+    cache: &Path,
+    repo_id: &str,
+    filename: &str,
+) -> Result<String, String> {
     let pool = state.pool().clone();
     let revision = "main";
 
     // 1) Cache hit → nothing to do (works fully offline).
-    let cache = models_dir(app).map_err(|e| e.to_string())?;
-    if let Some(path) = hf::cached_file(&cache, repo_id, revision, filename) {
+    if let Some(path) = hf::cached_file(cache, repo_id, revision, filename) {
         return Ok(path.to_string_lossy().to_string());
     }
 
@@ -253,7 +263,7 @@ pub async fn download_hf_file(
     {
         if matches!(active.status, JobStatus::Downloading | JobStatus::Probing | JobStatus::Queued) {
             let job = await_job(&state, &active.id).await.map_err(|e| e.to_string())?;
-            finalize_hf_ref(&state, &job);
+            finalize_hf_ref(&job, cache);
             return Ok(job.destination_path);
         }
         // paused/failed → fall through to the resume path below.
@@ -264,7 +274,7 @@ pub async fn download_hf_file(
         .await
         .map_err(|e| format!("HuggingFace metadata probe failed: {e:#}"))?;
     let expected_sha256 = meta.expected_sha256();
-    let dest = hf::snapshot_path(&cache, repo_id, revision, &meta.commit_hash, filename);
+    let dest = hf::snapshot_path(cache, repo_id, revision, &meta.commit_hash, filename);
     let options = DownloadJobOptions {
         hf_repo_id: Some(repo_id.to_string()),
         hf_filename: Some(filename.to_string()),
@@ -359,7 +369,7 @@ pub async fn download_hf_file(
         });
     }
 
-    finalize_hf_ref(&state, &job);
+    finalize_hf_ref(&job, cache);
     Ok(job.destination_path)
 }
 

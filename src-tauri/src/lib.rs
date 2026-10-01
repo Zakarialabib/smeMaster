@@ -19,7 +19,7 @@ mod agent;
 mod deliverability;
 mod device;
 mod dns;
-mod downloader;
+pub mod downloader;
 mod events;
 mod export;
 mod imap;

@@ -6,6 +6,16 @@ use crate::downloader::types::{DownloadChunk, DownloadJob, JobCategory, JobStatu
 use anyhow::Result;
 use sqlx::{Pool, Sqlite};
 
+/// In-memory pool with every crate migration applied (incl. `033_downloader`).
+/// Used by unit tests and the `hf_smoke` example — real schema, no disk files.
+pub async fn memory_pool_with_migrations() -> Result<Pool<Sqlite>> {
+    let pool = Pool::<Sqlite>::connect("sqlite::memory:").await?;
+    crate::db::migrations::run_migrations(&pool)
+        .await
+        .map_err(|e| anyhow::anyhow!("migration failed: {e}"))?;
+    Ok(pool)
+}
+
 /// Persist HEAD probe results for resume validation (ETag + range support).
 pub async fn update_job_probe(
     pool: &Pool<Sqlite>,
