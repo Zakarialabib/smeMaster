@@ -30,13 +30,13 @@ serde = { version = "1.0", features = ["derive"] }
 async-trait = "0.1"
 log = "0.4"
 tauri = { version = "2.11", features = ["tray-icon"] }
-tauri-plugin-log = "2.8.0"
-tauri-plugin-notification = "2.5.0"
+tauri-plugin-log = "2.10.0"
+tauri-plugin-notification = "2.5.1"
 tauri-plugin-opener = "2.7.0"
-tauri-plugin-dialog = "2.8.0"
+tauri-plugin-dialog = "2.8.1"
 tauri-plugin-fs = "2.6.0"
-tauri-plugin-single-instance = "2.4.2"
-tauri-plugin-deep-link = "2.6.0"
+tauri-plugin-single-instance = "2.5.2"
+tauri-plugin-deep-link = "2.6.1"
 tauri-plugin-updater = { version = "2.13.1", optional = true }
 sqlx = { version = "0.9.0", features = ["runtime-tokio", "sqlite", "uuid", "chrono"] }
 tokio = { version = "1", features = ["net", "io-util", "sync", "macros", "rt", "time", "fs"] }
@@ -65,11 +65,11 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["ring",
 # webpki-roots is used instead of rustls-native-certs for Android TLS support
 native-tls = { version = "0.2", optional = true }
 tokio-native-tls = { version = "0.3", optional = true }
-tauri-plugin-persisted-scope = "2.3.7"
-tauri-plugin-shell = "2.2.1"
-tauri-plugin-biometric = "2.4.0"
+tauri-plugin-persisted-scope = "2.4.0"
+tauri-plugin-shell = "2.4.0"
+tauri-plugin-biometric = "2.4.1"
 tauri-plugin-window-state = "2.5.0"
-tauri-plugin-clipboard-manager = "2.4.0"
+tauri-plugin-clipboard-manager = "2.4.1"
 tauri-plugin-store = "2.5.0"
 tauri-plugin-global-shortcut = "2.4.0"
 auto-launch = "0.6.0"

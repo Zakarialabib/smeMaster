@@ -2,8 +2,14 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "desktop",
   "description": "Permissions for Windows desktop platform",
-  "windows": ["main", "compose-*", "thread-*"],
-  "platforms": ["windows"],
+  "windows": [
+    "main",
+    "compose-*",
+    "thread-*"
+  ],
+  "platforms": [
+    "windows"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-create",
@@ -25,7 +31,9 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$APPDATA/**" }
+        {
+          "path": "$APPDATA/**"
+        }
       ]
     },
     "core:window:allow-minimize",
@@ -48,9 +56,7 @@
     "global-shortcut:allow-is-registered",
     "global-shortcut:allow-register-all",
     "global-shortcut:allow-unregister-all",
-    "shell:default",
-    "shell:allow-execute",
-    "shell:allow-spawn",
-    "shell:allow-stdin-write"
+    "biometric:default",
+    "window-state:default"
   ]
 }

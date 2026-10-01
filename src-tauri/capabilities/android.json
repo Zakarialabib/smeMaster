@@ -2,8 +2,13 @@
   "$schema": "../gen/schemas/mobile-schema.json",
   "identifier": "android",
   "description": "Permissions for Android mobile platform",
-  "windows": ["main", "compose-*"],
-  "platforms": ["android"],
+  "windows": [
+    "main",
+    "compose-*"
+  ],
+  "platforms": [
+    "android"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-create",
@@ -25,7 +30,9 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$APPDATA/**" }
+        {
+          "path": "$APPDATA/**"
+        }
       ]
     },
     "core:window:allow-show",
@@ -35,6 +42,7 @@
     "core:window:allow-set-position",
     "core:window:allow-get-all-windows",
     "clipboard-manager:default",
-    "store:default"
+    "store:default",
+    "biometric:default"
   ]
 }
