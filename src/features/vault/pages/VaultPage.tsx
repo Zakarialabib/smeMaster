@@ -548,41 +548,41 @@ export function VaultPage() {
 
       {/* File list */}
       <GlassPanel variant="card" className="flex-1 overflow-y-auto mx-3 mb-3">
-      <div
-        aria-busy={loading && displayEntries.length === 0}
-        aria-live="polite"
-        aria-label="Vault file list"
-      >
-        {loading ? (
-          <SkeletonPage />
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
-            <AlertCircle size={40} className="text-danger-text opacity-60" />
-            <p className="text-sm font-medium text-text-primary">Failed to load vault</p>
-            <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
-            <button
-              onClick={() => store.refresh()}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
-            >
-              <RefreshCw size={13} />
-              Retry
-            </button>
-          </div>
-        ) : displayEntries.length === 0 ? (
-          <VaultEmptyState onUpload={handleUploadClick} />
-        ) : (
-          <VaultFileList
-            entries={displayEntries}
-            viewMode={viewMode}
-            onNavigate={handleNavigate}
-            onPreview={(entry) => setPreviewFile({ path: entry.path, name: entry.name })}
-            onDelete={(path) => store.deleteEntry(path)}
-            selectionMode={selectionMode}
-            selectedPaths={selectedPaths}
-            onToggleSelect={(path) => store.toggleItemSelection(path)}
-          />
-        )}
-      </div>
+        <div
+          aria-busy={loading && displayEntries.length === 0}
+          aria-live="polite"
+          aria-label="Vault file list"
+        >
+          {loading ? (
+            <SkeletonPage />
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
+              <AlertCircle size={40} className="text-danger-text opacity-60" />
+              <p className="text-sm font-medium text-text-primary">Failed to load vault</p>
+              <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
+              <button
+                onClick={() => store.refresh()}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+              >
+                <RefreshCw size={13} />
+                Retry
+              </button>
+            </div>
+          ) : displayEntries.length === 0 ? (
+            <VaultEmptyState onUpload={handleUploadClick} />
+          ) : (
+            <VaultFileList
+              entries={displayEntries}
+              viewMode={viewMode}
+              onNavigate={handleNavigate}
+              onPreview={(entry) => setPreviewFile({ path: entry.path, name: entry.name })}
+              onDelete={(path) => store.deleteEntry(path)}
+              selectionMode={selectionMode}
+              selectedPaths={selectedPaths}
+              onToggleSelect={(path) => store.toggleItemSelection(path)}
+            />
+          )}
+        </div>
       </GlassPanel>
     </div>
   );

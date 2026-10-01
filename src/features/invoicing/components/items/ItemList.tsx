@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Search, Plus, Package, Boxes, Trash2, AlertTriangle, Layers,
-} from 'lucide-react';
+import { Search, Plus, Package, Boxes, Trash2, AlertTriangle, Layers } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID, formatMoney } from '../../utils/format';
@@ -32,9 +30,7 @@ export default function ItemList() {
     const q = search.trim().toLowerCase();
     if (!q) return items;
     return items.filter(
-      (it) =>
-        it.name.toLowerCase().includes(q) ||
-        (it.sku ?? '').toLowerCase().includes(q),
+      (it) => it.name.toLowerCase().includes(q) || (it.sku ?? '').toLowerCase().includes(q),
     );
   }, [items, search]);
 
@@ -66,16 +62,39 @@ export default function ItemList() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard label="Items" value={stats.total} icon={<Layers className="text-accent" />} tone="accent" />
-        <StatCard label="Products" value={stats.products} icon={<Package className="text-accent" />} tone="accent" />
-        <StatCard label="Services" value={stats.services} icon={<Boxes className="text-success" />} tone="success" />
-        <StatCard label="Low Stock" value={stats.lowStock} icon={<AlertTriangle className="text-warning" />} tone="warning" />
+        <StatCard
+          label="Items"
+          value={stats.total}
+          icon={<Layers className="text-accent" />}
+          tone="accent"
+        />
+        <StatCard
+          label="Products"
+          value={stats.products}
+          icon={<Package className="text-accent" />}
+          tone="accent"
+        />
+        <StatCard
+          label="Services"
+          value={stats.services}
+          icon={<Boxes className="text-success" />}
+          tone="success"
+        />
+        <StatCard
+          label="Low Stock"
+          value={stats.lowStock}
+          icon={<AlertTriangle className="text-warning" />}
+          tone="warning"
+        />
       </div>
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            size={16}
+            className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -123,7 +142,9 @@ export default function ItemList() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${TYPE_META[it.type].cls}`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${TYPE_META[it.type].cls}`}
+                      >
                         {TYPE_META[it.type].label}
                       </span>
                     </td>
@@ -201,7 +222,9 @@ export default function ItemList() {
                 </IconBtn>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${TYPE_META[it.type].cls}`}>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${TYPE_META[it.type].cls}`}
+                >
                   {TYPE_META[it.type].label}
                 </span>
                 <span className="text-text-secondary text-sm font-semibold">
@@ -233,7 +256,17 @@ export default function ItemList() {
   );
 }
 
-function StatCard({ label, value, icon, tone }: { label: string; value: number; icon: React.ReactNode; tone: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  tone: string;
+}) {
   const tones: Record<string, string> = {
     accent: 'bg-accent/10 text-accent',
     warning: 'bg-warning/10 text-warning',
@@ -242,23 +275,41 @@ function StatCard({ label, value, icon, tone }: { label: string; value: number; 
   };
   return (
     <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}>{icon}</div>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}
+      >
+        {icon}
+      </div>
       <div className="min-w-0">
-        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">{label}</p>
+        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">
+          {label}
+        </p>
         <p className="text-lg sm:text-xl font-bold text-text-primary mt-0.5">{value}</p>
       </div>
     </div>
   );
 }
 
-function IconBtn({ children, onClick, title, danger }: { children: React.ReactNode; onClick: (e: React.MouseEvent) => void; title: string; danger?: boolean }) {
+function IconBtn({
+  children,
+  onClick,
+  title,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  danger?: boolean;
+}) {
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97] ${
-        danger ? 'text-text-tertiary hover:text-danger hover:bg-danger/10' : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
+        danger
+          ? 'text-text-tertiary hover:text-danger hover:bg-danger/10'
+          : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
       }`}
     >
       {children}
@@ -306,9 +357,20 @@ function EmptyState({ hasItems, onNew }: { hasItems: boolean; onNew: () => void 
   );
 }
 
-function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: () => void; onConfirm: () => void }) {
+function ConfirmDelete({
+  name,
+  onCancel,
+  onConfirm,
+}: {
+  name: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onCancel}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onCancel}
+    >
       <div
         className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -321,8 +383,12 @@ function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: 
           This permanently removes the item from your catalog. This cannot be undone.
         </p>
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>Delete</Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
+            Delete
+          </Button>
         </div>
       </div>
     </div>

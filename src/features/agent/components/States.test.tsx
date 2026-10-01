@@ -16,25 +16,28 @@ const data = { rows: [1, 2, 3] };
 
 describe('AgentResource — the four states', () => {
   it('loading shows a skeleton, not an empty table', () => {
-    render(
-      <AgentResource state={{ kind: 'loading' }}>
-        {() => <p>DATA TABLE</p>}
-      </AgentResource>,
-    );
+    render(<AgentResource state={{ kind: 'loading' }}>{() => <p>DATA TABLE</p>}</AgentResource>);
     expect(screen.getByRole('status')).toBeDefined();
     expect(screen.getByLabelText('Loading')).toBeDefined();
     expect(screen.queryByText('DATA TABLE')).toBeNull();
   });
 
   it('ready renders the children with the data', () => {
-    render(<AgentResource state={{ kind: 'ready', data }}>{(d) => <p>rows: {d.rows.length}</p>}</AgentResource>);
+    render(
+      <AgentResource state={{ kind: 'ready', data }}>
+        {(d) => <p>rows: {d.rows.length}</p>}
+      </AgentResource>,
+    );
     expect(screen.getByText('rows: 3')).toBeDefined();
   });
 
   it('unreachable says "cannot reach", and offers retry', async () => {
     const onRetry = vi.fn();
     render(
-      <AgentResource state={{ kind: 'unreachable', message: 'connection refused' }} onRetry={onRetry}>
+      <AgentResource
+        state={{ kind: 'unreachable', message: 'connection refused' }}
+        onRetry={onRetry}
+      >
         {() => <p>DATA</p>}
       </AgentResource>,
     );

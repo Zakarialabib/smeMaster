@@ -5,8 +5,8 @@ import {
   deleteQuickReply as dbDeleteQuickReply,
   incrementQuickReplyUsage as dbIncrementQuickReplyUsage,
   countQuickReplies,
-} from "@/shared/services/db/db-invoke";
-import type { QuickReply } from "@shared/services/db/schema";
+} from '@/shared/services/db/db-invoke';
+import type { QuickReply } from '@shared/services/db/schema';
 
 export type DbQuickReply = QuickReply;
 

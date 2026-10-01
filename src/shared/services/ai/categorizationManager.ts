@@ -1,10 +1,10 @@
-﻿import { isAiAvailable } from "./providerManager";
-import { categorizeThreads } from "./aiService";
-import { getSetting } from "@features/settings/db/settings";
+﻿import { isAiAvailable } from './providerManager';
+import { categorizeThreads } from './aiService';
+import { getSetting } from '@features/settings/db/settings';
 import {
   getRecentRuleCategorizedThreadIds,
   setThreadCategoriesBatch,
-} from "@features/mail/db/threadCategories";
+} from '@features/mail/db/threadCategories';
 
 export async function reportUserCorrection(
   threadId: string,
@@ -13,7 +13,7 @@ export async function reportUserCorrection(
   try {
     console.info(`User correction: thread ${threadId} â†’ ${correctedCategory}`);
   } catch (err) {
-    console.error("Failed to report user correction:", err);
+    console.error('Failed to report user correction:', err);
   }
 }
 
@@ -23,8 +23,8 @@ export async function categorizeNewThreads(accountId: string): Promise<void> {
     const aiAvail = await isAiAvailable();
     if (!aiAvail) return;
 
-    const autoCat = await getSetting("ai_auto_categorize");
-    if (autoCat === "false") return;
+    const autoCat = await getSetting('ai_auto_categorize');
+    if (autoCat === 'false') return;
 
     // Get recently rule-categorized inbox threads (AI refines, not replaces)
     const threads = await getRecentRuleCategorizedThreadIds(accountId, 20);
@@ -34,9 +34,9 @@ export async function categorizeNewThreads(accountId: string): Promise<void> {
     const categories = await categorizeThreads(
       threads.map((t) => ({
         id: t.id,
-        subject: t.subject ?? "",
-        snippet: t.snippet ?? "",
-        fromAddress: t.fromAddress ?? "",
+        subject: t.subject ?? '',
+        snippet: t.snippet ?? '',
+        fromAddress: t.fromAddress ?? '',
       })),
     );
 
@@ -46,7 +46,6 @@ export async function categorizeNewThreads(accountId: string): Promise<void> {
     await setThreadCategoriesBatch(accountId, categories);
   } catch (err) {
     // Non-blocking â€” log and continue
-    console.error("Auto-categorization failed:", err);
+    console.error('Auto-categorization failed:', err);
   }
 }
-

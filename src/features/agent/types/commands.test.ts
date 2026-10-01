@@ -67,10 +67,39 @@ describe('interface field parity', () => {
   it.each([
     ['Health', ['ok', 'version', 'startedAt', 'db', 'providers']],
     ['StageMarks', ['vadMs', 'sttMs', 'llmMs', 'ttsMs', 'turnGapMs']],
-    ['OpsAlert', ['id', 'severity', 'rule', 'oneLiner', 'decision', 'evidence', 'acknowledgedAt', 'acknowledgedBy', 'thresholdIsProvisional']],
+    [
+      'OpsAlert',
+      [
+        'id',
+        'severity',
+        'rule',
+        'oneLiner',
+        'decision',
+        'evidence',
+        'acknowledgedAt',
+        'acknowledgedBy',
+        'thresholdIsProvisional',
+      ],
+    ],
     ['AlertEvidence', ['count', 'firstAt', 'lastAt', 'blastRadius']],
-    ['ProviderHealth', ['provider', 'role', 'errorRate', 'latencyP95Ms', 'fallbackActive', 'state']],
-    ['OpsSnapshot', ['generatedAt', 'since', 'p1', 'p2Grouped', 'p3Count', 'callCount', 'containedPct', 'reachable', 'lastSeenAt']],
+    [
+      'ProviderHealth',
+      ['provider', 'role', 'errorRate', 'latencyP95Ms', 'fallbackActive', 'state'],
+    ],
+    [
+      'OpsSnapshot',
+      [
+        'generatedAt',
+        'since',
+        'p1',
+        'p2Grouped',
+        'p3Count',
+        'callCount',
+        'containedPct',
+        'reachable',
+        'lastSeenAt',
+      ],
+    ],
     ['SearchResponse', ['chunks', 'embedder', 'dims']],
     ['SearchHit', ['docId', 'ordinal', 'text', 'score']],
     ['ErrorBody', ['code', 'message', 'retryable', 'provider', 'at']],
@@ -105,7 +134,9 @@ describe('invariants encoded as types', () => {
   it('no tenant field anywhere in the contract', () => {
     // Strip comments so prose about tenantId is not a false positive.
     const code = ts.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-    const offenders = [...code.matchAll(/^\s*(?:export\s+)?(?:interface\s+)?([A-Za-z]*[Tt]enant[A-Za-z]*)\??:/gm)].map((m) => m[1]);
+    const offenders = [
+      ...code.matchAll(/^\s*(?:export\s+)?(?:interface\s+)?([A-Za-z]*[Tt]enant[A-Za-z]*)\??:/gm),
+    ].map((m) => m[1]);
     expect(offenders).toEqual([]);
     // And the Python side agrees.
     expect(/^\s*tenant_id\s*:/m.test(py)).toBe(false);

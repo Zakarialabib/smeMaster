@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   Trash2,
@@ -16,16 +16,16 @@ import {
   Check,
   Search,
   Star,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getSnoozePresets,
   upsertSnoozePreset,
   deleteSnoozePreset,
   type SnoozePreset,
-} from "@features/calendar/db/snoozePresets";
-import { TextField } from "@shared/components/ui/TextField";
-import { cn } from "@shared/utils/cn";
+} from '@features/calendar/db/snoozePresets';
+import { TextField } from '@shared/components/ui/TextField';
+import { cn } from '@shared/utils/cn';
 
 // ─── Duration Formatter ───
 const formatDuration = (minutes: number) => {
@@ -63,16 +63,10 @@ interface SnoozePresetFormProps {
 
 function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
   const { t } = useTranslation();
-  const [label, setLabel] = useState(preset?.label ?? "");
-  const [hours, setHours] = useState(
-    preset ? Math.floor(preset.duration_minutes / 60) : 0,
-  );
-  const [minutes, setMinutes] = useState(
-    preset ? preset.duration_minutes % 60 : 30,
-  );
-  const [isRecurring, setIsRecurring] = useState(
-    preset ? preset.is_recurring === 1 : false,
-  );
+  const [label, setLabel] = useState(preset?.label ?? '');
+  const [hours, setHours] = useState(preset ? Math.floor(preset.duration_minutes / 60) : 0);
+  const [minutes, setMinutes] = useState(preset ? preset.duration_minutes % 60 : 30);
+  const [isRecurring, setIsRecurring] = useState(preset ? preset.is_recurring === 1 : false);
 
   const handleSubmit = () => {
     if (!label.trim()) return;
@@ -85,12 +79,12 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
   };
 
   const quickDurations = [
-    { label: "15m", h: 0, m: 15 },
-    { label: "30m", h: 0, m: 30 },
-    { label: "1h", h: 1, m: 0 },
-    { label: "2h", h: 2, m: 0 },
-    { label: "4h", h: 4, m: 0 },
-    { label: "Tomorrow", h: 24, m: 0 },
+    { label: '15m', h: 0, m: 15 },
+    { label: '30m', h: 0, m: 30 },
+    { label: '1h', h: 1, m: 0 },
+    { label: '2h', h: 2, m: 0 },
+    { label: '4h', h: 4, m: 0 },
+    { label: 'Tomorrow', h: 24, m: 0 },
   ];
 
   return (
@@ -100,7 +94,7 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
           {preset ? <Pencil size={14} /> : <Plus size={14} />}
         </div>
         <h4 className="text-sm font-bold text-text-primary">
-          {preset ? t("snooze.editPreset") || "Edit Preset" : t("snooze.newPreset") || "New Preset"}
+          {preset ? t('snooze.editPreset') || 'Edit Preset' : t('snooze.newPreset') || 'New Preset'}
         </h4>
       </div>
 
@@ -113,7 +107,7 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder={t("snooze.presetName")}
+            placeholder={t('snooze.presetName')}
             autoFocus
           />
         </div>
@@ -168,10 +162,10 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
                   setMinutes(qd.m);
                 }}
                 className={cn(
-                  "px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all active:scale-95",
+                  'px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-all active:scale-95',
                   hours === qd.h && minutes === qd.m
-                    ? "bg-accent text-white border-accent shadow-sm"
-                    : "bg-bg-primary text-text-secondary border-border hover:border-accent/30 hover:text-accent"
+                    ? 'bg-accent text-white border-accent shadow-sm'
+                    : 'bg-bg-primary text-text-secondary border-border hover:border-accent/30 hover:text-accent',
                 )}
               >
                 {qd.label}
@@ -183,20 +177,24 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
         <label className="flex items-center gap-3 p-3 rounded-xl bg-bg-primary border border-border/50 cursor-pointer hover:border-accent/20 transition-colors">
           <div
             className={cn(
-              "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all",
-              isRecurring
-                ? "bg-accent border-accent"
-                : "border-border bg-bg-primary"
+              'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all',
+              isRecurring ? 'bg-accent border-accent' : 'border-border bg-bg-primary',
             )}
             onClick={() => setIsRecurring(!isRecurring)}
           >
             {isRecurring && <Check size={12} className="text-white" />}
           </div>
           <div className="flex items-center gap-2">
-            <Repeat size={14} className={cn("transition-colors", isRecurring ? "text-accent" : "text-text-tertiary")} />
+            <Repeat
+              size={14}
+              className={cn(
+                'transition-colors',
+                isRecurring ? 'text-accent' : 'text-text-tertiary',
+              )}
+            />
             <div>
               <span className="text-sm font-medium text-text-primary block leading-tight">
-                {t("campaign.recurring")}
+                {t('campaign.recurring')}
               </span>
               <span className="text-[10px] text-text-tertiary">
                 Automatically re-snooze on the same schedule
@@ -219,14 +217,14 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
           className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-accent hover:bg-accent-hover rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm active:scale-95"
         >
           <Save size={13} />
-          {preset ? t("common.update") : t("common.save")}
+          {preset ? t('common.update') : t('common.save')}
         </button>
         <button
           onClick={onCancel}
           className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors"
         >
           <X size={13} />
-          {t("common.cancel")}
+          {t('common.cancel')}
         </button>
       </div>
     </div>
@@ -240,7 +238,7 @@ export function SnoozePresetsEditor() {
   const [presets, setPresets] = useState<SnoozePreset[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -259,12 +257,7 @@ export function SnoozePresetsEditor() {
   }, []);
 
   const handleSave = useCallback(
-    async (data: {
-      id?: string;
-      label: string;
-      durationMinutes: number;
-      isRecurring: boolean;
-    }) => {
+    async (data: { id?: string; label: string; durationMinutes: number; isRecurring: boolean }) => {
       if (!activeAccountId) return;
       await upsertSnoozePreset({
         id: data.id,
@@ -273,7 +266,7 @@ export function SnoozePresetsEditor() {
         durationMinutes: data.durationMinutes,
         isRecurring: data.isRecurring,
         sortOrder: editingId
-          ? presets.find((p) => p.id === editingId)?.sort_order ?? 0
+          ? (presets.find((p) => p.id === editingId)?.sort_order ?? 0)
           : presets.length,
       });
       resetForm();
@@ -329,7 +322,7 @@ export function SnoozePresetsEditor() {
   );
 
   const filteredPresets = presets.filter((p) =>
-    p.label.toLowerCase().includes(searchQuery.toLowerCase())
+    p.label.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -347,7 +340,7 @@ export function SnoozePresetsEditor() {
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => setSearchQuery('')}
               className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary transition-colors"
             >
               <X className="w-3.5 h-3.5" />
@@ -360,7 +353,7 @@ export function SnoozePresetsEditor() {
             className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-accent bg-accent/5 hover:bg-accent/10 rounded-xl border border-accent/20 transition-all active:scale-95 shrink-0"
           >
             <Plus size={14} />
-            {t("snooze.addPreset") || "Add Preset"}
+            {t('snooze.addPreset') || 'Add Preset'}
           </button>
         )}
       </div>
@@ -401,7 +394,7 @@ export function SnoozePresetsEditor() {
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="text-sm text-text-tertiary">No presets match your search.</p>
           <button
-            onClick={() => setSearchQuery("")}
+            onClick={() => setSearchQuery('')}
             className="mt-2 text-xs text-accent hover:underline"
           >
             Clear search
@@ -418,10 +411,10 @@ export function SnoozePresetsEditor() {
             <div
               key={preset.id}
               className={cn(
-                "group relative flex items-center gap-3 p-3 rounded-xl border transition-all",
+                'group relative flex items-center gap-3 p-3 rounded-xl border transition-all',
                 isEditing
-                  ? "border-accent/30 bg-accent/5 ring-1 ring-accent/20"
-                  : "border-border/50 bg-bg-primary hover:border-border hover:shadow-sm"
+                  ? 'border-accent/30 bg-accent/5 ring-1 ring-accent/20'
+                  : 'border-border/50 bg-bg-primary hover:border-border hover:shadow-sm',
               )}
             >
               {/* Drag handle visual (non-functional, aesthetic) */}
@@ -432,29 +425,23 @@ export function SnoozePresetsEditor() {
               {/* Icon */}
               <div
                 className={cn(
-                  "p-2 rounded-lg shrink-0",
+                  'p-2 rounded-lg shrink-0',
                   preset.is_recurring === 1
-                    ? "bg-accent/10 text-accent"
-                    : "bg-bg-tertiary text-text-tertiary"
+                    ? 'bg-accent/10 text-accent'
+                    : 'bg-bg-tertiary text-text-tertiary',
                 )}
               >
-                {preset.is_recurring === 1 ? (
-                  <Repeat size={15} />
-                ) : (
-                  <Clock size={15} />
-                )}
+                {preset.is_recurring === 1 ? <Repeat size={15} /> : <Clock size={15} />}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-text-primary">
-                    {preset.label}
-                  </span>
+                  <span className="text-sm font-semibold text-text-primary">{preset.label}</span>
                   {preset.is_recurring === 1 && (
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent/10 text-accent text-[10px] font-bold border border-accent/20">
                       <Repeat size={9} />
-                      {t("snooze.recurringLower") || "Recurring"}
+                      {t('snooze.recurringLower') || 'Recurring'}
                     </span>
                   )}
                   {/* Placeholder: default badge */}
@@ -495,10 +482,10 @@ export function SnoozePresetsEditor() {
                 <button
                   onClick={() => handleEdit(preset)}
                   className={cn(
-                    "p-1.5 rounded-lg transition-colors",
+                    'p-1.5 rounded-lg transition-colors',
                     isEditing
-                      ? "text-accent bg-accent/10"
-                      : "text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary"
+                      ? 'text-accent bg-accent/10'
+                      : 'text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary',
                   )}
                   title="Edit"
                 >

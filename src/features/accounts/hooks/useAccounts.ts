@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { listAccounts } from "../../../shared/services/db/db-invoke";
-import { queryKeys } from "@shared/query/keys";
+import { useQuery } from '@tanstack/react-query';
+import { listAccounts } from '../../../shared/services/db/db-invoke';
+import { queryKeys } from '@shared/query/keys';
 
 export function useAccounts() {
   return useQuery({

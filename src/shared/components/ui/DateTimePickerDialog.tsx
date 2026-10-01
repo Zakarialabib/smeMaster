@@ -1,7 +1,7 @@
-import { ReactNode, useState } from "react";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { INPUT_BASE, MENU_ITEM } from "@shared/styles/ui-tokens";
+import { ReactNode, useState } from 'react';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { INPUT_BASE, MENU_ITEM } from '@shared/styles/ui-tokens';
 
 interface Preset {
   label: string;
@@ -34,8 +34,8 @@ export function DateTimePickerDialog({
   zIndex,
   footer,
 }: DateTimePickerDialogProps) {
-  const [customDate, setCustomDate] = useState("");
-  const [customTime, setCustomTime] = useState("09:00");
+  const [customDate, setCustomDate] = useState('');
+  const [customTime, setCustomTime] = useState('09:00');
 
   const handlePresetClick = (timestamp: number) => {
     onSelect(timestamp);
@@ -59,19 +59,18 @@ export function DateTimePickerDialog({
             <span className="flex-1">{preset.label}</span>
             <span className="text-xs text-text-tertiary">
               {preset.detail ??
-                new Date(preset.timestamp * 1000).toLocaleDateString(
-                  undefined,
-                  { weekday: "short", month: "short", day: "numeric" },
-                )}
+                new Date(preset.timestamp * 1000).toLocaleDateString(undefined, {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                })}
             </span>
           </button>
         ))}
       </div>
 
       <div className="border-t border-border-secondary px-4 py-3 space-y-2">
-        <div className="text-xs text-text-tertiary font-medium">
-          Custom date & time
-        </div>
+        <div className="text-xs text-text-tertiary font-medium">Custom date & time</div>
         <div className="flex gap-2">
           <input
             type="date"

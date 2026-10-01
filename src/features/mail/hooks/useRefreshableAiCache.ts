@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { deleteAiCache } from "@features/mail/db/aiCache";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { deleteAiCache } from '@features/mail/db/aiCache';
 
 export interface UseRefreshableAiCacheOptions<T> {
   /** Account that owns the cached entry. */
@@ -118,11 +118,11 @@ export function useRefreshableAiCache<T>({
   }, [fetcher]);
 
   const runFetch = useCallback(
-    async (mode: "load" | "refresh"): Promise<void> => {
+    async (mode: 'load' | 'refresh'): Promise<void> => {
       if (loadingRef.current) return;
       loadingRef.current = true;
       setLoading(true);
-      if (mode === "refresh") {
+      if (mode === 'refresh') {
         try {
           await deleteAiCache(accountId, threadId, cacheType);
         } catch {
@@ -157,8 +157,8 @@ export function useRefreshableAiCache<T>({
     [accountId, threadId, cacheType, captureErrors],
   );
 
-  const load = useCallback(() => runFetch("load"), [runFetch]);
-  const refresh = useCallback(() => runFetch("refresh"), [runFetch]);
+  const load = useCallback(() => runFetch('load'), [runFetch]);
+  const refresh = useCallback(() => runFetch('refresh'), [runFetch]);
   const clear = useCallback(() => {
     setData(null);
     setError(null);
@@ -173,4 +173,3 @@ export function useRefreshableAiCache<T>({
 
   return { data, loading, error, loadingRef, load, refresh, clear };
 }
-

@@ -27,14 +27,7 @@ export type CallOutcome = 'contained' | 'transferred' | 'voicemail' | 'abandoned
 
 /** Lifecycle order — `CALL-FLOW.md` §1. The order here IS the call's order. */
 export type CallState =
-  | 'idle'
-  | 'connecting'
-  | 'greeting'
-  | 'listening'
-  | 'thinking'
-  | 'speaking'
-  | 'closing'
-  | 'wrapup';
+  'idle' | 'connecting' | 'greeting' | 'listening' | 'thinking' | 'speaking' | 'closing' | 'wrapup';
 
 export type Severity = 'P1' | 'P2' | 'P3';
 
@@ -124,8 +117,12 @@ export interface TranscriptDelta {
 }
 
 /** Stage marks ride along with the `stages` frame, so it is a type not an interface. */
-export type StagesFrame = { type: 'stages'; callId: string; turnId: number; at: string } &
-  StageMarks;
+export type StagesFrame = {
+  type: 'stages';
+  callId: string;
+  turnId: number;
+  at: string;
+} & StageMarks;
 
 export interface MetaFrame {
   type: 'meta';
@@ -142,12 +139,7 @@ export interface ClosedFrame {
   at: string;
 }
 
-export type ServerFrame =
-  | StateFrame
-  | TranscriptDelta
-  | StagesFrame
-  | MetaFrame
-  | ClosedFrame;
+export type ServerFrame = StateFrame | TranscriptDelta | StagesFrame | MetaFrame | ClosedFrame;
 
 /**
  * Client → server has exactly ONE variant.

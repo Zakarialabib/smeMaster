@@ -16,8 +16,8 @@
  * (in-memory) via `tauriStoreStorage` so the same code path works
  * everywhere.
  */
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
 // ── Background sync prefs ──────────────────────────────────────────────────
 
@@ -34,13 +34,12 @@ const DEFAULT_BG_SYNC: BackgroundSyncPrefs = { enabled: true, intervalMins: 15 }
  * In browser dev mode the localStorage-equivalent store is used.
  */
 export async function getBackgroundSyncPrefs(): Promise<BackgroundSyncPrefs> {
-  if (typeof window === "undefined") return DEFAULT_BG_SYNC;
-  const isTauri =
-    "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  if (typeof window === 'undefined') return DEFAULT_BG_SYNC;
+  const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
   if (isTauri) {
     try {
       const prefs = await invokeCommand<{ enabled: boolean; interval_minutes: number }>(
-        "get_background_sync_prefs",
+        'get_background_sync_prefs',
       );
       return {
         enabled: prefs.enabled,
@@ -50,7 +49,7 @@ export async function getBackgroundSyncPrefs(): Promise<BackgroundSyncPrefs> {
       return DEFAULT_BG_SYNC;
     }
   }
-  const raw = await tauriStoreStorage.getItem("smemaster.bgSync");
+  const raw = await tauriStoreStorage.getItem('smemaster.bgSync');
   if (!raw) return DEFAULT_BG_SYNC;
   try {
     const parsed = JSON.parse(raw) as Partial<BackgroundSyncPrefs>;
@@ -73,12 +72,11 @@ export async function setBackgroundSyncPrefs(
     enabled: prefs.enabled ?? current.enabled,
     intervalMins: prefs.intervalMins ?? current.intervalMins,
   };
-  if (typeof window === "undefined") return next;
-  const isTauri =
-    "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  if (typeof window === 'undefined') return next;
+  const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
   if (isTauri) {
     try {
-      await invokeCommand("set_background_sync_prefs", {
+      await invokeCommand('set_background_sync_prefs', {
         enabled: next.enabled,
         intervalMins: next.intervalMins,
       });
@@ -86,7 +84,7 @@ export async function setBackgroundSyncPrefs(
       // ignore — the on-disk file is the source of truth on next read
     }
   } else {
-    await tauriStoreStorage.setItem("smemaster.bgSync", JSON.stringify(next));
+    await tauriStoreStorage.setItem('smemaster.bgSync', JSON.stringify(next));
   }
   return next;
 }
@@ -99,12 +97,14 @@ export async function setBackgroundSyncPrefs(
 export async function resetOnboarding(): Promise<void> {
   // Remove the companion flag from dual-write storage (covers both
   // tauri-plugin-store and localStorage fallback).
-  await tauriStoreStorage.removeItem("smemaster.onboarding.done");
+  await tauriStoreStorage.removeItem('smemaster.onboarding.done');
 
-  if ("__TAURI_INTERNALS__" in window || "__TAURI__" in window) {
-    const { message } = await import("@tauri-apps/plugin-dialog");
-    await invokeCommand("db_reset_onboarding", {});
-    await message("Onboarding flag cleared. The setup wizard will appear on next launch.", { kind: "info" });
+  if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
+    const { message } = await import('@tauri-apps/plugin-dialog');
+    await invokeCommand('db_reset_onboarding', {});
+    await message('Onboarding flag cleared. The setup wizard will appear on next launch.', {
+      kind: 'info',
+    });
     // Brief delay so the user sees the message, then reload
     await new Promise((r) => setTimeout(r, 1500));
     window.location.reload();

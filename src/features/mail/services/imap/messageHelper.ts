@@ -1,8 +1,5 @@
-import {
-  executeSearchQuery,
-  bulkUpdateMessageImapFolder,
-} from "@shared/services/db/db-invoke";
-import type { DbMessage } from "@shared/services/db/messages";
+import { executeSearchQuery, bulkUpdateMessageImapFolder } from '@shared/services/db/db-invoke';
+import type { DbMessage } from '@shared/services/db/messages';
 
 export interface ImapMessageInfo {
   uid: number;
@@ -21,11 +18,11 @@ export async function getImapUidsForMessages(
     return new Map();
   }
 
-  const placeholders = messageIds.map((_, i) => `$${i + 2}`).join(", ");
-  const rows = await executeSearchQuery(
+  const placeholders = messageIds.map((_, i) => `$${i + 2}`).join(', ');
+  const rows = (await executeSearchQuery(
     `SELECT id, imap_uid, imap_folder FROM messages WHERE account_id = $1 AND id IN (${placeholders})`,
     [accountId, ...messageIds],
-  ) as Pick<DbMessage, "id" | "imap_uid" | "imap_folder">[];
+  )) as Pick<DbMessage, 'id' | 'imap_uid' | 'imap_folder'>[];
 
   const result = new Map<string, ImapMessageInfo>();
   for (const row of rows) {
@@ -58,11 +55,11 @@ export function groupMessagesByFolder(
  * Map from special-use flags to the expected label IDs in the DB.
  */
 const SPECIAL_USE_TO_LABEL_ID: Record<string, string> = {
-  "\\Trash": "TRASH",
-  "\\Junk": "SPAM",
-  "\\Sent": "SENT",
-  "\\Drafts": "DRAFT",
-  "\\Archive": "archive",
+  '\\Trash': 'TRASH',
+  '\\Junk': 'SPAM',
+  '\\Sent': 'SENT',
+  '\\Drafts': 'DRAFT',
+  '\\Archive': 'archive',
 };
 
 /**
@@ -74,10 +71,10 @@ export async function findSpecialFolder(
   specialUse: string,
 ): Promise<string | null> {
   // Primary: look up by imap_special_use attribute
-  const rows = await executeSearchQuery(
-    "SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND imap_special_use = $2 LIMIT 1",
+  const rows = (await executeSearchQuery(
+    'SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND imap_special_use = $2 LIMIT 1',
     [accountId, specialUse],
-  ) as { imap_folder_path: string | null; name: string }[];
+  )) as { imap_folder_path: string | null; name: string }[];
   if (rows.length > 0) {
     return rows[0]!.imap_folder_path ?? rows[0]!.name;
   }
@@ -87,10 +84,10 @@ export async function findSpecialFolder(
   // but didn't set imap_special_use (or the attribute wasn't reported by the server).
   const labelId = SPECIAL_USE_TO_LABEL_ID[specialUse];
   if (labelId) {
-    const fallbackRows = await executeSearchQuery(
-      "SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND id = $2 AND imap_folder_path IS NOT NULL LIMIT 1",
+    const fallbackRows = (await executeSearchQuery(
+      'SELECT imap_folder_path, name FROM labels WHERE account_id = $1 AND id = $2 AND imap_folder_path IS NOT NULL LIMIT 1',
       [accountId, labelId],
-    ) as { imap_folder_path: string | null; name: string }[];
+    )) as { imap_folder_path: string | null; name: string }[];
     if (fallbackRows.length > 0) {
       return fallbackRows[0]!.imap_folder_path ?? fallbackRows[0]!.name;
     }
@@ -103,18 +100,16 @@ export async function findSpecialFolder(
  * Map DB security values to ImapConfig/SmtpConfig security types.
  * DB stores 'ssl'/'starttls'/'none', but configs use 'tls'/'starttls'/'none'.
  */
-export function securityToConfigType(
-  dbSecurity: string,
-): "tls" | "starttls" | "none" {
+export function securityToConfigType(dbSecurity: string): 'tls' | 'starttls' | 'none' {
   switch (dbSecurity) {
-    case "ssl":
-      return "tls";
-    case "starttls":
-      return "starttls";
-    case "none":
-      return "none";
+    case 'ssl':
+      return 'tls';
+    case 'starttls':
+      return 'starttls';
+    case 'none':
+      return 'none';
     default:
-      return "tls";
+      return 'tls';
   }
 }
 

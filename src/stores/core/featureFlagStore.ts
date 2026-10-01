@@ -1,1 +1,1 @@
-export { useFeatureFlagStore, type FeatureUsage } from "@features/settings/stores/featureFlagStore";
+export { useFeatureFlagStore, type FeatureUsage } from '@features/settings/stores/featureFlagStore';

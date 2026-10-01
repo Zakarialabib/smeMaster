@@ -1,26 +1,46 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { Shield, ShieldCheck, ShieldOff, Plus, Trash2, Download, Upload, Check, Pencil } from "lucide-react";
-import { getAllProfiles, upsertProfile, setProfileActive, setDefaultProfile } from "@features/mail/db/complianceProfiles";
-import type { ComplianceProfile, ComplianceRule, ComplianceRuleType, RuleSeverity } from "@features/mail/services/compliance/types";
-import { Button } from "@shared/components/ui/Button";
-import { notify } from "@shared/services/notifications/toastHelper";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Shield,
+  ShieldCheck,
+  ShieldOff,
+  Plus,
+  Trash2,
+  Download,
+  Upload,
+  Check,
+  Pencil,
+} from 'lucide-react';
+import {
+  getAllProfiles,
+  upsertProfile,
+  setProfileActive,
+  setDefaultProfile,
+} from '@features/mail/db/complianceProfiles';
+import type {
+  ComplianceProfile,
+  ComplianceRule,
+  ComplianceRuleType,
+  RuleSeverity,
+} from '@features/mail/services/compliance/types';
+import { Button } from '@shared/components/ui/Button';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 const RULE_TYPE_OPTIONS: { value: ComplianceRuleType; label: string }[] = [
-  { value: "signature_required", label: "Signature Required" },
-  { value: "unsubscribe_required", label: "Unsubscribe Required" },
-  { value: "disclaimer_required", label: "Disclaimer Required" },
-  { value: "tone_check", label: "Tone Check" },
-  { value: "data_minimization", label: "Data Minimization" },
-  { value: "retention_notice", label: "Retention Notice" },
-  { value: "custom_regex", label: "Custom Regex" },
-  { value: "attachment_mentioned", label: "Attachment Mentioned" },
+  { value: 'signature_required', label: 'Signature Required' },
+  { value: 'unsubscribe_required', label: 'Unsubscribe Required' },
+  { value: 'disclaimer_required', label: 'Disclaimer Required' },
+  { value: 'tone_check', label: 'Tone Check' },
+  { value: 'data_minimization', label: 'Data Minimization' },
+  { value: 'retention_notice', label: 'Retention Notice' },
+  { value: 'custom_regex', label: 'Custom Regex' },
+  { value: 'attachment_mentioned', label: 'Attachment Mentioned' },
 ];
 
 const SEVERITY_OPTIONS: { value: RuleSeverity; label: string }[] = [
-  { value: "error", label: "Error" },
-  { value: "warning", label: "Warning" },
-  { value: "info", label: "Info" },
+  { value: 'error', label: 'Error' },
+  { value: 'warning', label: 'Warning' },
+  { value: 'info', label: 'Info' },
 ];
 
 export function ComplianceProfileManager() {
@@ -55,9 +75,7 @@ export function ComplianceProfileManager() {
 
   const handleSetDefault = async (profile: ComplianceProfile) => {
     await setDefaultProfile(profile.id);
-    setProfiles((prev) =>
-      prev.map((p) => ({ ...p, isDefault: p.id === profile.id })),
-    );
+    setProfiles((prev) => prev.map((p) => ({ ...p, isDefault: p.id === profile.id })));
   };
 
   const handleEdit = (profile: ComplianceProfile) => {
@@ -86,9 +104,9 @@ export function ComplianceProfileManager() {
       ...prev,
       {
         id: crypto.randomUUID(),
-        type: "signature_required",
-        severity: "warning",
-        messageKey: "compliance.customRule",
+        type: 'signature_required',
+        severity: 'warning',
+        messageKey: 'compliance.customRule',
       },
     ]);
   };
@@ -102,9 +120,9 @@ export function ComplianceProfileManager() {
   };
 
   const handleExport = (profile: ComplianceProfile) => {
-    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `compliance-${profile.code}.json`;
     a.click();
@@ -122,19 +140,19 @@ export function ComplianceProfileManager() {
       const text = await file.text();
       const parsed = JSON.parse(text) as ComplianceProfile;
       if (!parsed.code || !parsed.name || !parsed.rules) {
-        notify(t("compliance.invalidJson"), "");
+        notify(t('compliance.invalidJson'), '');
         return;
       }
       await upsertProfile(parsed);
       await loadProfiles();
     } catch {
-      notify(t("compliance.invalidJson"), "");
+      notify(t('compliance.invalidJson'), '');
     }
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   if (loading) {
-    return <div className="text-xs text-text-tertiary">{t("common.loading")}</div>;
+    return <div className="text-xs text-text-tertiary">{t('common.loading')}</div>;
   }
 
   return (
@@ -144,28 +162,42 @@ export function ComplianceProfileManager() {
         className="w-full flex items-center gap-2 p-3 rounded-lg bg-bg-secondary border border-border-primary text-sm text-start group"
       >
         <Shield className="w-4 h-4 text-accent shrink-0" />
-        <span className="flex-1 font-medium text-text-primary">{t("compliance.whatIsThis")}</span>
-        <span className="text-text-tertiary text-xs">{showHelp ? "▲" : "▼"}</span>
+        <span className="flex-1 font-medium text-text-primary">{t('compliance.whatIsThis')}</span>
+        <span className="text-text-tertiary text-xs">{showHelp ? '▲' : '▼'}</span>
       </button>
       {showHelp && (
         <div className="bg-bg-secondary rounded-lg p-4 border border-border-primary text-sm space-y-3">
           <p className="text-text-secondary">
-            Compliance profiles define regulatory requirements for outgoing emails. When you compose an email, SMEMaster checks it against active profiles that match your recipient's jurisdiction.
+            Compliance profiles define regulatory requirements for outgoing emails. When you compose
+            an email, SMEMaster checks it against active profiles that match your recipient's
+            jurisdiction.
           </p>
           <div className="space-y-2">
             <p className="font-medium text-text-primary">Built-in profiles:</p>
             <ul className="list-disc list-inside text-text-secondary space-y-1">
-              <li><strong>GDPR (EU)</strong> — Requires unsubscribe link, retention notice, lawful basis</li>
-              <li><strong>CAN-SPAM (US)</strong> — Physical address, clear subject, 10-day opt-out</li>
-              <li><strong>LGPD (Brazil)</strong> — Portuguese-language data subject rights notice</li>
-              <li><strong>Morocco Business</strong> — Formal French tone, company identifiers in signature</li>
-              <li><strong>Professional</strong> — No ALL-CAPS subject, attachment mentioned in body</li>
+              <li>
+                <strong>GDPR (EU)</strong> — Requires unsubscribe link, retention notice, lawful
+                basis
+              </li>
+              <li>
+                <strong>CAN-SPAM (US)</strong> — Physical address, clear subject, 10-day opt-out
+              </li>
+              <li>
+                <strong>LGPD (Brazil)</strong> — Portuguese-language data subject rights notice
+              </li>
+              <li>
+                <strong>Morocco Business</strong> — Formal French tone, company identifiers in
+                signature
+              </li>
+              <li>
+                <strong>Professional</strong> — No ALL-CAPS subject, attachment mentioned in body
+              </li>
             </ul>
           </div>
           <div className="space-y-2">
             <p className="font-medium text-text-primary">Import format:</p>
             <pre className="bg-bg-tertiary p-2 rounded text-xs overflow-x-auto">
-{`{
+              {`{
   "code": "my-profile",
   "name": "My Profile",
   "regionHint": ".com,.net",
@@ -179,11 +211,15 @@ export function ComplianceProfileManager() {
       )}
 
       <div className="flex items-center justify-between mb-2">
-        <p className="text-xs text-text-tertiary">
-          {t("compliance.profilesDescription")}
-        </p>
-        <Button variant="secondary" size="sm" icon={<Upload size={12} />} onClick={handleImport} className="bg-bg-tertiary text-text-primary border border-border-primary">
-          {t("compliance.import")}
+        <p className="text-xs text-text-tertiary">{t('compliance.profilesDescription')}</p>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<Upload size={12} />}
+          onClick={handleImport}
+          className="bg-bg-tertiary text-text-primary border border-border-primary"
+        >
+          {t('compliance.import')}
         </Button>
       </div>
 
@@ -211,12 +247,10 @@ export function ComplianceProfileManager() {
               )}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-text-primary">
-                    {profile.name}
-                  </span>
+                  <span className="text-sm font-medium text-text-primary">{profile.name}</span>
                   {profile.isDefault && (
                     <span className="text-[0.625rem] bg-accent/15 text-accent px-1.5 py-0.5 rounded-full">
-                      {t("compliance.default")}
+                      {t('compliance.default')}
                     </span>
                   )}
                   <span className="text-[0.625rem] bg-bg-tertiary text-text-tertiary px-1.5 py-0.5 rounded-full font-mono">
@@ -232,18 +266,16 @@ export function ComplianceProfileManager() {
             </div>
             <div className="flex items-center gap-2 shrink-0 ms-3">
               <div className="flex items-center gap-1.5">
-                {profiles
-                  .filter((p) => p.id !== profile.id)
-                  .some((p) => p.isDefault) && (
+                {profiles.filter((p) => p.id !== profile.id).some((p) => p.isDefault) && (
                   <button
                     onClick={() => handleSetDefault(profile)}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       profile.isDefault
-                        ? "bg-accent/15 text-accent cursor-default"
-                        : "bg-bg-tertiary text-text-tertiary hover:text-text-primary"
+                        ? 'bg-accent/15 text-accent cursor-default'
+                        : 'bg-bg-tertiary text-text-tertiary hover:text-text-primary'
                     }`}
                     disabled={profile.isDefault}
-                    title={t("compliance.setDefault")}
+                    title={t('compliance.setDefault')}
                   >
                     <Check size={12} />
                   </button>
@@ -251,14 +283,14 @@ export function ComplianceProfileManager() {
                 <button
                   onClick={() => handleExport(profile)}
                   className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                  title={t("compliance.export")}
+                  title={t('compliance.export')}
                 >
                   <Download size={12} />
                 </button>
                 <button
                   onClick={() => handleEdit(profile)}
                   className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors"
-                  title={t("compliance.editRules")}
+                  title={t('compliance.editRules')}
                 >
                   <Pencil size={12} />
                 </button>
@@ -278,13 +310,15 @@ export function ComplianceProfileManager() {
           {editingId === profile.id && (
             <div className="border-t border-border-primary px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-text-secondary">{t("compliance.rules")}</span>
+                <span className="text-xs font-medium text-text-secondary">
+                  {t('compliance.rules')}
+                </span>
                 <button
                   onClick={handleAddRule}
                   className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors"
                 >
                   <Plus size={12} />
-                  {t("compliance.addRule")}
+                  {t('compliance.addRule')}
                 </button>
               </div>
 
@@ -293,20 +327,28 @@ export function ComplianceProfileManager() {
                   <div className="flex-1 grid grid-cols-3 gap-2">
                     <select
                       value={rule.type}
-                      onChange={(e) => handleUpdateRule(idx, { type: e.target.value as ComplianceRuleType })}
+                      onChange={(e) =>
+                        handleUpdateRule(idx, { type: e.target.value as ComplianceRuleType })
+                      }
                       className="text-xs bg-bg-tertiary text-text-primary px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
                     >
                       {RULE_TYPE_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <select
                       value={rule.severity}
-                      onChange={(e) => handleUpdateRule(idx, { severity: e.target.value as RuleSeverity })}
+                      onChange={(e) =>
+                        handleUpdateRule(idx, { severity: e.target.value as RuleSeverity })
+                      }
                       className="text-xs bg-bg-tertiary text-text-primary px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
                     >
                       {SEVERITY_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
                       ))}
                     </select>
                     <div className="flex items-center gap-1">
@@ -329,12 +371,8 @@ export function ComplianceProfileManager() {
               ))}
 
               <div className="flex items-center gap-2 pt-1">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleSaveRules}
-                >
-                  {t("common.save")}
+                <Button variant="primary" size="sm" onClick={handleSaveRules}>
+                  {t('common.save')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -342,7 +380,7 @@ export function ComplianceProfileManager() {
                   onClick={handleCancelEdit}
                   className="bg-bg-tertiary text-text-primary border border-border-primary"
                 >
-                  {t("common.cancel")}
+                  {t('common.cancel')}
                 </Button>
               </div>
             </div>
@@ -352,5 +390,3 @@ export function ComplianceProfileManager() {
     </div>
   );
 }
-
-

@@ -76,12 +76,16 @@ export default function JournalView() {
       .slice(-6)
       .map(([k, v]) => {
         const [y, m] = k.split('-');
-        const label = new Date(Number(y), Number(m), 1).toLocaleDateString('en-GB', { month: 'short' });
+        const label = new Date(Number(y), Number(m), 1).toLocaleDateString('en-GB', {
+          month: 'short',
+        });
         return { label, debit: v.debit, credit: v.credit };
       });
   }, [entries]);
 
-  const maxMonthly = monthly.length ? Math.max(...monthly.map((m) => Math.max(m.debit, m.credit))) : 1;
+  const maxMonthly = monthly.length
+    ? Math.max(...monthly.map((m) => Math.max(m.debit, m.credit)))
+    : 1;
   const recent = useMemo(() => [...entries].sort((a, b) => b.entry_date - a.entry_date), [entries]);
 
   return (
@@ -109,9 +113,10 @@ export default function JournalView() {
 
       {!error && entries.length === 0 && !loading && (
         <InfoBanner>
-          No postings yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>. Send an
-          invoice from <span className="font-medium">Invoicing</span> and it is posted here automatically as a
-          double-entry journal entry.
+          No postings yet for{' '}
+          <span className="font-medium text-text-primary">{company?.name ?? 'this company'}</span>.
+          Send an invoice from <span className="font-medium">Invoicing</span> and it is posted here
+          automatically as a double-entry journal entry.
         </InfoBanner>
       )}
 
@@ -167,8 +172,12 @@ export default function JournalView() {
             <TrendingUp size={18} />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Total Debits</p>
-            <p className="text-lg font-bold text-text-primary tabular-nums">{formatMoney(totals.debit)}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+              Total Debits
+            </p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">
+              {formatMoney(totals.debit)}
+            </p>
           </div>
         </div>
         <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 flex items-center gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
@@ -176,8 +185,12 @@ export default function JournalView() {
             <TrendingDown size={18} />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Total Credits</p>
-            <p className="text-lg font-bold text-text-primary tabular-nums">{formatMoney(totals.credit)}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+              Total Credits
+            </p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">
+              {formatMoney(totals.credit)}
+            </p>
           </div>
         </div>
       </div>
@@ -201,14 +214,26 @@ export default function JournalView() {
               <tbody className="divide-y divide-border-primary/60">
                 {recent.map((e) => (
                   <tr key={e.id} className="hover:bg-bg-hover/40 transition-colors">
-                    <td className="px-5 py-3 text-text-tertiary whitespace-nowrap">{formatDate(e.entry_date, 'short')}</td>
+                    <td className="px-5 py-3 text-text-tertiary whitespace-nowrap">
+                      {formatDate(e.entry_date, 'short')}
+                    </td>
                     <td className="px-5 py-3 text-text-primary">{accountLabel(e.account_id)}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-text-tertiary">{e.reference ?? '—'}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-text-tertiary">
+                      {e.reference ?? '—'}
+                    </td>
                     <td className="px-5 py-3 text-end font-medium tabular-nums text-text-primary">
-                      {e.debit > 0 ? formatMoney(e.debit, { currency: e.currency }) : <span className="text-text-tertiary">—</span>}
+                      {e.debit > 0 ? (
+                        formatMoney(e.debit, { currency: e.currency })
+                      ) : (
+                        <span className="text-text-tertiary">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-end font-medium tabular-nums text-text-secondary">
-                      {e.credit > 0 ? formatMoney(e.credit, { currency: e.currency }) : <span className="text-text-tertiary">—</span>}
+                      {e.credit > 0 ? (
+                        formatMoney(e.credit, { currency: e.currency })
+                      ) : (
+                        <span className="text-text-tertiary">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

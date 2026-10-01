@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { useDensity } from "@shared/hooks/useDensity";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useDensity } from '@shared/hooks/useDensity';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,12 +38,12 @@ export interface NavRailProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const DIVIDER_ID = "__divider__";
+const DIVIDER_ID = '__divider__';
 
 const DENSITY_GAP_MAP: Record<string, string> = {
-  "gap-6 p-6": "gap-3",
-  "gap-4 p-4": "gap-2",
-  "gap-2 p-2": "gap-1",
+  'gap-6 p-6': 'gap-3',
+  'gap-4 p-4': 'gap-2',
+  'gap-2 p-2': 'gap-1',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ export function NavRail({
 }: NavRailProps) {
   const { t } = useTranslation();
   const { spacingClass } = useDensity();
-  const gapClass = DENSITY_GAP_MAP[spacingClass] ?? "gap-2";
+  const gapClass = DENSITY_GAP_MAP[spacingClass] ?? 'gap-2';
 
   // ── Panel open/close state ──────────────────────────────────────────────
   const [openGroupId, setOpenGroupId] = useState<string | null>(null);
@@ -87,21 +87,18 @@ export function NavRail({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openGroupId]);
 
   // Separate bottom groups (settings, help) from main groups
-  const bottomIds = new Set(["settings", "help"]);
+  const bottomIds = new Set(['settings', 'help']);
   const bottomGroups = groups.filter((g) => bottomIds.has(g.id));
   const mainGroups = groups.filter((g) => !bottomIds.has(g.id));
 
   // Ordered group IDs for keyboard navigation on the icon rail
   const orderedGroupIds = useMemo(
-    () => [
-      ...mainGroups.map((g) => g.id),
-      ...bottomGroups.map((g) => g.id),
-    ],
+    () => [...mainGroups.map((g) => g.id), ...bottomGroups.map((g) => g.id)],
     [mainGroups, bottomGroups],
   );
 
@@ -112,23 +109,22 @@ export function NavRail({
       let nextIndex = -1;
 
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           nextIndex = (currentIndex + 1) % orderedGroupIds.length;
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
-          nextIndex =
-            (currentIndex - 1 + orderedGroupIds.length) % orderedGroupIds.length;
+          nextIndex = (currentIndex - 1 + orderedGroupIds.length) % orderedGroupIds.length;
           break;
         }
-        case "Home": {
+        case 'Home': {
           e.preventDefault();
           nextIndex = 0;
           break;
         }
-        case "End": {
+        case 'End': {
           e.preventDefault();
           nextIndex = orderedGroupIds.length - 1;
           break;
@@ -139,9 +135,7 @@ export function NavRail({
 
       const nextId = orderedGroupIds[nextIndex];
       if (nextId) {
-        const btn = document.querySelector<HTMLButtonElement>(
-          `[data-nav-icon-id="${nextId}"]`,
-        );
+        const btn = document.querySelector<HTMLButtonElement>(`[data-nav-icon-id="${nextId}"]`);
         btn?.focus();
       }
     },
@@ -181,31 +175,26 @@ export function NavRail({
       if (!openGroupId || visibleItems.length === 0) return;
 
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           setFocusedSubItemIndex((prev) => (prev + 1) % visibleItems.length);
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
-          setFocusedSubItemIndex(
-            (prev) => (prev - 1 + visibleItems.length) % visibleItems.length,
-          );
+          setFocusedSubItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
           break;
         }
-        case "Enter":
-        case " ": {
+        case 'Enter':
+        case ' ': {
           e.preventDefault();
-          if (
-            focusedSubItemIndex >= 0 &&
-            focusedSubItemIndex < visibleItems.length
-          ) {
+          if (focusedSubItemIndex >= 0 && focusedSubItemIndex < visibleItems.length) {
             const item = visibleItems[focusedSubItemIndex]!;
             onSubItemSelect(openGroupId, item.id);
           }
           break;
         }
-        case "Escape": {
+        case 'Escape': {
           e.preventDefault();
           setOpenGroupId(null);
           // Focus back on the active group icon
@@ -231,16 +220,13 @@ export function NavRail({
     }
   }, [focusedSubItemIndex, currentItems]);
 
-  const setSubItemRef = useCallback(
-    (id: string, el: HTMLButtonElement | null) => {
-      if (el) {
-        subItemRefs.current.set(id, el);
-      } else {
-        subItemRefs.current.delete(id);
-      }
-    },
-    [],
-  );
+  const setSubItemRef = useCallback((id: string, el: HTMLButtonElement | null) => {
+    if (el) {
+      subItemRefs.current.set(id, el);
+    } else {
+      subItemRefs.current.delete(id);
+    }
+  }, []);
 
   // ── Render helpers ──────────────────────────────────────────────────────
 
@@ -249,10 +235,7 @@ export function NavRail({
     const isActive = group.id === activeGroupId;
 
     return (
-      <div
-        key={group.id}
-        className="relative group flex items-center justify-center w-full"
-      >
+      <div key={group.id} className="relative group flex items-center justify-center w-full">
         {/* Active accent bar */}
         {isActive && (
           <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-e bg-accent" />
@@ -262,16 +245,14 @@ export function NavRail({
           data-nav-icon-id={group.id}
           onClick={() => handleGroupClick(group.id)}
           onKeyDown={(e) => handleIconKeyDown(e, group.id)}
-          aria-current={isActive ? "page" : undefined}
+          aria-current={isActive ? 'page' : undefined}
           aria-label={t(group.label)}
           aria-expanded={openGroupId === group.id ? true : undefined}
-          aria-haspopup={
-            group.items.length > 0 ? ("true" as const) : undefined
-          }
+          aria-haspopup={group.items.length > 0 ? ('true' as const) : undefined}
           className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent ${
             isActive
-              ? "text-accent glass-accent-tint"
-              : "text-text-secondary hover:text-text-primary hover:glass-accent-tint"
+              ? 'text-accent glass-accent-tint'
+              : 'text-text-secondary hover:text-text-primary hover:glass-accent-tint'
           }`}
         >
           {/* size=20 matches --icon-md (20px) */}
@@ -280,15 +261,13 @@ export function NavRail({
           {/* Badge */}
           {group.badge !== undefined && group.badge > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-medium text-white bg-danger rounded-full leading-none">
-              {group.badge > 99 ? "99+" : group.badge}
+              {group.badge > 99 ? '99+' : group.badge}
             </span>
           )}
         </button>
 
         {/* Tooltip — positioned right, visible on hover */}
-        <div
-          className="absolute inset-inline-start-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary"
-        >
+        <div className="absolute inset-inline-start-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary">
           {t(group.label)}
         </div>
       </div>
@@ -309,9 +288,7 @@ export function NavRail({
       >
         {/* Panel header */}
         <div className="px-4 py-3 border-b border-border-primary">
-          <h2 className="text-sm font-semibold text-text-primary">
-            {t(group.label)}
-          </h2>
+          <h2 className="text-sm font-semibold text-text-primary">{t(group.label)}</h2>
         </div>
 
         {/* Sub-items list */}
@@ -322,19 +299,12 @@ export function NavRail({
           aria-label={`${t(group.label)} items`}
         >
           {group.items.length === 0 && (
-            <p className="px-4 py-6 text-xs text-text-secondary text-center">
-              {t("nav.noItems")}
-            </p>
+            <p className="px-4 py-6 text-xs text-text-secondary text-center">{t('nav.noItems')}</p>
           )}
 
           {group.items.map((item, index) => {
             if (item.id === DIVIDER_ID) {
-              return (
-                <hr
-                  key={DIVIDER_ID}
-                  className="mx-3 my-2 border-t border-border-primary"
-                />
-              );
+              return <hr key={DIVIDER_ID} className="mx-3 my-2 border-t border-border-primary" />;
             }
 
             const ItemIcon = item.icon;
@@ -351,10 +321,10 @@ export function NavRail({
                 tabIndex={isFocused ? 0 : -1}
                 className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px] ${
                   isSubItemActive
-                    ? "glass-accent-tint text-accent font-medium"
+                    ? 'glass-accent-tint text-accent font-medium'
                     : isFocused
-                      ? "bg-bg-tertiary text-text-primary"
-                      : "text-text-secondary hover:glass-accent-tint hover:text-text-primary"
+                      ? 'bg-bg-tertiary text-text-primary'
+                      : 'text-text-secondary hover:glass-accent-tint hover:text-text-primary'
                 }`}
               >
                 {ItemIcon && (
@@ -367,7 +337,7 @@ export function NavRail({
 
                 {item.badge !== undefined && item.badge > 0 && (
                   <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] font-medium text-white bg-danger rounded-full leading-none shrink-0">
-                    {item.badge > 99 ? "99+" : item.badge}
+                    {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
               </button>
@@ -406,4 +376,3 @@ export function NavRail({
     </div>
   );
 }
-

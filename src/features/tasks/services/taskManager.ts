@@ -1,7 +1,13 @@
-﻿import { completeTask, insertTask, getTaskById, updateTask, type TaskPriority } from "@features/tasks/db/tasks";
+﻿import {
+  completeTask,
+  insertTask,
+  getTaskById,
+  updateTask,
+  type TaskPriority,
+} from '@features/tasks/db/tasks';
 
 export interface RecurrenceRule {
-  type: "daily" | "weekly" | "monthly" | "yearly";
+  type: 'daily' | 'weekly' | 'monthly' | 'yearly';
   interval: number; // every N days/weeks/months/years
   daysOfWeek?: number[]; // 0=Sun - 6=Sat, for weekly
 }
@@ -21,23 +27,20 @@ export function parseRecurrenceRule(json: string | null): RecurrenceRule | null 
 /**
  * Calculate the next occurrence date from a given start date and recurrence rule.
  */
-export function calculateNextOccurrence(
-  fromDate: Date,
-  rule: RecurrenceRule,
-): Date {
+export function calculateNextOccurrence(fromDate: Date, rule: RecurrenceRule): Date {
   const next = new Date(fromDate);
 
   switch (rule.type) {
-    case "daily":
+    case 'daily':
       next.setDate(next.getDate() + rule.interval);
       break;
-    case "weekly":
+    case 'weekly':
       next.setDate(next.getDate() + 7 * rule.interval);
       break;
-    case "monthly":
+    case 'monthly':
       next.setMonth(next.getMonth() + rule.interval);
       break;
-    case "yearly":
+    case 'yearly':
       next.setFullYear(next.getFullYear() + rule.interval);
       break;
   }
@@ -50,9 +53,7 @@ export function calculateNextOccurrence(
  * Completes the current task and creates a new one for the next occurrence.
  * Returns the new task ID if a recurring task was created, null otherwise.
  */
-export async function handleRecurringTaskCompletion(
-  taskId: string,
-): Promise<string | null> {
+export async function handleRecurringTaskCompletion(taskId: string): Promise<string | null> {
   const task = await getTaskById(taskId);
   if (!task) return null;
 

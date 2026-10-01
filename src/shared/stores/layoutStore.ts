@@ -6,18 +6,18 @@
  *
  * Migration: useLayoutStore(s => s.sidebarCollapsed) instead of useUIStore(s => s.sidebarCollapsed)
  */
-import { create } from "zustand";
-import type { SupportedLocale } from "@/locales";
-import { LOCALE_DIRS } from "@/locales";
+import { create } from 'zustand';
+import type { SupportedLocale } from '@/locales';
+import { LOCALE_DIRS } from '@/locales';
 
-export type ReadingPanePosition = "right" | "bottom" | "hidden";
-export type ReadFilter = "all" | "read" | "unread";
-export type EmailDensity = "compact" | "default" | "spacious";
-export type AppDensity = "comfortable" | "compact";
-export type DefaultReplyMode = "reply" | "replyAll";
-export type MarkAsReadBehavior = "instant" | "2s" | "manual";
-export type InboxViewMode = "unified" | "split";
-export type ViewMode = "list" | "kanban" | "calendar" | "agenda";
+export type ReadingPanePosition = 'right' | 'bottom' | 'hidden';
+export type ReadFilter = 'all' | 'read' | 'unread';
+export type EmailDensity = 'compact' | 'default' | 'spacious';
+export type AppDensity = 'comfortable' | 'compact';
+export type DefaultReplyMode = 'reply' | 'replyAll';
+export type MarkAsReadBehavior = 'instant' | '2s' | 'manual';
+export type InboxViewMode = 'unified' | 'split';
+export type ViewMode = 'list' | 'kanban' | 'calendar' | 'agenda';
 
 export interface SidebarNavItem {
   id: string;
@@ -42,7 +42,7 @@ interface LayoutState {
   taskSidebarVisible: boolean;
   sidebarNavConfig: SidebarNavItem[] | null;
   locale: SupportedLocale;
-  textDirection: "ltr" | "rtl";
+  textDirection: 'ltr' | 'rtl';
   /** @deprecated Will be removed in a future refactor. Use aiLanguage from a dedicated AI settings store. */
   aiLanguage: string;
   /** View mode for tasks and emails (list/kanban/calendar/agenda) */
@@ -73,22 +73,22 @@ interface LayoutState {
 export const useLayoutStore = create<LayoutState>((set) => ({
   sidebarCollapsed: false,
   contactSidebarVisible: false,
-  density: "comfortable",
-  readingPanePosition: "right",
+  density: 'comfortable',
+  readingPanePosition: 'right',
   readingPaneExpanded: false,
-  readFilter: "all",
+  readFilter: 'all',
   emailListWidth: 320,
-  emailDensity: "default",
-  defaultReplyMode: "reply",
-  markAsReadBehavior: "instant",
+  emailDensity: 'default',
+  defaultReplyMode: 'reply',
+  markAsReadBehavior: 'instant',
   sendAndArchive: false,
-  inboxViewMode: "unified",
+  inboxViewMode: 'unified',
   taskSidebarVisible: false,
   sidebarNavConfig: null,
-  locale: "en",
-  textDirection: "ltr",
-  aiLanguage: "auto",
-  viewMode: "list",
+  locale: 'en',
+  textDirection: 'ltr',
+  aiLanguage: 'auto',
+  viewMode: 'list',
 
   setLocale: (locale) => {
     const textDirection = LOCALE_DIRS[locale];
@@ -96,24 +96,20 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   },
   setAiLanguage: (aiLanguage) => set({ aiLanguage }),
 
-  toggleSidebar: () =>
-    set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+  toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
   setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 
   toggleContactSidebar: () =>
     set((state) => ({ contactSidebarVisible: !state.contactSidebarVisible })),
 
-  setContactSidebarVisible: (contactSidebarVisible) =>
-    set({ contactSidebarVisible }),
+  setContactSidebarVisible: (contactSidebarVisible) => set({ contactSidebarVisible }),
 
   setDensity: (density) => set({ density }),
 
-  setReadingPanePosition: (readingPanePosition) =>
-    set({ readingPanePosition }),
+  setReadingPanePosition: (readingPanePosition) => set({ readingPanePosition }),
 
-  setReadingPaneExpanded: (readingPaneExpanded) =>
-    set({ readingPaneExpanded }),
+  setReadingPaneExpanded: (readingPaneExpanded) => set({ readingPaneExpanded }),
 
   setReadFilter: (readFilter) => set({ readFilter }),
 
@@ -131,8 +127,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
 
   setViewMode: (viewMode) => set({ viewMode }),
 
-  toggleTaskSidebar: () =>
-    set((state) => ({ taskSidebarVisible: !state.taskSidebarVisible })),
+  toggleTaskSidebar: () => set((state) => ({ taskSidebarVisible: !state.taskSidebarVisible })),
 
   setTaskSidebarVisible: (taskSidebarVisible) => set({ taskSidebarVisible }),
 

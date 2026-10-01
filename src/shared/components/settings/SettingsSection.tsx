@@ -1,13 +1,13 @@
-import type { ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
+import type { ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
 import {
   CARD_BASE,
   SETTINGS_DANGER_BG,
   SETTINGS_COMPACT_BG,
   SETTINGS_SECTION_GAP,
-} from "@shared/styles/ui-tokens";
+} from '@shared/styles/ui-tokens';
 
-type SectionVariant = "default" | "danger" | "compact";
+type SectionVariant = 'default' | 'danger' | 'compact';
 
 /**
  * SettingsSection — A self-contained group of related settings.
@@ -27,7 +27,7 @@ export function SettingsSection({
   title,
   description,
   children,
-  variant = "default",
+  variant = 'default',
   className,
   action,
 }: {
@@ -40,10 +40,10 @@ export function SettingsSection({
   action?: ReactNode;
 }) {
   const containerClass = cn(
-    "flex flex-col",
-    variant === "default" && CARD_BASE,
-    variant === "danger" && cn(CARD_BASE, SETTINGS_DANGER_BG),
-    variant === "compact" && SETTINGS_COMPACT_BG,
+    'flex flex-col',
+    variant === 'default' && CARD_BASE,
+    variant === 'danger' && cn(CARD_BASE, SETTINGS_DANGER_BG),
+    variant === 'compact' && SETTINGS_COMPACT_BG,
     SETTINGS_SECTION_GAP,
     className,
   );
@@ -54,25 +54,17 @@ export function SettingsSection({
       {(title || action) && (
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-text-primary leading-snug">
-              {title}
-            </h3>
+            <h3 className="text-sm font-semibold text-text-primary leading-snug">{title}</h3>
             {description && (
-              <p className="text-xs text-text-tertiary mt-1 leading-relaxed">
-                {description}
-              </p>
+              <p className="text-xs text-text-tertiary mt-1 leading-relaxed">{description}</p>
             )}
           </div>
-          {action && (
-            <div className="shrink-0">{action}</div>
-          )}
+          {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
 
       {/* Body */}
-      <div className="flex flex-col">
-        {children}
-      </div>
+      <div className="flex flex-col">{children}</div>
     </div>
   );
 }

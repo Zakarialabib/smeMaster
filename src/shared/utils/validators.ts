@@ -16,39 +16,37 @@ export type Validator = (value: string) => string | undefined;
 
 /** Field must not be empty / whitespace-only. */
 export const required: Validator = (v) =>
-  v.trim().length === 0 ? "validation.required" : undefined;
+  v.trim().length === 0 ? 'validation.required' : undefined;
 
 /** Basic RFC-ish email shape. Empty is allowed (compose with `required`). */
 export const email: Validator = (v) => {
   if (v.trim().length === 0) return undefined;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
-    ? undefined
-    : "validation.email";
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? undefined : 'validation.email';
 };
 
 /** Minimum length. */
 export const minLength =
   (n: number): Validator =>
   (v) =>
-    v.trim().length < n ? "validation.minLength" : undefined;
+    v.trim().length < n ? 'validation.minLength' : undefined;
 
 /** Maximum length. */
 export const maxLength =
   (n: number): Validator =>
   (v) =>
-    v.length > n ? "validation.maxLength" : undefined;
+    v.length > n ? 'validation.maxLength' : undefined;
 
 /** Numeric value. Empty allowed. */
 export const numeric: Validator = (v) => {
   if (v.trim().length === 0) return undefined;
-  return Number.isNaN(Number(v)) ? "validation.numeric" : undefined;
+  return Number.isNaN(Number(v)) ? 'validation.numeric' : undefined;
 };
 
 /** Positive number (> 0). Empty allowed. */
 export const positive: Validator = (v) => {
   if (v.trim().length === 0) return undefined;
   const n = Number(v);
-  return Number.isNaN(n) || n <= 0 ? "validation.positive" : undefined;
+  return Number.isNaN(n) || n <= 0 ? 'validation.positive' : undefined;
 };
 
 /** Compose multiple validators; returns the first error found. */

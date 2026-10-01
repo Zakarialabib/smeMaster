@@ -1,14 +1,13 @@
-import { useState, useCallback, useRef } from "react";
-import { Search, X } from "lucide-react";
-import { useVaultStore } from "../stores/vaultStore";
+import { useState, useCallback, useRef } from 'react';
+import { Search, X } from 'lucide-react';
+import { useVaultStore } from '../stores/vaultStore';
 
 interface VaultSearchBarProps {
   className?: string;
 }
 
-export function VaultSearchBar({ className = "" }: VaultSearchBarProps) {
-  const { searchQuery, setSearchQuery, executeSearch, clearSearch } =
-    useVaultStore();
+export function VaultSearchBar({ className = '' }: VaultSearchBarProps) {
+  const { searchQuery, setSearchQuery, executeSearch, clearSearch } = useVaultStore();
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,13 +33,13 @@ export function VaultSearchBar({ className = "" }: VaultSearchBarProps) {
   };
 
   const handleClear = () => {
-    setLocalQuery("");
-    setSearchQuery("");
+    setLocalQuery('');
+    setSearchQuery('');
     clearSearch();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       handleClear();
     }
   };

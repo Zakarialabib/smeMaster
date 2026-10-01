@@ -1,4 +1,11 @@
-import type { ClientFrame, StateFrame, TranscriptDelta, StagesFrame, MetaFrame, ClosedFrame } from '../types/commands';
+import type {
+  ClientFrame,
+  StateFrame,
+  TranscriptDelta,
+  StagesFrame,
+  MetaFrame,
+  ClosedFrame,
+} from '../types/commands';
 
 /**
  * The transcript/live-call WebSocket.

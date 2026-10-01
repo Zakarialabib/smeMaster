@@ -1,41 +1,65 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  X, Check, PenLine, UserPlus,
-  Paperclip, Building2, ChevronDown, ChevronRight, Info, Activity, FolderOpen,
-  Network, Receipt, Send,
-} from "lucide-react";
-import { getContactFilesBySender, type ContactFile } from "@features/contacts/db/contactFiles";
+  X,
+  Check,
+  PenLine,
+  UserPlus,
+  Paperclip,
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  Info,
+  Activity,
+  FolderOpen,
+  Network,
+  Receipt,
+  Send,
+} from 'lucide-react';
+import { getContactFilesBySender, type ContactFile } from '@features/contacts/db/contactFiles';
 import {
-  getContactByEmail, getContactStats, getRecentThreadsWithContact,
-  upsertContact, updateContact, updateContactFields,
-  getAttachmentsFromContact, getContactsFromSameDomain, getLatestAuthResult,
+  getContactByEmail,
+  getContactStats,
+  getRecentThreadsWithContact,
+  upsertContact,
+  updateContact,
+  updateContactFields,
+  getAttachmentsFromContact,
+  getContactsFromSameDomain,
+  getLatestAuthResult,
   getContactEngagementData,
-  type ContactStats, type DbContact, type ContactAttachment, type SameDomainContact, type ContactEngagementRow,
-} from "../../../features/contacts/db/contacts.ts";
-import { isVipSender, addVipSender, removeVipSender } from "@features/settings/db/notificationVips";
-import { fetchAndCacheGravatarUrl } from "@features/contacts/services/gravatar";
-import { getContactActivity, type ActivityEvent } from "@features/contacts/services/activity";
-import { extractContactFromEmail, diffExtracted } from "@features/contacts/services/emailContactExtractor";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { getThreadById, getThreadLabelIds } from "@shared/services/db/threads";
-import { navigateToThread, navigateToLabel } from "@/router/navigate";
-import { formatRelativeDate } from "@shared/utils/date";
-import { formatFileSize, getFileIcon } from "@shared/utils/fileTypeHelpers";
-import { AuthBadge } from "./AuthBadge";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { TagCloud } from "@features/contacts/components/TagCloud";
-import { ContactQuickActions } from "@features/contacts/components/ContactQuickActions";
-import { ContactTimeline } from "@features/contacts/components/ContactTimeline";
-import { ContactStatsSummary } from "@features/contacts/components/ContactStatsSummary";
-import { ContactFilesList } from "@features/contacts/components/ContactFilesList";
-import { EngagementScoreBar } from "@features/contacts/components/EngagementScoreBar";
-import { useContactNotes } from "@features/contacts/hooks/useContactNotes";
-import { useContactStore } from "@features/contacts/stores/contactStore";
-import { listInvoices } from "@features/invoicing/services/invoicing-invoke";
-import type { Invoice } from "@features/invoicing/types";
-import { listCampaignsByContact } from "@shared/services/db/invoke/campaigns";
+  type ContactStats,
+  type DbContact,
+  type ContactAttachment,
+  type SameDomainContact,
+  type ContactEngagementRow,
+} from '../../../features/contacts/db/contacts.ts';
+import { isVipSender, addVipSender, removeVipSender } from '@features/settings/db/notificationVips';
+import { fetchAndCacheGravatarUrl } from '@features/contacts/services/gravatar';
+import { getContactActivity, type ActivityEvent } from '@features/contacts/services/activity';
+import {
+  extractContactFromEmail,
+  diffExtracted,
+} from '@features/contacts/services/emailContactExtractor';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { getThreadById, getThreadLabelIds } from '@shared/services/db/threads';
+import { navigateToThread, navigateToLabel } from '@/router/navigate';
+import { formatRelativeDate } from '@shared/utils/date';
+import { formatFileSize, getFileIcon } from '@shared/utils/fileTypeHelpers';
+import { AuthBadge } from './AuthBadge';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { TagCloud } from '@features/contacts/components/TagCloud';
+import { ContactQuickActions } from '@features/contacts/components/ContactQuickActions';
+import { ContactTimeline } from '@features/contacts/components/ContactTimeline';
+import { ContactStatsSummary } from '@features/contacts/components/ContactStatsSummary';
+import { ContactFilesList } from '@features/contacts/components/ContactFilesList';
+import { EngagementScoreBar } from '@features/contacts/components/EngagementScoreBar';
+import { useContactNotes } from '@features/contacts/hooks/useContactNotes';
+import { useContactStore } from '@features/contacts/stores/contactStore';
+import { listInvoices } from '@features/invoicing/services/invoicing-invoke';
+import type { Invoice } from '@features/invoicing/types';
+import { listCampaignsByContact } from '@shared/services/db/invoke/campaigns';
 
 interface ContactSidebarProps {
   email: string;
@@ -49,7 +73,9 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [stats, setStats] = useState<ContactStats | null>(null);
-  const [recentThreads, setRecentThreads] = useState<{ thread_id: string; subject: string | null; last_message_at: number | null }[]>([]);
+  const [recentThreads, setRecentThreads] = useState<
+    { thread_id: string; subject: string | null; last_message_at: number | null }[]
+  >([]);
   const [contact, setContact] = useState<DbContact | null>(null);
   const [isVip, setIsVip] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
@@ -63,13 +89,15 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   const [addedFeedback, setAddedFeedback] = useState(false);
   const [extractFeedback, setExtractFeedback] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
-  const [editNameValue, setEditNameValue] = useState("");
+  const [editNameValue, setEditNameValue] = useState('');
 
-  const [activeTab, setActiveTab] = useState<"info" | "activity" | "files" | "relations">("info");
+  const [activeTab, setActiveTab] = useState<'info' | 'activity' | 'files' | 'relations'>('info');
   const [vaultFiles, setVaultFiles] = useState<ContactFile[]>([]);
   const [engagement, setEngagement] = useState<ContactEngagementRow | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [campaignRels, setCampaignRels] = useState<import("@shared/services/db/schema").CampaignRecipientWithCampaign[]>([]);
+  const [campaignRels, setCampaignRels] = useState<
+    import('@shared/services/db/schema').CampaignRecipientWithCampaign[]
+  >([]);
   const [relationsLoading, setRelationsLoading] = useState(false);
 
   const loadedRef = useRef<string | null>(null);
@@ -77,39 +105,43 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   const addedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Notes hook (debounced auto-save) ──────────────────────────────────
-  const { notes, handleChange: handleNotesChange, handleBlur: handleNotesBlur } = useContactNotes(
-    email,
-    contact?.notes ?? "",
-  );
+  const {
+    notes,
+    handleChange: handleNotesChange,
+    handleBlur: handleNotesBlur,
+  } = useContactNotes(email, contact?.notes ?? '');
 
-  const handleThreadClick = useCallback(async (threadId: string) => {
-    const { threads, threadMap, setThreads } = useThreadStore.getState();
-    if (threadMap.has(threadId)) {
+  const handleThreadClick = useCallback(
+    async (threadId: string) => {
+      const { threads, threadMap, setThreads } = useThreadStore.getState();
+      if (threadMap.has(threadId)) {
+        navigateToThread(threadId);
+        return;
+      }
+      const dbThread = await getThreadById(accountId, threadId);
+      if (!dbThread) return;
+      const labelIds = await getThreadLabelIds(accountId, threadId);
+      const mapped = {
+        id: dbThread.id,
+        accountId: dbThread.account_id,
+        subject: dbThread.subject,
+        snippet: dbThread.snippet,
+        lastMessageAt: dbThread.last_message_at ?? 0,
+        messageCount: dbThread.message_count,
+        isRead: dbThread.is_read === 1,
+        isStarred: dbThread.is_starred === 1,
+        isPinned: dbThread.is_pinned === 1,
+        isMuted: dbThread.is_muted === 1,
+        hasAttachments: dbThread.has_attachments === 1,
+        labelIds,
+        fromName: dbThread.from_name,
+        fromAddress: dbThread.from_address,
+      };
+      setThreads([...threads, mapped]);
       navigateToThread(threadId);
-      return;
-    }
-    const dbThread = await getThreadById(accountId, threadId);
-    if (!dbThread) return;
-    const labelIds = await getThreadLabelIds(accountId, threadId);
-    const mapped = {
-      id: dbThread.id,
-      accountId: dbThread.account_id,
-      subject: dbThread.subject,
-      snippet: dbThread.snippet,
-      lastMessageAt: dbThread.last_message_at ?? 0,
-      messageCount: dbThread.message_count,
-      isRead: dbThread.is_read === 1,
-      isStarred: dbThread.is_starred === 1,
-      isPinned: dbThread.is_pinned === 1,
-      isMuted: dbThread.is_muted === 1,
-      hasAttachments: dbThread.has_attachments === 1,
-      labelIds,
-      fromName: dbThread.from_name,
-      fromAddress: dbThread.from_address,
-    };
-    setThreads([...threads, mapped]);
-    navigateToThread(threadId);
-  }, [accountId]);
+    },
+    [accountId],
+  );
 
   useEffect(() => {
     if (!email) return;
@@ -130,22 +162,34 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     });
 
     // Load stats
-    getContactStats(email).then((s) => { if (!cancelled) setStats(s); });
+    getContactStats(email).then((s) => {
+      if (!cancelled) setStats(s);
+    });
 
     // Load recent threads
-    getRecentThreadsWithContact(email).then((t) => { if (!cancelled) setRecentThreads(t); });
+    getRecentThreadsWithContact(email).then((t) => {
+      if (!cancelled) setRecentThreads(t);
+    });
 
     // Load VIP status
-    isVipSender(accountId, email).then((v) => { if (!cancelled) setIsVip(v); });
+    isVipSender(accountId, email).then((v) => {
+      if (!cancelled) setIsVip(v);
+    });
 
     // Load attachments from contact
-    getAttachmentsFromContact(email).then((a) => { if (!cancelled) setAttachments(a); });
+    getAttachmentsFromContact(email).then((a) => {
+      if (!cancelled) setAttachments(a);
+    });
 
     // Load same-domain contacts
-    getContactsFromSameDomain(email).then((c) => { if (!cancelled) setSameDomainContacts(c); });
+    getContactsFromSameDomain(email).then((c) => {
+      if (!cancelled) setSameDomainContacts(c);
+    });
 
     // Load auth results
-    getLatestAuthResult(email).then((r) => { if (!cancelled) setAuthResults(r); });
+    getLatestAuthResult(email).then((r) => {
+      if (!cancelled) setAuthResults(r);
+    });
 
     // Load activity timeline
     setActivityLoading(true);
@@ -157,7 +201,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     // Load tags for this contact once contact exists
     getContactByEmail(email).then((c) => {
       if (cancelled || !c) return;
-      import("@features/contacts/services/tags").then(({ getContactTags }) => {
+      import('@features/contacts/services/tags').then(({ getContactTags }) => {
         getContactTags(c.id).then((tags) => {
           if (!cancelled) setTagIds(tags.map((t) => t.id));
         });
@@ -165,7 +209,9 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     });
 
     // Load vault files
-    getContactFilesBySender(email).then((files) => { if (!cancelled) setVaultFiles(files); });
+    getContactFilesBySender(email).then((files) => {
+      if (!cancelled) setVaultFiles(files);
+    });
 
     // Load engagement data
     getContactByEmail(email).then((c) => {
@@ -192,17 +238,19 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
       void run();
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [email, accountId]);
 
   // -- Event handlers --
 
   const handleCompose = useCallback(() => {
-    useComposerStore.getState().openComposer({ mode: "new", to: [email] });
+    useComposerStore.getState().openComposer({ mode: 'new', to: [email] });
   }, [email]);
 
   const handleCopyEmail = useCallback(() => {
-    import("@shared/hooks/useClipboard").then(({ copyToClipboard }) => copyToClipboard(email));
+    import('@shared/hooks/useClipboard').then(({ copyToClipboard }) => copyToClipboard(email));
     setCopyFeedback(true);
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     copyTimerRef.current = setTimeout(() => setCopyFeedback(false), 1500);
@@ -239,12 +287,10 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     });
     const keys = Object.keys(applied);
     if (keys.length === 0) {
-      setExtractFeedback(t("contact.extractNone"));
+      setExtractFeedback(t('contact.extractNone'));
     } else {
       await updateContactFields(contact.id, applied as Record<string, unknown>);
-      setExtractFeedback(
-        t("contact.extractApplied", { fields: keys.join(", ") }),
-      );
+      setExtractFeedback(t('contact.extractApplied', { fields: keys.join(', ') }));
       const refreshed = await getContactByEmail(email);
       setContact(refreshed);
     }
@@ -252,7 +298,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
   }, [contact, bodyText, email, t]);
 
   const handleStartEditName = useCallback(() => {
-    setEditNameValue(contact?.display_name ?? name ?? "");
+    setEditNameValue(contact?.display_name ?? name ?? '');
     setEditingName(true);
   }, [contact, name]);
 
@@ -266,12 +312,12 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
 
   const handleFilePreview = useCallback((_att: ContactAttachment) => {
     // Navigate to the attachments view where this file can be found
-    navigateToLabel("attachments");
+    navigateToLabel('attachments');
   }, []);
 
   const handleDomainContactClick = useCallback((_contactEmail: string) => {
     // Navigate to the people/contacts page for this person
-    navigateToLabel("people");
+    navigateToLabel('people');
   }, []);
 
   // Cleanup all timers on unmount
@@ -282,8 +328,8 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     };
   }, []);
 
-  const displayName = contact?.display_name ?? name ?? email.split("@")[0];
-  const domain = email.includes("@") ? email.split("@")[1] : null;
+  const displayName = contact?.display_name ?? name ?? email.split('@')[0];
+  const domain = email.includes('@') ? email.split('@')[1] : null;
 
   return (
     <div className="w-72 h-full border-s border-border-primary bg-bg-secondary overflow-y-auto shrink-0">
@@ -301,12 +347,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
 
         {/* Avatar */}
         <div className="flex flex-col items-center text-center mb-4">
-          <ContactAvatar
-            imageUrl={avatarUrl}
-            name={displayName}
-            email={email}
-            className="mb-2"
-          />
+          <ContactAvatar imageUrl={avatarUrl} name={displayName} email={email} className="mb-2" />
 
           {/* Name + Auth Badge */}
           {editingName ? (
@@ -316,8 +357,8 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                 value={editNameValue}
                 onChange={(e) => setEditNameValue(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSaveEditName();
-                  if (e.key === "Escape") setEditingName(false);
+                  if (e.key === 'Enter') handleSaveEditName();
+                  if (e.key === 'Escape') setEditingName(false);
                 }}
                 autoFocus
                 className="w-36 text-sm text-center bg-bg-primary border border-border-primary rounded px-1.5 py-0.5 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -353,7 +394,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
             {copyFeedback ? (
               <span className="inline-flex items-center gap-1 text-success">
                 <Check size={12} />
-                <span>{t("common.copied")}</span>
+                <span>{t('common.copied')}</span>
               </span>
             ) : (
               email
@@ -362,7 +403,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
         </div>
 
         <ContactQuickActions
-          actions={["compose", "copy", "vip", "campaign"]}
+          actions={['compose', 'copy', 'vip', 'campaign']}
           onCompose={handleCompose}
           onCopy={handleCopyEmail}
           onToggleVip={handleToggleVip}
@@ -370,7 +411,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
           copyFeedback={copyFeedback}
           onCampaign={() => {
             // Navigate to campaign list (mini CRM integration)
-            window.location.href = "/campaigns";
+            window.location.href = '/campaigns';
           }}
         />
 
@@ -418,12 +459,12 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
 
         {/* Tab Bar */}
         <div className="flex border-b border-border-primary mb-3">
-          {([
-            { id: "info" as const, icon: Info, label: t('contact.info') },
-            { id: "activity" as const, icon: Activity, label: t('contact.activity') },
-            { id: "files" as const, icon: FolderOpen, label: t('contact.files') },
-            { id: "relations" as const, icon: Network, label: t('contact.relations') },
-          ]).map((tab) => {
+          {[
+            { id: 'info' as const, icon: Info, label: t('contact.info') },
+            { id: 'activity' as const, icon: Activity, label: t('contact.activity') },
+            { id: 'files' as const, icon: FolderOpen, label: t('contact.files') },
+            { id: 'relations' as const, icon: Network, label: t('contact.relations') },
+          ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -432,8 +473,8 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                   isActive
-                    ? "border-accent text-accent"
-                    : "border-transparent text-text-tertiary hover:text-text-secondary"
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-text-tertiary hover:text-text-secondary'
                 }`}
               >
                 <Icon size={13} />
@@ -444,16 +485,16 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
         </div>
 
         {/* Tab Content */}
-        {activeTab === "files" ? (
+        {activeTab === 'files' ? (
           <ContactFilesList files={vaultFiles} />
-        ) : activeTab === "activity" ? (
+        ) : activeTab === 'activity' ? (
           <div className="mt-4">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
               {t('contact.recentActivity')}
             </h4>
             <ContactTimeline events={activityEvents} isLoading={activityLoading} />
           </div>
-        ) : activeTab === "relations" ? (
+        ) : activeTab === 'relations' ? (
           <div className="mt-4 space-y-4">
             {/* Company */}
             <div>
@@ -462,10 +503,12 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
               </h4>
               {contact?.company_id ? (
                 <div className="flex items-center justify-between rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
-                  <span className="text-sm text-text-primary truncate">{t('contact.linkedCompany')}</span>
+                  <span className="text-sm text-text-primary truncate">
+                    {t('contact.linkedCompany')}
+                  </span>
                   <button
                     type="button"
-                    onClick={() => navigateToLabel("company")}
+                    onClick={() => navigateToLabel('company')}
                     className="text-xs text-accent hover:underline shrink-0 ms-2"
                   >
                     {t('contact.viewCompany')}
@@ -486,9 +529,14 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
               ) : invoices.length > 0 ? (
                 <div className="space-y-1">
                   {invoices.map((inv) => (
-                    <div key={inv.id} className="flex items-center justify-between rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
+                    <div
+                      key={inv.id}
+                      className="flex items-center justify-between rounded-md border border-border-primary bg-bg-primary px-2.5 py-2"
+                    >
                       <div className="min-w-0">
-                        <div className="text-sm text-text-primary truncate">{inv.invoice_number}</div>
+                        <div className="text-sm text-text-primary truncate">
+                          {inv.invoice_number}
+                        </div>
                         <div className="text-[0.625rem] text-text-tertiary">{inv.status}</div>
                       </div>
                       <span className="text-xs text-text-secondary shrink-0 ms-2">
@@ -512,13 +560,22 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
               ) : campaignRels.length > 0 ? (
                 <div className="space-y-1">
                   {campaignRels.map((rel) => (
-                    <div key={rel.campaign_id} className="rounded-md border border-border-primary bg-bg-primary px-2.5 py-2">
+                    <div
+                      key={rel.campaign_id}
+                      className="rounded-md border border-border-primary bg-bg-primary px-2.5 py-2"
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-text-primary truncate">{rel.campaign_name}</span>
-                        <span className="text-[0.625rem] text-text-tertiary shrink-0 ms-2">{rel.recipient_status}</span>
+                        <span className="text-sm text-text-primary truncate">
+                          {rel.campaign_name}
+                        </span>
+                        <span className="text-[0.625rem] text-text-tertiary shrink-0 ms-2">
+                          {rel.recipient_status}
+                        </span>
                       </div>
                       {rel.opened_at != null && (
-                        <div className="text-[0.625rem] text-success mt-0.5">{t('contact.opened')}</div>
+                        <div className="text-[0.625rem] text-success mt-0.5">
+                          {t('contact.opened')}
+                        </div>
                       )}
                     </div>
                   ))}
@@ -533,160 +590,156 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
             {/* Stats */}
             <ContactStatsSummary stats={stats} />
 
-        {/* Engagement Score */}
-        {engagement && (
-          <EngagementScoreBar
-            score={engagement.engagement_score}
-            healthStatus={engagement.health_status}
-            lastEngagedAt={engagement.last_engaged_at}
-            size="sm"
-          />
-        )}
-
-        {/* Contact Notes */}
-        {contact && (
-          <div className="mb-4">
-            <button
-              onClick={() => setNotesExpanded(!notesExpanded)}
-              className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 hover:text-text-secondary transition-colors"
-            >
-              {notesExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-              {t('contact.notes')}
-            </button>
-            {notesExpanded && (
-              <textarea
-                value={notes}
-                onChange={(e) => handleNotesChange(e.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder={t('contact.addANote')}
-                rows={3}
-                className="w-full text-xs bg-bg-primary border border-border-primary rounded-md px-2 py-1.5 text-text-secondary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent resize-y"
+            {/* Engagement Score */}
+            {engagement && (
+              <EngagementScoreBar
+                score={engagement.engagement_score}
+                healthStatus={engagement.health_status}
+                lastEngagedAt={engagement.last_engaged_at}
+                size="sm"
               />
             )}
-          </div>
-        )}
 
-        {/* Tags */}
-        {contact && (
-          <div className="mb-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              {t('contact.tags')}
-            </h4>
-            <TagCloud
-              tagIds={tagIds}
-              allTags={useContactStore.getState().tags}
-              onAddTag={() => {}}
-              onRemoveTag={(tagId) => {
-                if (!contact) return;
-                import("@features/contacts/services/tags").then(({ untagContact }) => {
-                  untagContact(contact.id, tagId);
-                  setTagIds((prev) => prev.filter((id) => id !== tagId));
-                });
-              }}
-              editable={true}
-            />
-          </div>
-        )}
-
-        {/* Shared Files */}
-        {attachments.length > 0 && (
-          <div className="mb-4">
-            <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              <Paperclip size={11} />
-              {t('contact.sharedFiles')}
-            </h4>
-            <div className="space-y-1">
-              {attachments.map((att, i) => (
+            {/* Contact Notes */}
+            {contact && (
+              <div className="mb-4">
                 <button
-                  type="button"
-                  key={`${att.filename}-${att.date}-${i}`}
-                  onClick={() => handleFilePreview(att)}
-                  title={t('contact.previewFile', { filename: att.filename })}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
+                  onClick={() => setNotesExpanded(!notesExpanded)}
+                  className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 hover:text-text-secondary transition-colors"
                 >
-                  <span className="shrink-0">{getFileIcon(att.mime_type)}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-text-secondary truncate">{att.filename}</div>
-                    <div className="text-text-tertiary text-[0.625rem]">
-                      {att.size != null && formatFileSize(att.size)}
-                      {att.size != null && " \u00B7 "}
-                      {formatRelativeDate(att.date)}
-                    </div>
-                  </div>
+                  {notesExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  {t('contact.notes')}
                 </button>
-              ))}
-            </div>
-          </div>
-        )}
+                {notesExpanded && (
+                  <textarea
+                    value={notes}
+                    onChange={(e) => handleNotesChange(e.target.value)}
+                    onBlur={handleNotesBlur}
+                    placeholder={t('contact.addANote')}
+                    rows={3}
+                    className="w-full text-xs bg-bg-primary border border-border-primary rounded-md px-2 py-1.5 text-text-secondary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent resize-y"
+                  />
+                )}
+              </div>
+            )}
 
-        {/* Same-Domain Contacts */}
-        {sameDomainContacts.length > 0 && domain && (
-          <div className="mb-4">
-            <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              <Building2 size={11} />
-              {t('contact.othersAtDomain', { domain })}
-            </h4>
-            <div className="space-y-1">
-              {sameDomainContacts.map((c) => (
-                <button
-                  type="button"
-                  key={c.email}
-                  onClick={() => handleDomainContactClick(c.email)}
-                  title={t('contact.viewPerson', { name: c.display_name ?? c.email })}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
-                >
-                  {c.avatar_url ? (
-                    <img src={c.avatar_url} alt="" className="w-5 h-5 rounded-full shrink-0" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center text-[0.5rem] font-semibold shrink-0">
-                      {(c.display_name?.[0] ?? c.email[0] ?? "?").toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <div className="text-text-secondary truncate">
-                      {c.display_name ?? c.email.split("@")[0]}
-                    </div>
-                    <div className="text-text-tertiary text-[0.625rem] truncate">{c.email}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+            {/* Tags */}
+            {contact && (
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                  {t('contact.tags')}
+                </h4>
+                <TagCloud
+                  tagIds={tagIds}
+                  allTags={useContactStore.getState().tags}
+                  onAddTag={() => {}}
+                  onRemoveTag={(tagId) => {
+                    if (!contact) return;
+                    import('@features/contacts/services/tags').then(({ untagContact }) => {
+                      untagContact(contact.id, tagId);
+                      setTagIds((prev) => prev.filter((id) => id !== tagId));
+                    });
+                  }}
+                  editable={true}
+                />
+              </div>
+            )}
 
-        {/* Recent threads */}
-        {recentThreads.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              {t('contact.recentConversations')}
-            </h4>
-            <div className="space-y-1">
-              {recentThreads.map((thread) => (
-                <button
-                  key={thread.thread_id}
-                  onClick={() => handleThreadClick(thread.thread_id)}
-                  className="w-full text-start px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors group"
-                >
-                  <div className="text-text-secondary group-hover:text-text-primary truncate">
-                    {thread.subject ?? "(No subject)"}
-                  </div>
-                  {thread.last_message_at && (
-                    <div className="text-text-tertiary text-[0.625rem] mt-0.5">
-                      {formatRelativeDate(thread.last_message_at)}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+            {/* Shared Files */}
+            {attachments.length > 0 && (
+              <div className="mb-4">
+                <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                  <Paperclip size={11} />
+                  {t('contact.sharedFiles')}
+                </h4>
+                <div className="space-y-1">
+                  {attachments.map((att, i) => (
+                    <button
+                      type="button"
+                      key={`${att.filename}-${att.date}-${i}`}
+                      onClick={() => handleFilePreview(att)}
+                      title={t('contact.previewFile', { filename: att.filename })}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
+                    >
+                      <span className="shrink-0">{getFileIcon(att.mime_type)}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-text-secondary truncate">{att.filename}</div>
+                        <div className="text-text-tertiary text-[0.625rem]">
+                          {att.size != null && formatFileSize(att.size)}
+                          {att.size != null && ' \u00B7 '}
+                          {formatRelativeDate(att.date)}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
+            {/* Same-Domain Contacts */}
+            {sameDomainContacts.length > 0 && domain && (
+              <div className="mb-4">
+                <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                  <Building2 size={11} />
+                  {t('contact.othersAtDomain', { domain })}
+                </h4>
+                <div className="space-y-1">
+                  {sameDomainContacts.map((c) => (
+                    <button
+                      type="button"
+                      key={c.email}
+                      onClick={() => handleDomainContactClick(c.email)}
+                      title={t('contact.viewPerson', { name: c.display_name ?? c.email })}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors cursor-pointer text-start"
+                    >
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" className="w-5 h-5 rounded-full shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center text-[0.5rem] font-semibold shrink-0">
+                          {(c.display_name?.[0] ?? c.email[0] ?? '?').toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-text-secondary truncate">
+                          {c.display_name ?? c.email.split('@')[0]}
+                        </div>
+                        <div className="text-text-tertiary text-[0.625rem] truncate">{c.email}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Recent threads */}
+            {recentThreads.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
+                  {t('contact.recentConversations')}
+                </h4>
+                <div className="space-y-1">
+                  {recentThreads.map((thread) => (
+                    <button
+                      key={thread.thread_id}
+                      onClick={() => handleThreadClick(thread.thread_id)}
+                      className="w-full text-start px-2 py-1.5 text-xs rounded hover:bg-bg-hover transition-colors group"
+                    >
+                      <div className="text-text-secondary group-hover:text-text-primary truncate">
+                        {thread.subject ?? '(No subject)'}
+                      </div>
+                      {thread.last_message_at && (
+                        <div className="text-text-tertiary text-[0.625rem] mt-0.5">
+                          {formatRelativeDate(thread.last_message_at)}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
     </div>
   );
 }
-
-
-

@@ -1,36 +1,32 @@
-import { useTranslation } from "react-i18next";
-import type { ButtonBlock as ButtonBlockT } from "../types";
+import { useTranslation } from 'react-i18next';
+import type { ButtonBlock as ButtonBlockT } from '../types';
 
 interface ButtonBlockProps {
   block: ButtonBlockT;
   onChange: (changes: Partial<ButtonBlockT>) => void;
 }
 
-function fontFamilyStack(family: ButtonBlockT["typography"]["fontFamily"]): string {
+function fontFamilyStack(family: ButtonBlockT['typography']['fontFamily']): string {
   switch (family) {
-    case "serif":
+    case 'serif':
       return "Georgia, 'Times New Roman', serif";
-    case "monospace":
+    case 'monospace':
       return "'Courier New', Courier, monospace";
     default:
-      return "Arial, Helvetica, sans-serif";
+      return 'Arial, Helvetica, sans-serif';
   }
 }
 
 export function ButtonBlock({ block, onChange }: ButtonBlockProps) {
   const { t } = useTranslation();
   const align =
-    block.alignment === "center"
-      ? "center"
-      : block.alignment === "right"
-        ? "right"
-        : "left";
+    block.alignment === 'center' ? 'center' : block.alignment === 'right' ? 'right' : 'left';
 
   return (
     <div className="w-full" style={{ textAlign: align }}>
       <span
         style={{
-          display: block.fullWidth ? "block" : "inline-block",
+          display: block.fullWidth ? 'block' : 'inline-block',
           backgroundColor: block.backgroundColor,
           color: block.textColor,
           fontSize: `${block.typography.fontSize}px`,
@@ -38,15 +34,15 @@ export function ButtonBlock({ block, onChange }: ButtonBlockProps) {
           fontFamily: fontFamilyStack(block.typography.fontFamily),
           borderRadius: `${block.borderRadius}px`,
           padding: `${block.padding.top}px ${block.padding.right}px ${block.padding.bottom}px ${block.padding.left}px`,
-          textDecoration: "none",
+          textDecoration: 'none',
         }}
         className="select-none"
       >
-        {block.text || t("campaign.editor.button")}
+        {block.text || t('campaign.editor.button')}
       </span>
       <div className="mt-2 flex flex-wrap items-center gap-2 opacity-0 transition-opacity group-hover/block:opacity-100">
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.heading")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.heading')}</span>
           <input
             type="text"
             value={block.text}
@@ -55,7 +51,7 @@ export function ButtonBlock({ block, onChange }: ButtonBlockProps) {
           />
         </label>
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.linkUrl")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.linkUrl')}</span>
           <input
             type="text"
             value={block.url}

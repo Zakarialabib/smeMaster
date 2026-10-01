@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { Clock, Pause, Play } from "lucide-react";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { getQueuePaused } from "@features/settings/db/settings";
-import { getPendingOpsCount } from "@features/settings/db/pendingOperations";
+import { useState, useEffect } from 'react';
+import { Clock, Pause, Play } from 'lucide-react';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { getQueuePaused } from '@features/settings/db/settings';
+import { getPendingOpsCount } from '@features/settings/db/pendingOperations';
 
 export function QueueStatusIndicator() {
   const pendingOpsCount = useSyncStore((s) => s.pendingOpsCount);
@@ -13,10 +13,7 @@ export function QueueStatusIndicator() {
 
     async function poll() {
       try {
-        const [count, pausedState] = await Promise.all([
-          getPendingOpsCount(),
-          getQueuePaused(),
-        ]);
+        const [count, pausedState] = await Promise.all([getPendingOpsCount(), getQueuePaused()]);
         if (!mounted) return;
         useSyncStore.getState().setPendingOpsCount(count);
         setPaused(pausedState);

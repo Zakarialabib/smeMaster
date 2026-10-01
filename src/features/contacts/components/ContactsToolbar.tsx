@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ArrowUpDown,
   ChevronDown,
@@ -9,18 +9,12 @@ import {
   Download,
   Trash2,
   GitMerge,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import type { SortField, SortDirection } from "@features/contacts/hooks/useViewPrefs";
-import { Button } from "@shared/components/ui/Button";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { SortField, SortDirection } from '@features/contacts/hooks/useViewPrefs';
+import { Button } from '@shared/components/ui/Button';
 
-export type BulkAction =
-  | "tag"
-  | "group"
-  | "export"
-  | "delete"
-  | "merge"
-  | "clear";
+export type BulkAction = 'tag' | 'group' | 'export' | 'delete' | 'merge' | 'clear';
 
 interface ContactsToolbarProps {
   totalCount: number;
@@ -42,10 +36,10 @@ interface ContactsToolbarProps {
 }
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
-  { value: "last_contact", label: "Last contact" },
-  { value: "name", label: "Name" },
-  { value: "email", label: "Email" },
-  { value: "frequency", label: "Frequency" },
+  { value: 'last_contact', label: 'Last contact' },
+  { value: 'name', label: 'Name' },
+  { value: 'email', label: 'Email' },
+  { value: 'frequency', label: 'Frequency' },
 ];
 
 interface DropdownItem {
@@ -59,10 +53,10 @@ interface DropdownItem {
 interface DropdownProps {
   trigger: React.ReactNode;
   items: DropdownItem[];
-  align?: "left" | "right";
+  align?: 'left' | 'right';
 }
 
-function Dropdown({ trigger, items, align = "left" }: DropdownProps) {
+function Dropdown({ trigger, items, align = 'left' }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -74,13 +68,13 @@ function Dropdown({ trigger, items, align = "left" }: DropdownProps) {
       if (ref.current && !ref.current.contains(e.target as Node)) close();
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
+      if (e.key === 'Escape') close();
     };
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
     return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
     };
   }, [open, close]);
 
@@ -90,7 +84,7 @@ function Dropdown({ trigger, items, align = "left" }: DropdownProps) {
       {open && (
         <div
           className={`absolute z-30 top-full mt-1 min-w-[180px] rounded-lg border border-border-primary bg-bg-primary shadow-lg py-1 ${
-            align === "right" ? "right-0" : "left-0"
+            align === 'right' ? 'right-0' : 'left-0'
           }`}
           role="menu"
         >
@@ -146,23 +140,18 @@ export function ContactsToolbar({
     id: opt.value,
     label: opt.label,
     icon:
-      sortField === opt.value
-        ? sortDirection === "asc"
-          ? ArrowUpDown
-          : ArrowUpDown
-        : undefined,
+      sortField === opt.value ? (sortDirection === 'asc' ? ArrowUpDown : ArrowUpDown) : undefined,
     action: () => {
       if (sortField === opt.value) {
-        onSortChange(opt.value, sortDirection === "asc" ? "desc" : "asc");
+        onSortChange(opt.value, sortDirection === 'asc' ? 'desc' : 'asc');
       } else {
-        onSortChange(opt.value, "desc");
+        onSortChange(opt.value, 'desc');
       }
     },
     selected: sortField === opt.value,
   }));
 
-  const currentSortLabel =
-    SORT_OPTIONS.find((o) => o.value === sortField)?.label ?? "Sort";
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortField)?.label ?? 'Sort';
 
   const showBulkBar = selectedCount > 0;
 
@@ -183,7 +172,7 @@ export function ContactsToolbar({
             aria-label="Select all contacts"
           />
           <span className="text-[0.625rem] text-text-tertiary">
-            {allSelected ? "All" : "Select"}
+            {allSelected ? 'All' : 'Select'}
           </span>
         </label>
 
@@ -199,7 +188,7 @@ export function ContactsToolbar({
             >
               <ArrowUpDown size={10} />
               <span>
-                {currentSortLabel} {sortDirection === "asc" ? "↑" : "↓"}
+                {currentSortLabel} {sortDirection === 'asc' ? '↑' : '↓'}
               </span>
               <ChevronDown size={10} />
             </button>
@@ -212,12 +201,7 @@ export function ContactsToolbar({
 
         <div className="flex-1" />
 
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<GitMerge size={14} />}
-          onClick={onMergeClick}
-        >
+        <Button variant="secondary" size="sm" icon={<GitMerge size={14} />} onClick={onMergeClick}>
           Merge
         </Button>
         {(onExportAllCsv || onExportAllVcard || onExportAllTasks || onExportAllCalendar) && (
@@ -237,26 +221,26 @@ export function ContactsToolbar({
             items={(
               [
                 onExportAllCsv && {
-                  id: "all-csv",
-                  label: "All Contacts (CSV)",
+                  id: 'all-csv',
+                  label: 'All Contacts (CSV)',
                   icon: Download,
                   action: onExportAllCsv,
                 },
                 onExportAllVcard && {
-                  id: "all-vcard",
-                  label: "All Contacts (vCard)",
+                  id: 'all-vcard',
+                  label: 'All Contacts (vCard)',
                   icon: Download,
                   action: onExportAllVcard,
                 },
                 onExportAllTasks && {
-                  id: "all-tasks",
-                  label: "All Tasks (CSV)",
+                  id: 'all-tasks',
+                  label: 'All Tasks (CSV)',
                   icon: Download,
                   action: onExportAllTasks,
                 },
                 onExportAllCalendar && {
-                  id: "all-cal",
-                  label: "All Calendar (ICS)",
+                  id: 'all-cal',
+                  label: 'All Calendar (ICS)',
                   icon: Download,
                   action: onExportAllCalendar,
                 },
@@ -268,7 +252,16 @@ export function ContactsToolbar({
           variant="primary"
           size="sm"
           icon={
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
@@ -287,13 +280,11 @@ export function ContactsToolbar({
           role="region"
           aria-label="Bulk actions"
         >
-          <span className="text-xs font-medium text-text-primary">
-            {selectedCount} selected
-          </span>
+          <span className="text-xs font-medium text-text-primary">{selectedCount} selected</span>
           <div className="w-px h-4 bg-border-primary" aria-hidden="true" />
           <button
             type="button"
-            onClick={() => onBulkAction("tag")}
+            onClick={() => onBulkAction('tag')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-accent hover:bg-bg-hover rounded transition-colors min-h-[28px]"
           >
             <TagIcon size={10} />
@@ -301,7 +292,7 @@ export function ContactsToolbar({
           </button>
           <button
             type="button"
-            onClick={() => onBulkAction("group")}
+            onClick={() => onBulkAction('group')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-accent hover:bg-bg-hover rounded transition-colors min-h-[28px]"
           >
             <Users size={10} />
@@ -309,7 +300,7 @@ export function ContactsToolbar({
           </button>
           <button
             type="button"
-            onClick={() => onBulkAction("export")}
+            onClick={() => onBulkAction('export')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-accent hover:bg-bg-hover rounded transition-colors min-h-[28px]"
           >
             <Download size={10} />
@@ -317,7 +308,7 @@ export function ContactsToolbar({
           </button>
           <button
             type="button"
-            onClick={() => onBulkAction("merge")}
+            onClick={() => onBulkAction('merge')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-accent hover:bg-bg-hover rounded transition-colors min-h-[28px]"
           >
             <GitMerge size={10} />
@@ -325,7 +316,7 @@ export function ContactsToolbar({
           </button>
           <button
             type="button"
-            onClick={() => onBulkAction("delete")}
+            onClick={() => onBulkAction('delete')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-error hover:bg-error/10 rounded transition-colors min-h-[28px]"
           >
             <Trash2 size={10} />
@@ -334,7 +325,7 @@ export function ContactsToolbar({
           <div className="flex-1" />
           <button
             type="button"
-            onClick={() => onBulkAction("clear")}
+            onClick={() => onBulkAction('clear')}
             className="inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded transition-colors min-h-[28px]"
             aria-label="Clear selection"
           >

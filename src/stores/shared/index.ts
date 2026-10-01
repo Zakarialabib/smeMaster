@@ -1,1 +1,1 @@
-export { useSyncStore, initSyncStoreEvents } from "./syncStore";
+export { useSyncStore, initSyncStoreEvents } from './syncStore';

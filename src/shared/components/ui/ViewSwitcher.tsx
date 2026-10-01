@@ -21,9 +21,16 @@ const VIEW_LABELS: Record<ViewMode, string> = {
   calendar: 'Calendar',
 };
 
-export function ViewSwitcher({ activeView, onViewChange, availableViews = ['list', 'card', 'board'], className = '' }: ViewSwitcherProps) {
+export function ViewSwitcher({
+  activeView,
+  onViewChange,
+  availableViews = ['list', 'card', 'board'],
+  className = '',
+}: ViewSwitcherProps) {
   return (
-    <div className={`flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}>
+    <div
+      className={`flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}
+    >
       {availableViews.map((view) => (
         <button
           key={view}

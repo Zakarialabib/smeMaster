@@ -24,7 +24,13 @@ describe('ViewSwitcher', () => {
   });
 
   it('renders only specified available views', () => {
-    render(<ViewSwitcher activeView="list" onViewChange={vi.fn()} availableViews={['list', 'calendar']} />);
+    render(
+      <ViewSwitcher
+        activeView="list"
+        onViewChange={vi.fn()}
+        availableViews={['list', 'calendar']}
+      />,
+    );
     expect(screen.getByLabelText('List')).toBeDefined();
     expect(screen.getByLabelText('Calendar')).toBeDefined();
     expect(screen.queryByLabelText('Cards')).toBeNull();

@@ -1,4 +1,4 @@
-import type { DomainHealth } from "@features/deliverability/services/domainHealthService";
+import type { DomainHealth } from '@features/deliverability/services/domainHealthService';
 
 interface Props {
   health: DomainHealth;
@@ -11,9 +11,9 @@ interface ProviderRow {
 
 function getProviderRows(health: DomainHealth): ProviderRow[] {
   return [
-    { name: "Gmail", ready: health.spf_status.valid && health.dkim_status.valid },
-    { name: "Outlook", ready: health.spf_status.valid },
-    { name: "Yahoo", ready: health.dmarc_status.valid },
+    { name: 'Gmail', ready: health.spf_status.valid && health.dkim_status.valid },
+    { name: 'Outlook', ready: health.spf_status.valid },
+    { name: 'Yahoo', ready: health.dmarc_status.valid },
   ];
 }
 

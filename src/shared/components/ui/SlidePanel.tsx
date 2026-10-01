@@ -1,7 +1,7 @@
-import { useEffect, useRef, type ReactNode } from "react";
-import { CSSTransition } from "react-transition-group";
-import { X } from "lucide-react";
-import { usePlatform } from "@shared/hooks/usePlatform";
+import { useEffect, useRef, type ReactNode } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import { X } from 'lucide-react';
+import { usePlatform } from '@shared/hooks/usePlatform';
 
 /**
  * SlidePanel — right sidebar (desktop) or bottom sheet (mobile).
@@ -13,7 +13,7 @@ import { usePlatform } from "@shared/hooks/usePlatform";
  * See globals.css @keyframes section for the keyframe definitions.
  */
 
-type SlideSide = "right" | "bottom";
+type SlideSide = 'right' | 'bottom';
 
 interface SlidePanelProps {
   isOpen: boolean;
@@ -49,32 +49,34 @@ export function SlidePanel({
   const backdropRef = useRef<HTMLDivElement>(null);
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  const effectiveSide = isMobileDevice ? "bottom" : "right";
+  const effectiveSide = isMobileDevice ? 'bottom' : 'right';
 
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
 
   // Prevent body scroll when open on mobile
   useEffect(() => {
     if (isOpen && isMobileDevice) {
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = ""; };
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen, isMobileDevice]);
 
   const panelClasses =
-    effectiveSide === "right"
-      ? `fixed inset-inline-end-0 top-0 h-full w-full ${widthClass ?? "max-w-md"} bg-bg-primary border-s border-border-primary shadow-xl z-50 flex flex-col`
-      : "fixed bottom-0 inset-inline-start-0 inset-inline-end-0 max-h-[85vh] bg-bg-primary border-t border-border-primary rounded-t-2xl shadow-xl z-50 flex flex-col bottom-sheet";
+    effectiveSide === 'right'
+      ? `fixed inset-inline-end-0 top-0 h-full w-full ${widthClass ?? 'max-w-md'} bg-bg-primary border-s border-border-primary shadow-xl z-50 flex flex-col`
+      : 'fixed bottom-0 inset-inline-start-0 inset-inline-end-0 max-h-[85vh] bg-bg-primary border-t border-border-primary rounded-t-2xl shadow-xl z-50 flex flex-col bottom-sheet';
 
-  const transitionName = effectiveSide === "right" ? "slide-in-right" : "slide-up";
+  const transitionName = effectiveSide === 'right' ? 'slide-in-right' : 'slide-up';
 
   return (
     <>
@@ -102,9 +104,15 @@ export function SlidePanel({
         unmountOnExit
         nodeRef={nodeRef}
       >
-        <div ref={nodeRef} className={panelClasses} role="dialog" aria-modal="true" aria-label={title}>
+        <div
+          ref={nodeRef}
+          className={panelClasses}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+        >
           {/* Drag handle (mobile bottom sheet) */}
-          {effectiveSide === "bottom" && (
+          {effectiveSide === 'bottom' && (
             <div className="flex justify-center pt-2 pb-1 shrink-0">
               <div className="w-12 h-1.5 rounded-full bg-border-primary/60" />
             </div>
@@ -133,9 +141,7 @@ export function SlidePanel({
 
           {/* Footer with optional learn more link or custom content */}
           {footerChildren && (
-            <div className="shrink-0 border-t border-border-primary">
-              {footerChildren}
-            </div>
+            <div className="shrink-0 border-t border-border-primary">{footerChildren}</div>
           )}
           {!footerChildren && learnMoreHref && (
             <div className="px-5 py-3.5 border-t border-border-primary shrink-0">

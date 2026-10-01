@@ -1,6 +1,10 @@
-import { getCachedCheck, cacheCheck, getBlacklistHistory as dbGetHistory } from "@features/deliverability/db/blacklistCache";
-import type { BlacklistCheckRow } from "@features/deliverability/db/blacklistCache";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import {
+  getCachedCheck,
+  cacheCheck,
+  getBlacklistHistory as dbGetHistory,
+} from '@features/deliverability/db/blacklistCache';
+import type { BlacklistCheckRow } from '@features/deliverability/db/blacklistCache';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import {
   listBlacklistMonitors,
   createBlacklistMonitor,
@@ -25,7 +29,7 @@ import {
   type BulkCheckJob,
   type ReputationScore,
   type AlertPreferences,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type { BlacklistMonitor, DelistRequest, BulkCheckJob, ReputationScore, AlertPreferences };
 
@@ -36,29 +40,35 @@ export interface BlacklistCheckResult {
 }
 
 const DNSBLS = [
-  { name: "Spamhaus", host: "zen.spamhaus.org" },
-  { name: "Barracuda", host: "b.barracudacentral.org" },
-  { name: "SpamCop", host: "bl.spamcop.net" },
-  { name: "SURBL", host: "multi.surbl.org" },
+  { name: 'Spamhaus', host: 'zen.spamhaus.org' },
+  { name: 'Barracuda', host: 'b.barracudacentral.org' },
+  { name: 'SpamCop', host: 'bl.spamcop.net' },
+  { name: 'SURBL', host: 'multi.surbl.org' },
 ];
 
-export async function checkBlacklists(accountId: string, target: string, checkType: "ip" | "domain"): Promise<BlacklistCheckResult[]> {
+export async function checkBlacklists(
+  accountId: string,
+  target: string,
+  checkType: 'ip' | 'domain',
+): Promise<BlacklistCheckResult[]> {
   const cached = await getCachedCheck(accountId, checkType, target);
   if (cached && cached.listed === 1) {
-    return [{
-      listName: cached.list_name ?? "unknown",
-      listed: true,
-      responded: cached.responded === 1,
-    }];
+    return [
+      {
+        listName: cached.list_name ?? 'unknown',
+        listed: true,
+        responded: cached.responded === 1,
+      },
+    ];
   }
 
-  if (checkType !== "ip") {
+  if (checkType !== 'ip') {
     return DNSBLS.map((d) => ({ listName: d.name, listed: false, responded: false }));
   }
 
   let results: BlacklistCheckResult[];
   try {
-    results = await invokeCommand<BlacklistCheckResult[]>("check_dnsbl_cmd", { ip: target });
+    results = await invokeCommand<BlacklistCheckResult[]>('check_dnsbl_cmd', { ip: target });
   } catch {
     results = DNSBLS.map((d) => ({ listName: d.name, listed: false, responded: false }));
   }
@@ -83,9 +93,9 @@ export async function getBlacklistMonitors(accountId: string): Promise<Blacklist
 export async function addBlacklistMonitor(
   accountId: string,
   target: string,
-  checkType: "ip" | "domain",
+  checkType: 'ip' | 'domain',
   intervalMinutes: number = 1440,
-  alerts: string[] = ["email"]
+  alerts: string[] = ['email'],
 ): Promise<BlacklistMonitor> {
   return createBlacklistMonitor({
     accountId,
@@ -114,8 +124,8 @@ export async function submitDelistRequest(
   accountId: string,
   listName: string,
   target: string,
-  targetType: "ip" | "domain",
-  reason?: string
+  targetType: 'ip' | 'domain',
+  reason?: string,
 ): Promise<DelistRequest> {
   return createDelistRequest({
     accountId,
@@ -128,9 +138,9 @@ export async function submitDelistRequest(
 
 export async function updateDelistStatus(
   id: string,
-  status: "pending" | "submitted" | "in_review" | "resolved" | "rejected",
+  status: 'pending' | 'submitted' | 'in_review' | 'resolved' | 'rejected',
   delistUrl?: string,
-  notes?: string
+  notes?: string,
 ): Promise<void> {
   return updateDelistRequestStatus(id, status, delistUrl, notes);
 }
@@ -141,7 +151,10 @@ export async function removeDelistRequest(id: string): Promise<void> {
 
 // ── Bulk Check Jobs ────────────────────────────────────────────────────────────
 
-export async function getBulkCheckJobs(accountId: string, limit: number = 10): Promise<BulkCheckJob[]> {
+export async function getBulkCheckJobs(
+  accountId: string,
+  limit: number = 10,
+): Promise<BulkCheckJob[]> {
   return listBulkCheckJobs(accountId, limit);
 }
 
@@ -149,11 +162,18 @@ export async function getBulkCheckJobStatus(id: string): Promise<BulkCheckJob | 
   return getBulkCheckJob(id);
 }
 
-export async function startBulkCheck(accountId: string, targets: { target: string; type: "ip" | "domain" }[]): Promise<BulkCheckJob> {
+export async function startBulkCheck(
+  accountId: string,
+  targets: { target: string; type: 'ip' | 'domain' }[],
+): Promise<BulkCheckJob> {
   return createBulkCheckJob(accountId, targets.length);
 }
 
-export async function updateBulkCheckProgress(id: string, processed: number, results: unknown[]): Promise<void> {
+export async function updateBulkCheckProgress(
+  id: string,
+  processed: number,
+  results: unknown[],
+): Promise<void> {
   return updateBulkCheckJobProgress(id, processed, JSON.stringify(results));
 }
 
@@ -179,7 +199,7 @@ export async function saveReputationScore(
     bounce: number;
     complaint: number;
     warmup: number;
-  }
+  },
 ): Promise<ReputationScore> {
   return upsertReputationScore({
     accountId,
@@ -193,7 +213,9 @@ export async function saveReputationScore(
 
 // ── Alert Preferences ──────────────────────────────────────────────────────────
 
-export async function getNotificationPreferences(accountId: string): Promise<AlertPreferences | null> {
+export async function getNotificationPreferences(
+  accountId: string,
+): Promise<AlertPreferences | null> {
   return getAlertPreferences(accountId);
 }
 
@@ -201,7 +223,7 @@ export async function saveNotificationPreferences(
   accountId: string,
   enabled: boolean,
   channels: string[],
-  threshold: "immediate" | "daily" | "weekly"
+  threshold: 'immediate' | 'daily' | 'weekly',
 ): Promise<AlertPreferences> {
   return upsertAlertPreferences({
     accountId,

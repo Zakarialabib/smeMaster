@@ -3,11 +3,11 @@
   releaseHeldThreads,
   updateLastDelivered,
   type DeliverySchedule,
-} from "@features/deliverability/db/bundleRules";
-import { getAllAccounts } from "@features/accounts/db/accounts";
-import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
-import { createBackgroundChecker } from "@shared/services/backgroundCheckers";
-import { uiBus } from "@shared/services/events/uiBus";
+} from '@features/deliverability/db/bundleRules';
+import { getAllAccounts } from '@features/accounts/db/accounts';
+import { getCurrentUnixTimestamp } from '@shared/utils/timestamp';
+import { createBackgroundChecker } from '@shared/services/backgroundCheckers';
+import { uiBus } from '@shared/services/events/uiBus';
 
 /**
  * Check if the current time matches a delivery schedule.
@@ -55,14 +55,13 @@ async function checkBundleDelivery(): Promise<void> {
         if (released > 0) {
           await updateLastDelivered(account.id, rule.category);
           // Refresh UI
-          uiBus.emit("data:changed");
+          uiBus.emit('data:changed');
         }
       }
     }
   }
 }
 
-const bundleChecker = createBackgroundChecker("Bundle", checkBundleDelivery);
+const bundleChecker = createBackgroundChecker('Bundle', checkBundleDelivery);
 export const startBundleChecker = bundleChecker.start;
 export const stopBundleChecker = bundleChecker.stop;
-

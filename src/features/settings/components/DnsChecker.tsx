@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   Loader2,
@@ -15,10 +15,10 @@ import {
   KeyRound,
   FileText,
   Sparkles,
-} from "lucide-react";
-import { checkDomainDns, getDnsHealthScore } from "@features/deliverability/services/dnsChecker";
-import type { DnsCheckResult } from "@features/deliverability/services/dnsChecker";
-import { cn } from "@shared/utils/cn";
+} from 'lucide-react';
+import { checkDomainDns, getDnsHealthScore } from '@features/deliverability/services/dnsChecker';
+import type { DnsCheckResult } from '@features/deliverability/services/dnsChecker';
+import { cn } from '@shared/utils/cn';
 
 // ─── Record Type Config ───
 const RECORD_CONFIG: Record<
@@ -27,31 +27,31 @@ const RECORD_CONFIG: Record<
 > = {
   SPF: {
     icon: Shield,
-    label: "Sender Policy Framework",
-    color: "text-success",
-    bg: "bg-success/5",
-    border: "border-success/20",
+    label: 'Sender Policy Framework',
+    color: 'text-success',
+    bg: 'bg-success/5',
+    border: 'border-success/20',
   },
   DKIM: {
     icon: KeyRound,
-    label: "DomainKeys Identified Mail",
-    color: "text-accent",
-    bg: "bg-accent/5",
-    border: "border-accent/20",
+    label: 'DomainKeys Identified Mail',
+    color: 'text-accent',
+    bg: 'bg-accent/5',
+    border: 'border-accent/20',
   },
   DMARC: {
     icon: FileText,
-    label: "DMARC Policy",
-    color: "text-warning",
-    bg: "bg-warning/5",
-    border: "border-warning/20",
+    label: 'DMARC Policy',
+    color: 'text-warning',
+    bg: 'bg-warning/5',
+    border: 'border-warning/20',
   },
 };
 
 // ─── Copy Helper ───
 const copyToClipboard = async (text: string) => {
   try {
-    const { copyToClipboard: clip } = await import("@shared/hooks/useClipboard");
+    const { copyToClipboard: clip } = await import('@shared/hooks/useClipboard');
     await clip(text);
     return true;
   } catch {
@@ -63,8 +63,9 @@ const copyToClipboard = async (text: string) => {
 const ScoreGauge = ({ score }: { score: number }) => {
   const circumference = 2 * Math.PI * 36;
   const strokeDashoffset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "text-success" : score >= 50 ? "text-warning" : "text-danger";
-  const bgColor = score >= 80 ? "stroke-success/20" : score >= 50 ? "stroke-warning/20" : "stroke-danger/20";
+  const color = score >= 80 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-danger';
+  const bgColor =
+    score >= 80 ? 'stroke-success/20' : score >= 50 ? 'stroke-warning/20' : 'stroke-danger/20';
 
   return (
     <div className="relative w-24 h-24 shrink-0">
@@ -77,14 +78,16 @@ const ScoreGauge = ({ score }: { score: number }) => {
           fill="none"
           strokeWidth="6"
           strokeLinecap="round"
-          className={cn(color, "transition-all duration-1000")}
+          className={cn(color, 'transition-all duration-1000')}
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn("text-xl font-bold", color)}>{score}</span>
-        <span className="text-[9px] font-bold uppercase tracking-wider text-text-tertiary">/ 100</span>
+        <span className={cn('text-xl font-bold', color)}>{score}</span>
+        <span className="text-[9px] font-bold uppercase tracking-wider text-text-tertiary">
+          / 100
+        </span>
       </div>
     </div>
   );
@@ -96,15 +99,33 @@ const ResultCard = ({ result }: { result: DnsCheckResult }) => {
   const config = RECORD_CONFIG[result.record] || {
     icon: Globe,
     label: result.record,
-    color: "text-text-secondary",
-    bg: "bg-bg-tertiary",
-    border: "border-border",
+    color: 'text-text-secondary',
+    bg: 'bg-bg-tertiary',
+    border: 'border-border',
   };
 
   const statusConfig = {
-    pass: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", border: "border-success/20", label: "PASS" },
-    fail: { icon: XCircle, color: "text-danger", bg: "bg-danger/10", border: "border-danger/20", label: "FAIL" },
-    error: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", border: "border-warning/20", label: "ERROR" },
+    pass: {
+      icon: CheckCircle2,
+      color: 'text-success',
+      bg: 'bg-success/10',
+      border: 'border-success/20',
+      label: 'PASS',
+    },
+    fail: {
+      icon: XCircle,
+      color: 'text-danger',
+      bg: 'bg-danger/10',
+      border: 'border-danger/20',
+      label: 'FAIL',
+    },
+    error: {
+      icon: AlertTriangle,
+      color: 'text-warning',
+      bg: 'bg-warning/10',
+      border: 'border-warning/20',
+      label: 'ERROR',
+    },
   };
   const status = statusConfig[result.status as keyof typeof statusConfig] || statusConfig.error;
 
@@ -119,25 +140,25 @@ const ResultCard = ({ result }: { result: DnsCheckResult }) => {
   return (
     <div
       className={cn(
-        "group relative rounded-2xl border p-4 transition-all hover:shadow-sm",
+        'group relative rounded-2xl border p-4 transition-all hover:shadow-sm',
         config.bg,
-        config.border
+        config.border,
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-white/50 shrink-0">
-            <config.icon className={cn("w-5 h-5", config.color)} />
+            <config.icon className={cn('w-5 h-5', config.color)} />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-bold text-text-primary">{result.record}</span>
               <span
                 className={cn(
-                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
                   status.bg,
                   status.border,
-                  status.color
+                  status.color,
                 )}
               >
                 <status.icon size={10} />
@@ -155,7 +176,7 @@ const ResultCard = ({ result }: { result: DnsCheckResult }) => {
           className="absolute top-2 end-2 opacity-0 group-hover/value:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-medium text-text-secondary backdrop-blur-sm border border-white/10"
         >
           {copied ? <Check size={10} /> : <Copy size={10} />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? 'Copied' : 'Copy'}
         </button>
         <p className="text-xs text-success font-mono break-all pe-16">{result.value}</p>
       </div>
@@ -169,7 +190,7 @@ const ResultCard = ({ result }: { result: DnsCheckResult }) => {
 
 export function DnsChecker() {
   const { t } = useTranslation();
-  const [domain, setDomain] = useState("example.com");
+  const [domain, setDomain] = useState('example.com');
   const [results, setResults] = useState<DnsCheckResult[] | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -191,9 +212,7 @@ export function DnsChecker() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs text-text-tertiary">
-          {t("settings.dns.description")}
-        </p>
+        <p className="text-xs text-text-tertiary">{t('settings.dns.description')}</p>
       </div>
 
       {/* ── Input ─── */}
@@ -207,7 +226,7 @@ export function DnsChecker() {
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleCheck();
+              if (e.key === 'Enter') handleCheck();
             }}
           />
         </div>
@@ -216,12 +235,8 @@ export function DnsChecker() {
           disabled={loading || !domain.trim()}
           className="flex items-center justify-center gap-2 px-6 py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 shrink-0"
         >
-          {loading ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <Search size={16} />
-          )}
-          {loading ? t("common.checking") : t("settings.dns.checkNow")}
+          {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+          {loading ? t('common.checking') : t('settings.dns.checkNow')}
         </button>
       </div>
 
@@ -240,7 +255,7 @@ export function DnsChecker() {
               setResults(null);
               setScore(null);
               setCheckedDomain(null);
-              setDomain("");
+              setDomain('');
             }}
             className="text-[10px] text-text-tertiary hover:text-text-secondary transition-colors ms-2"
           >
@@ -253,12 +268,12 @@ export function DnsChecker() {
       {score !== null && !loading && (
         <div
           className={cn(
-            "rounded-2xl border p-5 transition-all",
+            'rounded-2xl border p-5 transition-all',
             score >= 80
-              ? "bg-success/5 border-success/20"
+              ? 'bg-success/5 border-success/20'
               : score >= 50
-                ? "bg-warning/5 border-warning/20"
-                : "bg-danger/5 border-danger/20"
+                ? 'bg-warning/5 border-warning/20'
+                : 'bg-danger/5 border-danger/20',
           )}
         >
           <div className="flex items-center gap-5">
@@ -266,35 +281,35 @@ export function DnsChecker() {
             <div className="flex-1 min-w-0">
               <h3
                 className={cn(
-                  "text-sm font-bold",
-                  score >= 80 ? "text-success" : score >= 50 ? "text-warning" : "text-danger"
+                  'text-sm font-bold',
+                  score >= 80 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-danger',
                 )}
               >
                 {score >= 80
-                  ? "Excellent DNS Health"
+                  ? 'Excellent DNS Health'
                   : score >= 50
-                    ? "Needs Improvement"
-                    : "Critical DNS Issues"}
+                    ? 'Needs Improvement'
+                    : 'Critical DNS Issues'}
               </h3>
               <p className="text-xs text-text-tertiary mt-1 leading-relaxed">
                 {score >= 80
-                  ? "Your domain is fully authenticated. Expect optimal deliverability and inbox placement."
+                  ? 'Your domain is fully authenticated. Expect optimal deliverability and inbox placement.'
                   : score >= 50
-                    ? "Some records are missing or misconfigured. Review the failed checks below and update your DNS."
-                    : "Major authentication gaps detected. Your emails are likely being rejected or sent to spam."}
+                    ? 'Some records are missing or misconfigured. Review the failed checks below and update your DNS.'
+                    : 'Major authentication gaps detected. Your emails are likely being rejected or sent to spam.'}
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <div
                   className={cn(
-                    "h-1.5 rounded-full flex-1",
-                    score >= 80 ? "bg-success" : score >= 50 ? "bg-warning" : "bg-danger"
+                    'h-1.5 rounded-full flex-1',
+                    score >= 80 ? 'bg-success' : score >= 50 ? 'bg-warning' : 'bg-danger',
                   )}
                   style={{ opacity: 0.3 }}
                 />
                 <span
                   className={cn(
-                    "text-[10px] font-bold",
-                    score >= 80 ? "text-success" : score >= 50 ? "text-warning" : "text-danger"
+                    'text-[10px] font-bold',
+                    score >= 80 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-danger',
                   )}
                 >
                   {score}/100
@@ -311,7 +326,7 @@ export function DnsChecker() {
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
               <Sparkles size={14} className="text-accent" />
-              {t("settings.dns.results") || "DNS Results"}
+              {t('settings.dns.results') || 'DNS Results'}
             </h4>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary border border-border">
               {results.length} records checked
@@ -333,11 +348,10 @@ export function DnsChecker() {
             <Shield className="w-8 h-8 text-text-tertiary opacity-30" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-text-tertiary">
-              Ready to check your domain
-            </p>
+            <p className="text-sm font-semibold text-text-tertiary">Ready to check your domain</p>
             <p className="text-xs text-text-tertiary mt-1 max-w-[280px]">
-              Enter a domain above and click "Check DNS" to validate SPF, DKIM, and DMARC configuration.
+              Enter a domain above and click "Check DNS" to validate SPF, DKIM, and DMARC
+              configuration.
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-text-tertiary">

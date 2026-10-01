@@ -152,7 +152,9 @@
 .page-slide-enter-active {
   transform: translateX(0);
   opacity: 1;
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease;
 }
 .page-slide-exit {
   transform: translateX(0);
@@ -161,7 +163,9 @@
 .page-slide-exit-active {
   transform: translateX(-30%);
   opacity: 0;
-  transition: transform 250ms ease, opacity 250ms ease;
+  transition:
+    transform 250ms ease,
+    opacity 250ms ease;
 }
 
 /* Slide up transitions for bottom sheets */
@@ -188,7 +192,9 @@
 .scale-enter-active {
   transform: scale(1);
   opacity: 1;
-  transition: transform 200ms ease, opacity 200ms ease;
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease;
 }
 .scale-exit {
   transform: scale(1);
@@ -197,14 +203,25 @@
 .scale-exit-active {
   transform: scale(0.95);
   opacity: 0;
-  transition: transform 150ms ease, opacity 150ms ease;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
 }
 
 /* Reconnection animation - added 2026-07-05 */
 @keyframes reconnect-pulse {
-  0% { background-color: rgb(34 197 94 / 0); transform: scale(1); }
-  50% { background-color: rgb(34 197 94 / 0.1); transform: scale(1.02); }
-  100% { background-color: rgb(34 197 94 / 0); transform: scale(1); }
+  0% {
+    background-color: rgb(34 197 94 / 0);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgb(34 197 94 / 0.1);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: rgb(34 197 94 / 0);
+    transform: scale(1);
+  }
 }
 
 .reconnect-animate {

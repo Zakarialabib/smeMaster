@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { useThemeStore } from "@/shared/stores/themeStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { getAllAccounts } from "@features/accounts";
-import { getSetting } from "@features/settings";
-import { initializeClients } from "@features/mail/services/gmail/tokenManager";
-import { getThemeById, COLOR_THEMES } from "@/constants/themes";
-import type { ColorThemeId } from "@/constants/themes";
+import { useEffect, useState } from 'react';
+import { useThemeStore } from '@/shared/stores/themeStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { getAllAccounts } from '@features/accounts';
+import { getSetting } from '@features/settings';
+import { initializeClients } from '@features/mail/services/gmail/tokenManager';
+import { getThemeById, COLOR_THEMES } from '@/constants/themes';
+import type { ColorThemeId } from '@/constants/themes';
 
 export interface WindowInitResult {
   loading: boolean;
@@ -22,19 +22,24 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
     async function init() {
       try {
         // Restore theme
-        const savedTheme = await getSetting("theme");
-        if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+        const savedTheme = await getSetting('theme');
+        if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
           setTheme(savedTheme);
         }
 
         // Restore font scale
-        const savedFontScale = await getSetting("font_size");
-        if (savedFontScale === "small" || savedFontScale === "default" || savedFontScale === "large" || savedFontScale === "xlarge") {
+        const savedFontScale = await getSetting('font_size');
+        if (
+          savedFontScale === 'small' ||
+          savedFontScale === 'default' ||
+          savedFontScale === 'large' ||
+          savedFontScale === 'xlarge'
+        ) {
           setFontScale(savedFontScale);
         }
 
         // Restore color theme
-        const savedColorTheme = await getSetting("color_theme");
+        const savedColorTheme = await getSetting('color_theme');
         if (savedColorTheme && COLOR_THEMES.some((t) => t.id === savedColorTheme)) {
           setColorTheme(savedColorTheme as ColorThemeId);
         }
@@ -57,7 +62,7 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
           await initializeClients();
         }
       } catch (err) {
-        console.error("Failed to initialize window:", err);
+        console.error('Failed to initialize window:', err);
         setError(err instanceof Error ? err.message : String(err));
       }
       setLoading(false);
@@ -72,19 +77,19 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
   const theme = useThemeStore((s) => s.theme);
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else if (theme === "light") {
-      root.classList.remove("dark");
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'light') {
+      root.classList.remove('dark');
     } else {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
       const apply = () => {
-        if (mq.matches) root.classList.add("dark");
-        else root.classList.remove("dark");
+        if (mq.matches) root.classList.add('dark');
+        else root.classList.remove('dark');
       };
       apply();
-      mq.addEventListener("change", apply);
-      return () => mq.removeEventListener("change", apply);
+      mq.addEventListener('change', apply);
+      return () => mq.removeEventListener('change', apply);
     }
   }, [theme]);
 
@@ -92,7 +97,12 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
   const fontScale = useThemeStore((s) => s.fontScale);
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove("font-scale-small", "font-scale-default", "font-scale-large", "font-scale-xlarge");
+    root.classList.remove(
+      'font-scale-small',
+      'font-scale-default',
+      'font-scale-large',
+      'font-scale-xlarge',
+    );
     root.classList.add(`font-scale-${fontScale}`);
   }, [fontScale]);
 
@@ -100,44 +110,50 @@ export function useWindowInit(options?: { skipClients?: boolean }): WindowInitRe
   const colorTheme = useThemeStore((s) => s.colorTheme);
   useEffect(() => {
     const root = document.documentElement;
-    const props = ["--color-accent", "--color-accent-hover", "--color-accent-light", "--color-bg-selected", "--color-sidebar-active"];
+    const props = [
+      '--color-accent',
+      '--color-accent-hover',
+      '--color-accent-light',
+      '--color-bg-selected',
+      '--color-sidebar-active',
+    ];
 
     const apply = () => {
-      if (colorTheme === "indigo") {
+      if (colorTheme === 'indigo') {
         for (const p of props) root.style.removeProperty(p);
         return;
       }
       const themeData = getThemeById(colorTheme);
       const isDark =
-        theme === "dark" ||
-        (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        theme === 'dark' ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       const colors = isDark ? themeData.dark : themeData.light;
-      root.style.setProperty("--color-accent", colors.accent);
-      root.style.setProperty("--color-accent-hover", colors.accentHover);
-      root.style.setProperty("--color-accent-light", colors.accentLight);
-      root.style.setProperty("--color-bg-selected", colors.bgSelected);
-      root.style.setProperty("--color-sidebar-active", colors.sidebarActive);
+      root.style.setProperty('--color-accent', colors.accent);
+      root.style.setProperty('--color-accent-hover', colors.accentHover);
+      root.style.setProperty('--color-accent-light', colors.accentLight);
+      root.style.setProperty('--color-bg-selected', colors.bgSelected);
+      root.style.setProperty('--color-sidebar-active', colors.sidebarActive);
     };
 
     apply();
 
-    if (theme === "system") {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      mq.addEventListener("change", apply);
-      return () => mq.removeEventListener("change", apply);
+    if (theme === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      mq.addEventListener('change', apply);
+      return () => mq.removeEventListener('change', apply);
     }
   }, [colorTheme, theme]);
 
   // Sync surface layer (flat | glass) to <html> for CSS gating
   const surface = useThemeStore((s) => s.surface);
   useEffect(() => {
-    document.documentElement.setAttribute("data-surface", surface);
+    document.documentElement.setAttribute('data-surface', surface);
   }, [surface]);
 
   // Sync UI density (compact | normal | relaxed) to <html>
   const density = useThemeStore((s) => s.density);
   useEffect(() => {
-    document.documentElement.setAttribute("data-density", density);
+    document.documentElement.setAttribute('data-density', density);
   }, [density]);
 
   return { loading, error };

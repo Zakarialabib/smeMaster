@@ -1,7 +1,10 @@
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { createDraft as createDraftAction, updateDraft as updateDraftAction } from "@features/mail/services/emailActions";
-import { buildRawEmail } from "@shared/utils/emailBuilder";
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import {
+  createDraft as createDraftAction,
+  updateDraft as updateDraftAction,
+} from '@features/mail/services/emailActions';
+import { buildRawEmail } from '@shared/utils/emailBuilder';
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let unsubscribe: (() => void) | null = null;
@@ -27,31 +30,32 @@ async function saveDraft(): Promise<void> {
   try {
     const raw = buildRawEmail({
       from: account.email,
-      to: state.to.length > 0 ? state.to : [""],
+      to: state.to.length > 0 ? state.to : [''],
       subject: state.subject,
       htmlBody: state.bodyHtml,
       threadId: state.threadId ?? undefined,
-      attachments: state.attachments.length > 0
-        ? state.attachments.map((a) => ({
-            filename: a.filename,
-            mimeType: a.mimeType,
-            content: a.content,
-          }))
-        : undefined,
+      attachments:
+        state.attachments.length > 0
+          ? state.attachments.map((a) => ({
+              filename: a.filename,
+              mimeType: a.mimeType,
+              content: a.content,
+            }))
+          : undefined,
     });
 
     if (state.draftId) {
       await updateDraftAction(accountId, state.draftId, raw, state.threadId ?? undefined);
     } else {
       const result = await createDraftAction(accountId, raw, state.threadId ?? undefined);
-      if (result.data && typeof result.data === "object" && "draftId" in result.data) {
+      if (result.data && typeof result.data === 'object' && 'draftId' in result.data) {
         state.setDraftId((result.data as { draftId: string }).draftId);
       }
     }
 
     state.setLastSavedAt(Date.now());
   } catch (err) {
-    console.error("Failed to auto-save draft:", err);
+    console.error('Failed to auto-save draft:', err);
   } finally {
     state.setIsSaving(false);
   }
@@ -70,22 +74,20 @@ export function startAutoSave(accountId: string): void {
   currentAccountId = accountId;
 
   // Subscribe to store changes ��� trigger debounced save on any field change
-  unsubscribe = useComposerStore.subscribe(
-    (state, prevState) => {
-      if (!state.isOpen) return;
-      // Only save when content-relevant fields change
-      if (
-        state.bodyHtml !== prevState.bodyHtml ||
-        state.subject !== prevState.subject ||
-        state.to !== prevState.to ||
-        state.cc !== prevState.cc ||
-        state.bcc !== prevState.bcc ||
-        state.attachments !== prevState.attachments
-      ) {
-        scheduleSave();
-      }
-    },
-  );
+  unsubscribe = useComposerStore.subscribe((state, prevState) => {
+    if (!state.isOpen) return;
+    // Only save when content-relevant fields change
+    if (
+      state.bodyHtml !== prevState.bodyHtml ||
+      state.subject !== prevState.subject ||
+      state.to !== prevState.to ||
+      state.cc !== prevState.cc ||
+      state.bcc !== prevState.bcc ||
+      state.attachments !== prevState.attachments
+    ) {
+      scheduleSave();
+    }
+  });
 }
 
 /**
@@ -102,5 +104,3 @@ export function stopAutoSave(): void {
   }
   currentAccountId = null;
 }
-
-

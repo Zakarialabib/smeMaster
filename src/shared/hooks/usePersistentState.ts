@@ -22,16 +22,16 @@ function getStorage(storage: string) {
   }
 }
 
-export const usePersistentState = <T,>(
+export const usePersistentState = <T>(
   key: string,
   defaultValue: T,
-  options: Partial<UsePersistentStateOptions<T>> = {}
+  options: Partial<UsePersistentStateOptions<T>> = {},
 ) => {
   const {
     storage = 'localStorage',
     serializer = JSON.stringify,
     deserializer = JSON.parse,
-    syncAcrossTabs = true
+    syncAcrossTabs = true,
   } = options;
 
   const storageInstance = getStorage(storage);
@@ -68,7 +68,7 @@ export const usePersistentState = <T,>(
         console.error(`Error writing persistent state for key '${key}':`, error);
       }
     },
-    [key, serializer, storage, state]
+    [key, serializer, storage, state],
   );
 
   useEffect(() => {

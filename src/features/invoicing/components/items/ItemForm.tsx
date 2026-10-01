@@ -115,7 +115,10 @@ export default function ItemForm({
       notify(item ? 'Product updated' : 'Product created', form.name.trim());
       onClose();
     } catch (err) {
-      notify(item ? 'Failed to update product' : 'Failed to create product', getUserFriendlyErrorMessage(err, 'save product'));
+      notify(
+        item ? 'Failed to update product' : 'Failed to create product',
+        getUserFriendlyErrorMessage(err, 'save product'),
+      );
     } finally {
       setSaving(false);
     }
@@ -140,7 +143,9 @@ export default function ItemForm({
                 {item ? 'Edit Item' : 'New Item'}
               </h3>
               <p className="text-xs text-text-tertiary">
-                {item ? 'Update the product or service details.' : 'Add a product or service to your catalog.'}
+                {item
+                  ? 'Update the product or service details.'
+                  : 'Add a product or service to your catalog.'}
               </p>
             </div>
           </div>

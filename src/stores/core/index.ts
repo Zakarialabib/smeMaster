@@ -1,4 +1,4 @@
-export { useConfigStore } from "./configStore";
+export { useConfigStore } from './configStore';
 export type {
   ThemeMode,
   FontScale,
@@ -9,9 +9,9 @@ export type {
   MarkAsReadBehavior,
   InboxViewMode,
   SidebarNavItem,
-} from "./configStore";
+} from './configStore';
 
-export { useFeatureFlagStore } from "./featureFlagStore";
-export type { FeatureUsage } from "./featureFlagStore";
+export { useFeatureFlagStore } from './featureFlagStore';
+export type { FeatureUsage } from './featureFlagStore';
 
-export { useUIStore } from "./uiStore";
+export { useUIStore } from './uiStore';

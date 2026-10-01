@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { eventBus, type DbChangePayload } from "@shared/services/events/eventBus";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { eventBus, type DbChangePayload } from '@shared/services/events/eventBus';
 
 export interface UseLiveQueryOptions {
   /** Tables to watch. If undefined, all changes trigger a refetch. */
@@ -19,10 +19,10 @@ export interface UseLiveQueryResult<T> {
 
 export function useLiveQuery<T>(
   queryFn: () => Promise<T>,
-  options: UseLiveQueryOptions = {}
+  options: UseLiveQueryOptions = {},
 ): UseLiveQueryResult<T> {
   const { watch, debounceMs = 100, enabled = true } = options;
-  const watchKey = watch?.join(",");
+  const watchKey = watch?.join(',');
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -53,9 +53,9 @@ export function useLiveQuery<T>(
     if (!enabled) return;
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const tables = watchKey?.split(",");
+    const tables = watchKey?.split(',');
 
-    const unregister = eventBus.register("db:change", (payload) => {
+    const unregister = eventBus.register('db:change', (payload) => {
       const change = payload as DbChangePayload;
       if (tables && !tables.includes(change.table)) return;
 

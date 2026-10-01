@@ -21,8 +21,7 @@ export const SESSION_RESPONSE_FIXTURE = {
   state: 'greeting',
   openedAt: '2026-09-28T20:54:56.538123+00:00',
   wsUrl: '/ws/transcript?session=01J33C24F53BA9144C8847C',
-  disclosure:
-    "Bonjour, vous êtes sur la ligne de l'assistant de [Entreprise]. Je vous écoute.",
+  disclosure: "Bonjour, vous êtes sur la ligne de l'assistant de [Entreprise]. Je vous écoute.",
 } satisfies SessionResponse;
 
 /** GET /ops/snapshot */

@@ -4,12 +4,12 @@ import {
   sendNotification,
   registerActionTypes,
   onAction,
-} from "@tauri-apps/plugin-notification";
-import { getSetting } from "@features/settings/db/settings";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { navigateToLabel } from "@/router/navigate";
-import { normalizeEmail } from "@shared/utils/emailUtils";
+} from '@tauri-apps/plugin-notification';
+import { getSetting } from '@features/settings/db/settings';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { navigateToLabel } from '@/router/navigate';
+import { normalizeEmail } from '@shared/utils/emailUtils';
 
 let initialized = false;
 let notificationsEnabled = true;
@@ -25,7 +25,7 @@ let lastNotificationContext: NotificationContext | null = null;
 const recentContexts = new Map<string, NotificationContext>();
 
 async function showAndFocusMainWindow(): Promise<void> {
-  const mainWindow = await WebviewWindow.getByLabel("main");
+  const mainWindow = await WebviewWindow.getByLabel('main');
   if (mainWindow) {
     await mainWindow.show();
     await mainWindow.setFocus();
@@ -39,15 +39,15 @@ export async function initNotifications(): Promise<void> {
   if (initialized) return;
   initialized = true;
 
-  const setting = await getSetting("notifications_enabled");
-  notificationsEnabled = setting !== "false";
+  const setting = await getSetting('notifications_enabled');
+  notificationsEnabled = setting !== 'false';
 
   if (!notificationsEnabled) return;
 
   let granted = await isPermissionGranted();
   if (!granted) {
     const permission = await requestPermission();
-    granted = permission === "granted";
+    granted = permission === 'granted';
   }
 
   if (!granted) {
@@ -59,14 +59,14 @@ export async function initNotifications(): Promise<void> {
   try {
     await registerActionTypes([
       {
-        id: "default",
+        id: 'default',
         actions: [],
       },
       {
-        id: "email",
+        id: 'email',
         actions: [
-          { id: "reply", title: "Reply" },
-          { id: "archive", title: "Archive" },
+          { id: 'reply', title: 'Reply' },
+          { id: 'archive', title: 'Archive' },
         ],
       },
     ]);
@@ -75,25 +75,25 @@ export async function initNotifications(): Promise<void> {
       const actionId = event.actionTypeId;
       const ctx = lastNotificationContext;
 
-      if (actionId === "reply" && ctx?.threadId && ctx?.accountId) {
+      if (actionId === 'reply' && ctx?.threadId && ctx?.accountId) {
         await showAndFocusMainWindow();
         useComposerStore.getState().openComposer({
-          mode: "reply",
+          mode: 'reply',
           to: ctx.fromAddress ? [ctx.fromAddress] : [],
-          subject: ctx.subject ? `Re: ${ctx.subject}` : "",
+          subject: ctx.subject ? `Re: ${ctx.subject}` : '',
           threadId: ctx.threadId,
         });
-      } else if (actionId === "archive" && ctx?.threadId && ctx?.accountId) {
+      } else if (actionId === 'archive' && ctx?.threadId && ctx?.accountId) {
         try {
-          const { archiveThread } = await import("@features/mail/services/emailActions");
+          const { archiveThread } = await import('@features/mail/services/emailActions');
           await archiveThread(ctx.accountId, ctx.threadId, []);
         } catch (err) {
-          console.error("Failed to archive from notification:", err);
+          console.error('Failed to archive from notification:', err);
         }
       } else {
         await showAndFocusMainWindow();
         if (ctx?.threadId) {
-          navigateToLabel("inbox", { threadId: ctx.threadId });
+          navigateToLabel('inbox', { threadId: ctx.threadId });
         }
       }
     });
@@ -131,14 +131,14 @@ export function queueNewEmailNotification(
     if (pendingCount === 1) {
       sendNotification({
         title: from,
-        body: subject || "(No subject)",
-        actionTypeId: "email",
+        body: subject || '(No subject)',
+        actionTypeId: 'email',
       });
     } else if (pendingCount > 1) {
       sendNotification({
-        title: "SMEMaster",
+        title: 'SMEMaster',
         body: `${pendingCount} new emails`,
-        actionTypeId: "email",
+        actionTypeId: 'email',
       });
     }
     pendingCount = 0;
@@ -159,26 +159,22 @@ export function shouldNotifyForMessage(
 ): boolean {
   if (!smartEnabled) return true; // Smart notifications off → notify everything
   if (fromAddress && vipSenders.has(normalizeEmail(fromAddress))) return true; // VIP always notifies
-  const category = threadCategory ?? "Primary"; // uncategorized defaults to Primary
+  const category = threadCategory ?? 'Primary'; // uncategorized defaults to Primary
   return allowedCategories.has(category);
 }
 
 /**
  * Show a notification for a follow-up reminder that fired.
  */
-export function notifyFollowUpDue(
-  subject: string,
-  threadId?: string,
-  accountId?: string,
-): void {
+export function notifyFollowUpDue(subject: string, threadId?: string, accountId?: string): void {
   if (!notificationsEnabled) return;
   const ctx = { threadId, accountId, subject };
   lastNotificationContext = ctx;
   if (threadId) recentContexts.set(threadId, ctx);
   sendNotification({
-    title: "Follow up needed",
-    body: subject || "(No subject)",
-    actionTypeId: "email",
+    title: 'Follow up needed',
+    body: subject || '(No subject)',
+    actionTypeId: 'email',
   });
 }
 
@@ -188,9 +184,8 @@ export function notifyFollowUpDue(
 export function notifySnoozeReturn(subject: string): void {
   if (!notificationsEnabled) return;
   sendNotification({
-    title: "Snoozed email returned",
-    body: subject || "(No subject)",
-    actionTypeId: "default",
+    title: 'Snoozed email returned',
+    body: subject || '(No subject)',
+    actionTypeId: 'default',
   });
 }
-

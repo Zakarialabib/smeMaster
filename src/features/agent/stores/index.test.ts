@@ -105,7 +105,10 @@ describe('useFilteredCalls', () => {
 
   it('applies an alert drill-down', () => {
     // The bug the prototype had: the button navigated but filtered nothing.
-    useCallListStore.setState({ rows: ROWS, drill: { label: 'transfer failed', ids: ['c_1', 'c_2'] } });
+    useCallListStore.setState({
+      rows: ROWS,
+      drill: { label: 'transfer failed', ids: ['c_1', 'c_2'] },
+    });
     const { result } = renderHook(() => useFilteredCalls());
     expect(result.current.map((r) => r.id)).toEqual(['c_1', 'c_2']);
   });

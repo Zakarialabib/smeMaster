@@ -18,13 +18,22 @@
 export type SnoozeParseResult = { until: number; label: string } | null;
 
 const WEEKDAYS: Record<string, number> = {
-  sunday: 0, sun: 0,
-  monday: 1, mon: 1,
-  tuesday: 2, tue: 2, tues: 2,
-  wednesday: 3, wed: 3,
-  thursday: 4, thu: 4, thurs: 4,
-  friday: 5, fri: 5,
-  saturday: 6, sat: 6,
+  sunday: 0,
+  sun: 0,
+  monday: 1,
+  mon: 1,
+  tuesday: 2,
+  tue: 2,
+  tues: 2,
+  wednesday: 3,
+  wed: 3,
+  thursday: 4,
+  thu: 4,
+  thurs: 4,
+  friday: 5,
+  fri: 5,
+  saturday: 6,
+  sat: 6,
 };
 
 function startOfDay(d: Date): Date {
@@ -54,16 +63,20 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
   const nowSec = Math.floor(now.getTime() / 1000);
 
   // "in <n> <unit>"
-  const inRe = /^in\s+(\d+)\s*(min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks)?$/;
+  const inRe =
+    /^in\s+(\d+)\s*(min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks)?$/;
   const inM = raw.match(inRe);
   if (inM) {
     if (!inM[1]) return null;
     const n = parseInt(inM[1], 10);
-    const unit = inM[2] ?? "minutes";
-    const sec = unit.startsWith("w") ? 604800
-      : unit.startsWith("d") ? 86400
-      : unit.startsWith("h") ? 3600
-      : 60;
+    const unit = inM[2] ?? 'minutes';
+    const sec = unit.startsWith('w')
+      ? 604800
+      : unit.startsWith('d')
+        ? 86400
+        : unit.startsWith('h')
+          ? 3600
+          : 60;
     return { until: nowSec + n * sec, label: raw };
   }
 
@@ -74,7 +87,7 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
     if (!sm[1]) return null;
     const n = parseInt(sm[1], 10);
     const unit = sm[2];
-    const sec = unit === "d" ? 86400 : unit === "h" ? 3600 : 60;
+    const sec = unit === 'd' ? 86400 : unit === 'h' ? 3600 : 60;
     return { until: nowSec + n * sec, label: raw };
   }
 
@@ -83,24 +96,25 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
     const d = new Date(now);
     let target = atTime(d, 20, 0);
     if (target <= nowSec) target = atTime(new Date(d.getTime() + 86400000), 20, 0);
-    return { until: target, label: "Tonight" };
+    return { until: target, label: 'Tonight' };
   }
 
   // "tomorrow [h[:mm]][am|pm]"
   const tomRe = /^tomorrow\s*(?:(\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?$/;
   const tom = raw.match(tomRe);
   if (tom) {
-    let h = parseInt(tom[1] ?? "9", 10);
+    let h = parseInt(tom[1] ?? '9', 10);
     const m = tom[2] ? parseInt(tom[2], 10) : 0;
     const ap = tom[3];
-    if (ap === "pm" && h < 12) h += 12;
-    if (ap === "am" && h === 12) h = 0;
+    if (ap === 'pm' && h < 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
     const base = startOfDay(new Date(now.getTime() + 86400000));
     return { until: atTime(base, h, m), label: `Tomorrow ${h}:${m}` };
   }
 
   // "<weekday> [h[:mm]][am|pm]" or "next <weekday>"
-  const wdRe = /^(?:next\s+)?(sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat)(?:\s*(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?$/;
+  const wdRe =
+    /^(?:next\s+)?(sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat)(?:\s*(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?$/;
   const wd = raw.match(wdRe);
   if (wd) {
     if (!wd[1]) return null;
@@ -108,8 +122,8 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
     let h = wd[2] ? parseInt(wd[2], 10) : 9;
     const m = wd[3] ? parseInt(wd[3], 10) : 0;
     const ap = wd[4];
-    if (ap === "pm" && h < 12) h += 12;
-    if (ap === "am" && h === 12) h = 0;
+    if (ap === 'pm' && h < 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
     return { until: nextWeekday(now, day, h, m), label: wd[1] };
   }
 
@@ -118,7 +132,9 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
   const iso = raw.match(isoRe);
   if (iso) {
     if (!iso[1] || !iso[2] || !iso[3]) return null;
-    const y = parseInt(iso[1], 10), mo = parseInt(iso[2], 10) - 1, da = parseInt(iso[3], 10);
+    const y = parseInt(iso[1], 10),
+      mo = parseInt(iso[2], 10) - 1,
+      da = parseInt(iso[3], 10);
     const d = new Date(y, mo, da, 9, 0, 0, 0);
     if (!Number.isNaN(d.getTime())) return { until: Math.floor(d.getTime() / 1000), label: iso[0] };
   }
@@ -126,7 +142,8 @@ export function parseSnooze(input: string, now: Date = new Date()): SnoozeParseR
   const us = raw.match(usRe);
   if (us) {
     if (!us[1] || !us[2]) return null;
-    const mo = parseInt(us[1], 10) - 1, da = parseInt(us[2], 10);
+    const mo = parseInt(us[1], 10) - 1,
+      da = parseInt(us[2], 10);
     const y = us[3] ? parseInt(us[3], 10) : now.getFullYear();
     const d = new Date(y, mo, da, 9, 0, 0, 0);
     if (!Number.isNaN(d.getTime())) return { until: Math.floor(d.getTime() / 1000), label: us[0] };

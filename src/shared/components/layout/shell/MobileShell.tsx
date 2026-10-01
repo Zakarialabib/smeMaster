@@ -1,26 +1,26 @@
-import "./mobile.css";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Outlet, useLocation } from "@tanstack/react-router";
-import { useScreenInfo } from "@shared/hooks/usePlatform";
-import { useNotificationStore } from "@shared/stores/notificationStore";
-import { eventBus, EventNames } from "@shared/services/events/eventBus";
-import { DesktopShell } from "./DesktopShell";
-import { WindowTitleBar } from "./WindowTitleBar";
-import { BottomTabBar } from "@features/mail/components/layout/BottomTabBar";
-import { OfflineBanner } from "@shared/components/ui/OfflineBanner";
-import { ToastContainer } from "@shared/components/ui/ToastContainer";
-import { FloatingActionButton } from "@shared/components/ui/FloatingActionButton";
-import { AppLayout } from "./AppLayout";
-import { FrostedBackground } from "@shared/components/ui/FrostedBackground";
+import './mobile.css';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Outlet, useLocation } from '@tanstack/react-router';
+import { useScreenInfo } from '@shared/hooks/usePlatform';
+import { useNotificationStore } from '@shared/stores/notificationStore';
+import { eventBus, EventNames } from '@shared/services/events/eventBus';
+import { DesktopShell } from './DesktopShell';
+import { WindowTitleBar } from './WindowTitleBar';
+import { BottomTabBar } from '@features/mail/components/layout/BottomTabBar';
+import { OfflineBanner } from '@shared/components/ui/OfflineBanner';
+import { ToastContainer } from '@shared/components/ui/ToastContainer';
+import { FloatingActionButton } from '@shared/components/ui/FloatingActionButton';
+import { AppLayout } from './AppLayout';
+import { FrostedBackground } from '@shared/components/ui/FrostedBackground';
 import {
   NAV_GROUPS,
   getActiveNavFromPath,
   getActiveSubItem,
   handleNavSelect,
   handleSubItemSelect,
-} from "./navConfig";
-import type { ReactNode } from "react";
-import { SkipLink } from "@shared/components/ui/SkipLink";
+} from './navConfig';
+import type { ReactNode } from 'react';
+import { SkipLink } from '@shared/components/ui/SkipLink';
 
 /**
  * Uses the EventBus to drive shell-level UI reactivity:
@@ -55,8 +55,8 @@ function useEventSubscriptions() {
         setIsSyncing(false);
         const err = payload as { last_error?: string };
         notifAddRef.current({
-          title: "Sync Error",
-          body: err.last_error ?? "A sync error occurred",
+          title: 'Sync Error',
+          body: err.last_error ?? 'A sync error occurred',
         });
       }),
     );
@@ -90,9 +90,7 @@ interface ShellProps {
 // ── Sync indicator bar ────────────────────────────────────────────────────
 function SyncIndicator({ visible }: { visible: boolean }) {
   if (!visible) return null;
-  return (
-    <div className="h-0.5 bg-accent/70 animate-pulse shrink-0" />
-  );
+  return <div className="h-0.5 bg-accent/70 animate-pulse shrink-0" />;
 }
 
 // ─── Tablet landscape shell: icon-only sidebar + content ───────────────────
@@ -151,7 +149,7 @@ function PhoneShell({
   licenseBanner?: ReactNode;
 }) {
   const handleQuickCompose = useCallback(() => {
-    eventBus.emit("composer:open", { mode: "new" });
+    eventBus.emit('composer:open', { mode: 'new' });
   }, []);
   return (
     <div className="flex flex-col h-screen overflow-hidden text-text-primary">
@@ -172,10 +170,20 @@ function PhoneShell({
         <FloatingActionButton
           actions={[
             {
-              id: "compose",
-              label: "New email",
+              id: 'compose',
+              label: 'New email',
               icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17l-4 4 4-4zm0 0l4-4m-4 4l4-4M22 2l-5 15-5-5L22 2z"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M7 17l-4 4 4-4zm0 0l4-4m-4 4l4-4M22 2l-5 15-5-5L22 2z" />
+                </svg>
               ),
               onAction: handleQuickCompose,
             },
@@ -200,11 +208,10 @@ export function MobileShell({ onAddAccount, licenseBanner }: ShellProps) {
   const screen = useScreenInfo();
   const { isSyncing } = useEventSubscriptions();
 
-  const isPhoneOrFolded =
-    screen.category === "phone" || screen.category === "phone-folded";
+  const isPhoneOrFolded = screen.category === 'phone' || screen.category === 'phone-folded';
 
   // Tablet landscape → compact split layout
-  if (screen.category === "tablet" && screen.aspect === "landscape") {
+  if (screen.category === 'tablet' && screen.aspect === 'landscape') {
     return (
       <TabletLandscapeShell syncing={isSyncing} licenseBanner={licenseBanner}>
         <Outlet />
@@ -227,7 +234,5 @@ export function MobileShell({ onAddAccount, licenseBanner }: ShellProps) {
   }
 
   // Desktop → full layout
-  return (
-    <DesktopShell syncing={isSyncing} licenseBanner={licenseBanner} />
-  );
+  return <DesktopShell syncing={isSyncing} licenseBanner={licenseBanner} />;
 }

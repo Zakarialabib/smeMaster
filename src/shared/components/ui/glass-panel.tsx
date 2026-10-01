@@ -18,12 +18,12 @@
  * ```
  */
 
-import { type HTMLAttributes, type ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
+import { type HTMLAttributes, type ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type GlassVariant = "panel" | "modal" | "card" | "elevated" | "liquid" | "liquid-elevated";
+export type GlassVariant = 'panel' | 'modal' | 'card' | 'elevated' | 'liquid' | 'liquid-elevated';
 
 export interface GlassPanelProps extends HTMLAttributes<HTMLDivElement> {
   /** Visual variant. Defaults to "panel". */
@@ -41,32 +41,21 @@ export interface GlassPanelProps extends HTMLAttributes<HTMLDivElement> {
 // ─── Variant class maps ─────────────────────────────────────────────────────
 
 const VARIANT_CLASSES: Record<GlassVariant, string> = {
-  panel:
-    "frost-surface " +
-    "rounded-[--frost-radius]",
-  modal:
-    "frost-surface-strong " +
-    "rounded-[--frost-radius]",
-  card:
-    "frost-surface " +
-    "rounded-[--frost-radius]",
-  elevated:
-    "frost-surface-strong " +
-    "rounded-[--frost-radius]",
-  liquid:
-    "liquid-glass " +
-    "rounded-[--frost-radius]",
-  "liquid-elevated":
-    "liquid-glass-elevated " +
-    "rounded-[--frost-radius]",
+  panel: 'frost-surface ' + 'rounded-[--frost-radius]',
+  modal: 'frost-surface-strong ' + 'rounded-[--frost-radius]',
+  card: 'frost-surface ' + 'rounded-[--frost-radius]',
+  elevated: 'frost-surface-strong ' + 'rounded-[--frost-radius]',
+  liquid: 'liquid-glass ' + 'rounded-[--frost-radius]',
+  'liquid-elevated': 'liquid-glass-elevated ' + 'rounded-[--frost-radius]',
 };
 
-const GLOW_CLASS =
-  "liquid-glow";
+const GLOW_CLASS = 'liquid-glow';
 
-const HIGHLIGHT_CLASS = "before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-[var(--frost-highlight)]";
+const HIGHLIGHT_CLASS =
+  "before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-[var(--frost-highlight)]";
 
-const ANIMATED_SHEEN_CLASS = "before:opacity-100 before:animate-[liquidShimmer_4s_ease-in-out_infinite]";
+const ANIMATED_SHEEN_CLASS =
+  'before:opacity-100 before:animate-[liquidShimmer_4s_ease-in-out_infinite]';
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -82,19 +71,19 @@ const ANIMATED_SHEEN_CLASS = "before:opacity-100 before:animate-[liquidShimmer_4
  * 6. Liquid variants add animated sheen/shiny overlay
  */
 export function GlassPanel({
-  variant = "panel",
+  variant = 'panel',
   glow = false,
   animated = false,
   children,
   className,
   ...rest
 }: GlassPanelProps) {
-  const isLiquid = variant === "liquid" || variant === "liquid-elevated";
+  const isLiquid = variant === 'liquid' || variant === 'liquid-elevated';
 
   return (
     <div
       className={cn(
-        "relative rounded-xl transition-all duration-200",
+        'relative rounded-xl transition-all duration-200',
         VARIANT_CLASSES[variant],
         !isLiquid && HIGHLIGHT_CLASS,
         glow && GLOW_CLASS,

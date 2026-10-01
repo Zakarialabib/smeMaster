@@ -1,19 +1,19 @@
-import { memo, useMemo, useCallback } from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { Calendar, CheckCircle2, Circle } from "lucide-react";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
-import { Badge } from "@shared/components/ui/Badge";
+import { memo, useMemo, useCallback } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { Calendar, CheckCircle2, Circle } from 'lucide-react';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
+import { Badge } from '@shared/components/ui/Badge';
 
 /**
  * Priority dot colors for task cards.
  * @spec §7.1
  */
 const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-400",
-  none: "bg-text-tertiary/30",
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-amber-500',
+  low: 'bg-blue-400',
+  none: 'bg-text-tertiary/30',
 };
 
 /**
@@ -23,9 +23,9 @@ const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
 function getDueDateStyle(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = timestamp - now;
-  if (diff < 0) return "text-red-500 bg-red-500/10";
-  if (diff < 86400) return "text-amber-500 bg-amber-500/10";
-  return "text-text-tertiary bg-bg-tertiary";
+  if (diff < 0) return 'text-red-500 bg-red-500/10';
+  if (diff < 86400) return 'text-amber-500 bg-amber-500/10';
+  return 'text-text-tertiary bg-bg-tertiary';
 }
 
 /**
@@ -39,10 +39,10 @@ function formatDueDate(timestamp: number): string {
   const diffDays = Math.floor((dueStart.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) return `${Math.abs(diffDays)}d overdue`;
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Tomorrow";
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
   if (diffDays <= 7) return `${diffDays}d`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 /**
@@ -127,7 +127,7 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
     [contactId, onContactClick],
   );
 
-  const initial = (contactName?.[0] ?? "?").toUpperCase();
+  const initial = (contactName?.[0] ?? '?').toUpperCase();
 
   return (
     <div
@@ -138,8 +138,8 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
       className={`
         group bg-bg-secondary border border-border-primary rounded-lg p-3 cursor-pointer
         transition-all duration-150 hover-lift
-        ${isDragging ? "opacity-50 scale-105" : ""}
-        ${task.is_completed ? "opacity-60" : ""}
+        ${isDragging ? 'opacity-50 scale-105' : ''}
+        ${task.is_completed ? 'opacity-60' : ''}
       `}
       role="article"
       aria-label={`Task: ${task.title}`}
@@ -158,7 +158,7 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
       <div className="pl-3">
         {/* Priority dot + Title row */}
         <div className="flex items-start gap-1.5 mb-2">
-          {task.priority !== "none" && (
+          {task.priority !== 'none' && (
             <span
               className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${PRIORITY_DOT_COLORS[task.priority as TaskPriority]}`}
               aria-label={`${task.priority} priority`}
@@ -166,7 +166,7 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
           )}
           <span
             className={`text-sm font-medium flex-1 min-w-0 truncate ${
-              task.is_completed ? "line-through text-text-tertiary" : "text-text-primary"
+              task.is_completed ? 'line-through text-text-tertiary' : 'text-text-primary'
             }`}
           >
             {task.title}
@@ -238,7 +238,7 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
           <button
             onClick={handleToggleComplete}
             className="shrink-0 ms-1"
-            aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+            aria-label={task.is_completed ? 'Mark incomplete' : 'Mark complete'}
           >
             {task.is_completed ? (
               <CheckCircle2 size={14} className="text-success" />

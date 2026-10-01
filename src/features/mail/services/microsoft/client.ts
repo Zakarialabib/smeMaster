@@ -1,5 +1,3 @@
-
-
 export interface MicrosoftGraphClientConfig {
   accessToken: string;
   refreshToken: string;
@@ -71,7 +69,7 @@ export class MicrosoftGraphClient {
    * Refresh the access token using the refresh token.
    */
   private async refreshToken(): Promise<void> {
-    const { refreshMicrosoftAccessToken } = await import("./auth");
+    const { refreshMicrosoftAccessToken } = await import('./auth');
 
     const tokens = await refreshMicrosoftAccessToken(
       this.config.refreshToken,
@@ -84,8 +82,13 @@ export class MicrosoftGraphClient {
     this.config.expiresAt = getCurrentUnixTimestamp() + tokens.expires_in;
 
     // Update in database
-    const { updateAccountAllTokens } = await import("@features/accounts/db/accounts");
-    await updateAccountAllTokens(this.accountId, this.config.accessToken, this.config.refreshToken, this.config.expiresAt);
+    const { updateAccountAllTokens } = await import('@features/accounts/db/accounts');
+    await updateAccountAllTokens(
+      this.accountId,
+      this.config.accessToken,
+      this.config.refreshToken,
+      this.config.expiresAt,
+    );
   }
 
   /**
@@ -99,7 +102,7 @@ export class MicrosoftGraphClient {
       headers: {
         ...options.headers,
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -119,7 +122,7 @@ export class MicrosoftGraphClient {
    * Get user profile.
    */
   async getMe(): Promise<GraphUser> {
-    return this.request<GraphUser>("/me");
+    return this.request<GraphUser>('/me');
   }
 
   /**
@@ -133,13 +136,13 @@ export class MicrosoftGraphClient {
     select?: string;
   }) {
     const searchParams = new URLSearchParams();
-    if (params?.top) searchParams.set("$top", params.top.toString());
-    if (params?.skip) searchParams.set("$skip", params.skip.toString());
-    if (params?.filter) searchParams.set("$filter", params.filter);
-    if (params?.orderby) searchParams.set("$orderby", params.orderby);
-    if (params?.select) searchParams.set("$select", params.select);
+    if (params?.top) searchParams.set('$top', params.top.toString());
+    if (params?.skip) searchParams.set('$skip', params.skip.toString());
+    if (params?.filter) searchParams.set('$filter', params.filter);
+    if (params?.orderby) searchParams.set('$orderby', params.orderby);
+    if (params?.select) searchParams.set('$select', params.select);
 
-    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.request(`/me/messages${query}`);
   }
 
@@ -155,18 +158,18 @@ export class MicrosoftGraphClient {
    */
   async sendMail(message: {
     subject: string;
-    body: { contentType: "html" | "text"; content: string };
+    body: { contentType: 'html' | 'text'; content: string };
     toRecipients: Array<{ emailAddress: { address: string; name?: string } }>;
     ccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
     bccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
     attachments?: Array<{
-      "@odata.type": "#microsoft.graph.fileAttachment";
+      '@odata.type': '#microsoft.graph.fileAttachment';
       name: string;
       contentBytes: string;
     }>;
   }) {
-    return this.request("/me/sendMail", {
-      method: "POST",
+    return this.request('/me/sendMail', {
+      method: 'POST',
       body: JSON.stringify({ message, saveToSentItems: true }),
     });
   }
@@ -219,17 +222,14 @@ export class MicrosoftGraphClient {
     const token = await this.getAccessToken();
     const mimeContent = this.decodeBase64Url(rawBase64Url);
 
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "message/rfc822",
-        },
-        body: mimeContent,
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'message/rfc822',
       },
-    );
+      body: mimeContent,
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -242,29 +242,26 @@ export class MicrosoftGraphClient {
    */
   async deleteDraft(draftId: string): Promise<void> {
     await this.request(`/me/messages/${draftId}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
   }
 
   // ── Private helpers for raw MIME operations ─────────────────────────────
 
   private decodeBase64Url(data: string): string {
-    const base64 = data.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
     return atob(base64);
   }
 
   private async createEmptyDraft(token: string): Promise<string> {
-    const response = await fetch(
-      "https://graph.microsoft.com/v1.0/me/messages",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isDraft: true }),
+    const response = await fetch('https://graph.microsoft.com/v1.0/me/messages', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({ isDraft: true }),
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -280,17 +277,14 @@ export class MicrosoftGraphClient {
     draftId: string,
     mimeContent: string,
   ): Promise<void> {
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "message/rfc822",
-        },
-        body: mimeContent,
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${draftId}/$value`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'message/rfc822',
       },
-    );
+      body: mimeContent,
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -299,13 +293,10 @@ export class MicrosoftGraphClient {
   }
 
   private async sendDraft(token: string, draftId: string): Promise<void> {
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/messages/${draftId}/send`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${draftId}/send`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -316,7 +307,7 @@ export class MicrosoftGraphClient {
   private async cleanupDraft(token: string, draftId: string): Promise<void> {
     try {
       await fetch(`https://graph.microsoft.com/v1.0/me/messages/${draftId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
@@ -328,23 +319,19 @@ export class MicrosoftGraphClient {
    * Get mail folders.
    */
   async getMailFolders(): Promise<GraphMailFolderResponse> {
-    return this.request<GraphMailFolderResponse>("/me/mailFolders");
+    return this.request<GraphMailFolderResponse>('/me/mailFolders');
   }
 
   /**
    * Get calendar events.
    */
-  async getEvents(params?: {
-    top?: number;
-    filter?: string;
-    orderby?: string;
-  }) {
+  async getEvents(params?: { top?: number; filter?: string; orderby?: string }) {
     const searchParams = new URLSearchParams();
-    if (params?.top) searchParams.set("$top", params.top.toString());
-    if (params?.filter) searchParams.set("$filter", params.filter);
-    if (params?.orderby) searchParams.set("$orderby", params.orderby);
+    if (params?.top) searchParams.set('$top', params.top.toString());
+    if (params?.filter) searchParams.set('$filter', params.filter);
+    if (params?.orderby) searchParams.set('$orderby', params.orderby);
 
-    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.request(`/me/events${query}`);
   }
 
@@ -353,13 +340,16 @@ export class MicrosoftGraphClient {
    */
   async createEvent(event: {
     subject: string;
-    body: { contentType: "html" | "text"; content: string };
+    body: { contentType: 'html' | 'text'; content: string };
     start: { dateTime: string; timeZone: string };
     end: { dateTime: string; timeZone: string };
-    attendees?: Array<{ emailAddress: { address: string; name?: string }; type: "required" | "optional" }>;
+    attendees?: Array<{
+      emailAddress: { address: string; name?: string };
+      type: 'required' | 'optional';
+    }>;
   }) {
-    return this.request("/me/events", {
-      method: "POST",
+    return this.request('/me/events', {
+      method: 'POST',
       body: JSON.stringify(event),
     });
   }
@@ -367,17 +357,13 @@ export class MicrosoftGraphClient {
   /**
    * Get contacts.
    */
-  async getContacts(params?: {
-    top?: number;
-    filter?: string;
-    orderby?: string;
-  }) {
+  async getContacts(params?: { top?: number; filter?: string; orderby?: string }) {
     const searchParams = new URLSearchParams();
-    if (params?.top) searchParams.set("$top", params.top.toString());
-    if (params?.filter) searchParams.set("$filter", params.filter);
-    if (params?.orderby) searchParams.set("$orderby", params.orderby);
+    if (params?.top) searchParams.set('$top', params.top.toString());
+    if (params?.filter) searchParams.set('$filter', params.filter);
+    if (params?.orderby) searchParams.set('$orderby', params.orderby);
 
-    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.request(`/me/contacts${query}`);
   }
 }

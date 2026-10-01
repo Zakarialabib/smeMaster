@@ -1,4 +1,9 @@
-﻿import { getTaskById, listTasks as dbListTasks, getTaskTagByTag as dbGetTaskTagByTag, tasksCountByContact as dbTasksCountByContact } from "@shared/services/db/db-invoke";
+﻿import {
+  getTaskById,
+  listTasks as dbListTasks,
+  getTaskTagByTag as dbGetTaskTagByTag,
+  tasksCountByContact as dbTasksCountByContact,
+} from '@shared/services/db/db-invoke';
 import {
   getTasksForAccount as dbGetTasksForAccount,
   getTasksWithContacts as dbGetTasksWithContacts,
@@ -19,14 +24,14 @@ import {
   getTaskTags as dbGetTaskTags,
   upsertTaskTag as dbUpsertTaskTag,
   deleteTaskTag as dbDeleteTaskTag,
-} from "@shared/services/db/db-invoke";
-import type { ContactTaskCount } from "@shared/services/db/db-invoke";
-import type { Task } from "@shared/services/db/schema";
-import type { TaskTag } from "@shared/services/db/db-invoke";
-import { logEntityEngagement } from "@features/contacts/services/engagement";
-import { useTaskStore } from "../stores/taskStore";
+} from '@shared/services/db/db-invoke';
+import type { ContactTaskCount } from '@shared/services/db/db-invoke';
+import type { Task } from '@shared/services/db/schema';
+import type { TaskTag } from '@shared/services/db/db-invoke';
+import { logEntityEngagement } from '@features/contacts/services/engagement';
+import { useTaskStore } from '../stores/taskStore';
 
-export type TaskPriority = "none" | "low" | "medium" | "high" | "urgent";
+export type TaskPriority = 'none' | 'low' | 'medium' | 'high' | 'urgent';
 
 export type DbTask = Task;
 
@@ -81,10 +86,7 @@ export async function countTasksForAccount(
   return rows[0]?.count ?? 0;
 }
 
-export async function getTasksForThread(
-  companyId: string,
-  threadId: string,
-): Promise<DbTask[]> {
+export async function getTasksForThread(companyId: string, threadId: string): Promise<DbTask[]> {
   return dbGetTasksForThread(companyId, threadId);
 }
 
@@ -113,14 +115,14 @@ export async function insertTask(task: {
     companyId: task.accountId ?? undefined,
     title: task.title,
     description: task.description ?? null,
-    priority: task.priority ?? "none",
+    priority: task.priority ?? 'none',
     dueDate: task.dueDate ?? null,
     parentId: task.parentId ?? null,
     contactId: task.contactId ?? null,
     threadId: task.threadId ?? null,
     threadAccountId: task.threadAccountId ?? null,
     recurrenceRule: task.recurrenceRule ?? null,
-    tagsJson: task.tagsJson ?? "[]",
+    tagsJson: task.tagsJson ?? '[]',
     workflowConfigJson: task.workflowConfigJson ?? null,
     reminderConfigJson: task.reminderConfigJson ?? null,
   });
@@ -149,7 +151,8 @@ export async function updateTask(
   if (updates.title !== undefined) storeUpdates.title = updates.title;
   if (updates.description !== undefined) storeUpdates.description = updates.description;
   if (updates.priority !== undefined) storeUpdates.priority = updates.priority;
-  if (updates.isCompleted !== undefined) storeUpdates.is_completed = Number(updates.isCompleted) as 0 | 1;
+  if (updates.isCompleted !== undefined)
+    storeUpdates.is_completed = Number(updates.isCompleted) as 0 | 1;
   if (updates.dueDate !== undefined) storeUpdates.due_date = updates.dueDate;
   if (updates.sortOrder !== undefined) storeUpdates.sort_order = updates.sortOrder;
   if (updates.tagsJson !== undefined) storeUpdates.tags_json = updates.tagsJson;
@@ -179,7 +182,7 @@ export async function completeTask(id: string): Promise<void> {
   await dbCompleteTask(id);
 
   // Fire-and-forget engagement log; failure should not block completion.
-  logEntityEngagement("task", id, "task_completed", 5).catch(() => {});
+  logEntityEngagement('task', id, 'task_completed', 5).catch(() => {});
 }
 
 export async function uncompleteTask(id: string): Promise<void> {
@@ -187,15 +190,11 @@ export async function uncompleteTask(id: string): Promise<void> {
   await dbUncompleteTask(id);
 }
 
-export async function reorderTasks(
-  taskIds: string[],
-): Promise<void> {
+export async function reorderTasks(taskIds: string[]): Promise<void> {
   await dbReorderTasks(taskIds);
 }
 
-export async function getIncompleteTaskCount(
-  companyId: string | null,
-): Promise<number> {
+export async function getIncompleteTaskCount(companyId: string | null): Promise<number> {
   return dbGetIncompleteTaskCount(companyId);
 }
 
@@ -214,9 +213,7 @@ export async function getTasksWithWorkflow(): Promise<DbTask[]> {
   return dbGetTasksWithWorkflow();
 }
 
-export async function getTaskTags(
-  companyId: string | null,
-): Promise<DbTaskTag[]> {
+export async function getTaskTags(companyId: string | null): Promise<DbTaskTag[]> {
   return dbGetTaskTags(companyId);
 }
 
@@ -228,10 +225,7 @@ export async function upsertTaskTag(
   await dbUpsertTaskTag(tag, companyId, color ?? null);
 }
 
-export async function deleteTaskTag(
-  tag: string,
-  companyId: string | null,
-): Promise<void> {
+export async function deleteTaskTag(tag: string, companyId: string | null): Promise<void> {
   await dbDeleteTaskTag(tag, companyId);
 }
 
@@ -245,5 +239,5 @@ export async function tasksCountByContact(): Promise<ContactTaskCount[]> {
 
 // Re-export for convenience
 export type { ContactTaskCount };
-export { getTaskById  };
+export { getTaskById };
 export { dbListTasks as listTasks };

@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import type { LucideIcon } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
 export interface CardTabItem<T extends string = string> {
   id: T;
@@ -30,7 +30,7 @@ export function CardTabBar<T extends string>({
   tabs,
   activeTab,
   onTabChange,
-  ariaLabel = "Tabs",
+  ariaLabel = 'Tabs',
   className,
 }: CardTabBarProps<T>) {
   return (
@@ -38,7 +38,7 @@ export function CardTabBar<T extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "flex gap-1 px-1.5 py-1.5 rounded-2xl bg-bg-secondary/40 backdrop-blur-[12px] border border-border-secondary/40",
+        'flex gap-1 px-1.5 py-1.5 rounded-2xl bg-bg-secondary/40 backdrop-blur-[12px] border border-border-secondary/40',
         className,
       )}
     >
@@ -54,10 +54,10 @@ export function CardTabBar<T extends string>({
             aria-controls={`tabpanel-${tab.id}`}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "flex-1 flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl text-[10px] font-medium transition-all duration-200 ios-tap",
+              'flex-1 flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl text-[10px] font-medium transition-all duration-200 ios-tap',
               isActive
-                ? "bg-accent text-white shadow-sm shadow-accent/30"
-                : "text-text-tertiary hover:text-text-secondary hover:bg-bg-hover/50",
+                ? 'bg-accent text-white shadow-sm shadow-accent/30'
+                : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-hover/50',
             )}
           >
             <Icon size={16} />

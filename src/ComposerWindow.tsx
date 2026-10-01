@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Composer } from "./features/mail/components/composer/Composer";
-import { UndoSendToast } from "./features/mail/components/composer/UndoSendToast";
-import { useComposerStore } from "./features/mail/stores/composerStore";
-import { useWindowInit } from "@shared/hooks/useWindowInit";
-import type { ComposerMode } from "./features/mail/stores/composerStore";
+import { useEffect, useState } from 'react';
+import { Composer } from './features/mail/components/composer/Composer';
+import { UndoSendToast } from './features/mail/components/composer/UndoSendToast';
+import { useComposerStore } from './features/mail/stores/composerStore';
+import { useWindowInit } from '@shared/hooks/useWindowInit';
+import type { ComposerMode } from './features/mail/stores/composerStore';
 
 export default function ComposerWindow() {
   const { loading: initLoading, error: initError } = useWindowInit();
@@ -16,24 +16,24 @@ export default function ComposerWindow() {
     async function initComposer() {
       try {
         // Parse composer state from URL params
-        const mode = (params.get("mode") as ComposerMode) ?? "new";
-        const to = params.get("to")?.split(",").filter(Boolean) ?? [];
-        const cc = params.get("cc")?.split(",").filter(Boolean) ?? [];
-        const bcc = params.get("bcc")?.split(",").filter(Boolean) ?? [];
-        const subject = params.get("subject") ?? "";
-        const threadId = params.get("threadId") ?? null;
-        const inReplyToMessageId = params.get("inReplyToMessageId") ?? null;
-        const draftId = params.get("draftId") ?? null;
-        const fromEmail = params.get("fromEmail");
+        const mode = (params.get('mode') as ComposerMode) ?? 'new';
+        const to = params.get('to')?.split(',').filter(Boolean) ?? [];
+        const cc = params.get('cc')?.split(',').filter(Boolean) ?? [];
+        const bcc = params.get('bcc')?.split(',').filter(Boolean) ?? [];
+        const subject = params.get('subject') ?? '';
+        const threadId = params.get('threadId') ?? null;
+        const inReplyToMessageId = params.get('inReplyToMessageId') ?? null;
+        const draftId = params.get('draftId') ?? null;
+        const fromEmail = params.get('fromEmail');
 
         // Decode base64 body
-        let bodyHtml = "";
-        const bodyParam = params.get("body");
+        let bodyHtml = '';
+        const bodyParam = params.get('body');
         if (bodyParam) {
           try {
             bodyHtml = decodeURIComponent(escape(atob(bodyParam)));
           } catch {
-            bodyHtml = "";
+            bodyHtml = '';
           }
         }
 
@@ -54,10 +54,10 @@ export default function ComposerWindow() {
         if (fromEmail) {
           useComposerStore.getState().setFromEmail(fromEmail);
         }
-        useComposerStore.getState().setViewMode("fullpage");
+        useComposerStore.getState().setViewMode('fullpage');
       } catch (err) {
-        console.error("Failed to initialize composer window:", err);
-        setComposerError("Failed to load composer");
+        console.error('Failed to initialize composer window:', err);
+        setComposerError('Failed to load composer');
       }
       setComposerReady(true);
     }

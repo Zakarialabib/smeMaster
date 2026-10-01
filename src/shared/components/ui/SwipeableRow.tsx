@@ -1,5 +1,5 @@
-import { useSwipeActions } from "@shared/hooks/useSwipeGesture";
-import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
+import { useSwipeActions } from '@shared/hooks/useSwipeGesture';
+import type { SwipeActions } from '@shared/hooks/useSwipeGesture';
 import {
   Archive,
   Trash2,
@@ -12,21 +12,21 @@ import {
   ExternalLink,
   Clock,
   CheckCircle2,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   archive: Archive,
-  "trash-2": Trash2,
+  'trash-2': Trash2,
   mail: Mail,
-  "mail-open": MailOpen,
+  'mail-open': MailOpen,
   star: Star,
-  "bell-off": BellOff,
-  "volume-x": VolumeX,
+  'bell-off': BellOff,
+  'volume-x': VolumeX,
   pin: Pin,
-  "external-link": ExternalLink,
+  'external-link': ExternalLink,
   clock: Clock,
-  "check-circle-2": CheckCircle2,
+  'check-circle-2': CheckCircle2,
 };
 
 interface SwipeableRowProps {
@@ -59,8 +59,25 @@ export function SwipeableRow({
   };
 
   const renderActions = (
-    sideActions: { primary?: { label: string; icon: string; color: string; onAction: () => void; destructive?: boolean }; secondary?: { label: string; icon: string; color: string; onAction: () => void; destructive?: boolean } } | undefined,
-    side: "left" | "right",
+    sideActions:
+      | {
+          primary?: {
+            label: string;
+            icon: string;
+            color: string;
+            onAction: () => void;
+            destructive?: boolean;
+          };
+          secondary?: {
+            label: string;
+            icon: string;
+            color: string;
+            onAction: () => void;
+            destructive?: boolean;
+          };
+        }
+      | undefined,
+    side: 'left' | 'right',
   ) => {
     if (!sideActions) return null;
 
@@ -76,11 +93,9 @@ export function SwipeableRow({
 
     // Left actions (revealed when swiping right): primary closest to content, secondary further left
     // Right actions (revealed when swiping left): primary closest to content (rightmost), secondary further right
-    const displayActions =
-      side === "right" ? [...allActions].reverse() : allActions;
-    const positionClass =
-      side === "left" ? "inset-y-0 left-0" : "inset-y-0 right-0";
-    const flexDir = side === "left" ? "flex-row" : "flex-row-reverse";
+    const displayActions = side === 'right' ? [...allActions].reverse() : allActions;
+    const positionClass = side === 'left' ? 'inset-y-0 left-0' : 'inset-y-0 right-0';
+    const flexDir = side === 'left' ? 'flex-row' : 'flex-row-reverse';
 
     return (
       <div className={`absolute ${positionClass} flex ${flexDir}`}>
@@ -99,9 +114,7 @@ export function SwipeableRow({
               type="button"
             >
               <Icon size={17} />
-              <span className="hidden whitespace-nowrap sm:inline">
-                {action.label}
-              </span>
+              <span className="hidden whitespace-nowrap sm:inline">{action.label}</span>
             </button>
           );
         })}
@@ -118,19 +131,15 @@ export function SwipeableRow({
       };
 
   return (
-    <div className={`relative overflow-hidden ${className || ""}`}>
+    <div className={`relative overflow-hidden ${className || ''}`}>
       {/* Left background actions (revealed when swiping right) */}
-      {renderActions(actions.right, "left")}
+      {renderActions(actions.right, 'left')}
 
       {/* Right background actions (revealed when swiping left) */}
-      {renderActions(actions.left, "right")}
+      {renderActions(actions.left, 'right')}
 
       {/* Foreground content */}
-      <div
-        {...gestureHandlers}
-        style={swipe.style}
-        className="relative bg-inherit"
-      >
+      <div {...gestureHandlers} style={swipe.style} className="relative bg-inherit">
         {children}
       </div>
     </div>

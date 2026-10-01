@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   isAutoDraftEnabled,
   generateAutoDraft,
   regenerateAutoDraft,
   type AutoDraftMode,
-} from "@shared/services/ai/writingStyleService";
+} from '@shared/services/ai/writingStyleService';
 
 export interface UseAutoDraftOptions {
   threadId: string;
@@ -18,8 +18,8 @@ export interface UseAutoDraftOptions {
   editor: {
     isEmpty: boolean;
     commands: { setContent: (html: string) => void };
-    on: (event: "update", cb: () => void) => void;
-    off: (event: "update", cb: () => void) => void;
+    on: (event: 'update', cb: () => void) => void;
+    off: (event: 'update', cb: () => void) => void;
   } | null;
   /**
    * Called with the generated draft HTML. Return `true` to accept the draft
@@ -106,24 +106,17 @@ export function useAutoDraft({
         const enabled = await isAutoDraftEnabled();
         if (!enabled || abortRef.current) return;
 
-        const draft = await generator(
-          threadId,
-          accountId,
-          messagesRef.current as never,
-          mode,
-        );
+        const draft = await generator(threadId, accountId, messagesRef.current as never, mode);
         if (abortRef.current || !draft) return;
 
-        const accepted = acceptDraft
-          ? acceptDraft(draft)
-          : editor.isEmpty;
+        const accepted = acceptDraft ? acceptDraft(draft) : editor.isEmpty;
         if (accepted) {
           editor.commands.setContent(draft);
           setHasDraft(true);
         }
       } catch (err) {
         // Swallow — non-fatal. UI shows nothing on error.
-        console.warn("Auto-draft generation failed:", err);
+        console.warn('Auto-draft generation failed:', err);
       } finally {
         loadingRef.current = false;
         setLoading(false);
@@ -145,7 +138,7 @@ export function useAutoDraft({
   const clear = useCallback(() => {
     abortRef.current = true;
     setHasDraft(false);
-    editor?.commands.setContent("");
+    editor?.commands.setContent('');
   }, [editor]);
 
   // Abort in-flight drafts when the user starts typing.
@@ -156,9 +149,9 @@ export function useAutoDraft({
         abortRef.current = true;
       }
     };
-    editor.on("update", onUpdate);
+    editor.on('update', onUpdate);
     return () => {
-      editor.off("update", onUpdate);
+      editor.off('update', onUpdate);
     };
   }, [editor]);
 
@@ -171,4 +164,3 @@ export function useAutoDraft({
 
   return { loading, hasDraft, load, regenerate, clear };
 }
-

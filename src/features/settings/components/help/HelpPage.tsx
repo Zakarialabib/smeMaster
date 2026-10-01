@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react";
-import { useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Search } from "lucide-react";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { navigateToLabel } from "@/router/navigate";
-import { HELP_CATEGORIES, getAllCards, getCategoryById } from "@/constants/helpContent";
-import { HelpSearchBar } from "./HelpSearchBar";
-import { HelpCardGrid } from "./HelpCardGrid";
-import { HelpSidebar } from "./HelpSidebar";
-import { usePlatform } from "@shared/hooks/usePlatform";
+import { useState, useMemo } from 'react';
+import { useParams, useNavigate } from '@tanstack/react-router';
+import { ArrowLeft, Search } from 'lucide-react';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { navigateToLabel } from '@/router/navigate';
+import { HELP_CATEGORIES, getAllCards, getCategoryById } from '@/constants/helpContent';
+import { HelpSearchBar } from './HelpSearchBar';
+import { HelpCardGrid } from './HelpCardGrid';
+import { HelpSidebar } from './HelpSidebar';
+import { usePlatform } from '@shared/hooks/usePlatform';
 
 export function HelpPage() {
   const { screen } = usePlatform();
@@ -15,15 +15,15 @@ export function HelpPage() {
   const navigate = useNavigate();
   const { topic } = useParams({ strict: false }) as { topic?: string };
   const activeTopic =
-    topic && HELP_CATEGORIES.some((c) => c.id === topic) ? topic : "getting-started";
+    topic && HELP_CATEGORIES.some((c) => c.id === topic) ? topic : 'getting-started';
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   const handleSelectTopic = (newTopic: string) => {
-    setSearchQuery("");
-    navigate({ to: "/help/$topic", params: { topic: newTopic } });
+    setSearchQuery('');
+    navigate({ to: '/help/$topic', params: { topic: newTopic } });
   };
 
   const handleToggleCard = (cardId: string) => {
@@ -65,7 +65,7 @@ export function HelpPage() {
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm">
         <button
-          onClick={() => navigateToLabel("inbox")}
+          onClick={() => navigateToLabel('inbox')}
           className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
           title="Back to Inbox"
         >
@@ -88,7 +88,7 @@ export function HelpPage() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-          <div className={isMobileDevice ? "px-4 py-4" : "max-w-3xl px-8 py-6"}>
+          <div className={isMobileDevice ? 'px-4 py-4' : 'max-w-3xl px-8 py-6'}>
             <HelpSearchBar query={searchQuery} onChange={setSearchQuery} />
 
             {groupedResults ? (

@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Wallet, ArrowDownLeft, ArrowUpRight, Plus, Minus, X, Check, RefreshCw,
-  Landmark, Coins, TrendingUp, TrendingDown, ArrowRightLeft,
+  Wallet,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Plus,
+  Minus,
+  X,
+  Check,
+  RefreshCw,
+  Landmark,
+  Coins,
+  TrendingUp,
+  TrendingDown,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { formatMoney, formatDate } from '@features/invoicing/utils/format';
@@ -9,8 +20,11 @@ import { useCompanyStore, getActiveCompany } from './companyStore';
 import { SectionCard, LiveBadge } from './erpShared';
 import type { ErpAccount, JournalEntry, Wallet as WalletType } from '@shared/services/db/schema';
 import {
-  getWallet, creditWallet, debitWallet,
-  listChartOfAccounts, listJournalEntries,
+  getWallet,
+  creditWallet,
+  debitWallet,
+  listChartOfAccounts,
+  listJournalEntries,
 } from '@shared/services/db/invoke/invoicing';
 import { notify } from '@shared/services/notifications/toastHelper';
 
@@ -54,8 +68,24 @@ export default function WalletView() {
       if (cash) {
         for (const e of je as JournalEntry[]) {
           if (e.account_id !== cash.id) continue;
-          if (e.debit > 0) feed.push({ id: e.id, date: e.entry_date, description: e.description ?? 'Cash in', reference: e.reference, amount: e.debit, currency: e.currency });
-          else if (e.credit > 0) feed.push({ id: e.id, date: e.entry_date, description: e.description ?? 'Cash out', reference: e.reference, amount: -e.credit, currency: e.currency });
+          if (e.debit > 0)
+            feed.push({
+              id: e.id,
+              date: e.entry_date,
+              description: e.description ?? 'Cash in',
+              reference: e.reference,
+              amount: e.debit,
+              currency: e.currency,
+            });
+          else if (e.credit > 0)
+            feed.push({
+              id: e.id,
+              date: e.entry_date,
+              description: e.description ?? 'Cash out',
+              reference: e.reference,
+              amount: -e.credit,
+              currency: e.currency,
+            });
         }
       }
       feed.sort((a, b) => b.date - a.date);
@@ -94,7 +124,13 @@ export default function WalletView() {
           <h2 className="text-lg font-bold text-text-primary">Company Wallet</h2>
           <LiveBadge />
         </div>
-        <Button variant="ghost" size="sm" icon={<RefreshCw size={15} />} onClick={load} disabled={loading}>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<RefreshCw size={15} />}
+          onClick={load}
+          disabled={loading}
+        >
           Refresh
         </Button>
       </div>
@@ -108,26 +144,34 @@ export default function WalletView() {
       {/* ── Hero balance card ── */}
       <div
         className={`relative overflow-hidden rounded-3xl border border-border-primary p-6 sm:p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] ${
-          overdraft ? 'bg-gradient-to-br from-danger/15 via-bg-secondary/70 to-bg-secondary/40' : 'bg-gradient-to-br from-accent/20 via-bg-secondary/70 to-bg-secondary/30'
+          overdraft
+            ? 'bg-gradient-to-br from-danger/15 via-bg-secondary/70 to-bg-secondary/40'
+            : 'bg-gradient-to-br from-accent/20 via-bg-secondary/70 to-bg-secondary/30'
         }`}
       >
         {/* ambient glow */}
-        <div className={`pointer-events-none absolute -top-16 -right-10 w-56 h-56 rounded-full blur-3xl opacity-50 ${
-          overdraft ? 'bg-danger/30' : 'bg-accent/30'
-        }`} />
+        <div
+          className={`pointer-events-none absolute -top-16 -right-10 w-56 h-56 rounded-full blur-3xl opacity-50 ${
+            overdraft ? 'bg-danger/30' : 'bg-accent/30'
+          }`}
+        />
         <div className="relative flex flex-col gap-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <span className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg ${
-                overdraft ? 'bg-danger' : 'bg-accent'
-              }`}>
+              <span
+                className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg ${
+                  overdraft ? 'bg-danger' : 'bg-accent'
+                }`}
+              >
                 <Wallet size={20} />
               </span>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                   Cash on hand
                 </p>
-                <p className="text-sm font-medium text-text-secondary">{company?.name ?? "Company"}</p>
+                <p className="text-sm font-medium text-text-secondary">
+                  {company?.name ?? 'Company'}
+                </p>
               </div>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-bg-primary/60 text-text-secondary border border-border-primary backdrop-blur">
@@ -136,9 +180,11 @@ export default function WalletView() {
           </div>
 
           <div>
-            <p className={`text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums leading-none ${
-              overdraft ? 'text-danger' : 'text-text-primary'
-            }`}>
+            <p
+              className={`text-4xl sm:text-5xl font-extrabold tracking-tight tabular-nums leading-none ${
+                overdraft ? 'text-danger' : 'text-text-primary'
+              }`}
+            >
               {formatMoney(balance, { currency })}
             </p>
             <p className="mt-2 text-xs text-text-tertiary">
@@ -179,8 +225,12 @@ export default function WalletView() {
             <TrendingUp size={18} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Cash in</p>
-            <p className="text-lg font-bold text-text-primary tabular-nums truncate">{formatMoney(totalIn, { currency })}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+              Cash in
+            </p>
+            <p className="text-lg font-bold text-text-primary tabular-nums truncate">
+              {formatMoney(totalIn, { currency })}
+            </p>
           </div>
         </div>
         <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 flex items-center gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
@@ -188,8 +238,12 @@ export default function WalletView() {
             <TrendingDown size={18} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Cash out</p>
-            <p className="text-lg font-bold text-text-primary tabular-nums truncate">{formatMoney(totalOut, { currency })}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+              Cash out
+            </p>
+            <p className="text-lg font-bold text-text-primary tabular-nums truncate">
+              {formatMoney(totalOut, { currency })}
+            </p>
           </div>
         </div>
       </div>
@@ -198,14 +252,19 @@ export default function WalletView() {
       <SectionCard className="overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border-primary flex items-center gap-2 text-text-secondary text-sm font-medium">
           <ArrowRightLeft size={16} className="text-accent" /> Wallet movements
-          <span className="ms-auto text-[11px] font-normal text-text-tertiary">{moves.length} entries</span>
+          <span className="ms-auto text-[11px] font-normal text-text-tertiary">
+            {moves.length} entries
+          </span>
         </div>
 
         {loading ? (
-          <div className="px-5 py-10 text-center text-sm text-text-tertiary">Loading movements…</div>
+          <div className="px-5 py-10 text-center text-sm text-text-tertiary">
+            Loading movements…
+          </div>
         ) : !error && moves.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-text-tertiary">
-            No movements yet. Mark an invoice <span className="font-medium">paid</span>, or use Top up / Withdraw above.
+            No movements yet. Mark an invoice <span className="font-medium">paid</span>, or use Top
+            up / Withdraw above.
           </div>
         ) : (
           <>
@@ -223,22 +282,37 @@ export default function WalletView() {
                 <tbody className="divide-y divide-border-primary/60">
                   {moves.map((m) => (
                     <tr key={m.id} className="hover:bg-bg-hover/40 transition-colors">
-                      <td className="px-5 py-3 text-text-tertiary whitespace-nowrap">{formatDate(m.date, 'short')}</td>
+                      <td className="px-5 py-3 text-text-tertiary whitespace-nowrap">
+                        {formatDate(m.date, 'short')}
+                      </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2.5">
-                          <span className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                            m.amount > 0 ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
-                          }`}>
-                            {m.amount > 0 ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
+                          <span
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              m.amount > 0
+                                ? 'bg-success/10 text-success'
+                                : 'bg-warning/10 text-warning'
+                            }`}
+                          >
+                            {m.amount > 0 ? (
+                              <ArrowDownLeft size={15} />
+                            ) : (
+                              <ArrowUpRight size={15} />
+                            )}
                           </span>
                           <span className="text-text-primary">{m.description}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs text-text-tertiary">{m.reference ?? '—'}</td>
-                      <td className={`px-5 py-3 text-end font-semibold tabular-nums ${
-                        m.amount > 0 ? 'text-success' : 'text-warning'
-                      }`}>
-                        {m.amount > 0 ? '+' : '−'}{formatMoney(Math.abs(m.amount), { currency, sign: false })}
+                      <td className="px-5 py-3 font-mono text-xs text-text-tertiary">
+                        {m.reference ?? '—'}
+                      </td>
+                      <td
+                        className={`px-5 py-3 text-end font-semibold tabular-nums ${
+                          m.amount > 0 ? 'text-success' : 'text-warning'
+                        }`}
+                      >
+                        {m.amount > 0 ? '+' : '−'}
+                        {formatMoney(Math.abs(m.amount), { currency, sign: false })}
                       </td>
                     </tr>
                   ))}
@@ -250,21 +324,27 @@ export default function WalletView() {
             <div className="sm:hidden divide-y divide-border-primary/60">
               {moves.map((m) => (
                 <div key={m.id} className="px-4 py-3.5 flex items-center gap-3">
-                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    m.amount > 0 ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
-                  }`}>
+                  <span
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      m.amount > 0 ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                    }`}
+                  >
                     {m.amount > 0 ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-text-primary truncate">{m.description}</p>
                     <p className="text-[11px] text-text-tertiary">
-                      {formatDate(m.date, 'short')}{m.reference ? ` · ${m.reference}` : ''}
+                      {formatDate(m.date, 'short')}
+                      {m.reference ? ` · ${m.reference}` : ''}
                     </p>
                   </div>
-                  <span className={`font-semibold tabular-nums shrink-0 ${
-                    m.amount > 0 ? 'text-success' : 'text-warning'
-                  }`}>
-                    {m.amount > 0 ? '+' : '−'}{formatMoney(Math.abs(m.amount), { currency, sign: false })}
+                  <span
+                    className={`font-semibold tabular-nums shrink-0 ${
+                      m.amount > 0 ? 'text-success' : 'text-warning'
+                    }`}
+                  >
+                    {m.amount > 0 ? '+' : '−'}
+                    {formatMoney(Math.abs(m.amount), { currency, sign: false })}
                   </span>
                 </div>
               ))}
@@ -276,7 +356,7 @@ export default function WalletView() {
       {action && (
         <WalletActionModal
           mode={action}
-          companyName={company?.name ?? "Company"}
+          companyName={company?.name ?? 'Company'}
           currency={currency}
           onClose={() => setAction(null)}
           onDone={async () => {
@@ -344,13 +424,17 @@ function WalletActionModal({
       >
         <div className="flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3 min-w-0">
-            <span className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 ${
-              isTopup ? 'bg-success' : 'bg-accent'
-            }`}>
+            <span
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 ${
+                isTopup ? 'bg-success' : 'bg-accent'
+              }`}
+            >
               {isTopup ? <Plus size={20} /> : <Minus size={20} />}
             </span>
             <div className="min-w-0">
-              <h3 className="font-bold text-text-primary">{isTopup ? 'Top up wallet' : 'Withdraw from wallet'}</h3>
+              <h3 className="font-bold text-text-primary">
+                {isTopup ? 'Top up wallet' : 'Withdraw from wallet'}
+              </h3>
               <p className="text-[11px] text-text-tertiary truncate">{companyName}</p>
             </div>
           </div>
@@ -413,7 +497,9 @@ function WalletActionModal({
         </p>
 
         <div className="flex justify-end gap-2 mt-5">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
           <Button
             variant={isTopup ? 'primary' : 'secondary'}
             icon={<Check size={15} />}

@@ -42,8 +42,15 @@ describe.skipIf(!live)('agentApi against a live agent-core', () => {
   it('reads a snapshot whose shape the console expects', async () => {
     const snap = await agentApi.opsSnapshot();
     expect(Object.keys(snap).sort()).toEqual([
-      'callCount', 'containedPct', 'generatedAt', 'lastSeenAt',
-      'p1', 'p2Grouped', 'p3Count', 'reachable', 'since',
+      'callCount',
+      'containedPct',
+      'generatedAt',
+      'lastSeenAt',
+      'p1',
+      'p2Grouped',
+      'p3Count',
+      'reachable',
+      'since',
     ]);
     expect(typeof snap.reachable).toBe('boolean');
   });

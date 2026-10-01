@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ShieldAlert, Bell, Megaphone, DatabaseBackup, ArrowRight, Activity } from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ShieldAlert, Bell, Megaphone, DatabaseBackup, ArrowRight, Activity } from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   listComplianceChecks,
   listFollowUpReminders,
   listCampaigns,
   listBackupSchedules,
-} from "@shared/services/db/db-invoke";
-import { navigateToLabel } from "@/router/navigate";
-import { WidgetHeader } from "./WidgetHelpers";
+} from '@shared/services/db/db-invoke';
+import { navigateToLabel } from '@/router/navigate';
+import { WidgetHeader } from './WidgetHelpers';
 
 type HealthMetric = {
   key: string;
@@ -60,23 +60,23 @@ export function BusinessHealthWidget() {
       if (cancelled) return;
 
       const issueCount =
-        checks.status === "fulfilled"
+        checks.status === 'fulfilled'
           ? checks.value.filter((c) => parseViolations(c.violations_json).length > 0).length
           : 0;
       const followUpCount =
-        reminders.status === "fulfilled"
-          ? reminders.value.filter((r) => r.status !== "done").length
+        reminders.status === 'fulfilled'
+          ? reminders.value.filter((r) => r.status !== 'done').length
           : 0;
       const campaignCount =
-        campaigns.status === "fulfilled"
-          ? campaigns.value.filter((c) => c.status === "scheduled").length
+        campaigns.status === 'fulfilled'
+          ? campaigns.value.filter((c) => c.status === 'scheduled').length
           : 0;
       const nextRun =
-        backups.status === "fulfilled"
-          ? backups.value
-            .filter((b) => b.is_enabled === 1 && b.next_run_at)
-            .map((b) => b.next_run_at as number)
-            .sort((a, b) => a - b)[0] ?? null
+        backups.status === 'fulfilled'
+          ? (backups.value
+              .filter((b) => b.is_enabled === 1 && b.next_run_at)
+              .map((b) => b.next_run_at as number)
+              .sort((a, b) => a - b)[0] ?? null)
           : null;
 
       setComplianceIssues(issueCount);
@@ -91,58 +91,60 @@ export function BusinessHealthWidget() {
   }, [activeAccountId]);
 
   const rtf = useMemo(
-    () => new Intl.RelativeTimeFormat(i18n.language, { numeric: "auto" }),
+    () => new Intl.RelativeTimeFormat(i18n.language, { numeric: 'auto' }),
     [i18n.language],
   );
 
   const nextBackupLabel = useMemo(() => {
-    if (!nextBackupAt) return t("businessHealth.notScheduled");
+    if (!nextBackupAt) return t('businessHealth.notScheduled');
     const diffMs = nextBackupAt - Date.now();
     const abs = Math.abs(diffMs);
-    if (abs < 3_600_000) return rtf.format(Math.round(diffMs / 60_000), "minute");
-    if (abs < 86_400_000) return rtf.format(Math.round(diffMs / 3_600_000), "hour");
-    return rtf.format(Math.round(diffMs / 86_400_000), "day");
+    if (abs < 3_600_000) return rtf.format(Math.round(diffMs / 60_000), 'minute');
+    if (abs < 86_400_000) return rtf.format(Math.round(diffMs / 3_600_000), 'hour');
+    return rtf.format(Math.round(diffMs / 86_400_000), 'day');
   }, [nextBackupAt, rtf, t]);
 
   const metrics: HealthMetric[] = [
     {
-      key: "compliance",
+      key: 'compliance',
       icon: <ShieldAlert size={18} />,
-      label: t("dashboard.compliancePending"),
+      label: t('dashboard.compliancePending'),
       value: complianceIssues,
-      to: "settings",
+      to: 'settings',
       issueTone: true,
     },
     {
-      key: "followups",
+      key: 'followups',
       icon: <Bell size={18} />,
-      label: t("dashboard.followUpReminders"),
+      label: t('dashboard.followUpReminders'),
       value: followUps,
-      to: "inbox",
+      to: 'inbox',
       issueTone: true,
     },
     {
-      key: "campaigns",
+      key: 'campaigns',
       icon: <Megaphone size={18} />,
-      label: t("dashboard.upcomingCampaigns"),
+      label: t('dashboard.upcomingCampaigns'),
       value: upcomingCampaigns,
-      to: "campaigns",
+      to: 'campaigns',
     },
     {
-      key: "backup",
+      key: 'backup',
       icon: <DatabaseBackup size={18} />,
-      label: t("businessHealth.nextBackup"),
+      label: t('businessHealth.nextBackup'),
       value: 0,
-      to: "settings",
+      to: 'settings',
     },
   ];
 
   return (
-    <section aria-label={t("businessHealth.title")}>
-      <WidgetHeader icon={<Activity size={16} />} title={t("businessHealth.title")} />
-      <div className={`grid grid-cols-2 gap-2 mt-3 transition-opacity ${loading ? "opacity-60" : ""}`}>
+    <section aria-label={t('businessHealth.title')}>
+      <WidgetHeader icon={<Activity size={16} />} title={t('businessHealth.title')} />
+      <div
+        className={`grid grid-cols-2 gap-2 mt-3 transition-opacity ${loading ? 'opacity-60' : ''}`}
+      >
         {metrics.map((m) => {
-          if (m.key === "backup") {
+          if (m.key === 'backup') {
             return (
               <button
                 key={m.key}
@@ -159,12 +161,11 @@ export function BusinessHealthWidget() {
               </button>
             );
           }
-          const tone =
-            m.issueTone
-              ? m.value > 0
-                ? "text-danger"
-                : "text-success"
-              : "text-text-primary";
+          const tone = m.issueTone
+            ? m.value > 0
+              ? 'text-danger'
+              : 'text-success'
+            : 'text-text-primary';
           return (
             <button
               key={m.key}

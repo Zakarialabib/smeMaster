@@ -1,8 +1,8 @@
-import { useEffect, useId, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { SECTION_CARDS, type SectionCardConfig } from "../data/sectionCards";
-import { SectionCard, type SectionStat } from "./SectionCard";
+import { useEffect, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { SECTION_CARDS, type SectionCardConfig } from '../data/sectionCards';
+import { SectionCard, type SectionStat } from './SectionCard';
 
 /**
  * SectionConsole — the dashboard "menu console": a grid of SectionCards,
@@ -28,9 +28,7 @@ export function SectionConsole({ refreshKey = 0 }: { refreshKey?: number }) {
   const { t } = useTranslation();
   const headingId = useId();
   const accountId = useAccountStore((s) => s.activeAccountId);
-  const [stats, setStats] = useState<SectionStatsMap>(() =>
-    buildSkeletons(SECTION_CARDS),
-  );
+  const [stats, setStats] = useState<SectionStatsMap>(() => buildSkeletons(SECTION_CARDS));
 
   useEffect(() => {
     let cancelled = false;
@@ -68,11 +66,9 @@ export function SectionConsole({ refreshKey = 0 }: { refreshKey?: number }) {
     <section aria-labelledby={headingId} className="mb-4">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 id={headingId} className="text-base font-semibold text-text-primary">
-          {t("dashboard.sections.consoleTitle")}
+          {t('dashboard.sections.consoleTitle')}
         </h2>
-        <p className="text-xs text-text-tertiary">
-          {t("dashboard.sections.consoleDescription")}
-        </p>
+        <p className="text-xs text-text-tertiary">{t('dashboard.sections.consoleDescription')}</p>
       </div>
 
       <div className="grid auto-rows-min grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">

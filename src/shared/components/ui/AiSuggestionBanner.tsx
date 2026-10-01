@@ -3,9 +3,9 @@
  * Used for: "AI Task Detection" — shows detected action items with their source, plus
  * Review (convert to tasks) and Dismiss actions. Follows the Frosted Glass design language.
  */
-import { useState } from "react";
-import { Sparkles, X, ChevronRight, CheckCircle2 } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { useState } from 'react';
+import { Sparkles, X, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
 export interface AiSuggestionItem {
   id: string;
@@ -20,7 +20,7 @@ export interface AiSuggestion {
   title: string;
   description?: string;
   count?: number;
-  type: "task" | "email" | "contact" | "custom";
+  type: 'task' | 'email' | 'contact' | 'custom';
 }
 
 export interface AiSuggestionBannerProps {
@@ -39,14 +39,14 @@ export interface AiSuggestionBannerProps {
   /** Show animated icon */
   animatedIcon?: boolean;
   /** Variant styling */
-  variant?: "default" | "success" | "info" | "warning";
+  variant?: 'default' | 'success' | 'info' | 'warning';
 }
 
 const variantClasses = {
-  default: "border-ai/30",
-  success: "border-success/30",
-  info: "border-ai/30",
-  warning: "border-warning/30",
+  default: 'border-ai/30',
+  success: 'border-success/30',
+  info: 'border-ai/30',
+  warning: 'border-warning/30',
 };
 
 export function AiSuggestionBanner({
@@ -54,10 +54,10 @@ export function AiSuggestionBanner({
   items,
   onReview,
   onDismiss,
-  className = "",
+  className = '',
   autoDismissMs = 0,
   animatedIcon = true,
-  variant = "info",
+  variant = 'info',
 }: AiSuggestionBannerProps) {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -80,9 +80,9 @@ export function AiSuggestionBanner({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border backdrop-blur-[var(--glass-blur,14px)]",
-        "bg-ai/[0.06] shadow-[0_1px_2px_rgba(16,24,40,0.06)]",
-        "animate-in fade-in slide-in-from-top-2 duration-300",
+        'relative overflow-hidden rounded-2xl border backdrop-blur-[var(--glass-blur,14px)]',
+        'bg-ai/[0.06] shadow-[0_1px_2px_rgba(16,24,40,0.06)]',
+        'animate-in fade-in slide-in-from-top-2 duration-300',
         variantClasses[variant],
         className,
       )}
@@ -99,7 +99,7 @@ export function AiSuggestionBanner({
           <div className="shrink-0 grid place-items-center w-9 h-9 rounded-xl bg-ai/15 text-ai">
             <Sparkles
               size={18}
-              className={cn("transition-colors", animatedIcon && "animate-pulse")}
+              className={cn('transition-colors', animatedIcon && 'animate-pulse')}
               aria-hidden="true"
             />
           </div>
@@ -154,14 +154,14 @@ export function AiSuggestionBanner({
             <button
               onClick={onReview}
               className={cn(
-                "inline-flex items-center gap-1.5",
-                "px-3.5 py-1.5 text-xs font-semibold rounded-lg",
-                "bg-ai text-white hover:bg-ai-hover",
-                "transition-colors focus:outline-none focus:ring-2 focus:ring-ai focus:ring-offset-1",
+                'inline-flex items-center gap-1.5',
+                'px-3.5 py-1.5 text-xs font-semibold rounded-lg',
+                'bg-ai text-white hover:bg-ai-hover',
+                'transition-colors focus:outline-none focus:ring-2 focus:ring-ai focus:ring-offset-1',
               )}
               aria-label={`Review ${suggestion.title}`}
             >
-              {showItems ? "Review & convert to tasks" : "Review"}
+              {showItems ? 'Review & convert to tasks' : 'Review'}
               <ChevronRight size={14} className="opacity-80" />
             </button>
           </div>

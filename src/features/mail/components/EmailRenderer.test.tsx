@@ -1,29 +1,28 @@
-﻿import { render, waitFor } from "@testing-library/react";
-import { EmailRenderer } from "./EmailRenderer";
-import type { DbAttachment } from "@shared/services/db/attachments";
+﻿import { render, waitFor } from '@testing-library/react';
+import { EmailRenderer } from './EmailRenderer';
+import type { DbAttachment } from '@shared/services/db/attachments';
 
 // Mock dependencies
-vi.mock("@tauri-apps/plugin-opener", () => ({
+vi.mock('@tauri-apps/plugin-opener', () => ({
   openUrl: vi.fn(),
 }));
 
-vi.mock("@shared/utils/sanitize", () => ({
+vi.mock('@shared/utils/sanitize', () => ({
   sanitizeHtml: (html: string) => html,
   escapeHtml: (text: string) => text,
 }));
 
-vi.mock("@features/deliverability/db/imageAllowlist", () => ({
+vi.mock('@features/deliverability/db/imageAllowlist', () => ({
   addToAllowlist: vi.fn(),
 }));
 
-vi.mock("@shared/stores/uiStore", () => ({
-  useUIStore: (selector: (s: { theme: string }) => string) =>
-    selector({ theme: "light" }),
+vi.mock('@shared/stores/uiStore', () => ({
+  useUIStore: (selector: (s: { theme: string }) => string) => selector({ theme: 'light' }),
 }));
 
 const mockFetchAttachment = vi.fn();
 
-vi.mock("@features/mail/services/email/providerFactory", () => ({
+vi.mock('@features/mail/services/email/providerFactory', () => ({
   getEmailProvider: vi.fn().mockResolvedValue({
     fetchAttachment: (...args: unknown[]) => mockFetchAttachment(...args),
   }),
@@ -39,41 +38,37 @@ globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserv
 
 function makeAttachment(overrides: Partial<DbAttachment> = {}): DbAttachment {
   return {
-    id: "att-1",
-    message_id: "msg-1",
-    account_id: "acc-1",
-    filename: "icon.png",
-    mime_type: "image/png",
+    id: 'att-1',
+    message_id: 'msg-1',
+    account_id: 'acc-1',
+    filename: 'icon.png',
+    mime_type: 'image/png',
     size: 1024,
-    gmail_attachment_id: "gmail-att-1",
-    content_id: "icon@example.com",
+    gmail_attachment_id: 'gmail-att-1',
+    content_id: 'icon@example.com',
     is_inline: 1,
     local_path: null,
     ...overrides,
   };
 }
 
-describe("EmailRenderer", () => {
+describe('EmailRenderer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders plain text when no html provided", () => {
-    const { container } = render(
-      <EmailRenderer html={null} text="Hello world" />,
-    );
-    expect(container.querySelector("iframe")).toBeTruthy();
+  it('renders plain text when no html provided', () => {
+    const { container } = render(<EmailRenderer html={null} text="Hello world" />);
+    expect(container.querySelector('iframe')).toBeTruthy();
   });
 
-  it("renders html content in iframe", () => {
-    const { container } = render(
-      <EmailRenderer html="<p>Hello</p>" text={null} />,
-    );
-    expect(container.querySelector("iframe")).toBeTruthy();
+  it('renders html content in iframe', () => {
+    const { container } = render(<EmailRenderer html="<p>Hello</p>" text={null} />);
+    expect(container.querySelector('iframe')).toBeTruthy();
   });
 
-  it("resolves cid: references by fetching inline attachment data", async () => {
-    const base64Data = btoa("fake-image-data");
+  it('resolves cid: references by fetching inline attachment data', async () => {
+    const base64Data = btoa('fake-image-data');
     mockFetchAttachment.mockResolvedValue({ data: base64Data, size: 100 });
 
     const inlineAttachments = [makeAttachment()];
@@ -89,13 +84,13 @@ describe("EmailRenderer", () => {
     );
 
     await waitFor(() => {
-      expect(mockFetchAttachment).toHaveBeenCalledWith("msg-1", "gmail-att-1");
+      expect(mockFetchAttachment).toHaveBeenCalledWith('msg-1', 'gmail-att-1');
     });
 
-    expect(container.querySelector("iframe")).toBeTruthy();
+    expect(container.querySelector('iframe')).toBeTruthy();
   });
 
-  it("skips cid resolution when no inline attachments", () => {
+  it('skips cid resolution when no inline attachments', () => {
     render(
       <EmailRenderer
         html='<img src="cid:missing@example.com" />'
@@ -109,7 +104,7 @@ describe("EmailRenderer", () => {
     expect(mockFetchAttachment).not.toHaveBeenCalled();
   });
 
-  it("skips cid resolution when accountId or messageId missing", () => {
+  it('skips cid resolution when accountId or messageId missing', () => {
     const inlineAttachments = [makeAttachment()];
 
     render(
@@ -123,8 +118,8 @@ describe("EmailRenderer", () => {
     expect(mockFetchAttachment).not.toHaveBeenCalled();
   });
 
-  it("handles fetch failure gracefully", async () => {
-    mockFetchAttachment.mockRejectedValue(new Error("Network error"));
+  it('handles fetch failure gracefully', async () => {
+    mockFetchAttachment.mockRejectedValue(new Error('Network error'));
 
     const inlineAttachments = [makeAttachment()];
 
@@ -142,17 +137,22 @@ describe("EmailRenderer", () => {
       expect(mockFetchAttachment).toHaveBeenCalled();
     });
 
-    expect(container.querySelector("iframe")).toBeTruthy();
+    expect(container.querySelector('iframe')).toBeTruthy();
   });
 
-  it("resolves multiple cid references", async () => {
+  it('resolves multiple cid references', async () => {
     mockFetchAttachment
-      .mockResolvedValueOnce({ data: btoa("img1"), size: 50 })
-      .mockResolvedValueOnce({ data: btoa("img2"), size: 60 });
+      .mockResolvedValueOnce({ data: btoa('img1'), size: 50 })
+      .mockResolvedValueOnce({ data: btoa('img2'), size: 60 });
 
     const inlineAttachments = [
-      makeAttachment({ id: "att-1", content_id: "img1@ex.com", gmail_attachment_id: "g1" }),
-      makeAttachment({ id: "att-2", content_id: "img2@ex.com", gmail_attachment_id: "g2", mime_type: "image/jpeg" }),
+      makeAttachment({ id: 'att-1', content_id: 'img1@ex.com', gmail_attachment_id: 'g1' }),
+      makeAttachment({
+        id: 'att-2',
+        content_id: 'img2@ex.com',
+        gmail_attachment_id: 'g2',
+        mime_type: 'image/jpeg',
+      }),
     ];
 
     render(
@@ -167,15 +167,15 @@ describe("EmailRenderer", () => {
 
     await waitFor(() => {
       expect(mockFetchAttachment).toHaveBeenCalledTimes(2);
-      expect(mockFetchAttachment).toHaveBeenCalledWith("msg-1", "g1");
-      expect(mockFetchAttachment).toHaveBeenCalledWith("msg-1", "g2");
+      expect(mockFetchAttachment).toHaveBeenCalledWith('msg-1', 'g1');
+      expect(mockFetchAttachment).toHaveBeenCalledWith('msg-1', 'g2');
     });
   });
 
-  it("ignores attachments without content_id or gmail_attachment_id", () => {
+  it('ignores attachments without content_id or gmail_attachment_id', () => {
     const inlineAttachments = [
       makeAttachment({ content_id: null }),
-      makeAttachment({ id: "att-2", gmail_attachment_id: null }),
+      makeAttachment({ id: 'att-2', gmail_attachment_id: null }),
     ];
 
     render(

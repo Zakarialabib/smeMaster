@@ -1,6 +1,6 @@
-﻿import { create } from "zustand";
-import { setSetting } from "@features/settings/db/settings";
-import { createEventBusSubscription } from "@shared/stores/createEventBusSubscription";
+﻿import { create } from 'zustand';
+import { setSetting } from '@features/settings/db/settings';
+import { createEventBusSubscription } from '@shared/stores/createEventBusSubscription';
 
 export interface Account {
   id: string;
@@ -27,14 +27,15 @@ export const useAccountStore = create<AccountState>((set) => ({
   activeAccountId: null,
 
   setAccounts: (accounts, restoredId) => {
-    const activeId = (restoredId && accounts.some((a) => a.id === restoredId))
-      ? restoredId
-      : accounts[0]?.id ?? null;
+    const activeId =
+      restoredId && accounts.some((a) => a.id === restoredId)
+        ? restoredId
+        : (accounts[0]?.id ?? null);
     set({ accounts, activeAccountId: activeId });
   },
 
   setActiveAccount: (activeAccountId) => {
-    setSetting("active_account_id", activeAccountId).catch(() => {});
+    setSetting('active_account_id', activeAccountId).catch(() => {});
     set({ activeAccountId });
   },
 
@@ -50,9 +51,7 @@ export const useAccountStore = create<AccountState>((set) => ({
       return {
         accounts,
         activeAccountId:
-          state.activeAccountId === id
-            ? (accounts[0]?.id ?? null)
-            : state.activeAccountId,
+          state.activeAccountId === id ? (accounts[0]?.id ?? null) : state.activeAccountId,
       };
     }),
 
@@ -86,18 +85,18 @@ export const useAccountStore = create<AccountState>((set) => ({
  * without re-wiring the EventBus — and so that any cross-store events
  * routed to "accountStore" via EVENT_BUS_MAP are at least seen here.
  */
-const accountStoreEventSub = createEventBusSubscription("accountStore", {
-  "sync:account-start": (payload) => {
-    useAccountStore.getState().handleEvent?.("sync:account-start", payload);
+const accountStoreEventSub = createEventBusSubscription('accountStore', {
+  'sync:account-start': (payload) => {
+    useAccountStore.getState().handleEvent?.('sync:account-start', payload);
   },
-  "sync:account-complete": (payload) => {
-    useAccountStore.getState().handleEvent?.("sync:account-complete", payload);
+  'sync:account-complete': (payload) => {
+    useAccountStore.getState().handleEvent?.('sync:account-complete', payload);
   },
-  "sync:account-error": (payload) => {
-    useAccountStore.getState().handleEvent?.("sync:account-error", payload);
+  'sync:account-error': (payload) => {
+    useAccountStore.getState().handleEvent?.('sync:account-error', payload);
   },
-  "share:received": (payload) => {
-    useAccountStore.getState().handleEvent?.("share:received", payload);
+  'share:received': (payload) => {
+    useAccountStore.getState().handleEvent?.('share:received', payload);
   },
 });
 
@@ -111,6 +110,6 @@ export function initAccountStoreEvents(): () => void {
 }
 
 // Eagerly initialise in browser environments (module-level side-effect).
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   initAccountStoreEvents();
 }

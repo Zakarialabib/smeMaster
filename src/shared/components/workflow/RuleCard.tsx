@@ -1,10 +1,10 @@
-import { Trash2, Pencil } from "lucide-react";
-import { Toggle } from "@shared/components/ui/Toggle";
-import { Badge } from "@shared/components/ui/Badge";
-import { safeParseJson } from "@shared/utils/safeParseJson";
-import type { WorkflowRule } from "@shared/services/db/schema";
+import { Trash2, Pencil } from 'lucide-react';
+import { Toggle } from '@shared/components/ui/Toggle';
+import { Badge } from '@shared/components/ui/Badge';
+import { safeParseJson } from '@shared/utils/safeParseJson';
+import type { WorkflowRule } from '@shared/services/db/schema';
 
-export type RuleCardCountUnit = "step" | "action";
+export type RuleCardCountUnit = 'step' | 'action';
 
 export interface RuleCardProps {
   rule: WorkflowRule;
@@ -20,9 +20,9 @@ export interface RuleCardProps {
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
 });
 
 function formatCreatedAt(ts: number): string {

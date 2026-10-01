@@ -10,18 +10,14 @@
  * The setter is fire-and-forget (returns void) to match the old API,
  * but writes are awaited internally and errors are swallowed.
  */
-import { useEffect, useState } from "react";
-import {
-  usePersistentStorage,
-  type UsePersistentStorageResult,
-} from "./usePersistentStorage";
+import { useEffect, useState } from 'react';
+import { usePersistentStorage, type UsePersistentStorageResult } from './usePersistentStorage';
 
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T,
-): [T, (value: T) => void] {
-  const { value, setValue }: UsePersistentStorageResult<T> =
-    usePersistentStorage<T>(key, initialValue);
+export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
+  const { value, setValue }: UsePersistentStorageResult<T> = usePersistentStorage<T>(
+    key,
+    initialValue,
+  );
 
   // Mirror `value` into local React state so the API stays synchronous
   // for legacy callers. The persistence write still goes through

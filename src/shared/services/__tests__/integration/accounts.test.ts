@@ -1,20 +1,27 @@
-﻿import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { freshTestDb, runMigrations, getTestAccountId, seedAccount, createDbInvokeHandlers, MockTauriDb } from "./setup";
+﻿import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  freshTestDb,
+  runMigrations,
+  getTestAccountId,
+  seedAccount,
+  createDbInvokeHandlers,
+  MockTauriDb,
+} from './setup';
 
 let db: MockTauriDb;
 const mockInvoke = vi.fn();
 
-vi.mock("@tauri-apps/api/core", () => ({
+vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }));
 
-vi.mock("@shared/utils/crypto", () => ({
+vi.mock('@shared/utils/crypto', () => ({
   encryptValue: vi.fn((val: string) => Promise.resolve(`enc:${val}`)),
-  decryptValue: vi.fn((val: string) => Promise.resolve(val.replace("enc:", ""))),
-  isEncrypted: vi.fn((val: string) => val.startsWith("enc:")),
+  decryptValue: vi.fn((val: string) => Promise.resolve(val.replace('enc:', ''))),
+  isEncrypted: vi.fn((val: string) => val.startsWith('enc:')),
 }));
 
-describe("Integration: Accounts", () => {
+describe('Integration: Accounts', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     db = freshTestDb();
@@ -22,125 +29,127 @@ describe("Integration: Accounts", () => {
 
     // Set up invoke mock to route db_* commands to the test DB
     const handlers = createDbInvokeHandlers(db);
-    mockInvoke.mockImplementation((cmd: string, args?: Record<string, unknown>) => handlers.handler(cmd, args));
+    mockInvoke.mockImplementation((cmd: string, args?: Record<string, unknown>) =>
+      handlers.handler(cmd, args),
+    );
   });
 
   afterEach(() => {
     db?.close();
   });
 
-  describe("Test #1: Add Gmail account (mock OAuth)", () => {
-    it("creates a Gmail API account with tokens persisted", async () => {
-      const { insertAccount, getAccount } = await import("@features/accounts/db/accounts");
+  describe('Test #1: Add Gmail account (mock OAuth)', () => {
+    it('creates a Gmail API account with tokens persisted', async () => {
+      const { insertAccount, getAccount } = await import('@features/accounts/db/accounts');
       await insertAccount({
         id: getTestAccountId(),
-        email: "user@gmail.com",
-        displayName: "Gmail User",
+        email: 'user@gmail.com',
+        displayName: 'Gmail User',
         avatarUrl: null,
-        accessToken: "ya29.mock-access-token",
-        refreshToken: "1//mock-refresh-token",
+        accessToken: 'ya29.mock-access-token',
+        refreshToken: '1//mock-refresh-token',
         tokenExpiresAt: 9999999999,
       });
       const account = await getAccount(getTestAccountId());
       expect(account).not.toBeNull();
-      expect(account!.email).toBe("user@gmail.com");
-      expect(account!.provider).toBe("gmail_api");
-      expect(account!.access_token).toBe("ya29.mock-access-token");
-      expect(account!.refresh_token).toBe("1//mock-refresh-token");
+      expect(account!.email).toBe('user@gmail.com');
+      expect(account!.provider).toBe('gmail_api');
+      expect(account!.access_token).toBe('ya29.mock-access-token');
+      expect(account!.refresh_token).toBe('1//mock-refresh-token');
       expect(account!.token_expires_at).toBe(9999999999);
       expect(account!.is_active).toBe(1);
     });
 
-    it("returns account via getAllAccounts", async () => {
-      const { insertAccount, getAllAccounts } = await import("@features/accounts/db/accounts");
+    it('returns account via getAllAccounts', async () => {
+      const { insertAccount, getAllAccounts } = await import('@features/accounts/db/accounts');
       await insertAccount({
         id: getTestAccountId(),
-        email: "user@gmail.com",
-        displayName: "Gmail User",
-        avatarUrl: "https://example.com/avatar.png",
-        accessToken: "ya29.token",
-        refreshToken: "1//refresh",
+        email: 'user@gmail.com',
+        displayName: 'Gmail User',
+        avatarUrl: 'https://example.com/avatar.png',
+        accessToken: 'ya29.token',
+        refreshToken: '1//refresh',
         tokenExpiresAt: 9999999999,
       });
       const all = await getAllAccounts();
       expect(all).toHaveLength(1);
-      expect(all[0]!.email).toBe("user@gmail.com");
-      expect(all[0]!.avatar_url).toBe("https://example.com/avatar.png");
+      expect(all[0]!.email).toBe('user@gmail.com');
+      expect(all[0]!.avatar_url).toBe('https://example.com/avatar.png');
     });
   });
 
-  describe("Test #2: Add IMAP account", () => {
-    it("creates an IMAP account with host/port/security persisted", async () => {
-      const { insertImapAccount, getAccount } = await import("@features/accounts/db/accounts");
+  describe('Test #2: Add IMAP account', () => {
+    it('creates an IMAP account with host/port/security persisted', async () => {
+      const { insertImapAccount, getAccount } = await import('@features/accounts/db/accounts');
       await insertImapAccount({
         id: getTestAccountId(),
-        email: "user@example.com",
-        displayName: "IMAP User",
+        email: 'user@example.com',
+        displayName: 'IMAP User',
         avatarUrl: null,
-        imapHost: "imap.example.com",
+        imapHost: 'imap.example.com',
         imapPort: 993,
-        imapSecurity: "ssl",
-        smtpHost: "smtp.example.com",
+        imapSecurity: 'ssl',
+        smtpHost: 'smtp.example.com',
         smtpPort: 587,
-        smtpSecurity: "starttls",
-        authMethod: "password",
-        password: "secret123",
+        smtpSecurity: 'starttls',
+        authMethod: 'password',
+        password: 'secret123',
       });
       const account = await getAccount(getTestAccountId());
       expect(account).not.toBeNull();
-      expect(account!.provider).toBe("imap");
-      expect(account!.imap_host).toBe("imap.example.com");
+      expect(account!.provider).toBe('imap');
+      expect(account!.imap_host).toBe('imap.example.com');
       expect(account!.imap_port).toBe(993);
-      expect(account!.imap_security).toBe("ssl");
-      expect(account!.smtp_host).toBe("smtp.example.com");
+      expect(account!.imap_security).toBe('ssl');
+      expect(account!.smtp_host).toBe('smtp.example.com');
       expect(account!.smtp_port).toBe(587);
-      expect(account!.smtp_security).toBe("starttls");
-      expect(account!.auth_method).toBe("password");
+      expect(account!.smtp_security).toBe('starttls');
+      expect(account!.auth_method).toBe('password');
     });
 
-    it("creates IMAP account with optional imap_username", async () => {
-      const { insertImapAccount, getAccount } = await import("@features/accounts/db/accounts");
+    it('creates IMAP account with optional imap_username', async () => {
+      const { insertImapAccount, getAccount } = await import('@features/accounts/db/accounts');
       await insertImapAccount({
         id: getTestAccountId(),
-        email: "user@custom.com",
+        email: 'user@custom.com',
         displayName: null,
         avatarUrl: null,
-        imapHost: "mail.custom.com",
+        imapHost: 'mail.custom.com',
         imapPort: 143,
-        imapSecurity: "starttls",
-        smtpHost: "mail.custom.com",
+        imapSecurity: 'starttls',
+        smtpHost: 'mail.custom.com',
         smtpPort: 587,
-        smtpSecurity: "starttls",
-        authMethod: "password",
-        password: "pass",
-        imapUsername: "custom-username",
+        smtpSecurity: 'starttls',
+        authMethod: 'password',
+        password: 'pass',
+        imapUsername: 'custom-username',
       });
       const account = await getAccount(getTestAccountId());
-      expect(account!.imap_username).toBe("custom-username");
-      expect(account!.imap_host).toBe("mail.custom.com");
+      expect(account!.imap_username).toBe('custom-username');
+      expect(account!.imap_host).toBe('mail.custom.com');
     });
 
-    it("insertImapAccount encrypts the password in the DB", async () => {
-      const { insertImapAccount } = await import("@features/accounts/db/accounts");
+    it('insertImapAccount encrypts the password in the DB', async () => {
+      const { insertImapAccount } = await import('@features/accounts/db/accounts');
       await insertImapAccount({
         id: getTestAccountId(),
-        email: "user@secure.com",
+        email: 'user@secure.com',
         displayName: null,
         avatarUrl: null,
-        imapHost: "imap.secure.com",
+        imapHost: 'imap.secure.com',
         imapPort: 993,
-        imapSecurity: "ssl",
-        smtpHost: "smtp.secure.com",
+        imapSecurity: 'ssl',
+        smtpHost: 'smtp.secure.com',
         smtpPort: 465,
-        smtpSecurity: "ssl",
-        authMethod: "password",
-        password: "my-password",
+        smtpSecurity: 'ssl',
+        authMethod: 'password',
+        password: 'my-password',
       });
       const raw = await db!.select<{ imap_password: string }[]>(
-        "SELECT imap_password FROM accounts WHERE id = $1",
+        'SELECT imap_password FROM accounts WHERE id = $1',
         [getTestAccountId()],
       );
-      expect(raw[0]!.imap_password).toBe("enc:my-password");
+      expect(raw[0]!.imap_password).toBe('enc:my-password');
     });
   });
 });

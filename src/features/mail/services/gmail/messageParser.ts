@@ -1,5 +1,5 @@
-import type { GmailMessage, GmailMessagePart, GmailHeader } from "./client";
-import { parseAuthenticationResults } from "./authParser";
+import type { GmailMessage, GmailMessagePart, GmailHeader } from './client';
+import { parseAuthenticationResults } from './authParser';
 
 export interface ParsedAttachment {
   filename: string;
@@ -38,11 +38,11 @@ export interface ParsedMessage {
 
 export function parseGmailMessage(msg: GmailMessage): ParsedMessage {
   const headers = msg.payload.headers;
-  const from = getHeader(headers, "From");
+  const from = getHeader(headers, 'From');
   const { name: fromName, address: fromAddress } = parseEmailAddress(from);
 
-  const bodyHtml = extractBody(msg.payload, "text/html");
-  const bodyText = extractBody(msg.payload, "text/plain");
+  const bodyHtml = extractBody(msg.payload, 'text/html');
+  const bodyText = extractBody(msg.payload, 'text/plain');
   const attachments = extractAttachments(msg.payload);
   const authResult = parseAuthenticationResults(headers);
 
@@ -51,15 +51,15 @@ export function parseGmailMessage(msg: GmailMessage): ParsedMessage {
     threadId: msg.threadId,
     fromAddress: fromAddress,
     fromName: fromName,
-    toAddresses: getHeader(headers, "To"),
-    ccAddresses: getHeader(headers, "Cc"),
-    bccAddresses: getHeader(headers, "Bcc"),
-    replyTo: getHeader(headers, "Reply-To"),
-    subject: getHeader(headers, "Subject"),
+    toAddresses: getHeader(headers, 'To'),
+    ccAddresses: getHeader(headers, 'Cc'),
+    bccAddresses: getHeader(headers, 'Bcc'),
+    replyTo: getHeader(headers, 'Reply-To'),
+    subject: getHeader(headers, 'Subject'),
     snippet: msg.snippet,
     date: parseInt(msg.internalDate, 10),
-    isRead: !msg.labelIds.includes("UNREAD"),
-    isStarred: msg.labelIds.includes("STARRED"),
+    isRead: !msg.labelIds.includes('UNREAD'),
+    isStarred: msg.labelIds.includes('STARRED'),
     bodyHtml: bodyHtml ? decodeBase64Url(bodyHtml) : null,
     bodyText: bodyText ? decodeBase64Url(bodyText) : null,
     rawSize: msg.sizeEstimate,
@@ -67,16 +67,14 @@ export function parseGmailMessage(msg: GmailMessage): ParsedMessage {
     labelIds: msg.labelIds,
     hasAttachments: attachments.length > 0,
     attachments,
-    listUnsubscribe: getHeader(headers, "List-Unsubscribe"),
-    listUnsubscribePost: getHeader(headers, "List-Unsubscribe-Post"),
+    listUnsubscribe: getHeader(headers, 'List-Unsubscribe'),
+    listUnsubscribePost: getHeader(headers, 'List-Unsubscribe-Post'),
     authResults: authResult ? JSON.stringify(authResult) : null,
   };
 }
 
 function getHeader(headers: GmailHeader[], name: string): string | null {
-  const header = headers.find(
-    (h) => h.name.toLowerCase() === name.toLowerCase(),
-  );
+  const header = headers.find((h) => h.name.toLowerCase() === name.toLowerCase());
   return header?.value ?? null;
 }
 
@@ -98,10 +96,7 @@ function parseEmailAddress(raw: string | null): {
   return { name: null, address: raw.trim() };
 }
 
-function extractBody(
-  part: GmailMessagePart,
-  mimeType: string,
-): string | null {
+function extractBody(part: GmailMessagePart, mimeType: string): string | null {
   if (part.mimeType === mimeType && part.body.data) {
     return part.body.data;
   }
@@ -124,24 +119,22 @@ function extractAttachments(part: GmailMessagePart): ParsedAttachment[] {
 
 function collectAttachments(part: GmailMessagePart, results: ParsedAttachment[]): void {
   if (part.body.attachmentId) {
-    const contentIdHeader = part.headers?.find(
-      (h) => h.name.toLowerCase() === "content-id",
-    );
+    const contentIdHeader = part.headers?.find((h) => h.name.toLowerCase() === 'content-id');
     const contentDisposition = part.headers?.find(
-      (h) => h.name.toLowerCase() === "content-disposition",
+      (h) => h.name.toLowerCase() === 'content-disposition',
     );
     const hasFilename = part.filename && part.filename.length > 0;
     const hasCid = !!contentIdHeader?.value;
-    const isInline = contentDisposition?.value?.toLowerCase().startsWith("inline") ?? false;
+    const isInline = contentDisposition?.value?.toLowerCase().startsWith('inline') ?? false;
 
     // Collect parts with a filename (regular attachments) or a Content-ID (CID inline images)
     if (hasFilename || hasCid) {
       results.push({
-        filename: part.filename || contentIdHeader?.value?.replace(/[<>]/g, "") || "inline",
+        filename: part.filename || contentIdHeader?.value?.replace(/[<>]/g, '') || 'inline',
         mimeType: part.mimeType,
         size: part.body.size,
         gmailAttachmentId: part.body.attachmentId,
-        contentId: contentIdHeader?.value?.replace(/[<>]/g, "") ?? null,
+        contentId: contentIdHeader?.value?.replace(/[<>]/g, '') ?? null,
         isInline: isInline && !hasFilename,
       });
     }
@@ -156,13 +149,13 @@ function collectAttachments(part: GmailMessagePart, results: ParsedAttachment[])
 
 function decodeBase64Url(data: string): string {
   // Gmail uses URL-safe base64
-  const base64 = data.replace(/-/g, "+").replace(/_/g, "/");
+  const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
   try {
     return decodeURIComponent(
       atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
     );
   } catch {
     // Fallback for binary data
@@ -173,10 +166,7 @@ function decodeBase64Url(data: string): string {
 /**
  * Convert a DB message row to the ParsedMessage interface.
  */
-export function parseDbMessage(
-  row: any,
-  _accountId: string,
-): ParsedMessage {
+export function parseDbMessage(row: any, _accountId: string): ParsedMessage {
   let attachments: ParsedAttachment[] = [];
   if (row.attachments_json) {
     try {
@@ -196,7 +186,7 @@ export function parseDbMessage(
     bccAddresses: row.bcc_addresses,
     replyTo: row.reply_to,
     subject: row.subject,
-    snippet: row.snippet ?? "",
+    snippet: row.snippet ?? '',
     date: row.date,
     isRead: row.is_read === 1,
     isStarred: row.is_starred === 1,

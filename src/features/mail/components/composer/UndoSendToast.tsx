@@ -1,8 +1,8 @@
-﻿import { useEffect, useRef, useState } from "react";
-import { CSSTransition } from "react-transition-group";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { getSetting } from "@features/settings/db/settings";
-import { deleteOperation } from "@features/settings/db/pendingOperations";
+﻿import { useEffect, useRef, useState } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { getSetting } from '@features/settings/db/settings';
+import { deleteOperation } from '@features/settings/db/pendingOperations';
 
 export function UndoSendToast() {
   const { undoSendVisible, pendingSendOpId, setPendingSendOpId, setUndoSendVisible } =
@@ -23,8 +23,8 @@ export function UndoSendToast() {
       return;
     }
 
-    getSetting("undo_send_delay_seconds").then((val) => {
-      setDelay(parseInt(val ?? "5", 10));
+    getSetting('undo_send_delay_seconds').then((val) => {
+      setDelay(parseInt(val ?? '5', 10));
     });
 
     startRef.current = Date.now();
@@ -57,10 +57,21 @@ export function UndoSendToast() {
   };
 
   return (
-    <CSSTransition nodeRef={toastRef} in={undoSendVisible} timeout={200} classNames="toast" unmountOnExit>
-      <div ref={toastRef} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-text-primary text-bg-primary rounded-lg shadow-lg overflow-hidden min-w-[280px]">
+    <CSSTransition
+      nodeRef={toastRef}
+      in={undoSendVisible}
+      timeout={200}
+      classNames="toast"
+      unmountOnExit
+    >
+      <div
+        ref={toastRef}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-text-primary text-bg-primary rounded-lg shadow-lg overflow-hidden min-w-[280px]"
+      >
         <div className="px-4 py-2.5 flex items-center gap-3">
-          <span className="text-sm">Sending email{elapsed > 0 ? ` in ${Math.ceil(delay - elapsed)}s` : "..."}</span>
+          <span className="text-sm">
+            Sending email{elapsed > 0 ? ` in ${Math.ceil(delay - elapsed)}s` : '...'}
+          </span>
           <button
             onClick={handleUndo}
             className="text-sm font-medium text-accent hover:text-accent-hover underline ms-auto"

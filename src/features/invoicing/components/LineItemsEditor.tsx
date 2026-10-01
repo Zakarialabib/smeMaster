@@ -65,7 +65,9 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
                     className="w-full text-start px-3 py-2 rounded-lg hover:bg-bg-hover/60 flex items-center justify-between gap-2"
                   >
                     <span className="text-sm text-text-primary truncate">{it.name}</span>
-                    <span className="text-[11px] text-text-tertiary shrink-0">{formatMoney(it.sell_price, { currency })}</span>
+                    <span className="text-[11px] text-text-tertiary shrink-0">
+                      {formatMoney(it.sell_price, { currency })}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -130,7 +132,9 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
                       min={0}
                       step="0.01"
                       value={it.unitPrice}
-                      onChange={(e) => update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })}
+                      onChange={(e) =>
+                        update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })
+                      }
                       className="w-full glass-input rounded-lg px-2 py-1.5 text-end text-text-primary tabular-nums"
                     />
                   </td>
@@ -141,7 +145,9 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
                       className="w-full glass-input rounded-lg px-2 py-1.5 text-center text-text-primary text-xs"
                     >
                       {TAX_RATES.map((r) => (
-                        <option key={r} value={r}>{r}%</option>
+                        <option key={r} value={r}>
+                          {r}%
+                        </option>
                       ))}
                     </select>
                   </td>
@@ -194,18 +200,43 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <Field label="Qty">
-                  <input type="number" min={0} value={it.qty} onChange={(e) => update(idx, { qty: Math.max(0, Number(e.target.value)) })} className="glass-input rounded-lg px-2 py-1.5 text-center w-full" />
+                  <input
+                    type="number"
+                    min={0}
+                    value={it.qty}
+                    onChange={(e) => update(idx, { qty: Math.max(0, Number(e.target.value)) })}
+                    className="glass-input rounded-lg px-2 py-1.5 text-center w-full"
+                  />
                 </Field>
                 <Field label="Price">
-                  <input type="number" min={0} step="0.01" value={it.unitPrice} onChange={(e) => update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })} className="glass-input rounded-lg px-2 py-1.5 text-end w-full" />
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={it.unitPrice}
+                    onChange={(e) =>
+                      update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })
+                    }
+                    className="glass-input rounded-lg px-2 py-1.5 text-end w-full"
+                  />
                 </Field>
                 <Field label="Tax">
-                  <select value={it.taxRate} onChange={(e) => update(idx, { taxRate: Number(e.target.value) })} className="glass-input rounded-lg px-2 py-1.5 w-full text-center">
-                    {TAX_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
+                  <select
+                    value={it.taxRate}
+                    onChange={(e) => update(idx, { taxRate: Number(e.target.value) })}
+                    className="glass-input rounded-lg px-2 py-1.5 w-full text-center"
+                  >
+                    {TAX_RATES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}%
+                      </option>
+                    ))}
                   </select>
                 </Field>
               </div>
-              <p className="text-end text-sm font-semibold text-text-primary">{formatMoney(lineTotal, { currency })}</p>
+              <p className="text-end text-sm font-semibold text-text-primary">
+                {formatMoney(lineTotal, { currency })}
+              </p>
             </div>
           );
         })}

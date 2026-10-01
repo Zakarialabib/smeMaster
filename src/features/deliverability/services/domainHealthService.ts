@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export interface RecordStatus {
   present: boolean;
@@ -26,16 +26,16 @@ export interface DomainHealth {
 }
 
 export enum FailureType {
-  MissingSpf = "MissingSpf",
-  SpfPermissive = "SpfPermissive",
-  SpfLookupLimit = "SpfLookupLimit",
-  MissingDkim = "MissingDkim",
-  WeakDkimKey = "WeakDkimKey",
-  MissingDmarc = "MissingDmarc",
-  WeakDmarcPolicy = "WeakDmarcPolicy",
-  BlacklistedIp = "BlacklistedIp",
-  NoPtrMatch = "NoPtrMatch",
-  MxIssues = "MxIssues",
+  MissingSpf = 'MissingSpf',
+  SpfPermissive = 'SpfPermissive',
+  SpfLookupLimit = 'SpfLookupLimit',
+  MissingDkim = 'MissingDkim',
+  WeakDkimKey = 'WeakDkimKey',
+  MissingDmarc = 'MissingDmarc',
+  WeakDmarcPolicy = 'WeakDmarcPolicy',
+  BlacklistedIp = 'BlacklistedIp',
+  NoPtrMatch = 'NoPtrMatch',
+  MxIssues = 'MxIssues',
 }
 
 export interface ProviderImpact {
@@ -79,13 +79,22 @@ export interface SentinelAlert {
 }
 
 export async function checkDomainHealth(domain: string, sendingIp?: string): Promise<DomainHealth> {
-  return invokeCommand<DomainHealth>("check_domain_health", { domain, sendingIp: sendingIp ?? null });
+  return invokeCommand<DomainHealth>('check_domain_health', {
+    domain,
+    sendingIp: sendingIp ?? null,
+  });
 }
 
-export async function getRemediation(domain: string, failureTypes: FailureType[]): Promise<RemediationNode[]> {
-  return invokeCommand<RemediationNode[]>("get_remediation", { domain, failureTypes });
+export async function getRemediation(
+  domain: string,
+  failureTypes: FailureType[],
+): Promise<RemediationNode[]> {
+  return invokeCommand<RemediationNode[]>('get_remediation', { domain, failureTypes });
 }
 
-export async function runSentinelCheck(domain: string, previousScore: number): Promise<SentinelAlert[]> {
-  return invokeCommand<SentinelAlert[]>("run_sentinel_check", { domain, previousScore });
+export async function runSentinelCheck(
+  domain: string,
+  previousScore: number,
+): Promise<SentinelAlert[]> {
+  return invokeCommand<SentinelAlert[]>('run_sentinel_check', { domain, previousScore });
 }

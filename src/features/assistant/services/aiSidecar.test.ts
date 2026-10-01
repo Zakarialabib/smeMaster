@@ -349,9 +349,7 @@ describe('aiSidecar service', () => {
     });
 
     it('handles backend rejection from aiGetSidecarStatus without crashing', async () => {
-      (aiGetSidecarStatus as vi.Mock).mockRejectedValue(
-        new Error('status backend error'),
-      );
+      (aiGetSidecarStatus as vi.Mock).mockRejectedValue(new Error('status backend error'));
 
       await expect(refreshAiSidecarRuntime()).resolves.toBeUndefined();
 
@@ -368,9 +366,7 @@ describe('aiSidecar service', () => {
         healthy: true,
         version: '1.2.3',
       });
-      (aiGetSidecarMetrics as vi.Mock).mockRejectedValue(
-        new Error('metrics backend error'),
-      );
+      (aiGetSidecarMetrics as vi.Mock).mockRejectedValue(new Error('metrics backend error'));
       (aiListSidecarModels as vi.Mock).mockResolvedValue(['model-a']);
 
       await expect(refreshAiSidecarRuntime()).resolves.toBeUndefined();
@@ -383,15 +379,9 @@ describe('aiSidecar service', () => {
     });
 
     it('does not crash on total upper-level failure', async () => {
-      (aiGetSidecarStatus as vi.Mock).mockRejectedValue(
-        new Error('fatal refresh error'),
-      );
-      (aiGetSidecarMetrics as vi.Mock).mockRejectedValue(
-        new Error('metrics fatal error'),
-      );
-      (aiListSidecarModels as vi.Mock).mockRejectedValue(
-        new Error('models fatal error'),
-      );
+      (aiGetSidecarStatus as vi.Mock).mockRejectedValue(new Error('fatal refresh error'));
+      (aiGetSidecarMetrics as vi.Mock).mockRejectedValue(new Error('metrics fatal error'));
+      (aiListSidecarModels as vi.Mock).mockRejectedValue(new Error('models fatal error'));
 
       await expect(refreshAiSidecarRuntime()).resolves.toBeUndefined();
     });

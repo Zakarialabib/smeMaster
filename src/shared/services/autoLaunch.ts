@@ -1,8 +1,10 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 /** Check if running inside a Tauri webview. */
 function isTauri(): boolean {
-  return typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+  return (
+    typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
+  );
 }
 
 /**
@@ -12,9 +14,9 @@ function isTauri(): boolean {
 export async function isAutoLaunchEnabled(): Promise<boolean> {
   if (!isTauri()) return false;
   try {
-    return await invokeCommand<boolean>("is_auto_launch_enabled");
+    return await invokeCommand<boolean>('is_auto_launch_enabled');
   } catch (err) {
-    console.error("Failed to check autolaunch status:", err);
+    console.error('Failed to check autolaunch status:', err);
     return false;
   }
 }
@@ -25,13 +27,13 @@ export async function isAutoLaunchEnabled(): Promise<boolean> {
  */
 export async function enableAutoLaunch(): Promise<void> {
   if (!isTauri()) {
-    console.info("Auto-launch disabled — not in Tauri environment");
+    console.info('Auto-launch disabled — not in Tauri environment');
     return;
   }
   try {
-    await invokeCommand("enable_auto_launch");
+    await invokeCommand('enable_auto_launch');
   } catch (err) {
-    console.error("Failed to enable autolaunch:", err);
+    console.error('Failed to enable autolaunch:', err);
   }
 }
 
@@ -41,8 +43,8 @@ export async function enableAutoLaunch(): Promise<void> {
 export async function disableAutoLaunch(): Promise<void> {
   if (!isTauri()) return;
   try {
-    await invokeCommand("disable_auto_launch");
+    await invokeCommand('disable_auto_launch');
   } catch (err) {
-    console.error("Failed to disable autolaunch:", err);
+    console.error('Failed to disable autolaunch:', err);
   }
 }

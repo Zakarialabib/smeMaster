@@ -11,7 +11,4 @@
  * The `initSyncStoreEvents()` function wires the store to the typed
  * EventBus manifest and is called eagerly at module-load time.
  */
-export {
-  useSyncStore,
-  initSyncStoreEvents,
-} from "@/stores/shared/syncStore";
+export { useSyncStore, initSyncStoreEvents } from '@/stores/shared/syncStore';

@@ -31,7 +31,7 @@
  */
 
 // Use invokeCommand (generic wrapper) since mobile-only commands aren't in the typed CommandRegistry
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ declare global {
  */
 export async function syncAndroidContacts(): Promise<AndroidContact[]> {
   try {
-    const raw = await invokeCommand<string>("get_android_contacts");
+    const raw = await invokeCommand<string>('get_android_contacts');
     return JSON.parse(raw) as AndroidContact[];
   } catch {
     return [];
@@ -105,10 +105,10 @@ export async function refreshAndroidContacts(): Promise<boolean> {
     }
 
     // Fallback: call via Tauri IPC (command routes to Kotlin @TauriPlugin)
-    await invokeCommand("plugin:contacts|fetch_contacts");
+    await invokeCommand('plugin:contacts|fetch_contacts');
     return true;
   } catch (err) {
-    console.error("[contactsSync] Failed to refresh contacts:", err);
+    console.error('[contactsSync] Failed to refresh contacts:', err);
     return false;
   }
 }
@@ -118,5 +118,5 @@ export async function refreshAndroidContacts(): Promise<boolean> {
  * Returns true only on Android with the bridge injected.
  */
 export function isContactsBridgeAvailable(): boolean {
-  return typeof window.ContactsBridge?.fetchContacts === "function";
+  return typeof window.ContactsBridge?.fetchContacts === 'function';
 }

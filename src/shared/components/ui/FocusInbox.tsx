@@ -11,34 +11,27 @@
  * - Responsive: single-column timeline on mobile, wider layout on desktop
  * - Empty state with InboxClearIllustration
  */
-import { useState, useMemo, type ReactNode } from "react";
-import {
-  CheckCircle2,
-  Mail,
-  Bell,
-  AlertTriangle,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { SwipeableRow } from "./SwipeableRow";
-import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
-import { PullToRefresh } from "./PullToRefresh";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { EmptyState } from "./EmptyState";
-import { InboxClearIllustration } from "./illustrations";
-import { cn } from "@shared/utils/cn";
+import { useState, useMemo, type ReactNode } from 'react';
+import { CheckCircle2, Mail, Bell, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { SwipeableRow } from './SwipeableRow';
+import type { SwipeActions } from '@shared/hooks/useSwipeGesture';
+import { PullToRefresh } from './PullToRefresh';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { EmptyState } from './EmptyState';
+import { InboxClearIllustration } from './illustrations';
+import { cn } from '@shared/utils/cn';
 
 /* ─── Public Types ─────────────────────────────────────────────────── */
 
-export type FocusItemType = "task" | "email" | "alert";
+export type FocusItemType = 'task' | 'email' | 'alert';
 
 export interface FocusItemMetadata {
-  priority?: "low" | "medium" | "high" | "urgent";
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   /** Sender name / email (email items) */
   from?: string;
-  taskStatus?: "pending" | "in_progress" | "completed";
-  alertSeverity?: "info" | "warning" | "critical";
+  taskStatus?: 'pending' | 'in_progress' | 'completed';
+  alertSeverity?: 'info' | 'warning' | 'critical';
   alertCategory?: string;
 }
 
@@ -60,7 +53,7 @@ export interface FocusInboxProps {
   /** Called when a swipe/tap action is performed */
   onItemAction?: (
     itemId: string,
-    action: "complete" | "archive" | "expand" | "snooze" | "dismiss",
+    action: 'complete' | 'archive' | 'expand' | 'snooze' | 'dismiss',
   ) => void;
   /** Additional classes for the container */
   className?: string;
@@ -72,7 +65,7 @@ export interface FocusInboxProps {
 
 /* ─── Filter definitions ───────────────────────────────────────────── */
 
-type FilterKey = "all" | FocusItemType;
+type FilterKey = 'all' | FocusItemType;
 
 interface FilterChip {
   key: FilterKey;
@@ -80,10 +73,10 @@ interface FilterChip {
 }
 
 const FILTERS: FilterChip[] = [
-  { key: "all", label: "All" },
-  { key: "task", label: "Tasks" },
-  { key: "email", label: "Emails" },
-  { key: "alert", label: "Alerts" },
+  { key: 'all', label: 'All' },
+  { key: 'task', label: 'Tasks' },
+  { key: 'email', label: 'Emails' },
+  { key: 'alert', label: 'Alerts' },
 ];
 
 /* ─── Icon map ─────────────────────────────────────────────────────── */
@@ -104,14 +97,14 @@ function getRelativeTime(date: Date): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 10) return "just now";
+  if (seconds < 10) return 'just now';
   if (seconds < 60) return `${seconds}s ago`;
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -119,45 +112,45 @@ function getRelativeTime(date: Date): string {
 
 function buildSwipeActions(
   item: FocusItem,
-  onAction: FocusInboxProps["onItemAction"],
+  onAction: FocusInboxProps['onItemAction'],
 ): SwipeActions {
   switch (item.type) {
-    case "task":
+    case 'task':
       return {
         left: {
           primary: {
-            label: "Complete",
-            icon: "check-circle-2",
-            color: "bg-success",
-            onAction: () => onAction?.(item.id, "complete"),
+            label: 'Complete',
+            icon: 'check-circle-2',
+            color: 'bg-success',
+            onAction: () => onAction?.(item.id, 'complete'),
           },
           secondary: {
-            label: "Snooze",
-            icon: "clock",
-            color: "bg-warning",
-            onAction: () => onAction?.(item.id, "snooze"),
+            label: 'Snooze',
+            icon: 'clock',
+            color: 'bg-warning',
+            onAction: () => onAction?.(item.id, 'snooze'),
           },
         },
       };
-    case "email":
+    case 'email':
       return {
         left: {
           primary: {
-            label: "Archive",
-            icon: "archive",
-            color: "bg-accent",
-            onAction: () => onAction?.(item.id, "archive"),
+            label: 'Archive',
+            icon: 'archive',
+            color: 'bg-accent',
+            onAction: () => onAction?.(item.id, 'archive'),
           },
         },
       };
-    case "alert":
+    case 'alert':
       return {
         left: {
           primary: {
-            label: "Dismiss",
-            icon: "bell-off",
-            color: "bg-text-tertiary",
-            onAction: () => onAction?.(item.id, "dismiss"),
+            label: 'Dismiss',
+            icon: 'bell-off',
+            color: 'bg-text-tertiary',
+            onAction: () => onAction?.(item.id, 'dismiss'),
           },
         },
       };
@@ -167,7 +160,7 @@ function buildSwipeActions(
 /* ─── Category count badge helper ──────────────────────────────────── */
 
 function getFilterLabel(key: FilterKey, count: number): string {
-  const base = FILTERS.find((f) => f.key === key)?.label ?? "All";
+  const base = FILTERS.find((f) => f.key === key)?.label ?? 'All';
   return `${base} (${count})`;
 }
 
@@ -179,12 +172,8 @@ interface FeedItemContentProps {
   onToggleExpand: (id: string) => void;
 }
 
-function FeedItemContent({
-  item,
-  isExpanded,
-  onToggleExpand,
-}: FeedItemContentProps) {
-  const isAlert = item.type === "alert";
+function FeedItemContent({ item, isExpanded, onToggleExpand }: FeedItemContentProps) {
+  const isAlert = item.type === 'alert';
   const Icon = TYPE_ICON[item.type];
 
   const handleAlertClick = () => {
@@ -194,7 +183,7 @@ function FeedItemContent({
   };
 
   const handleAlertKeyDown = (e: React.KeyboardEvent) => {
-    if (isAlert && (e.key === "Enter" || e.key === " ")) {
+    if (isAlert && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       onToggleExpand(item.id);
     }
@@ -202,26 +191,26 @@ function FeedItemContent({
 
   /* -- Severity icon for expanded alerts -- */
   const alertSeverityIcon = (severity?: string): ReactNode => {
-    if (!severity || severity === "info") return null;
+    if (!severity || severity === 'info') return null;
     const colorClass =
-      severity === "critical"
-        ? "text-danger"
-        : severity === "warning"
-          ? "text-warning"
-          : "text-accent";
+      severity === 'critical'
+        ? 'text-danger'
+        : severity === 'warning'
+          ? 'text-warning'
+          : 'text-accent';
     return <AlertTriangle size={10} className={colorClass} />;
   };
 
   return (
     <div
       className={cn(
-        "flex items-start gap-3 px-4 py-3 border-b border-border-secondary transition-colors",
-        item.unread && "bg-accent-light/50",
-        isAlert && "cursor-pointer hover:bg-bg-hover",
+        'flex items-start gap-3 px-4 py-3 border-b border-border-secondary transition-colors',
+        item.unread && 'bg-accent-light/50',
+        isAlert && 'cursor-pointer hover:bg-bg-hover',
       )}
       onClick={handleAlertClick}
       onKeyDown={handleAlertKeyDown}
-      role={isAlert ? "button" : undefined}
+      role={isAlert ? 'button' : undefined}
       tabIndex={isAlert ? 0 : undefined}
       aria-expanded={isAlert ? isExpanded : undefined}
       aria-label={`${item.type}: ${item.title}`}
@@ -232,12 +221,12 @@ function FeedItemContent({
           size={24}
           strokeWidth={1.5}
           className={cn(
-            "transition-colors",
+            'transition-colors',
             item.unread
-              ? item.type === "alert"
-                ? "text-warning"
-                : "text-accent"
-              : "text-text-tertiary",
+              ? item.type === 'alert'
+                ? 'text-warning'
+                : 'text-accent'
+              : 'text-text-tertiary',
           )}
         />
       </div>
@@ -248,21 +237,14 @@ function FeedItemContent({
         <div className="flex items-center justify-between gap-2">
           <h3
             className={cn(
-              "text-sm truncate",
-              item.unread
-                ? "font-semibold text-text-primary"
-                : "font-medium text-text-primary",
+              'text-sm truncate',
+              item.unread ? 'font-semibold text-text-primary' : 'font-medium text-text-primary',
             )}
           >
             {item.title}
           </h3>
           <div className="flex items-center gap-1.5 shrink-0">
-            {item.unread && (
-              <span
-                className="w-2 h-2 rounded-full bg-accent"
-                aria-label="Unread"
-              />
-            )}
+            {item.unread && <span className="w-2 h-2 rounded-full bg-accent" aria-label="Unread" />}
             <time
               className="text-xs text-text-tertiary whitespace-nowrap tabular-nums"
               dateTime={item.timestamp.toISOString()}
@@ -273,20 +255,13 @@ function FeedItemContent({
         </div>
 
         {/* Preview line */}
-        <p
-          className={cn(
-            "text-xs text-text-tertiary mt-0.5",
-            isExpanded ? "" : "line-clamp-1",
-          )}
-        >
+        <p className={cn('text-xs text-text-tertiary mt-0.5', isExpanded ? '' : 'line-clamp-1')}>
           {item.preview}
         </p>
 
         {/* Sender metadata (emails) */}
-        {!isExpanded && item.type === "email" && item.metadata?.from && (
-          <p className="text-[11px] text-text-tertiary/70 mt-0.5 truncate">
-            {item.metadata.from}
-          </p>
+        {!isExpanded && item.type === 'email' && item.metadata?.from && (
+          <p className="text-[11px] text-text-tertiary/70 mt-0.5 truncate">{item.metadata.from}</p>
         )}
 
         {/* Expanded alert detail */}
@@ -298,13 +273,9 @@ function FeedItemContent({
                 {item.metadata.alertCategory}
               </span>
             )}
-            <p className="text-xs text-text-secondary leading-relaxed">
-              {item.preview}
-            </p>
-            {item.metadata?.alertSeverity === "critical" && (
-              <p className="text-[11px] font-medium text-danger">
-                Requires attention
-              </p>
+            <p className="text-xs text-text-secondary leading-relaxed">{item.preview}</p>
+            {item.metadata?.alertSeverity === 'critical' && (
+              <p className="text-[11px] font-medium text-danger">Requires attention</p>
             )}
           </div>
         )}
@@ -330,31 +301,18 @@ interface FeedItemWrapperProps {
   item: FocusItem;
   isExpanded: boolean;
   onToggleExpand: (id: string) => void;
-  onAction?: FocusInboxProps["onItemAction"];
+  onAction?: FocusInboxProps['onItemAction'];
 }
 
-function FeedItemWrapper({
-  item,
-  isExpanded,
-  onToggleExpand,
-  onAction,
-}: FeedItemWrapperProps) {
+function FeedItemWrapper({ item, isExpanded, onToggleExpand, onAction }: FeedItemWrapperProps) {
   const content = (
-    <FeedItemContent
-      item={item}
-      isExpanded={isExpanded}
-      onToggleExpand={onToggleExpand}
-    />
+    <FeedItemContent item={item} isExpanded={isExpanded} onToggleExpand={onToggleExpand} />
   );
 
   // Alerts are tap-to-expand — no swipe wrapper
-  if (item.type === "alert") return content;
+  if (item.type === 'alert') return content;
 
-  return (
-    <SwipeableRow actions={buildSwipeActions(item, onAction)}>
-      {content}
-    </SwipeableRow>
-  );
+  return <SwipeableRow actions={buildSwipeActions(item, onAction)}>{content}</SwipeableRow>;
 }
 
 /* ─── Main Component ───────────────────────────────────────────────── */
@@ -363,16 +321,14 @@ export function FocusInbox({
   items,
   onRefresh,
   onItemAction,
-  className = "",
-  title = "Focus Inbox",
+  className = '',
+  title = 'Focus Inbox',
   refreshing = false,
 }: FocusInboxProps) {
   const { screen } = usePlatform();
   const isMobile = screen.isMobile;
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
-  const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(() => new Set());
 
   /* -- Toggle alert expand -- */
   const toggleExpand = (id: string) => {
@@ -390,7 +346,7 @@ export function FocusInbox({
   /* -- Filter counts -- */
   const counts = useMemo(() => {
     const result: Record<string, number> = { all: items.length };
-    for (const type of ["task", "email", "alert"] as const) {
+    for (const type of ['task', 'email', 'alert'] as const) {
       result[type] = items.filter((i) => i.type === type).length;
     }
     return result;
@@ -398,7 +354,7 @@ export function FocusInbox({
 
   /* -- Filtered items -- */
   const filteredItems = useMemo(() => {
-    if (activeFilter === "all") return items;
+    if (activeFilter === 'all') return items;
     return items.filter((item) => item.type === activeFilter);
   }, [items, activeFilter]);
 
@@ -413,9 +369,9 @@ export function FocusInbox({
       <EmptyState
         title="All caught up!"
         subtitle={
-          activeFilter === "all"
-            ? "No pending tasks, unread emails, or active alerts."
-            : `No ${activeFilter === "task" ? "pending tasks" : activeFilter === "email" ? "unread emails" : "active alerts"} to show.`
+          activeFilter === 'all'
+            ? 'No pending tasks, unread emails, or active alerts.'
+            : `No ${activeFilter === 'task' ? 'pending tasks' : activeFilter === 'email' ? 'unread emails' : 'active alerts'} to show.`
         }
         illustration={InboxClearIllustration}
         size="md"
@@ -446,8 +402,8 @@ export function FocusInbox({
   return (
     <section
       className={cn(
-        "flex flex-col bg-bg-primary rounded-xl border border-border-primary overflow-hidden",
-        isMobile ? "h-full rounded-none border-0" : "shadow-sm",
+        'flex flex-col bg-bg-primary rounded-xl border border-border-primary overflow-hidden',
+        isMobile ? 'h-full rounded-none border-0' : 'shadow-sm',
         className,
       )}
       aria-label={title}
@@ -456,7 +412,7 @@ export function FocusInbox({
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-primary bg-bg-secondary/50">
         <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
         <span className="text-xs text-text-tertiary tabular-nums">
-          {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}
+          {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
         </span>
       </div>
 
@@ -473,11 +429,11 @@ export function FocusInbox({
               key={filter.key}
               onClick={() => setActiveFilter(filter.key)}
               className={cn(
-                "whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
+                'whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                'focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2',
                 isActive
-                  ? "bg-accent text-white"
-                  : "bg-bg-tertiary text-text-secondary hover:bg-bg-hover",
+                  ? 'bg-accent text-white'
+                  : 'bg-bg-tertiary text-text-secondary hover:bg-bg-hover',
               )}
               aria-pressed={isActive}
               aria-label={`Show ${filter.label.toLowerCase()}`}

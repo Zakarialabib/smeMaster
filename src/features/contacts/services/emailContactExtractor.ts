@@ -23,14 +23,14 @@ export interface ExtractedContact {
 // Strip HTML to plain text (lightweight; the sidebar passes already-stripped body when possible).
 function stripHtml(input: string): string {
   return input
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -46,7 +46,7 @@ export function extractContactFromEmail(
   body: string,
   opts: { existingPhone?: string | null } = {},
 ): ExtractedContact {
-  const text = stripHtml(body || "");
+  const text = stripHtml(body || '');
   const result: ExtractedContact = {
     phone: null,
     taxId: null,
@@ -58,7 +58,7 @@ export function extractContactFromEmail(
   if (!opts.existingPhone) {
     const phoneMatch = text.match(PHONE_RE);
     if (phoneMatch) {
-      result.phone = phoneMatch[0]!.replace(/\s+/g, " ").trim();
+      result.phone = phoneMatch[0]!.replace(/\s+/g, ' ').trim();
     }
   }
 
@@ -70,13 +70,13 @@ export function extractContactFromEmail(
   // Address — first line that looks like a street.
   const street = text.match(STREET_RE);
   if (street) {
-    result.address = street[0]!.replace(/\s+/g, " ").trim();
+    result.address = street[0]!.replace(/\s+/g, ' ').trim();
   }
 
   // Company — first capitalised entity ending in a company suffix.
   const company = text.match(COMPANY_RE);
   if (company) {
-    result.company = company[1]!.replace(/\s+/g, " ").trim();
+    result.company = company[1]!.replace(/\s+/g, ' ').trim();
   }
 
   return result;
@@ -88,7 +88,12 @@ export function extractContactFromEmail(
  */
 export function diffExtracted(
   extracted: ExtractedContact,
-  current: { phone?: string | null; tax_id?: string | null; address?: string | null; company?: string | null },
+  current: {
+    phone?: string | null;
+    tax_id?: string | null;
+    address?: string | null;
+    company?: string | null;
+  },
 ): Partial<ExtractedContact> {
   const applied: Partial<ExtractedContact> = {};
   if (extracted.phone && !current.phone) applied.phone = extracted.phone;

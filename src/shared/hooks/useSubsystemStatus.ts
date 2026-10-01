@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { getSubsystemStatus } from "@shared/services/ipc/invoke";
-import type { SubsystemStatusResponse } from "@shared/services/ipc/CommandRegistry";
+import { useState, useEffect, useCallback } from 'react';
+import { getSubsystemStatus } from '@shared/services/ipc/invoke';
+import type { SubsystemStatusResponse } from '@shared/services/ipc/CommandRegistry';
 
 export type { SubsystemStatusResponse };
 

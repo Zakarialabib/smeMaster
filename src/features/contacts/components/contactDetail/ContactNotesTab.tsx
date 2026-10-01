@@ -1,5 +1,5 @@
-import { StickyNote, Clock } from "lucide-react";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { StickyNote, Clock } from 'lucide-react';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 export interface ContactNotesTabProps {
   notes: string;
@@ -26,9 +26,7 @@ export function ContactNotesTab({
         aria-label="Contact notes"
       />
       <div className="flex items-center justify-between mt-2">
-        <p className="text-[0.6rem] text-text-tertiary">
-          Notes are auto-saved
-        </p>
+        <p className="text-[0.6rem] text-text-tertiary">Notes are auto-saved</p>
         {notesDirty && (
           <span className="text-[0.6rem] text-accent flex items-center gap-1">
             <Clock size={9} />

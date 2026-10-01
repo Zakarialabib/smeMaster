@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import type { ActionStatus, ActionStatusValue } from "./types";
+import { create } from 'zustand';
+import type { ActionStatus, ActionStatusValue } from './types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -18,11 +18,7 @@ interface ActionStatusStore {
   statuses: Record<string, ActionStatus>;
 
   /** Set or update the status for a given actionId */
-  setStatus: (
-    id: string,
-    status: ActionStatusValue,
-    opts?: SetStatusOptions,
-  ) => void;
+  setStatus: (id: string, status: ActionStatusValue, opts?: SetStatusOptions) => void;
 
   /** Remove a single action status entry */
   clearStatus: (id: string) => void;
@@ -51,10 +47,7 @@ export const useActionStatusStore = create<ActionStatusStore>((set, get) => {
    * Schedule auto-clear for a given actionId.
    * Cancels any existing timer for the same actionId first.
    */
-  function scheduleAutoClear(
-    id: string,
-    ms: number,
-  ): void {
+  function scheduleAutoClear(id: string, ms: number): void {
     const existing = autoClearTimers.get(id);
     if (existing) clearTimeout(existing);
 
@@ -73,7 +66,7 @@ export const useActionStatusStore = create<ActionStatusStore>((set, get) => {
       set((state) => {
         const existing = state.statuses[id];
         const now = Date.now();
-        const isTerminal = status === "success" || status === "error";
+        const isTerminal = status === 'success' || status === 'error';
 
         return {
           statuses: {
@@ -84,9 +77,7 @@ export const useActionStatusStore = create<ActionStatusStore>((set, get) => {
               // Only include error when explicitly provided
               ...(opts?.error !== undefined ? { error: opts.error } : {}),
               // Preserve existing error if not overwritten
-              ...(opts?.error === undefined && existing?.error
-                ? { error: existing.error }
-                : {}),
+              ...(opts?.error === undefined && existing?.error ? { error: existing.error } : {}),
               // Only include progress when explicitly provided, otherwise preserve existing
               ...(opts?.progress !== undefined
                 ? { progress: opts.progress }
@@ -128,7 +119,7 @@ export const useActionStatusStore = create<ActionStatusStore>((set, get) => {
       get().setStatus(id, status, rest);
 
       // Only schedule auto-clear for terminal states (success/error)
-      if (status === "success" || status === "error") {
+      if (status === 'success' || status === 'error') {
         const ms = autoClearMs ?? 3000;
         scheduleAutoClear(id, ms);
       }

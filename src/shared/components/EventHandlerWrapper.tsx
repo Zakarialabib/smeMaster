@@ -12,7 +12,7 @@ export const EventHandlerWrapper: React.FC<EventHandlerProps> = ({
   event,
   handler,
   dependencies = [],
-  children
+  children,
 }) => {
   const handlerRef = useRef(handler);
   const offRef = useRef<(() => void) | null>(null);

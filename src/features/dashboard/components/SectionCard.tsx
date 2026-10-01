@@ -1,9 +1,9 @@
-import { useId, useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { Info, ArrowRight, type LucideIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
-import { StatBox } from "./StatBox";
+import { useId, useState, type ReactNode } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Info, ArrowRight, type LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
+import { StatBox } from './StatBox';
 
 /**
  * SectionCard — reusable "menu console" card for the dashboard.
@@ -29,10 +29,10 @@ export interface SectionStat {
   value: string | number | null;
   /** Optional i18n key rendered as a small hint under the value. */
   hint?: string;
-  variant?: "default" | "danger" | "warning" | "muted";
+  variant?: 'default' | 'danger' | 'warning' | 'muted';
 }
 
-export type SectionAccent = "accent" | "success" | "warning" | "danger";
+export type SectionAccent = 'accent' | 'success' | 'warning' | 'danger';
 
 export interface SectionCardProps {
   /** i18n key for the card title. */
@@ -54,10 +54,10 @@ export interface SectionCardProps {
 }
 
 const ACCENT_CHIP_CLASSES: Record<SectionAccent, string> = {
-  accent: "bg-accent/10 text-accent",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  danger: "bg-danger/10 text-danger",
+  accent: 'bg-accent/10 text-accent',
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
+  danger: 'bg-danger/10 text-danger',
 };
 
 export function SectionCard({
@@ -68,14 +68,14 @@ export function SectionCard({
   stats,
   children,
   badge,
-  accent = "accent",
+  accent = 'accent',
 }: SectionCardProps) {
   const { t } = useTranslation();
   const [infoOpen, setInfoOpen] = useState(false);
   const titleId = useId();
 
   const sectionTitle = t(title);
-  const aboutLabel = t("dashboard.cards.aboutSection", { section: sectionTitle });
+  const aboutLabel = t('dashboard.cards.aboutSection', { section: sectionTitle });
   const chipClasses = ACCENT_CHIP_CLASSES[accent];
   const singleStat = stats && stats.length === 1;
 
@@ -100,10 +100,7 @@ export function SectionCard({
               <Icon size={18} />
             </span>
             <div className="min-w-0">
-              <h3
-                id={titleId}
-                className="truncate text-sm font-semibold text-text-primary"
-              >
+              <h3 id={titleId} className="truncate text-sm font-semibold text-text-primary">
                 {sectionTitle}
               </h3>
               {badge && (
@@ -134,10 +131,10 @@ export function SectionCard({
         {stats && stats.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
             {stats.map((s) => (
-              <div key={s.label} className={singleStat ? "col-span-2" : undefined}>
+              <div key={s.label} className={singleStat ? 'col-span-2' : undefined}>
                 <StatBox
                   label={t(s.label)}
-                  value={s.value ?? "—"}
+                  value={s.value ?? '—'}
                   variant={s.variant}
                   subtitle={s.hint ? t(s.hint) : undefined}
                 />
@@ -151,7 +148,7 @@ export function SectionCard({
 
         {/* Open-section affordance */}
         <span className="flex items-center gap-1 text-xs font-medium text-accent">
-          {t("dashboard.cards.openSection")}
+          {t('dashboard.cards.openSection')}
           <ArrowRight size={13} aria-hidden="true" />
         </span>
       </div>
@@ -169,7 +166,7 @@ export function SectionCard({
               onClick={() => setInfoOpen(false)}
               className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-              {t("dashboard.cards.openSection")}
+              {t('dashboard.cards.openSection')}
               <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
@@ -181,9 +178,7 @@ export function SectionCard({
             {stats.map((s) => (
               <div key={s.label} className="flex items-center justify-between gap-3">
                 <dt className="text-xs text-text-tertiary">{t(s.label)}</dt>
-                <dd className="text-sm font-semibold text-text-primary">
-                  {s.value ?? "—"}
-                </dd>
+                <dd className="text-sm font-semibold text-text-primary">{s.value ?? '—'}</dd>
               </div>
             ))}
           </dl>

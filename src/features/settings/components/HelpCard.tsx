@@ -1,5 +1,13 @@
-import { useState } from "react";
-import { HelpCircle, Lightbulb, Clock, AlertTriangle, ChevronDown, ChevronRight, type LucideIcon } from "lucide-react";
+import { useState } from 'react';
+import {
+  HelpCircle,
+  Lightbulb,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
 
 /* ─── Education Icons ─── */
 
@@ -12,7 +20,7 @@ const iconMap: Record<string, LucideIcon> = {
 /* ─── Education Item ─── */
 
 interface EducationItem {
-  type: "why" | "how" | "when"|'tip';
+  type: 'why' | 'how' | 'when' | 'tip';
   text: string;
 }
 
@@ -22,7 +30,7 @@ interface HelpCardProps {
   title?: string;
   items: EducationItem[];
   /** Optional warning variant */
-  variant?: "default" | "warning";
+  variant?: 'default' | 'warning';
   /** Optional class name */
   className?: string;
   /** Collapse by default, expand on click. Default: true */
@@ -35,15 +43,15 @@ interface HelpCardProps {
  * Education icon style per icon type — 18x18 rounded box with tinted bg.
  */
 const iconStyles: Record<string, string> = {
-  why: "bg-warning/15 text-warning",
-  how: "bg-accent/15 text-accent",
-  when: "bg-success/15 text-success",
+  why: 'bg-warning/15 text-warning',
+  how: 'bg-accent/15 text-accent',
+  when: 'bg-success/15 text-success',
 };
 
 const labelStyles: Record<string, string> = {
-  why: "text-warning",
-  how: "text-accent",
-  when: "text-success",
+  why: 'text-warning',
+  how: 'text-accent',
+  when: 'text-success',
 };
 
 /**
@@ -74,8 +82,8 @@ const labelStyles: Record<string, string> = {
 export function HelpCard({
   title,
   items,
-  variant = "default",
-  className = "",
+  variant = 'default',
+  className = '',
   collapsible = true,
   defaultOpen = false,
 }: HelpCardProps) {
@@ -91,7 +99,7 @@ export function HelpCard({
         onClick={() => setOpen(true)}
         className={`
           w-full text-start bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 mt-3
-          ${variant === "warning" ? "border-warning/20 bg-warning/4" : ""}
+          ${variant === 'warning' ? 'border-warning/20 bg-warning/4' : ''}
           hover:bg-accent/10 transition-colors cursor-pointer
           ${className}
         `}
@@ -100,10 +108,10 @@ export function HelpCard({
           <ChevronRight size={14} className="text-accent shrink-0" />
           <HelpCircle size={13} className="text-accent shrink-0" />
           <span className="text-xs font-medium text-text-secondary">
-            {title ?? "Learn more — why, how, when"}
+            {title ?? 'Learn more — why, how, when'}
           </span>
           <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
-            {items.map((i) => i.type.charAt(0).toUpperCase()).join(" · ")}
+            {items.map((i) => i.type.charAt(0).toUpperCase()).join(' · ')}
           </span>
         </div>
       </button>
@@ -115,20 +123,20 @@ export function HelpCard({
     <div
       className={`
         bg-accent/5 border border-accent/12 rounded-[10px] p-4 mt-3
-        ${variant === "warning" ? "border-warning/20 bg-warning/4" : ""}
+        ${variant === 'warning' ? 'border-warning/20 bg-warning/4' : ''}
         ${className}
       `}
     >
       {/* Header row with collapse button */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          {variant === "warning" ? (
+          {variant === 'warning' ? (
             <AlertTriangle size={14} className="text-warning shrink-0" />
           ) : (
             <HelpCircle size={14} className="text-accent shrink-0" />
           )}
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-            {title ?? "Why · How · When"}
+            {title ?? 'Why · How · When'}
           </span>
         </div>
         {collapsible && (
@@ -155,8 +163,10 @@ export function HelpCard({
                 <Icon size={12} />
               </div>
               <div className="min-w-0">
-                <span className={`text-[11px] font-semibold uppercase tracking-[0.04em] ${labelStyles[item.type]}`}>
-                  {item.type === "why" ? "Why" : item.type === "how" ? "How" : "When"}
+                <span
+                  className={`text-[11px] font-semibold uppercase tracking-[0.04em] ${labelStyles[item.type]}`}
+                >
+                  {item.type === 'why' ? 'Why' : item.type === 'how' ? 'How' : 'When'}
                 </span>
                 <p className="text-[13px] text-text-secondary leading-relaxed mt-0.5">
                   {item.text}
@@ -180,7 +190,13 @@ export function InlineTooltip({ text, label }: { text: string; label?: string })
   return (
     <span className="inline-flex items-center group relative">
       {label && <span className="text-sm text-text-secondary">{label}</span>}
-      <span className="info-tooltip-trigger" title={text} tabIndex={0} role="tooltip" aria-label={text}>
+      <span
+        className="info-tooltip-trigger"
+        title={text}
+        tabIndex={0}
+        role="tooltip"
+        aria-label={text}
+      >
         ?
       </span>
       {/* Desktop tooltip on hover */}

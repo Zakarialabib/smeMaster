@@ -1,6 +1,6 @@
-import { Trash2, Pencil } from "lucide-react";
-import { Toggle } from "@shared/components/ui/Toggle";
-import { TRIGGER_LABELS } from "./triggerLabels";
+import { Trash2, Pencil } from 'lucide-react';
+import { Toggle } from '@shared/components/ui/Toggle';
+import { TRIGGER_LABELS } from './triggerLabels';
 
 /** Minimum shape every rule-like object passed to the card must satisfy. */
 export interface RuleSummaryCardRule {
@@ -11,8 +11,8 @@ export interface RuleSummaryCardRule {
   is_active: number;
 }
 
-export type RuleSummaryEntityName = "rule" | "workflow";
-export type RuleSummaryCountNoun = "action" | "step";
+export type RuleSummaryEntityName = 'rule' | 'workflow';
+export type RuleSummaryCountNoun = 'action' | 'step';
 
 export interface RuleSummaryCardProps<TRule extends RuleSummaryCardRule> {
   /** The full rule object — id/name/trigger_event are read from here. */
@@ -33,9 +33,9 @@ export interface RuleSummaryCardProps<TRule extends RuleSummaryCardRule> {
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
 });
 
 function formatCreatedAt(ts: number): string {
@@ -137,4 +137,3 @@ export function RuleSummaryCard<TRule extends RuleSummaryCardRule>({
     </div>
   );
 }
-

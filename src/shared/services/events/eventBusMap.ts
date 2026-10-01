@@ -8,7 +8,7 @@
  *
  * See design doc: `docs/superpowers/specs/2026-06-04-app-shell-init-refactor-design.md` §3.3
  */
-import { eventBus, type EventHandler } from "./eventBus";
+import { eventBus, type EventHandler } from './eventBus';
 // NOTE: The `as EventName` cast in `subscribeFromManifest` relies on all
 // manifest keys being valid EventName values (from eventBus.ts).  If a new
 // key is added to EVENT_BUS_MAP that has no matching string in EventNames,
@@ -17,12 +17,7 @@ import { eventBus, type EventHandler } from "./eventBus";
 // ── Event owner identifiers ────────────────────────────────────────────────
 
 export type EventOwner =
-  | "syncStore"
-  | "threadStore"
-  | "composerStore"
-  | "notificationStore"
-  | "actionStatus"
-  | "shell";
+  'syncStore' | 'threadStore' | 'composerStore' | 'notificationStore' | 'actionStatus' | 'shell';
 
 // ── Event entry shape ──────────────────────────────────────────────────────
 
@@ -37,80 +32,80 @@ export interface EventEntry {
 // Payload type names match actual interfaces in `eventBus.ts`.
 
 export const EVENT_BUS_MAP = {
-  "sync:started": {
-    owner: "syncStore",
-    description: "A sync run started",
-    payload: "SyncStatusPayload",
+  'sync:started': {
+    owner: 'syncStore',
+    description: 'A sync run started',
+    payload: 'SyncStatusPayload',
   },
-  "sync:complete": {
-    owner: "syncStore",
-    description: "Sync finished for an account",
-    payload: "SyncStatusPayload",
+  'sync:complete': {
+    owner: 'syncStore',
+    description: 'Sync finished for an account',
+    payload: 'SyncStatusPayload',
   },
-  "sync:account-start": {
-    owner: "syncStore",
-    description: "Single account sync started",
-    payload: "SyncAccountStartPayload",
+  'sync:account-start': {
+    owner: 'syncStore',
+    description: 'Single account sync started',
+    payload: 'SyncAccountStartPayload',
   },
-  "sync:account-complete": {
-    owner: "syncStore",
-    description: "Single account sync done",
-    payload: "SyncAccountCompletePayload",
+  'sync:account-complete': {
+    owner: 'syncStore',
+    description: 'Single account sync done',
+    payload: 'SyncAccountCompletePayload',
   },
-  "sync:account-error": {
-    owner: "syncStore",
-    description: "Single account sync failed",
-    payload: "SyncAccountErrorPayload",
+  'sync:account-error': {
+    owner: 'syncStore',
+    description: 'Single account sync failed',
+    payload: 'SyncAccountErrorPayload',
   },
-  "sync:error": {
-    owner: "syncStore",
-    description: "Sync run error",
-    payload: "SyncStatusPayload",
+  'sync:error': {
+    owner: 'syncStore',
+    description: 'Sync run error',
+    payload: 'SyncStatusPayload',
   },
-  "rust:init:db": {
-    owner: "syncStore",
-    description: "Rust database initialization complete",
-    payload: "InitCompletePayload",
+  'rust:init:db': {
+    owner: 'syncStore',
+    description: 'Rust database initialization complete',
+    payload: 'InitCompletePayload',
   },
-  "rust:init:sync": {
-    owner: "syncStore",
-    description: "Rust sync subsystem initialization complete",
-    payload: "InitCompletePayload",
+  'rust:init:sync': {
+    owner: 'syncStore',
+    description: 'Rust sync subsystem initialization complete',
+    payload: 'InitCompletePayload',
   },
-  "rust:init:complete": {
-    owner: "syncStore",
-    description: "Rust orchestrator init done",
-    payload: "InitCompletePayload",
+  'rust:init:complete': {
+    owner: 'syncStore',
+    description: 'Rust orchestrator init done',
+    payload: 'InitCompletePayload',
   },
-  "heartbeat": {
-    owner: "shell",
-    description: "Periodic heartbeat from Rust backend",
-    payload: "HeartbeatPayload",
+  heartbeat: {
+    owner: 'shell',
+    description: 'Periodic heartbeat from Rust backend',
+    payload: 'HeartbeatPayload',
   },
-  "db:change": {
-    owner: "shell",
-    description: "Database change notification",
-    payload: "DbChangePayload",
+  'db:change': {
+    owner: 'shell',
+    description: 'Database change notification',
+    payload: 'DbChangePayload',
   },
-  "push:token-registered": {
-    owner: "notificationStore",
-    description: "FCM push token registered",
-    payload: "PushTokenPayload",
+  'push:token-registered': {
+    owner: 'notificationStore',
+    description: 'FCM push token registered',
+    payload: 'PushTokenPayload',
   },
-  "share:received": {
-    owner: "shell",
-    description: "Share intent received from another app",
-    payload: "SharePayload",
+  'share:received': {
+    owner: 'shell',
+    description: 'Share intent received from another app',
+    payload: 'SharePayload',
   },
-  "composer:open": {
-    owner: "composerStore",
-    description: "Open a compose window",
-    payload: "ComposerOpenPayload",
+  'composer:open': {
+    owner: 'composerStore',
+    description: 'Open a compose window',
+    payload: 'ComposerOpenPayload',
   },
-  "notification:received": {
-    owner: "notificationStore",
-    description: "Push notification arrived",
-    payload: "PushNotificationPayload",
+  'notification:received': {
+    owner: 'notificationStore',
+    description: 'Push notification arrived',
+    payload: 'PushNotificationPayload',
   },
   // actionStatus events are owned by initActionStatusEventBridge — out of scope
 } as const;

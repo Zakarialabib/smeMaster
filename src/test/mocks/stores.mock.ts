@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 export function createMockUIStoreState(overrides: Record<string, unknown> = {}) {
   return {
@@ -8,9 +8,7 @@ export function createMockUIStoreState(overrides: Record<string, unknown> = {}) 
   };
 }
 
-export function createMockThreadStoreState(
-  overrides: Record<string, unknown> = {},
-) {
+export function createMockThreadStoreState(overrides: Record<string, unknown> = {}) {
   return {
     threads: [],
     updateThread: vi.fn(),
@@ -26,9 +24,7 @@ export function createMockThreadStoreState(
   };
 }
 
-export function createMockAccountStoreState(
-  overrides: Record<string, unknown> = {},
-) {
+export function createMockAccountStoreState(overrides: Record<string, unknown> = {}) {
   return {
     accounts: [],
     activeAccountId: null,

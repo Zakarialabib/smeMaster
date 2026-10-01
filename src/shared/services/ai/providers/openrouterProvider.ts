@@ -9,9 +9,14 @@
  * No native embeddings, STT, or TTS — text generation only.
  */
 
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
-import { buildSystemPrompt } from "../utils";
-import { createOpenAICompatibleProvider } from "./openAiCompatibleProvider";
+import type {
+  AiProviderClient,
+  AiCompletionRequest,
+  AiEmbeddingRequest,
+  ModelOption,
+} from '../types';
+import { buildSystemPrompt } from '../utils';
+import { createOpenAICompatibleProvider } from './openAiCompatibleProvider';
 import type {
   StreamingCapable,
   SpeechToTextCapable,
@@ -24,15 +29,21 @@ import type {
   TtsOptions,
   RealtimeOptions,
   RealtimeVoiceSession,
-} from "../capabilities";
+} from '../capabilities';
 
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
 export function createOpenRouterProvider(
   apiKey: string,
   model: string,
-  aiLanguage = "auto",
-): AiProviderClient & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
+  aiLanguage = 'auto',
+): AiProviderClient &
+  StreamingCapable &
+  SpeechToTextCapable &
+  TextToSpeechCapable &
+  RealtimeVoiceCapable &
+  ModelDiscoveryCapable &
+  EmbeddingCapable {
   const baseProvider = createOpenAICompatibleProvider(
     OPENROUTER_BASE_URL,
     apiKey,
@@ -46,16 +57,16 @@ export function createOpenRouterProvider(
     async *streamComplete(req: AiCompletionRequest): AsyncIterable<string> {
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
       const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model,
           messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: req.userContent },
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: req.userContent },
           ],
           max_tokens: req.maxTokens ?? 1024,
           stream: true,
@@ -67,21 +78,21 @@ export function createOpenRouterProvider(
       }
 
       const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
+      if (!reader) throw new Error('No response body');
 
       const decoder = new TextDecoder();
-      let buffer = "";
+      let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
+          if (line.startsWith('data: ')) {
             const data = line.slice(6);
-            if (data === "[DONE]") return;
+            if (data === '[DONE]') return;
             try {
               const parsed = JSON.parse(data) as { choices: { delta: { content?: string } }[] };
               const content = parsed.choices[0]?.delta?.content;
@@ -95,15 +106,15 @@ export function createOpenRouterProvider(
     },
 
     async transcribe(_audio: Blob, _options?: SttOptions): Promise<string> {
-      throw new Error("STT not supported by this provider");
+      throw new Error('STT not supported by this provider');
     },
 
     async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
-      throw new Error("TTS not supported by this provider");
+      throw new Error('TTS not supported by this provider');
     },
 
     async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
-      throw new Error("Realtime voice not supported by this provider");
+      throw new Error('Realtime voice not supported by this provider');
     },
 
     async listModels(): Promise<ModelOption[]> {
@@ -112,7 +123,7 @@ export function createOpenRouterProvider(
           headers: { Authorization: `Bearer ${apiKey}` },
         });
         if (!response.ok) return [];
-        const data = await response.json() as { data: { id: string }[] };
+        const data = (await response.json()) as { data: { id: string }[] };
         return (data.data ?? []).map((m) => ({ id: m.id, label: m.id }));
       } catch {
         return [];
@@ -120,7 +131,7 @@ export function createOpenRouterProvider(
     },
 
     async getEmbeddings(_req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
-      throw new Error("Embeddings not supported by OpenRouter");
+      throw new Error('Embeddings not supported by OpenRouter');
     },
   };
 }

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Search, CheckSquare, Square, Users, Building2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { getContactCountForGroup } from "@features/contacts/db/contactGroups";
-import { evaluateSegmentQuery } from "@features/contacts/services/segments";
-import type { AudienceMode } from "@features/campaigns/stores/campaignComposerStore";
+import { useState, useEffect } from 'react';
+import { Search, CheckSquare, Square, Users, Building2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { getContactCountForGroup } from '@features/contacts/db/contactGroups';
+import { evaluateSegmentQuery } from '@features/contacts/services/segments';
+import type { AudienceMode } from '@features/campaigns/stores/campaignComposerStore';
 
 interface Contact {
   id: string;
@@ -78,12 +78,12 @@ export function AudienceStep({
     async function computeCount() {
       setCountLoading(true);
       try {
-        if (audienceMode === "contacts") {
+        if (audienceMode === 'contacts') {
           setRecipientCount(selectedContactIds.length);
-        } else if (audienceMode === "group" && selectedGroupId) {
+        } else if (audienceMode === 'group' && selectedGroupId) {
           const count = await getContactCountForGroup(selectedGroupId);
           if (!cancelled) setRecipientCount(count);
-        } else if (audienceMode === "segment" && selectedSegmentId) {
+        } else if (audienceMode === 'segment' && selectedSegmentId) {
           const segment = segments.find((s) => s.id === selectedSegmentId);
           if (segment) {
             const ids = await evaluateSegmentQuery(accountId, segment.query);
@@ -100,16 +100,18 @@ export function AudienceStep({
     }
 
     if (
-      audienceMode === "contacts" ||
-      (audienceMode === "group" && selectedGroupId) ||
-      (audienceMode === "segment" && selectedSegmentId)
+      audienceMode === 'contacts' ||
+      (audienceMode === 'group' && selectedGroupId) ||
+      (audienceMode === 'segment' && selectedSegmentId)
     ) {
       computeCount();
     } else {
       setRecipientCount(null);
     }
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [audienceMode, selectedContactIds, selectedGroupId, selectedSegmentId, accountId, segments]);
 
   return (
@@ -124,19 +126,25 @@ export function AudienceStep({
         autoFocus
       />
 
-      <label className="text-sm text-text-primary font-medium">{t('campaign.selectAudience')}</label>
+      <label className="text-sm text-text-primary font-medium">
+        {t('campaign.selectAudience')}
+      </label>
       <div className="flex gap-2">
-        {(["contacts", "group", "segment"] as AudienceMode[]).map((mode) => (
+        {(['contacts', 'group', 'segment'] as AudienceMode[]).map((mode) => (
           <button
             key={mode}
             onClick={() => onAudienceModeChange(mode)}
             className={`flex-1 px-3 py-2 rounded-lg text-sm border transition-colors ${
               audienceMode === mode
-                ? "bg-accent/10 border-accent text-accent"
-                : "bg-bg-secondary border-border-primary text-text-secondary hover:border-accent/50"
+                ? 'bg-accent/10 border-accent text-accent'
+                : 'bg-bg-secondary border-border-primary text-text-secondary hover:border-accent/50'
             }`}
           >
-            {mode === "contacts" ? t('campaign.individualContacts') : mode === "group" ? t('campaign.contactGroup') : t('campaign.segment')}
+            {mode === 'contacts'
+              ? t('campaign.individualContacts')
+              : mode === 'group'
+                ? t('campaign.contactGroup')
+                : t('campaign.segment')}
           </button>
         ))}
       </div>
@@ -153,7 +161,7 @@ export function AudienceStep({
         </div>
       )}
 
-      {audienceMode === "contacts" && (
+      {audienceMode === 'contacts' && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-lg border border-border-primary">
             <Search size={14} className="text-text-tertiary shrink-0" />
@@ -170,7 +178,10 @@ export function AudienceStep({
               <Users size={12} />
               {t('campaign.nSelected', { n: selectedContactIds.length })}
             </span>
-            <button onClick={onToggleAll} className="text-xs text-accent hover:underline flex items-center gap-1">
+            <button
+              onClick={onToggleAll}
+              className="text-xs text-accent hover:underline flex items-center gap-1"
+            >
               {allSelected ? <Square size={12} /> : <CheckSquare size={12} />}
               {allSelected ? t('campaign.deselectAll') : t('email.selectAll')}
             </button>
@@ -212,10 +223,12 @@ export function AudienceStep({
         </div>
       )}
 
-      {audienceMode === "group" && (
+      {audienceMode === 'group' && (
         <div className="space-y-1 max-h-48 overflow-y-auto">
           {groups.length === 0 ? (
-            <p className="text-xs text-text-tertiary px-1 py-2">{t('campaign.noContactGroupsYet')}</p>
+            <p className="text-xs text-text-tertiary px-1 py-2">
+              {t('campaign.noContactGroupsYet')}
+            </p>
           ) : (
             groups.map((g) => (
               <button
@@ -223,8 +236,8 @@ export function AudienceStep({
                 onClick={() => onGroupSelect(g.id)}
                 className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-start text-sm transition-colors ${
                   selectedGroupId === g.id
-                    ? "bg-accent/10 border border-accent text-accent"
-                    : "bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50"
+                    ? 'bg-accent/10 border border-accent text-accent'
+                    : 'bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50'
                 }`}
               >
                 <Users size={14} className="shrink-0" />
@@ -235,7 +248,7 @@ export function AudienceStep({
         </div>
       )}
 
-      {audienceMode === "segment" && (
+      {audienceMode === 'segment' && (
         <div className="space-y-1 max-h-48 overflow-y-auto">
           {segments.length === 0 ? (
             <p className="text-xs text-text-tertiary px-1 py-2">{t('campaign.noSegmentsYet')}</p>
@@ -246,8 +259,8 @@ export function AudienceStep({
                 onClick={() => onSegmentSelect(s.id)}
                 className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-start text-sm transition-colors ${
                   selectedSegmentId === s.id
-                    ? "bg-accent/10 border border-accent text-accent"
-                    : "bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50"
+                    ? 'bg-accent/10 border border-accent text-accent'
+                    : 'bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50'
                 }`}
               >
                 <Users size={14} className="shrink-0" />

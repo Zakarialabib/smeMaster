@@ -1,27 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
-import { Users, FileText, Clock, Eye, ChevronLeft, Send, Save } from "lucide-react";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { useCampaignComposerStore } from "@features/campaigns/stores/campaignComposerStore";
-import { CampaignBuilder } from "@features/campaigns/components/editor/CampaignBuilder";
-import { createCampaignTemplate } from "@shared/services/db/invoke/mail";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useCampaignStore } from "@features/campaigns/stores/campaignStore";
-import { AudienceStep } from "@features/campaigns/components/AudienceStep";
-import { ScheduleStep } from "@features/campaigns/components/ScheduleStep";
-import { ReviewStep } from "@features/campaigns/components/ReviewStep";
-import { getCampaignTemplateList } from "@features/campaigns/services/campaignTemplateCatalog";
-import type { DbTemplate } from "@features/mail/db/templates";
-import { getContactSegments } from "@features/contacts/db/contactSegments";
-import { getContactGroups } from "@features/contacts/db/contactGroups";
-import { createCampaign as svcCreateCampaign } from "@features/campaigns/services/campaignService";
-import { executeSearchQuery } from "@/shared/services/db/db-invoke";
-import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
-import { useTranslation } from "react-i18next";
-import {
-  getUserFriendlyErrorMessage,
-} from "@features/campaigns/services/errorHandler";
-import { notify } from "@shared/services/notifications/toastHelper";
+import { useState, useEffect, useMemo } from 'react';
+import { Users, FileText, Clock, Eye, ChevronLeft, Send, Save } from 'lucide-react';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { useCampaignComposerStore } from '@features/campaigns/stores/campaignComposerStore';
+import { CampaignBuilder } from '@features/campaigns/components/editor/CampaignBuilder';
+import { createCampaignTemplate } from '@shared/services/db/invoke/mail';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useCampaignStore } from '@features/campaigns/stores/campaignStore';
+import { AudienceStep } from '@features/campaigns/components/AudienceStep';
+import { ScheduleStep } from '@features/campaigns/components/ScheduleStep';
+import { ReviewStep } from '@features/campaigns/components/ReviewStep';
+import { getCampaignTemplateList } from '@features/campaigns/services/campaignTemplateCatalog';
+import type { DbTemplate } from '@features/mail/db/templates';
+import { getContactSegments } from '@features/contacts/db/contactSegments';
+import { getContactGroups } from '@features/contacts/db/contactGroups';
+import { createCampaign as svcCreateCampaign } from '@features/campaigns/services/campaignService';
+import { executeSearchQuery } from '@/shared/services/db/db-invoke';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
+import { useTranslation } from 'react-i18next';
+import { getUserFriendlyErrorMessage } from '@features/campaigns/services/errorHandler';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 interface CampaignComposerProps {
   isOpen: boolean;
@@ -55,7 +53,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const handleSaveTemplate = (name: string) => {
     void createCampaignTemplate({
-      companyId: activeAccountId ?? "",
+      companyId: activeAccountId ?? '',
       name,
       subject: store.subject,
       bodyHtml: store.getBodyHtml(),
@@ -69,7 +67,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [groups, setGroups] = useState<ContactGroup[]>([]);
   const [segments, setSegments] = useState<ContactSegment[]>([]);
-  const [contactSearch, setContactSearch] = useState("");
+  const [contactSearch, setContactSearch] = useState('');
   const [contactsLoading, setContactsLoading] = useState(true);
   const [templates, setTemplates] = useState<DbTemplate[]>([]);
 
@@ -77,7 +75,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
   useEffect(() => {
     if (isOpen) {
       store.open();
-      setContactSearch("");
+      setContactSearch('');
     }
   }, [isOpen, store]);
 
@@ -89,9 +87,9 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       try {
         const [contactsRows, groupsRows, segmentsRows, templateList] = await Promise.all([
           executeSearchQuery(
-            "SELECT id, display_name AS name, email, display_name, company_id AS company " +
-            "FROM contacts WHERE company_id = $1 AND contact_type IN ('contact','client','supplier','other') " +
-            "ORDER BY display_name ASC",
+            'SELECT id, display_name AS name, email, display_name, company_id AS company ' +
+              "FROM contacts WHERE company_id = $1 AND contact_type IN ('contact','client','supplier','other') " +
+              'ORDER BY display_name ASC',
             [ACTIVE_COMPANY_ID],
           ) as unknown as Promise<Contact[]>,
           getContactGroups(ACTIVE_COMPANY_ID),
@@ -105,52 +103,61 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
           setTemplates(templateList);
         }
       } catch (err) {
-        console.error("Failed to load audience data:", err);
+        console.error('Failed to load audience data:', err);
       } finally {
         if (!cancelled) setContactsLoading(false);
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, accountId]);
 
   const filteredContacts = useMemo(() => {
     if (!contactSearch.trim()) return contacts;
     const q = contactSearch.toLowerCase();
-    return contacts.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
+    return contacts.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q),
+    );
   }, [contacts, contactSearch]);
 
-  const allSelected = filteredContacts.length > 0 && filteredContacts.every((c) => store.selectedContactIds.includes(c.id));
+  const allSelected =
+    filteredContacts.length > 0 &&
+    filteredContacts.every((c) => store.selectedContactIds.includes(c.id));
 
   const selectedGroup = groups.find((g) => g.id === store.selectedGroupId);
   const selectedSegment = segments.find((s) => s.id === store.selectedSegmentId);
-  const selectedTemplate = store.templateId ? templates.find((tpl) => tpl.id === store.templateId) : null;
+  const selectedTemplate = store.templateId
+    ? templates.find((tpl) => tpl.id === store.templateId)
+    : null;
 
   function canProceed(): boolean {
-    if (store.step === "audience") {
-      if (store.audienceMode === "contacts") return store.selectedContactIds.length > 0;
-      if (store.audienceMode === "group") return store.selectedGroupId !== "";
-      if (store.audienceMode === "segment") return store.selectedSegmentId !== "";
+    if (store.step === 'audience') {
+      if (store.audienceMode === 'contacts') return store.selectedContactIds.length > 0;
+      if (store.audienceMode === 'group') return store.selectedGroupId !== '';
+      if (store.audienceMode === 'segment') return store.selectedSegmentId !== '';
       return false;
     }
-    if (store.step === "template") return store.templateId !== "";
-    if (store.step === "schedule") {
-      if (store.scheduleMode === "scheduled") return store.scheduledDate !== "" && store.scheduledTime !== "";
+    if (store.step === 'template') return store.templateId !== '';
+    if (store.step === 'schedule') {
+      if (store.scheduleMode === 'scheduled')
+        return store.scheduledDate !== '' && store.scheduledTime !== '';
       return true;
     }
     return true;
   }
 
   function nextStep() {
-    if (store.step === "audience") store.setStep("template");
-    else if (store.step === "template") store.setStep("schedule");
-    else if (store.step === "schedule") store.setStep("review");
+    if (store.step === 'audience') store.setStep('template');
+    else if (store.step === 'template') store.setStep('schedule');
+    else if (store.step === 'schedule') store.setStep('review');
   }
 
   function prevStep() {
-    if (store.step === "template") store.setStep("audience");
-    else if (store.step === "schedule") store.setStep("template");
-    else if (store.step === "review") store.setStep("schedule");
+    if (store.step === 'template') store.setStep('audience');
+    else if (store.step === 'schedule') store.setStep('template');
+    else if (store.step === 'review') store.setStep('schedule');
   }
 
   async function handleCreate() {
@@ -161,25 +168,25 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       let groupId: string | undefined;
       let segmentId: string | undefined;
 
-      if (store.audienceMode === "contacts") recipientContactIds = store.selectedContactIds;
-      else if (store.audienceMode === "group") groupId = store.selectedGroupId;
-      else if (store.audienceMode === "segment") segmentId = store.selectedSegmentId;
+      if (store.audienceMode === 'contacts') recipientContactIds = store.selectedContactIds;
+      else if (store.audienceMode === 'group') groupId = store.selectedGroupId;
+      else if (store.audienceMode === 'segment') segmentId = store.selectedSegmentId;
 
       let scheduledAt: number | undefined;
       let status: string | undefined;
 
-      if (store.scheduleMode === "scheduled") {
+      if (store.scheduleMode === 'scheduled') {
         const dateStr = store.scheduledDate; // "2026-07-20"
         const timeStr = store.scheduledTime; // "14:30"
         const timestamp = new Date(`${dateStr}T${timeStr}:00`).getTime();
         if (!isNaN(timestamp)) {
           scheduledAt = Math.floor(timestamp / 1000);
-          status = "scheduled";
+          status = 'scheduled';
         }
       }
 
       if (!status) {
-        status = "sent";
+        status = 'sent';
       }
 
       await svcCreateCampaign({
@@ -190,21 +197,22 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         groupId,
         segmentId,
         scheduledAt,
-        abTestConfig: store.abEnabled && store.variantA.subject && store.variantB.subject
-          ? {
-              variantA: { subject: store.variantA.subject, body: store.variantA.body },
-              variantB: { subject: store.variantB.subject, body: store.variantB.body },
-              splitRatio: store.splitRatio / 100,
-              testDurationHours: store.testDuration,
-            }
-          : undefined,
+        abTestConfig:
+          store.abEnabled && store.variantA.subject && store.variantB.subject
+            ? {
+                variantA: { subject: store.variantA.subject, body: store.variantA.body },
+                variantB: { subject: store.variantB.subject, body: store.variantB.body },
+                splitRatio: store.splitRatio / 100,
+                testDurationHours: store.testDuration,
+              }
+            : undefined,
         bodyHtml: store.getBodyHtml(),
         status,
       });
       loadCampaigns(accountId);
     } catch (err) {
-      const message = getUserFriendlyErrorMessage(err, "create campaign");
-      notify("Failed to create campaign", message);
+      const message = getUserFriendlyErrorMessage(err, 'create campaign');
+      notify('Failed to create campaign', message);
       return;
     } finally {
       setCreating(false);
@@ -220,9 +228,9 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       let groupId: string | undefined;
       let segmentId: string | undefined;
 
-      if (store.audienceMode === "contacts") recipientContactIds = store.selectedContactIds;
-      else if (store.audienceMode === "group") groupId = store.selectedGroupId;
-      else if (store.audienceMode === "segment") segmentId = store.selectedSegmentId;
+      if (store.audienceMode === 'contacts') recipientContactIds = store.selectedContactIds;
+      else if (store.audienceMode === 'group') groupId = store.selectedGroupId;
+      else if (store.audienceMode === 'segment') segmentId = store.selectedSegmentId;
 
       await svcCreateCampaign({
         companyId: accountId,
@@ -231,21 +239,22 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         recipientContactIds,
         groupId,
         segmentId,
-        abTestConfig: store.abEnabled && store.variantA.subject && store.variantB.subject
-          ? {
-              variantA: { subject: store.variantA.subject, body: store.variantA.body },
-              variantB: { subject: store.variantB.subject, body: store.variantB.body },
-              splitRatio: store.splitRatio / 100,
-              testDurationHours: store.testDuration,
-            }
-          : undefined,
+        abTestConfig:
+          store.abEnabled && store.variantA.subject && store.variantB.subject
+            ? {
+                variantA: { subject: store.variantA.subject, body: store.variantA.body },
+                variantB: { subject: store.variantB.subject, body: store.variantB.body },
+                splitRatio: store.splitRatio / 100,
+                testDurationHours: store.testDuration,
+              }
+            : undefined,
         bodyHtml: store.getBodyHtml(),
-        status: "draft",
+        status: 'draft',
       });
       loadCampaigns(accountId);
     } catch (err) {
-      const message = getUserFriendlyErrorMessage(err, "save campaign draft");
-      notify("Failed to save draft", message);
+      const message = getUserFriendlyErrorMessage(err, 'save campaign draft');
+      notify('Failed to save draft', message);
       return;
     } finally {
       setSavingDraft(false);
@@ -254,33 +263,44 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
   }
 
   function getAudienceLabel(): string {
-    if (store.audienceMode === "contacts") return t('campaign.nContacts', { n: store.selectedContactIds.length });
-    if (store.audienceMode === "group") return t('campaign.groupLabel', { name: selectedGroup?.name ?? store.selectedGroupId });
+    if (store.audienceMode === 'contacts')
+      return t('campaign.nContacts', { n: store.selectedContactIds.length });
+    if (store.audienceMode === 'group')
+      return t('campaign.groupLabel', { name: selectedGroup?.name ?? store.selectedGroupId });
     return t('campaign.segmentLabel', { name: selectedSegment?.name ?? store.selectedSegmentId });
   }
 
   function getScheduleLabel(): string {
-    if (store.scheduleMode === "immediate") return t('campaign.sendImmediately');
-    if (store.scheduleMode === "scheduled") return t('campaign.scheduledLabel', { date: store.scheduledDate, time: store.scheduledTime });
+    if (store.scheduleMode === 'immediate') return t('campaign.sendImmediately');
+    if (store.scheduleMode === 'scheduled')
+      return t('campaign.scheduledLabel', { date: store.scheduledDate, time: store.scheduledTime });
     return t('campaign.recurringLabel', { frequency: store.recurringFrequency });
   }
 
   const steps: { id: typeof store.step; label: string; icon: typeof Users }[] = [
-    { id: "audience", label: t('campaign.audience'), icon: Users },
-    { id: "template", label: t('campaign.stepTemplate'), icon: FileText },
-    { id: "schedule", label: t("campaign.schedule"), icon: Clock },
-    { id: "review", label: t('campaign.stepReview'), icon: Eye },
+    { id: 'audience', label: t('campaign.audience'), icon: Users },
+    { id: 'template', label: t('campaign.stepTemplate'), icon: FileText },
+    { id: 'schedule', label: t('campaign.schedule'), icon: Clock },
+    { id: 'review', label: t('campaign.stepReview'), icon: Eye },
   ];
 
   const currentIdx = steps.findIndex((s) => s.id === store.step);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="" size="xl" panelClassName="max-h-[85vh] overflow-hidden flex flex-col p-0 border-t-2 border-t-accent">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title=""
+      size="xl"
+      panelClassName="max-h-[85vh] overflow-hidden flex flex-col p-0 border-t-2 border-t-accent"
+    >
       {/* Modal header with step indicator */}
       <div className="px-5 py-3 border-b border-border-primary bg-bg-secondary/50 shrink-0">
         <div className="flex items-center justify-between mb-2.5">
           <h2 className="text-sm font-semibold text-text-primary">{t('campaign.newCampaign')}</h2>
-          <span className="text-[0.625rem] text-text-tertiary">Step {currentIdx + 1} of {steps.length}</span>
+          <span className="text-[0.625rem] text-text-tertiary">
+            Step {currentIdx + 1} of {steps.length}
+          </span>
         </div>
         {/* Progress bar */}
         <div className="w-full h-1 bg-border-primary rounded-full overflow-hidden mb-3">
@@ -296,29 +316,33 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
               <div
                 className={`flex items-center gap-1.5 ${
                   s.id === store.step
-                    ? "text-text-primary"
+                    ? 'text-text-primary'
                     : i < currentIdx
-                      ? "text-accent"
-                      : "text-text-tertiary"
+                      ? 'text-accent'
+                      : 'text-text-tertiary'
                 }`}
               >
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-medium transition-all duration-300 ${
                     s.id === store.step
-                      ? "bg-accent text-white ring-2 ring-accent/30"
+                      ? 'bg-accent text-white ring-2 ring-accent/30'
                       : i < currentIdx
-                        ? "bg-accent/15 text-accent"
-                        : "bg-bg-tertiary text-text-tertiary"
+                        ? 'bg-accent/15 text-accent'
+                        : 'bg-bg-tertiary text-text-tertiary'
                   }`}
                 >
                   <s.icon size={12} />
                 </div>
-                <span className={`text-xs font-medium hidden sm:inline ${s.id === store.step ? "text-text-primary" : ""}`}>
+                <span
+                  className={`text-xs font-medium hidden sm:inline ${s.id === store.step ? 'text-text-primary' : ''}`}
+                >
                   {s.label}
                 </span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`w-8 h-px hidden sm:block ${i < currentIdx ? "bg-accent/40" : "bg-border-secondary"}`} />
+                <div
+                  className={`w-8 h-px hidden sm:block ${i < currentIdx ? 'bg-accent/40' : 'bg-border-secondary'}`}
+                />
               )}
             </div>
           ))}
@@ -326,9 +350,8 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
         {/* Step 1: Audience Selection */}
-        {store.step === "audience" && (
+        {store.step === 'audience' && (
           <AudienceStep
             name={store.name}
             onNameChange={store.setName}
@@ -353,12 +376,10 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         )}
 
         {/* Step 2: Template */}
-        {store.step === "template" && (
-          <CampaignBuilder onSaveTemplate={handleSaveTemplate} />
-        )}
+        {store.step === 'template' && <CampaignBuilder onSaveTemplate={handleSaveTemplate} />}
 
         {/* Step 3: Schedule */}
-        {store.step === "schedule" && (
+        {store.step === 'schedule' && (
           <ScheduleStep
             scheduleMode={store.scheduleMode}
             onScheduleModeChange={store.setScheduleMode}
@@ -377,7 +398,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         )}
 
         {/* Step 4: Review */}
-        {store.step === "review" && (
+        {store.step === 'review' && (
           <ReviewStep
             name={store.name}
             audienceLabel={getAudienceLabel()}
@@ -388,9 +409,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
             splitRatio={store.splitRatio}
             testDuration={store.testDuration}
             recipientCount={
-              store.audienceMode === "contacts"
-                ? store.selectedContactIds.length
-                : null
+              store.audienceMode === 'contacts' ? store.selectedContactIds.length : null
             }
             t={t}
           />
@@ -402,13 +421,13 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
         <Button
           variant="ghost"
           size="sm"
-          icon={store.step !== "audience" ? <ChevronLeft size={15} /> : undefined}
-          onClick={store.step === "audience" ? onClose : prevStep}
+          icon={store.step !== 'audience' ? <ChevronLeft size={15} /> : undefined}
+          onClick={store.step === 'audience' ? onClose : prevStep}
         >
-          {store.step === "audience" ? t('common.cancel') : t('common.back')}
+          {store.step === 'audience' ? t('common.cancel') : t('common.back')}
         </Button>
         <div className="flex items-center gap-2">
-          {store.step === "review" && (
+          {store.step === 'review' && (
             <>
               <Button
                 variant="secondary"
@@ -432,13 +451,8 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
               </Button>
             </>
           )}
-          {store.step !== "review" && (
-            <Button
-              variant="primary"
-              size="md"
-              onClick={nextStep}
-              disabled={!canProceed()}
-            >
+          {store.step !== 'review' && (
+            <Button variant="primary" size="md" onClick={nextStep} disabled={!canProceed()}>
               {t('common.next')}
             </Button>
           )}

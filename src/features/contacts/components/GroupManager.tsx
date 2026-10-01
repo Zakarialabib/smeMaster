@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Users } from "lucide-react";
-import { useContactStore, type ContactGroup } from "@features/contacts/stores/contactStore";
-import { InputDialog } from "@shared/components/ui/InputDialog";
-import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Trash2, Users } from 'lucide-react';
+import { useContactStore, type ContactGroup } from '@features/contacts/stores/contactStore';
+import { InputDialog } from '@shared/components/ui/InputDialog';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 
 interface GroupManagerProps {
   accountId: string;
@@ -43,9 +43,7 @@ export function GroupManager({ accountId, onGroupClick }: GroupManagerProps) {
   }, [deleteTarget, accountId, deleteGroup]);
 
   if (isLoading && groups.length === 0) {
-    return (
-      <div className="text-xs text-text-tertiary py-2">Loading groups...</div>
-    );
+    return <div className="text-xs text-text-tertiary py-2">Loading groups...</div>;
   }
 
   return (
@@ -90,9 +88,7 @@ export function GroupManager({ accountId, onGroupClick }: GroupManagerProps) {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-[0.625rem] text-text-tertiary">
-                  {group.contact_count}
-                </span>
+                <span className="text-[0.625rem] text-text-tertiary">{group.contact_count}</span>
                 <button
                   onClick={() => setDeleteTarget(group)}
                   className="p-0.5 text-text-tertiary hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
@@ -112,8 +108,13 @@ export function GroupManager({ accountId, onGroupClick }: GroupManagerProps) {
         onSubmit={handleCreate}
         title="Create Group"
         fields={[
-          { key: "name", label: "Name", placeholder: "Group name", required: true },
-          { key: "description", label: "Description", placeholder: "Optional description", required: false },
+          { key: 'name', label: 'Name', placeholder: 'Group name', required: true },
+          {
+            key: 'description',
+            label: 'Description',
+            placeholder: 'Optional description',
+            required: false,
+          },
         ]}
         submitLabel="Create"
       />

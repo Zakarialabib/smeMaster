@@ -1,5 +1,5 @@
-﻿import type { DbCalendarEvent } from "@features/calendar/db/calendarEvents";
-import { ListTodo, Send, Mail } from "lucide-react";
+﻿import type { DbCalendarEvent } from '@features/calendar/db/calendarEvents';
+import { ListTodo, Send, Mail } from 'lucide-react';
 
 export type IntegratedItemType = 'task' | 'campaign' | 'scheduled_email' | 'event';
 
@@ -11,7 +11,13 @@ interface EventCardProps {
   onClick?: () => void;
 }
 
-export function EventCard({ event, type = 'event', compact, calendarColor, onClick }: EventCardProps) {
+export function EventCard({
+  event,
+  type = 'event',
+  compact,
+  calendarColor,
+  onClick,
+}: EventCardProps) {
   const getStartTime = () => {
     if (type === 'task') return event.due_date;
     if (type === 'campaign') return event.sent_at;
@@ -22,14 +28,14 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
   const startTime = getStartTime();
   const startDate = new Date(startTime * 1000);
   const timeStr = event.is_all_day
-    ? "All day"
-    : startDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    ? 'All day'
+    : startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   const getSummary = () => {
     if (type === 'task') return event.title;
     if (type === 'campaign') return event.name;
-    if (type === 'scheduled_email') return event.subject || "(No Subject)";
-    return event.summary || "(No Title)";
+    if (type === 'scheduled_email') return event.subject || '(No Subject)';
+    return event.summary || '(No Title)';
   };
 
   const summary = getSummary();
@@ -45,7 +51,7 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
     if (type === 'task') return '#8b5cf6'; // Violet
     if (type === 'campaign') return '#10b981'; // Emerald
     if (type === 'scheduled_email') return '#3b82f6'; // Blue
-    return calendarColor || "var(--color-accent)";
+    return calendarColor || 'var(--color-accent)';
   };
 
   const bgColor = getTypeColor();
@@ -87,16 +93,11 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 mb-0.5">
             <span style={{ color: bgColor }}>{getTypeIcon()}</span>
-            <div className="text-sm font-medium text-text-primary truncate">
-              {summary}
-            </div>
+            <div className="text-sm font-medium text-text-primary truncate">{summary}</div>
           </div>
           <div className="text-xs text-text-tertiary flex items-center gap-1.5">
             {!getTypeIcon() && calendarColor && (
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: bgColor }}
-              />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: bgColor }} />
             )}
             <span>{timeStr}</span>
             {event.location && (
@@ -117,4 +118,3 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
     </button>
   );
 }
-

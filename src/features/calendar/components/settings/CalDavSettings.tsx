@@ -1,10 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { TextField } from "@shared/components/ui/TextField";
-import { discoverCalDavSettings, testCalDavConnection } from "@features/calendar/services/autoDiscovery";
-import { updateAccountCalDav, type DbAccount } from "@features/accounts/db/accounts";
-import { removeCalendarProvider } from "@features/calendar/services/providerFactory";
+import { useState, useCallback, useEffect } from 'react';
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { TextField } from '@shared/components/ui/TextField';
+import {
+  discoverCalDavSettings,
+  testCalDavConnection,
+} from '@features/calendar/services/autoDiscovery';
+import { updateAccountCalDav, type DbAccount } from '@features/accounts/db/accounts';
+import { removeCalendarProvider } from '@features/calendar/services/providerFactory';
 
 interface CalDavSettingsProps {
   account: DbAccount;
@@ -12,9 +15,9 @@ interface CalDavSettingsProps {
 }
 
 export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
-  const [caldavUrl, setCaldavUrl] = useState(account.caldav_url ?? "");
+  const [caldavUrl, setCaldavUrl] = useState(account.caldav_url ?? '');
   const [username, setUsername] = useState(account.caldav_username ?? account.email);
-  const [password, setPassword] = useState(account.caldav_password ?? "");
+  const [password, setPassword] = useState(account.caldav_password ?? '');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -47,12 +50,12 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
         caldavUrl,
         caldavUsername: username,
         caldavPassword: password,
-        calendarProvider: "caldav",
+        calendarProvider: 'caldav',
       });
       removeCalendarProvider(account.id);
       onSaved();
     } catch (err) {
-      console.error("Failed to save CalDAV settings:", err);
+      console.error('Failed to save CalDAV settings:', err);
     } finally {
       setSaving(false);
     }
@@ -62,15 +65,15 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
     setSaving(true);
     try {
       await updateAccountCalDav(account.id, {
-        caldavUrl: "",
-        caldavUsername: "",
-        caldavPassword: "",
-        calendarProvider: "",
+        caldavUrl: '',
+        caldavUsername: '',
+        caldavPassword: '',
+        calendarProvider: '',
       });
       removeCalendarProvider(account.id);
-      setCaldavUrl("");
+      setCaldavUrl('');
       setUsername(account.email);
-      setPassword("");
+      setPassword('');
       setTestResult(null);
       onSaved();
     } finally {
@@ -84,9 +87,7 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium text-text-primary">Calendar (CalDAV)</h4>
-        {isConfigured && (
-          <span className="text-xs text-success font-medium">Connected</span>
-        )}
+        {isConfigured && <span className="text-xs text-success font-medium">Connected</span>}
       </div>
       <p className="text-xs text-text-tertiary">
         Connect a CalDAV calendar server to enable calendar features for this IMAP account.
@@ -117,7 +118,9 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
       />
 
       {testResult && (
-        <div className={`flex items-center gap-2 text-xs ${testResult.success ? "text-success" : "text-danger"}`}>
+        <div
+          className={`flex items-center gap-2 text-xs ${testResult.success ? 'text-success' : 'text-danger'}`}
+        >
           {testResult.success ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
           {testResult.message}
         </div>
@@ -131,7 +134,7 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
           disabled={testing || !caldavUrl || !password}
         >
           {testing && <Loader2 size={14} className="animate-spin" />}
-          {testing ? "Testing..." : "Test Connection"}
+          {testing ? 'Testing...' : 'Test Connection'}
         </Button>
 
         <Button
@@ -140,16 +143,11 @@ export function CalDavSettings({ account, onSaved }: CalDavSettingsProps) {
           onClick={handleSave}
           disabled={saving || !caldavUrl || !password}
         >
-          {saving ? "Saving..." : "Save"}
+          {saving ? 'Saving...' : 'Save'}
         </Button>
 
         {isConfigured && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRemove}
-            disabled={saving}
-          >
+          <Button variant="ghost" size="sm" onClick={handleRemove} disabled={saving}>
             Remove
           </Button>
         )}

@@ -1,7 +1,10 @@
-﻿import { getUncategorizedInboxThreadIds, setThreadCategory } from "@features/mail/db/threadCategories";
-import { getThreadLabelIds } from "@shared/services/db/threads";
-import { getMessagesForThread } from "@shared/services/db/messages";
-import { categorizeByRules } from "./ruleEngine";
+﻿import {
+  getUncategorizedInboxThreadIds,
+  setThreadCategory,
+} from '@features/mail/db/threadCategories';
+import { getThreadLabelIds } from '@shared/services/db/threads';
+import { getMessagesForThread } from '@shared/services/db/messages';
+import { categorizeByRules } from './ruleEngine';
 
 /**
  * Backfill uncategorized inbox threads with rule-based categorization.
@@ -21,24 +24,25 @@ export async function backfillUncategorizedThreads(
   do {
     batch = await getUncategorizedInboxThreadIds(accountId, batchSize);
 
-    await Promise.all(batch.map(async (thread) => {
-      const [labelIds, messages] = await Promise.all([
-        getThreadLabelIds(accountId, thread.id),
-        getMessagesForThread(accountId, thread.id),
-      ]);
-      const lastMessage = messages[messages.length - 1];
+    await Promise.all(
+      batch.map(async (thread) => {
+        const [labelIds, messages] = await Promise.all([
+          getThreadLabelIds(accountId, thread.id),
+          getMessagesForThread(accountId, thread.id),
+        ]);
+        const lastMessage = messages[messages.length - 1];
 
-      const category = categorizeByRules({
-        labelIds,
-        fromAddress: lastMessage?.from_address ?? thread.fromAddress ?? null,
-        listUnsubscribe: lastMessage?.list_unsubscribe ?? null,
-      });
+        const category = categorizeByRules({
+          labelIds,
+          fromAddress: lastMessage?.from_address ?? thread.fromAddress ?? null,
+          listUnsubscribe: lastMessage?.list_unsubscribe ?? null,
+        });
 
-      await setThreadCategory(accountId, thread.id, category, false);
-      totalCategorized++;
-    }));
+        await setThreadCategory(accountId, thread.id, category, false);
+        totalCategorized++;
+      }),
+    );
   } while (batch.length === batchSize);
 
   return totalCategorized;
 }
-

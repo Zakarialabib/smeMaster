@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { WifiOff, Check } from "lucide-react";
-import "@shared/styles/mobile-animations.css";
+import { useEffect, useRef, useState } from 'react';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { WifiOff, Check } from 'lucide-react';
+import '@shared/styles/mobile-animations.css';
 
 export function OfflineBanner() {
   const isOnline = useSyncStore((s) => s.isOnline);

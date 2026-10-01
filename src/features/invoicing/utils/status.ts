@@ -1,7 +1,4 @@
-import {
-  FileEdit, Send, CheckCircle2, CircleDashed, Ban,
-  type LucideIcon,
-} from 'lucide-react';
+import { FileEdit, Send, CheckCircle2, CircleDashed, Ban, type LucideIcon } from 'lucide-react';
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'partial' | 'cancelled';
 
@@ -68,8 +65,16 @@ export const DOCUMENT_TYPE_META: Record<
   { label: string; abbr: string; description: string }
 > = {
   invoice: { label: 'Invoice', abbr: 'INV', description: 'Commercial billing document' },
-  delivery_bill: { label: 'Delivery Bill', abbr: 'BL', description: 'Bon de Livraison — proof of delivery' },
-  shipping_print: { label: 'Shipping Print', abbr: 'EXP', description: 'Packaging & shipping slip' },
+  delivery_bill: {
+    label: 'Delivery Bill',
+    abbr: 'BL',
+    description: 'Bon de Livraison — proof of delivery',
+  },
+  shipping_print: {
+    label: 'Shipping Print',
+    abbr: 'EXP',
+    description: 'Packaging & shipping slip',
+  },
 };
 
 export const TAX_RATES = [20, 14, 10, 7, 0];

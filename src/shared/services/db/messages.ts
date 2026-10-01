@@ -6,7 +6,7 @@ import {
   deleteAllMessagesForAccount as dbInvokeDeleteAllMessagesForAccount,
   getRecentSentMessages as dbInvokeGetRecentSentMessages,
   type Message,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type DbMessage = Message;
 
@@ -82,10 +82,7 @@ export async function upsertMessage(msg: {
 /**
  * Delete a message via the typed db-invoke wrapper.
  */
-export async function deleteMessage(
-  accountId: string,
-  messageId: string,
-): Promise<void> {
+export async function deleteMessage(accountId: string, messageId: string): Promise<void> {
   await dbInvokeDeleteMessage(accountId, messageId);
 }
 
@@ -106,9 +103,7 @@ export async function updateMessageThreadIds(
  * Delete all messages for an account.
  * Delegates to the Rust-backed db_delete_account_messages command.
  */
-export async function deleteAllMessagesForAccount(
-  accountId: string,
-): Promise<void> {
+export async function deleteAllMessagesForAccount(accountId: string): Promise<void> {
   await dbInvokeDeleteAllMessagesForAccount(accountId);
 }
 

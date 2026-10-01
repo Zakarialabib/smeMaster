@@ -1,9 +1,9 @@
-import { create } from "zustand";
-import { initialAsyncState } from "@shared/stores/createAsyncStore";
-import { createEventBusSubscription } from "@shared/stores/createEventBusSubscription";
+import { create } from 'zustand';
+import { initialAsyncState } from '@shared/stores/createAsyncStore';
+import { createEventBusSubscription } from '@shared/stores/createEventBusSubscription';
 
-export type ComposerMode = "new" | "reply" | "replyAll" | "forward";
-export type ComposerViewMode = "modal" | "fullpage";
+export type ComposerMode = 'new' | 'reply' | 'replyAll' | 'forward';
+export type ComposerViewMode = 'modal' | 'fullpage';
 
 export interface ComposerAttachment {
   id: string;
@@ -98,12 +98,12 @@ export interface ComposerState {
 
 export const useComposerStore = create<ComposerState>((set, get) => ({
   isOpen: false,
-  mode: "new",
+  mode: 'new',
   to: [],
   cc: [],
   bcc: [],
-  subject: "",
-  bodyHtml: "",
+  subject: '',
+  bodyHtml: '',
   threadId: null,
   inReplyToMessageId: null,
   showCcBcc: false,
@@ -113,12 +113,12 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   undoSendDelay: 10,
   pendingSendOpId: null,
   attachments: [],
-  viewMode: "modal",
+  viewMode: 'modal',
   fromEmail: null,
   lastSavedAt: null,
   isSaving: false,
   ...initialAsyncState,
-  signatureHtml: "",
+  signatureHtml: '',
   signatureId: null,
   templateId: null,
   contactId: null,
@@ -128,12 +128,12 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
   openComposer: (opts) =>
     set({
       isOpen: true,
-      mode: opts?.mode ?? "new",
+      mode: opts?.mode ?? 'new',
       to: opts?.to ?? [],
       cc: opts?.cc ?? [],
       bcc: opts?.bcc ?? [],
-      subject: opts?.subject ?? "",
-      bodyHtml: opts?.bodyHtml ?? "",
+      subject: opts?.subject ?? '',
+      bodyHtml: opts?.bodyHtml ?? '',
       threadId: opts?.threadId ?? null,
       inReplyToMessageId: opts?.inReplyToMessageId ?? null,
       showCcBcc: (opts?.cc?.length ?? 0) > 0 || (opts?.bcc?.length ?? 0) > 0,
@@ -142,24 +142,24 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
       contactId: opts?.contactId ?? null,
       prefillVariables: opts?.prefillVariables ?? {},
       aiSuggestMode: opts?.aiSuggestMode ?? null,
-      viewMode: "modal",
+      viewMode: 'modal',
       fromEmail: null,
       attachments: [],
       lastSavedAt: null,
       isSaving: false,
       ...initialAsyncState,
-      signatureHtml: "",
+      signatureHtml: '',
       signatureId: null,
     }),
   closeComposer: () =>
     set({
       isOpen: false,
-      mode: "new",
+      mode: 'new',
       to: [],
       cc: [],
       bcc: [],
-      subject: "",
-      bodyHtml: "",
+      subject: '',
+      bodyHtml: '',
       threadId: null,
       inReplyToMessageId: null,
       showCcBcc: false,
@@ -168,13 +168,13 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
       contactId: null,
       prefillVariables: {},
       aiSuggestMode: null,
-      viewMode: "modal",
+      viewMode: 'modal',
       fromEmail: null,
       attachments: [],
       lastSavedAt: null,
       isSaving: false,
       ...initialAsyncState,
-      signatureHtml: "",
+      signatureHtml: '',
       signatureId: null,
     }),
   setTo: (to) => set({ to }),
@@ -211,7 +211,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
    * Routes `composer:open` to `openComposer`.
    */
   handleEvent: (eventType, payload) => {
-    if (eventType === "composer:open") {
+    if (eventType === 'composer:open') {
       const p = payload as {
         mode?: ComposerMode;
         templateId?: string;
@@ -228,7 +228,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         draftId?: string;
       };
       get().openComposer({
-        mode: p.mode ?? "new",
+        mode: p.mode ?? 'new',
         templateId: p.templateId ?? null,
         contactId: p.contactId ?? null,
         prefillVariables: p.prefillVariables ?? {},
@@ -252,9 +252,9 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
  * Subscribe the composer store to its owned events.
  *   - `composer:open` → opens the compose window with the given mode
  */
-const composerStoreEventSub = createEventBusSubscription("composerStore", {
-  "composer:open": (payload) => {
-    useComposerStore.getState().handleEvent?.("composer:open", payload);
+const composerStoreEventSub = createEventBusSubscription('composerStore', {
+  'composer:open': (payload) => {
+    useComposerStore.getState().handleEvent?.('composer:open', payload);
   },
 });
 
@@ -268,6 +268,6 @@ export function initComposerStoreEvents(): () => void {
 }
 
 // Eagerly initialise in browser environments (module-level side-effect).
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   initComposerStoreEvents();
 }

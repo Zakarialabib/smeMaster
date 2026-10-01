@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { Search, Mail, ChevronRight, X, Loader2, ShieldCheck, CheckCircle2 } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { notify } from "@shared/services/notifications/toastHelper";
+import { useState, useCallback } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { Search, Mail, ChevronRight, X, Loader2, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 export interface DiscoveredAccount {
   email: string;
@@ -32,17 +32,17 @@ interface AccountImportScannerProps {
 }
 
 const providerColors: Record<string, string> = {
-  gmail_api: "bg-red-500/15 text-red-600 dark:text-red-400",
-  microsoft_graph: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-  jmap: "bg-teal-500/15 text-teal-600 dark:text-teal-400",
-  imap_smtp: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  gmail_api: 'bg-red-500/15 text-red-600 dark:text-red-400',
+  microsoft_graph: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
+  jmap: 'bg-teal-500/15 text-teal-600 dark:text-teal-400',
+  imap_smtp: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
 };
 
 const providerLabels: Record<string, string> = {
-  gmail_api: "Gmail",
-  microsoft_graph: "Microsoft",
-  jmap: "JMAP",
-  imap_smtp: "IMAP/SMTP",
+  gmail_api: 'Gmail',
+  microsoft_graph: 'Microsoft',
+  jmap: 'JMAP',
+  imap_smtp: 'IMAP/SMTP',
 };
 
 export function AccountImportScanner({ onSelectAccount, onClose }: AccountImportScannerProps) {
@@ -53,17 +53,23 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
   const handleScan = useCallback(async () => {
     setScanning(true);
     try {
-      const discoveryResult = await invokeCommand<DiscoveryResult>("scan_system_accounts");
+      const discoveryResult = await invokeCommand<DiscoveryResult>('scan_system_accounts');
       setResult(discoveryResult);
       if (discoveryResult.accounts.length === 0) {
-        notify("Account Import", "No email accounts found on this system. You can still add accounts manually.");
+        notify(
+          'Account Import',
+          'No email accounts found on this system. You can still add accounts manually.',
+        );
       } else {
-        notify("Account Import", `Found ${discoveryResult.accounts.length} account${discoveryResult.accounts.length === 1 ? "" : "s"}.`);
+        notify(
+          'Account Import',
+          `Found ${discoveryResult.accounts.length} account${discoveryResult.accounts.length === 1 ? '' : 's'}.`,
+        );
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      notify("Account Import", `Scan failed: ${message}`);
-      console.error("Account import scan error:", err);
+      notify('Account Import', `Scan failed: ${message}`);
+      console.error('Account import scan error:', err);
     } finally {
       setScanning(false);
     }
@@ -81,11 +87,10 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-text-primary">
-            Import from System
-          </h3>
+          <h3 className="text-base font-semibold text-text-primary">Import from System</h3>
           <p className="text-xs text-text-tertiary mt-0.5">
-            We found email accounts configured on this device. Pick one to import — you'll still need to authenticate.
+            We found email accounts configured on this device. Pick one to import — you'll still
+            need to authenticate.
           </p>
         </div>
         <button
@@ -102,8 +107,8 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
         <ShieldCheck className="w-4 h-4 text-info shrink-0 mt-0.5" />
         <div>
           <strong>Privacy first:</strong> We never read or store your passwords. Only server
-          settings (host, port, security) are imported. You'll be asked to authenticate
-          each account separately via OAuth or app password.
+          settings (host, port, security) are imported. You'll be asked to authenticate each account
+          separately via OAuth or app password.
         </div>
       </div>
 
@@ -114,14 +119,10 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
             <Search className="w-6 h-6 text-text-secondary" />
           </div>
           <p className="text-sm text-text-secondary mb-4">
-            Scan your system for email accounts configured in Apple Mail, Thunderbird, Outlook, or Evolution.
+            Scan your system for email accounts configured in Apple Mail, Thunderbird, Outlook, or
+            Evolution.
           </p>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleScan}
-            icon={<Search size={14} />}
-          >
+          <Button variant="primary" size="md" onClick={handleScan} icon={<Search size={14} />}>
             Scan for accounts
           </Button>
         </div>
@@ -130,9 +131,7 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
       {scanning && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 text-accent mx-auto mb-3 animate-spin" />
-          <p className="text-sm text-text-secondary">
-            Scanning for email accounts...
-          </p>
+          <p className="text-sm text-text-secondary">Scanning for email accounts...</p>
         </div>
       )}
 
@@ -141,14 +140,15 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
           {/* Sources scanned */}
           {result.sources_scanned.length > 0 && (
             <div className="text-xs text-text-tertiary">
-              Scanned: {result.sources_scanned.join(", ")}
+              Scanned: {result.sources_scanned.join(', ')}
             </div>
           )}
 
           {/* Errors (non-fatal) */}
           {result.errors.length > 0 && (
             <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-xs text-warning">
-              {result.errors.length} source{result.errors.length === 1 ? "" : "s"} could not be scanned.
+              {result.errors.length} source{result.errors.length === 1 ? '' : 's'} could not be
+              scanned.
             </div>
           )}
 
@@ -169,8 +169,10 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
             <div className="space-y-2">
               {result.accounts.map((account, idx) => {
                 const isSelected = selectedEmail === account.email;
-                const providerColor = providerColors[account.provider_type] || "bg-bg-tertiary text-text-secondary";
-                const providerLabel = providerLabels[account.provider_type] || account.provider_type;
+                const providerColor =
+                  providerColors[account.provider_type] || 'bg-bg-tertiary text-text-secondary';
+                const providerLabel =
+                  providerLabels[account.provider_type] || account.provider_type;
 
                 return (
                   <button
@@ -178,8 +180,8 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
                     onClick={() => setSelectedEmail(isSelected ? null : account.email)}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-start ${
                       isSelected
-                        ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
-                        : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
+                        ? 'border-accent/40 bg-accent/5 ring-1 ring-accent/20'
+                        : 'border-border-primary bg-bg-secondary hover:bg-bg-hover'
                     }`}
                   >
                     <div
@@ -189,20 +191,19 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-text-primary truncate">
-                        {account.display_name || account.email || "Unknown account"}
+                        {account.display_name || account.email || 'Unknown account'}
                       </div>
                       <div className="text-xs text-text-tertiary truncate">
-                        {account.email || "No email"} · {account.source}
+                        {account.email || 'No email'} · {account.source}
                       </div>
                       {account.imap_host && (
                         <div className="text-[10px] text-text-tertiary/60 truncate mt-0.5">
-                          {account.imap_host}:{account.imap_port || 993} ({account.imap_security || "SSL"})
+                          {account.imap_host}:{account.imap_port || 993} (
+                          {account.imap_security || 'SSL'})
                         </div>
                       )}
                     </div>
-                    {isSelected && (
-                      <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-                    )}
+                    {isSelected && <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />}
                   </button>
                 );
               })}

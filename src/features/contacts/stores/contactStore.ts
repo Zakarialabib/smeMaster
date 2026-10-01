@@ -1,9 +1,26 @@
-﻿import { create } from "zustand";
-import { getContactTags, upsertContactTag, deleteContactTag, getContactCountForTag, type DbContactTag } from "@features/contacts/db/contactTags";
-import { getContactGroups, upsertContactGroup, deleteContactGroup, getContactCountForGroup, type DbContactGroup } from "@features/contacts/db/contactGroups";
-import { getContactSegments, upsertContactSegment, deleteContactSegment, type DbContactSegment } from "@features/contacts/db/contactSegments";
-import { createAsyncActions, initialAsyncState } from "@shared/stores/createAsyncStore";
-import { createCrudSlice } from "@shared/stores/createCrudSlice";
+﻿import { create } from 'zustand';
+import {
+  getContactTags,
+  upsertContactTag,
+  deleteContactTag,
+  getContactCountForTag,
+  type DbContactTag,
+} from '@features/contacts/db/contactTags';
+import {
+  getContactGroups,
+  upsertContactGroup,
+  deleteContactGroup,
+  getContactCountForGroup,
+  type DbContactGroup,
+} from '@features/contacts/db/contactGroups';
+import {
+  getContactSegments,
+  upsertContactSegment,
+  deleteContactSegment,
+  type DbContactSegment,
+} from '@features/contacts/db/contactSegments';
+import { createAsyncActions, initialAsyncState } from '@shared/stores/createAsyncStore';
+import { createCrudSlice } from '@shared/stores/createCrudSlice';
 
 export interface ContactTag {
   id: string;
@@ -27,7 +44,13 @@ export interface ContactSegment {
 }
 
 function mapTag(db: DbContactTag, count: number): ContactTag {
-  return { id: db.id, name: db.name, color: db.color, sort_order: db.sort_order, contact_count: count };
+  return {
+    id: db.id,
+    name: db.name,
+    color: db.color,
+    sort_order: db.sort_order,
+    contact_count: count,
+  };
 }
 
 function mapGroup(db: DbContactGroup, count: number): ContactGroup {
@@ -71,7 +94,9 @@ export const useContactStore = create<ContactState>((set, get) => {
     loadTags: async (accountId) => {
       await withLoading(async () => {
         const dbTags = await getContactTags(accountId);
-        const tags = await Promise.all(dbTags.map(async (t) => mapTag(t, await getContactCountForTag(t.id))));
+        const tags = await Promise.all(
+          dbTags.map(async (t) => mapTag(t, await getContactCountForTag(t.id))),
+        );
         set({ tags });
       });
     },
@@ -79,7 +104,9 @@ export const useContactStore = create<ContactState>((set, get) => {
     loadGroups: async (accountId) => {
       await withLoading(async () => {
         const dbGroups = await getContactGroups(accountId);
-        const groups = await Promise.all(dbGroups.map(async (g) => mapGroup(g, await getContactCountForGroup(g.id))));
+        const groups = await Promise.all(
+          dbGroups.map(async (g) => mapGroup(g, await getContactCountForGroup(g.id))),
+        );
         set({ groups });
       });
     },
@@ -96,7 +123,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withCreate(
         () => upsertContactTag(undefined, accountId, name, color),
         () => get().loadTags(accountId),
-        "Failed to create contact tag",
+        'Failed to create contact tag',
       );
     },
 
@@ -104,7 +131,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withCreate(
         () => upsertContactGroup(undefined, accountId, name, description),
         () => get().loadGroups(accountId),
-        "Failed to create contact group",
+        'Failed to create contact group',
       );
     },
 
@@ -112,7 +139,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withCreate(
         () => upsertContactSegment(undefined, accountId, name, query),
         () => get().loadSegments(accountId),
-        "Failed to create contact segment",
+        'Failed to create contact segment',
       );
     },
 
@@ -120,7 +147,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withDelete(
         () => deleteContactTag(id, accountId),
         () => get().loadTags(accountId),
-        "Failed to delete contact tag",
+        'Failed to delete contact tag',
       );
     },
 
@@ -128,7 +155,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withDelete(
         () => deleteContactGroup(id, accountId),
         () => get().loadGroups(accountId),
-        "Failed to delete contact group",
+        'Failed to delete contact group',
       );
     },
 
@@ -136,7 +163,7 @@ export const useContactStore = create<ContactState>((set, get) => {
       await crud.withDelete(
         () => deleteContactSegment(id, accountId),
         () => get().loadSegments(accountId),
-        "Failed to delete contact segment",
+        'Failed to delete contact segment',
       );
     },
   };

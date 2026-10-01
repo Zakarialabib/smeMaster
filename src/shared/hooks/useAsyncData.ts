@@ -12,11 +12,9 @@ interface UseAsyncDataOptions<T, TQueryFnData = T, TError = Error> {
   meta?: Record<string, any>;
 }
 
-export const useAsyncData = <T, TError = Error>(
-  options: UseAsyncDataOptions<T, T, TError>
-) => {
+export const useAsyncData = <T, TError = Error>(options: UseAsyncDataOptions<T, T, TError>) => {
   return useQuery<T, TError>({
     ...options,
-    meta: { domain: 'async-data', ...options.meta }
+    meta: { domain: 'async-data', ...options.meta },
   });
 };

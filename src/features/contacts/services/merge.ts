@@ -1,5 +1,5 @@
-import { getAllContacts, deleteContact } from "@features/contacts/db/contacts.ts";
-import { mergeContacts as dbMergeContacts } from "@shared/services/db/db-invoke";
+import { getAllContacts, deleteContact } from '@features/contacts/db/contacts.ts';
+import { mergeContacts as dbMergeContacts } from '@shared/services/db/db-invoke';
 
 export interface MergeCandidate {
   keepId: string;

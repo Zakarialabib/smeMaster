@@ -6,11 +6,11 @@
  * logs in an in-memory buffer for the Logs UI.
  */
 
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type LogLevel = "debug" | "info" | "warning" | "error" | "critical";
+export type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical';
 
 export interface LogEntry {
   id: string;
@@ -36,12 +36,7 @@ class Logger {
   /**
    * Add a log entry to the in-memory buffer
    */
-  private addLog(
-    level: LogLevel,
-    message: string,
-    category?: string,
-    data?: unknown
-  ): LogEntry {
+  private addLog(level: LogLevel, message: string, category?: string, data?: unknown): LogEntry {
     const entry: LogEntry = {
       id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       timestamp: new Date(),
@@ -63,16 +58,15 @@ class Logger {
 
     // Console output for development
     if (import.meta.env.DEV) {
-      const consoleMethod =
-        level === "error" || level === "critical" ? "error" : "log";
+      const consoleMethod = level === 'error' || level === 'critical' ? 'error' : 'log';
       console[consoleMethod](
-        `[${level.toUpperCase()}]${category ? ` [${category}]` : ""} ${message}`,
-        data ?? ""
+        `[${level.toUpperCase()}]${category ? ` [${category}]` : ''} ${message}`,
+        data ?? '',
       );
     }
 
     // Send error/critical logs to backend
-    if (level === "error" || level === "critical") {
+    if (level === 'error' || level === 'critical') {
       this.sendToBackend(entry);
     }
 
@@ -88,17 +82,15 @@ class Logger {
     this._isLoggingIpcError = true;
 
     try {
-      await invokeCommand("log_error_command", {
+      await invokeCommand('log_error_command', {
         error: entry.message,
         stack:
-          entry.data && typeof entry.data === "object"
-            ? String((entry.data as Record<string, unknown>).stack ?? "")
+          entry.data && typeof entry.data === 'object'
+            ? String((entry.data as Record<string, unknown>).stack ?? '')
             : undefined,
-        component: entry.category ?? "frontend",
+        component: entry.category ?? 'frontend',
         timestamp:
-          entry.timestamp instanceof Date
-            ? entry.timestamp.toISOString()
-            : String(entry.timestamp),
+          entry.timestamp instanceof Date ? entry.timestamp.toISOString() : String(entry.timestamp),
       });
     } catch {
       // Silently swallow errors to prevent infinite loops
@@ -108,23 +100,23 @@ class Logger {
   }
 
   debug(message: string, category?: string, data?: unknown) {
-    return this.addLog("debug", message, category, data);
+    return this.addLog('debug', message, category, data);
   }
 
   info(message: string, category?: string, data?: unknown) {
-    return this.addLog("info", message, category, data);
+    return this.addLog('info', message, category, data);
   }
 
   warn(message: string, category?: string, data?: unknown) {
-    return this.addLog("warning", message, category, data);
+    return this.addLog('warning', message, category, data);
   }
 
   error(message: string, category?: string, data?: unknown) {
-    return this.addLog("error", message, category, data);
+    return this.addLog('error', message, category, data);
   }
 
   critical(message: string, category?: string, data?: unknown) {
-    return this.addLog("critical", message, category, data);
+    return this.addLog('critical', message, category, data);
   }
 
   /**
@@ -134,10 +126,10 @@ class Logger {
     level: LogLevel,
     message: string,
     category?: string,
-    data?: unknown
+    data?: unknown,
   ): Promise<void> {
     try {
-      await invokeCommand("log_event", {
+      await invokeCommand('log_event', {
         level,
         message,
         category,
@@ -174,16 +166,14 @@ class Logger {
    * Get all error-level logs
    */
   getErrors(): LogEntry[] {
-    return this.logs.filter(
-      (log) => log.level === "error" || log.level === "critical"
-    );
+    return this.logs.filter((log) => log.level === 'error' || log.level === 'critical');
   }
 
   /**
    * Get all warning-level logs
    */
   getWarnings(): LogEntry[] {
-    return this.logs.filter((log) => log.level === "warning");
+    return this.logs.filter((log) => log.level === 'warning');
   }
 
   clearLogs() {
@@ -213,13 +203,11 @@ class Logger {
   }
 
   getErrorCount(): number {
-    return this.logs.filter(
-      (log) => log.level === "error" || log.level === "critical"
-    ).length;
+    return this.logs.filter((log) => log.level === 'error' || log.level === 'critical').length;
   }
 
   getWarningCount(): number {
-    return this.logs.filter((log) => log.level === "warning").length;
+    return this.logs.filter((log) => log.level === 'warning').length;
   }
 }
 

@@ -1,7 +1,7 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { X, ExternalLink } from "lucide-react";
-import { useTaskStore } from "@features/tasks/stores/taskStore";
-import { useLayoutStore } from "@shared/stores/layoutStore";
+﻿import { useState, useEffect, useCallback } from 'react';
+import { X, ExternalLink } from 'lucide-react';
+import { useTaskStore } from '@features/tasks/stores/taskStore';
+import { useLayoutStore } from '@shared/stores/layoutStore';
 import {
   getTasksForThread,
   insertTask,
@@ -9,12 +9,12 @@ import {
   uncompleteTask,
   deleteTask as dbDeleteTask,
   getSubtasks,
-} from "@features/tasks/db/tasks";
-import type { DbTask } from "@features/tasks/db/tasks";
-import { handleRecurringTaskCompletion } from "@features/tasks/services/taskManager";
-import { TaskItem } from "./TaskItem";
-import { TaskQuickAdd } from "./TaskQuickAdd";
-import { navigateToLabel } from "@/router/navigate";
+} from '@features/tasks/db/tasks';
+import type { DbTask } from '@features/tasks/db/tasks';
+import { handleRecurringTaskCompletion } from '@features/tasks/services/taskManager';
+import { TaskItem } from './TaskItem';
+import { TaskQuickAdd } from './TaskQuickAdd';
+import { navigateToLabel } from '@/router/navigate';
 
 interface TaskSidebarProps {
   accountId: string;
@@ -31,52 +31,61 @@ export function TaskSidebar({ accountId, threadId }: TaskSidebarProps) {
     getTasksForThread(accountId, threadId).then((tasks) => {
       if (!cancelled) setThreadTasks(tasks);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [accountId, threadId, setThreadTasks]);
 
-  const handleAddTask = useCallback(async (title: string) => {
-    const id = await insertTask({
-      accountId,
-      title,
-      threadId,
-      threadAccountId: accountId,
-    });
-    // Refresh
-    const tasks = await getTasksForThread(accountId, threadId);
-    setThreadTasks(tasks);
-    useTaskStore.getState().setIncompleteCount(
-      useTaskStore.getState().incompleteCount + 1,
-    );
-    return id;
-  }, [accountId, threadId, setThreadTasks]);
+  const handleAddTask = useCallback(
+    async (title: string) => {
+      const id = await insertTask({
+        accountId,
+        title,
+        threadId,
+        threadAccountId: accountId,
+      });
+      // Refresh
+      const tasks = await getTasksForThread(accountId, threadId);
+      setThreadTasks(tasks);
+      useTaskStore.getState().setIncompleteCount(useTaskStore.getState().incompleteCount + 1);
+      return id;
+    },
+    [accountId, threadId, setThreadTasks],
+  );
 
-  const handleToggleComplete = useCallback(async (id: string, completed: boolean) => {
-    if (completed) {
-      const task = threadTasks.find((t) => t.id === id);
-      if (task?.recurrence_rule) {
-        await handleRecurringTaskCompletion(id);
+  const handleToggleComplete = useCallback(
+    async (id: string, completed: boolean) => {
+      if (completed) {
+        const task = threadTasks.find((t) => t.id === id);
+        if (task?.recurrence_rule) {
+          await handleRecurringTaskCompletion(id);
+        } else {
+          await completeTask(id);
+        }
       } else {
-        await completeTask(id);
+        await uncompleteTask(id);
       }
-    } else {
-      await uncompleteTask(id);
-    }
-    const tasks = await getTasksForThread(accountId, threadId);
-    setThreadTasks(tasks);
-    // Update count
-    const { getIncompleteTaskCount } = await import("@features/tasks/db/tasks");
-    const count = await getIncompleteTaskCount(accountId);
-    useTaskStore.getState().setIncompleteCount(count);
-  }, [accountId, threadId, setThreadTasks, threadTasks]);
+      const tasks = await getTasksForThread(accountId, threadId);
+      setThreadTasks(tasks);
+      // Update count
+      const { getIncompleteTaskCount } = await import('@features/tasks/db/tasks');
+      const count = await getIncompleteTaskCount(accountId);
+      useTaskStore.getState().setIncompleteCount(count);
+    },
+    [accountId, threadId, setThreadTasks, threadTasks],
+  );
 
-  const handleDelete = useCallback(async (id: string) => {
-    await dbDeleteTask(id);
-    const tasks = await getTasksForThread(accountId, threadId);
-    setThreadTasks(tasks);
-    const { getIncompleteTaskCount } = await import("@features/tasks/db/tasks");
-    const count = await getIncompleteTaskCount(accountId);
-    useTaskStore.getState().setIncompleteCount(count);
-  }, [accountId, threadId, setThreadTasks]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await dbDeleteTask(id);
+      const tasks = await getTasksForThread(accountId, threadId);
+      setThreadTasks(tasks);
+      const { getIncompleteTaskCount } = await import('@features/tasks/db/tasks');
+      const count = await getIncompleteTaskCount(accountId);
+      useTaskStore.getState().setIncompleteCount(count);
+    },
+    [accountId, threadId, setThreadTasks],
+  );
 
   // Load subtasks for each task
   const [subtaskMap, setSubtaskMap] = useState<Record<string, DbTask[]>>({});
@@ -92,7 +101,9 @@ export function TaskSidebar({ accountId, threadId }: TaskSidebarProps) {
       if (!cancelled) setSubtaskMap(map);
     }
     loadSubtasks();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [threadTasks]);
 
   return (
@@ -102,7 +113,7 @@ export function TaskSidebar({ accountId, threadId }: TaskSidebarProps) {
         <h3 className="text-sm font-semibold text-text-primary">Tasks</h3>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => navigateToLabel("tasks")}
+            onClick={() => navigateToLabel('tasks')}
             title="Open tasks page"
             className="p-1 text-text-tertiary hover:text-text-primary transition-colors"
           >

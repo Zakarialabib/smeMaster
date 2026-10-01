@@ -5,16 +5,14 @@ import {
   deleteLabelsForAccount as dbInvokeDeleteLabelsForAccount,
   updateLabelSortOrder as dbInvokeUpdateLabelSortOrder,
   type Label,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type DbLabel = Label;
 
 /**
  * Get all labels for an account via the typed db-invoke wrapper.
  */
-export async function getLabelsForAccount(
-  accountId: string,
-): Promise<DbLabel[]> {
+export async function getLabelsForAccount(accountId: string): Promise<DbLabel[]> {
   return dbInvokeGetLabelsForAccount(accountId);
 }
 
@@ -49,19 +47,14 @@ export async function upsertLabel(label: {
  * Delete all labels for an account.
  * Uses raw SQL since there is no db-invoke bulk-delete equivalent.
  */
-export async function deleteLabelsForAccount(
-  accountId: string,
-): Promise<void> {
+export async function deleteLabelsForAccount(accountId: string): Promise<void> {
   await dbInvokeDeleteLabelsForAccount(accountId);
 }
 
 /**
  * Delete a label via the typed db-invoke wrapper.
  */
-export async function deleteLabel(
-  accountId: string,
-  labelId: string,
-): Promise<void> {
+export async function deleteLabel(accountId: string, labelId: string): Promise<void> {
   await dbInvokeDeleteLabel(accountId, labelId);
 }
 

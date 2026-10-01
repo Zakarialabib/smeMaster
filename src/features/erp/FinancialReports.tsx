@@ -93,9 +93,10 @@ export default function FinancialReports() {
 
       {!error && !hasData && !loading && (
         <InfoBanner>
-          No financial data yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>.
-          Send invoices from <span className="font-medium">Invoicing</span> to populate the ledger, then the
-          P&amp;L and chart of accounts update automatically.
+          No financial data yet for{' '}
+          <span className="font-medium text-text-primary">{company?.name ?? 'this company'}</span>.
+          Send invoices from <span className="font-medium">Invoicing</span> to populate the ledger,
+          then the P&amp;L and chart of accounts update automatically.
         </InfoBanner>
       )}
 
@@ -112,10 +113,27 @@ export default function FinancialReports() {
             </div>
           </div>
 
-          <PnlRow icon={<Wallet size={15} />} label="Revenue" value={revenue} tone="text-text-primary" />
-          <PnlRow icon={<Layers size={15} />} label="Operating Expenses" value={-expenses} tone="text-warning" />
+          <PnlRow
+            icon={<Wallet size={15} />}
+            label="Revenue"
+            value={revenue}
+            tone="text-text-primary"
+          />
+          <PnlRow
+            icon={<Layers size={15} />}
+            label="Operating Expenses"
+            value={-expenses}
+            tone="text-warning"
+          />
           <div className="my-2 border-t border-border-primary" />
-          <PnlRow icon={<TrendingUp size={15} />} label="Net Profit" value={net} tone="text-success" bold large />
+          <PnlRow
+            icon={<TrendingUp size={15} />}
+            label="Net Profit"
+            value={net}
+            tone="text-success"
+            bold
+            large
+          />
 
           {/* Breakdown bar */}
           <div className="mt-4">
@@ -131,7 +149,10 @@ export default function FinancialReports() {
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
               {breakdown.map((s) => (
-                <span key={s.label} className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
+                <span
+                  key={s.label}
+                  className="flex items-center gap-1.5 text-[11px] text-text-tertiary"
+                >
                   <span className={`w-2.5 h-2.5 rounded-sm ${s.color}`} /> {s.label}
                 </span>
               ))}
@@ -169,7 +190,9 @@ export default function FinancialReports() {
                         className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-bg-hover/40 transition-colors"
                       >
                         <span className="flex items-center gap-2 text-sm text-text-secondary min-w-0">
-                          <span className="font-mono text-[11px] text-text-tertiary shrink-0">{a.code}</span>
+                          <span className="font-mono text-[11px] text-text-tertiary shrink-0">
+                            {a.code}
+                          </span>
                           <span className="truncate">{a.name}</span>
                         </span>
                         <span className="text-[10px] font-semibold uppercase text-text-tertiary shrink-0 ms-2">
@@ -209,11 +232,15 @@ function PnlRow({
 }) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className={`flex items-center gap-2 ${bold ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}>
+      <span
+        className={`flex items-center gap-2 ${bold ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
+      >
         <span className="text-text-tertiary">{icon}</span>
         {label}
       </span>
-      <span className={`tabular-nums ${tone} ${bold ? (large ? 'text-lg font-bold' : 'font-bold') : ''}`}>
+      <span
+        className={`tabular-nums ${tone} ${bold ? (large ? 'text-lg font-bold' : 'font-bold') : ''}`}
+      >
         {formatMoney(value)}
       </span>
     </div>

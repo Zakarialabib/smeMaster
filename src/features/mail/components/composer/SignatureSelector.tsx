@@ -1,16 +1,16 @@
-﻿import { useState, useEffect } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+﻿import { useState, useEffect } from 'react';
+import { Sparkles, Loader2 } from 'lucide-react';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getSignaturesForAccount,
   insertSignature,
   type DbSignature,
-} from "@features/mail/db/signatures";
-import { generateSignature } from "@shared/services/ai/signatureGenerator";
-import { Modal } from "@shared/components/ui/Modal";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { UpgradeBadge } from "@shared/components/ui/UpgradeBadge";
+} from '@features/mail/db/signatures';
+import { generateSignature } from '@shared/services/ai/signatureGenerator';
+import { Modal } from '@shared/components/ui/Modal';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { UpgradeBadge } from '@shared/components/ui/UpgradeBadge';
 
 export function SignatureSelector() {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -20,16 +20,16 @@ export function SignatureSelector() {
   const setSignatureId = useComposerStore((s) => s.setSignatureId);
   const [signatures, setSignatures] = useState<DbSignature[]>([]);
   const [previewSig, setPreviewSig] = useState<DbSignature | null>(null);
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
   const [showAiForm, setShowAiForm] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiName, setAiName] = useState("");
-  const [aiTitle, setAiTitle] = useState("");
-  const [aiCompany, setAiCompany] = useState("");
-  const [aiEmail, setAiEmail] = useState("");
-  const [aiPhone, setAiPhone] = useState("");
-  const [aiStyle, setAiStyle] = useState<"modern" | "classic" | "minimal" | "branded">("modern");
+  const [aiName, setAiName] = useState('');
+  const [aiTitle, setAiTitle] = useState('');
+  const [aiCompany, setAiCompany] = useState('');
+  const [aiEmail, setAiEmail] = useState('');
+  const [aiPhone, setAiPhone] = useState('');
+  const [aiStyle, setAiStyle] = useState<'modern' | 'classic' | 'minimal' | 'branded'>('modern');
 
   useEffect(() => {
     if (!isOpen || !activeAccountId) return;
@@ -37,15 +37,17 @@ export function SignatureSelector() {
     getSignaturesForAccount(activeAccountId).then((sigs) => {
       if (!cancelled) setSignatures(sigs);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, activeAccountId]);
 
   if (signatures.length === 0) return null;
 
   const handleChange = (id: string) => {
-    if (id === "") {
+    if (id === '') {
       setSignatureId(null);
-      setSignatureHtml("");
+      setSignatureHtml('');
       setPreviewSig(null);
       return;
     }
@@ -58,7 +60,15 @@ export function SignatureSelector() {
   };
 
   const handleGenerateWithAi = async () => {
-    if (!aiName.trim() || !aiTitle.trim() || !aiCompany.trim() || !aiEmail.trim() || aiLoading || !activeAccountId) return;
+    if (
+      !aiName.trim() ||
+      !aiTitle.trim() ||
+      !aiCompany.trim() ||
+      !aiEmail.trim() ||
+      aiLoading ||
+      !activeAccountId
+    )
+      return;
     setAiLoading(true);
     setAiError(null);
     try {
@@ -92,14 +102,14 @@ export function SignatureSelector() {
       setPreviewSig(newSig);
       setShowAiForm(false);
       // Reset form
-      setAiName("");
-      setAiTitle("");
-      setAiCompany("");
-      setAiEmail("");
-      setAiPhone("");
-      setAiStyle("modern");
+      setAiName('');
+      setAiTitle('');
+      setAiCompany('');
+      setAiEmail('');
+      setAiPhone('');
+      setAiStyle('modern');
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Generation failed");
+      setAiError(err instanceof Error ? err.message : 'Generation failed');
     } finally {
       setAiLoading(false);
     }
@@ -108,7 +118,7 @@ export function SignatureSelector() {
   return (
     <div className="space-y-1">
       <select
-        value={signatureId ?? ""}
+        value={signatureId ?? ''}
         onChange={(e) => handleChange(e.target.value)}
         onMouseEnter={(e) => {
           const id = e.currentTarget.value;
@@ -146,7 +156,15 @@ export function SignatureSelector() {
       </div>
 
       {/* AI Signature Form Modal */}
-      <Modal isOpen={showAiForm} onClose={() => { setShowAiForm(false); setAiError(null); }} title="Generate Email Signature" size="sm">
+      <Modal
+        isOpen={showAiForm}
+        onClose={() => {
+          setShowAiForm(false);
+          setAiError(null);
+        }}
+        title="Generate Email Signature"
+        size="sm"
+      >
         <div className="p-4 space-y-3">
           <input
             type="text"
@@ -202,7 +220,10 @@ export function SignatureSelector() {
           {aiError && <p className="text-xs text-danger">{aiError}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <button
-              onClick={() => { setShowAiForm(false); setAiError(null); }}
+              onClick={() => {
+                setShowAiForm(false);
+                setAiError(null);
+              }}
               className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
               disabled={aiLoading}
             >
@@ -210,15 +231,17 @@ export function SignatureSelector() {
             </button>
             <button
               onClick={handleGenerateWithAi}
-              disabled={aiLoading || !aiName.trim() || !aiTitle.trim() || !aiCompany.trim() || !aiEmail.trim()}
+              disabled={
+                aiLoading ||
+                !aiName.trim() ||
+                !aiTitle.trim() ||
+                !aiCompany.trim() ||
+                !aiEmail.trim()
+              }
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-accent text-white rounded hover:bg-accent-hover transition-colors disabled:opacity-50"
             >
-              {aiLoading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Sparkles size={14} />
-              )}
-              {aiLoading ? "Generating..." : "Generate"}
+              {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {aiLoading ? 'Generating...' : 'Generate'}
             </button>
           </div>
         </div>
@@ -238,4 +261,3 @@ export function SignatureSelector() {
     </div>
   );
 }
-

@@ -5,8 +5,8 @@ import {
   setDefaultComplianceProfile as dbSetDefaultProfile,
   insertComplianceCheck as dbInsertCheck,
   type ComplianceProfile as DbComplianceProfileRow,
-} from "@shared/services/db/db-invoke";
-import type { ComplianceProfile, ComplianceRule } from "@features/mail/services/compliance/types";
+} from '@shared/services/db/db-invoke';
+import type { ComplianceProfile, ComplianceRule } from '@features/mail/services/compliance/types';
 
 function mapRow(row: DbComplianceProfileRow): ComplianceProfile {
   let rules: ComplianceRule[] = [];
@@ -39,7 +39,7 @@ export async function getProfilesForDomains(domains: string[]): Promise<Complian
     .filter((row) => {
       if (!row.is_active) return false;
       if (!row.region_hint) return true;
-      const hints = row.region_hint.split(",").map((h) => h.trim().toLowerCase());
+      const hints = row.region_hint.split(',').map((h) => h.trim().toLowerCase());
       return domains.some((d) => hints.some((h) => d.endsWith(h)));
     })
     .map(mapRow);

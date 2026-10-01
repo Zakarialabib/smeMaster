@@ -1,4 +1,4 @@
-﻿import { useTranslation } from "react-i18next";
+﻿import { useTranslation } from 'react-i18next';
 
 interface Props {
   error: string | null;
@@ -47,15 +47,11 @@ export default function BiometricLockScreen({ error, onUnlock, isLoading }: Prop
         </g>
       </svg>
 
-      <h1 className="text-2xl font-semibold text-white mb-2">{t("lock.appLocked")}</h1>
+      <h1 className="text-2xl font-semibold text-white mb-2">{t('lock.appLocked')}</h1>
 
-      <p className="text-sm text-white/60 mb-8 text-center max-w-xs">
-        {t("lock.unlockToAccess")}
-      </p>
+      <p className="text-sm text-white/60 mb-8 text-center max-w-xs">{t('lock.unlockToAccess')}</p>
 
-      {error && (
-        <p className="text-sm text-red-400 mb-4 text-center max-w-xs">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-400 mb-4 text-center max-w-xs">{error}</p>}
 
       <button
         onClick={onUnlock}
@@ -65,14 +61,24 @@ export default function BiometricLockScreen({ error, onUnlock, isLoading }: Prop
         {isLoading ? (
           <span className="flex items-center gap-2">
             <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            {t("lock.unlocking")}
+            {t('lock.unlocking')}
           </span>
         ) : (
           <span className="relative z-10 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0-1.1-.9-2-2-2s-2 .9-2 2m4 0a2 2 0 00-2-2m2 2v2m0-2h2m-2 2v2m0-2H8m0 2v2m0-2H6m12 4v-1a3 3 0 00-3-3H9a3 3 0 00-3 3v1" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 11c0-1.1-.9-2-2-2s-2 .9-2 2m4 0a2 2 0 00-2-2m2 2v2m0-2h2m-2 2v2m0-2H8m0 2v2m0-2H6m12 4v-1a3 3 0 00-3-3H9a3 3 0 00-3 3v1"
+              />
             </svg>
-            {t("lock.unlockWithBiometric")}
+            {t('lock.unlockWithBiometric')}
           </span>
         )}
         <span className="absolute inset-0 animate-[shine_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12" />

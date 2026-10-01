@@ -1,6 +1,7 @@
 import { useBreakpoint } from '@/shared/hooks/useBreakpoint';
 
-export type FieldType = 'text' | 'email' | 'tel' | 'number' | 'select' | 'textarea' | 'date' | 'toggle';
+export type FieldType =
+  'text' | 'email' | 'tel' | 'number' | 'select' | 'textarea' | 'date' | 'toggle';
 
 export interface FieldDefinition {
   key: string;
@@ -22,7 +23,8 @@ interface DynamicFieldRendererProps {
 }
 
 function renderInput(field: FieldDefinition, onChange: (val: string | number | boolean) => void) {
-  const baseClass = 'w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]';
+  const baseClass =
+    'w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]';
 
   switch (field.type) {
     case 'select':
@@ -34,7 +36,9 @@ function renderInput(field: FieldDefinition, onChange: (val: string | number | b
           required={field.required}
         >
           {field.options?.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
       );
@@ -56,7 +60,9 @@ function renderInput(field: FieldDefinition, onChange: (val: string | number | b
           role="switch"
           aria-checked={Boolean(field.value)}
         >
-          <span className={`absolute top-0.5 inset-inline-start-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'}`} />
+          <span
+            className={`absolute top-0.5 inset-inline-start-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'}`}
+          />
         </button>
       );
     default:
@@ -68,13 +74,26 @@ function renderInput(field: FieldDefinition, onChange: (val: string | number | b
           className={baseClass}
           placeholder={field.placeholder}
           required={field.required}
-          inputMode={field.type === 'number' ? 'numeric' : field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
+          inputMode={
+            field.type === 'number'
+              ? 'numeric'
+              : field.type === 'email'
+                ? 'email'
+                : field.type === 'tel'
+                  ? 'tel'
+                  : 'text'
+          }
         />
       );
   }
 }
 
-export function DynamicFieldRenderer({ fields, onChange, columns, className = '' }: DynamicFieldRendererProps) {
+export function DynamicFieldRenderer({
+  fields,
+  onChange,
+  columns,
+  className = '',
+}: DynamicFieldRendererProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const effectiveColumns = columns ?? (isMobile ? 1 : 2);
@@ -87,8 +106,8 @@ export function DynamicFieldRenderer({ fields, onChange, columns, className = ''
     return acc;
   }, {});
 
-  const sortedSections = Object.entries(sections).sort(([, a], [, b]) =>
-    (a[0]?.sectionPriority ?? 99) - (b[0]?.sectionPriority ?? 99)
+  const sortedSections = Object.entries(sections).sort(
+    ([, a], [, b]) => (a[0]?.sectionPriority ?? 99) - (b[0]?.sectionPriority ?? 99),
   );
 
   return (
@@ -98,7 +117,9 @@ export function DynamicFieldRenderer({ fields, onChange, columns, className = ''
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-1">
             {sectionName}
           </h3>
-          <div className={`grid gap-3 ${effectiveColumns === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+          <div
+            className={`grid gap-3 ${effectiveColumns === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}
+          >
             {sectionFields.map((field) => (
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">

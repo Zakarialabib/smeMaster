@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import type { DbCalendarEvent } from "@features/calendar/db/calendarEvents";
-import type { DbCalendar } from "@features/calendar/db/calendars";
-import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import { CalendarDays, ListTodo, Send, Mail } from "lucide-react";
-import { type IntegratedItemType } from "./EventCard";
+import { useMemo } from 'react';
+import type { DbCalendarEvent } from '@features/calendar/db/calendarEvents';
+import type { DbCalendar } from '@features/calendar/db/calendars';
+import { PullToRefresh } from '@shared/components/ui/PullToRefresh';
+import { CalendarDays, ListTodo, Send, Mail } from 'lucide-react';
+import { type IntegratedItemType } from './EventCard';
 
 interface AgendaViewProps {
   events: DbCalendarEvent[];
@@ -30,11 +30,11 @@ interface EventGroup {
  * Formats a Unix timestamp (seconds) to a local time string.
  */
 function formatTime(item: AgendaItem): string {
-  if (item.type === 'event' && item.item.is_all_day) return "All day";
+  if (item.type === 'event' && item.item.is_all_day) return 'All day';
   const start = new Date(item.startTime * 1000);
   const fmt = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
   });
 
   if (item.type === 'event') {
@@ -53,20 +53,20 @@ function formatDateLabel(date: Date): string {
   const todayStr = today.toDateString();
   const dateStr = date.toDateString();
 
-  if (dateStr === todayStr) return "Today";
+  if (dateStr === todayStr) return 'Today';
 
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  if (dateStr === tomorrow.toDateString()) return "Tomorrow";
+  if (dateStr === tomorrow.toDateString()) return 'Tomorrow';
 
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (dateStr === yesterday.toDateString()) return "Yesterday";
+  if (dateStr === yesterday.toDateString()) return 'Yesterday';
 
   return date.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -75,7 +75,7 @@ function formatDateLabel(date: Date): string {
  */
 function toDateKey(ts: number): string {
   const d = new Date(ts * 1000);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function AgendaView({
@@ -99,18 +99,25 @@ export function AgendaView({
   const groupedEvents: EventGroup[] = useMemo(() => {
     const groups = new Map<string, AgendaItem[]>();
 
-    const integratedWithType = (integratedItems || []).map(item => {
+    const integratedWithType = (integratedItems || []).map((item) => {
       let type: IntegratedItemType = 'task';
       let time = 0;
-      if ('due_date' in item) { type = 'task'; time = item.due_date; }
-      else if ('sent_at' in item) { type = 'campaign'; time = item.sent_at; }
-      else if ('scheduled_at' in item) { type = 'scheduled_email'; time = item.scheduled_at; }
+      if ('due_date' in item) {
+        type = 'task';
+        time = item.due_date;
+      } else if ('sent_at' in item) {
+        type = 'campaign';
+        time = item.sent_at;
+      } else if ('scheduled_at' in item) {
+        type = 'scheduled_email';
+        time = item.scheduled_at;
+      }
       return { item, type, startTime: time };
     });
 
     const allItems = [
-      ...events.map(e => ({ item: e, type: 'event' as const, startTime: e.start_time })),
-      ...integratedWithType
+      ...events.map((e) => ({ item: e, type: 'event' as const, startTime: e.start_time })),
+      ...integratedWithType,
     ];
 
     for (const entry of allItems) {
@@ -124,7 +131,7 @@ export function AgendaView({
     return Array.from(groups.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([dateKey, items]) => ({
-        date: new Date(dateKey + "T00:00:00"),
+        date: new Date(dateKey + 'T00:00:00'),
         dateKey,
         items: items.sort((a, b) => a.startTime - b.startTime),
       }));
@@ -166,17 +173,22 @@ export function AgendaView({
           <div className="divide-y divide-border-secondary" role="list">
             {group.items.map((entry) => {
               const { item, type } = entry;
-              const cal = type === 'event' ? (calendarMap.get(item.calendar_id ?? "") ?? null) : null;
+              const cal =
+                type === 'event' ? (calendarMap.get(item.calendar_id ?? '') ?? null) : null;
 
-              let color = cal?.color ?? "var(--color-accent)";
+              let color = cal?.color ?? 'var(--color-accent)';
               if (type === 'task') color = '#8b5cf6';
               else if (type === 'campaign') color = '#10b981';
               else if (type === 'scheduled_email') color = '#3b82f6';
 
-              const summary = type === 'task' ? item.title
-                : type === 'campaign' ? item.name
-                : type === 'scheduled_email' ? (item.subject || "(No Subject)")
-                : (item.summary || "(No Title)");
+              const summary =
+                type === 'task'
+                  ? item.title
+                  : type === 'campaign'
+                    ? item.name
+                    : type === 'scheduled_email'
+                      ? item.subject || '(No Subject)'
+                      : item.summary || '(No Title)';
 
               return (
                 <button
@@ -190,10 +202,19 @@ export function AgendaView({
                 >
                   {/* Icon or color dot */}
                   <div className="mt-1 shrink-0 w-6 flex justify-center" style={{ color }}>
-                    {type === 'task' ? <ListTodo size={14} />
-                      : type === 'campaign' ? <Send size={14} />
-                      : type === 'scheduled_email' ? <Mail size={14} />
-                      : <span className="w-2.5 h-2.5 rounded-full mt-0.5" style={{ backgroundColor: color }} aria-hidden="true" />}
+                    {type === 'task' ? (
+                      <ListTodo size={14} />
+                    ) : type === 'campaign' ? (
+                      <Send size={14} />
+                    ) : type === 'scheduled_email' ? (
+                      <Mail size={14} />
+                    ) : (
+                      <span
+                        className="w-2.5 h-2.5 rounded-full mt-0.5"
+                        style={{ backgroundColor: color }}
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
 
                   {/* Time range */}
@@ -224,11 +245,7 @@ export function AgendaView({
   // ── Wrap in PullToRefresh if onRefresh is provided ───────────────────
   if (onRefresh) {
     return (
-      <PullToRefresh
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        className="flex-1 overflow-auto"
-      >
+      <PullToRefresh onRefresh={onRefresh} refreshing={refreshing} className="flex-1 overflow-auto">
         {content}
       </PullToRefresh>
     );

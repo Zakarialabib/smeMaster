@@ -1,8 +1,13 @@
-import { GoogleGenAI } from "@google/genai";
-import type { z } from "zod";
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "../types";
-import { createProviderFactory } from "../providerFactory";
-import { buildSystemPrompt } from "../utils";
+import { GoogleGenAI } from '@google/genai';
+import type { z } from 'zod';
+import type {
+  AiProviderClient,
+  AiCompletionRequest,
+  AiEmbeddingRequest,
+  ModelOption,
+} from '../types';
+import { createProviderFactory } from '../providerFactory';
+import { buildSystemPrompt } from '../utils';
 import type {
   StructuredOutputCapable,
   ToolCallingCapable,
@@ -24,13 +29,27 @@ import type {
   RealtimeOptions,
   RealtimeVoiceSession,
   EmbeddingResult,
-} from "../capabilities";
+} from '../capabilities';
 
-const factory = createProviderFactory(
-  (apiKey) => new GoogleGenAI({ apiKey }),
-);
+const factory = createProviderFactory((apiKey) => new GoogleGenAI({ apiKey }));
 
-export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage = "auto"): AiProviderClient & StructuredOutputCapable & ToolCallingCapable & ReasoningCapable & VisionCapable & ContextCachingCapable & BatchProcessingCapable & StreamingCapable & SpeechToTextCapable & TextToSpeechCapable & RealtimeVoiceCapable & ModelDiscoveryCapable & EmbeddingCapable {
+export function createGeminiProvider(
+  apiKey: string,
+  modelId: string,
+  aiLanguage = 'auto',
+): AiProviderClient &
+  StructuredOutputCapable &
+  ToolCallingCapable &
+  ReasoningCapable &
+  VisionCapable &
+  ContextCachingCapable &
+  BatchProcessingCapable &
+  StreamingCapable &
+  SpeechToTextCapable &
+  TextToSpeechCapable &
+  RealtimeVoiceCapable &
+  ModelDiscoveryCapable &
+  EmbeddingCapable {
   const client = factory.getClient(apiKey);
 
   return {
@@ -41,14 +60,14 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
         contents: req.userContent,
         config: systemPrompt ? { systemInstruction: systemPrompt } : undefined,
       });
-      return response.text ?? "";
+      return response.text ?? '';
     },
 
     async testConnection(): Promise<boolean> {
       try {
         await client.models.generateContent({
           model: modelId,
-          contents: "Say hi",
+          contents: 'Say hi',
         });
         return true;
       } catch {
@@ -68,17 +87,17 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
         config: {
           systemInstruction: systemPrompt,
           responseSchema: zodToJsonSchema(schema),
-          responseMimeType: "application/json",
+          responseMimeType: 'application/json',
         },
       });
-      const text = response.text ?? "{}";
+      const text = response.text ?? '{}';
       return schema.parse(JSON.parse(text));
     },
 
     async completeWithTools(
       req: AiCompletionRequest,
       tools: ToolDefinition[],
-      _options?: { toolChoice?: "auto" | "required" | "none" | { name: string } },
+      _options?: { toolChoice?: 'auto' | 'required' | 'none' | { name: string } },
     ): Promise<ToolCallResult> {
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
       const response = await client.models.generateContent({
@@ -87,22 +106,25 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
         config: {
           systemInstruction: systemPrompt,
           tools: tools.map((t) => ({
-            functionDeclarations: [{
-              name: t.name,
-              description: t.description,
-              parameters: zodToJsonSchema(t.parameters),
-            }],
+            functionDeclarations: [
+              {
+                name: t.name,
+                description: t.description,
+                parameters: zodToJsonSchema(t.parameters),
+              },
+            ],
           })),
         },
       });
 
-      const functionCalls = response.functionCalls?.map((fc) => ({
-        name: fc.name ?? "",
-        arguments: (fc.args ?? {}) as Record<string, unknown>,
-      })) ?? [];
+      const functionCalls =
+        response.functionCalls?.map((fc) => ({
+          name: fc.name ?? '',
+          arguments: (fc.args ?? {}) as Record<string, unknown>,
+        })) ?? [];
 
       return {
-        content: response.text ?? "",
+        content: response.text ?? '',
         toolCalls: functionCalls,
       };
     },
@@ -121,13 +143,13 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
           ...thinkingConfig,
         },
       });
-      return response.text ?? "";
+      return response.text ?? '';
     },
 
     async completeWithImage(
       req: AiCompletionRequest,
       image: Blob,
-      _options?: { detail?: "low" | "high" },
+      _options?: { detail?: 'low' | 'high' },
     ): Promise<string> {
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
       const base64 = await blobToBase64(image);
@@ -135,13 +157,13 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
         model: modelId,
         contents: [
           { text: req.userContent },
-          { inlineData: { mimeType: "image/png", data: base64.split(",")[1] ?? "" } },
+          { inlineData: { mimeType: 'image/png', data: base64.split(',')[1] ?? '' } },
         ],
         config: {
           systemInstruction: systemPrompt,
         },
       });
-      return response.text ?? "";
+      return response.text ?? '';
     },
 
     async completeWithCachedContext(
@@ -156,7 +178,7 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
           systemInstruction: `${systemPrompt}\n\n${cachedContext}`,
         },
       });
-      return response.text ?? "";
+      return response.text ?? '';
     },
 
     async completeBatch(
@@ -178,7 +200,7 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
                 systemInstruction: systemPrompt,
               },
             });
-            return response.text ?? "";
+            return response.text ?? '';
           }),
         );
         results.push(...batchResults);
@@ -206,19 +228,19 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
       const response = await client.models.generateContent({
         model: modelId,
         contents: [
-          { text: "Transcribe this audio" },
-          { inlineData: { mimeType: "audio/webm", data: base64.split(",")[1] ?? "" } },
+          { text: 'Transcribe this audio' },
+          { inlineData: { mimeType: 'audio/webm', data: base64.split(',')[1] ?? '' } },
         ],
       });
-      return response.text ?? "";
+      return response.text ?? '';
     },
 
     async synthesize(_text: string, _options?: TtsOptions): Promise<Blob> {
-      throw new Error("TTS not supported by this provider");
+      throw new Error('TTS not supported by this provider');
     },
 
     async startRealtimeSession(_options?: RealtimeOptions): Promise<RealtimeVoiceSession> {
-      throw new Error("Realtime voice not supported by this provider");
+      throw new Error('Realtime voice not supported by this provider');
     },
 
     async listModels(): Promise<ModelOption[]> {
@@ -235,7 +257,7 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
     async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
       try {
         const response = await client.models.embedContent({
-          model: "gemini-embedding-2",
+          model: 'gemini-embedding-2',
           contents: Array.isArray(req.input) ? req.input : [req.input],
         });
         const vectors = response.embeddings?.map((e) => e.values ?? []) ?? [];
@@ -244,7 +266,7 @@ export function createGeminiProvider(apiKey: string, modelId: string, aiLanguage
           vectors,
           spaceId: `gemini-embedding-2-${dimensions}`,
           dimensions,
-          modelId: "gemini-embedding-2",
+          modelId: 'gemini-embedding-2',
         };
       } catch {
         return null;
@@ -264,13 +286,13 @@ function blobToBase64(blob: Blob): Promise<string> {
 
 function getThinkingConfig(effort: ReasoningEffort): Record<string, unknown> {
   switch (effort) {
-    case "none":
+    case 'none':
       return { thinkingConfig: { includeThoughts: false } };
-    case "low":
+    case 'low':
       return { thinkingConfig: { includeThoughts: true, thinkingBudget: 1024 } };
-    case "medium":
+    case 'medium':
       return { thinkingConfig: { includeThoughts: true, thinkingBudget: 4096 } };
-    case "high":
+    case 'high':
       return { thinkingConfig: { includeThoughts: true, thinkingBudget: 8192 } };
   }
 }
@@ -279,45 +301,42 @@ function zodToJsonSchema(schema: z.ZodSchema): Record<string, unknown> {
   const def = schema._def as Record<string, unknown>;
   const typeName = def.typeName as string;
   switch (typeName) {
-    case "ZodObject": {
+    case 'ZodObject': {
       const shape = def.shape as () => Record<string, z.ZodSchema>;
       const s = shape();
       return {
-        type: "object",
+        type: 'object',
         properties: Object.fromEntries(
-          Object.entries(s).map(([key, value]) => [
-            key,
-            zodToJsonSchema(value),
-          ]),
+          Object.entries(s).map(([key, value]) => [key, zodToJsonSchema(value)]),
         ),
         required: Object.keys(s),
         additionalProperties: false,
       };
     }
-    case "ZodString":
-      return { type: "string" };
-    case "ZodNumber":
-      return { type: "number" };
-    case "ZodBoolean":
-      return { type: "boolean" };
-    case "ZodArray": {
+    case 'ZodString':
+      return { type: 'string' };
+    case 'ZodNumber':
+      return { type: 'number' };
+    case 'ZodBoolean':
+      return { type: 'boolean' };
+    case 'ZodArray': {
       const itemType = def.type as z.ZodSchema;
-      return { type: "array", items: zodToJsonSchema(itemType) };
+      return { type: 'array', items: zodToJsonSchema(itemType) };
     }
-    case "ZodEnum": {
+    case 'ZodEnum': {
       const values = def.values as string[];
-      return { type: "string", enum: values };
+      return { type: 'string', enum: values };
     }
-    case "ZodOptional": {
+    case 'ZodOptional': {
       const innerType = def.innerType as z.ZodSchema;
       return zodToJsonSchema(innerType);
     }
-    case "ZodNullable": {
+    case 'ZodNullable': {
       const innerType = def.innerType as z.ZodSchema;
       return { ...zodToJsonSchema(innerType), nullable: true };
     }
     default:
-      return { type: "object" };
+      return { type: 'object' };
   }
 }
 

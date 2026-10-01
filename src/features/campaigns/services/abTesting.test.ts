@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const { mockExecuteSearchQuery, mockUpdateCampaignABTestConfig } = vi.hoisted(() => ({
   mockExecuteSearchQuery: vi.fn(),
   mockUpdateCampaignABTestConfig: vi.fn(),
 }));
 
-vi.mock("@shared/services/db/db-invoke", () => ({
+vi.mock('@shared/services/db/db-invoke', () => ({
   executeSearchQuery: mockExecuteSearchQuery,
   updateCampaignABTestConfig: mockUpdateCampaignABTestConfig,
 }));
@@ -18,86 +18,86 @@ import {
   getVariantStats,
   runSignificanceTest,
   shouldRunABTestDecision,
-} from "./abTesting";
+} from './abTesting';
 
-describe("chiSquareTest", () => {
-  it("returns not significant when both variants have zero opens", () => {
+describe('chiSquareTest', () => {
+  it('returns not significant when both variants have zero opens', () => {
     const result = chiSquareTest(0, 10, 0, 10);
     expect(result.significant).toBe(false);
     expect(result.pValue).toBe(1);
   });
 
-  it("returns not significant when both variants have zero total", () => {
+  it('returns not significant when both variants have zero total', () => {
     const result = chiSquareTest(0, 0, 0, 0);
     expect(result.significant).toBe(false);
     expect(result.pValue).toBe(1);
   });
 
-  it("returns not significant when one variant has zero total", () => {
+  it('returns not significant when one variant has zero total', () => {
     const result = chiSquareTest(5, 10, 0, 0);
     expect(result.significant).toBe(false);
     expect(result.pValue).toBe(1);
   });
 
-  it("returns significant for large difference with sufficient sample", () => {
+  it('returns significant for large difference with sufficient sample', () => {
     const result = chiSquareTest(80, 100, 20, 100);
     expect(result.significant).toBe(true);
     expect(result.pValue).toBeLessThan(0.05);
   });
 
-  it("returns not significant for small difference", () => {
+  it('returns not significant for small difference', () => {
     const result = chiSquareTest(55, 100, 50, 100);
     expect(result.significant).toBe(false);
     expect(result.pValue).toBeGreaterThan(0.05);
   });
 
-  it("detects borderline significance", () => {
+  it('detects borderline significance', () => {
     const result = chiSquareTest(65, 100, 45, 100);
     expect(result.significant).toBe(true);
     expect(result.pValue).toBeLessThan(0.01);
   });
 });
 
-describe("assignVariant", () => {
-  it("returns A or B for any ID", async () => {
-    const result = await assignVariant("test-id", 0.5);
-    expect(["A", "B"]).toContain(result);
+describe('assignVariant', () => {
+  it('returns A or B for any ID', async () => {
+    const result = await assignVariant('test-id', 0.5);
+    expect(['A', 'B']).toContain(result);
   });
 
-  it("distributes variants across different IDs", async () => {
+  it('distributes variants across different IDs', async () => {
     const results: string[] = [];
     for (let i = 0; i < 100; i++) {
       const v = await assignVariant(`id-${i}`, 0.5);
       results.push(v);
     }
-    const aCount = results.filter((r) => r === "A").length;
+    const aCount = results.filter((r) => r === 'A').length;
     expect(aCount).toBeGreaterThan(30);
     expect(aCount).toBeLessThan(70);
   });
 
-  it("is deterministic for the same ID", async () => {
-    const a = await assignVariant("deterministic-test", 0.5);
-    const b = await assignVariant("deterministic-test", 0.5);
+  it('is deterministic for the same ID', async () => {
+    const a = await assignVariant('deterministic-test', 0.5);
+    const b = await assignVariant('deterministic-test', 0.5);
     expect(a).toBe(b);
   });
 
-  it("favors A more with higher split ratio", async () => {
+  it('favors A more with higher split ratio', async () => {
     const lowRatioResults: string[] = [];
     const highRatioResults: string[] = [];
     for (let i = 0; i < 100; i++) {
       lowRatioResults.push(await assignVariant(`id-${i}`, 0.1));
       highRatioResults.push(await assignVariant(`id-${i}`, 0.9));
     }
-    const lowA = lowRatioResults.filter((r) => r === "A").length;
-    const highA = highRatioResults.filter((r) => r === "A").length;
+    const lowA = lowRatioResults.filter((r) => r === 'A').length;
+    const highA = highRatioResults.filter((r) => r === 'A').length;
     expect(highA).toBeGreaterThan(lowA);
   });
 });
 
-describe("createABTest and getABTestConfig", () => {
+describe('createABTest and getABTestConfig', () => {
   const testConfig = {
-    variantA: { subject: "Test A", body: "Body A" },
-    variantB: { subject: "Test B", body: "Body B" },
+    variantA: { subject: 'Test A', body: 'Body A' },
+    variantB: { subject: 'Test B', body: 'Body B' },
     splitRatio: 0.5,
     winnerId: null as string | null,
     testDurationHours: 24,
@@ -111,45 +111,45 @@ describe("createABTest and getABTestConfig", () => {
     vi.clearAllMocks();
   });
 
-  it("stores config via updateCampaignABTestConfig", async () => {
-    await createABTest("campaign-1", testConfig);
+  it('stores config via updateCampaignABTestConfig', async () => {
+    await createABTest('campaign-1', testConfig);
     expect(mockUpdateCampaignABTestConfig).toHaveBeenCalledWith(
-      "campaign-1",
+      'campaign-1',
       JSON.stringify(testConfig),
     );
   });
 
-  it("retrieves config from executeSearchQuery", async () => {
+  it('retrieves config from executeSearchQuery', async () => {
     mockExecuteSearchQuery.mockResolvedValueOnce([{ ab_test_config: JSON.stringify(testConfig) }]);
-    const result = await getABTestConfig("campaign-1");
+    const result = await getABTestConfig('campaign-1');
     expect(result).toEqual(testConfig);
   });
 
-  it("returns null when no config stored", async () => {
+  it('returns null when no config stored', async () => {
     mockExecuteSearchQuery.mockResolvedValueOnce([]);
-    const result = await getABTestConfig("campaign-1");
+    const result = await getABTestConfig('campaign-1');
     expect(result).toBeNull();
   });
 });
 
-describe("getVariantStats", () => {
+describe('getVariantStats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns null for both variants when no data", async () => {
+  it('returns null for both variants when no data', async () => {
     mockExecuteSearchQuery.mockResolvedValueOnce([]);
-    const result = await getVariantStats("campaign-1");
+    const result = await getVariantStats('campaign-1');
     expect(result.a).toBeNull();
     expect(result.b).toBeNull();
   });
 
-  it("computes stats per variant", async () => {
+  it('computes stats per variant', async () => {
     mockExecuteSearchQuery.mockResolvedValueOnce([
-      { variant: "A", total: 100, opens: 40, clicks: 10 },
-      { variant: "B", total: 100, opens: 25, clicks: 5 },
+      { variant: 'A', total: 100, opens: 40, clicks: 10 },
+      { variant: 'B', total: 100, opens: 25, clicks: 5 },
     ]);
-    const result = await getVariantStats("campaign-1");
+    const result = await getVariantStats('campaign-1');
     expect(result.a?.total).toBe(100);
     expect(result.a?.opens).toBe(40);
     expect(result.a?.openRate).toBe(0.4);
@@ -159,23 +159,23 @@ describe("getVariantStats", () => {
   });
 });
 
-describe("shouldRunABTestDecision", () => {
+describe('shouldRunABTestDecision', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns false when no config exists", async () => {
+  it('returns false when no config exists', async () => {
     mockExecuteSearchQuery.mockResolvedValueOnce([]);
-    const result = await shouldRunABTestDecision("campaign-1");
+    const result = await shouldRunABTestDecision('campaign-1');
     expect(result).toBe(false);
   });
 
-  it("returns false when winner already declared", async () => {
+  it('returns false when winner already declared', async () => {
     const config = {
-      variantA: { subject: "A", body: "A" },
-      variantB: { subject: "B", body: "B" },
+      variantA: { subject: 'A', body: 'A' },
+      variantB: { subject: 'B', body: 'B' },
       splitRatio: 0.5,
-      winnerId: "A",
+      winnerId: 'A',
       testDurationHours: 24,
       startedAt: Math.floor(Date.now() / 1000) - 86400,
       endedAt: Math.floor(Date.now() / 1000),
@@ -183,14 +183,14 @@ describe("shouldRunABTestDecision", () => {
       pValue: 0.01,
     };
     mockExecuteSearchQuery.mockResolvedValueOnce([{ ab_test_config: JSON.stringify(config) }]);
-    const result = await shouldRunABTestDecision("campaign-1");
+    const result = await shouldRunABTestDecision('campaign-1');
     expect(result).toBe(false);
   });
 
-  it("returns false when test has not yet run long enough", async () => {
+  it('returns false when test has not yet run long enough', async () => {
     const config = {
-      variantA: { subject: "A", body: "A" },
-      variantB: { subject: "B", body: "B" },
+      variantA: { subject: 'A', body: 'A' },
+      variantB: { subject: 'B', body: 'B' },
       splitRatio: 0.5,
       winnerId: null,
       testDurationHours: 24,
@@ -201,7 +201,7 @@ describe("shouldRunABTestDecision", () => {
     };
     mockExecuteSearchQuery.mockResolvedValueOnce([{ ab_test_config: JSON.stringify(config) }]);
     mockExecuteSearchQuery.mockResolvedValueOnce([{ cnt: 5 }]);
-    const result = await shouldRunABTestDecision("campaign-1");
+    const result = await shouldRunABTestDecision('campaign-1');
     expect(result).toBe(false);
   });
 });

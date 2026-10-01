@@ -1,4 +1,4 @@
-import type { StoreApi } from "zustand";
+import type { StoreApi } from 'zustand';
 
 export interface EditorSlice<T, S = T> {
   showEditor: boolean;
@@ -16,11 +16,13 @@ export interface EditorSliceOptions<T, S = T> {
 }
 
 export function createEditorSlice<T, S = T>(
-  set: StoreApi<any>["setState"],
-  _get: StoreApi<any>["getState"],
+  set: StoreApi<any>['setState'],
+  _get: StoreApi<any>['getState'],
   options: EditorSliceOptions<T, S>,
 ): EditorSlice<T, S> {
-  const setState = (state: Partial<EditorSlice<T>> | ((state: EditorSlice<T>) => Partial<EditorSlice<T>>)) => set(state as any);
+  const setState = (
+    state: Partial<EditorSlice<T>> | ((state: EditorSlice<T>) => Partial<EditorSlice<T>>),
+  ) => set(state as any);
 
   return {
     showEditor: false,

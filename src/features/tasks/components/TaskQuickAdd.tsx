@@ -7,10 +7,10 @@
  * Mobile: compact version that slides in from the top.
  */
 
-import { useState, useCallback, useRef } from "react";
-import { Plus, ArrowUpRight } from "lucide-react";
-import { BTN_GHOST } from "@shared/styles/ui-tokens";
-import { TaskCreateModal } from "./TaskCreateModal";
+import { useState, useCallback, useRef } from 'react';
+import { Plus, ArrowUpRight } from 'lucide-react';
+import { BTN_GHOST } from '@shared/styles/ui-tokens';
+import { TaskCreateModal } from './TaskCreateModal';
 
 interface TaskQuickAddProps {
   /** Called when a task is created via quick-add (title only) */
@@ -27,9 +27,9 @@ export function TaskQuickAdd({
   onQuickAdd,
   onModalCreate,
   accountId,
-  placeholder = "Add a task...",
+  placeholder = 'Add a task...',
 }: TaskQuickAddProps) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
   const [showModal, setShowModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +37,7 @@ export function TaskQuickAdd({
     const trimmed = value.trim();
     if (!trimmed) return;
     onQuickAdd(trimmed);
-    setValue("");
+    setValue('');
     inputRef.current?.focus();
   }, [value, onQuickAdd]);
 
@@ -49,7 +49,7 @@ export function TaskQuickAdd({
   const handleModalCreated = useCallback(
     (taskId: string) => {
       setShowModal(false);
-      setValue("");
+      setValue('');
       onModalCreate(taskId);
     },
     [onModalCreate],
@@ -70,7 +70,7 @@ export function TaskQuickAdd({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               e.preventDefault();
               handleSubmit();
             }
@@ -99,7 +99,7 @@ export function TaskQuickAdd({
           accountId={accountId}
           prefill={{
             title: value.trim() || undefined,
-            source: "manual",
+            source: 'manual',
           }}
         />
       )}

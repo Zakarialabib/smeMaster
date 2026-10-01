@@ -1,8 +1,8 @@
-import { useTranslation } from "react-i18next";
-import { Monitor, Smartphone } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { useTranslation } from 'react-i18next';
+import { Monitor, Smartphone } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
-export type PreviewWidth = "desktop" | "mobile";
+export type PreviewWidth = 'desktop' | 'mobile';
 
 export interface WidthToggleProps {
   value: PreviewWidth;
@@ -12,8 +12,8 @@ export interface WidthToggleProps {
 export function WidthToggle({ value, onChange }: WidthToggleProps) {
   const { t } = useTranslation();
   const opts: { v: PreviewWidth; icon: React.ReactNode; label: string }[] = [
-    { v: "desktop", icon: <Monitor size={16} />, label: t("campaign.editor.desktop") },
-    { v: "mobile", icon: <Smartphone size={16} />, label: t("campaign.editor.mobile") },
+    { v: 'desktop', icon: <Monitor size={16} />, label: t('campaign.editor.desktop') },
+    { v: 'mobile', icon: <Smartphone size={16} />, label: t('campaign.editor.mobile') },
   ];
   return (
     <div className="inline-flex rounded-lg border border-border-primary bg-bg-tertiary p-0.5">
@@ -25,10 +25,8 @@ export function WidthToggle({ value, onChange }: WidthToggleProps) {
           aria-label={o.label}
           onClick={() => onChange(o.v)}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors",
-            value === o.v
-              ? "bg-accent text-white"
-              : "text-text-secondary hover:text-text-primary",
+            'flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors',
+            value === o.v ? 'bg-accent text-white' : 'text-text-secondary hover:text-text-primary',
           )}
         >
           {o.icon}

@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockCheck = vi.fn();
 
-vi.mock("@tauri-apps/plugin-updater", () => ({
+vi.mock('@tauri-apps/plugin-updater', () => ({
   check: (...args: unknown[]) => mockCheck(...args),
 }));
 
@@ -12,51 +12,51 @@ import {
   getAvailableUpdate,
   setUpdateCallback,
   _resetForTesting,
-} from "./updateManager";
+} from './updateManager';
 
 beforeEach(() => {
   _resetForTesting();
   mockCheck.mockReset();
 });
 
-describe("updateManager", () => {
-  it("returns null when no update is available", async () => {
+describe('updateManager', () => {
+  it('returns null when no update is available', async () => {
     mockCheck.mockResolvedValue(null);
     const result = await checkForUpdateNow();
     expect(result).toBeNull();
     expect(getAvailableUpdate()).toBeNull();
   });
 
-  it("returns update info when an update is available", async () => {
+  it('returns update info when an update is available', async () => {
     mockCheck.mockResolvedValue({
-      version: "1.2.3",
-      body: "Bug fixes",
+      version: '1.2.3',
+      body: 'Bug fixes',
       downloadAndInstall: vi.fn(),
     });
 
     const result = await checkForUpdateNow();
-    expect(result).toEqual({ version: "1.2.3", body: "Bug fixes" });
-    expect(getAvailableUpdate()).toEqual({ version: "1.2.3", body: "Bug fixes" });
+    expect(result).toEqual({ version: '1.2.3', body: 'Bug fixes' });
+    expect(getAvailableUpdate()).toEqual({ version: '1.2.3', body: 'Bug fixes' });
   });
 
-  it("invokes callback when update is found", async () => {
+  it('invokes callback when update is found', async () => {
     const cb = vi.fn();
     setUpdateCallback(cb);
 
     mockCheck.mockResolvedValue({
-      version: "2.0.0",
+      version: '2.0.0',
       body: null,
       downloadAndInstall: vi.fn(),
     });
 
     await checkForUpdateNow();
-    expect(cb).toHaveBeenCalledWith({ version: "2.0.0", body: null });
+    expect(cb).toHaveBeenCalledWith({ version: '2.0.0', body: null });
   });
 
-  it("installUpdate calls downloadAndInstall", async () => {
+  it('installUpdate calls downloadAndInstall', async () => {
     const mockDownloadAndInstall = vi.fn().mockResolvedValue(undefined);
     mockCheck.mockResolvedValue({
-      version: "1.0.1",
+      version: '1.0.1',
       body: null,
       downloadAndInstall: mockDownloadAndInstall,
     });
@@ -67,14 +67,14 @@ describe("updateManager", () => {
     expect(mockDownloadAndInstall).toHaveBeenCalled();
   });
 
-  it("installUpdate throws if no update available", async () => {
-    await expect(installUpdate()).rejects.toThrow("No update available");
+  it('installUpdate throws if no update available', async () => {
+    await expect(installUpdate()).rejects.toThrow('No update available');
   });
 
-  it("_resetForTesting clears state", async () => {
+  it('_resetForTesting clears state', async () => {
     mockCheck.mockResolvedValue({
-      version: "3.0.0",
-      body: "New features",
+      version: '3.0.0',
+      body: 'New features',
       downloadAndInstall: vi.fn(),
     });
     await checkForUpdateNow();

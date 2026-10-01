@@ -1,5 +1,5 @@
-import { callAi } from "./aiService";
-import type { WarmupPreset } from "@/constants/warmupPresets";
+import { callAi } from './aiService';
+import type { WarmupPreset } from '@/constants/warmupPresets';
 
 const WARMUP_GENERATION_PROMPT = `You are an email warmup content generator. Output ONLY valid JSON with no markdown, no code fences, no extra text.
 

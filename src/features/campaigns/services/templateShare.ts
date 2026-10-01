@@ -43,26 +43,27 @@ export function parseImportedTemplate(json: string): ExportedTemplate | null {
   try {
     const parsed = JSON.parse(json);
     if (
-      typeof parsed !== "object" ||
+      typeof parsed !== 'object' ||
       parsed === null ||
-      typeof parsed.version !== "number" ||
-      typeof parsed.name !== "string" ||
-      typeof parsed.body_html !== "string"
+      typeof parsed.version !== 'number' ||
+      typeof parsed.name !== 'string' ||
+      typeof parsed.body_html !== 'string'
     ) {
       return null;
     }
     return {
       version: parsed.version,
       name: parsed.name,
-      subject: typeof parsed.subject === "string" ? parsed.subject : null,
+      subject: typeof parsed.subject === 'string' ? parsed.subject : null,
       body_html: parsed.body_html,
-      shortcut: typeof parsed.shortcut === "string" ? parsed.shortcut : null,
-      category_name: typeof parsed.category_name === "string" ? parsed.category_name : null,
-      conditional_blocks_json: typeof parsed.conditional_blocks_json === "string" ? parsed.conditional_blocks_json : null,
-      usage_count: typeof parsed.usage_count === "number" ? parsed.usage_count : undefined,
+      shortcut: typeof parsed.shortcut === 'string' ? parsed.shortcut : null,
+      category_name: typeof parsed.category_name === 'string' ? parsed.category_name : null,
+      conditional_blocks_json:
+        typeof parsed.conditional_blocks_json === 'string' ? parsed.conditional_blocks_json : null,
+      usage_count: typeof parsed.usage_count === 'number' ? parsed.usage_count : undefined,
       last_used_at: parsed.last_used_at ?? undefined,
-      created_at: typeof parsed.created_at === "number" ? parsed.created_at : undefined,
-      exported_at: typeof parsed.exported_at === "number" ? parsed.exported_at : undefined,
+      created_at: typeof parsed.created_at === 'number' ? parsed.created_at : undefined,
+      exported_at: typeof parsed.exported_at === 'number' ? parsed.exported_at : undefined,
     };
   } catch {
     return null;
@@ -76,7 +77,7 @@ export function importFromFile(file: File): Promise<ExportedTemplate | null> {
       const text = reader.result as string;
       resolve(parseImportedTemplate(text));
     };
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsText(file);
   });
 }

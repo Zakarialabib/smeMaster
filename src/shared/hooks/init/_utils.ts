@@ -18,7 +18,7 @@ export async function withRetry<T>(
       // Outside a Tauri shell the backend will never appear, so retrying is
       // pointless and floods the dev console with warn lines. Fail fast with
       // the fallback (or rethrow) on the first attempt.
-      if (typeof err === "object" && err !== null && "isTauriUnavailable" in err) {
+      if (typeof err === 'object' && err !== null && 'isTauriUnavailable' in err) {
         if (fallbackValue !== undefined) return fallbackValue;
         throw err;
       }

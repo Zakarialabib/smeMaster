@@ -1,22 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Building2,
-  Plus,
-  Pencil,
-  X,
-  Save,
-  RefreshCw,
-  Check,
-} from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { SectionCard, InfoBanner } from "./erpShared";
-import {
-  listCompanies,
-  createCompany,
-  updateCompany,
-} from "@shared/services/db/invoke/invoicing";
-import type { Company } from "@shared/services/db/schema";
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Building2, Plus, Pencil, X, Save, RefreshCw, Check } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { SectionCard, InfoBanner } from './erpShared';
+import { listCompanies, createCompany, updateCompany } from '@shared/services/db/invoke/invoicing';
+import type { Company } from '@shared/services/db/schema';
 
 // ── Form field type ──────────────────────────────────────────────────────────
 
@@ -41,44 +29,44 @@ interface CompanyFormData {
 }
 
 const EMPTY_FORM: CompanyFormData = {
-  name: "",
-  legal_name: "",
-  email: "",
-  phone: "",
-  address_line1: "",
-  address_line2: "",
-  city: "",
-  state: "",
-  postal_code: "",
-  country: "Morocco",
-  website: "",
-  industry: "",
-  timezone: "Africa/Casablanca",
-  ice: "",
-  tax_id: "",
-  rc: "",
-  cnss: "",
+  name: '',
+  legal_name: '',
+  email: '',
+  phone: '',
+  address_line1: '',
+  address_line2: '',
+  city: '',
+  state: '',
+  postal_code: '',
+  country: 'Morocco',
+  website: '',
+  industry: '',
+  timezone: 'Africa/Casablanca',
+  ice: '',
+  tax_id: '',
+  rc: '',
+  cnss: '',
 };
 
 function companyToForm(c: Company): CompanyFormData {
   return {
     name: c.name,
-    legal_name: c.legal_name ?? "",
-    email: c.email ?? "",
-    phone: c.phone ?? "",
-    address_line1: c.address_line1 ?? "",
-    address_line2: c.address_line2 ?? "",
-    city: c.city ?? "",
-    state: c.state ?? "",
-    postal_code: c.postal_code ?? "",
-    country: c.country ?? "Morocco",
-    website: c.website ?? "",
-    industry: c.industry ?? "",
+    legal_name: c.legal_name ?? '',
+    email: c.email ?? '',
+    phone: c.phone ?? '',
+    address_line1: c.address_line1 ?? '',
+    address_line2: c.address_line2 ?? '',
+    city: c.city ?? '',
+    state: c.state ?? '',
+    postal_code: c.postal_code ?? '',
+    country: c.country ?? 'Morocco',
+    website: c.website ?? '',
+    industry: c.industry ?? '',
     timezone: c.timezone,
-    ice: c.ice ?? "",
-    tax_id: c.tax_id ?? "",
-    rc: c.rc ?? "",
-    cnss: c.cnss ?? "",
+    ice: c.ice ?? '',
+    tax_id: c.tax_id ?? '',
+    rc: c.rc ?? '',
+    cnss: c.cnss ?? '',
   };
 }
 
@@ -93,7 +81,7 @@ export default function CompanyManagementView() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CompanyFormData>(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
-  const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   // ── Data loading ───────────────────────────────────────────────────────
 
@@ -103,8 +91,8 @@ export default function CompanyManagementView() {
       const data = await listCompanies();
       setCompanies(data);
     } catch (err) {
-      console.error("Failed to load companies:", err);
-      showToast("error", "Failed to load companies");
+      console.error('Failed to load companies:', err);
+      showToast('error', 'Failed to load companies');
     } finally {
       setLoading(false);
     }
@@ -117,7 +105,7 @@ export default function CompanyManagementView() {
 
   // ── Toast ──────────────────────────────────────────────────────────────
 
-  const showToast = useCallback((type: "success" | "error", msg: string) => {
+  const showToast = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
     setTimeout(() => setToast(null), 3000);
   }, []);
@@ -131,7 +119,7 @@ export default function CompanyManagementView() {
   }, []);
 
   const handleNew = useCallback(() => {
-    setEditingId("__new__");
+    setEditingId('__new__');
     setForm(EMPTY_FORM);
     setCreating(true);
   }, []);
@@ -141,16 +129,13 @@ export default function CompanyManagementView() {
     setCreating(false);
   }, []);
 
-  const handleFieldChange = useCallback(
-    (field: keyof CompanyFormData, value: string) => {
-      setForm((prev) => ({ ...prev, [field]: value }));
-    },
-    [],
-  );
+  const handleFieldChange = useCallback((field: keyof CompanyFormData, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   const handleSave = useCallback(async () => {
     if (!form.name.trim()) {
-      showToast("error", "Company name is required");
+      showToast('error', 'Company name is required');
       return;
     }
     setSaving(true);
@@ -175,7 +160,7 @@ export default function CompanyManagementView() {
           rc: form.rc || null,
           cnss: form.cnss || null,
         });
-        showToast("success", "Company created");
+        showToast('success', 'Company created');
       } else if (editingId) {
         await updateCompany(editingId, {
           name: form.name.trim(),
@@ -196,14 +181,14 @@ export default function CompanyManagementView() {
           rc: form.rc || null,
           cnss: form.cnss || null,
         });
-        showToast("success", "Company updated");
+        showToast('success', 'Company updated');
       }
       setEditingId(null);
       setCreating(false);
       await load();
     } catch (err) {
-      console.error("Failed to save company:", err);
-      showToast("error", "Failed to save company");
+      console.error('Failed to save company:', err);
+      showToast('error', 'Failed to save company');
     } finally {
       setSaving(false);
     }
@@ -217,20 +202,16 @@ export default function CompanyManagementView() {
     placeholder?: string,
     opts?: { type?: string; className?: string; hint?: string },
   ) => (
-    <div className={opts?.className ?? "col-span-1"}>
-      <label className="block text-xs font-medium text-text-secondary mb-1">
-        {label}
-      </label>
+    <div className={opts?.className ?? 'col-span-1'}>
+      <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
       <input
-        type={opts?.type ?? "text"}
+        type={opts?.type ?? 'text'}
         value={form[field]}
         onChange={(e) => handleFieldChange(field, e.target.value)}
         placeholder={placeholder}
         className="w-full bg-bg-tertiary text-text-primary text-sm px-3 py-2 rounded-lg border border-border-primary outline-none focus:border-accent transition-colors"
       />
-      {opts?.hint && (
-        <p className="text-[10px] text-text-tertiary mt-0.5">{opts.hint}</p>
-      )}
+      {opts?.hint && <p className="text-[10px] text-text-tertiary mt-0.5">{opts.hint}</p>}
     </div>
   );
 
@@ -242,13 +223,13 @@ export default function CompanyManagementView() {
       {toast && (
         <div
           className={`fixed top-4 inset-inline-end-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium backdrop-blur-xl border transition-all ${
-            toast.type === "success"
-              ? "bg-success/10 text-success border-success/20"
-              : "bg-danger/10 text-danger border-danger/20"
+            toast.type === 'success'
+              ? 'bg-success/10 text-success border-success/20'
+              : 'bg-danger/10 text-danger border-danger/20'
           }`}
         >
           <div className="flex items-center gap-2">
-            {toast.type === "success" ? <Check size={16} /> : <X size={16} />}
+            {toast.type === 'success' ? <Check size={16} /> : <X size={16} />}
             {toast.msg}
           </div>
         </div>
@@ -259,10 +240,10 @@ export default function CompanyManagementView() {
         <div>
           <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
             <Building2 size={16} className="text-accent" />
-            {t("erp.companyManagement", "Company Management")}
+            {t('erp.companyManagement', 'Company Management')}
           </h3>
           <p className="text-xs text-text-tertiary mt-0.5">
-            {t("erp.companyManagementSub", "Manage your companies and Morocco DGI identifiers")}
+            {t('erp.companyManagementSub', 'Manage your companies and Morocco DGI identifiers')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -273,16 +254,11 @@ export default function CompanyManagementView() {
             onClick={load}
             disabled={loading}
           >
-            {t("common.refresh", "Refresh")}
+            {t('common.refresh', 'Refresh')}
           </Button>
           {!editingId && (
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Plus size={14} />}
-              onClick={handleNew}
-            >
-              {t("erp.addCompany", "Add Company")}
+            <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={handleNew}>
+              {t('erp.addCompany', 'Add Company')}
             </Button>
           )}
         </div>
@@ -298,7 +274,7 @@ export default function CompanyManagementView() {
       {/* Company list */}
       {!loading && companies.length === 0 && !editingId && (
         <InfoBanner>
-          {t("erp.noCompanies", "No companies yet. Add your first company to get started.")}
+          {t('erp.noCompanies', 'No companies yet. Add your first company to get started.')}
         </InfoBanner>
       )}
 
@@ -308,8 +284,8 @@ export default function CompanyManagementView() {
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-semibold text-text-primary">
               {creating
-                ? t("erp.createCompany", "Create Company")
-                : t("erp.editCompany", "Edit Company")}
+                ? t('erp.createCompany', 'Create Company')
+                : t('erp.editCompany', 'Edit Company')}
             </h4>
             <div className="flex items-center gap-2">
               <Button
@@ -320,10 +296,10 @@ export default function CompanyManagementView() {
                 loading={saving}
                 disabled={!form.name.trim() || saving}
               >
-                {t("common.save", "Save")}
+                {t('common.save', 'Save')}
               </Button>
               <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={handleCancel}>
-                {t("common.cancel", "Cancel")}
+                {t('common.cancel', 'Cancel')}
               </Button>
             </div>
           </div>
@@ -331,21 +307,27 @@ export default function CompanyManagementView() {
           {/* Form grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Basic info */}
-            {renderField("Company Name *", "name", "My Company SARL", { className: "md:col-span-2" })}
-            {renderField("Legal Name", "legal_name", "My Company SARL AU")}
-            {renderField("Email", "email", "contact@company.ma", { type: "email" })}
-            {renderField("Phone", "phone", "+212 5XX XX XX XX", { type: "tel" })}
-            {renderField("Website", "website", "https://company.ma")}
-            {renderField("Industry", "industry", "Technology")}
+            {renderField('Company Name *', 'name', 'My Company SARL', {
+              className: 'md:col-span-2',
+            })}
+            {renderField('Legal Name', 'legal_name', 'My Company SARL AU')}
+            {renderField('Email', 'email', 'contact@company.ma', { type: 'email' })}
+            {renderField('Phone', 'phone', '+212 5XX XX XX XX', { type: 'tel' })}
+            {renderField('Website', 'website', 'https://company.ma')}
+            {renderField('Industry', 'industry', 'Technology')}
 
             {/* Address */}
-            {renderField("Address Line 1", "address_line1", "123 Avenue Mohammed V", { className: "md:col-span-2" })}
-            {renderField("Address Line 2", "address_line2", "Etage 3, Appartement 6", { className: "md:col-span-2" })}
-            {renderField("City", "city", "Casablanca")}
-            {renderField("State / Region", "state", "Casablanca-Settat")}
-            {renderField("Postal Code", "postal_code", "20000")}
-            {renderField("Country", "country", "Morocco")}
-            {renderField("Timezone", "timezone", "Africa/Casablanca")}
+            {renderField('Address Line 1', 'address_line1', '123 Avenue Mohammed V', {
+              className: 'md:col-span-2',
+            })}
+            {renderField('Address Line 2', 'address_line2', 'Etage 3, Appartement 6', {
+              className: 'md:col-span-2',
+            })}
+            {renderField('City', 'city', 'Casablanca')}
+            {renderField('State / Region', 'state', 'Casablanca-Settat')}
+            {renderField('Postal Code', 'postal_code', '20000')}
+            {renderField('Country', 'country', 'Morocco')}
+            {renderField('Timezone', 'timezone', 'Africa/Casablanca')}
 
             {/* Morocco DGI identifiers */}
             <div className="md:col-span-3 border-t border-border-primary pt-4 mt-2">
@@ -353,17 +335,17 @@ export default function CompanyManagementView() {
                 Morocco DGI Identifiers
               </p>
             </div>
-            {renderField("ICE", "ice", "002315476000032", {
+            {renderField('ICE', 'ice', '002315476000032', {
               hint: "Identifiant Commun de l'Entreprise (15 digits)",
             })}
-            {renderField("Tax ID / IF", "tax_id", "12345678", {
-              hint: "Identifiant Fiscal",
+            {renderField('Tax ID / IF', 'tax_id', '12345678', {
+              hint: 'Identifiant Fiscal',
             })}
-            {renderField("RC", "rc", "123456", {
-              hint: "Registre de Commerce",
+            {renderField('RC', 'rc', '123456', {
+              hint: 'Registre de Commerce',
             })}
-            {renderField("CNSS", "cnss", "987654321", {
-              hint: "Caisse Nationale de Sécurité Sociale",
+            {renderField('CNSS', 'cnss', '987654321', {
+              hint: 'Caisse Nationale de Sécurité Sociale',
             })}
           </div>
         </SectionCard>
@@ -407,14 +389,10 @@ export default function CompanyManagementView() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-text-secondary font-mono text-xs">
-                      {c.ice ?? "—"}
+                      {c.ice ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {c.city ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      {c.industry ?? "—"}
-                    </td>
+                    <td className="px-4 py-3 text-text-secondary">{c.city ?? '—'}</td>
+                    <td className="px-4 py-3 text-text-secondary">{c.industry ?? '—'}</td>
                     <td className="px-4 py-3 text-end">
                       <Button
                         variant="ghost"
@@ -422,7 +400,7 @@ export default function CompanyManagementView() {
                         icon={<Pencil size={12} />}
                         onClick={() => handleEdit(c)}
                       >
-                        {t("common.edit", "Edit")}
+                        {t('common.edit', 'Edit')}
                       </Button>
                     </td>
                   </tr>

@@ -1,4 +1,4 @@
-import type { CalendarEventData, CreateEventInput, UpdateEventInput } from "./types";
+import type { CalendarEventData, CreateEventInput, UpdateEventInput } from './types';
 
 /**
  * Generate a VEVENT iCalendar string from event input.
@@ -8,10 +8,10 @@ export function generateVEvent(event: CreateEventInput | UpdateEventInput, uid?:
   const now = formatDateTimeUTC(new Date());
 
   const lines: string[] = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//SMEMaster Mail//CalDAV Client//EN",
-    "BEGIN:VEVENT",
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//SMEMaster Mail//CalDAV Client//EN',
+    'BEGIN:VEVENT',
     `UID:${eventUid}`,
     `DTSTAMP:${now}`,
   ];
@@ -38,16 +38,16 @@ export function generateVEvent(event: CreateEventInput | UpdateEventInput, uid?:
     lines.push(`LOCATION:${escapeICalText(event.location)}`);
   }
 
-  if ("attendees" in event && event.attendees) {
+  if ('attendees' in event && event.attendees) {
     for (const attendee of event.attendees) {
       lines.push(`ATTENDEE;RSVP=TRUE:mailto:${attendee.email}`);
     }
   }
 
-  lines.push("END:VEVENT");
-  lines.push("END:VCALENDAR");
+  lines.push('END:VEVENT');
+  lines.push('END:VCALENDAR');
 
-  return lines.join("\r\n");
+  return lines.join('\r\n');
 }
 
 /**
@@ -62,57 +62,57 @@ export function parseVEvent(icalData: string, href?: string): CalendarEventData 
   let location: string | null = null;
   let dtstart: string | null = null;
   let dtend: string | null = null;
-  let status = "confirmed";
+  let status = 'confirmed';
   let organizerEmail: string | null = null;
   let isAllDay = false;
   const attendees: { email: string; displayName?: string; responseStatus?: string }[] = [];
 
   for (const line of lines) {
-    const [nameWithParams, ...valueParts] = line.split(":");
+    const [nameWithParams, ...valueParts] = line.split(':');
     if (!nameWithParams) continue;
-    const value = valueParts.join(":");
-    const nameParts = nameWithParams.split(";");
+    const value = valueParts.join(':');
+    const nameParts = nameWithParams.split(';');
     const propName = nameParts[0]!.toUpperCase();
-    const params = nameParts.slice(1).join(";").toUpperCase();
+    const params = nameParts.slice(1).join(';').toUpperCase();
 
     switch (propName) {
-      case "UID":
+      case 'UID':
         uid = value;
         break;
-      case "SUMMARY":
+      case 'SUMMARY':
         summary = unescapeICalText(value);
         break;
-      case "DESCRIPTION":
+      case 'DESCRIPTION':
         description = unescapeICalText(value);
         break;
-      case "LOCATION":
+      case 'LOCATION':
         location = unescapeICalText(value);
         break;
-      case "DTSTART":
+      case 'DTSTART':
         dtstart = value;
-        if (params.includes("VALUE=DATE") && !params.includes("VALUE=DATE-TIME")) {
+        if (params.includes('VALUE=DATE') && !params.includes('VALUE=DATE-TIME')) {
           isAllDay = true;
         }
         break;
-      case "DTEND":
+      case 'DTEND':
         dtend = value;
         break;
-      case "STATUS":
+      case 'STATUS':
         status = value.toLowerCase();
         break;
-      case "ORGANIZER": {
+      case 'ORGANIZER': {
         const mailto = value.match(/mailto:(.+)/i);
         if (mailto) organizerEmail = mailto[1]!;
         break;
       }
-      case "ATTENDEE": {
+      case 'ATTENDEE': {
         const attendeeMailto = value.match(/mailto:(.+)/i);
         if (attendeeMailto) {
           const cnMatch = nameWithParams.match(/CN=([^;]+)/i);
           const statusMatch = nameWithParams.match(/PARTSTAT=([^;]+)/i);
           attendees.push({
             email: attendeeMailto[1]!,
-            displayName: cnMatch?.[1]?.replace(/^"(.*)"$/, "$1"),
+            displayName: cnMatch?.[1]?.replace(/^"(.*)"$/, '$1'),
             responseStatus: statusMatch?.[1]?.toLowerCase(),
           });
         }
@@ -144,35 +144,41 @@ export function parseVEvent(icalData: string, href?: string): CalendarEventData 
 
 /** Unfold continuation lines (RFC 5545 §3.1) */
 function unfoldLines(icalData: string): string[] {
-  const raw = icalData.replace(/\r\n[ \t]/g, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  return raw.split("\n").filter((l) => l.length > 0);
+  const raw = icalData
+    .replace(/\r\n[ \t]/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  return raw.split('\n').filter((l) => l.length > 0);
 }
 
 function formatDateTimeUTC(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
 }
 
 function formatDateOnly(date: Date): string {
   const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(date.getUTCDate()).padStart(2, "0");
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
   return `${y}${m}${d}`;
 }
 
 function escapeICalText(text: string): string {
   return text
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\n/g, "\\n");
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
 }
 
 function unescapeICalText(text: string): string {
   return text
-    .replace(/\\n/gi, "\n")
-    .replace(/\\,/g, ",")
-    .replace(/\\;/g, ";")
-    .replace(/\\\\/g, "\\");
+    .replace(/\\n/gi, '\n')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\');
 }
 
 function parseICalDateTime(value: string, isAllDay: boolean): number {
@@ -185,8 +191,8 @@ function parseICalDateTime(value: string, isAllDay: boolean): number {
   }
 
   // Format: YYYYMMDDTHHMMSS or YYYYMMDDTHHMMSSZ
-  const isUTC = value.endsWith("Z");
-  const cleaned = value.replace("Z", "");
+  const isUTC = value.endsWith('Z');
+  const cleaned = value.replace('Z', '');
   const y = parseInt(cleaned.substring(0, 4), 10);
   const m = parseInt(cleaned.substring(4, 6), 10) - 1;
   const d = parseInt(cleaned.substring(6, 8), 10);
@@ -194,10 +200,7 @@ function parseICalDateTime(value: string, isAllDay: boolean): number {
   const min = parseInt(cleaned.substring(11, 13), 10);
   const s = parseInt(cleaned.substring(13, 15), 10) || 0;
 
-  const date = isUTC
-    ? new Date(Date.UTC(y, m, d, h, min, s))
-    : new Date(y, m, d, h, min, s);
+  const date = isUTC ? new Date(Date.UTC(y, m, d, h, min, s)) : new Date(y, m, d, h, min, s);
 
   return Math.floor(date.getTime() / 1000);
 }
-

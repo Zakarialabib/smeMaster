@@ -1,4 +1,8 @@
-﻿import { getWarmingPlan as dbGetWarmingPlan, upsertWarmingPlan, logWarmingVolume } from "@features/deliverability/db/warming";
+﻿import {
+  getWarmingPlan as dbGetWarmingPlan,
+  upsertWarmingPlan,
+  logWarmingVolume,
+} from '@features/deliverability/db/warming';
 
 export interface WarmingPlan {
   id: string;
@@ -21,7 +25,17 @@ export interface WarmingProgress {
   percentageComplete: number;
 }
 
-function mapPlan(row: { id: string; account_id: string; enabled: number; start_volume: number; current_volume: number; target_volume: number; ramp_days: number; created_at: number; updated_at: number }): WarmingPlan {
+function mapPlan(row: {
+  id: string;
+  account_id: string;
+  enabled: number;
+  start_volume: number;
+  current_volume: number;
+  target_volume: number;
+  ramp_days: number;
+  created_at: number;
+  updated_at: number;
+}): WarmingPlan {
   return {
     id: row.id,
     accountId: row.account_id,
@@ -89,7 +103,12 @@ export async function getWarmingProgress(accountId: string): Promise<WarmingProg
   };
 }
 
-function computeVolume(start: number, target: number, daysElapsed: number, rampDays: number): number {
+function computeVolume(
+  start: number,
+  target: number,
+  daysElapsed: number,
+  rampDays: number,
+): number {
   const t = Math.min(1, daysElapsed / rampDays);
   return Math.round(start + (target - start) * t);
 }

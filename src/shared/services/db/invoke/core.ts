@@ -1864,5 +1864,3 @@ export async function cacheAttachmentDb(
 export async function executeInsert(table: string, record: Record<string, unknown>): Promise<void> {
   return invokeCommand<void>('db_execute_insert', { table, record });
 }
-
-

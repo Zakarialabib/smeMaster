@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { useConfigStore } from "@/stores/core";
-import { getSetting } from "@features/settings/db/settings";
-import { changeLanguage, SUPPORTED_LOCALES } from "@/locales";
-import type { SupportedLocale } from "@/locales";
+import { useEffect } from 'react';
+import { useConfigStore } from '@/stores/core';
+import { getSetting } from '@features/settings/db/settings';
+import { changeLanguage, SUPPORTED_LOCALES } from '@/locales';
+import type { SupportedLocale } from '@/locales';
 
 /**
  * Phase 2: Restore the persisted locale setting and apply it to i18n.
@@ -18,7 +18,7 @@ export function useI18nLocale(): void {
 
     async function initLocale() {
       try {
-        const savedLocale = await getSetting("locale");
+        const savedLocale = await getSetting('locale');
         if (cancelled || !savedLocale) return;
         if (SUPPORTED_LOCALES.includes(savedLocale as SupportedLocale)) {
           const locale = savedLocale as SupportedLocale;
@@ -28,10 +28,10 @@ export function useI18nLocale(): void {
       } catch (err) {
         // Outside a Tauri shell there is no settings table to read the
         // persisted locale from — fall back to the i18n default (en).
-        if (typeof err === "object" && err !== null && "isTauriUnavailable" in err) {
+        if (typeof err === 'object' && err !== null && 'isTauriUnavailable' in err) {
           return;
         }
-        console.warn("[init] Failed to restore locale:", err);
+        console.warn('[init] Failed to restore locale:', err);
       }
     }
 

@@ -9,7 +9,7 @@
  * unavailable (e.g. browser dev server) a clear empty state is shown instead
  * of fabricated data.
  */
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   RefreshCw,
   Server,
@@ -19,42 +19,39 @@ import {
   CheckCircle2,
   Loader2,
   Play,
-} from "lucide-react";
-import { useHealthStore } from "../stores/healthStore";
-import type { ServiceHealth } from "../stores/healthStore";
-import { restartSubsystem } from "@shared/services/db/invoke/crm";
-import { cn } from "@shared/utils/cn";
-import { Button } from "@shared/components/ui/Button";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { formatRelativeDate } from "@shared/utils/date";
+} from 'lucide-react';
+import { useHealthStore } from '../stores/healthStore';
+import type { ServiceHealth } from '../stores/healthStore';
+import { restartSubsystem } from '@shared/services/db/invoke/crm';
+import { cn } from '@shared/utils/cn';
+import { Button } from '@shared/components/ui/Button';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { formatRelativeDate } from '@shared/utils/date';
 
 // ── Status configuration ────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<
-  ServiceHealth["status"],
-  { dot: string; bg: string; label: string }
-> = {
+const STATUS_STYLES: Record<ServiceHealth['status'], { dot: string; bg: string; label: string }> = {
   running: {
-    dot: "bg-success",
-    bg: "bg-success/10",
-    label: "Running",
+    dot: 'bg-success',
+    bg: 'bg-success/10',
+    label: 'Running',
   },
   degraded: {
-    dot: "bg-warning",
-    bg: "bg-warning/10",
-    label: "Degraded",
+    dot: 'bg-warning',
+    bg: 'bg-warning/10',
+    label: 'Degraded',
   },
   stopped: {
-    dot: "bg-danger",
-    bg: "bg-danger/10",
-    label: "Stopped",
+    dot: 'bg-danger',
+    bg: 'bg-danger/10',
+    label: 'Stopped',
   },
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function formatUptime(ms: number | null): string {
-  if (ms === null) return "—";
+  if (ms === null) return '—';
   const seconds = Math.floor(ms / 1000);
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -66,9 +63,9 @@ function formatUptime(ms: number | null): string {
 
 function getSeverityCounts(services: ServiceHealth[]) {
   return {
-    running: services.filter((s) => s.status === "running").length,
-    degraded: services.filter((s) => s.status === "degraded").length,
-    stopped: services.filter((s) => s.status === "stopped").length,
+    running: services.filter((s) => s.status === 'running').length,
+    degraded: services.filter((s) => s.status === 'degraded').length,
+    stopped: services.filter((s) => s.status === 'stopped').length,
   };
 }
 
@@ -86,7 +83,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
       await restartSubsystem(service.id);
       await refresh();
     } catch (err) {
-      console.error("Failed to restart subsystem:", err);
+      console.error('Failed to restart subsystem:', err);
     } finally {
       setRestarting(false);
     }
@@ -95,31 +92,25 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
   return (
     <div
       className={cn(
-        "rounded-xl border p-4 transition-all duration-200 hover:shadow-sm",
-        service.status === "stopped"
-          ? "border-danger/20 bg-danger/[0.02]"
-          : service.status === "degraded"
-            ? "border-warning/20 bg-warning/[0.02]"
-            : "border-border-primary bg-bg-secondary/50",
+        'rounded-xl border p-4 transition-all duration-200 hover:shadow-sm',
+        service.status === 'stopped'
+          ? 'border-danger/20 bg-danger/[0.02]'
+          : service.status === 'degraded'
+            ? 'border-warning/20 bg-warning/[0.02]'
+            : 'border-border-primary bg-bg-secondary/50',
       )}
     >
       {/* Header row */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className={cn("p-1.5 rounded-lg shrink-0", style.bg)}>
+          <div className={cn('p-1.5 rounded-lg shrink-0', style.bg)}>
             <Server size={14} className="text-text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-text-primary truncate">
-              {service.name}
-            </p>
+            <p className="text-sm font-medium text-text-primary truncate">{service.name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className={cn("w-1.5 h-1.5 rounded-full", style.dot)}
-              />
-              <span className="text-[10px] text-text-tertiary">
-                {style.label}
-              </span>
+              <span className={cn('w-1.5 h-1.5 rounded-full', style.dot)} />
+              <span className="text-[10px] text-text-tertiary">{style.label}</span>
             </div>
           </div>
         </div>
@@ -144,9 +135,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
             <Clock size={10} className="shrink-0" />
             Uptime
           </span>
-          <span className="text-text-secondary font-mono">
-            {formatUptime(service.uptimeMs)}
-          </span>
+          <span className="text-text-secondary font-mono">{formatUptime(service.uptimeMs)}</span>
         </div>
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-text-tertiary flex items-center gap-1">
@@ -154,9 +143,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
             Last heartbeat
           </span>
           <span className="text-text-secondary font-mono">
-            {service.lastHeartbeat
-              ? formatRelativeDate(service.lastHeartbeat)
-              : "—"}
+            {service.lastHeartbeat ? formatRelativeDate(service.lastHeartbeat) : '—'}
           </span>
         </div>
       </div>
@@ -204,10 +191,10 @@ export default function HealthDashboard() {
         {/* Master status bar */}
         <div
           className={cn(
-            "flex items-center justify-between rounded-xl border px-4 py-3 mb-4",
+            'flex items-center justify-between rounded-xl border px-4 py-3 mb-4',
             allRunning && services.length > 0
-              ? "border-success/20 bg-success/[0.02]"
-              : "border-warning/20 bg-warning/[0.02]",
+              ? 'border-success/20 bg-success/[0.02]'
+              : 'border-warning/20 bg-warning/[0.02]',
           )}
         >
           <div className="flex items-center gap-3">
@@ -219,24 +206,18 @@ export default function HealthDashboard() {
             <div>
               <p className="text-sm font-medium text-text-primary">
                 {showEmptyState
-                  ? "Service status unavailable"
+                  ? 'Service status unavailable'
                   : allRunning
-                    ? "All systems running"
-                    : `${degradedCount} service${degradedCount > 1 ? "s" : ""} degraded`}
+                    ? 'All systems running'
+                    : `${degradedCount} service${degradedCount > 1 ? 's' : ''} degraded`}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-text-tertiary">
-                  {counts.running} running
-                </span>
+                <span className="text-[10px] text-text-tertiary">{counts.running} running</span>
                 {counts.degraded > 0 && (
-                  <span className="text-[10px] text-warning">
-                    {counts.degraded} degraded
-                  </span>
+                  <span className="text-[10px] text-warning">{counts.degraded} degraded</span>
                 )}
                 {counts.stopped > 0 && (
-                  <span className="text-[10px] text-danger">
-                    {counts.stopped} stopped
-                  </span>
+                  <span className="text-[10px] text-danger">{counts.stopped} stopped</span>
                 )}
               </div>
             </div>
@@ -256,10 +237,7 @@ export default function HealthDashboard() {
               className="shrink-0"
               aria-label="Refresh service status"
             >
-              <RefreshCw
-                size={14}
-                className={cn(loading && "animate-spin")}
-              />
+              <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
               <span className="ms-1 hidden sm:inline">Refresh</span>
             </Button>
           </div>
@@ -276,8 +254,8 @@ export default function HealthDashboard() {
             <Server size={20} className="opacity-50" />
             <span className="text-xs">
               {backendAvailable
-                ? "No background services are currently reporting status."
-                : "Service health is available in the desktop app."}
+                ? 'No background services are currently reporting status.'
+                : 'Service health is available in the desktop app.'}
             </span>
           </div>
         ) : (

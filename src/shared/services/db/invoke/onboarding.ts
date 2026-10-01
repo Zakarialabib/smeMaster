@@ -2,15 +2,19 @@
 import { invokeCommand } from './command';
 
 export async function saveOnboardingStep(step: number, data: string): Promise<void> {
-  await invokeCommand("db_save_onboarding_step", { step, data });
+  await invokeCommand('db_save_onboarding_step', { step, data });
 }
 
 export async function getOnboardingProgress(): Promise<[number, string]> {
-  return await invokeCommand<[number, string]>("db_get_onboarding_progress", {});
+  return await invokeCommand<[number, string]>('db_get_onboarding_progress', {});
 }
 
-export async function seedDemoPreset(preset: string, businessName: string, theme: string): Promise<string> {
-  return await invokeCommand<string>("db_seed_demo_preset", { preset, businessName, theme });
+export async function seedDemoPreset(
+  preset: string,
+  businessName: string,
+  theme: string,
+): Promise<string> {
+  return await invokeCommand<string>('db_seed_demo_preset', { preset, businessName, theme });
 }
 
 export async function finalizeOnboarding(params: {
@@ -23,11 +27,11 @@ export async function finalizeOnboarding(params: {
   enableAi: boolean;
   hasConnectedEmail: boolean;
 }): Promise<void> {
-  await invokeCommand("db_finalize_onboarding", params);
+  await invokeCommand('db_finalize_onboarding', params);
 }
 
 export async function hasEmailAccounts(): Promise<boolean> {
-  return await invokeCommand<boolean>("db_has_email_accounts", {});
+  return await invokeCommand<boolean>('db_has_email_accounts', {});
 }
 
 /**
@@ -39,9 +43,9 @@ export async function hasEmailAccounts(): Promise<boolean> {
  * preset seeding via `seedDemoPreset` is unaffected.
  */
 export async function setDemoDataEnabled(enabled: boolean): Promise<void> {
-  await invokeCommand("db_set_demo_data_enabled", { enabled });
+  await invokeCommand('db_set_demo_data_enabled', { enabled });
 }
 
 export async function getToolStatus(): Promise<Record<string, boolean>> {
-  return await invokeCommand<Record<string, boolean>>("db_get_tool_status", {});
+  return await invokeCommand<Record<string, boolean>>('db_get_tool_status', {});
 }

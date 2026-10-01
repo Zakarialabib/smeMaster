@@ -8,7 +8,7 @@ export interface DashboardWidgetConfig {
   order: number;
 }
 
-export type DashboardDensity = "comfortable" | "compact";
+export type DashboardDensity = 'comfortable' | 'compact';
 
 export const DASHBOARD_RANGE_OPTIONS = [7, 30, 90] as const;
 export type DashboardRangeDays = (typeof DASHBOARD_RANGE_OPTIONS)[number];
@@ -50,7 +50,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   widgets: DEFAULT_WIDGETS,
   loaded: false,
   rangeDays: 30,
-  density: "comfortable",
+  density: 'comfortable',
 
   loadPreferences: async () => {
     try {
@@ -63,7 +63,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
             rangeDays: DASHBOARD_RANGE_OPTIONS.includes(parsed.rangeDays as DashboardRangeDays)
               ? (parsed.rangeDays as DashboardRangeDays)
               : 30,
-            density: parsed.density === "compact" ? "compact" : "comfortable",
+            density: parsed.density === 'compact' ? 'compact' : 'comfortable',
             loaded: true,
           });
           return;

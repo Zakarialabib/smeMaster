@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X } from 'lucide-react';
 
 export interface ActiveFilter {
   id: string;
@@ -38,7 +38,7 @@ export function FilterChipBar({ filters, onClearAll }: FilterChipBarProps) {
                   backgroundColor: `${f.color}20`,
                   color: f.color,
                 }
-              : { backgroundColor: "var(--color-accent, #3b82f6)20" }
+              : { backgroundColor: 'var(--color-accent, #3b82f6)20' }
           }
         >
           {f.label}

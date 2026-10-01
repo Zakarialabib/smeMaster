@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export interface PairingToken {
   token: string;
@@ -18,13 +18,13 @@ export interface PairedDevice {
 }
 
 export async function generateToken(deviceName: string): Promise<PairingToken> {
-  return invokeCommand<PairingToken>("generate_qr_token", { deviceName });
+  return invokeCommand<PairingToken>('generate_qr_token', { deviceName });
 }
 
 export async function verifyToken(token: string, deviceType: string): Promise<PairedDevice> {
-  return invokeCommand<PairedDevice>("verify_device_token", { token, deviceType });
+  return invokeCommand<PairedDevice>('verify_device_token', { token, deviceType });
 }
 
 export async function getQrPayload(token: PairingToken): Promise<string> {
-  return invokeCommand<string>("get_qr_payload", { token });
+  return invokeCommand<string>('get_qr_payload', { token });
 }

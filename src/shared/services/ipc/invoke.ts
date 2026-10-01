@@ -15,14 +15,20 @@
  *   // ^-- automatically logged to backend buffer
  */
 
-import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import { logger } from "@shared/services/logger";
-import { TauriCommands, type CommandName, type CommandParams, type CommandResult, type SubsystemStatusResponse } from "./CommandRegistry";
-import { isTauriEnvironment, TauriUnavailableError } from "./environment";
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { logger } from '@shared/services/logger';
+import {
+  TauriCommands,
+  type CommandName,
+  type CommandParams,
+  type CommandResult,
+  type SubsystemStatusResponse,
+} from './CommandRegistry';
+import { isTauriEnvironment, TauriUnavailableError } from './environment';
 
 // Re-export environment helpers so consumers can import everything IPC-related
 // from a single module ("@shared/services/ipc").
-export { isTauriEnvironment, TauriUnavailableError } from "./environment";
+export { isTauriEnvironment, TauriUnavailableError } from './environment';
 
 // Re-export types for convenience
 export type { CommandName, CommandParams, CommandResult };
@@ -39,26 +45,26 @@ const DEFAULT_TIMEOUT_MS = 30_000;
  * These will be redacted in logs.
  */
 const SENSITIVE_COMMANDS: ReadonlySet<string> = new Set([
-  "store_secure_data",
-  "get_secure_data",
-  "activate_license",
-  "validate_license",
+  'store_secure_data',
+  'get_secure_data',
+  'activate_license',
+  'validate_license',
 ]);
 
 /**
  * Redact sensitive fields from a payload before logging.
  */
 function redactPayload(command: string, payload: unknown): unknown {
-  if (!SENSITIVE_COMMANDS.has(command) || !payload || typeof payload !== "object") {
+  if (!SENSITIVE_COMMANDS.has(command) || !payload || typeof payload !== 'object') {
     return payload;
   }
 
   const p = payload as Record<string, unknown>;
   const redacted = { ...p };
 
-  for (const key of ["data", "value", "key", "license_key", "password"]) {
+  for (const key of ['data', 'value', 'key', 'license_key', 'password']) {
     if (key in redacted) {
-      redacted[key] = "<redacted>";
+      redacted[key] = '<redacted>';
     }
   }
 
@@ -122,17 +128,13 @@ export async function invoke<C extends CommandName>(
   params: CommandParams<C>,
   options: InvokeOptions = {},
 ): Promise<CommandResult<C>> {
-  const {
-    log: shouldLog = true,
-    silent = false,
-    timeoutMs = DEFAULT_TIMEOUT_MS,
-  } = options;
+  const { log: shouldLog = true, silent = false, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
 
   const startTime = performance.now();
   const redactedParams = redactPayload(command, params);
 
   if (shouldLog) {
-    logger.debug(`IPC → ${command}`, "ipc", redactedParams);
+    logger.debug(`IPC → ${command}`, 'ipc', redactedParams);
   }
 
   try {
@@ -145,14 +147,13 @@ export async function invoke<C extends CommandName>(
       throw new TauriUnavailableError(command);
     }
 
-    if (typeof tauriInvoke !== "function") {
+    if (typeof tauriInvoke !== 'function') {
       throw new Error(`Tauri invoke is not available in this environment. Attempted: ${command}`);
     }
 
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(
-        () =>
-          reject(new Error(`IPC timeout after ${timeoutMs}ms: ${command}`)),
+        () => reject(new Error(`IPC timeout after ${timeoutMs}ms: ${command}`)),
         timeoutMs,
       );
     });
@@ -165,7 +166,7 @@ export async function invoke<C extends CommandName>(
     const elapsed = Math.round(performance.now() - startTime);
 
     if (shouldLog) {
-      logger.debug(`IPC ← ${command} (${elapsed}ms)`, "ipc", { elapsed });
+      logger.debug(`IPC ← ${command} (${elapsed}ms)`, 'ipc', { elapsed });
     }
 
     return result;
@@ -179,26 +180,27 @@ export async function invoke<C extends CommandName>(
     // this branch can never fire. Skipping the log avoids flooding the dev
     // console with false ERROR lines and a futile `log_error_command`
     // round-trip that would itself fail.
-    const isUnavailable =
-      typeof err === "object" && err !== null && "isTauriUnavailable" in err;
+    const isUnavailable = typeof err === 'object' && err !== null && 'isTauriUnavailable' in err;
 
     if (!isUnavailable) {
       // Always log errors to the backend (even when shouldLog=false for other levels)
       // This is critical for the Logs tab in Developer settings.
-      logger.error(
-        `IPC ✗ ${command} (${elapsed}ms): ${errorMessage}`,
-        "ipc",
-        {
-          command,
-          params: redactedParams,
-          elapsed,
-          error: err instanceof Error
+      logger.error(`IPC ✗ ${command} (${elapsed}ms): ${errorMessage}`, 'ipc', {
+        command,
+        params: redactedParams,
+        elapsed,
+        error:
+          err instanceof Error
             ? { name: err.name, message: err.message, stack: err.stack }
             : typeof err === 'object' && err !== null
-              ? Object.fromEntries(Object.entries(err as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'string' ? v : JSON.stringify(v)]))
+              ? Object.fromEntries(
+                  Object.entries(err as Record<string, unknown>).map(([k, v]) => [
+                    k,
+                    typeof v === 'string' ? v : JSON.stringify(v),
+                  ]),
+                )
               : { value: String(err) },
-        },
-      );
+      });
 
       if (!silent) {
         console.error(`[IPC] ${command} failed:`, err);
@@ -239,7 +241,7 @@ export async function safeInvoke<C extends CommandName>(
  * Returns an array of SubsystemStatusResponse objects.
  */
 export async function getSubsystemStatus(): Promise<SubsystemStatusResponse[]> {
-  return invoke("get_subsystem_status", {});
+  return invoke('get_subsystem_status', {});
 }
 
 /**
@@ -247,7 +249,7 @@ export async function getSubsystemStatus(): Promise<SubsystemStatusResponse[]> {
  * Called when the frontend onboarding wizard completes.
  */
 export async function completeOnboarding(): Promise<void> {
-  return invoke("complete_onboarding", {});
+  return invoke('complete_onboarding', {});
 }
 
 /**
@@ -255,7 +257,7 @@ export async function completeOnboarding(): Promise<void> {
  * Returns a list of (tool_id, enabled) tuples.
  */
 export async function getToolState(): Promise<[string, boolean][]> {
-  return invoke("get_tool_state", {});
+  return invoke('get_tool_state', {});
 }
 
 /**
@@ -263,7 +265,7 @@ export async function getToolState(): Promise<[string, boolean][]> {
  * Takes a list of (tool_id, enabled) tuples and updates the registry.
  */
 export async function applyToolState(updates: [string, boolean][]): Promise<void> {
-  return invoke("apply_tool_state", { updates });
+  return invoke('apply_tool_state', { updates });
 }
 
 /**
@@ -281,4 +283,3 @@ export function hasCommand(command: string): command is CommandName {
 export function listCommands(): CommandName[] {
   return Object.keys(TauriCommands) as CommandName[];
 }
-

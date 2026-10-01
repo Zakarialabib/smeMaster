@@ -1,7 +1,11 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { MessageSquarePlus, Zap, ChevronDown, ChevronRight } from "lucide-react";
-import { getQuickReplies, incrementQuickReplyUsage, type DbQuickReply } from "@features/mail/db/quickReplies";
+﻿import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MessageSquarePlus, Zap, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  getQuickReplies,
+  incrementQuickReplyUsage,
+  type DbQuickReply,
+} from '@features/mail/db/quickReplies';
 
 interface QuickReplyListProps {
   accountId: string;
@@ -23,10 +27,13 @@ export function QuickReplyList({ accountId, onInsert }: QuickReplyListProps) {
     if (expanded) load();
   }, [expanded, load]);
 
-  const handleInsert = useCallback(async (qr: DbQuickReply) => {
-    onInsert(qr.body_html, qr.title);
-    await incrementQuickReplyUsage(qr.id).catch(() => {});
-  }, [onInsert]);
+  const handleInsert = useCallback(
+    async (qr: DbQuickReply) => {
+      onInsert(qr.body_html, qr.title);
+      await incrementQuickReplyUsage(qr.id).catch(() => {});
+    },
+    [onInsert],
+  );
 
   if (quickReplies.length === 0 && !expanded) return null;
 
@@ -38,14 +45,14 @@ export function QuickReplyList({ accountId, onInsert }: QuickReplyListProps) {
       >
         {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         <MessageSquarePlus size={13} />
-        {t("quickReply.title")}
+        {t('quickReply.title')}
       </button>
 
       {expanded && (
         <div className="px-2 pb-2 space-y-0.5">
           {quickReplies.length === 0 ? (
             <p className="text-xs text-text-tertiary px-2 py-2">
-              {t("quickReply.noReplies")}. {t("quickReply.createInSettings")}
+              {t('quickReply.noReplies')}. {t('quickReply.createInSettings')}
             </p>
           ) : (
             quickReplies.map((qr) => (
@@ -69,4 +76,3 @@ export function QuickReplyList({ accountId, onInsert }: QuickReplyListProps) {
     </div>
   );
 }
-

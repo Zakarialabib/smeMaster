@@ -113,9 +113,34 @@ describe('TranscriptSocket', () => {
     const s = FakeSocket.instances[0]!;
     s.accept();
     s.emit({ type: 'state', sessionId: '01JABC', state: 'listening', at: 'now' });
-    s.emit({ type: 'delta', callId: 'x', turnId: 1, seq: 1, role: 'caller', text: 'bonjour', final: true, at: 'now' });
-    s.emit({ type: 'stages', callId: 'x', turnId: 1, vadMs: 1, sttMs: 2, llmMs: 3, ttsMs: 4, turnGapMs: 5, at: 'now' });
-    s.emit({ type: 'meta', callId: 'x', locale: 'fr', fallbackActive: false, chainTier: 'standard' });
+    s.emit({
+      type: 'delta',
+      callId: 'x',
+      turnId: 1,
+      seq: 1,
+      role: 'caller',
+      text: 'bonjour',
+      final: true,
+      at: 'now',
+    });
+    s.emit({
+      type: 'stages',
+      callId: 'x',
+      turnId: 1,
+      vadMs: 1,
+      sttMs: 2,
+      llmMs: 3,
+      ttsMs: 4,
+      turnGapMs: 5,
+      at: 'now',
+    });
+    s.emit({
+      type: 'meta',
+      callId: 'x',
+      locale: 'fr',
+      fallbackActive: false,
+      chainTier: 'standard',
+    });
     s.emit({ type: 'closed', callId: 'x', outcome: 'resolved', at: 'now' });
     expect(Object.keys(got).sort()).toEqual(['closed', 'delta', 'meta', 'stages', 'state']);
   });

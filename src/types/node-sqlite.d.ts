@@ -1,4 +1,4 @@
-declare module "node:sqlite" {
+declare module 'node:sqlite' {
   interface DatabaseSync {
     prepare(sql: string): StatementSync;
     exec(sql: string): void;

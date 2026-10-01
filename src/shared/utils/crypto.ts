@@ -4,10 +4,10 @@
  * via Tauri's filesystem in the app data directory.
  */
 
-import { exists, readTextFile, writeTextFile, mkdir, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { exists, readTextFile, writeTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 
-const KEY_FILE_NAME = "smemaster.key";
-const ALGORITHM = "AES-GCM";
+const KEY_FILE_NAME = 'smemaster.key';
+const ALGORITHM = 'AES-GCM';
 const KEY_LENGTH = 256;
 const IV_LENGTH = 12;
 const FS_OPTIONS = { baseDir: BaseDirectory.AppData };
@@ -15,7 +15,7 @@ const FS_OPTIONS = { baseDir: BaseDirectory.AppData };
 let cachedKey: CryptoKey | null = null;
 
 function base64Encode(bytes: Uint8Array): string {
-  let binary = "";
+  let binary = '';
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
@@ -33,7 +33,7 @@ function base64Decode(str: string): Uint8Array {
 
 async function ensureAppDataDir(): Promise<void> {
   try {
-    await mkdir("", { ...FS_OPTIONS, recursive: true });
+    await mkdir('', { ...FS_OPTIONS, recursive: true });
   } catch {
     // directory may already exist
   }
@@ -64,11 +64,11 @@ async function getOrCreateKey(): Promise<CryptoKey> {
 
   const rawKey = base64Decode(rawKeyB64);
   cachedKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     asBufferSource(rawKey),
     { name: ALGORITHM },
     false,
-    ["encrypt", "decrypt"],
+    ['encrypt', 'decrypt'],
   );
 
   return cachedKey;
@@ -103,13 +103,13 @@ export async function encryptValue(plaintext: string): Promise<string> {
 export async function decryptValue(encrypted: string): Promise<string> {
   const key = await getOrCreateKey();
 
-  const parts = encrypted.split(":");
+  const parts = encrypted.split(':');
   if (parts.length !== 2) {
-    throw new Error("Invalid encrypted value format");
+    throw new Error('Invalid encrypted value format');
   }
   const [ivB64, ciphertextB64] = parts;
   if (!ivB64 || !ciphertextB64) {
-    throw new Error("Invalid encrypted value format");
+    throw new Error('Invalid encrypted value format');
   }
 
   const iv = base64Decode(ivB64);
@@ -129,7 +129,7 @@ export async function decryptValue(encrypted: string): Promise<string> {
  * Check if a value looks like it's already encrypted (base64:base64 format).
  */
 export function isEncrypted(value: string): boolean {
-  const parts = value.split(":");
+  const parts = value.split(':');
   if (parts.length !== 2) return false;
   try {
     atob(parts[0]!);
@@ -140,4 +140,3 @@ export function isEncrypted(value: string): boolean {
     return false;
   }
 }
-

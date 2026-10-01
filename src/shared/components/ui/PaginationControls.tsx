@@ -20,8 +20,8 @@
  * ```
  */
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -122,10 +122,10 @@ export function PaginationControls({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           className={cn(
-            "flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs transition-colors",
+            'flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs transition-colors',
             currentPage <= 1
-              ? "opacity-30 cursor-not-allowed text-text-tertiary"
-              : "bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
+              ? 'opacity-30 cursor-not-allowed text-text-tertiary'
+              : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary',
           )}
           aria-label="Previous page"
         >
@@ -154,13 +154,13 @@ export function PaginationControls({
               onClick={() => onPageChange(page)}
               disabled={isCurrent}
               className={cn(
-                "flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs font-medium transition-colors",
+                'flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs font-medium transition-colors',
                 isCurrent
-                  ? "bg-accent text-white cursor-default"
-                  : "bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
+                  ? 'bg-accent text-white cursor-default'
+                  : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary',
               )}
               aria-label={`Page ${page}`}
-              aria-current={isCurrent ? "page" : undefined}
+              aria-current={isCurrent ? 'page' : undefined}
             >
               {page}
             </button>
@@ -173,10 +173,10 @@ export function PaginationControls({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
           className={cn(
-            "flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs transition-colors",
+            'flex items-center justify-center min-w-8 min-h-[36px] h-9 rounded-md text-xs transition-colors',
             currentPage >= totalPages
-              ? "opacity-30 cursor-not-allowed text-text-tertiary"
-              : "bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary",
+              ? 'opacity-30 cursor-not-allowed text-text-tertiary'
+              : 'bg-bg-tertiary text-text-secondary hover:bg-bg-secondary hover:text-text-primary',
           )}
           aria-label="Next page"
         >

@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
@@ -34,7 +34,6 @@ export interface UpdateHistoryEntry {
   date: Date;
   success: boolean;
 }
-
 
 // ── Constants ──────────────────────────────────────────────────────────
 
@@ -221,7 +220,7 @@ class UpdaterService {
           if (totalBytes > 0) {
             this.state.downloadProgress = Math.min(
               0.99,
-              this.state.downloadProgress + (data.chunkLength ?? 0 / totalBytes)
+              this.state.downloadProgress + (data.chunkLength ?? 0 / totalBytes),
             );
           }
           this.progressCallbacks.forEach((cb) => cb(this.state.downloadProgress));
@@ -291,10 +290,7 @@ class UpdaterService {
       await invokeCommand('mark_successful_launch', {});
     } catch {
       // Fallback: write directly to the durable store
-      void tauriStoreStorage.setItem(
-        STORAGE_KEY_LAST_VERSION,
-        this.getAppVersion(),
-      );
+      void tauriStoreStorage.setItem(STORAGE_KEY_LAST_VERSION, this.getAppVersion());
     }
   }
 
@@ -409,7 +405,7 @@ class UpdaterService {
             signature: '',
           };
           this.notifyStateChange();
-        }
+        },
       );
       this.unlisteners.push(unlistenAvailable);
 
@@ -422,7 +418,7 @@ class UpdaterService {
           }
           this.progressCallbacks.forEach((cb) => cb(this.state.downloadProgress));
           this.notifyStateChange();
-        }
+        },
       );
       this.unlisteners.push(unlistenProgress);
 

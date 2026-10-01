@@ -1,4 +1,4 @@
-﻿import { DAVClient, type DAVCalendar, type DAVObject } from "tsdav";
+﻿import { DAVClient, type DAVCalendar, type DAVObject } from 'tsdav';
 import type {
   CalendarProvider,
   CalendarProviderType,
@@ -7,12 +7,12 @@ import type {
   CalendarSyncResult,
   CreateEventInput,
   UpdateEventInput,
-} from "./types";
-import { generateVEvent, parseVEvent } from "./icalHelper";
-import { getAccount } from "@features/accounts/db/accounts";
+} from './types';
+import { generateVEvent, parseVEvent } from './icalHelper';
+import { getAccount } from '@features/accounts/db/accounts';
 
 export class CalDAVProvider implements CalendarProvider {
-  readonly type: CalendarProviderType = "caldav";
+  readonly type: CalendarProviderType = 'caldav';
   private client: DAVClient | null = null;
 
   constructor(readonly accountId: string) {}
@@ -21,21 +21,21 @@ export class CalDAVProvider implements CalendarProvider {
     if (this.client) return this.client;
 
     const account = await getAccount(this.accountId);
-    if (!account) throw new Error("Account not found");
+    if (!account) throw new Error('Account not found');
 
     const serverUrl = account.caldav_url;
     const username = account.caldav_username ?? account.email;
     const password = account.caldav_password;
 
     if (!serverUrl || !password) {
-      throw new Error("CalDAV credentials not configured");
+      throw new Error('CalDAV credentials not configured');
     }
 
     this.client = new DAVClient({
       serverUrl,
       credentials: { username, password },
-      authMethod: "Basic",
-      defaultAccountType: "caldav",
+      authMethod: 'Basic',
+      defaultAccountType: 'caldav',
     });
 
     await this.client.login();
@@ -48,13 +48,17 @@ export class CalDAVProvider implements CalendarProvider {
 
     return calendars.map((cal, index) => ({
       remoteId: cal.url,
-      displayName: typeof cal.displayName === "string" ? cal.displayName : `Calendar ${index + 1}`,
+      displayName: typeof cal.displayName === 'string' ? cal.displayName : `Calendar ${index + 1}`,
       color: extractCalendarColor(cal) ?? null,
       isPrimary: index === 0,
     }));
   }
 
-  async fetchEvents(calendarRemoteId: string, timeMin: string, timeMax: string): Promise<CalendarEventData[]> {
+  async fetchEvents(
+    calendarRemoteId: string,
+    timeMin: string,
+    timeMax: string,
+  ): Promise<CalendarEventData[]> {
     const client = await this.getClient();
 
     const objects = await client.fetchCalendarObjects({
@@ -105,12 +109,12 @@ export class CalDAVProvider implements CalendarProvider {
     });
 
     const existing = objects[0];
-    if (!existing?.data) throw new Error("Event not found on server");
+    if (!existing?.data) throw new Error('Event not found on server');
 
     // Parse existing, merge updates, regenerate
     const parsed = parseVEvent(existing.data, remoteEventId);
     const merged: CreateEventInput = {
-      summary: event.summary ?? parsed.summary ?? "",
+      summary: event.summary ?? parsed.summary ?? '',
       description: event.description ?? parsed.description ?? undefined,
       location: event.location ?? parsed.location ?? undefined,
       startTime: event.startTime ?? new Date(parsed.startTime * 1000).toISOString(),
@@ -121,7 +125,7 @@ export class CalDAVProvider implements CalendarProvider {
     const icalData = generateVEvent(merged, parsed.uid ?? undefined);
 
     const headers: Record<string, string> = {};
-    if (etag) headers["If-Match"] = etag;
+    if (etag) headers['If-Match'] = etag;
 
     await client.updateCalendarObject({
       calendarObject: {
@@ -136,11 +140,15 @@ export class CalDAVProvider implements CalendarProvider {
     return result;
   }
 
-  async deleteEvent(_calendarRemoteId: string, remoteEventId: string, etag?: string): Promise<void> {
+  async deleteEvent(
+    _calendarRemoteId: string,
+    remoteEventId: string,
+    etag?: string,
+  ): Promise<void> {
     const client = await this.getClient();
 
     const headers: Record<string, string> = {};
-    if (etag) headers["If-Match"] = etag;
+    if (etag) headers['If-Match'] = etag;
 
     await client.deleteCalendarObject({
       calendarObject: {
@@ -188,12 +196,12 @@ export class CalDAVProvider implements CalendarProvider {
       const calendars = await client.fetchCalendars();
       return {
         success: true,
-        message: `Connected â€” found ${calendars.length} calendar${calendars.length !== 1 ? "s" : ""}`,
+        message: `Connected â€” found ${calendars.length} calendar${calendars.length !== 1 ? 's' : ''}`,
       };
     } catch (err) {
       // Reset client on failure so next attempt can retry
       this.client = null;
-      return { success: false, message: err instanceof Error ? err.message : "Connection failed" };
+      return { success: false, message: err instanceof Error ? err.message : 'Connection failed' };
     }
   }
 }
@@ -201,6 +209,6 @@ export class CalDAVProvider implements CalendarProvider {
 function extractCalendarColor(cal: DAVCalendar): string | null {
   // tsdav may expose calendar-color in props
   const props = cal as unknown as Record<string, unknown>;
-  if (typeof props.calendarColor === "string") return props.calendarColor;
+  if (typeof props.calendarColor === 'string') return props.calendarColor;
   return null;
 }

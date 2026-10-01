@@ -22,7 +22,7 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
     baseDelay = 1000,
     maxDelay = 10000,
     retryCondition = () => true,
-    onRetry
+    onRetry,
   } = options;
 
   const [isRetrying, setIsRetrying] = useState(false);
@@ -35,43 +35,45 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
     return delay;
   };
 
-  const execute = useCallback(async <T>(operation: () => Promise<T>): Promise<T> => {
-    let lastAttemptError: any = null;
-    
-    for (let attempt = 0; attempt <= maxAttempts; attempt++) {
-      try {
-        if (attempt > 0) {
-          setIsRetrying(true);
-          setAttempts(attempt);
-          
-          if (onRetry) {
-            onRetry(attempt, lastAttemptError);
-          }
-          
-          await new Promise(resolve => {
-            timeoutRef.current = setTimeout(resolve, calculateDelay(attempt - 1));
-          });
-        }
+  const execute = useCallback(
+    async <T>(operation: () => Promise<T>): Promise<T> => {
+      let lastAttemptError: any = null;
 
-        const result = await operation();
-        setIsRetrying(false);
-        setAttempts(0);
-        setLastError(null);
-        return result;
-        
-      } catch (error) {
-        lastAttemptError = error;
-        setLastError(error);
-        
-        if (attempt === maxAttempts || !retryCondition(error)) {
+      for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+        try {
+          if (attempt > 0) {
+            setIsRetrying(true);
+            setAttempts(attempt);
+
+            if (onRetry) {
+              onRetry(attempt, lastAttemptError);
+            }
+
+            await new Promise((resolve) => {
+              timeoutRef.current = setTimeout(resolve, calculateDelay(attempt - 1));
+            });
+          }
+
+          const result = await operation();
           setIsRetrying(false);
-          throw error;
+          setAttempts(0);
+          setLastError(null);
+          return result;
+        } catch (error) {
+          lastAttemptError = error;
+          setLastError(error);
+
+          if (attempt === maxAttempts || !retryCondition(error)) {
+            setIsRetrying(false);
+            throw error;
+          }
         }
       }
-    }
-    
-    throw lastAttemptError;
-  }, [maxAttempts, baseDelay, maxDelay, retryCondition, onRetry]);
+
+      throw lastAttemptError;
+    },
+    [maxAttempts, baseDelay, maxDelay, retryCondition, onRetry],
+  );
 
   const reset = useCallback(() => {
     setIsRetrying(false);
@@ -87,6 +89,6 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
     isRetrying,
     attempts,
     lastError,
-    reset
+    reset,
   };
 };

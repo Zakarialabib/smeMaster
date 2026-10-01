@@ -7,9 +7,9 @@
  * the raw event name (see `RuleSummaryCard`).
  */
 export const TRIGGER_LABELS: Record<string, string> = {
-  email_received: "Email Received",
-  no_reply_after_days: "No Reply After",
-  time_based: "Scheduled",
-  label_applied: "Label Applied",
-  starred: "Starred",
+  email_received: 'Email Received',
+  no_reply_after_days: 'No Reply After',
+  time_based: 'Scheduled',
+  label_applied: 'Label Applied',
+  starred: 'Starred',
 };

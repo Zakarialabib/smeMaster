@@ -6,7 +6,7 @@
  *
  * @spec §4.3
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import {
   Calendar,
   Tag,
@@ -20,35 +20,35 @@ import {
   AlertCircle,
   Check,
   X,
-} from "lucide-react";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
+} from 'lucide-react';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
 
 /**
  * Priority labels
  */
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "None",
+  urgent: 'Urgent',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  none: 'None',
 };
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  urgent: "text-red-500",
-  high: "text-orange-500",
-  medium: "text-amber-500",
-  low: "text-blue-400",
-  none: "text-text-tertiary",
+  urgent: 'text-red-500',
+  high: 'text-orange-500',
+  medium: 'text-amber-500',
+  low: 'text-blue-400',
+  none: 'text-text-tertiary',
 };
 
 const PRIORITY_BG: Record<TaskPriority, string> = {
-  urgent: "bg-red-500/10",
-  high: "bg-orange-500/10",
-  medium: "bg-amber-500/10",
-  low: "bg-blue-400/10",
-  none: "bg-bg-tertiary",
+  urgent: 'bg-red-500/10',
+  high: 'bg-orange-500/10',
+  medium: 'bg-amber-500/10',
+  low: 'bg-blue-400/10',
+  none: 'bg-bg-tertiary',
 };
 
 /**
@@ -106,8 +106,10 @@ export function TaskMobileDetailSheet({
 }: TaskMobileDetailSheetProps) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["meta", "description"]));
-  const [localTitle, setLocalTitle] = useState("");
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(['meta', 'description']),
+  );
+  const [localTitle, setLocalTitle] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   // Sync local title with external task
@@ -138,7 +140,7 @@ export function TaskMobileDetailSheet({
       await onSave(taskId, { title: localTitle });
       setIsEditingTitle(false);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Failed to save");
+      setSaveError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -183,10 +185,7 @@ export function TaskMobileDetailSheet({
           <div className="flex flex-col items-center gap-2 text-center px-4">
             <AlertCircle size={24} className="text-danger" />
             <span className="text-sm text-text-secondary">{error}</span>
-            <button
-              onClick={onClose}
-              className="text-xs text-accent hover:underline"
-            >
+            <button onClick={onClose} className="text-xs text-accent hover:underline">
               Close
             </button>
           </div>
@@ -208,8 +207,8 @@ export function TaskMobileDetailSheet({
                     className="flex-1 text-lg font-semibold bg-bg-tertiary text-text-primary px-3 py-1.5 rounded-lg border border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                     autoFocus
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveTitle();
-                      if (e.key === "Escape") {
+                      if (e.key === 'Enter') handleSaveTitle();
+                      if (e.key === 'Escape') {
                         setLocalTitle(externalTask.title);
                         setIsEditingTitle(false);
                       }
@@ -221,11 +220,7 @@ export function TaskMobileDetailSheet({
                     className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors disabled:opacity-50"
                     aria-label="Save title"
                   >
-                    {saving ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Check size={16} />
-                    )}
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                   </button>
                 </div>
               ) : (
@@ -244,7 +239,16 @@ export function TaskMobileDetailSheet({
                     className="p-1.5 text-text-tertiary hover:text-accent hover:bg-accent/10 rounded-lg transition-colors shrink-0"
                     aria-label="Edit title"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                       <path d="m15 5 4 4" />
                     </svg>
@@ -274,51 +278,51 @@ export function TaskMobileDetailSheet({
           {/* Meta section: Priority + Due Date + Tags */}
           <div className="mb-4">
             <button
-              onClick={() => toggleSection("meta")}
+              onClick={() => toggleSection('meta')}
               className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Details
               </span>
-              {isExpanded("meta") ? (
+              {isExpanded('meta') ? (
                 <ChevronUp size={14} className="text-text-tertiary" />
               ) : (
                 <ChevronDown size={14} className="text-text-tertiary" />
               )}
             </button>
 
-            {isExpanded("meta") && (
+            {isExpanded('meta') && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {/* Priority badge */}
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                    PRIORITY_COLORS[externalTask.priority as TaskPriority] || "text-text-tertiary"
-                  } ${PRIORITY_BG[externalTask.priority as TaskPriority] || "bg-bg-tertiary"}`}
+                    PRIORITY_COLORS[externalTask.priority as TaskPriority] || 'text-text-tertiary'
+                  } ${PRIORITY_BG[externalTask.priority as TaskPriority] || 'bg-bg-tertiary'}`}
                 >
                   <span
                     className={`w-2 h-2 rounded-full ${
-                      externalTask.priority === "urgent"
-                        ? "bg-red-500"
-                        : externalTask.priority === "high"
-                          ? "bg-orange-500"
-                          : externalTask.priority === "medium"
-                            ? "bg-amber-500"
-                            : externalTask.priority === "low"
-                              ? "bg-blue-400"
-                              : "bg-text-tertiary/30"
+                      externalTask.priority === 'urgent'
+                        ? 'bg-red-500'
+                        : externalTask.priority === 'high'
+                          ? 'bg-orange-500'
+                          : externalTask.priority === 'medium'
+                            ? 'bg-amber-500'
+                            : externalTask.priority === 'low'
+                              ? 'bg-blue-400'
+                              : 'bg-text-tertiary/30'
                     }`}
                   />
-                  {PRIORITY_LABELS[externalTask.priority as TaskPriority] || "None"}
+                  {PRIORITY_LABELS[externalTask.priority as TaskPriority] || 'None'}
                 </span>
 
                 {/* Due date */}
                 {externalTask.due_date && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-bg-tertiary text-text-secondary">
                     <Calendar size={12} />
-                    {new Date(externalTask.due_date * 1000).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
+                    {new Date(externalTask.due_date * 1000).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
                     })}
                   </span>
                 )}
@@ -347,20 +351,20 @@ export function TaskMobileDetailSheet({
           {/* Description section */}
           <div className="mb-4">
             <button
-              onClick={() => toggleSection("description")}
+              onClick={() => toggleSection('description')}
               className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Description
               </span>
-              {isExpanded("description") ? (
+              {isExpanded('description') ? (
                 <ChevronUp size={14} className="text-text-tertiary" />
               ) : (
                 <ChevronDown size={14} className="text-text-tertiary" />
               )}
             </button>
 
-            {isExpanded("description") && (
+            {isExpanded('description') && (
               <div className="mt-2">
                 {externalTask.description ? (
                   <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
@@ -376,24 +380,22 @@ export function TaskMobileDetailSheet({
           {/* Subtasks section */}
           <div className="mb-4">
             <button
-              onClick={() => toggleSection("subtasks")}
+              onClick={() => toggleSection('subtasks')}
               className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Subtasks
               </span>
-              {isExpanded("subtasks") ? (
+              {isExpanded('subtasks') ? (
                 <ChevronUp size={14} className="text-text-tertiary" />
               ) : (
                 <ChevronDown size={14} className="text-text-tertiary" />
               )}
             </button>
 
-            {isExpanded("subtasks") && (
+            {isExpanded('subtasks') && (
               <div className="mt-2">
-                <p className="text-sm text-text-tertiary italic">
-                  Subtask management coming soon
-                </p>
+                <p className="text-sm text-text-tertiary italic">Subtask management coming soon</p>
               </div>
             )}
           </div>
@@ -401,20 +403,20 @@ export function TaskMobileDetailSheet({
           {/* Context section */}
           <div className="mb-4">
             <button
-              onClick={() => toggleSection("context")}
+              onClick={() => toggleSection('context')}
               className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Context
               </span>
-              {isExpanded("context") ? (
+              {isExpanded('context') ? (
                 <ChevronUp size={14} className="text-text-tertiary" />
               ) : (
                 <ChevronDown size={14} className="text-text-tertiary" />
               )}
             </button>
 
-            {isExpanded("context") && (
+            {isExpanded('context') && (
               <div className="mt-2 space-y-2">
                 {/* Linked contact */}
                 {externalTask.contact_id && (
@@ -423,9 +425,7 @@ export function TaskMobileDetailSheet({
                     <span className="text-sm text-text-secondary flex-1 truncate">
                       Linked to contact
                     </span>
-                    <button className="text-xs text-accent hover:underline shrink-0">
-                      Open
-                    </button>
+                    <button className="text-xs text-accent hover:underline shrink-0">Open</button>
                   </div>
                 )}
 
@@ -433,14 +433,10 @@ export function TaskMobileDetailSheet({
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-secondary border border-border-primary">
                   <MessageSquare size={14} className="text-accent shrink-0" />
                   <span className="text-sm text-text-secondary flex-1 truncate">
-                    {externalTask.thread_id
-                      ? "From email thread"
-                      : "No linked thread"}
+                    {externalTask.thread_id ? 'From email thread' : 'No linked thread'}
                   </span>
                   {externalTask.thread_id && (
-                    <button className="text-xs text-accent hover:underline shrink-0">
-                      Open
-                    </button>
+                    <button className="text-xs text-accent hover:underline shrink-0">Open</button>
                   )}
                 </div>
               </div>
@@ -451,19 +447,21 @@ export function TaskMobileDetailSheet({
           <div className="mb-4 px-3">
             {externalTask.created_at && (
               <p className="text-[0.6875rem] text-text-tertiary">
-                Created: {new Date(externalTask.created_at * 1000).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
+                Created:{' '}
+                {new Date(externalTask.created_at * 1000).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
                 })}
               </p>
             )}
             {externalTask.completed_at && (
               <p className="text-[0.6875rem] text-text-tertiary mt-0.5">
-                Completed: {new Date(externalTask.completed_at * 1000).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
+                Completed:{' '}
+                {new Date(externalTask.completed_at * 1000).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
                 })}
               </p>
             )}
@@ -498,4 +496,3 @@ export function TaskMobileDetailSheet({
     </SlidePanel>
   );
 }
-

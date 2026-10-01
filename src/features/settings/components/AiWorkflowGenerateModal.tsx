@@ -1,18 +1,28 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Sparkles, Check, GitBranch, Archive, Star, Tag, Forward, FileText, Bell } from "lucide-react";
-import { AiGenerationFlow } from "@shared/components/ai/AiGenerationFlow";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { generateWorkflowPreset } from "@shared/services/ai/workflowGenerator";
-import type { WorkflowPreset } from "@/constants/workflowPresets";
-import { useAiGenerationModal } from "@features/settings/hooks/useAiGenerationModal";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Sparkles,
+  Check,
+  GitBranch,
+  Archive,
+  Star,
+  Tag,
+  Forward,
+  FileText,
+  Bell,
+} from 'lucide-react';
+import { AiGenerationFlow } from '@shared/components/ai/AiGenerationFlow';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { generateWorkflowPreset } from '@shared/services/ai/workflowGenerator';
+import type { WorkflowPreset } from '@/constants/workflowPresets';
+import { useAiGenerationModal } from '@features/settings/hooks/useAiGenerationModal';
 
 const TRIGGER_LABELS: Record<string, string> = {
-  email_received: "modals.aiWorkflow.emailReceived",
-  no_reply_after_days: "modals.aiWorkflow.noReplyAfterDays",
-  time_based: "modals.aiWorkflow.timeBased",
-  label_applied: "modals.aiWorkflow.labelApplied",
-  starred: "modals.aiWorkflow.starred",
+  email_received: 'modals.aiWorkflow.emailReceived',
+  no_reply_after_days: 'modals.aiWorkflow.noReplyAfterDays',
+  time_based: 'modals.aiWorkflow.timeBased',
+  label_applied: 'modals.aiWorkflow.labelApplied',
+  starred: 'modals.aiWorkflow.starred',
 };
 
 const ACTION_ICONS: Record<string, typeof Archive> = {
@@ -37,8 +47,8 @@ export function AiWorkflowGenerateModal({
   onCreate,
 }: AiWorkflowGenerateModalProps) {
   const { t } = useTranslation();
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
-  const [category, setCategory] = useState<"automation" | "ai_enhanced">("automation");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
+  const [category, setCategory] = useState<'automation' | 'ai_enhanced'>('automation');
 
   const generator = async (prompt: string) => {
     return generateWorkflowPreset(`${prompt}. Category: ${category}`);
@@ -86,26 +96,28 @@ export function AiWorkflowGenerateModal({
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-text-secondary mb-1.5 block">{t('modals.aiWorkflow.type')}</label>
+            <label className="text-xs font-medium text-text-secondary mb-1.5 block">
+              {t('modals.aiWorkflow.type')}
+            </label>
             <div className="inline-flex rounded-lg border border-border-primary overflow-hidden">
               <button
                 type="button"
-                onClick={() => setCategory("automation")}
+                onClick={() => setCategory('automation')}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  category === "automation"
-                    ? "bg-accent text-white"
-                    : "bg-bg-secondary text-text-secondary hover:bg-bg-hover"
+                  category === 'automation'
+                    ? 'bg-accent text-white'
+                    : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
                 }`}
               >
                 {t('modals.aiWorkflow.basicAutomation')}
               </button>
               <button
                 type="button"
-                onClick={() => setCategory("ai_enhanced")}
+                onClick={() => setCategory('ai_enhanced')}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  category === "ai_enhanced"
-                    ? "bg-accent text-white"
-                    : "bg-bg-secondary text-text-secondary hover:bg-bg-hover"
+                  category === 'ai_enhanced'
+                    ? 'bg-accent text-white'
+                    : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
                 }`}
               >
                 {t('modals.aiWorkflow.aiEnhanced')}
@@ -151,25 +163,31 @@ export function AiWorkflowGenerateModal({
                 </h4>
                 <p className="text-xs text-text-tertiary mt-0.5">{result.description}</p>
               </div>
-              <span className={`text-[0.625rem] px-2 py-0.5 rounded-full border ${
-                result.category === "ai_enhanced"
-                  ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                  : "bg-accent/10 text-accent border-accent/20"
-              }`}>
-                {result.category === "ai_enhanced" ? t('modals.aiWorkflow.aiEnhanced') : t('modals.aiWorkflow.basicAutomation')}
+              <span
+                className={`text-[0.625rem] px-2 py-0.5 rounded-full border ${
+                  result.category === 'ai_enhanced'
+                    ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+                    : 'bg-accent/10 text-accent border-accent/20'
+                }`}
+              >
+                {result.category === 'ai_enhanced'
+                  ? t('modals.aiWorkflow.aiEnhanced')
+                  : t('modals.aiWorkflow.basicAutomation')}
               </span>
             </div>
 
             <div className="rounded-lg border border-border-primary p-3 bg-bg-secondary/50">
-              <span className="text-[0.625rem] font-medium text-text-tertiary uppercase tracking-wider">{t('modals.aiWorkflow.triggerLabel')}</span>
+              <span className="text-[0.625rem] font-medium text-text-tertiary uppercase tracking-wider">
+                {t('modals.aiWorkflow.triggerLabel')}
+              </span>
               <p className="text-sm text-text-primary mt-1 flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded bg-accent/10 text-accent text-xs font-medium">
                   {t(TRIGGER_LABELS[result.trigger_event] ?? result.trigger_event)}
                 </span>
-                {result.trigger_conditions && result.trigger_conditions !== "{}" && (
+                {result.trigger_conditions && result.trigger_conditions !== '{}' && (
                   <span className="text-xs text-text-tertiary font-mono">
                     {result.trigger_conditions.slice(0, 80)}
-                    {result.trigger_conditions.length > 80 ? "..." : ""}
+                    {result.trigger_conditions.length > 80 ? '...' : ''}
                   </span>
                 )}
               </p>
@@ -188,7 +206,7 @@ export function AiWorkflowGenerateModal({
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-bg-tertiary border border-border-primary text-xs text-text-primary"
                     >
                       <ActionIcon size={10} className="text-accent" />
-                      {action.type.replace(/_/g, " ")}
+                      {action.type.replace(/_/g, ' ')}
                     </span>
                   );
                 })}

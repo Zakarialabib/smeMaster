@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { Search, Image as ImageIcon, FileText } from "lucide-react";
-import { AdaptiveBottomSheet } from "@shared/components/ui/AdaptiveBottomSheet";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { useVaultStore } from "@features/vault/stores/vaultStore";
-import { readVaultFile } from "@shared/services/vault/vaultService";
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Search, Image as ImageIcon, FileText } from 'lucide-react';
+import { AdaptiveBottomSheet } from '@shared/components/ui/AdaptiveBottomSheet';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { useVaultStore } from '@features/vault/stores/vaultStore';
+import { readVaultFile } from '@shared/services/vault/vaultService';
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic)$/i;
 
@@ -20,19 +20,19 @@ export function VaultFilePicker({ isOpen, onClose, onPick }: VaultFilePickerProp
   const entries = useVaultStore((s) => s.entries);
   const loadDir = useVaultStore((s) => s.loadDir);
   const isLoading = useVaultStore((s) => s.isLoading);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [resolving, setResolving] = useState<string | null>(null);
 
   // Load the vault root listing whenever the sheet opens.
   useEffect(() => {
     if (isOpen) {
-      void loadDir("");
-      setQuery("");
+      void loadDir('');
+      setQuery('');
     }
   }, [isOpen, loadDir]);
 
   const images = useMemo(
-    () => entries.filter((e) => !e.isDir && (e.category === "image" || IMAGE_EXT.test(e.path))),
+    () => entries.filter((e) => !e.isDir && (e.category === 'image' || IMAGE_EXT.test(e.path))),
     [entries],
   );
 
@@ -51,14 +51,14 @@ export function VaultFilePicker({ isOpen, onClose, onPick }: VaultFilePickerProp
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       // Surface the failure to the console; the sheet stays open.
-      console.error("[VaultFilePicker] readVaultFile failed:", msg);
+      console.error('[VaultFilePicker] readVaultFile failed:', msg);
     } finally {
       setResolving(null);
     }
   };
 
   return (
-    <AdaptiveBottomSheet isOpen={isOpen} onClose={onClose} title={t("campaign.editor.fromVault")}>
+    <AdaptiveBottomSheet isOpen={isOpen} onClose={onClose} title={t('campaign.editor.fromVault')}>
       <div className="flex flex-col gap-3 p-4">
         {/* Search */}
         <div className="relative">
@@ -66,20 +66,22 @@ export function VaultFilePicker({ isOpen, onClose, onPick }: VaultFilePickerProp
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("campaign.editor.fromVault")}
+            placeholder={t('campaign.editor.fromVault')}
             className="w-full rounded-xl border border-border-primary bg-bg-secondary py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         {/* Grid */}
         {isLoading ? (
-          <p className="py-8 text-center text-sm text-text-tertiary">{t("campaign.editor.fromVault")}</p>
+          <p className="py-8 text-center text-sm text-text-tertiary">
+            {t('campaign.editor.fromVault')}
+          </p>
         ) : filtered.length === 0 ? (
           <div className="py-6">
             <EmptyState
               icon={ImageIcon}
-              title={t("campaign.editor.fromVault")}
-              subtitle={t("campaign.editor.insertImage")}
+              title={t('campaign.editor.fromVault')}
+              subtitle={t('campaign.editor.insertImage')}
             />
           </div>
         ) : (

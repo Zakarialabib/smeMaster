@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useRefreshableAiCache } from "./useRefreshableAiCache";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useRefreshableAiCache } from './useRefreshableAiCache';
 
-vi.mock("@features/mail/db/aiCache", () => ({
+vi.mock('@features/mail/db/aiCache', () => ({
   deleteAiCache: vi.fn(),
 }));
 
-import { deleteAiCache } from "@features/mail/db/aiCache";
+import { deleteAiCache } from '@features/mail/db/aiCache';
 
 const mockDeleteAiCache = vi.mocked(deleteAiCache);
 
@@ -15,14 +15,14 @@ beforeEach(() => {
   mockDeleteAiCache.mockResolvedValue(undefined);
 });
 
-describe("useRefreshableAiCache", () => {
-  it("load() calls the fetcher with (accountId, threadId) and stores the result", async () => {
-    const fetcher = vi.fn().mockResolvedValue("summary text");
+describe('useRefreshableAiCache', () => {
+  it('load() calls the fetcher with (accountId, threadId) and stores the result', async () => {
+    const fetcher = vi.fn().mockResolvedValue('summary text');
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -32,19 +32,19 @@ describe("useRefreshableAiCache", () => {
     });
 
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(fetcher).toHaveBeenCalledWith("a1", "t1");
-    expect(result.current.data).toBe("summary text");
+    expect(fetcher).toHaveBeenCalledWith('a1', 't1');
+    expect(result.current.data).toBe('summary text');
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
   });
 
-  it("load() does NOT call deleteAiCache", async () => {
-    const fetcher = vi.fn().mockResolvedValue("text");
+  it('load() does NOT call deleteAiCache', async () => {
+    const fetcher = vi.fn().mockResolvedValue('text');
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -56,13 +56,13 @@ describe("useRefreshableAiCache", () => {
     expect(mockDeleteAiCache).not.toHaveBeenCalled();
   });
 
-  it("refresh() calls deleteAiCache with the supplied (accountId, threadId, cacheType) before re-fetching", async () => {
-    const fetcher = vi.fn().mockResolvedValue("fresh text");
+  it('refresh() calls deleteAiCache with the supplied (accountId, threadId, cacheType) before re-fetching', async () => {
+    const fetcher = vi.fn().mockResolvedValue('fresh text');
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "smart_replies",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'smart_replies',
         fetcher,
       }),
     );
@@ -72,16 +72,16 @@ describe("useRefreshableAiCache", () => {
     });
 
     expect(mockDeleteAiCache).toHaveBeenCalledTimes(1);
-    expect(mockDeleteAiCache).toHaveBeenCalledWith("a1", "t1", "smart_replies");
-    expect(fetcher).toHaveBeenCalledWith("a1", "t1");
-    expect(result.current.data).toBe("fresh text");
+    expect(mockDeleteAiCache).toHaveBeenCalledWith('a1', 't1', 'smart_replies');
+    expect(fetcher).toHaveBeenCalledWith('a1', 't1');
+    expect(result.current.data).toBe('fresh text');
   });
 
-  it("refresh() clears data to null before re-running the fetcher (mid-flight visibility)", async () => {
+  it('refresh() clears data to null before re-running the fetcher (mid-flight visibility)', async () => {
     // First load: resolve immediately with "initial".
     const fetcher = vi
       .fn()
-      .mockResolvedValueOnce("initial")
+      .mockResolvedValueOnce('initial')
       // Second call (from refresh): hang on a deferred promise.
       .mockImplementationOnce(
         () =>
@@ -102,9 +102,9 @@ describe("useRefreshableAiCache", () => {
 
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -112,7 +112,7 @@ describe("useRefreshableAiCache", () => {
     await act(async () => {
       await result.current.load();
     });
-    expect(result.current.data).toBe("initial");
+    expect(result.current.data).toBe('initial');
 
     // Kick off the refresh; deleteAiCache is now hanging.
     let refreshPromise!: Promise<void>;
@@ -121,7 +121,7 @@ describe("useRefreshableAiCache", () => {
     });
 
     // While deleteAiCache is still pending, `data` is unchanged.
-    expect(result.current.data).toBe("initial");
+    expect(result.current.data).toBe('initial');
 
     // Resolve deleteAiCache → hook reaches `setData(null)` and the
     // fetcher is now in flight.
@@ -129,20 +129,20 @@ describe("useRefreshableAiCache", () => {
       resolveDelete();
     });
 
-    expect(mockDeleteAiCache).toHaveBeenCalledWith("a1", "t1", "summary");
+    expect(mockDeleteAiCache).toHaveBeenCalledWith('a1', 't1', 'summary');
     expect(result.current.data).toBeNull();
     expect(result.current.loading).toBe(true);
 
     // Now let the refresh fetcher finish.
     await act(async () => {
-      (globalThis as { __resolveRefresh?: (v: string) => void }).__resolveRefresh?.("next");
+      (globalThis as { __resolveRefresh?: (v: string) => void }).__resolveRefresh?.('next');
       await refreshPromise;
     });
 
-    expect(result.current.data).toBe("next");
+    expect(result.current.data).toBe('next');
   });
 
-  it("load() is a no-op (no second fetcher call) while a load is already in flight", async () => {
+  it('load() is a no-op (no second fetcher call) while a load is already in flight', async () => {
     let resolveFirst!: (v: string) => void;
     const fetcher = vi.fn().mockImplementationOnce(
       () =>
@@ -152,9 +152,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -172,14 +172,14 @@ describe("useRefreshableAiCache", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveFirst("x");
+      resolveFirst('x');
       await first;
     });
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(result.current.data).toBe("x");
+    expect(result.current.data).toBe('x');
   });
 
-  it("refresh() is a no-op while a load is already in flight (fixes the original race)", async () => {
+  it('refresh() is a no-op while a load is already in flight (fixes the original race)', async () => {
     let resolveFirst!: (v: string) => void;
     const fetcher = vi.fn().mockImplementationOnce(
       () =>
@@ -189,9 +189,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -209,12 +209,12 @@ describe("useRefreshableAiCache", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveFirst("x");
+      resolveFirst('x');
       await first;
     });
   });
 
-  it("load() is also a no-op while a refresh is in flight", async () => {
+  it('load() is also a no-op while a refresh is in flight', async () => {
     let resolveRefresh!: (v: string) => void;
     const fetcher = vi.fn().mockReturnValue(
       new Promise<string>((resolve) => {
@@ -223,9 +223,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -242,21 +242,21 @@ describe("useRefreshableAiCache", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveRefresh("x");
+      resolveRefresh('x');
       await refreshPromise;
     });
   });
 
-  it("captures fetcher errors into `error` by default and keeps data unchanged", async () => {
+  it('captures fetcher errors into `error` by default and keeps data unchanged', async () => {
     const fetcher = vi
       .fn()
-      .mockRejectedValueOnce(new Error("AI down"))
-      .mockResolvedValueOnce("recovered");
+      .mockRejectedValueOnce(new Error('AI down'))
+      .mockResolvedValueOnce('recovered');
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -266,7 +266,7 @@ describe("useRefreshableAiCache", () => {
     });
 
     expect(result.current.error).toBeInstanceOf(Error);
-    expect((result.current.error as Error | null)?.message).toBe("AI down");
+    expect((result.current.error as Error | null)?.message).toBe('AI down');
     expect(result.current.loading).toBe(false);
 
     // After error, the next load should clear the error and succeed.
@@ -274,16 +274,16 @@ describe("useRefreshableAiCache", () => {
       await result.current.load();
     });
     expect(result.current.error).toBeNull();
-    expect(result.current.data).toBe("recovered");
+    expect(result.current.data).toBe('recovered');
   });
 
-  it("re-throws errors from load() when captureErrors is false", async () => {
-    const fetcher = vi.fn().mockRejectedValue(new Error("boom"));
+  it('re-throws errors from load() when captureErrors is false', async () => {
+    const fetcher = vi.fn().mockRejectedValue(new Error('boom'));
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
         captureErrors: false,
       }),
@@ -299,14 +299,14 @@ describe("useRefreshableAiCache", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
-  it("refresh() proceeds with the fetcher even if deleteAiCache rejects", async () => {
-    mockDeleteAiCache.mockRejectedValue(new Error("cache delete failed"));
-    const fetcher = vi.fn().mockResolvedValue("ok");
+  it('refresh() proceeds with the fetcher even if deleteAiCache rejects', async () => {
+    mockDeleteAiCache.mockRejectedValue(new Error('cache delete failed'));
+    const fetcher = vi.fn().mockResolvedValue('ok');
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -315,12 +315,12 @@ describe("useRefreshableAiCache", () => {
       await result.current.refresh();
     });
 
-    expect(fetcher).toHaveBeenCalledWith("a1", "t1");
-    expect(result.current.data).toBe("ok");
+    expect(fetcher).toHaveBeenCalledWith('a1', 't1');
+    expect(result.current.data).toBe('ok');
     expect(result.current.error).toBeNull();
   });
 
-  it("clear() resets data and error to null but does not abort an in-flight load", async () => {
+  it('clear() resets data and error to null but does not abort an in-flight load', async () => {
     let resolveFetch!: (v: string) => void;
     const fetcher = vi.fn().mockReturnValue(
       new Promise<string>((resolve) => {
@@ -329,9 +329,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -349,23 +349,23 @@ describe("useRefreshableAiCache", () => {
     expect(result.current.loadingRef.current).toBe(true);
 
     await act(async () => {
-      resolveFetch("late");
+      resolveFetch('late');
       await loadPromise;
     });
     // The in-flight load's result is still applied after clear().
-    expect(result.current.data).toBe("late");
+    expect(result.current.data).toBe('late');
   });
 
-  it("uses the latest fetcher closure across re-renders (ref pattern)", async () => {
-    const fetcherA = vi.fn().mockResolvedValue("A");
-    const fetcherB = vi.fn().mockResolvedValue("B");
+  it('uses the latest fetcher closure across re-renders (ref pattern)', async () => {
+    const fetcherA = vi.fn().mockResolvedValue('A');
+    const fetcherB = vi.fn().mockResolvedValue('B');
 
     const { result, rerender } = renderHook(
       ({ fetcher }: { fetcher: (a: string, t: string) => Promise<string> }) =>
         useRefreshableAiCache<string>({
-          accountId: "a1",
-          threadId: "t1",
-          cacheType: "summary",
+          accountId: 'a1',
+          threadId: 't1',
+          cacheType: 'summary',
           fetcher,
         }),
       { initialProps: { fetcher: fetcherA } },
@@ -374,7 +374,7 @@ describe("useRefreshableAiCache", () => {
     await act(async () => {
       await result.current.load();
     });
-    expect(result.current.data).toBe("A");
+    expect(result.current.data).toBe('A');
 
     // Switch fetcher between renders.
     rerender({ fetcher: fetcherB });
@@ -382,12 +382,12 @@ describe("useRefreshableAiCache", () => {
     await act(async () => {
       await result.current.load();
     });
-    expect(result.current.data).toBe("B");
+    expect(result.current.data).toBe('B');
     expect(fetcherA).toHaveBeenCalledTimes(1);
     expect(fetcherB).toHaveBeenCalledTimes(1);
   });
 
-  it("exposes loadingRef synchronously in sync with `loading` state", async () => {
+  it('exposes loadingRef synchronously in sync with `loading` state', async () => {
     let resolveFetch!: (v: string) => void;
     const fetcher = vi.fn().mockReturnValue(
       new Promise<string>((resolve) => {
@@ -396,9 +396,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -415,20 +415,20 @@ describe("useRefreshableAiCache", () => {
     expect(result.current.loading).toBe(true);
 
     await act(async () => {
-      resolveFetch("done");
+      resolveFetch('done');
       await loadPromise;
     });
     expect(result.current.loadingRef.current).toBe(false);
     expect(result.current.loading).toBe(false);
   });
 
-  it("loadingRef object identity is stable across renders (safe in dep arrays)", () => {
+  it('loadingRef object identity is stable across renders (safe in dep arrays)', () => {
     const { result, rerender } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
-        fetcher: vi.fn().mockResolvedValue("x"),
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
+        fetcher: vi.fn().mockResolvedValue('x'),
       }),
     );
     const first = result.current.loadingRef;
@@ -436,7 +436,7 @@ describe("useRefreshableAiCache", () => {
     expect(result.current.loadingRef).toBe(first);
   });
 
-  it("does not update data after unmount", async () => {
+  it('does not update data after unmount', async () => {
     let resolveFetch!: (v: string) => void;
     const fetcher = vi.fn().mockReturnValue(
       new Promise<string>((resolve) => {
@@ -445,9 +445,9 @@ describe("useRefreshableAiCache", () => {
     );
     const { result, unmount } = renderHook(() =>
       useRefreshableAiCache<string>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "summary",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'summary',
         fetcher,
       }),
     );
@@ -459,7 +459,7 @@ describe("useRefreshableAiCache", () => {
     unmount();
 
     await act(async () => {
-      resolveFetch("should-be-ignored");
+      resolveFetch('should-be-ignored');
       await loadPromise;
     });
     // We can't read result.current after unmount, so just confirm the
@@ -467,13 +467,13 @@ describe("useRefreshableAiCache", () => {
     await expect(loadPromise).resolves.toBeUndefined();
   });
 
-  it("supports typed result arrays (e.g. string[] for smart_replies)", async () => {
-    const fetcher = vi.fn().mockResolvedValue(["reply 1", "reply 2"]);
+  it('supports typed result arrays (e.g. string[] for smart_replies)', async () => {
+    const fetcher = vi.fn().mockResolvedValue(['reply 1', 'reply 2']);
     const { result } = renderHook(() =>
       useRefreshableAiCache<string[]>({
-        accountId: "a1",
-        threadId: "t1",
-        cacheType: "smart_replies",
+        accountId: 'a1',
+        threadId: 't1',
+        cacheType: 'smart_replies',
         fetcher,
       }),
     );
@@ -482,6 +482,6 @@ describe("useRefreshableAiCache", () => {
       await result.current.load();
     });
 
-    expect(result.current.data).toEqual(["reply 1", "reply 2"]);
+    expect(result.current.data).toEqual(['reply 1', 'reply 2']);
   });
 });

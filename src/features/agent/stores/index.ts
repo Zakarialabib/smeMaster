@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
-import type { CallListItem, CallOutcome, OpsAlert, ProviderHealth, WsStatus } from '../types/commands';
+import type {
+  CallListItem,
+  CallOutcome,
+  OpsAlert,
+  ProviderHealth,
+  WsStatus,
+} from '../types/commands';
 
 /**
  * Store split for the agent console — one store per domain, per
@@ -139,7 +145,8 @@ const acknowledgeIn = <T extends { id: string; acknowledgedAt: string | null }>(
   list: T[],
   id: string,
   at: string,
-): T[] => list.map((a) => (a.id === id ? { ...a, acknowledgedAt: at, acknowledgedBy: 'operator' } : a));
+): T[] =>
+  list.map((a) => (a.id === id ? { ...a, acknowledgedAt: at, acknowledgedBy: 'operator' } : a));
 
 export const useOpsStore = create<OpsState>((set) => ({
   p1: [],

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import type { Account } from "@features/accounts/stores/accountStore";
+import { useEffect, useRef } from 'react';
+import type { Account } from '@features/accounts/stores/accountStore';
 
 /**
  * Seed-on-first-run hook.

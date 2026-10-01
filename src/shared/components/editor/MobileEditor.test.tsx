@@ -9,7 +9,9 @@ vi.mock('@/shared/hooks/usePlatform', () => ({
 
 // Mock FloatingFormatBar
 vi.mock('@/shared/components/ui/FloatingFormatBar', () => ({
-  FloatingFormatBar: ({ actions }: any) => <div data-testid="format-bar">{actions.length} actions</div>,
+  FloatingFormatBar: ({ actions }: any) => (
+    <div data-testid="format-bar">{actions.length} actions</div>
+  ),
 }));
 
 describe('MobileEditor', () => {

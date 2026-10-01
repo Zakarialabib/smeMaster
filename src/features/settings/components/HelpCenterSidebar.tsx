@@ -1,13 +1,23 @@
-import { useMemo, useEffect, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Search, BookOpen, ExternalLink, EyeOff, Pin, PinOff, HelpCircle, Lightbulb, Clock } from "lucide-react";
-import { getContextualHelp } from "@/constants/contextualHelp";
-import type { ContextualHelpEntry } from "@/constants/contextualHelp";
-import { useContextualHelp } from "@shared/hooks/useContextualHelp";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
-import { TAB_HELP_KEYS, EDUCATION_CONTENT } from "./SettingsTabRegistry";
-import type { EducationItem } from "./SettingsTabRegistry";
-import { cn } from "@shared/utils/cn";
+import { useMemo, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Search,
+  BookOpen,
+  ExternalLink,
+  EyeOff,
+  Pin,
+  PinOff,
+  HelpCircle,
+  Lightbulb,
+  Clock,
+} from 'lucide-react';
+import { getContextualHelp } from '@/constants/contextualHelp';
+import type { ContextualHelpEntry } from '@/constants/contextualHelp';
+import { useContextualHelp } from '@shared/hooks/useContextualHelp';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
+import { TAB_HELP_KEYS, EDUCATION_CONTENT } from './SettingsTabRegistry';
+import type { EducationItem } from './SettingsTabRegistry';
+import { cn } from '@shared/utils/cn';
 
 /* ─── Props ─── */
 
@@ -30,15 +40,15 @@ const eduIcons: Record<string, typeof HelpCircle> = {
 };
 
 const eduColors: Record<string, string> = {
-  why: "text-warning bg-warning/15",
-  how: "text-accent bg-accent/15",
-  when: "text-success bg-success/15",
+  why: 'text-warning bg-warning/15',
+  how: 'text-accent bg-accent/15',
+  when: 'text-success bg-success/15',
 };
 
 const eduLabels: Record<string, string> = {
-  why: "settings.educationLabels.why",
-  how: "settings.educationLabels.how",
-  when: "settings.educationLabels.when",
+  why: 'settings.educationLabels.why',
+  how: 'settings.educationLabels.how',
+  when: 'settings.educationLabels.when',
 };
 
 /**
@@ -54,7 +64,11 @@ const eduLabels: Record<string, string> = {
  * - Seen/dismissed tracking per article
  * - Link to full Help Center
  */
-export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: HelpCenterSidebarProps) {
+export function HelpCenterSidebar({
+  currentTab = 'general',
+  isOpen,
+  onClose,
+}: HelpCenterSidebarProps) {
   const { t } = useTranslation();
   const { dismissedKeys, unseenKeys, dismissKey, markSeen } = useContextualHelp();
   const [pinned, setPinned] = useState(false);
@@ -84,9 +98,12 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
     }
   }, [isOpen, helpEntries, markSeen]);
 
-  const handleDismiss = useCallback((key: string) => {
-    dismissKey(key);
-  }, [dismissKey]);
+  const handleDismiss = useCallback(
+    (key: string) => {
+      dismissKey(key);
+    },
+    [dismissKey],
+  );
 
   const hasContent = educationItems.length > 0 || helpEntries.length > 0;
 
@@ -94,19 +111,19 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
     <SlidePanel
       isOpen={isOpen}
       onClose={onClose}
-      title={pinned ? t("settings.helpCenter.titlePinned") : t("settings.helpCenter.title")}
+      title={pinned ? t('settings.helpCenter.titlePinned') : t('settings.helpCenter.title')}
       headerIcon={<BookOpen size={16} className="text-accent" />}
       headerChildren={
         <button
           onClick={() => setPinned((prev) => !prev)}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
+            'p-1.5 rounded-md transition-colors',
             pinned
-              ? "text-accent bg-accent/10"
-              : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
+              ? 'text-accent bg-accent/10'
+              : 'text-text-tertiary hover:text-text-primary hover:bg-bg-hover',
           )}
-          title={pinned ? t("settings.helpCenter.unpin") : t("settings.helpCenter.pinKeepOpen")}
-          aria-label={pinned ? t("settings.helpCenter.unpin") : t("settings.helpCenter.pin")}
+          title={pinned ? t('settings.helpCenter.unpin') : t('settings.helpCenter.pinKeepOpen')}
+          aria-label={pinned ? t('settings.helpCenter.unpin') : t('settings.helpCenter.pin')}
         >
           {pinned ? <PinOff size={14} /> : <Pin size={14} />}
         </button>
@@ -115,9 +132,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
       {!hasContent ? (
         <div className="text-center py-8">
           <Search size={24} className="mx-auto text-text-tertiary mb-2" />
-          <p className="text-xs text-text-tertiary">
-            {t("settings.helpCenter.noHelp")}
-          </p>
+          <p className="text-xs text-text-tertiary">{t('settings.helpCenter.noHelp')}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -127,13 +142,13 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
               <div className="flex items-center gap-2 mb-3 px-1">
                 <Lightbulb size={13} className="text-accent" />
                 <h3 className="text-xs font-semibold text-text-primary uppercase tracking-[0.05em]">
-                  {t("settings.helpCenter.quickHelp")}
+                  {t('settings.helpCenter.quickHelp')}
                 </h3>
               </div>
               <div className="space-y-3">
                 {educationItems.map((item, idx) => {
                   const Icon = eduIcons[item.type] ?? HelpCircle;
-                  const colorClass = eduColors[item.type] ?? "text-text-tertiary";
+                  const colorClass = eduColors[item.type] ?? 'text-text-tertiary';
                   return (
                     <div
                       key={idx}
@@ -141,17 +156,23 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                     >
                       <div
                         className={cn(
-                          "w-[22px] h-[22px] rounded flex items-center justify-center shrink-0 mt-0.5",
+                          'w-[22px] h-[22px] rounded flex items-center justify-center shrink-0 mt-0.5',
                           colorClass,
                         )}
                       >
                         <Icon size={13} />
                       </div>
                       <div className="min-w-0">
-                        <span className={cn(
-                          "text-[10px] font-semibold uppercase tracking-[0.04em]",
-                          item.type === "why" ? "text-warning" : item.type === "how" ? "text-accent" : "text-success",
-                        )}>
+                        <span
+                          className={cn(
+                            'text-[10px] font-semibold uppercase tracking-[0.04em]',
+                            item.type === 'why'
+                              ? 'text-warning'
+                              : item.type === 'how'
+                                ? 'text-accent'
+                                : 'text-success',
+                          )}
+                        >
                           {t(eduLabels[item.type] ?? `settings.educationLabels.${item.type}`)}
                         </span>
                         <p className="text-xs text-text-secondary leading-relaxed mt-0.5">
@@ -171,7 +192,7 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
               <div className="flex items-center gap-2 mb-3 px-1">
                 <BookOpen size={13} className="text-accent" />
                 <h3 className="text-xs font-semibold text-text-primary uppercase tracking-[0.05em]">
-                  {t("settings.helpCenter.articles")}
+                  {t('settings.helpCenter.articles')}
                 </h3>
               </div>
               <div className="space-y-4">
@@ -179,14 +200,17 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                   const isUnseen = unseenKeys.includes(entry.key);
 
                   return (
-                    <article key={entry.key} className="help-article rounded-lg border border-border-primary/40 p-3">
+                    <article
+                      key={entry.key}
+                      className="help-article rounded-lg border border-border-primary/40 p-3"
+                    >
                       {/* Title with unseen dot indicator */}
                       <div className="flex items-start gap-2 mb-2">
                         <h4 className="text-sm font-semibold text-text-primary leading-snug">
                           {entry.key
-                            .split("-")
+                            .split('-')
                             .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                            .join(" ")}
+                            .join(' ')}
                         </h4>
                         {isUnseen && (
                           <span
@@ -204,11 +228,14 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                       {entry.tips && entry.tips.length > 0 && (
                         <div className="mb-3">
                           <span className="text-[0.625rem] font-semibold text-accent uppercase tracking-wider">
-                            {t("settings.helpCenter.tips")}
+                            {t('settings.helpCenter.tips')}
                           </span>
                           <ul className="mt-1.5 space-y-1">
                             {entry.tips.map((tip, idx) => (
-                              <li key={idx} className="flex items-start gap-1.5 text-xs text-text-tertiary">
+                              <li
+                                key={idx}
+                                className="flex items-start gap-1.5 text-xs text-text-tertiary"
+                              >
                                 <span className="text-accent mt-0.5 shrink-0">•</span>
                                 {tip}
                               </li>
@@ -232,24 +259,25 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
                             className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors font-medium"
                             onClick={(e) => {
                               e.preventDefault();
-                              const topic = entry.learnMoreHref?.replace("/help/", "") ?? "getting-started";
+                              const topic =
+                                entry.learnMoreHref?.replace('/help/', '') ?? 'getting-started';
                               window.dispatchEvent(
-                                new CustomEvent("smemaster-navigate-help", { detail: { topic } })
+                                new CustomEvent('smemaster-navigate-help', { detail: { topic } }),
                               );
                             }}
                           >
                             <ExternalLink size={12} />
-                            {t("settings.helpCenter.learnMore")}
+                            {t('settings.helpCenter.learnMore')}
                           </a>
                         )}
 
                         <button
                           onClick={() => handleDismiss(entry.key)}
                           className="inline-flex items-center gap-1 text-xs text-text-tertiary hover:text-text-primary transition-colors ms-auto"
-                          aria-label={`${t("settings.helpCenter.dismiss")} ${entry.key}`}
+                          aria-label={`${t('settings.helpCenter.dismiss')} ${entry.key}`}
                         >
                           <EyeOff size={12} />
-                          {t("settings.helpCenter.dismiss")}
+                          {t('settings.helpCenter.dismiss')}
                         </button>
                       </div>
                     </article>
@@ -264,13 +292,15 @@ export function HelpCenterSidebar({ currentTab = "general", isOpen, onClose }: H
             <button
               onClick={() => {
                 window.dispatchEvent(
-                  new CustomEvent("smemaster-navigate-help", { detail: { topic: "getting-started" } })
+                  new CustomEvent('smemaster-navigate-help', {
+                    detail: { topic: 'getting-started' },
+                  }),
                 );
               }}
               className="flex items-center gap-2 text-xs text-text-tertiary hover:text-accent transition-colors w-full"
             >
               <BookOpen size={14} />
-              {t("settings.helpCenter.browseFull")}
+              {t('settings.helpCenter.browseFull')}
             </button>
           </div>
         </div>

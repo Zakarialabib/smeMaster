@@ -1,4 +1,4 @@
-import { callAi } from "./aiService";
+import { callAi } from './aiService';
 
 export interface GeneratedTemplate {
   id: string;
@@ -33,7 +33,7 @@ RULES (DO NOT VIOLATE):
 export async function generateTemplate(
   description: string,
   category?: string,
-  style?: string
+  style?: string,
 ): Promise<GeneratedTemplate> {
   const userContent = `Create an email template. Description: ${description}${category ? `\nCategory: ${category}` : ''}${style ? `\nStyle: ${style}` : ''}`;
   const raw = await callAi(TEMPLATE_GENERATION_PROMPT, userContent);
@@ -47,7 +47,7 @@ export async function generateTemplate(
 export async function regenerateTemplate(
   description: string,
   previousHtml: string,
-  feedback: string
+  feedback: string,
 ): Promise<GeneratedTemplate> {
   const userContent = `Previous template HTML: ${previousHtml.slice(0, 500)}\n\nFeedback: ${feedback}\n\nDescription: ${description}\n\nRegenerate the template based on this feedback.`;
   const raw = await callAi(TEMPLATE_GENERATION_PROMPT, userContent);

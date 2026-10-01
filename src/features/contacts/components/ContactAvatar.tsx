@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo } from 'react';
 
 interface ContactAvatarProps {
   /** Image URL (e.g. from gravatar). If null, shows initial letter fallback. */
@@ -18,40 +18,34 @@ const ContactAvatar = memo(function ContactAvatar({
   name,
   email,
   size = 64,
-  className = "",
+  className = '',
 }: ContactAvatarProps) {
   const initial = useMemo(() => {
-    const source = name || email || "?";
-    return source[0]?.toUpperCase() ?? "?";
+    const source = name || email || '?';
+    return source[0]?.toUpperCase() ?? '?';
   }, [name, email]);
 
   const sizeClass =
     size === 64
-      ? "w-16 h-16"
+      ? 'w-16 h-16'
       : size === 40
-        ? "w-10 h-10"
+        ? 'w-10 h-10'
         : size === 32
-          ? "w-8 h-8"
+          ? 'w-8 h-8'
           : size === 24
-            ? "w-6 h-6"
+            ? 'w-6 h-6'
             : size === 20
-              ? "w-5 h-5"
-              : "";
+              ? 'w-5 h-5'
+              : '';
 
   const textClass =
-    size === 64
-      ? "text-xl"
-      : size === 40
-        ? "text-base"
-        : size === 32
-          ? "text-sm"
-          : "text-xs";
+    size === 64 ? 'text-xl' : size === 40 ? 'text-base' : size === 32 ? 'text-sm' : 'text-xs';
 
   if (imageUrl) {
     return (
       <img
         src={imageUrl}
-        alt={name || email || ""}
+        alt={name || email || ''}
         className={`rounded-full object-cover ${sizeClass} ${className}`}
         style={sizeClass ? undefined : { width: size, height: size }}
       />

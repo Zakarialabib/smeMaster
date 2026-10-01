@@ -1,22 +1,37 @@
-import { useState, useEffect } from "react";
-import { ContextMenu, type ContextMenuItem } from "./ContextMenu";
-import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { getActiveLabel } from "@/router/navigate";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useLabelStore } from "@features/mail/stores/labelStore";
-import { archiveThread, trashThread, permanentDeleteThread, markThreadRead, starThread, spamThread, addThreadLabel, removeThreadLabel } from "@features/mail/services/emailActions";
-import { deleteThread as deleteThreadFromDb, pinThread as pinThreadDb, unpinThread as unpinThreadDb, muteThread as muteThreadDb, unmuteThread as unmuteThreadDb } from "@shared/services/db/threads";
-import { deleteDraftsForThread } from "@features/mail/services/gmail/draftDeletion";
-import { getGmailClient } from "@features/mail/services/gmail/tokenManager";
-import { getMessagesForThread } from "@shared/services/db/messages";
-import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
-import { getEnabledQuickStepsForAccount, type DbQuickStep } from "@features/mail/db/quickSteps";
-import { executeQuickStep } from "@features/settings/services/quickSteps/executor";
-import type { QuickStep, QuickStepAction } from "@features/settings/services/quickSteps/types";
-import { SnoozeDialog } from "@features/mail/components/SnoozeDialog";
-import { uiBus } from "@shared/services/events/uiBus";
+import { useState, useEffect } from 'react';
+import { ContextMenu, type ContextMenuItem } from './ContextMenu';
+import { useContextMenuStore } from '@features/mail/stores/contextMenuStore';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { getActiveLabel } from '@/router/navigate';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useLabelStore } from '@features/mail/stores/labelStore';
+import {
+  archiveThread,
+  trashThread,
+  permanentDeleteThread,
+  markThreadRead,
+  starThread,
+  spamThread,
+  addThreadLabel,
+  removeThreadLabel,
+} from '@features/mail/services/emailActions';
+import {
+  deleteThread as deleteThreadFromDb,
+  pinThread as pinThreadDb,
+  unpinThread as unpinThreadDb,
+  muteThread as muteThreadDb,
+  unmuteThread as unmuteThreadDb,
+} from '@shared/services/db/threads';
+import { deleteDraftsForThread } from '@features/mail/services/gmail/draftDeletion';
+import { getGmailClient } from '@features/mail/services/gmail/tokenManager';
+import { getMessagesForThread } from '@shared/services/db/messages';
+import { snoozeThread } from '@features/mail/services/snooze/snoozeManager';
+import { getEnabledQuickStepsForAccount, type DbQuickStep } from '@features/mail/db/quickSteps';
+import { executeQuickStep } from '@features/settings/services/quickSteps/executor';
+import type { QuickStep, QuickStepAction } from '@features/settings/services/quickSteps/types';
+import { SnoozeDialog } from '@features/mail/components/SnoozeDialog';
+import { uiBus } from '@shared/services/events/uiBus';
 import {
   Reply,
   ReplyAll,
@@ -39,23 +54,37 @@ import {
   Zap,
   Code,
   RefreshCw,
-} from "lucide-react";
-import { triggerSync } from "@features/mail/services/gmail/syncManager";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { updateThreadCategory, ALL_CATEGORIES } from "@features/mail/db/threadCategories";
-import { reportUserCorrection } from "@shared/services/ai/categorizationManager";
+} from 'lucide-react';
+import { triggerSync } from '@features/mail/services/gmail/syncManager';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { updateThreadCategory, ALL_CATEGORIES } from '@features/mail/db/threadCategories';
+import { reportUserCorrection } from '@shared/services/ai/categorizationManager';
 
-function buildQuote(msg: { from_name: string | null; from_address: string | null; date: string | number; body_html: string | null; body_text: string | null }): string {
+function buildQuote(msg: {
+  from_name: string | null;
+  from_address: string | null;
+  date: string | number;
+  body_html: string | null;
+  body_text: string | null;
+}): string {
   const date = new Date(msg.date).toLocaleString();
   const from = msg.from_name
     ? `${msg.from_name} &lt;${msg.from_address}&gt;`
-    : (msg.from_address ?? "Unknown");
-  return `<br><br><div style="border-left:2px solid #ccc;padding-left:12px;margin-left:0;color:#666">On ${date}, ${from} wrote:<br>${msg.body_html ?? msg.body_text ?? ""}</div>`;
+    : (msg.from_address ?? 'Unknown');
+  return `<br><br><div style="border-left:2px solid #ccc;padding-left:12px;margin-left:0;color:#666">On ${date}, ${from} wrote:<br>${msg.body_html ?? msg.body_text ?? ''}</div>`;
 }
 
-function buildForwardQuote(msg: { from_name: string | null; from_address: string | null; date: string | number; subject: string | null; to_addresses: string | null; body_html: string | null; body_text: string | null }): string {
+function buildForwardQuote(msg: {
+  from_name: string | null;
+  from_address: string | null;
+  date: string | number;
+  subject: string | null;
+  to_addresses: string | null;
+  body_html: string | null;
+  body_text: string | null;
+}): string {
   const date = new Date(msg.date).toLocaleString();
-  return `<br><br>---------- Forwarded message ---------<br>From: ${msg.from_name ?? ""} &lt;${msg.from_address ?? ""}&gt;<br>Date: ${date}<br>Subject: ${msg.subject ?? ""}<br>To: ${msg.to_addresses ?? ""}<br><br>${msg.body_html ?? msg.body_text ?? ""}`;
+  return `<br><br>---------- Forwarded message ---------<br>From: ${msg.from_name ?? ''} &lt;${msg.from_address ?? ''}&gt;<br>Date: ${date}<br>Subject: ${msg.subject ?? ''}<br>To: ${msg.to_addresses ?? ''}<br><br>${msg.body_html ?? msg.body_text ?? ''}`;
 }
 
 export function ContextMenuPortal() {
@@ -63,7 +92,10 @@ export function ContextMenuPortal() {
   const position = useContextMenuStore((s) => s.position);
   const data = useContextMenuStore((s) => s.data);
   const closeMenu = useContextMenuStore((s) => s.closeMenu);
-  const [snoozeTarget, setSnoozeTarget] = useState<{ threadIds: string[]; accountId: string } | null>(null);
+  const [snoozeTarget, setSnoozeTarget] = useState<{
+    threadIds: string[];
+    accountId: string;
+  } | null>(null);
 
   if (!menuType) {
     if (snoozeTarget) {
@@ -85,13 +117,13 @@ export function ContextMenuPortal() {
 
   return (
     <>
-      {menuType === "sidebarLabel" && (
+      {menuType === 'sidebarLabel' && (
         <SidebarLabelMenu position={position} data={data} onClose={closeMenu} />
       )}
-      {menuType === "sidebarNav" && (
+      {menuType === 'sidebarNav' && (
         <SidebarNavMenu position={position} data={data} onClose={closeMenu} />
       )}
-      {menuType === "thread" && (
+      {menuType === 'thread' && (
         <ThreadMenu
           position={position}
           data={data}
@@ -99,7 +131,7 @@ export function ContextMenuPortal() {
           onSnooze={setSnoozeTarget}
         />
       )}
-      {menuType === "message" && (
+      {menuType === 'message' && (
         <MessageMenu position={position} data={data} onClose={closeMenu} />
       )}
       {snoozeTarget && (
@@ -127,34 +159,34 @@ function SidebarLabelMenu({
   data: Record<string, unknown>;
   onClose: () => void;
 }) {
-  const onEdit = data["onEdit"] as (() => void) | undefined;
-  const onDelete = data["onDelete"] as (() => void) | undefined;
+  const onEdit = data['onEdit'] as (() => void) | undefined;
+  const onDelete = data['onDelete'] as (() => void) | undefined;
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
   const handleSync = () => {
     if (!activeAccountId) return;
-    const labelId = data["labelId"] as string | undefined;
-    useSyncStore.getState().setSyncingFolder(labelId ?? "label");
+    const labelId = data['labelId'] as string | undefined;
+    useSyncStore.getState().setSyncingFolder(labelId ?? 'label');
     triggerSync([activeAccountId]);
   };
 
   const items: ContextMenuItem[] = [
     {
-      id: "sync-folder",
-      label: "Sync this folder",
+      id: 'sync-folder',
+      label: 'Sync this folder',
       icon: RefreshCw,
       action: handleSync,
     },
-    { id: "sep-sync", label: "", separator: true },
+    { id: 'sep-sync', label: '', separator: true },
     {
-      id: "edit-label",
-      label: "Edit label",
+      id: 'edit-label',
+      label: 'Edit label',
       icon: Pencil,
       action: () => onEdit?.(),
     },
     {
-      id: "delete-label",
-      label: "Delete label",
+      id: 'delete-label',
+      label: 'Delete label',
       icon: Trash2,
       danger: true,
       action: () => onDelete?.(),
@@ -174,7 +206,7 @@ function SidebarNavMenu({
   onClose: () => void;
 }) {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
-  const navId = data["navId"] as string;
+  const navId = data['navId'] as string;
 
   const handleSync = () => {
     if (!activeAccountId) return;
@@ -184,8 +216,8 @@ function SidebarNavMenu({
 
   const items: ContextMenuItem[] = [
     {
-      id: "sync-folder",
-      label: "Sync this folder",
+      id: 'sync-folder',
+      label: 'Sync this folder',
       icon: RefreshCw,
       action: handleSync,
     },
@@ -205,7 +237,7 @@ function ThreadMenu({
   onClose: () => void;
   onSnooze: (target: { threadIds: string[]; accountId: string }) => void;
 }) {
-  const threadId = data["threadId"] as string;
+  const threadId = data['threadId'] as string;
   const threads = useThreadStore((s) => s.threads);
   const selectedThreadIds = useThreadStore((s) => s.selectedThreadIds);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -216,16 +248,17 @@ function ThreadMenu({
 
   useEffect(() => {
     if (!activeAccountId) return;
-    getEnabledQuickStepsForAccount(activeAccountId).then(setQuickSteps).catch(() => {
-      // quick_steps table may not exist yet before migration
-    });
+    getEnabledQuickStepsForAccount(activeAccountId)
+      .then(setQuickSteps)
+      .catch(() => {
+        // quick_steps table may not exist yet before migration
+      });
   }, [activeAccountId]);
 
   // Determine target threads: if right-clicked thread is in multi-select, use all selected; otherwise just this one
   const isInMultiSelect = selectedThreadIds.has(threadId);
-  const targetIds = isInMultiSelect && selectedThreadIds.size > 1
-    ? [...selectedThreadIds]
-    : [threadId];
+  const targetIds =
+    isInMultiSelect && selectedThreadIds.size > 1 ? [...selectedThreadIds] : [threadId];
   const isMulti = targetIds.length > 1;
 
   const thread = threads.find((t) => t.id === threadId);
@@ -233,9 +266,9 @@ function ThreadMenu({
     return <ContextMenu items={[]} position={position} onClose={onClose} />;
   }
 
-  const isTrashView = activeLabel === "trash";
-  const isDraftsView = activeLabel === "drafts";
-  const isSpamView = activeLabel === "spam";
+  const isTrashView = activeLabel === 'trash';
+  const isDraftsView = activeLabel === 'drafts';
+  const isSpamView = activeLabel === 'spam';
 
   // For single thread: show current state. For multi: be generic
   const isRead = isMulti ? true : thread.isRead;
@@ -249,9 +282,9 @@ function ThreadMenu({
     if (!lastMessage) return;
     const replyTo = lastMessage.reply_to ?? lastMessage.from_address;
     openComposer({
-      mode: "reply",
+      mode: 'reply',
       to: replyTo ? [replyTo] : [],
-      subject: `Re: ${lastMessage.subject ?? ""}`,
+      subject: `Re: ${lastMessage.subject ?? ''}`,
       bodyHtml: buildQuote(lastMessage),
       threadId: lastMessage.thread_id,
       inReplyToMessageId: lastMessage.id,
@@ -266,17 +299,17 @@ function ThreadMenu({
     const allRecipients = new Set<string>();
     if (replyTo) allRecipients.add(replyTo);
     if (lastMessage.to_addresses) {
-      lastMessage.to_addresses.split(",").forEach((a) => allRecipients.add(a.trim()));
+      lastMessage.to_addresses.split(',').forEach((a) => allRecipients.add(a.trim()));
     }
     const ccList: string[] = [];
     if (lastMessage.cc_addresses) {
-      lastMessage.cc_addresses.split(",").forEach((a) => ccList.push(a.trim()));
+      lastMessage.cc_addresses.split(',').forEach((a) => ccList.push(a.trim()));
     }
     openComposer({
-      mode: "replyAll",
+      mode: 'replyAll',
       to: Array.from(allRecipients),
       cc: ccList,
-      subject: `Re: ${lastMessage.subject ?? ""}`,
+      subject: `Re: ${lastMessage.subject ?? ''}`,
       bodyHtml: buildQuote(lastMessage),
       threadId: lastMessage.thread_id,
       inReplyToMessageId: lastMessage.id,
@@ -288,9 +321,9 @@ function ThreadMenu({
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage) return;
     openComposer({
-      mode: "forward",
+      mode: 'forward',
       to: [],
-      subject: `Fwd: ${lastMessage.subject ?? ""}`,
+      subject: `Fwd: ${lastMessage.subject ?? ''}`,
       bodyHtml: buildForwardQuote(lastMessage),
       threadId: lastMessage.thread_id,
       inReplyToMessageId: lastMessage.id,
@@ -314,7 +347,7 @@ function ThreadMenu({
           const client = await getGmailClient(activeAccountId);
           await deleteDraftsForThread(client, activeAccountId, id);
         } catch (err) {
-          console.error("Failed to delete drafts:", err);
+          console.error('Failed to delete drafts:', err);
         }
       } else {
         await trashThread(activeAccountId, id, []);
@@ -379,8 +412,8 @@ function ThreadMenu({
 
   const handlePopOut = async () => {
     try {
-      const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-      const windowLabel = `thread-${thread.id.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+      const windowLabel = `thread-${thread.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
       const url = `index.html?thread=${encodeURIComponent(thread.id)}&account=${encodeURIComponent(thread.accountId)}`;
       const existing = await WebviewWindow.getByLabel(windowLabel);
       if (existing) {
@@ -389,17 +422,17 @@ function ThreadMenu({
       }
       const win = new WebviewWindow(windowLabel, {
         url,
-        title: thread.subject ?? "Thread",
+        title: thread.subject ?? 'Thread',
         width: 800,
         height: 700,
         center: true,
         dragDropEnabled: false,
       });
-      win.once("tauri://error", (e) => {
-        console.error("Failed to create pop-out window:", e);
+      win.once('tauri://error', (e) => {
+        console.error('Failed to create pop-out window:', e);
       });
     } catch (err) {
-      console.error("Failed to open pop-out window:", err);
+      console.error('Failed to open pop-out window:', err);
     }
   };
 
@@ -436,108 +469,110 @@ function ThreadMenu({
 
   const items: ContextMenuItem[] = [
     {
-      id: "reply",
-      label: "Reply",
+      id: 'reply',
+      label: 'Reply',
       icon: Reply,
-      shortcut: "r",
+      shortcut: 'r',
       disabled: isMulti,
       action: handleReply,
     },
     {
-      id: "reply-all",
-      label: "Reply All",
+      id: 'reply-all',
+      label: 'Reply All',
       icon: ReplyAll,
-      shortcut: "a",
+      shortcut: 'a',
       disabled: isMulti,
       action: handleReplyAll,
     },
     {
-      id: "forward",
-      label: "Forward",
+      id: 'forward',
+      label: 'Forward',
       icon: Forward,
-      shortcut: "f",
+      shortcut: 'f',
       disabled: isMulti,
       action: handleForward,
     },
-    { id: "sep-1", label: "", separator: true },
+    { id: 'sep-1', label: '', separator: true },
     {
-      id: "archive",
-      label: "Archive",
+      id: 'archive',
+      label: 'Archive',
       icon: Archive,
-      shortcut: "e",
+      shortcut: 'e',
       action: handleArchive,
     },
     {
-      id: "delete",
-      label: isTrashView ? "Delete Permanently" : "Delete",
+      id: 'delete',
+      label: isTrashView ? 'Delete Permanently' : 'Delete',
       icon: Trash2,
-      shortcut: "#",
+      shortcut: '#',
       danger: isTrashView,
       action: handleDelete,
     },
     {
-      id: "toggle-read",
-      label: isRead ? "Mark as Unread" : "Mark as Read",
+      id: 'toggle-read',
+      label: isRead ? 'Mark as Unread' : 'Mark as Read',
       icon: isRead ? Mail : MailOpen,
       action: handleToggleRead,
     },
     {
-      id: "toggle-star",
-      label: isStarred ? "Unstar" : "Star",
+      id: 'toggle-star',
+      label: isStarred ? 'Unstar' : 'Star',
       icon: Star,
-      shortcut: "s",
+      shortcut: 's',
       action: handleToggleStar,
     },
-    { id: "sep-2", label: "", separator: true },
+    { id: 'sep-2', label: '', separator: true },
     {
-      id: "snooze",
-      label: "Snooze...",
+      id: 'snooze',
+      label: 'Snooze...',
       icon: Clock,
-      shortcut: "h",
+      shortcut: 'h',
       action: handleSnooze,
     },
     {
-      id: "toggle-pin",
-      label: isPinned ? "Unpin" : "Pin",
+      id: 'toggle-pin',
+      label: isPinned ? 'Unpin' : 'Pin',
       icon: Pin,
-      shortcut: "p",
+      shortcut: 'p',
       action: handleTogglePin,
     },
     {
-      id: "toggle-mute",
-      label: isMuted ? "Unmute" : "Mute",
+      id: 'toggle-mute',
+      label: isMuted ? 'Unmute' : 'Mute',
       icon: VolumeX,
-      shortcut: "m",
+      shortcut: 'm',
       action: handleToggleMute,
     },
     {
-      id: "spam",
-      label: isSpamView ? "Not Spam" : "Report Spam",
+      id: 'spam',
+      label: isSpamView ? 'Not Spam' : 'Report Spam',
       icon: Ban,
-      shortcut: "!",
+      shortcut: '!',
       action: handleSpam,
     },
-    { id: "sep-3", label: "", separator: true },
+    { id: 'sep-3', label: '', separator: true },
     ...(labelItems.length > 0
-      ? [{
-          id: "apply-label",
-          label: "Apply Label",
-          icon: Tag,
-          children: labelItems,
-        }]
+      ? [
+          {
+            id: 'apply-label',
+            label: 'Apply Label',
+            icon: Tag,
+            children: labelItems,
+          },
+        ]
       : []),
     {
-      id: "move-to-folder",
-      label: "Move to Folder",
+      id: 'move-to-folder',
+      label: 'Move to Folder',
       icon: FolderInput,
-      shortcut: "v",
+      shortcut: 'v',
       action: () => {
-        uiBus.emit("move-to-folder", { threadIds: [...targetIds] });
+        uiBus.emit('move-to-folder', { threadIds: [...targetIds] });
       },
     },
     {
-      id: "move-to-category",
-      label: "Move to Category",
+      id: 'move-to-category',
+      label: 'Move to Category',
       icon: Layers,
       children: ALL_CATEGORIES.map((cat) => ({
         id: `cat-${cat}`,
@@ -547,22 +582,24 @@ function ThreadMenu({
             await updateThreadCategory(activeAccountId, id, cat, true);
             reportUserCorrection(id, cat);
           }
-          uiBus.emit("data:changed");
+          uiBus.emit('data:changed');
         },
       })),
     },
     ...(quickSteps.length > 0
       ? [
-          { id: "sep-4", label: "", separator: true },
+          { id: 'sep-4', label: '', separator: true },
           {
-            id: "quick-steps",
-            label: "Quick Steps",
+            id: 'quick-steps',
+            label: 'Quick Steps',
             icon: Zap,
             children: quickSteps.map((qs) => {
               let parsedActions: QuickStepAction[] = [];
               try {
                 parsedActions = JSON.parse(qs.actions_json) as QuickStepAction[];
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
               return {
                 id: `qs-${qs.id}`,
                 label: qs.name,
@@ -588,8 +625,8 @@ function ThreadMenu({
         ]
       : []),
     {
-      id: "pop-out",
-      label: "Open in New Window",
+      id: 'pop-out',
+      label: 'Open in New Window',
       icon: ExternalLink,
       disabled: isMulti,
       action: handlePopOut,
@@ -610,27 +647,35 @@ function MessageMenu({
 }) {
   const openComposer = useComposerStore((s) => s.openComposer);
 
-  const messageId = data["messageId"] as string;
-  const threadId = data["threadId"] as string;
-  const accountId = data["accountId"] as string | null;
-  const fromAddress = data["fromAddress"] as string | null;
-  const fromName = data["fromName"] as string | null;
-  const replyTo = data["replyTo"] as string | null;
-  const toAddresses = data["toAddresses"] as string | null;
-  const ccAddresses = data["ccAddresses"] as string | null;
-  const subject = data["subject"] as string | null;
-  const date = data["date"] as string | number;
-  const bodyHtml = data["bodyHtml"] as string | null;
-  const bodyText = data["bodyText"] as string | null;
+  const messageId = data['messageId'] as string;
+  const threadId = data['threadId'] as string;
+  const accountId = data['accountId'] as string | null;
+  const fromAddress = data['fromAddress'] as string | null;
+  const fromName = data['fromName'] as string | null;
+  const replyTo = data['replyTo'] as string | null;
+  const toAddresses = data['toAddresses'] as string | null;
+  const ccAddresses = data['ccAddresses'] as string | null;
+  const subject = data['subject'] as string | null;
+  const date = data['date'] as string | number;
+  const bodyHtml = data['bodyHtml'] as string | null;
+  const bodyText = data['bodyText'] as string | null;
 
-  const msg = { from_name: fromName, from_address: fromAddress, date, body_html: bodyHtml, body_text: bodyText, subject, to_addresses: toAddresses };
+  const msg = {
+    from_name: fromName,
+    from_address: fromAddress,
+    date,
+    body_html: bodyHtml,
+    body_text: bodyText,
+    subject,
+    to_addresses: toAddresses,
+  };
 
   const handleReply = () => {
     const replyAddr = replyTo ?? fromAddress;
     openComposer({
-      mode: "reply",
+      mode: 'reply',
       to: replyAddr ? [replyAddr] : [],
-      subject: `Re: ${subject ?? ""}`,
+      subject: `Re: ${subject ?? ''}`,
       bodyHtml: buildQuote(msg),
       threadId,
       inReplyToMessageId: messageId,
@@ -642,17 +687,17 @@ function MessageMenu({
     const allRecipients = new Set<string>();
     if (replyAddr) allRecipients.add(replyAddr);
     if (toAddresses) {
-      toAddresses.split(",").forEach((a) => allRecipients.add(a.trim()));
+      toAddresses.split(',').forEach((a) => allRecipients.add(a.trim()));
     }
     const ccList: string[] = [];
     if (ccAddresses) {
-      ccAddresses.split(",").forEach((a) => ccList.push(a.trim()));
+      ccAddresses.split(',').forEach((a) => ccList.push(a.trim()));
     }
     openComposer({
-      mode: "replyAll",
+      mode: 'replyAll',
       to: Array.from(allRecipients),
       cc: ccList,
-      subject: `Re: ${subject ?? ""}`,
+      subject: `Re: ${subject ?? ''}`,
       bodyHtml: buildQuote(msg),
       threadId,
       inReplyToMessageId: messageId,
@@ -661,9 +706,9 @@ function MessageMenu({
 
   const handleForward = () => {
     openComposer({
-      mode: "forward",
+      mode: 'forward',
       to: [],
-      subject: `Fwd: ${subject ?? ""}`,
+      subject: `Fwd: ${subject ?? ''}`,
       bodyHtml: buildForwardQuote(msg),
       threadId,
       inReplyToMessageId: messageId,
@@ -671,49 +716,49 @@ function MessageMenu({
   };
 
   const handleCopy = async () => {
-    const text = bodyText ?? "";
-    const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+    const text = bodyText ?? '';
+    const { copyToClipboard } = await import('@shared/hooks/useClipboard');
     await copyToClipboard(text);
   };
 
   const items: ContextMenuItem[] = [
     {
-      id: "reply",
-      label: "Reply",
+      id: 'reply',
+      label: 'Reply',
       icon: Reply,
-      shortcut: "r",
+      shortcut: 'r',
       action: handleReply,
     },
     {
-      id: "reply-all",
-      label: "Reply All",
+      id: 'reply-all',
+      label: 'Reply All',
       icon: ReplyAll,
-      shortcut: "a",
+      shortcut: 'a',
       action: handleReplyAll,
     },
     {
-      id: "forward",
-      label: "Forward",
+      id: 'forward',
+      label: 'Forward',
       icon: Forward,
-      shortcut: "f",
+      shortcut: 'f',
       action: handleForward,
     },
-    { id: "sep-1", label: "", separator: true },
+    { id: 'sep-1', label: '', separator: true },
     {
-      id: "copy-text",
-      label: "Copy Message Text",
+      id: 'copy-text',
+      label: 'Copy Message Text',
       icon: Copy,
       action: handleCopy,
     },
     ...(accountId
       ? [
-          { id: "sep-2", label: "", separator: true },
+          { id: 'sep-2', label: '', separator: true },
           {
-            id: "view-source",
-            label: "View Source",
+            id: 'view-source',
+            label: 'View Source',
             icon: Code,
             action: () => {
-              uiBus.emit("view-raw-message", { messageId });
+              uiBus.emit('view-raw-message', { messageId });
             },
           },
         ]
@@ -722,5 +767,3 @@ function MessageMenu({
 
   return <ContextMenu items={items} position={position} onClose={onClose} />;
 }
-
-

@@ -19,8 +19,8 @@
  * @module
  */
 
-import type { z } from "zod";
-import type { AiCompletionRequest, AiEmbeddingRequest, ModelOption } from "./types";
+import type { z } from 'zod';
+import type { AiCompletionRequest, AiEmbeddingRequest, ModelOption } from './types';
 
 // ── Original Capability Interfaces ─────────────────────────────────────────
 
@@ -78,7 +78,7 @@ export interface StructuredOutputCapable {
   completeStructured<T>(
     req: AiCompletionRequest,
     schema: z.ZodSchema<T>,
-    options?: { strict?: boolean }
+    options?: { strict?: boolean },
   ): Promise<T>;
 }
 
@@ -90,7 +90,7 @@ export interface ToolCallingCapable {
   completeWithTools(
     req: AiCompletionRequest,
     tools: ToolDefinition[],
-    options?: { toolChoice?: "auto" | "required" | "none" | { name: string } }
+    options?: { toolChoice?: 'auto' | 'required' | 'none' | { name: string } },
   ): Promise<ToolCallResult>;
 }
 
@@ -98,13 +98,10 @@ export interface ToolCallingCapable {
  * Reasoning effort control — cost lever for task routing.
  * GPT-6 Sol: reasoning_effort; Gemini 3.8: Extended Thinking; Mistral: reasoning modes.
  */
-export type ReasoningEffort = "none" | "low" | "medium" | "high";
+export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 export interface ReasoningCapable {
-  completeWithReasoning(
-    req: AiCompletionRequest,
-    effort: ReasoningEffort
-  ): Promise<string>;
+  completeWithReasoning(req: AiCompletionRequest, effort: ReasoningEffort): Promise<string>;
 }
 
 /**
@@ -115,7 +112,7 @@ export interface VisionCapable {
   completeWithImage(
     req: AiCompletionRequest,
     image: Blob,
-    options?: { detail?: "low" | "high" }
+    options?: { detail?: 'low' | 'high' },
   ): Promise<string>;
 }
 
@@ -124,10 +121,7 @@ export interface VisionCapable {
  * OpenAI: cached input at 90% discount; Gemini: context caching; Mistral: cached input at 10%.
  */
 export interface ContextCachingCapable {
-  completeWithCachedContext(
-    req: AiCompletionRequest,
-    cachedContext: string
-  ): Promise<string>;
+  completeWithCachedContext(req: AiCompletionRequest, cachedContext: string): Promise<string>;
 }
 
 /**
@@ -137,7 +131,7 @@ export interface ContextCachingCapable {
 export interface BatchProcessingCapable {
   completeBatch(
     requests: AiCompletionRequest[],
-    options?: { maxConcurrent?: number }
+    options?: { maxConcurrent?: number },
   ): Promise<string[]>;
 }
 
@@ -150,7 +144,7 @@ export interface BatchProcessingCapable {
  */
 export interface EmbeddingResult {
   vectors: number[][];
-  spaceId: string;      // e.g. "openai-te3-small-1536"
+  spaceId: string; // e.g. "openai-te3-small-1536"
   dimensions: number;
   modelId: string;
 }
@@ -219,19 +213,19 @@ export interface RealtimeVoiceSession {
 // ── Capability Union ───────────────────────────────────────────────────────
 
 export type AiCapability =
-  | "text"
-  | "streaming"
-  | "embedding"
-  | "stt"
-  | "tts"
-  | "realtime_voice"
-  | "model_discovery"
-  | "structured_output"
-  | "tool_calling"
-  | "reasoning"
-  | "vision"
-  | "context_caching"
-  | "batch_processing";
+  | 'text'
+  | 'streaming'
+  | 'embedding'
+  | 'stt'
+  | 'tts'
+  | 'realtime_voice'
+  | 'model_discovery'
+  | 'structured_output'
+  | 'tool_calling'
+  | 'reasoning'
+  | 'vision'
+  | 'context_caching'
+  | 'batch_processing';
 
 // ── Provider Capability Declaration ────────────────────────────────────────
 
@@ -247,126 +241,126 @@ export interface ProviderCapabilities {
 
 export function isTextCapable(provider: unknown): provider is TextCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "complete" in provider &&
-    typeof (provider as TextCapable).complete === "function"
+    'complete' in provider &&
+    typeof (provider as TextCapable).complete === 'function'
   );
 }
 
 export function isStreamingCapable(provider: unknown): provider is StreamingCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "streamComplete" in provider &&
-    typeof (provider as StreamingCapable).streamComplete === "function"
+    'streamComplete' in provider &&
+    typeof (provider as StreamingCapable).streamComplete === 'function'
   );
 }
 
 export function isEmbeddingCapable(provider: unknown): provider is EmbeddingCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "getEmbeddings" in provider &&
-    typeof (provider as EmbeddingCapable).getEmbeddings === "function"
+    'getEmbeddings' in provider &&
+    typeof (provider as EmbeddingCapable).getEmbeddings === 'function'
   );
 }
 
 export function isSpeechToTextCapable(provider: unknown): provider is SpeechToTextCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "transcribe" in provider &&
-    typeof (provider as SpeechToTextCapable).transcribe === "function"
+    'transcribe' in provider &&
+    typeof (provider as SpeechToTextCapable).transcribe === 'function'
   );
 }
 
 export function isTextToSpeechCapable(provider: unknown): provider is TextToSpeechCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "synthesize" in provider &&
-    typeof (provider as TextToSpeechCapable).synthesize === "function"
+    'synthesize' in provider &&
+    typeof (provider as TextToSpeechCapable).synthesize === 'function'
   );
 }
 
 export function isRealtimeVoiceCapable(provider: unknown): provider is RealtimeVoiceCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "startRealtimeSession" in provider &&
-    typeof (provider as RealtimeVoiceCapable).startRealtimeSession === "function"
+    'startRealtimeSession' in provider &&
+    typeof (provider as RealtimeVoiceCapable).startRealtimeSession === 'function'
   );
 }
 
 export function isModelDiscoveryCapable(provider: unknown): provider is ModelDiscoveryCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "listModels" in provider &&
-    typeof (provider as ModelDiscoveryCapable).listModels === "function"
+    'listModels' in provider &&
+    typeof (provider as ModelDiscoveryCapable).listModels === 'function'
   );
 }
 
 export function isConnectionTestable(provider: unknown): provider is ConnectionTestable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "testConnection" in provider &&
-    typeof (provider as ConnectionTestable).testConnection === "function"
+    'testConnection' in provider &&
+    typeof (provider as ConnectionTestable).testConnection === 'function'
   );
 }
 
 export function isStructuredOutputCapable(provider: unknown): provider is StructuredOutputCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeStructured" in provider &&
-    typeof (provider as StructuredOutputCapable).completeStructured === "function"
+    'completeStructured' in provider &&
+    typeof (provider as StructuredOutputCapable).completeStructured === 'function'
   );
 }
 
 export function isToolCallingCapable(provider: unknown): provider is ToolCallingCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeWithTools" in provider &&
-    typeof (provider as ToolCallingCapable).completeWithTools === "function"
+    'completeWithTools' in provider &&
+    typeof (provider as ToolCallingCapable).completeWithTools === 'function'
   );
 }
 
 export function isReasoningCapable(provider: unknown): provider is ReasoningCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeWithReasoning" in provider &&
-    typeof (provider as ReasoningCapable).completeWithReasoning === "function"
+    'completeWithReasoning' in provider &&
+    typeof (provider as ReasoningCapable).completeWithReasoning === 'function'
   );
 }
 
 export function isVisionCapable(provider: unknown): provider is VisionCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeWithImage" in provider &&
-    typeof (provider as VisionCapable).completeWithImage === "function"
+    'completeWithImage' in provider &&
+    typeof (provider as VisionCapable).completeWithImage === 'function'
   );
 }
 
 export function isContextCachingCapable(provider: unknown): provider is ContextCachingCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeWithCachedContext" in provider &&
-    typeof (provider as ContextCachingCapable).completeWithCachedContext === "function"
+    'completeWithCachedContext' in provider &&
+    typeof (provider as ContextCachingCapable).completeWithCachedContext === 'function'
   );
 }
 
 export function isBatchProcessingCapable(provider: unknown): provider is BatchProcessingCapable {
   return (
-    typeof provider === "object" &&
+    typeof provider === 'object' &&
     provider !== null &&
-    "completeBatch" in provider &&
-    typeof (provider as BatchProcessingCapable).completeBatch === "function"
+    'completeBatch' in provider &&
+    typeof (provider as BatchProcessingCapable).completeBatch === 'function'
   );
 }

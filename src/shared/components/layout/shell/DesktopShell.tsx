@@ -1,21 +1,21 @@
-import { useLocation, Outlet } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { PremiumSidebar } from "./PremiumSidebar";
-import { MainWorkspace } from "./MainWorkspace";
-import { WindowTitleBar } from "./WindowTitleBar";
-import { OfflineBanner } from "@shared/components/ui/OfflineBanner";
-import { OfflineQueueIndicator } from "@shared/components/ui/OfflineQueueIndicator";
-import { SyncProgressIndicator } from "@features/sync/components/SyncProgressIndicator";
-import { FrostedBackground } from "@shared/components/ui/FrostedBackground";
+import { useLocation, Outlet } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
+import { PremiumSidebar } from './PremiumSidebar';
+import { MainWorkspace } from './MainWorkspace';
+import { WindowTitleBar } from './WindowTitleBar';
+import { OfflineBanner } from '@shared/components/ui/OfflineBanner';
+import { OfflineQueueIndicator } from '@shared/components/ui/OfflineQueueIndicator';
+import { SyncProgressIndicator } from '@features/sync/components/SyncProgressIndicator';
+import { FrostedBackground } from '@shared/components/ui/FrostedBackground';
 import {
   NAV_GROUPS,
   getActiveNavFromPath,
   getActiveSubItem,
   handleNavSelect,
   handleSubItemSelect,
-} from "./navConfig";
-import { SidebarContentLayout } from "./SidebarContentLayout";
-import { useLayoutStore } from "@shared/stores/layoutStore";
+} from './navConfig';
+import { SidebarContentLayout } from './SidebarContentLayout';
+import { useLayoutStore } from '@shared/stores/layoutStore';
 
 export interface DesktopShellProps {
   syncing: boolean;
@@ -29,7 +29,7 @@ export function DesktopShell({ syncing, licenseBanner }: DesktopShellProps) {
   const sidebarCollapsed = useLayoutStore((s) => s.sidebarCollapsed);
   // Icon rail always visible. Mail panel only expands on mail pages.
   // All other pages (settings, help, tasks, calendar) show icon rail only.
-  const isMailPage = activeNavId === "mail";
+  const isMailPage = activeNavId === 'mail';
   const effectiveSidebarWidth = isMailPage && !sidebarCollapsed ? 344 : 64;
 
   const header = (

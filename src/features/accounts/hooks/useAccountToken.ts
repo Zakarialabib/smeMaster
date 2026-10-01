@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { getTokenHealth } from "@features/mail/services/tokenStatus";
+import { useQuery } from '@tanstack/react-query';
+import { getTokenHealth } from '@features/mail/services/tokenStatus';
 
-export type TokenHealth = "healthy" | "refreshing" | "expired" | "unknown";
+export type TokenHealth = 'healthy' | 'refreshing' | 'expired' | 'unknown';
 
 interface TokenHealthData {
   health: TokenHealth;
@@ -15,11 +15,11 @@ interface TokenHealthData {
  */
 export function useAccountToken(accountId: string) {
   return useQuery<TokenHealthData>({
-    queryKey: ["account-token-health", accountId],
+    queryKey: ['account-token-health', accountId],
     queryFn: async () => {
       const result = await getTokenHealth(accountId);
       return {
-        health: result.status === "error" ? "unknown" : (result.status as TokenHealth),
+        health: result.status === 'error' ? 'unknown' : (result.status as TokenHealth),
         expiresAt: result.expiresAt,
       };
     },

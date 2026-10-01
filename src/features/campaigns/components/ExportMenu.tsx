@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import { FileDown, Download, FileText } from "lucide-react";
-import { exportCampaignToCSV, downloadCSV } from "@features/mail/services/export/csvExport";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import type { CampaignAnalytics } from "@features/campaigns/services/analyticsService";
+import { useState, useRef, useEffect } from 'react';
+import { FileDown, Download, FileText } from 'lucide-react';
+import { exportCampaignToCSV, downloadCSV } from '@features/mail/services/export/csvExport';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import type { CampaignAnalytics } from '@features/campaigns/services/analyticsService';
 
 interface ExportMenuProps {
   campaignId: string;
@@ -22,19 +22,19 @@ export function ExportMenu({ campaignId, campaignName, analytics }: ExportMenuPr
       }
     }
     if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
   async function handleExportCSV() {
     setExporting(true);
     try {
       const csv = await exportCampaignToCSV(campaignId);
-      const filename = `${campaignName.replace(/\s+/g, "_")}_recipients.csv`;
+      const filename = `${campaignName.replace(/\s+/g, '_')}_recipients.csv`;
       downloadCSV(csv, filename);
     } catch (err) {
-      console.error("CSV export failed:", err);
+      console.error('CSV export failed:', err);
     } finally {
       setExporting(false);
       setOpen(false);
@@ -56,9 +56,9 @@ export function ExportMenu({ campaignId, campaignName, analytics }: ExportMenuPr
         daily_stats: analytics.dailyStats,
         top_links: analytics.topLinks,
       });
-      await invokeCommand<string>("export_analytics_report", { campaignData: data });
+      await invokeCommand<string>('export_analytics_report', { campaignData: data });
     } catch (err) {
-      console.error("PDF export failed:", err);
+      console.error('PDF export failed:', err);
     } finally {
       setExporting(false);
       setOpen(false);
@@ -73,7 +73,7 @@ export function ExportMenu({ campaignId, campaignName, analytics }: ExportMenuPr
         className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors disabled:opacity-50"
       >
         <Download size={14} />
-        {exporting ? "Exporting..." : "Export"}
+        {exporting ? 'Exporting...' : 'Export'}
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-1 w-52 glass-modal rounded-lg py-1 z-50 shadow-xl border border-border-primary">

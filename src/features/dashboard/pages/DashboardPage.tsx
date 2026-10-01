@@ -16,7 +16,12 @@ import { Modal } from '@shared/components/ui/Modal';
 import { Button } from '@shared/components/ui/Button';
 import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
 import { SkeletonPage, GlassPanel } from '@shared/components/ui';
-import { useDashboardStore, DASHBOARD_RANGE_OPTIONS, type DashboardRangeDays, type DashboardDensity } from '@features/dashboard/stores/dashboardStore';
+import {
+  useDashboardStore,
+  DASHBOARD_RANGE_OPTIONS,
+  type DashboardRangeDays,
+  type DashboardDensity,
+} from '@features/dashboard/stores/dashboardStore';
 import {
   dashboardContactsTotal,
   dashboardContactsNewWeek,
@@ -24,7 +29,7 @@ import {
   dashboardTasksOverdue,
   dashboardCampaignsTotal,
   dashboardContactGrowth,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 import type { DashboardTimeSeries } from '@shared/services/db/db-invoke';
 import { EmailVolumeWidget } from '@features/dashboard/components/EmailVolumeWidget';
 import { EmailHeatmapWidget } from '@features/dashboard/components/EmailHeatmapWidget';
@@ -129,7 +134,13 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; density: DashboardDensity }) {
+function HeroMetrics({
+  rangeDays,
+  density,
+}: {
+  rangeDays: DashboardRangeDays;
+  density: DashboardDensity;
+}) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<HeroMetricData[]>([]);
@@ -204,7 +215,8 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
         : featuredMetric.trendPct >= -5
           ? 'text-warning'
           : 'text-danger';
-  const ArrowIcon = featuredMetric.trendPct !== undefined && featuredMetric.trendPct >= 0 ? ArrowUp : ArrowDown;
+  const ArrowIcon =
+    featuredMetric.trendPct !== undefined && featuredMetric.trendPct >= 0 ? ArrowUp : ArrowDown;
 
   return (
     <GlassPanel
@@ -235,7 +247,9 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
               </span>
               {isFeatured && m.trendPct !== undefined && (
                 <span className="mt-1 flex items-center gap-1 text-xs">
-                  <span className={`inline-flex items-center gap-0.5 font-semibold ${semanticColor}`}>
+                  <span
+                    className={`inline-flex items-center gap-0.5 font-semibold ${semanticColor}`}
+                  >
                     <ArrowIcon size={12} aria-hidden="true" />
                     {Math.abs(m.trendPct)}%
                   </span>
@@ -297,11 +311,7 @@ function WidgetWrapper({
 }) {
   return (
     <ErrorBoundary name={`Widget-${widgetId}`}>
-      <GlassPanel
-        key={refreshKey}
-        variant="card"
-        className={density === 'compact' ? 'p-3' : 'p-4'}
-      >
+      <GlassPanel key={refreshKey} variant="card" className={density === 'compact' ? 'p-3' : 'p-4'}>
         {children}
       </GlassPanel>
     </ErrorBoundary>
@@ -316,15 +326,8 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  const {
-    widgets,
-    loaded,
-    loadPreferences,
-    rangeDays,
-    density,
-    setRangeDays,
-    setDensity,
-  } = useDashboardStore();
+  const { widgets, loaded, loadPreferences, rangeDays, density, setRangeDays, setDensity } =
+    useDashboardStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -468,12 +471,7 @@ export function DashboardPage() {
         aria-label="Dashboard widgets"
       >
         {visibleWidgets.map((w) => (
-          <WidgetWrapper
-            key={w.id}
-            widgetId={w.id}
-            density={density}
-            refreshKey={refreshNonce}
-          >
+          <WidgetWrapper key={w.id} widgetId={w.id} density={density} refreshKey={refreshNonce}>
             {renderWidget(w.id, rangeDays)}
           </WidgetWrapper>
         ))}

@@ -1,14 +1,21 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   getWorkflowRules,
   upsertWorkflowRule,
   deleteWorkflowRule,
   toggleWorkflowRule,
-} from "@features/settings/db/workflowRules";
-import type { WorkflowRule } from "@features/settings/db/workflowRules";
-import { createAsyncActions } from "@shared/stores/createAsyncStore";
-import { createDeleteConfirmation, type DeleteConfirmationSlice } from "@shared/stores/createDeleteConfirmation";
-import { createEditorSlice, type EditorSlice, type EditorSliceOptions } from "@shared/stores/createEditorSlice";
+} from '@features/settings/db/workflowRules';
+import type { WorkflowRule } from '@features/settings/db/workflowRules';
+import { createAsyncActions } from '@shared/stores/createAsyncStore';
+import {
+  createDeleteConfirmation,
+  type DeleteConfirmationSlice,
+} from '@shared/stores/createDeleteConfirmation';
+import {
+  createEditorSlice,
+  type EditorSlice,
+  type EditorSliceOptions,
+} from '@shared/stores/createEditorSlice';
 
 // ── Action type matching the inline form structure ─────────────────────────
 
@@ -27,7 +34,7 @@ export interface WorkflowStep {
 
 // ── Editor mode ────────────────────────────────────────────────────────────
 
-export type EditorMode = "simple" | "steps" | "builder";
+export type EditorMode = 'simple' | 'steps' | 'builder';
 
 // ── Editor form state ──────────────────────────────────────────────────────
 
@@ -47,11 +54,12 @@ export interface AutomationEditorState {
 
 // ── View mode for the rules list ───────────────────────────────────────────
 
-export type ViewMode = "cards" | "list";
+export type ViewMode = 'cards' | 'list';
 
 // ── Store ──────────────────────────────────────────────────────────────────
 
-interface AutomationState extends AsyncSlice, EditorSlice<AutomationEditorState, WorkflowRule>, DeleteConfirmationSlice {
+interface AutomationState
+  extends AsyncSlice, EditorSlice<AutomationEditorState, WorkflowRule>, DeleteConfirmationSlice {
   /** All rules for the active account */
   rules: WorkflowRule[];
 
@@ -113,12 +121,12 @@ interface AsyncSlice {
 
 const DEFAULT_EDITOR_BOTH: AutomationEditorState = {
   editingId: null,
-  name: "",
-  triggerEvent: "email_received",
-  triggerConditions: "",
+  name: '',
+  triggerEvent: 'email_received',
+  triggerConditions: '',
   actions: [],
   steps: [],
-  editorMode: "simple",
+  editorMode: 'simple',
 };
 
 const editorOptions: EditorSliceOptions<AutomationEditorState, WorkflowRule> = {
@@ -135,19 +143,25 @@ const editorOptions: EditorSliceOptions<AutomationEditorState, WorkflowRule> = {
       editingId: rule.id,
       name: rule.name,
       triggerEvent: rule.trigger_event,
-      triggerConditions: rule.trigger_conditions ?? "",
+      triggerConditions: rule.trigger_conditions ?? '',
       actions: parsedItems,
       steps: parsedItems.map((a) => ({ ...a })),
-      editorMode: "simple",
+      editorMode: 'simple',
     };
   },
 };
 
 export const useAutomationStore = create<AutomationState>((set, get) => {
   const { withLoading } = createAsyncActions(set);
-  const editorSlice = createEditorSlice<AutomationEditorState, WorkflowRule>(set, get, editorOptions);
+  const editorSlice = createEditorSlice<AutomationEditorState, WorkflowRule>(
+    set,
+    get,
+    editorOptions,
+  );
   const deleteSlice = createDeleteConfirmation(set, get, {
-    onDelete: async (id) => { await get().deleteRule(id); },
+    onDelete: async (id) => {
+      await get().deleteRule(id);
+    },
   });
 
   return {
@@ -157,7 +171,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
 
     showAiModal: false,
     showTemplates: false,
-    viewMode: "cards" as ViewMode,
+    viewMode: 'cards' as ViewMode,
     showBuilder: false,
 
     ...editorSlice,
@@ -219,12 +233,10 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
       try {
         await toggleWorkflowRule(id, isActive);
         set((state) => ({
-          rules: state.rules.map((r) =>
-            r.id === id ? { ...r, is_active: isActive ? 1 : 0 } : r,
-          ),
+          rules: state.rules.map((r) => (r.id === id ? { ...r, is_active: isActive ? 1 : 0 } : r)),
         }));
       } catch (err) {
-        console.error("Failed to toggle automation rule:", err);
+        console.error('Failed to toggle automation rule:', err);
       }
     },
 
@@ -235,7 +247,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
           rules: state.rules.filter((r) => r.id !== id),
         }));
       } catch (err) {
-        console.error("Failed to delete automation rule:", err);
+        console.error('Failed to delete automation rule:', err);
       }
     },
 
@@ -246,7 +258,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
 
       // Serialize whichever data is relevant based on editor mode
       const serializedActions =
-        editor.editorMode === "steps" && editor.steps.length > 0
+        editor.editorMode === 'steps' && editor.steps.length > 0
           ? JSON.stringify(editor.steps)
           : JSON.stringify(editor.actions);
 
@@ -278,9 +290,22 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
 
     // ── Builder ────────────────────────────────────────────────────────────
     openBuilder: () =>
-      set({ showBuilder: true, showEditor: false, editorHistory: [], editorFuture: [], canUndo: false, canRedo: false }),
+      set({
+        showBuilder: true,
+        showEditor: false,
+        editorHistory: [],
+        editorFuture: [],
+        canUndo: false,
+        canRedo: false,
+      }),
     closeBuilder: () =>
-      set({ showBuilder: false, editorHistory: [], editorFuture: [], canUndo: false, canRedo: false }),
+      set({
+        showBuilder: false,
+        editorHistory: [],
+        editorFuture: [],
+        canUndo: false,
+        canRedo: false,
+      }),
     openBuilderForRule: (rule) => {
       let parsedItems: AutomationAction[] = [];
       try {
@@ -300,10 +325,10 @@ export const useAutomationStore = create<AutomationState>((set, get) => {
           editingId: rule.id,
           name: rule.name,
           triggerEvent: rule.trigger_event,
-          triggerConditions: rule.trigger_conditions ?? "",
+          triggerConditions: rule.trigger_conditions ?? '',
           actions: parsedItems,
           steps: parsedItems.map((a) => ({ ...a })),
-          editorMode: "builder",
+          editorMode: 'builder',
         },
       });
     },

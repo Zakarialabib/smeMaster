@@ -1,5 +1,5 @@
-import { Shield } from "lucide-react";
-import { getScoreVariant } from "@shared/utils/scoreVariant";
+import { Shield } from 'lucide-react';
+import { getScoreVariant } from '@shared/utils/scoreVariant';
 
 interface Props {
   domain: string;

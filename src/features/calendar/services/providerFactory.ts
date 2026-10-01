@@ -1,7 +1,7 @@
-﻿import type { CalendarProvider } from "./types";
-import { GoogleCalendarProvider } from "./googleCalendarProvider";
-import { CalDAVProvider } from "./caldavProvider";
-import { getAccount } from "@features/accounts/db/accounts";
+﻿import type { CalendarProvider } from './types';
+import { GoogleCalendarProvider } from './googleCalendarProvider';
+import { CalDAVProvider } from './caldavProvider';
+import { getAccount } from '@features/accounts/db/accounts';
 
 const providerCache = new Map<string, CalendarProvider>();
 
@@ -19,19 +19,19 @@ export async function getCalendarProvider(accountId: string): Promise<CalendarPr
   let provider: CalendarProvider;
 
   // Standalone CalDAV account
-  if (account.provider === "caldav") {
+  if (account.provider === 'caldav') {
     provider = new CalDAVProvider(accountId);
   }
   // IMAP account with CalDAV configured
-  else if (account.calendar_provider === "caldav" && account.caldav_url) {
+  else if (account.calendar_provider === 'caldav' && account.caldav_url) {
     provider = new CalDAVProvider(accountId);
   }
   // Gmail API account
-  else if (account.provider === "gmail_api" || account.calendar_provider === "google_api") {
+  else if (account.provider === 'gmail_api' || account.calendar_provider === 'google_api') {
     provider = new GoogleCalendarProvider(accountId);
   }
   // Default for Gmail accounts
-  else if (account.provider === "gmail_api") {
+  else if (account.provider === 'gmail_api') {
     provider = new GoogleCalendarProvider(accountId);
   } else {
     throw new Error(`No calendar provider configured for account ${accountId}`);
@@ -48,9 +48,9 @@ export async function hasCalendarSupport(accountId: string): Promise<boolean> {
   const account = await getAccount(accountId);
   if (!account) return false;
 
-  if (account.provider === "caldav") return true;
-  if (account.provider === "gmail_api") return true;
-  if (account.calendar_provider === "caldav" && account.caldav_url) return true;
+  if (account.provider === 'caldav') return true;
+  if (account.provider === 'gmail_api') return true;
+  if (account.calendar_provider === 'caldav' && account.caldav_url) return true;
   return false;
 }
 

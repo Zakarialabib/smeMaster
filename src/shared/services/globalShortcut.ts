@@ -2,14 +2,16 @@ import {
   register as tauriRegister,
   unregister as tauriUnregister,
   isRegistered as tauriIsRegistered,
-} from "@tauri-apps/plugin-global-shortcut";
+} from '@tauri-apps/plugin-global-shortcut';
 
 /** Check if running inside a Tauri webview. */
 function isTauri(): boolean {
-  return typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+  return (
+    typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
+  );
 }
 
-const DEFAULT_SHORTCUT = "CmdOrCtrl+Shift+M";
+const DEFAULT_SHORTCUT = 'CmdOrCtrl+Shift+M';
 
 let currentHandler: (() => void) | null = null;
 let currentShortcut: string | null = null;
@@ -20,7 +22,7 @@ let currentShortcut: string | null = null;
  */
 export async function initGlobalShortcut(): Promise<void> {
   if (!isTauri()) {
-    console.info("Global shortcuts disabled — not in Tauri environment");
+    console.info('Global shortcuts disabled — not in Tauri environment');
     return;
   }
   // No-op: registration happens via registerComposeShortcut
@@ -37,20 +39,20 @@ export async function registerComposeShortcut(shortcut: string): Promise<void> {
   }
 
   if (!isTauri()) {
-    console.info("Global shortcuts disabled — not in Tauri environment");
+    console.info('Global shortcuts disabled — not in Tauri environment');
     currentShortcut = shortcut;
     return;
   }
 
   try {
     await tauriRegister(shortcut, (event) => {
-      if (event.state === "Pressed") {
+      if (event.state === 'Pressed') {
         currentHandler?.();
       }
     });
     currentShortcut = shortcut;
   } catch (err) {
-    console.error("Failed to register global shortcut:", err);
+    console.error('Failed to register global shortcut:', err);
   }
 }
 

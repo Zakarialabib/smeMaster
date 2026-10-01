@@ -1,8 +1,8 @@
 // src/features/onboarding/components/FeatureGateBanner.tsx
-import { useState, useEffect, type ReactNode } from "react";
-import { X, Mail } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { AddAccount } from "@features/accounts/components/AddAccount";
+import { useState, useEffect, type ReactNode } from 'react';
+import { X, Mail } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { AddAccount } from '@features/accounts/components/AddAccount';
 
 interface FeatureGateBannerProps {
   featureName: string;
@@ -10,17 +10,13 @@ interface FeatureGateBannerProps {
   storageKey?: string;
 }
 
-const SESSION_PREFIX = "smemaster.feature-banner.dismissed.";
+const SESSION_PREFIX = 'smemaster.feature-banner.dismissed.';
 
-export function FeatureGateBanner({
-  featureName,
-  icon,
-  storageKey,
-}: FeatureGateBannerProps) {
+export function FeatureGateBanner({ featureName, icon, storageKey }: FeatureGateBannerProps) {
   const [dismissed, setDismissed] = useState(() => {
     try {
-      const key = storageKey ?? featureName.toLowerCase().replace(/\s+/g, "-");
-      return sessionStorage.getItem(SESSION_PREFIX + key) === "true";
+      const key = storageKey ?? featureName.toLowerCase().replace(/\s+/g, '-');
+      return sessionStorage.getItem(SESSION_PREFIX + key) === 'true';
     } catch {
       return false;
     }
@@ -36,9 +32,11 @@ export function FeatureGateBanner({
 
   const handleDismiss = () => {
     try {
-      const key = storageKey ?? featureName.toLowerCase().replace(/\s+/g, "-");
-      sessionStorage.setItem(SESSION_PREFIX + key, "true");
-    } catch { /* noop */ }
+      const key = storageKey ?? featureName.toLowerCase().replace(/\s+/g, '-');
+      sessionStorage.setItem(SESSION_PREFIX + key, 'true');
+    } catch {
+      /* noop */
+    }
     setDismissed(true);
   };
 
@@ -53,14 +51,11 @@ export function FeatureGateBanner({
           )}
         </div>
         <p className="text-sm text-muted-foreground flex-1">
-          Connect your email to use <span className="font-medium text-foreground">{featureName}</span> features
+          Connect your email to use{' '}
+          <span className="font-medium text-foreground">{featureName}</span> features
         </p>
         <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowAddAccount(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setShowAddAccount(true)}>
             Connect Email
           </Button>
           <button
@@ -77,7 +72,7 @@ export function FeatureGateBanner({
       {showAddAccount && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          style={{ animation: "fadeIn 200ms ease-out both" }}
+          style={{ animation: 'fadeIn 200ms ease-out both' }}
         >
           <div className="relative rounded-2xl border border-border bg-card p-6 shadow-2xl w-full max-w-md">
             <button

@@ -7,7 +7,7 @@ export type InputModality = 'touch' | 'mouse' | 'keyboard';
  * - 'touch': user is interacting via touch screen
  * - 'mouse': user is using a mouse/pointer
  * - 'keyboard': user is navigating via keyboard (Tab/Enter)
- * 
+ *
  * Adds a data attribute `data-input-modality` to <html> element
  * for CSS targeting (e.g., `.touch .button { min-height: 44px }`).
  */

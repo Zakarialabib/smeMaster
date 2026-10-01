@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Globe,
   Github,
@@ -16,13 +16,13 @@ import {
   Smartphone,
   GlobeLock,
   BellRing,
-} from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { resetOnboarding } from "@shared/services/settings/settingsService";
-import { cn } from "@shared/utils/cn";
-import appIcon from "@/assets/icon.png";
+} from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { resetOnboarding } from '@shared/services/settings/settingsService';
+import { cn } from '@shared/utils/cn';
+import appIcon from '@/assets/icon.png';
 
 /* ─── Feature highlights ─── */
 
@@ -30,57 +30,57 @@ interface FeatureHighlight {
   icon: typeof Sparkles;
   label: string;
   description: string;
-  tone: "accent" | "success" | "warning" | "info" | "neutral";
+  tone: 'accent' | 'success' | 'warning' | 'info' | 'neutral';
 }
 
 const FEATURES: FeatureHighlight[] = [
   {
     icon: Shield,
-    label: "Email Suite",
-    description: "Unified inbox, composing, campaigns, and warmup",
-    tone: "accent",
+    label: 'Email Suite',
+    description: 'Unified inbox, composing, campaigns, and warmup',
+    tone: 'accent',
   },
   {
     icon: Layers,
-    label: "CRM & Contacts",
-    description: "Full contact management with pipeline tracking",
-    tone: "success",
+    label: 'CRM & Contacts',
+    description: 'Full contact management with pipeline tracking',
+    tone: 'success',
   },
   {
     icon: Zap,
-    label: "Task Automation",
-    description: "Rule-based automation, schedule & trigger actions",
-    tone: "warning",
+    label: 'Task Automation',
+    description: 'Rule-based automation, schedule & trigger actions',
+    tone: 'warning',
   },
   {
     icon: Server,
-    label: "Local RAG AI",
-    description: "On-device AI for smart compose, search & generation",
-    tone: "info",
+    label: 'Local RAG AI',
+    description: 'On-device AI for smart compose, search & generation',
+    tone: 'info',
   },
   {
     icon: Lock,
-    label: "PGP Security",
-    description: "End-to-end encryption with PGP key management",
-    tone: "accent",
+    label: 'PGP Security',
+    description: 'End-to-end encryption with PGP key management',
+    tone: 'accent',
   },
   {
     icon: Smartphone,
-    label: "Offline-First",
-    description: "Full offline support with multi-device CRDT sync",
-    tone: "success",
+    label: 'Offline-First',
+    description: 'Full offline support with multi-device CRDT sync',
+    tone: 'success',
   },
   {
     icon: GlobeLock,
-    label: "Morocco DGI",
-    description: "DGI-compliant invoicing, POS & ERP module",
-    tone: "info",
+    label: 'Morocco DGI',
+    description: 'DGI-compliant invoicing, POS & ERP module',
+    tone: 'info',
   },
   {
     icon: BellRing,
-    label: "360° Dashboard",
-    description: "Unified view of email, tasks, calendar, and CRM",
-    tone: "warning",
+    label: '360° Dashboard',
+    description: 'Unified view of email, tasks, calendar, and CRM',
+    tone: 'warning',
   },
 ];
 
@@ -88,7 +88,12 @@ const FEATURES: FeatureHighlight[] = [
 
 function TechBadge({ label, color }: { label: string; color: string }) {
   return (
-    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border", color)}>
+    <span
+      className={cn(
+        'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
+        color,
+      )}
+    >
       {label}
     </span>
   );
@@ -108,7 +113,7 @@ function LinkRow({
   href: string;
 }) {
   const openExternal = async (url: string) => {
-    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    const { openUrl } = await import('@tauri-apps/plugin-opener');
     await openUrl(url);
   };
 
@@ -124,7 +129,10 @@ function LinkRow({
         <span className="text-sm font-medium text-text-primary">{label}</span>
         <p className="text-xs text-text-tertiary">{sublabel}</p>
       </div>
-      <ExternalLink size={14} className="text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <ExternalLink
+        size={14}
+        className="text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+      />
     </button>
   );
 }
@@ -132,12 +140,10 @@ function LinkRow({
 /* ─── AboutTab ─── */
 
 export default function AboutTab() {
-  const [appVersion, setAppVersion] = useState("");
+  const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
-    import("@tauri-apps/api/app").then(({ getVersion }) =>
-      getVersion().then(setAppVersion),
-    );
+    import('@tauri-apps/api/app').then(({ getVersion }) => getVersion().then(setAppVersion));
   }, []);
 
   const { t } = useTranslation();
@@ -157,11 +163,11 @@ export default function AboutTab() {
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-bold text-text-primary tracking-tight">SMEMaster</h2>
             <p className="text-sm text-text-secondary mt-1 leading-relaxed max-w-lg">
-              {t("settings.appDescription")}
+              {t('settings.appDescription')}
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-[11px] font-bold">
-                {appVersion ? `v${appVersion}` : "..."}
+                {appVersion ? `v${appVersion}` : '...'}
               </span>
               <span className="text-[10px] text-text-tertiary">|</span>
               <span className="text-[10px] text-text-tertiary">Apache 2.0 License</span>
@@ -170,7 +176,10 @@ export default function AboutTab() {
             <div className="flex flex-wrap gap-1.5 mt-3">
               <TechBadge label="Tauri v2" color="bg-accent/10 text-accent border-accent/20" />
               <TechBadge label="React 19" color="bg-sky-500/10 text-sky-400 border-sky-500/20" />
-              <TechBadge label="Rust" color="bg-orange-500/10 text-orange-400 border-orange-500/20" />
+              <TechBadge
+                label="Rust"
+                color="bg-orange-500/10 text-orange-400 border-orange-500/20"
+              />
               <TechBadge label="SQLite" color="bg-blue-500/10 text-blue-400 border-blue-500/20" />
             </div>
           </div>
@@ -187,23 +196,23 @@ export default function AboutTab() {
             <div
               key={feature.label}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
-                feature.tone === "accent" && "bg-accent/5 border-accent/20",
-                feature.tone === "success" && "bg-success/5 border-success/20",
-                feature.tone === "warning" && "bg-warning/5 border-warning/20",
-                feature.tone === "info" && "bg-info/5 border-info/20",
-                feature.tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+                'flex items-start gap-3 p-3 rounded-xl border transition-all hover:shadow-sm',
+                feature.tone === 'accent' && 'bg-accent/5 border-accent/20',
+                feature.tone === 'success' && 'bg-success/5 border-success/20',
+                feature.tone === 'warning' && 'bg-warning/5 border-warning/20',
+                feature.tone === 'info' && 'bg-info/5 border-info/20',
+                feature.tone === 'neutral' && 'bg-bg-tertiary/40 border-border/40',
               )}
             >
               <div className="p-2 rounded-lg bg-white/50">
                 <feature.icon
                   className={cn(
-                    "w-4 h-4",
-                    feature.tone === "accent" && "text-accent",
-                    feature.tone === "success" && "text-success",
-                    feature.tone === "warning" && "text-warning",
-                    feature.tone === "info" && "text-info",
-                    feature.tone === "neutral" && "text-text-tertiary",
+                    'w-4 h-4',
+                    feature.tone === 'accent' && 'text-accent',
+                    feature.tone === 'success' && 'text-success',
+                    feature.tone === 'warning' && 'text-warning',
+                    feature.tone === 'info' && 'text-info',
+                    feature.tone === 'neutral' && 'text-text-tertiary',
                   )}
                 />
               </div>
@@ -217,23 +226,23 @@ export default function AboutTab() {
       </SettingGroup>
 
       {/* ── Links ──────────────────────────────────────────────────── */}
-      <SettingGroup title={t("settings.links")}>
+      <SettingGroup title={t('settings.links')}>
         <div className="space-y-1.5">
           <LinkRow
             icon={Globe}
-            label={t("settings.website")}
+            label={t('settings.website')}
             sublabel="smemaster.app"
             href="https://smemaster.app"
           />
           <LinkRow
             icon={Github}
-            label={t("settings.githubRepo")}
+            label={t('settings.githubRepo')}
             sublabel="Zakarialabib/smeMaster"
             href="https://github.com/Zakarialabib/smeMaster"
           />
           <LinkRow
             icon={Mail}
-            label={t("settings.contact")}
+            label={t('settings.contact')}
             sublabel="info@smemaster.app"
             href="mailto:info@smemaster.app"
           />
@@ -241,18 +250,20 @@ export default function AboutTab() {
       </SettingGroup>
 
       {/* ── License ──────────────────────────────────────────────────── */}
-      <SettingGroup title={t("settings.license")}>
+      <SettingGroup title={t('settings.license')}>
         <div className="px-4 py-3 bg-bg-secondary rounded-xl border border-border/50">
           <div className="flex items-center gap-2 mb-2">
             <Scale size={15} className="text-text-tertiary" />
-            <span className="text-sm font-medium text-text-primary">{t("settings.apacheLicense")}</span>
+            <span className="text-sm font-medium text-text-primary">
+              {t('settings.apacheLicense')}
+            </span>
           </div>
           <p className="text-xs text-text-secondary leading-relaxed mb-3">
-            {t("settings.licenseText")}{" "}
+            {t('settings.licenseText')}{' '}
             <button
               onClick={async () => {
-                const { openUrl } = await import("@tauri-apps/plugin-opener");
-                await openUrl("https://www.apache.org/licenses/LICENSE-2.0");
+                const { openUrl } = await import('@tauri-apps/plugin-opener');
+                await openUrl('https://www.apache.org/licenses/LICENSE-2.0');
               }}
               className="text-accent hover:text-accent-hover transition-colors"
             >
@@ -260,7 +271,7 @@ export default function AboutTab() {
             </button>
           </p>
           <p className="text-xs text-text-tertiary leading-relaxed">
-            {t("settings.copyrightText")}
+            {t('settings.copyrightText')}
           </p>
         </div>
       </SettingGroup>
@@ -282,9 +293,18 @@ export default function AboutTab() {
         </div>
         <HelpCard
           items={[
-            { type: "why", text: "The About section gives you version info, license details, and access to project resources — useful for troubleshooting, compliance, and staying updated." },
-            { type: "how", text: "Version information is read from the app bundle. License info links to the open-source Apache 2.0 license. Reset onboarding clears the 'seen' flag so the intro screens reappear." },
-            { type: "when", text: "Check the About page when reporting bugs (include version), reviewing license terms, or wanting to re-experience the onboarding tutorial." },
+            {
+              type: 'why',
+              text: 'The About section gives you version info, license details, and access to project resources — useful for troubleshooting, compliance, and staying updated.',
+            },
+            {
+              type: 'how',
+              text: "Version information is read from the app bundle. License info links to the open-source Apache 2.0 license. Reset onboarding clears the 'seen' flag so the intro screens reappear.",
+            },
+            {
+              type: 'when',
+              text: 'Check the About page when reporting bugs (include version), reviewing license terms, or wanting to re-experience the onboarding tutorial.',
+            },
           ]}
         />
       </SettingGroup>

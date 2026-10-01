@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { useTranslation } from 'react-i18next';
 import {
   Smartphone,
   Monitor,
@@ -10,10 +10,10 @@ import {
   CheckCircle2,
   AlertCircle,
   Wifi,
-} from "lucide-react";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { syncNow, SyncState, SyncResult } from "../services/sync/syncService";
-import { isTauriEnvironment } from "@shared/services/ipc";
+} from 'lucide-react';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { syncNow, SyncState, SyncResult } from '../services/sync/syncService';
+import { isTauriEnvironment } from '@shared/services/ipc';
 
 interface PairedDevice {
   device_id: string;
@@ -27,7 +27,7 @@ interface PairedDevice {
 const RECENT_SYNC_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 
 function formatTimestamp(iso: string | null | undefined): string {
-  if (!iso) return "";
+  if (!iso) return '';
   try {
     const d = new Date(iso);
     return d.toLocaleString();
@@ -53,14 +53,12 @@ export function DevicePairingPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Global sync state
-  const [globalSyncState, setGlobalSyncState] = useState<SyncState>("idle");
+  const [globalSyncState, setGlobalSyncState] = useState<SyncState>('idle');
   const [globalLastSync, setGlobalLastSync] = useState<string | null>(null);
   const [globalSyncError, setGlobalSyncError] = useState<string | null>(null);
 
   // Per-device sync states { deviceId: SyncState }
-  const [deviceSyncStates, setDeviceSyncStates] = useState<
-    Record<string, SyncState>
-  >({});
+  const [deviceSyncStates, setDeviceSyncStates] = useState<Record<string, SyncState>>({});
 
   useEffect(() => {
     loadDevices();
@@ -70,7 +68,7 @@ export function DevicePairingPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await invokeCommand<PairedDevice[]>("get_pairings");
+      const result = await invokeCommand<PairedDevice[]>('get_pairings');
       setDevices(result);
     } catch (err) {
       setError(String(err));
@@ -80,7 +78,7 @@ export function DevicePairingPage() {
   }
 
   const handleGlobalSync = useCallback(async () => {
-    setGlobalSyncState("syncing");
+    setGlobalSyncState('syncing');
     setGlobalSyncError(null);
     let allSuccess = true;
     let lastErr: string | null = null;
@@ -89,56 +87,53 @@ export function DevicePairingPage() {
       const result = await syncNow(device.device_id);
       if (!result.success) {
         allSuccess = false;
-        lastErr = result.error ?? "Unknown error";
+        lastErr = result.error ?? 'Unknown error';
       }
     }
 
     if (allSuccess) {
-      setGlobalSyncState("success");
+      setGlobalSyncState('success');
       setGlobalLastSync(new Date().toISOString());
     } else {
-      setGlobalSyncState("error");
+      setGlobalSyncState('error');
       setGlobalSyncError(lastErr);
     }
 
     // Reset back to idle after 3s on success, stay on error
     if (allSuccess) {
-      setTimeout(() => setGlobalSyncState("idle"), 3000);
+      setTimeout(() => setGlobalSyncState('idle'), 3000);
     }
   }, [devices]);
 
-  const handleDeviceSync = useCallback(
-    async (deviceId: string) => {
-      setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: "syncing" }));
-      const result: SyncResult = await syncNow(deviceId);
+  const handleDeviceSync = useCallback(async (deviceId: string) => {
+    setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: 'syncing' }));
+    const result: SyncResult = await syncNow(deviceId);
 
-      if (result.success) {
-        setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: "success" }));
-        setGlobalLastSync(new Date().toISOString());
-        // Refresh devices to update last_seen_at
-        try {
-          const updated = await invokeCommand<PairedDevice[]>("get_pairings");
-          setDevices(updated);
-        } catch {
-          // Silently ignore refresh failure
-        }
-        setTimeout(() => {
-          setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: "idle" }));
-        }, 3000);
-      } else {
-        setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: "error" }));
-        setError(result.error ?? "Sync failed");
-        setTimeout(() => {
-          setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: "idle" }));
-        }, 5000);
+    if (result.success) {
+      setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: 'success' }));
+      setGlobalLastSync(new Date().toISOString());
+      // Refresh devices to update last_seen_at
+      try {
+        const updated = await invokeCommand<PairedDevice[]>('get_pairings');
+        setDevices(updated);
+      } catch {
+        // Silently ignore refresh failure
       }
-    },
-    [],
-  );
+      setTimeout(() => {
+        setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: 'idle' }));
+      }, 3000);
+    } else {
+      setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: 'error' }));
+      setError(result.error ?? 'Sync failed');
+      setTimeout(() => {
+        setDeviceSyncStates((prev) => ({ ...prev, [deviceId]: 'idle' }));
+      }, 5000);
+    }
+  }, []);
 
   async function handleRemove(deviceId: string) {
     try {
-      await invokeCommand("remove_device_pairing", { deviceId });
+      await invokeCommand('remove_device_pairing', { deviceId });
       setDevices((prev) => prev.filter((d) => d.device_id !== deviceId));
     } catch (err) {
       setError(String(err));
@@ -153,33 +148,31 @@ export function DevicePairingPage() {
 
   /** CSS class for the global sync status indicator */
   const statusIndicatorClass = {
-    idle: "bg-text-tertiary",
-    syncing: "bg-accent animate-pulse",
-    success: "bg-success",
-    error: "bg-danger-text",
+    idle: 'bg-text-tertiary',
+    syncing: 'bg-accent animate-pulse',
+    success: 'bg-success',
+    error: 'bg-danger-text',
   }[globalSyncState];
 
   /** Status text for the indicator */
   const statusLabel = {
-    idle: t("settings.syncStatusIdle", "Idle"),
-    syncing: t("settings.syncStatusSyncing", "Syncing..."),
-    success: t("settings.syncStatusSuccess", "Sync complete"),
-    error: t("settings.syncStatusError", "Sync failed"),
+    idle: t('settings.syncStatusIdle', 'Idle'),
+    syncing: t('settings.syncStatusSyncing', 'Syncing...'),
+    success: t('settings.syncStatusSuccess', 'Sync complete'),
+    error: t('settings.syncStatusError', 'Sync failed'),
   }[globalSyncState];
 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center text-text-tertiary text-sm p-4">
-        {t("common.loading")}
+        {t('common.loading')}
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col p-4 max-w-2xl mx-auto w-full">
-      <h1 className="text-xl font-semibold mb-4">
-        {t("settings.devicePairing")}
-      </h1>
+      <h1 className="text-xl font-semibold mb-4">{t('settings.devicePairing')}</h1>
 
       {/* ── Global Sync Section ── */}
       <div className="bg-elevated-bg rounded-lg border border-border p-3 mb-4">
@@ -191,8 +184,8 @@ export function DevicePairingPage() {
               aria-hidden="true"
             />
             <span className="text-sm text-text-secondary">
-              {globalSyncState === "idle" && globalLastSync
-                ? t("settings.lastSync", {
+              {globalSyncState === 'idle' && globalLastSync
+                ? t('settings.lastSync', {
                     time: formatTimestamp(globalLastSync),
                   })
                 : statusLabel}
@@ -201,22 +194,18 @@ export function DevicePairingPage() {
 
           <button
             onClick={handleGlobalSync}
-            disabled={globalSyncState === "syncing"}
+            disabled={globalSyncState === 'syncing'}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-accent text-white hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw
-              className={`w-4 h-4 ${
-                globalSyncState === "syncing" ? "animate-spin" : ""
-              }`}
+              className={`w-4 h-4 ${globalSyncState === 'syncing' ? 'animate-spin' : ''}`}
             />
-            {globalSyncState === "syncing"
-              ? t("common.syncing")
-              : t("settings.syncNow")}
+            {globalSyncState === 'syncing' ? t('common.syncing') : t('settings.syncNow')}
           </button>
         </div>
 
         {/* Global sync error */}
-        {globalSyncState === "error" && globalSyncError && (
+        {globalSyncState === 'error' && globalSyncError && (
           <div className="flex items-center gap-2 mt-2 text-xs text-danger-text">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>{globalSyncError}</span>
@@ -227,11 +216,8 @@ export function DevicePairingPage() {
       {/* Global error display */}
       {error && !globalSyncError && (
         <div className="bg-danger-bg border border-danger-border text-danger-text rounded-lg p-3 mb-4 text-sm">
-          {!isTauriEnvironment() || error.includes("Tauri backend is not available")
-            ? t(
-                "settings.pairingUnavailableDev",
-                "Device pairing is available in the desktop app.",
-              )
+          {!isTauriEnvironment() || error.includes('Tauri backend is not available')
+            ? t('settings.pairingUnavailableDev', 'Device pairing is available in the desktop app.')
             : error}
         </div>
       )}
@@ -239,13 +225,12 @@ export function DevicePairingPage() {
       {devices.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-text-tertiary gap-3">
           <Smartphone className="w-12 h-12 opacity-40" />
-          <p className="text-sm">{t("settings.noPairedDevices")}</p>
+          <p className="text-sm">{t('settings.noPairedDevices')}</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2 mb-4">
           {devices.map((device) => {
-            const devSyncState =
-              deviceSyncStates[device.device_id] ?? "idle";
+            const devSyncState = deviceSyncStates[device.device_id] ?? 'idle';
             const recent = isRecentlySynced(device.last_seen_at);
 
             return (
@@ -262,52 +247,48 @@ export function DevicePairingPage() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">
-                      {device.device_name}
-                    </p>
+                    <p className="font-medium text-sm truncate">{device.device_name}</p>
                     {recent && (
                       <span className="text-[10px] font-medium text-success uppercase tracking-wide shrink-0">
-                        {t("common.synced", "Synced")}
+                        {t('common.synced', 'Synced')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-text-tertiary">
                     {device.last_seen_at
-                      ? t("settings.lastSync", {
+                      ? t('settings.lastSync', {
                           time: formatTimestamp(device.last_seen_at),
                         })
-                      : t("settings.notSyncedYet", "Not synced yet")}
+                      : t('settings.notSyncedYet', 'Not synced yet')}
                   </p>
                 </div>
 
                 {/* Per-device sync button */}
                 <button
                   onClick={() => handleDeviceSync(device.device_id)}
-                  disabled={devSyncState === "syncing"}
+                  disabled={devSyncState === 'syncing'}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-elevated-bg border border-border hover:bg-hover-bg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  aria-label={t("settings.syncWithDevice", {
+                  aria-label={t('settings.syncWithDevice', {
                     deviceName: device.device_name,
                   })}
                 >
-                  {devSyncState === "syncing" ? (
+                  {devSyncState === 'syncing' ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : devSyncState === "success" ? (
+                  ) : devSyncState === 'success' ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-                  ) : devSyncState === "error" ? (
+                  ) : devSyncState === 'error' ? (
                     <AlertCircle className="w-3.5 h-3.5 text-danger-text" />
                   ) : (
                     <RefreshCw className="w-3.5 h-3.5" />
                   )}
-                  {devSyncState === "syncing"
-                    ? t("common.syncing")
-                    : t("settings.syncNow")}
+                  {devSyncState === 'syncing' ? t('common.syncing') : t('settings.syncNow')}
                 </button>
 
                 {/* Remove button */}
                 <button
                   onClick={() => handleRemove(device.device_id)}
                   className="p-2 text-danger-text hover:bg-danger-bg rounded-lg transition-colors"
-                  aria-label={t("common.remove")}
+                  aria-label={t('common.remove')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -320,25 +301,37 @@ export function DevicePairingPage() {
       <button
         onClick={handlePairNew}
         disabled
-        title={t("settings.pairNewDeviceComingSoon")}
+        title={t('settings.pairNewDeviceComingSoon')}
         aria-disabled="true"
         className="flex items-center justify-center gap-2 w-full py-3 bg-accent text-white rounded-lg font-medium opacity-50 cursor-not-allowed transition-colors"
       >
         <Plus className="w-5 h-5" />
-        {t("settings.pairNewDevice")}
+        {t('settings.pairNewDevice')}
       </button>
       <p className="mt-2 text-xs text-text-tertiary text-center">
-        {t("settings.pairNewDeviceComingSoon")}
+        {t('settings.pairNewDeviceComingSoon')}
       </p>
 
       {/* Education: Device Pairing */}
       <div className="mt-6">
         <HelpCard
           items={[
-            { type: "why", text: "Device pairing lets you sync your email, calendar, and settings between desktop and mobile seamlessly — no manual setup on each device." },
-            { type: "how", text: "Pair a new device by generating a token on this page, then scanning a QR code from the SME Master mobile app. Paired devices sync automatically in the background." },
-            { type: "when", text: "Pair when setting up a new device, after reinstalling the app, or when you want to sync settings across devices. Keep both devices on the same network for best performance." },
-            { type: "tip", text: "Check sync status regularly. A green indicator means the device has synced recently. Use the per-device sync button to force an immediate sync if needed." },
+            {
+              type: 'why',
+              text: 'Device pairing lets you sync your email, calendar, and settings between desktop and mobile seamlessly — no manual setup on each device.',
+            },
+            {
+              type: 'how',
+              text: 'Pair a new device by generating a token on this page, then scanning a QR code from the SME Master mobile app. Paired devices sync automatically in the background.',
+            },
+            {
+              type: 'when',
+              text: 'Pair when setting up a new device, after reinstalling the app, or when you want to sync settings across devices. Keep both devices on the same network for best performance.',
+            },
+            {
+              type: 'tip',
+              text: 'Check sync status regularly. A green indicator means the device has synced recently. Use the per-device sync button to force an immediate sync if needed.',
+            },
           ]}
         />
       </div>

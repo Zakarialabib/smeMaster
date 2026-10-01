@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import type { FeatureAccess } from "@/constants/featureFlags";
+import { useMemo } from 'react';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import type { FeatureAccess } from '@/constants/featureFlags';
 
 export interface UseFeatureLockedResult {
   isLocked: boolean;
@@ -18,6 +18,5 @@ export interface UseFeatureLockedResult {
  */
 export function useFeatureLocked(featureName: string, currentUsage = 0): UseFeatureLockedResult {
   const access = useFeatureFlagStore((s) => s.getFeatureAccess(featureName, currentUsage));
-  return useMemo(() => ({ access, isLocked: access === "locked" }), [access]);
+  return useMemo(() => ({ access, isLocked: access === 'locked' }), [access]);
 }
-

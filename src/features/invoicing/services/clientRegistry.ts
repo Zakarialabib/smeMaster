@@ -13,14 +13,19 @@ export interface UnifiedClient extends Client {
 
 export async function listInvoicingClients(companyId: string): Promise<Client[]> {
   const clients = await listClients(companyId);
-  return clients.map((c) => (({ ...c } as Client)));
+  return clients.map((c) => ({ ...c }) as Client);
 }
 
-export async function createBillingContact(data: Parameters<typeof createClient>[0]): Promise<Client> {
+export async function createBillingContact(
+  data: Parameters<typeof createClient>[0],
+): Promise<Client> {
   return createClient(data);
 }
 
-export async function updateBillingContact(id: string, fields: Record<string, unknown>): Promise<void> {
+export async function updateBillingContact(
+  id: string,
+  fields: Record<string, unknown>,
+): Promise<void> {
   await updateClient(id, fields);
 }
 

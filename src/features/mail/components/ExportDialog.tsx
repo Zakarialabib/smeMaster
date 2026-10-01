@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { save } from "@tauri-apps/plugin-dialog";
-import { Modal } from "@shared/components/ui/Modal";
-import { exportMessages, type ExportFormat } from "@features/mail/services/export/exportService";
-import { Download, FileText, File, Archive, Shield, Check } from "lucide-react";
+import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { save } from '@tauri-apps/plugin-dialog';
+import { Modal } from '@shared/components/ui/Modal';
+import { exportMessages, type ExportFormat } from '@features/mail/services/export/exportService';
+import { Download, FileText, File, Archive, Shield, Check } from 'lucide-react';
 
 interface ExportDialogProps {
   accountId: string;
@@ -11,21 +11,36 @@ interface ExportDialogProps {
   onClose: () => void;
 }
 
-type Step = "format" | "filter" | "destination" | "encrypt";
+type Step = 'format' | 'filter' | 'destination' | 'encrypt';
 
 const FORMATS: { value: ExportFormat; labelKey: string; icon: typeof File; descKey: string }[] = [
-  { value: "mbox", labelKey: "modals.export.formatMbox", icon: FileText, descKey: "modals.export.mboxDesc" },
-  { value: "eml", labelKey: "modals.export.formatEml", icon: File, descKey: "modals.export.emlDesc" },
-  { value: "zip", labelKey: "modals.export.formatZip", icon: Archive, descKey: "modals.export.zipDesc" },
+  {
+    value: 'mbox',
+    labelKey: 'modals.export.formatMbox',
+    icon: FileText,
+    descKey: 'modals.export.mboxDesc',
+  },
+  {
+    value: 'eml',
+    labelKey: 'modals.export.formatEml',
+    icon: File,
+    descKey: 'modals.export.emlDesc',
+  },
+  {
+    value: 'zip',
+    labelKey: 'modals.export.formatZip',
+    icon: Archive,
+    descKey: 'modals.export.zipDesc',
+  },
 ];
 
 export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<Step>("format");
-  const [format, setFormat] = useState<ExportFormat>("mbox");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [destinationPath, setDestinationPath] = useState("");
+  const [step, setStep] = useState<Step>('format');
+  const [format, setFormat] = useState<ExportFormat>('mbox');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [destinationPath, setDestinationPath] = useState('');
   const [encryptBackup, setEncryptBackup] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [done, setDone] = useState(false);
@@ -34,8 +49,8 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
     const picked = await save({
       defaultPath: `smemaster-export-${Date.now()}.mbox`,
       filters: [
-        { name: "Mbox", extensions: ["mbox"] },
-        { name: "All Files", extensions: ["*"] },
+        { name: 'Mbox', extensions: ['mbox'] },
+        { name: 'All Files', extensions: ['*'] },
       ],
     });
     if (picked) setDestinationPath(picked);
@@ -55,18 +70,18 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
       });
       setDone(true);
     } catch (err) {
-      console.error("Export failed:", err);
+      console.error('Export failed:', err);
     } finally {
       setExporting(false);
     }
   }, [accountId, format, destinationPath, dateFrom, dateTo, encryptBackup]);
 
   const handleClose = useCallback(() => {
-    setStep("format");
-    setFormat("mbox");
-    setDateFrom("");
-    setDateTo("");
-    setDestinationPath("");
+    setStep('format');
+    setFormat('mbox');
+    setDateFrom('');
+    setDateTo('');
+    setDestinationPath('');
     setEncryptBackup(false);
     setDone(false);
     onClose();
@@ -82,9 +97,13 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
             <div className="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center">
               <Check size={24} className="text-success" />
             </div>
-            <p className="text-sm font-medium text-text-primary">{t('modals.export.exportComplete')}</p>
+            <p className="text-sm font-medium text-text-primary">
+              {t('modals.export.exportComplete')}
+            </p>
             <p className="text-xs text-text-tertiary text-center">
-              {t('modals.export.messagesExportedTo')}<br />{destinationPath}
+              {t('modals.export.messagesExportedTo')}
+              <br />
+              {destinationPath}
             </p>
             <button
               onClick={handleClose}
@@ -93,7 +112,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
               {t('modals.export.done')}
             </button>
           </div>
-        ) : step === "format" ? (
+        ) : step === 'format' ? (
           <>
             <p className="text-sm text-text-secondary">{t('modals.export.chooseFormat')}</p>
             <div className="space-y-2">
@@ -106,13 +125,18 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                     onClick={() => setFormat(f.value)}
                     className={`w-full flex items-start gap-3 p-3 rounded-lg border text-start transition-colors ${
                       isSelected
-                        ? "border-accent bg-accent/5"
-                        : "border-border-primary hover:bg-bg-hover"
+                        ? 'border-accent bg-accent/5'
+                        : 'border-border-primary hover:bg-bg-hover'
                     }`}
                   >
-                    <Icon size={18} className={`mt-0.5 ${isSelected ? "text-accent" : "text-text-tertiary"}`} />
+                    <Icon
+                      size={18}
+                      className={`mt-0.5 ${isSelected ? 'text-accent' : 'text-text-tertiary'}`}
+                    />
                     <div className="min-w-0">
-                      <div className={`text-sm font-medium ${isSelected ? "text-accent" : "text-text-primary"}`}>
+                      <div
+                        className={`text-sm font-medium ${isSelected ? 'text-accent' : 'text-text-primary'}`}
+                      >
                         {t(f.labelKey)}
                       </div>
                       <div className="text-xs text-text-tertiary mt-0.5">{t(f.descKey)}</div>
@@ -123,19 +147,21 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
             </div>
             <div className="flex justify-end">
               <button
-                onClick={() => setStep("filter")}
+                onClick={() => setStep('filter')}
                 className="px-4 py-2 text-xs font-medium text-white bg-accent rounded-md hover:bg-accent-hover transition-colors"
               >
                 {t('modals.export.next')}
               </button>
             </div>
           </>
-        ) : step === "filter" ? (
+        ) : step === 'filter' ? (
           <>
             <p className="text-sm text-text-secondary">{t('modals.export.filterMessages')}</p>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-text-tertiary block mb-1">{t('modals.export.fromDate')}</label>
+                <label className="text-xs text-text-tertiary block mb-1">
+                  {t('modals.export.fromDate')}
+                </label>
                 <input
                   type="date"
                   value={dateFrom}
@@ -144,7 +170,9 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                 />
               </div>
               <div>
-                <label className="text-xs text-text-tertiary block mb-1">{t('modals.export.toDate')}</label>
+                <label className="text-xs text-text-tertiary block mb-1">
+                  {t('modals.export.toDate')}
+                </label>
                 <input
                   type="date"
                   value={dateTo}
@@ -155,20 +183,20 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
             </div>
             <div className="flex justify-between">
               <button
-                onClick={() => setStep("format")}
+                onClick={() => setStep('format')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 {t('modals.export.back')}
               </button>
               <button
-                onClick={() => setStep("destination")}
+                onClick={() => setStep('destination')}
                 className="px-4 py-2 text-xs font-medium text-white bg-accent rounded-md hover:bg-accent-hover transition-colors"
               >
                 {t('modals.export.next')}
               </button>
             </div>
           </>
-        ) : step === "destination" ? (
+        ) : step === 'destination' ? (
           <>
             <p className="text-sm text-text-secondary">{t('modals.export.chooseDestination')}</p>
             <div className="flex items-center gap-2">
@@ -184,13 +212,13 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
             </div>
             <div className="flex justify-between">
               <button
-                onClick={() => setStep("filter")}
+                onClick={() => setStep('filter')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 {t('modals.export.back')}
               </button>
               <button
-                onClick={() => setStep("encrypt")}
+                onClick={() => setStep('encrypt')}
                 disabled={!canProceed}
                 className="px-4 py-2 text-xs font-medium text-white bg-accent rounded-md hover:bg-accent-hover transition-colors disabled:opacity-50"
               >
@@ -208,7 +236,9 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-text-tertiary">{t('modals.export.destination')}</span>
-                <span className="text-text-primary font-medium truncate max-w-[200px]">{destinationPath}</span>
+                <span className="text-text-primary font-medium truncate max-w-[200px]">
+                  {destinationPath}
+                </span>
               </div>
               {dateFrom && (
                 <div className="flex items-center justify-between text-xs">
@@ -231,11 +261,13 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                 className="accent-accent"
               />
               <Shield size={14} className="text-text-tertiary" />
-              <span className="text-xs text-text-secondary">{t('modals.export.encryptBackup')}</span>
+              <span className="text-xs text-text-secondary">
+                {t('modals.export.encryptBackup')}
+              </span>
             </label>
             <div className="flex justify-between">
               <button
-                onClick={() => setStep("destination")}
+                onClick={() => setStep('destination')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 {t('modals.export.back')}
@@ -255,4 +287,3 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
     </Modal>
   );
 }
-

@@ -34,8 +34,15 @@ describe('live agent-core payloads', () => {
     const snap = OPS_SNAPSHOT_FIXTURE;
     expect(Object.keys(snap).sort()).toEqual(
       [
-        'callCount', 'containedPct', 'generatedAt', 'lastSeenAt',
-        'p1', 'p2Grouped', 'p3Count', 'reachable', 'since',
+        'callCount',
+        'containedPct',
+        'generatedAt',
+        'lastSeenAt',
+        'p1',
+        'p2Grouped',
+        'p3Count',
+        'reachable',
+        'since',
       ].sort(),
     );
   });

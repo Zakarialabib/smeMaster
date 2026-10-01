@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { Target } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Target } from 'lucide-react';
 import {
   dashboardCampaignsTotal,
   dashboardCampaignsSent,
   dashboardCampaignsOpenRate,
   dashboardCampaignsClickRate,
-} from "@shared/services/db/db-invoke";
-import { WidgetHeader, WidgetSkeleton, WidgetError } from "./WidgetHelpers";
-import { StatBox } from "./StatBox";
+} from '@shared/services/db/db-invoke';
+import { WidgetHeader, WidgetSkeleton, WidgetError } from './WidgetHelpers';
+import { StatBox } from './StatBox';
 
 export function CampaignsStatsWidget() {
   const [total, setTotal] = useState<number | null>(null);
@@ -39,7 +39,9 @@ export function CampaignsStatsWidget() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) return <WidgetSkeleton />;
@@ -51,8 +53,16 @@ export function CampaignsStatsWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <StatBox label="Total" value={total ?? 0} />
         <StatBox label="Sent" value={sent ?? 0} />
-        <StatBox label="Open Rate" value={`${openRate ?? 0}%`} variant={openRate != null && openRate > 30 ? "default" : "warning"} />
-        <StatBox label="Click Rate" value={`${clickRate ?? 0}%`} variant={clickRate != null && clickRate > 10 ? "default" : "warning"} />
+        <StatBox
+          label="Open Rate"
+          value={`${openRate ?? 0}%`}
+          variant={openRate != null && openRate > 30 ? 'default' : 'warning'}
+        />
+        <StatBox
+          label="Click Rate"
+          value={`${clickRate ?? 0}%`}
+          variant={clickRate != null && clickRate > 10 ? 'default' : 'warning'}
+        />
       </div>
     </>
   );

@@ -1,12 +1,21 @@
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, Settings2, ListTodo, Send, Mail } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { i18n } from "@/locales/i18n";
-import { useState, useEffect } from "react";
-import { getSetting, setSetting } from "@features/settings/db/settings";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  CalendarDays,
+  Settings2,
+  ListTodo,
+  Send,
+  Mail,
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { i18n } from '@/locales/i18n';
+import { useState, useEffect } from 'react';
+import { getSetting, setSetting } from '@features/settings/db/settings';
 
-export type CalendarView = "day" | "week" | "month" | "agenda";
+export type CalendarView = 'day' | 'week' | 'month' | 'agenda';
 
-export type CalendarType = "gregorian" | "islamic" | "islamic-umalqura" | "islamic-civil";
+export type CalendarType = 'gregorian' | 'islamic' | 'islamic-umalqura' | 'islamic-civil';
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 
@@ -15,23 +24,23 @@ function CalendarNavButtons({
   onNext,
   onToday,
   todayLabel,
-  size = "default",
+  size = 'default',
 }: {
   onPrev: () => void;
   onNext: () => void;
   onToday?: () => void;
   todayLabel?: string;
-  size?: "default" | "small";
+  size?: 'default' | 'small';
 }) {
-  const iconSize = size === "small" ? 14 : 16;
+  const iconSize = size === 'small' ? 14 : 16;
   const btnClass =
-    size === "small"
-      ? "p-1 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors shrink-0"
-      : "p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors";
+    size === 'small'
+      ? 'p-1 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors shrink-0'
+      : 'p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors';
   const todayClass =
-    size === "small"
-      ? "px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors"
-      : "px-2.5 py-1 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors";
+    size === 'small'
+      ? 'px-2 py-1 text-[0.625rem] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors'
+      : 'px-2.5 py-1 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded transition-colors';
 
   return (
     <>
@@ -65,10 +74,10 @@ function CalendarTypeToggle({
       onChange={(e) => onChange(e.target.value as CalendarType)}
       className="bg-bg-tertiary text-text-primary text-xs font-medium rounded-md px-2 py-1 outline-none border-none focus:ring-1 focus:ring-accent"
     >
-      <option value="gregorian">{t("calendar.gregorian")}</option>
-      <option value="islamic">{t("calendar.islamic")}</option>
-      <option value="islamic-umalqura">{t("calendar.islamic-umalqura")}</option>
-      <option value="islamic-civil">{t("calendar.islamic-civil")}</option>
+      <option value="gregorian">{t('calendar.gregorian')}</option>
+      <option value="islamic">{t('calendar.islamic')}</option>
+      <option value="islamic-umalqura">{t('calendar.islamic-umalqura')}</option>
+      <option value="islamic-civil">{t('calendar.islamic-civil')}</option>
     </select>
   );
 }
@@ -77,17 +86,17 @@ function ViewSwitcher<T extends string>({
   view,
   views,
   onChange,
-  size = "default",
+  size = 'default',
 }: {
   view: T;
   views: Array<{ value: T; label: string }>;
   onChange: (view: T) => void;
-  size?: "default" | "small";
+  size?: 'default' | 'small';
 }) {
   const btnClass =
-    size === "small"
-      ? "px-2 py-1 text-[0.625rem] font-medium rounded transition-colors"
-      : "px-3 py-1 text-xs font-medium rounded transition-colors";
+    size === 'small'
+      ? 'px-2 py-1 text-[0.625rem] font-medium rounded transition-colors'
+      : 'px-3 py-1 text-xs font-medium rounded transition-colors';
 
   return (
     <div className="flex bg-bg-tertiary rounded-md p-0.5">
@@ -97,8 +106,8 @@ function ViewSwitcher<T extends string>({
           onClick={() => onChange(v.value)}
           className={`${btnClass} capitalize ${
             view === v.value
-              ? "bg-bg-primary text-text-primary shadow-sm"
-              : "text-text-tertiary hover:text-text-secondary"
+              ? 'bg-bg-primary text-text-primary shadow-sm'
+              : 'text-text-tertiary hover:text-text-secondary'
           }`}
         >
           {v.label}
@@ -110,12 +119,12 @@ function ViewSwitcher<T extends string>({
 
 function CreateEventButton({
   onClick,
-  size = "default",
+  size = 'default',
 }: {
   onClick: () => void;
-  size?: "default" | "small";
+  size?: 'default' | 'small';
 }) {
-  if (size === "small") {
+  if (size === 'small') {
     return (
       <button
         onClick={onClick}
@@ -179,15 +188,17 @@ export function CalendarToolbar({
   const [showScheduledEmails, setShowScheduledEmails] = useState(true);
 
   useEffect(() => {
-    getSetting("calendar_show_tasks").then((val) => setShowTasks(val !== "false"));
-    getSetting("calendar_show_campaigns").then((val) => setShowCampaigns(val !== "false"));
-    getSetting("calendar_show_scheduled_emails").then((val) => setShowScheduledEmails(val !== "false"));
+    getSetting('calendar_show_tasks').then((val) => setShowTasks(val !== 'false'));
+    getSetting('calendar_show_campaigns').then((val) => setShowCampaigns(val !== 'false'));
+    getSetting('calendar_show_scheduled_emails').then((val) =>
+      setShowScheduledEmails(val !== 'false'),
+    );
   }, []);
 
   const toggleSetting = (key: string, current: boolean, setter: (v: boolean) => void) => {
     const next = !current;
     setter(next);
-    setSetting(key, next ? "true" : "false");
+    setSetting(key, next ? 'true' : 'false');
     if (onRefresh) onRefresh();
   };
 
@@ -201,7 +212,7 @@ export function CalendarToolbar({
             onPrev={onPrev}
             onToday={onToday}
             onNext={onNext}
-            todayLabel={t("date.today")}
+            todayLabel={t('date.today')}
           />
         </div>
 
@@ -209,7 +220,7 @@ export function CalendarToolbar({
           <div className="relative">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-1.5 rounded transition-colors ${showSettings ? "bg-accent/10 text-accent" : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"}`}
+              className={`p-1.5 rounded transition-colors ${showSettings ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}`}
               title="Calendar Settings"
             >
               <Settings2 size={16} />
@@ -217,45 +228,63 @@ export function CalendarToolbar({
 
             {showSettings && (
               <div className="absolute right-0 mt-1 w-56 bg-bg-primary border border-border-primary rounded-lg shadow-xl z-50 p-2 animate-in fade-in slide-in-from-top-1">
-                <div className="px-2 py-1.5 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Integrations</div>
+                <div className="px-2 py-1.5 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+                  Integrations
+                </div>
                 <button
-                  onClick={() => toggleSetting("calendar_show_tasks", showTasks, setShowTasks)}
+                  onClick={() => toggleSetting('calendar_show_tasks', showTasks, setShowTasks)}
                   className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-text-primary hover:bg-bg-hover rounded-md transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <ListTodo size={14} className="text-[#8b5cf6]" />
                     <span>Tasks</span>
                   </div>
-                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showTasks ? "bg-accent border-accent" : "border-border-primary"}`}>
+                  <div
+                    className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showTasks ? 'bg-accent border-accent' : 'border-border-primary'}`}
+                  >
                     {showTasks && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </button>
                 <button
-                  onClick={() => toggleSetting("calendar_show_campaigns", showCampaigns, setShowCampaigns)}
+                  onClick={() =>
+                    toggleSetting('calendar_show_campaigns', showCampaigns, setShowCampaigns)
+                  }
                   className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-text-primary hover:bg-bg-hover rounded-md transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Send size={14} className="text-[#10b981]" />
                     <span>Campaigns</span>
                   </div>
-                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showCampaigns ? "bg-accent border-accent" : "border-border-primary"}`}>
+                  <div
+                    className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showCampaigns ? 'bg-accent border-accent' : 'border-border-primary'}`}
+                  >
                     {showCampaigns && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </button>
                 <button
-                  onClick={() => toggleSetting("calendar_show_scheduled_emails", showScheduledEmails, setShowScheduledEmails)}
+                  onClick={() =>
+                    toggleSetting(
+                      'calendar_show_scheduled_emails',
+                      showScheduledEmails,
+                      setShowScheduledEmails,
+                    )
+                  }
                   className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-text-primary hover:bg-bg-hover rounded-md transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Mail size={14} className="text-[#3b82f6]" />
                     <span>Scheduled Emails</span>
                   </div>
-                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showScheduledEmails ? "bg-accent border-accent" : "border-border-primary"}`}>
+                  <div
+                    className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${showScheduledEmails ? 'bg-accent border-accent' : 'border-border-primary'}`}
+                  >
                     {showScheduledEmails && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                   </div>
                 </button>
                 <div className="h-px bg-border-primary my-1" />
-                <div className="px-2 py-1.5 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Calendar System</div>
+                <div className="px-2 py-1.5 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+                  Calendar System
+                </div>
                 <div className="px-1 py-1">
                   <CalendarTypeToggle
                     calendarType={calendarType}
@@ -279,9 +308,9 @@ export function CalendarToolbar({
           <ViewSwitcher
             view={view}
             views={[
-              { value: "day", label: "day" },
-              { value: "week", label: "week" },
-              { value: "month", label: "month" },
+              { value: 'day', label: 'day' },
+              { value: 'week', label: 'week' },
+              { value: 'month', label: 'month' },
             ]}
             onChange={onViewChange}
           />
@@ -297,9 +326,7 @@ export function CalendarToolbar({
       {/* Left: title + nav */}
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <CalendarNavButtons onPrev={onPrev} onNext={onNext} size="small" />
-        <h2 className="text-sm font-semibold text-text-primary truncate">
-          {title}
-        </h2>
+        <h2 className="text-sm font-semibold text-text-primary truncate">{title}</h2>
       </div>
 
       {/* Right: controls */}
@@ -317,10 +344,10 @@ export function CalendarToolbar({
         <ViewSwitcher
           view={view}
           views={[
-            { value: "month", label: t("calendar.month") },
-            { value: "week", label: t("calendar.week") },
-            { value: "day", label: t("calendar.day") },
-            { value: "agenda", label: "List" },
+            { value: 'month', label: t('calendar.month') },
+            { value: 'week', label: t('calendar.week') },
+            { value: 'day', label: t('calendar.day') },
+            { value: 'agenda', label: 'List' },
           ]}
           onChange={onViewChange}
           size="small"
@@ -333,22 +360,18 @@ export function CalendarToolbar({
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatTitle(
-  date: Date,
-  view: CalendarView,
-  calendarType: CalendarType,
-): string {
-  const calendar = calendarType === "gregorian" ? "gregory" : calendarType;
+function formatTitle(date: Date, view: CalendarView, calendarType: CalendarType): string {
+  const calendar = calendarType === 'gregorian' ? 'gregory' : calendarType;
 
-  if (view === "month" || view === "agenda") {
+  if (view === 'month' || view === 'agenda') {
     return new Intl.DateTimeFormat(i18n.language, {
       calendar,
-      year: "numeric",
-      month: "long",
+      year: 'numeric',
+      month: 'long',
     }).format(date);
   }
 
-  if (view === "week") {
+  if (view === 'week') {
     const start = new Date(date);
     start.setDate(start.getDate() - start.getDay());
     const end = new Date(start);
@@ -356,18 +379,18 @@ function formatTitle(
 
     const fmt = new Intl.DateTimeFormat(i18n.language, {
       calendar,
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
     return `${fmt.format(start)} – ${fmt.format(end)}`;
   }
 
   return new Intl.DateTimeFormat(i18n.language, {
     calendar,
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   }).format(date);
 }

@@ -1,9 +1,9 @@
-import { PremiumSidebar } from "./PremiumSidebar";
-import type { NavRailGroup } from "./NavRail";
-import { MainWorkspace } from "./MainWorkspace";
-import { SidebarContainer } from "./SidebarContainer";
-import { useFocusModeStore } from "@shared/stores/focusModeStore";
-import type { ReactNode } from "react";
+import { PremiumSidebar } from './PremiumSidebar';
+import type { NavRailGroup } from './NavRail';
+import { MainWorkspace } from './MainWorkspace';
+import { SidebarContainer } from './SidebarContainer';
+import { useFocusModeStore } from '@shared/stores/focusModeStore';
+import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
   navGroups: NavRailGroup[];
@@ -53,9 +53,7 @@ export function AppLayout({
         />
       )}
       {!focusMode && sidebar && (
-        <SidebarContainer title={sidebarTitle ?? "Sidebar"}>
-          {sidebar}
-        </SidebarContainer>
+        <SidebarContainer title={sidebarTitle ?? 'Sidebar'}>{sidebar}</SidebarContainer>
       )}
       <MainWorkspace>{children}</MainWorkspace>
     </div>

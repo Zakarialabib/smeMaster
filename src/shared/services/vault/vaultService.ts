@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export interface VaultEntry {
   path: string;
@@ -43,7 +43,11 @@ export async function copyToVault(
   vaultPath: string,
   accountId?: string,
 ): Promise<void> {
-  return invokeCommand('copy_to_vault', { sourcePath, vaultPath, ...(accountId ? { accountId } : {}) });
+  return invokeCommand('copy_to_vault', {
+    sourcePath,
+    vaultPath,
+    ...(accountId ? { accountId } : {}),
+  });
 }
 
 /**
@@ -59,7 +63,10 @@ export async function deleteFromVault(vaultPath: string, accountId?: string): Pr
  * Requires biometric auth on mobile.
  */
 export async function listVaultDir(dirPath: string, accountId?: string): Promise<VaultEntry[]> {
-  return invokeCommand<VaultEntry[]>('list_vault_dir', { dirPath, ...(accountId ? { accountId } : {}) });
+  return invokeCommand<VaultEntry[]>('list_vault_dir', {
+    dirPath,
+    ...(accountId ? { accountId } : {}),
+  });
 }
 
 /**
@@ -93,7 +100,10 @@ export async function readVaultFile(path: string, accountId?: string): Promise<s
  * Requires biometric auth on mobile.
  */
 export async function copyVaultToDownloads(vaultPath: string, accountId?: string): Promise<void> {
-  return invokeCommand('copy_vault_to_downloads', { vaultPath, ...(accountId ? { accountId } : {}) });
+  return invokeCommand('copy_vault_to_downloads', {
+    vaultPath,
+    ...(accountId ? { accountId } : {}),
+  });
 }
 
 /**
@@ -139,7 +149,11 @@ export async function moveVaultItem(
   destPath: string,
   accountId?: string,
 ): Promise<void> {
-  return invokeCommand('move_vault_item', { sourcePath, destPath, ...(accountId ? { accountId } : {}) });
+  return invokeCommand('move_vault_item', {
+    sourcePath,
+    destPath,
+    ...(accountId ? { accountId } : {}),
+  });
 }
 
 /**
@@ -163,7 +177,11 @@ export async function copyVaultItem(
   destPath: string,
   accountId?: string,
 ): Promise<void> {
-  return invokeCommand('copy_vault_item', { sourcePath, destPath, ...(accountId ? { accountId } : {}) });
+  return invokeCommand('copy_vault_item', {
+    sourcePath,
+    destPath,
+    ...(accountId ? { accountId } : {}),
+  });
 }
 
 /**

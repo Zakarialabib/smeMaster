@@ -7,7 +7,7 @@ import {
   Workflow,
   CalendarDays,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   getUnreadInboxCount,
   getThreadCount,
@@ -21,9 +21,9 @@ import {
   dashboardWorkflowRulesTotal,
   dashboardWorkflowRulesActive,
   listCalendarEvents,
-} from "@shared/services/db/db-invoke";
-import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
-import type { SectionAccent, SectionStat } from "../components/SectionCard";
+} from '@shared/services/db/db-invoke';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
+import type { SectionAccent, SectionStat } from '../components/SectionCard';
 
 /**
  * Static "menu console" configuration for the dashboard section cards.
@@ -69,7 +69,7 @@ export interface SectionCardConfig {
 async function safeNum(promise: Promise<unknown>): Promise<number | null> {
   try {
     const value = await promise;
-    return typeof value === "number" && Number.isFinite(value) ? value : null;
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
   } catch {
     return null;
   }
@@ -87,15 +87,15 @@ async function safeArray<T>(promise: Promise<T[]>): Promise<T[] | null> {
 
 export const SECTION_CARDS: SectionCardConfig[] = [
   {
-    id: "emails",
-    to: "/mail/inbox",
+    id: 'emails',
+    to: '/mail/inbox',
     icon: Mail,
-    titleKey: "dashboard.sections.emails.title",
-    descriptionKey: "dashboard.sections.emails.description",
-    accent: "accent",
+    titleKey: 'dashboard.sections.emails.title',
+    descriptionKey: 'dashboard.sections.emails.description',
+    accent: 'accent',
     stats: [
-      { label: "dashboard.cards.stat.unread", value: null },
-      { label: "dashboard.cards.stat.threads", value: null },
+      { label: 'dashboard.cards.stat.unread', value: null },
+      { label: 'dashboard.cards.stat.threads', value: null },
     ],
     fetchValues: async ({ accountId }) => {
       const [unread, threads] = await Promise.all([
@@ -106,15 +106,15 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     },
   },
   {
-    id: "people",
-    to: "/people",
+    id: 'people',
+    to: '/people',
     icon: Users,
-    titleKey: "dashboard.sections.people.title",
-    descriptionKey: "dashboard.sections.people.description",
-    accent: "success",
+    titleKey: 'dashboard.sections.people.title',
+    descriptionKey: 'dashboard.sections.people.description',
+    accent: 'success',
     stats: [
-      { label: "dashboard.cards.stat.total", value: null },
-      { label: "dashboard.cards.stat.newWeek", value: null },
+      { label: 'dashboard.cards.stat.total', value: null },
+      { label: 'dashboard.cards.stat.newWeek', value: null },
     ],
     fetchValues: async () => {
       const [total, newWeek] = await Promise.all([
@@ -125,15 +125,15 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     },
   },
   {
-    id: "tasks",
-    to: "/tasks",
+    id: 'tasks',
+    to: '/tasks',
     icon: CheckSquare,
-    titleKey: "dashboard.sections.tasks.title",
-    descriptionKey: "dashboard.sections.tasks.description",
-    accent: "warning",
+    titleKey: 'dashboard.sections.tasks.title',
+    descriptionKey: 'dashboard.sections.tasks.description',
+    accent: 'warning',
     stats: [
-      { label: "dashboard.cards.stat.dueToday", value: null, variant: "warning" },
-      { label: "dashboard.cards.stat.overdue", value: null, variant: "danger" },
+      { label: 'dashboard.cards.stat.dueToday', value: null, variant: 'warning' },
+      { label: 'dashboard.cards.stat.overdue', value: null, variant: 'danger' },
     ],
     fetchValues: async () => {
       const [dueToday, overdue] = await Promise.all([
@@ -144,35 +144,33 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     },
   },
   {
-    id: "invoicing",
-    to: "/invoicing",
+    id: 'invoicing',
+    to: '/invoicing',
     icon: FileText,
-    titleKey: "dashboard.sections.invoicing.title",
-    descriptionKey: "dashboard.sections.invoicing.description",
-    accent: "danger",
+    titleKey: 'dashboard.sections.invoicing.title',
+    descriptionKey: 'dashboard.sections.invoicing.description',
+    accent: 'danger',
     stats: [
-      { label: "dashboard.cards.stat.unpaid", value: null, variant: "warning" },
-      { label: "dashboard.cards.stat.total", value: null },
+      { label: 'dashboard.cards.stat.unpaid', value: null, variant: 'warning' },
+      { label: 'dashboard.cards.stat.total', value: null },
     ],
     fetchValues: async () => {
       const invoices = await safeArray(listInvoices(ACTIVE_COMPANY_ID));
       if (!invoices) return [null, null];
-      const unpaid = invoices.filter(
-        (i) => i.status !== "paid" && i.status !== "cancelled",
-      ).length;
+      const unpaid = invoices.filter((i) => i.status !== 'paid' && i.status !== 'cancelled').length;
       return [unpaid, invoices.length];
     },
   },
   {
-    id: "campaigns",
-    to: "/campaigns",
+    id: 'campaigns',
+    to: '/campaigns',
     icon: Megaphone,
-    titleKey: "dashboard.sections.campaigns.title",
-    descriptionKey: "dashboard.sections.campaigns.description",
-    accent: "accent",
+    titleKey: 'dashboard.sections.campaigns.title',
+    descriptionKey: 'dashboard.sections.campaigns.description',
+    accent: 'accent',
     stats: [
-      { label: "dashboard.cards.stat.total", value: null },
-      { label: "dashboard.cards.stat.sent", value: null },
+      { label: 'dashboard.cards.stat.total', value: null },
+      { label: 'dashboard.cards.stat.sent', value: null },
     ],
     fetchValues: async () => {
       const [total, sent] = await Promise.all([
@@ -183,15 +181,15 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     },
   },
   {
-    id: "automation",
-    to: "/automation",
+    id: 'automation',
+    to: '/automation',
     icon: Workflow,
-    titleKey: "dashboard.sections.automation.title",
-    descriptionKey: "dashboard.sections.automation.description",
-    accent: "success",
+    titleKey: 'dashboard.sections.automation.title',
+    descriptionKey: 'dashboard.sections.automation.description',
+    accent: 'success',
     stats: [
-      { label: "dashboard.cards.stat.rules", value: null },
-      { label: "dashboard.cards.stat.active", value: null },
+      { label: 'dashboard.cards.stat.rules', value: null },
+      { label: 'dashboard.cards.stat.active', value: null },
     ],
     fetchValues: async () => {
       const [rules, active] = await Promise.all([
@@ -202,13 +200,13 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     },
   },
   {
-    id: "calendar",
-    to: "/calendar",
+    id: 'calendar',
+    to: '/calendar',
     icon: CalendarDays,
-    titleKey: "dashboard.sections.calendar.title",
-    descriptionKey: "dashboard.sections.calendar.description",
-    accent: "warning",
-    stats: [{ label: "dashboard.cards.stat.eventsToday", value: null }],
+    titleKey: 'dashboard.sections.calendar.title',
+    descriptionKey: 'dashboard.sections.calendar.description',
+    accent: 'warning',
+    stats: [{ label: 'dashboard.cards.stat.eventsToday', value: null }],
     fetchValues: async () => {
       // Bounded to today — calendar times are epoch seconds (schema.ts).
       const start = new Date();

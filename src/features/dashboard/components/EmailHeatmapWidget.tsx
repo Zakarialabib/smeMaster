@@ -16,7 +16,7 @@ const getHeatColor = (count: number, max: number): string => {
 };
 
 const formatDate = (d: Date): string => {
-  return d.toISOString().split('T')[0] ?? "";
+  return d.toISOString().split('T')[0] ?? '';
 };
 
 const MONTH_LABELS = [
@@ -72,7 +72,7 @@ function getMonthLabels(weeks: Date[][]): { label: string; col: number }[] {
     // Use the Thursday of each week to determine which month it belongs to
     const thursday = week[3];
     if (thursday && thursday.getMonth() !== lastMonth) {
-      const monthLabel = MONTH_LABELS[thursday.getMonth()] ?? "";
+      const monthLabel = MONTH_LABELS[thursday.getMonth()] ?? '';
       labels.push({ label: monthLabel, col: colIdx });
       lastMonth = thursday.getMonth();
     }
@@ -204,7 +204,9 @@ export function EmailHeatmapWidget() {
               <div className="flex gap-0.5 mb-0.5 text-[0.5rem] text-text-tertiary">
                 {monthLabels.map((ml, idx) => {
                   const nextCol =
-                    idx < monthLabels.length - 1 ? (monthLabels[idx + 1] as { col: number }).col : weeks.length;
+                    idx < monthLabels.length - 1
+                      ? (monthLabels[idx + 1] as { col: number }).col
+                      : weeks.length;
                   const span = nextCol - ml.col;
                   return (
                     <div key={ml.col} style={{ width: `${span * 14}px` }} className="shrink-0">

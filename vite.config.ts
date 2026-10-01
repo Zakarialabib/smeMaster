@@ -23,16 +23,12 @@ export default defineConfig({
         splashscreen: path.resolve(__dirname, "splashscreen.html"),
       },
       output: {
-        manualChunks: {
-          "vendor-icons": ["lucide-react"],
-          "vendor-charts": ["recharts", "d3-array", "d3-scale", "d3-shape"],
-          "vendor-editor": [
-            "prosemirror-state",
-            "prosemirror-view",
-            "prosemirror-model",
-          ],
-          "vendor-i18n": ["i18next", "react-i18next"],
-          "vendor-react": ["react", "react-dom", "@tanstack/react-router"],
+        manualChunks: (id) => {
+          if (id.includes("node_modules/lucide-react")) return "vendor-icons";
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) return "vendor-charts";
+          if (id.includes("node_modules/prosemirror-")) return "vendor-editor";
+          if (id.includes("node_modules/i18next") || id.includes("node_modules/react-i18next")) return "vendor-i18n";
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/@tanstack/react-router")) return "vendor-react";
         },
       },
     },

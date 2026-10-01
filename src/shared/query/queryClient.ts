@@ -10,7 +10,7 @@
  * call `getQueryClient()?.invalidateQueries(...)` to drive cache invalidation
  * from EventBus-driven handlers.
  */
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from '@tanstack/react-query';
 
 let _client: QueryClient | null = null;
 

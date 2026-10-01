@@ -88,8 +88,8 @@ function levenshteinDistance(a: string, b: string): number {
     for (let j = 1; j <= n; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       dp[i]![j] = Math.min(
-        dp[i - 1]![j]! + 1,       // deletion
-        dp[i]![j - 1]! + 1,       // insertion
+        dp[i - 1]![j]! + 1, // deletion
+        dp[i]![j - 1]! + 1, // insertion
         dp[i - 1]![j - 1]! + cost, // substitution
       );
     }
@@ -521,10 +521,7 @@ export function updateThreads(
             // This new message references a root of an existing thread
             const existingMsgIds = threadToMessageIds.get(potentialThreadId);
             if (existingMsgIds) {
-              const merged = new Set([
-                ...existingMsgIds,
-                ...newThread.messageIds,
-              ]);
+              const merged = new Set([...existingMsgIds, ...newThread.messageIds]);
               result.push({
                 threadId: potentialThreadId,
                 messageIds: [...merged],

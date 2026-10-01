@@ -1,8 +1,8 @@
-import { Mail, CheckSquare, Calendar, Megaphone } from "lucide-react";
-import { formatRelativeDate } from "@shared/utils/date";
+import { Mail, CheckSquare, Calendar, Megaphone } from 'lucide-react';
+import { formatRelativeDate } from '@shared/utils/date';
 
 export interface ActivityEvent {
-  type: "email" | "task" | "calendar" | "campaign";
+  type: 'email' | 'task' | 'calendar' | 'campaign';
   date: number;
   summary: string;
   id: string;
@@ -23,10 +23,10 @@ const iconMap = {
 } as const;
 
 const colorMap = {
-  email: "text-accent",
-  task: "text-success",
-  calendar: "text-warning",
-  campaign: "text-secondary",
+  email: 'text-accent',
+  task: 'text-success',
+  calendar: 'text-warning',
+  campaign: 'text-secondary',
 } as const;
 
 export function ContactTimeline({ events, isLoading }: ContactTimelineProps) {
@@ -50,9 +50,7 @@ export function ContactTimeline({ events, isLoading }: ContactTimelineProps) {
   }
 
   if (events.length === 0) {
-    return (
-      <p className="text-xs text-text-tertiary">No recent activity</p>
-    );
+    return <p className="text-xs text-text-tertiary">No recent activity</p>;
   }
 
   const sorted = [...events].sort((a, b) => b.date - a.date);
@@ -69,14 +67,10 @@ export function ContactTimeline({ events, isLoading }: ContactTimelineProps) {
               <div className={`p-0.5 rounded-full ${colorClass}`}>
                 <Icon size={12} />
               </div>
-              {i < sorted.length - 1 && (
-                <div className="w-px flex-1 bg-border-primary mt-1" />
-              )}
+              {i < sorted.length - 1 && <div className="w-px flex-1 bg-border-primary mt-1" />}
             </div>
             <div className="min-w-0 flex-1 -mt-0.5">
-              <div className="text-xs text-text-primary truncate">
-                {event.summary}
-              </div>
+              <div className="text-xs text-text-primary truncate">{event.summary}</div>
               <div className="text-[0.625rem] text-text-tertiary">
                 {formatRelativeDate(event.date)}
               </div>

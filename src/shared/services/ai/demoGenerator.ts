@@ -1,6 +1,6 @@
-import { callAi } from "./aiService";
-import type { TemplateDemo } from "@features/mail/constants/templateDemos";
-import type { CampaignTemplate } from "@/constants/campaignTemplates";
+import { callAi } from './aiService';
+import type { TemplateDemo } from '@features/mail/constants/templateDemos';
+import type { CampaignTemplate } from '@/constants/campaignTemplates';
 
 const DEMO_GENERATION_PROMPT = `You are a demo walkthrough generator. Output ONLY valid JSON with no markdown, no code fences, no extra text.
 
@@ -31,9 +31,7 @@ function nextDemoId(): string {
   return `ai-demo-${_demoCounter}-${Date.now()}`;
 }
 
-export async function generateDemoForTemplate(
-  template: CampaignTemplate
-): Promise<TemplateDemo> {
+export async function generateDemoForTemplate(template: CampaignTemplate): Promise<TemplateDemo> {
   const userContent = `Create a demo walkthrough for this email template:
 Name: ${template.name}
 Description: ${template.description}
@@ -64,7 +62,7 @@ Category: ${template.category}`;
 
 export async function generateDemoFromDescription(
   name: string,
-  features: string[]
+  features: string[],
 ): Promise<TemplateDemo> {
   const userContent = `Create a demo walkthrough titled "${name}" covering these features:\n${features.map((f) => `- ${f}`).join('\n')}`;
   const raw = await callAi(DEMO_GENERATION_PROMPT, userContent);

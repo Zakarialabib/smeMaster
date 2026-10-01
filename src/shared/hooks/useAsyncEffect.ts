@@ -1,4 +1,4 @@
-import { useEffect, type DependencyList } from "react";
+import { useEffect, type DependencyList } from 'react';
 
 /**
  * Like `useEffect`, but the callback may return a promise. The hook owns a
@@ -25,4 +25,3 @@ export function useAsyncEffect(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
-

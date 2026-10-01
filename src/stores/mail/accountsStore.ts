@@ -1,1 +1,1 @@
-export { useAccountStore, type Account } from "@features/accounts/stores/accountStore";
+export { useAccountStore, type Account } from '@features/accounts/stores/accountStore';

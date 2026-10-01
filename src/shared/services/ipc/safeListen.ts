@@ -20,8 +20,8 @@ import {
   type EventName,
   type Options,
   type UnlistenFn,
-} from "@tauri-apps/api/event";
-import { isTauriEnvironment } from "./environment";
+} from '@tauri-apps/api/event';
+import { isTauriEnvironment } from './environment';
 
 /**
  * Subscribe to a Tauri event, or no-op outside Tauri.

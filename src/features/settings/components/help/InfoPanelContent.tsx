@@ -1,4 +1,4 @@
-import { getContextualHelp } from "@/constants/contextualHelp";
+import { getContextualHelp } from '@/constants/contextualHelp';
 
 interface InfoPanelContentProps {
   infoKey: string;

@@ -1,6 +1,6 @@
-import { sendNotification } from "@tauri-apps/plugin-notification";
-import { useNotificationStore } from "@shared/stores/notificationStore";
-import { useToastStore } from "@shared/stores/toastStore";
+import { sendNotification } from '@tauri-apps/plugin-notification';
+import { useNotificationStore } from '@shared/stores/notificationStore';
+import { useToastStore } from '@shared/stores/toastStore';
 
 /**
  * Show an in-app toast AND send a native OS notification.
@@ -14,7 +14,7 @@ export function notify(title: string, body: string): void {
   try {
     useToastStore.getState().addToast({
       message: title ? `${title} — ${body}` : body,
-      type: "info",
+      type: 'info',
       duration: 3000,
     });
   } catch {

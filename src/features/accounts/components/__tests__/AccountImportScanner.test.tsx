@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { AccountImportScanner } from "../AccountImportScanner";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { AccountImportScanner } from '../AccountImportScanner';
 
 // AccountImportScanner routes its IPC through the app's typed command wrapper
 // (@shared/services/db/invoke/command), not @tauri-apps/api/core directly.
@@ -8,12 +8,12 @@ import { AccountImportScanner } from "../AccountImportScanner";
 // installs a shared `@tauri-apps/api/core` mock, so we only override the
 // wrapper that the component actually calls.
 const mockInvoke = vi.fn();
-vi.mock("@shared/services/db/invoke/command", () => ({
+vi.mock('@shared/services/db/invoke/command', () => ({
   invokeCommand: (...args: unknown[]) => mockInvoke(...args),
 }));
 
 // Mock toast notifications
-vi.mock("@shared/services/notifications/toastHelper", () => ({
+vi.mock('@shared/services/notifications/toastHelper', () => ({
   notify: vi.fn(),
 }));
 
@@ -25,49 +25,45 @@ const defaultProps = {
   onClose: mockOnClose,
 };
 
-describe("AccountImportScanner", () => {
+describe('AccountImportScanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders initial state with scan button", () => {
+  it('renders initial state with scan button', () => {
     render(<AccountImportScanner {...defaultProps} />);
 
-    expect(screen.getByText("Import from System")).toBeInTheDocument();
+    expect(screen.getByText('Import from System')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        /Scan your system for email accounts configured in/,
-      ),
+      screen.getByText(/Scan your system for email accounts configured in/),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Scan for accounts/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Scan for accounts/i })).toBeInTheDocument();
   });
 
-  it("renders privacy notice", () => {
+  it('renders privacy notice', () => {
     render(<AccountImportScanner {...defaultProps} />);
 
     expect(screen.getByText(/Privacy first:/i)).toBeInTheDocument();
   });
 
-  it("calls onClose when close button is clicked", () => {
+  it('calls onClose when close button is clicked', () => {
     render(<AccountImportScanner {...defaultProps} />);
 
-    const closeButton = screen.getByLabelText("Close");
+    const closeButton = screen.getByLabelText('Close');
     fireEvent.click(closeButton);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it("shows scanning state when scan button is clicked", async () => {
+  it('shows scanning state when scan button is clicked', async () => {
     // Keep the promise unresolved to stay in loading state
     mockInvoke.mockReturnValue(new Promise(() => {}));
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
-    expect(screen.getByText("Scanning for email accounts...")).toBeInTheDocument();
+    expect(screen.getByText('Scanning for email accounts...')).toBeInTheDocument();
   });
 
   it("calls invoke('scan_system_accounts') when scan button is clicked", async () => {
@@ -79,39 +75,37 @@ describe("AccountImportScanner", () => {
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("scan_system_accounts");
+      expect(mockInvoke).toHaveBeenCalledWith('scan_system_accounts');
     });
   });
 
-  it("shows empty state when no accounts are found", async () => {
+  it('shows empty state when no accounts are found', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [],
-      sources_scanned: ["apple_mail"],
+      sources_scanned: ['apple_mail'],
       errors: [],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("No email accounts found on this system."),
-      ).toBeInTheDocument();
+      expect(screen.getByText('No email accounts found on this system.')).toBeInTheDocument();
     });
   });
 
-  it("shows scanned sources in results", async () => {
+  it('shows scanned sources in results', async () => {
     const discoveryResult = {
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -123,7 +117,7 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail", "thunderbird"],
+      sources_scanned: ['apple_mail', 'thunderbird'],
       errors: [],
     };
 
@@ -131,7 +125,7 @@ describe("AccountImportScanner", () => {
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Scanned:/)).toBeInTheDocument();
@@ -139,14 +133,14 @@ describe("AccountImportScanner", () => {
     });
   });
 
-  it("shows discovered account in results", async () => {
+  it('shows discovered account in results', async () => {
     const discoveryResult = {
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -158,7 +152,7 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail"],
+      sources_scanned: ['apple_mail'],
       errors: [],
     };
 
@@ -166,22 +160,22 @@ describe("AccountImportScanner", () => {
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("User")).toBeInTheDocument();
+      expect(screen.getByText('User')).toBeInTheDocument();
       expect(screen.getByText(/user@gmail.com/)).toBeInTheDocument();
     });
   });
 
-  it("selects an account on click and calls onSelectAccount via Continue", async () => {
+  it('selects an account on click and calls onSelectAccount via Continue', async () => {
     const discoveryResult = {
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -193,7 +187,7 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail"],
+      sources_scanned: ['apple_mail'],
       errors: [],
     };
 
@@ -202,18 +196,18 @@ describe("AccountImportScanner", () => {
     render(<AccountImportScanner {...defaultProps} />);
 
     // Click scan
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     // Wait for results
     await waitFor(() => {
-      expect(screen.getByText("User")).toBeInTheDocument();
+      expect(screen.getByText('User')).toBeInTheDocument();
     });
 
     // Click the discovered account
-    fireEvent.click(screen.getByText("User"));
+    fireEvent.click(screen.getByText('User'));
 
     // Continue button should now be enabled
-    const continueButton = screen.getByRole("button", { name: /Continue/i });
+    const continueButton = screen.getByRole('button', { name: /Continue/i });
     expect(continueButton).not.toBeDisabled();
 
     // Click continue
@@ -221,20 +215,20 @@ describe("AccountImportScanner", () => {
 
     expect(mockOnSelectAccount).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: "user@gmail.com",
-        display_name: "User",
+        email: 'user@gmail.com',
+        display_name: 'User',
       }),
     );
   });
 
-  it("shows Re-scan button when results are displayed", async () => {
+  it('shows Re-scan button when results are displayed', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -246,27 +240,27 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail"],
+      sources_scanned: ['apple_mail'],
       errors: [],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Re-scan/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Re-scan/i })).toBeInTheDocument();
     });
   });
 
-  it("shows Continue button disabled when no account is selected", async () => {
+  it('shows Continue button disabled when no account is selected', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -278,10 +272,10 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
         {
-          email: "other@outlook.com",
-          display_name: "Other",
-          source: "thunderbird",
-          provider_type: "microsoft_graph",
+          email: 'other@outlook.com',
+          display_name: 'Other',
+          source: 'thunderbird',
+          provider_type: 'microsoft_graph',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -293,59 +287,57 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail", "thunderbird"],
+      sources_scanned: ['apple_mail', 'thunderbird'],
       errors: [],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
-      const continueButton = screen.getByRole("button", { name: /Continue/i });
+      const continueButton = screen.getByRole('button', { name: /Continue/i });
       expect(continueButton).toBeDisabled();
     });
   });
 
-  it("shows non-fatal errors section when errors exist", async () => {
+  it('shows non-fatal errors section when errors exist', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [],
-      sources_scanned: ["apple_mail"],
-      errors: ["thunderbird: permission denied"],
+      sources_scanned: ['apple_mail'],
+      errors: ['thunderbird: permission denied'],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/could not be scanned/)).toBeInTheDocument();
     });
   });
 
-  it("handles invoke rejection gracefully", async () => {
-    mockInvoke.mockRejectedValue(new Error("Tauri command not found"));
+  it('handles invoke rejection gracefully', async () => {
+    mockInvoke.mockRejectedValue(new Error('Tauri command not found'));
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
       // Should show the scan button again (initial state) after error
-      expect(
-        screen.getByRole("button", { name: /Scan for accounts/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Scan for accounts/i })).toBeInTheDocument();
     });
   });
 
-  it("displays provider badge color for gmail accounts", async () => {
+  it('displays provider badge color for gmail accounts', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [
         {
-          email: "user@gmail.com",
-          display_name: "User",
-          source: "apple_mail",
-          provider_type: "gmail_api",
+          email: 'user@gmail.com',
+          display_name: 'User',
+          source: 'apple_mail',
+          provider_type: 'gmail_api',
           imap_host: null,
           imap_port: null,
           imap_security: null,
@@ -357,46 +349,46 @@ describe("AccountImportScanner", () => {
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["apple_mail"],
+      sources_scanned: ['apple_mail'],
       errors: [],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
       // Gmail badge should show "G"
-      expect(screen.getByText("G")).toBeInTheDocument();
+      expect(screen.getByText('G')).toBeInTheDocument();
     });
   });
 
-  it("displays IMAP host info when available", async () => {
+  it('displays IMAP host info when available', async () => {
     mockInvoke.mockResolvedValue({
       accounts: [
         {
-          email: "user@custom.com",
+          email: 'user@custom.com',
           display_name: null,
-          source: "thunderbird",
-          provider_type: "imap_smtp",
-          imap_host: "imap.custom.com",
+          source: 'thunderbird',
+          provider_type: 'imap_smtp',
+          imap_host: 'imap.custom.com',
           imap_port: 993,
-          imap_security: "SSL",
-          smtp_host: "smtp.custom.com",
+          imap_security: 'SSL',
+          smtp_host: 'smtp.custom.com',
           smtp_port: 465,
-          smtp_security: "SSL",
-          username: "user@custom.com",
-          auth_method: "password",
+          smtp_security: 'SSL',
+          username: 'user@custom.com',
+          auth_method: 'password',
           oauth_provider: null,
         },
       ],
-      sources_scanned: ["thunderbird"],
+      sources_scanned: ['thunderbird'],
       errors: [],
     });
 
     render(<AccountImportScanner {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Scan for accounts/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Scan for accounts/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/imap.custom.com/)).toBeInTheDocument();

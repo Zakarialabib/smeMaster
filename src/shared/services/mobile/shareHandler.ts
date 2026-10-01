@@ -1,10 +1,9 @@
-
-import { listen } from "@tauri-apps/api/event";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { isTauriEnvironment } from "@shared/services/ipc/environment";
-import { isAndroid } from "@shared/services/nativeBridges";
-import { escapeHtml } from "@shared/utils/sanitize";
-import { useComposerStore } from "@features/mail/stores/composerStore";
+import { listen } from '@tauri-apps/api/event';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { isTauriEnvironment } from '@shared/services/ipc/environment';
+import { isAndroid } from '@shared/services/nativeBridges';
+import { escapeHtml } from '@shared/utils/sanitize';
+import { useComposerStore } from '@features/mail/stores/composerStore';
 
 interface SharePayload {
   text: string;
@@ -13,16 +12,16 @@ interface SharePayload {
 }
 
 async function handleShare(payload: SharePayload): Promise<void> {
-  const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-  const mainWindow = await WebviewWindow.getByLabel("main");
+  const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+  const mainWindow = await WebviewWindow.getByLabel('main');
   if (mainWindow) {
     await mainWindow.show();
     await mainWindow.setFocus();
   }
 
   useComposerStore.getState().openComposer({
-    mode: "new",
-    subject: payload.title ?? "",
+    mode: 'new',
+    subject: payload.title ?? '',
     bodyHtml: `<p>${escapeHtml(payload.text)}</p>`,
   });
 }
@@ -36,12 +35,12 @@ export async function initShareHandler(): Promise<() => void> {
   const cleanups: Array<() => void> = [];
 
   try {
-    const unlisten = await listen<SharePayload>("share:received", (event) => {
+    const unlisten = await listen<SharePayload>('share:received', (event) => {
       handleShare(event.payload);
     });
     cleanups.push(unlisten);
   } catch (err) {
-    console.error("Failed to register share handler:", err);
+    console.error('Failed to register share handler:', err);
   }
 
   // Check for any pending share missed while the app was loading.
@@ -69,7 +68,7 @@ export async function initShareHandler(): Promise<() => void> {
 
 export async function getPendingShare(): Promise<SharePayload | null> {
   try {
-    return await invokeCommand<SharePayload | null>("plugin:share|get_pending_share");
+    return await invokeCommand<SharePayload | null>('plugin:share|get_pending_share');
   } catch {
     return null;
   }

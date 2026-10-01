@@ -1,59 +1,78 @@
-import { useState, useEffect, useMemo } from "react";
-import { Search, Eye, Star, Clock, Sparkles, Grid3X3, List, Play, Check, X, Loader2, AlertCircle, RefreshCw } from "lucide-react";
-import { getTemplatesPaginated, countTemplatesCount, insertTemplate, type DbTemplate } from "@features/mail/db/templates";
-import { usePagination } from "@shared/hooks/usePagination";
-import { PaginationControls } from "@shared/components/ui/PaginationControls";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { TemplateDemo } from "./TemplateDemo";
-import { getDemoById } from "@features/mail/constants/templateDemos";
-import { generateTemplate } from "@shared/services/ai/templateGenerator";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { UpgradeBadge } from "@shared/components/ui/UpgradeBadge";
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Search,
+  Eye,
+  Star,
+  Clock,
+  Sparkles,
+  Grid3X3,
+  List,
+  Play,
+  Check,
+  X,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
+import {
+  getTemplatesPaginated,
+  countTemplatesCount,
+  insertTemplate,
+  type DbTemplate,
+} from '@features/mail/db/templates';
+import { usePagination } from '@shared/hooks/usePagination';
+import { PaginationControls } from '@shared/components/ui/PaginationControls';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { TemplateDemo } from './TemplateDemo';
+import { getDemoById } from '@features/mail/constants/templateDemos';
+import { generateTemplate } from '@shared/services/ai/templateGenerator';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { UpgradeBadge } from '@shared/components/ui/UpgradeBadge';
 
 export interface TemplateGalleryProps {
   onSelect?: (template: DbTemplate) => void;
   filterType?: string;
-  mode: "picker" | "full";
+  mode: 'picker' | 'full';
   onClose?: () => void;
   isOpen?: boolean;
 }
 
-type TypeFilter = "all" | "email" | "campaign" | "workflow" | "warmup" | "quick";
-type OriginFilter = "all" | "built_in" | "user_created" | "ai_generated";
-type ViewMode = "grid" | "list";
+type TypeFilter = 'all' | 'email' | 'campaign' | 'workflow' | 'warmup' | 'quick';
+type OriginFilter = 'all' | 'built_in' | 'user_created' | 'ai_generated';
+type ViewMode = 'grid' | 'list';
 
 const TYPE_COLORS: Record<string, string> = {
-  email: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  campaign: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  workflow: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  warmup: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  quick: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  email: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  campaign: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  workflow: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+  warmup: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+  quick: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  email: "Email",
-  campaign: "Campaign",
-  workflow: "Workflow",
-  warmup: "Warmup",
-  quick: "Quick",
+  email: 'Email',
+  campaign: 'Campaign',
+  workflow: 'Workflow',
+  warmup: 'Warmup',
+  quick: 'Quick',
 };
 
 const TYPE_FILTERS: { key: TypeFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "email", label: "Email" },
-  { key: "campaign", label: "Campaign" },
-  { key: "workflow", label: "Workflow" },
-  { key: "warmup", label: "Warmup" },
-  { key: "quick", label: "Quick" },
+  { key: 'all', label: 'All' },
+  { key: 'email', label: 'Email' },
+  { key: 'campaign', label: 'Campaign' },
+  { key: 'workflow', label: 'Workflow' },
+  { key: 'warmup', label: 'Warmup' },
+  { key: 'quick', label: 'Quick' },
 ];
 
 const ORIGIN_FILTERS: { key: OriginFilter; label: string }[] = [
-  { key: "all", label: "All Origins" },
-  { key: "built_in", label: "Built-in" },
-  { key: "user_created", label: "User" },
-  { key: "ai_generated", label: "AI-generated" },
+  { key: 'all', label: 'All Origins' },
+  { key: 'built_in', label: 'Built-in' },
+  { key: 'user_created', label: 'User' },
+  { key: 'ai_generated', label: 'AI-generated' },
 ];
 
 function fuzzyMatch(text: string, query: string): boolean {
@@ -67,27 +86,35 @@ function fuzzyMatch(text: string, query: string): boolean {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  return html.replace(/<[^>]*>/g, '').trim();
 }
 
 function firstLinePreview(html: string): string {
   const text = stripHtml(html);
-  const firstLine = text.split("\n")[0] ?? text;
-  return firstLine.length > 120 ? firstLine.slice(0, 120) + "..." : firstLine;
+  const firstLine = text.split('\n')[0] ?? text;
+  return firstLine.length > 120 ? firstLine.slice(0, 120) + '...' : firstLine;
 }
 
-export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }: TemplateGalleryProps) {
+export function TemplateGallery({
+  onSelect,
+  filterType,
+  mode,
+  onClose,
+  isOpen,
+}: TemplateGalleryProps) {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>(filterType ? (filterType as TypeFilter) : "all");
-  const [originFilter, setOriginFilter] = useState<OriginFilter>("all");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(
+    filterType ? (filterType as TypeFilter) : 'all',
+  );
+  const [originFilter, setOriginFilter] = useState<OriginFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [previewTemplate, setPreviewTemplate] = useState<DbTemplate | null>(null);
   const [activeDemoId, setActiveDemoId] = useState<string | null>(null);
   const [demoSourceTemplate, setDemoSourceTemplate] = useState<DbTemplate | null>(null);
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
   const [showAiPrompt, setShowAiPrompt] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,21 +128,24 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
   }, [filterType, typeFilter]);
 
   // Paginated template loading
-  const paginationOptions = useMemo(() => ({
-    fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
-      if (!activeAccountId) return { items: [], total: 0 };
-      const type = typeFilter === "all" ? null : typeFilter;
-      const origin = originFilter === "all" ? null : originFilter;
-      const [items, total] = await Promise.all([
-        getTemplatesPaginated(activeAccountId, limit, offset, type, origin),
-        countTemplatesCount(),
-      ]);
-      return { items, total };
-    },
-    pageSize: viewMode === "grid" ? 25 : 50,
-    deps: [activeAccountId, typeFilter, originFilter, viewMode],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [activeAccountId, typeFilter, originFilter, viewMode]);
+  const paginationOptions = useMemo(
+    () => ({
+      fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
+        if (!activeAccountId) return { items: [], total: 0 };
+        const type = typeFilter === 'all' ? null : typeFilter;
+        const origin = originFilter === 'all' ? null : originFilter;
+        const [items, total] = await Promise.all([
+          getTemplatesPaginated(activeAccountId, limit, offset, type, origin),
+          countTemplatesCount(),
+        ]);
+        return { items, total };
+      },
+      pageSize: viewMode === 'grid' ? 25 : 50,
+      deps: [activeAccountId, typeFilter, originFilter, viewMode],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }),
+    [activeAccountId, typeFilter, originFilter, viewMode],
+  );
 
   const {
     items: templates,
@@ -130,13 +160,16 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
 
   const filtered = useMemo(() => {
     let list = templates;
-    if (originFilter !== "all") {
+    if (originFilter !== 'all') {
       list = list.filter((t) => t.origin === originFilter);
     }
     if (search.trim()) {
       const q = search.trim();
       list = list.filter(
-        (t) => fuzzyMatch(t.name, q) || fuzzyMatch(t.body_html, q) || (t.subject ? fuzzyMatch(t.subject, q) : false),
+        (t) =>
+          fuzzyMatch(t.name, q) ||
+          fuzzyMatch(t.body_html, q) ||
+          (t.subject ? fuzzyMatch(t.subject, q) : false),
       );
     }
     return list;
@@ -148,7 +181,9 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
   };
 
   const handleCustomize = (tmpl: DbTemplate) => {
-    window.dispatchEvent(new CustomEvent("smemaster-edit-template", { detail: { templateId: tmpl.id } }));
+    window.dispatchEvent(
+      new CustomEvent('smemaster-edit-template', { detail: { templateId: tmpl.id } }),
+    );
   };
 
   const handleOpenDemo = (demoId: string, sourceTemplate?: DbTemplate) => {
@@ -170,14 +205,14 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
         subject: result.name,
         bodyHtml: result.html,
         shortcut: null,
-        origin: "ai_generated",
+        origin: 'ai_generated',
       });
-      setAiPrompt("");
+      setAiPrompt('');
       setShowAiPrompt(false);
       // Reload templates to include the new AI-generated one
       await resetTemplates();
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Generation failed");
+      setAiError(err instanceof Error ? err.message : 'Generation failed');
     } finally {
       setAiLoading(false);
     }
@@ -188,7 +223,10 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
       {/* Search bar */}
       <div className="px-4 py-3 border-b border-border-primary">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
           <input
             type="text"
             value={search}
@@ -198,7 +236,7 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => setSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
             >
               <X size={14} />
@@ -215,8 +253,8 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
             onClick={() => setTypeFilter(f.key)}
             className={`shrink-0 px-3 py-1 text-xs rounded-full transition-colors ${
               typeFilter === f.key
-                ? "bg-accent/15 text-accent font-medium"
-                : "text-text-tertiary hover:text-text-secondary hover:bg-bg-hover"
+                ? 'bg-accent/15 text-accent font-medium'
+                : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-hover'
             }`}
           >
             {f.label}
@@ -224,15 +262,15 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
         ))}
         <div className="ms-auto flex items-center gap-1">
           <button
-            onClick={() => setViewMode("grid")}
-            className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-secondary"}`}
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'text-accent bg-accent/10' : 'text-text-tertiary hover:text-text-secondary'}`}
             title="Grid view"
           >
             <Grid3X3 size={14} />
           </button>
           <button
-            onClick={() => setViewMode("list")}
-            className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-secondary"}`}
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'text-accent bg-accent/10' : 'text-text-tertiary hover:text-text-secondary'}`}
             title="List view"
           >
             <List size={14} />
@@ -248,8 +286,8 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
             onClick={() => setOriginFilter(f.key)}
             className={`text-[0.625rem] px-2 py-0.5 rounded-full transition-colors ${
               originFilter === f.key
-                ? "bg-bg-tertiary text-text-primary font-medium"
-                : "text-text-tertiary hover:text-text-secondary"
+                ? 'bg-bg-tertiary text-text-primary font-medium'
+                : 'text-text-tertiary hover:text-text-secondary'
             }`}
           >
             {f.label}
@@ -271,13 +309,13 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleGenerateWithAi();
                 }
-                if (e.key === "Escape") {
+                if (e.key === 'Escape') {
                   setShowAiPrompt(false);
-                  setAiPrompt("");
+                  setAiPrompt('');
                   setAiError(null);
                 }
               }}
@@ -291,15 +329,15 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
               disabled={aiLoading || !aiPrompt.trim()}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-accent text-white rounded hover:bg-accent-hover transition-colors disabled:opacity-50"
             >
-              {aiLoading ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Sparkles size={12} />
-              )}
-              {aiLoading ? "Generating..." : "Generate"}
+              {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+              {aiLoading ? 'Generating...' : 'Generate'}
             </button>
             <button
-              onClick={() => { setShowAiPrompt(false); setAiPrompt(""); setAiError(null); }}
+              onClick={() => {
+                setShowAiPrompt(false);
+                setAiPrompt('');
+                setAiError(null);
+              }}
               className="text-text-tertiary hover:text-text-primary"
               aria-label="Cancel"
             >
@@ -315,9 +353,7 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
             Generate with AI
           </button>
         )}
-        {aiError && (
-          <p className="text-xs text-danger mt-1">{aiError}</p>
-        )}
+        {aiError && <p className="text-xs text-danger mt-1">{aiError}</p>}
       </div>
 
       {/* Template grid or list */}
@@ -339,7 +375,9 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
             </button>
           </div>
         ) : loading ? (
-          <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-3"}>
+          <div
+            className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'space-y-3'}
+          >
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="glass-panel rounded-xl p-4 animate-pulse">
                 <div className="flex items-start justify-between mb-3">
@@ -360,13 +398,15 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Sparkles size={32} className="text-text-tertiary mb-3" />
             <p className="text-sm text-text-secondary font-medium mb-1">
-              {search ? "No templates match your search" : "No templates yet"}
+              {search ? 'No templates match your search' : 'No templates yet'}
             </p>
             <p className="text-xs text-text-tertiary">
-              {search ? "Try a different search term or filter" : "Create your first template in Settings"}
+              {search
+                ? 'Try a different search term or filter'
+                : 'Create your first template in Settings'}
             </p>
           </div>
-        ) : viewMode === "grid" ? (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filtered.map((tmpl) => (
               <TemplateCard
@@ -399,7 +439,7 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
           <PaginationControls
             currentPage={tmplPage}
             totalPages={tmplTotalPages}
-            pageSize={viewMode === "grid" ? 25 : 50}
+            pageSize={viewMode === 'grid' ? 25 : 50}
             totalItems={totalTemplates}
             onPageChange={goToTmplPage}
             onPageSizeChange={setTmplPageSize}
@@ -409,24 +449,37 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
 
       {/* Preview modal */}
       {previewTemplate && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" onClick={() => setPreviewTemplate(null)}>
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+          onClick={() => setPreviewTemplate(null)}
+        >
           <div className="absolute inset-0 bg-black/40 glass-backdrop" />
-          <div className="relative bg-bg-primary border border-border-primary rounded-xl glass-modal w-full max-w-2xl max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative bg-bg-primary border border-border-primary rounded-xl glass-modal w-full max-w-2xl max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-4 py-3 border-b border-border-primary flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-text-primary">{previewTemplate.name}</h3>
-                <span className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[previewTemplate.template_type] ?? "bg-bg-tertiary text-text-tertiary"}`}>
+                <span
+                  className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[previewTemplate.template_type] ?? 'bg-bg-tertiary text-text-tertiary'}`}
+                >
                   {TYPE_LABELS[previewTemplate.template_type] ?? previewTemplate.template_type}
                 </span>
               </div>
-              <button onClick={() => setPreviewTemplate(null)} className="text-text-tertiary hover:text-text-primary">
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="text-text-tertiary hover:text-text-primary"
+              >
                 <X size={18} />
               </button>
             </div>
             <div className="p-4 overflow-y-auto max-h-[calc(80vh-120px)]">
               {previewTemplate.subject && (
                 <div className="mb-3 pb-3 border-b border-border-secondary">
-                  <span className="text-[0.625rem] text-text-tertiary uppercase tracking-wider font-medium">Subject</span>
+                  <span className="text-[0.625rem] text-text-tertiary uppercase tracking-wider font-medium">
+                    Subject
+                  </span>
                   <p className="text-sm text-text-primary mt-0.5">{previewTemplate.subject}</p>
                 </div>
               )}
@@ -459,24 +512,41 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
       {activeDemo && (
         <TemplateDemo
           demo={activeDemo}
-          onClose={() => { setActiveDemoId(null); setDemoSourceTemplate(null); }}
-          onSelect={onSelect && mode === "picker" ? (t) => {
-            // Find the template from the list that matches the picker info
-            const tmpl = templates.find((tpl) => tpl.id === t.id);
-            if (tmpl) {
-              onSelect(tmpl);
-              onClose?.();
-            }
-          } : undefined}
-          pickerTemplate={demoSourceTemplate ? { id: demoSourceTemplate.id, name: demoSourceTemplate.name } : undefined}
+          onClose={() => {
+            setActiveDemoId(null);
+            setDemoSourceTemplate(null);
+          }}
+          onSelect={
+            onSelect && mode === 'picker'
+              ? (t) => {
+                  // Find the template from the list that matches the picker info
+                  const tmpl = templates.find((tpl) => tpl.id === t.id);
+                  if (tmpl) {
+                    onSelect(tmpl);
+                    onClose?.();
+                  }
+                }
+              : undefined
+          }
+          pickerTemplate={
+            demoSourceTemplate
+              ? { id: demoSourceTemplate.id, name: demoSourceTemplate.name }
+              : undefined
+          }
         />
       )}
     </div>
   );
 
-  if (mode === "picker") {
+  if (mode === 'picker') {
     return (
-      <Modal isOpen={isOpen ?? true} onClose={() => onClose?.()} title="Template Gallery" width="w-[800px]" panelClassName="max-h-[85vh] flex flex-col">
+      <Modal
+        isOpen={isOpen ?? true}
+        onClose={() => onClose?.()}
+        title="Template Gallery"
+        width="w-[800px]"
+        panelClassName="max-h-[85vh] flex flex-col"
+      >
         {content}
       </Modal>
     );
@@ -508,12 +578,16 @@ function TemplateCard({
   return (
     <div className="glass-panel rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer group border border-border-primary hover:border-accent/30">
       <div className="flex items-start justify-between mb-2">
-        <span className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[template.template_type] ?? "bg-bg-tertiary text-text-tertiary"}`}>
+        <span
+          className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[template.template_type] ?? 'bg-bg-tertiary text-text-tertiary'}`}
+        >
           {TYPE_LABELS[template.template_type] ?? template.template_type}
         </span>
         <div className="flex items-center gap-1">
-          {template.is_favorite === 1 && <Star size={12} className="text-amber-400 fill-amber-400" />}
-          {template.origin === "ai_generated" && <Sparkles size={12} className="text-purple-400" />}
+          {template.is_favorite === 1 && (
+            <Star size={12} className="text-amber-400 fill-amber-400" />
+          )}
+          {template.origin === 'ai_generated' && <Sparkles size={12} className="text-purple-400" />}
         </div>
       </div>
 
@@ -538,27 +612,39 @@ function TemplateCard({
 
       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-secondary">
         <button
-          onClick={(e) => { e.stopPropagation(); onUse(template); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUse(template);
+          }}
           className="flex-1 text-xs font-medium px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent-hover transition-colors"
         >
           Use
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); onPreview(template); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPreview(template);
+          }}
           className="flex items-center gap-1 text-xs px-2.5 py-1.5 text-text-secondary hover:text-text-primary bg-bg-tertiary hover:bg-bg-hover rounded-md transition-colors"
         >
           <Eye size={12} />
           Preview
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); onCustomize(template); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCustomize(template);
+          }}
           className="text-xs px-2.5 py-1.5 text-text-tertiary hover:text-text-secondary bg-bg-tertiary hover:bg-bg-hover rounded-md transition-colors"
         >
           Customize
         </button>
         {demos && (
           <button
-            onClick={(e) => { e.stopPropagation(); onOpenDemo(demos.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDemo(demos.id);
+            }}
             className="flex items-center gap-1 text-xs px-2.5 py-1.5 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-md transition-colors"
             title="See Demo"
           >
@@ -591,26 +677,45 @@ function TemplateListItem({
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-bg-secondary border border-border-primary hover:border-accent/30 hover:bg-bg-hover transition-all group">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className={`text-[0.5rem] font-medium px-1.5 py-0.5 rounded-full border ${TYPE_COLORS[template.template_type] ?? "bg-bg-tertiary text-text-tertiary"}`}>
+          <span
+            className={`text-[0.5rem] font-medium px-1.5 py-0.5 rounded-full border ${TYPE_COLORS[template.template_type] ?? 'bg-bg-tertiary text-text-tertiary'}`}
+          >
             {TYPE_LABELS[template.template_type] ?? template.template_type}
           </span>
           <span className="text-sm font-medium text-text-primary truncate">{template.name}</span>
-          {template.is_favorite === 1 && <Star size={10} className="text-amber-400 fill-amber-400 shrink-0" />}
+          {template.is_favorite === 1 && (
+            <Star size={10} className="text-amber-400 fill-amber-400 shrink-0" />
+          )}
         </div>
         <p className="text-[0.625rem] text-text-tertiary truncate mt-0.5">{bodyPreview}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={() => onUse(template)} className="px-2 py-1 text-xs font-medium text-white bg-accent rounded hover:bg-accent-hover transition-colors">
+        <button
+          onClick={() => onUse(template)}
+          className="px-2 py-1 text-xs font-medium text-white bg-accent rounded hover:bg-accent-hover transition-colors"
+        >
           <Check size={12} />
         </button>
-        <button onClick={() => onPreview(template)} className="p-1.5 text-text-tertiary hover:text-text-secondary rounded hover:bg-bg-tertiary transition-colors" title="Preview">
+        <button
+          onClick={() => onPreview(template)}
+          className="p-1.5 text-text-tertiary hover:text-text-secondary rounded hover:bg-bg-tertiary transition-colors"
+          title="Preview"
+        >
           <Eye size={12} />
         </button>
-        <button onClick={() => onCustomize(template)} className="p-1.5 text-text-tertiary hover:text-text-secondary rounded hover:bg-bg-tertiary transition-colors" title="Customize">
+        <button
+          onClick={() => onCustomize(template)}
+          className="p-1.5 text-text-tertiary hover:text-text-secondary rounded hover:bg-bg-tertiary transition-colors"
+          title="Customize"
+        >
           <Sparkles size={12} />
         </button>
         {demos && (
-          <button onClick={() => onOpenDemo(demos.id)} className="p-1.5 text-amber-500 hover:text-amber-400 rounded hover:bg-amber-500/10 transition-colors" title="Demo">
+          <button
+            onClick={() => onOpenDemo(demos.id)}
+            className="p-1.5 text-amber-500 hover:text-amber-400 rounded hover:bg-amber-500/10 transition-colors"
+            title="Demo"
+          >
             <Play size={12} />
           </button>
         )}
@@ -624,5 +729,3 @@ function TemplateListItem({
     </div>
   );
 }
-
-

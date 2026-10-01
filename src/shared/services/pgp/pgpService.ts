@@ -1,10 +1,10 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import {
   getPgpKeys as getDbKeys,
   deletePgpKey as deleteDbKey,
   savePgpKey,
-} from "@shared/services/db/pgpKeys";
-import type { DbPgpKey } from "@shared/services/db/pgpKeys";
+} from '@shared/services/db/pgpKeys';
+import type { DbPgpKey } from '@shared/services/db/pgpKeys';
 
 export interface PgpKeyInfo {
   key_id: string;
@@ -16,7 +16,11 @@ export interface PgpKeyInfo {
 // Re-export the DB type so consumers can work with stored keys
 export type { DbPgpKey };
 
-async function pgpInvoke<T>(cmd: string, label: string, args?: Record<string, unknown>): Promise<T> {
+async function pgpInvoke<T>(
+  cmd: string,
+  label: string,
+  args?: Record<string, unknown>,
+): Promise<T> {
   try {
     return await invokeCommand<T>(cmd, args ?? {});
   } catch (error) {
@@ -25,24 +29,33 @@ async function pgpInvoke<T>(cmd: string, label: string, args?: Record<string, un
 }
 
 export function generatePgpKey(userId: string, passphrase: string): Promise<[string, string]> {
-  return pgpInvoke<[string, string]>("generate_key", "Failed to generate PGP key", { userId, passphrase });
+  return pgpInvoke<[string, string]>('generate_key', 'Failed to generate PGP key', {
+    userId,
+    passphrase,
+  });
 }
 
 export function getPgpKeyInfo(armoredKey: string): Promise<PgpKeyInfo> {
-  return pgpInvoke<PgpKeyInfo>("get_key_info_cmd", "Failed to get PGP key info", { armoredKey });
+  return pgpInvoke<PgpKeyInfo>('get_key_info_cmd', 'Failed to get PGP key info', { armoredKey });
 }
 
 export function encryptMessage(plaintext: string, publicKeyArmored: string): Promise<string> {
-  return pgpInvoke<string>("encrypt", "Failed to encrypt message", { plaintext, publicKeyArmored });
+  return pgpInvoke<string>('encrypt', 'Failed to encrypt message', { plaintext, publicKeyArmored });
 }
 
-export function decryptMessage(ciphertextB64: string, privateKeyArmored: string, passphrase: string): Promise<string> {
-  return pgpInvoke<string>("decrypt_message", "Failed to decrypt message", { ciphertextB64, privateKeyArmored, passphrase });
+export function decryptMessage(
+  ciphertextB64: string,
+  privateKeyArmored: string,
+  passphrase: string,
+): Promise<string> {
+  return pgpInvoke<string>('decrypt_message', 'Failed to decrypt message', {
+    ciphertextB64,
+    privateKeyArmored,
+    passphrase,
+  });
 }
 
-export async function getPrivateKeyArmored(
-  accountId: string,
-): Promise<string | null> {
+export async function getPrivateKeyArmored(accountId: string): Promise<string | null> {
   const keys = await getDbKeys(accountId);
   const key = keys[0];
   if (!key?.private_key_encrypted) return null;
@@ -50,15 +63,15 @@ export async function getPrivateKeyArmored(
 }
 
 export function isPgpMessage(text: string): boolean {
-  return text.includes("-----BEGIN PGP MESSAGE-----");
+  return text.includes('-----BEGIN PGP MESSAGE-----');
 }
 
 export function extractPgpCiphertext(text: string): string | null {
-  const start = text.indexOf("-----BEGIN PGP MESSAGE-----");
+  const start = text.indexOf('-----BEGIN PGP MESSAGE-----');
   if (start === -1) return null;
-  const end = text.indexOf("-----END PGP MESSAGE-----", start);
+  const end = text.indexOf('-----END PGP MESSAGE-----', start);
   if (end === -1) return null;
-  return text.slice(start, end + "-----END PGP MESSAGE-----".length);
+  return text.slice(start, end + '-----END PGP MESSAGE-----'.length);
 }
 
 // ── Key management helpers ────────────────────────────────────────────────

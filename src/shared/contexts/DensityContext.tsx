@@ -9,14 +9,9 @@
  *   'comfortable' (default) — standard spacing, padding, and font sizes
  *   'compact'               — tighter rows, smaller padding, smaller fonts
  */
-import {
-  createContext,
-  useContext,
-  useEffect,
-  type ReactNode,
-} from "react";
-import { useLayoutStore, type AppDensity } from "@shared/stores/layoutStore";
-import { setSetting } from "@features/settings/db/settings";
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useLayoutStore, type AppDensity } from '@shared/stores/layoutStore';
+import { setSetting } from '@features/settings/db/settings';
 
 // ─── CSS custom property values ────────────────────────────────────────────
 
@@ -26,7 +21,7 @@ export interface DensityTokens {
   /** Horizontal/vertical padding in px */
   padding: number;
   /** Font size tailwind class */
-  fontSize: "text-sm" | "text-xs";
+  fontSize: 'text-sm' | 'text-xs';
   /** Row padding tailwind class */
   rowPadding: string;
 }
@@ -35,14 +30,14 @@ const TOKENS: Record<AppDensity, DensityTokens> = {
   comfortable: {
     rowHeight: 48,
     padding: 16,
-    fontSize: "text-sm",
-    rowPadding: "py-3 px-4",
+    fontSize: 'text-sm',
+    rowPadding: 'py-3 px-4',
   },
   compact: {
     rowHeight: 32,
     padding: 8,
-    fontSize: "text-xs",
-    rowPadding: "py-2 px-2",
+    fontSize: 'text-xs',
+    rowPadding: 'py-2 px-2',
   },
 };
 
@@ -71,22 +66,22 @@ export function DensityProvider({ children }: DensityProviderProps) {
     const root = document.documentElement;
     const t = TOKENS[density];
 
-    root.style.setProperty("--density-row-height", `${t.rowHeight}px`);
-    root.style.setProperty("--density-padding", `${t.padding}px`);
+    root.style.setProperty('--density-row-height', `${t.rowHeight}px`);
+    root.style.setProperty('--density-padding', `${t.padding}px`);
 
     // Set a data attribute for descendant selectors
     root.dataset.density = density;
 
     // Persist to backend settings
-    setSetting("app_density", density).catch(() => {});
+    setSetting('app_density', density).catch(() => {});
   }, [density]);
 
   // Also run once on mount to restore from any pre-set value
   useEffect(() => {
     const root = document.documentElement;
     const t = TOKENS[density];
-    root.style.setProperty("--density-row-height", `${t.rowHeight}px`);
-    root.style.setProperty("--density-padding", `${t.padding}px`);
+    root.style.setProperty('--density-row-height', `${t.rowHeight}px`);
+    root.style.setProperty('--density-padding', `${t.padding}px`);
     root.dataset.density = density;
   }, [density]);
 
@@ -102,7 +97,7 @@ export function DensityProvider({ children }: DensityProviderProps) {
 export function useDensityContext(): DensityContextValue {
   const ctx = useContext(DensityCtx);
   if (!ctx) {
-    throw new Error("useDensityContext must be used within a DensityProvider");
+    throw new Error('useDensityContext must be used within a DensityProvider');
   }
   return ctx;
 }

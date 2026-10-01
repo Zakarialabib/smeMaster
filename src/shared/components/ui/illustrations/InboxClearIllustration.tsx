@@ -25,14 +25,7 @@ export function InboxClearIllustration({ size = 140, className }: Props) {
         strokeWidth="1.5"
       />
       {/* Tray inner shadow */}
-      <rect
-        x="32"
-        y="62"
-        width="76"
-        height="36"
-        rx="4"
-        fill="var(--color-bg-secondary)"
-      />
+      <rect x="32" y="62" width="76" height="36" rx="4" fill="var(--color-bg-secondary)" />
       {/* Open lid */}
       <path
         d="M25 63 L70 38 L115 63"
@@ -42,20 +35,8 @@ export function InboxClearIllustration({ size = 140, className }: Props) {
         strokeLinejoin="round"
       />
       {/* Checkmark circle */}
-      <circle
-        cx="70"
-        cy="72"
-        r="16"
-        fill="var(--color-accent)"
-        opacity="0.15"
-      />
-      <circle
-        cx="70"
-        cy="72"
-        r="12"
-        fill="var(--color-accent)"
-        opacity="0.25"
-      />
+      <circle cx="70" cy="72" r="16" fill="var(--color-accent)" opacity="0.15" />
+      <circle cx="70" cy="72" r="12" fill="var(--color-accent)" opacity="0.25" />
       {/* Checkmark */}
       <path
         d="M62 72 L67 77 L78 66"

@@ -5,7 +5,7 @@ import {
   clearFolderSyncStates as dbInvokeClearFolderSyncStates,
   listFolderSyncStates as dbInvokeListFolderSyncStates,
   type FolderSyncState,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type { FolderSyncState };
 
@@ -16,9 +16,7 @@ export async function getFolderSyncState(
   return dbInvokeGetFolderSyncState(accountId, folderPath);
 }
 
-export async function upsertFolderSyncState(
-  state: FolderSyncState,
-): Promise<void> {
+export async function upsertFolderSyncState(state: FolderSyncState): Promise<void> {
   await dbInvokeUpsertFolderSyncState({
     accountId: state.account_id,
     folderPath: state.folder_path,
@@ -33,10 +31,7 @@ export async function upsertFolderSyncState(
  * Delete a specific folder sync state.
  * Uses raw SQL since there is no db-invoke delete equivalent.
  */
-export async function deleteFolderSyncState(
-  accountId: string,
-  folderPath: string,
-): Promise<void> {
+export async function deleteFolderSyncState(accountId: string, folderPath: string): Promise<void> {
   await dbInvokeDeleteFolderSyncState(accountId, folderPath);
 }
 
@@ -44,9 +39,7 @@ export async function deleteFolderSyncState(
  * Clear all folder sync states for an account.
  * Uses raw SQL since there is no db-invoke bulk-delete equivalent.
  */
-export async function clearAllFolderSyncStates(
-  accountId: string,
-): Promise<void> {
+export async function clearAllFolderSyncStates(accountId: string): Promise<void> {
   await dbInvokeClearFolderSyncStates(accountId);
 }
 
@@ -54,8 +47,6 @@ export async function clearAllFolderSyncStates(
  * Get all folder sync states for an account.
  * Uses raw SQL since there is no db-invoke list-all equivalent.
  */
-export async function getAllFolderSyncStates(
-  accountId: string,
-): Promise<FolderSyncState[]> {
+export async function getAllFolderSyncStates(accountId: string): Promise<FolderSyncState[]> {
   return dbInvokeListFolderSyncStates(accountId);
 }

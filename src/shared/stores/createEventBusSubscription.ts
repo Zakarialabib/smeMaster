@@ -1,4 +1,4 @@
-import { eventBus } from "@shared/services/events/eventBus";
+import { eventBus } from '@shared/services/events/eventBus';
 
 /**
  * A self-managed EventBus subscription handle. The returned `init()` is

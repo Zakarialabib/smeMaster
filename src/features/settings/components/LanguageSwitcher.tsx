@@ -1,8 +1,8 @@
-import { useTranslation } from "react-i18next";
-import { SUPPORTED_LOCALES, LOCALE_NAMES, changeLanguage } from "@/locales";
-import type { SupportedLocale } from "@/locales";
-import { useLayoutStore } from "@shared/stores/layoutStore";
-import { saveLocale } from "@shared/services/i18nService";
+import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LOCALES, LOCALE_NAMES, changeLanguage } from '@/locales';
+import type { SupportedLocale } from '@/locales';
+import { useLayoutStore } from '@shared/stores/layoutStore';
+import { saveLocale } from '@shared/services/i18nService';
 
 export function LanguageSwitcher() {
   const { t } = useTranslation();
@@ -12,10 +12,8 @@ export function LanguageSwitcher() {
   return (
     <div className="flex items-center justify-between py-2.5 first:pt-0 gap-4 min-h-[36px] rounded-lg px-3 -mx-3 transition-colors hover:bg-bg-hover/40">
       <div>
-        <span className="text-sm text-text-secondary">{t("settings.language")}</span>
-        <p className="text-xs text-text-tertiary mt-0.5">
-          {t("settings.languageDescription")}
-        </p>
+        <span className="text-sm text-text-secondary">{t('settings.language')}</span>
+        <p className="text-xs text-text-tertiary mt-0.5">{t('settings.languageDescription')}</p>
       </div>
       <select
         value={locale}

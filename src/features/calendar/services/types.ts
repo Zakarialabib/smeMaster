@@ -1,4 +1,4 @@
-export type CalendarProviderType = "google_api" | "caldav";
+export type CalendarProviderType = 'google_api' | 'caldav';
 
 export interface CalendarInfo {
   remoteId: string;
@@ -29,7 +29,7 @@ export interface CreateEventInput {
   description?: string;
   location?: string;
   startTime: string; // ISO 8601
-  endTime: string;   // ISO 8601
+  endTime: string; // ISO 8601
   isAllDay?: boolean;
   attendees?: { email: string }[];
 }
@@ -57,9 +57,18 @@ export interface CalendarProvider {
 
   listCalendars(): Promise<CalendarInfo[]>;
 
-  fetchEvents(calendarRemoteId: string, timeMin: string, timeMax: string): Promise<CalendarEventData[]>;
+  fetchEvents(
+    calendarRemoteId: string,
+    timeMin: string,
+    timeMax: string,
+  ): Promise<CalendarEventData[]>;
   createEvent(calendarRemoteId: string, event: CreateEventInput): Promise<CalendarEventData>;
-  updateEvent(calendarRemoteId: string, remoteEventId: string, event: UpdateEventInput, etag?: string): Promise<CalendarEventData>;
+  updateEvent(
+    calendarRemoteId: string,
+    remoteEventId: string,
+    event: UpdateEventInput,
+    etag?: string,
+  ): Promise<CalendarEventData>;
   deleteEvent(calendarRemoteId: string, remoteEventId: string, etag?: string): Promise<void>;
 
   syncEvents(calendarRemoteId: string, syncToken?: string): Promise<CalendarSyncResult>;

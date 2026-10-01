@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Edit3, Filter } from "lucide-react";
-import { useContactStore } from "@features/contacts/stores/contactStore";
-import { deleteContactSegment } from "@features/contacts/db/contactSegments";
-import { SegmentQueryEditor } from "./SegmentQueryEditor";
+﻿import { useState, useEffect, useCallback } from 'react';
+import { Plus, Trash2, Edit3, Filter } from 'lucide-react';
+import { useContactStore } from '@features/contacts/stores/contactStore';
+import { deleteContactSegment } from '@features/contacts/db/contactSegments';
+import { SegmentQueryEditor } from './SegmentQueryEditor';
 
 interface SegmentManagerProps {
   accountId: string;
@@ -14,77 +14,68 @@ export function SegmentManager({ accountId }: SegmentManagerProps) {
   const loadSegments = useContactStore((s) => s.loadSegments);
 
   const [editorState, setEditorState] = useState<{
-    mode: "hidden" | "create" | "edit";
+    mode: 'hidden' | 'create' | 'edit';
     segmentId?: string;
     segmentName?: string;
     segmentQuery?: string;
     segmentDescription?: string;
     segmentColor?: string;
-  }>({ mode: "hidden" });
+  }>({ mode: 'hidden' });
 
   useEffect(() => {
     loadSegments(accountId);
   }, [accountId, loadSegments]);
 
   const handleNew = useCallback(() => {
-    setEditorState({ mode: "create" });
+    setEditorState({ mode: 'create' });
   }, []);
 
-  const handleEdit = useCallback(
-    (id: string, name: string, query: string) => {
-      setEditorState({
-        mode: "edit",
-        segmentId: id,
-        segmentName: name,
-        segmentQuery: query,
-      });
-    },
-    [],
-  );
+  const handleEdit = useCallback((id: string, name: string, query: string) => {
+    setEditorState({
+      mode: 'edit',
+      segmentId: id,
+      segmentName: name,
+      segmentQuery: query,
+    });
+  }, []);
 
   const handleDelete = useCallback(
     async (id: string, name: string) => {
-      const confirmed = window.confirm(
-        `Are you sure you want to delete the segment "${name}"?`,
-      );
+      const confirmed = window.confirm(`Are you sure you want to delete the segment "${name}"?`);
       if (!confirmed) return;
       try {
         await deleteContactSegment(id, accountId);
         await loadSegments(accountId);
       } catch (err) {
-        console.error("Failed to delete segment:", err);
+        console.error('Failed to delete segment:', err);
       }
     },
     [accountId, loadSegments],
   );
 
   const handleSaveComplete = useCallback(() => {
-    setEditorState({ mode: "hidden" });
+    setEditorState({ mode: 'hidden' });
   }, []);
 
   const handleCancel = useCallback(() => {
-    setEditorState({ mode: "hidden" });
+    setEditorState({ mode: 'hidden' });
   }, []);
 
   // â”€â”€â”€ Loading state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (isLoading && segments.length === 0) {
-    return (
-      <div className="text-xs text-text-tertiary py-2">
-        Loading segments...
-      </div>
-    );
+    return <div className="text-xs text-text-tertiary py-2">Loading segments...</div>;
   }
 
   // â”€â”€â”€ Editor open (create or edit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  if (editorState.mode !== "hidden") {
+  if (editorState.mode !== 'hidden') {
     const initialSegment =
-      editorState.mode === "edit" && editorState.segmentId
+      editorState.mode === 'edit' && editorState.segmentId
         ? {
             id: editorState.segmentId,
-            name: editorState.segmentName ?? "",
-            query: editorState.segmentQuery ?? "",
+            name: editorState.segmentName ?? '',
+            query: editorState.segmentQuery ?? '',
             description: editorState.segmentDescription,
             color: editorState.segmentColor,
           }
@@ -94,7 +85,7 @@ export function SegmentManager({ accountId }: SegmentManagerProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            {editorState.mode === "create" ? "New Segment" : "Edit Segment"}
+            {editorState.mode === 'create' ? 'New Segment' : 'Edit Segment'}
           </h4>
         </div>
         <SegmentQueryEditor
@@ -136,9 +127,7 @@ export function SegmentManager({ accountId }: SegmentManagerProps) {
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Filter size={12} className="text-text-tertiary shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs text-text-primary truncate">
-                    {segment.name}
-                  </div>
+                  <div className="text-xs text-text-primary truncate">{segment.name}</div>
                   <div className="text-[0.625rem] text-text-tertiary truncate flex items-center gap-1">
                     <code className="truncate">{segment.query}</code>
                   </div>
@@ -146,9 +135,7 @@ export function SegmentManager({ accountId }: SegmentManagerProps) {
               </div>
               <div className="flex items-center gap-1 shrink-0 ms-2">
                 <button
-                  onClick={() =>
-                    handleEdit(segment.id, segment.name, segment.query)
-                  }
+                  onClick={() => handleEdit(segment.id, segment.name, segment.query)}
                   className="p-1 text-text-tertiary hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-bg-hover"
                   title="Edit segment"
                 >

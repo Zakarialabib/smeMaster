@@ -1,5 +1,5 @@
-import { useEffect, useCallback, lazy, Suspense } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useCallback, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   RefreshCw,
   Workflow,
@@ -9,39 +9,39 @@ import {
   List,
   GitBranch,
   LayoutTemplate,
-} from "lucide-react";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
-import { Button } from "@shared/components/ui/Button";
-import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
-import { SkeletonPage, GlassPanel } from "@shared/components/ui";
-import { PageScaffold } from "@shared/components/layout";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
-import { useAutomationStore } from "@features/automation/stores/automationStore";
-import { AutomationRuleCard } from "@features/automation/components/AutomationRuleCard";
-import { AutomationRuleList } from "@features/automation/components/AutomationRuleList";
-import { AutomationRuleEditor } from "@features/automation/components/AutomationRuleEditor";
-import { WorkflowTemplatesGallery } from "@features/automation/components/WorkflowTemplatesGallery";
-import { upsertWorkflowRule } from "@features/settings/db/workflowRules";
+} from 'lucide-react';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
+import { Button } from '@shared/components/ui/Button';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { SkeletonPage, GlassPanel } from '@shared/components/ui';
+import { PageScaffold } from '@shared/components/layout';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
+import { useAutomationStore } from '@features/automation/stores/automationStore';
+import { AutomationRuleCard } from '@features/automation/components/AutomationRuleCard';
+import { AutomationRuleList } from '@features/automation/components/AutomationRuleList';
+import { AutomationRuleEditor } from '@features/automation/components/AutomationRuleEditor';
+import { WorkflowTemplatesGallery } from '@features/automation/components/WorkflowTemplatesGallery';
+import { upsertWorkflowRule } from '@features/settings/db/workflowRules';
 
 // Heavy, conditionally-rendered UI: the visual flow builder pulls in xyflow
 // and the AI modal pulls in settings/constants. Both are only mounted on
 // demand, so lazy-load them to keep them out of the initial automation chunk.
 const AutomationBuilder = lazy(() =>
-  import("@features/automation/components/AutomationBuilder").then((m) => ({
+  import('@features/automation/components/AutomationBuilder').then((m) => ({
     default: m.AutomationBuilder,
   })),
 );
 
 const AiWorkflowGenerateModal = lazy(() =>
-  import("@features/settings/components/AiWorkflowGenerateModal").then((m) => ({
+  import('@features/settings/components/AiWorkflowGenerateModal').then((m) => ({
     default: m.AiWorkflowGenerateModal,
   })),
 );
-import { notify } from "@shared/services/notifications/toastHelper";
-import type { WorkflowPreset } from "@/constants/workflowPresets";
-import type { ViewMode } from "@features/automation/stores/automationStore";
+import { notify } from '@shared/services/notifications/toastHelper';
+import type { WorkflowPreset } from '@/constants/workflowPresets';
+import type { ViewMode } from '@features/automation/stores/automationStore';
 
 export function AutomationPage() {
   const { t } = useTranslation();
@@ -115,10 +115,10 @@ export function AutomationPage() {
         });
         closeTemplates();
         await loadRules(ACTIVE_COMPANY_ID);
-        notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
+        notify(t('automation.notifyTitle'), t('automation.notifyCreated', { name: preset.name }));
       } catch (err) {
-        console.error("Failed to create workflow from template:", err);
-        notify(t("automation.notifyTitle"), t("automation.notifyFailed"));
+        console.error('Failed to create workflow from template:', err);
+        notify(t('automation.notifyTitle'), t('automation.notifyFailed'));
       }
     },
     [activeAccountId, loadRules, closeTemplates, t],
@@ -139,10 +139,10 @@ export function AutomationPage() {
         });
         closeAiModal();
         await loadRules(ACTIVE_COMPANY_ID);
-        notify(t("automation.notifyTitle"), t("automation.notifyCreated", { name: preset.name }));
+        notify(t('automation.notifyTitle'), t('automation.notifyCreated', { name: preset.name }));
       } catch (err) {
-        console.error("Failed to create AI workflow:", err);
-        notify(t("automation.notifyTitle"), t("automation.notifyFailed"));
+        console.error('Failed to create AI workflow:', err);
+        notify(t('automation.notifyTitle'), t('automation.notifyFailed'));
       }
     },
     [activeAccountId, loadRules, closeAiModal, t],
@@ -152,8 +152,8 @@ export function AutomationPage() {
 
   const cycleViewMode = useCallback(() => {
     const next: Record<ViewMode, ViewMode> = {
-      cards: "list",
-      list: "cards",
+      cards: 'list',
+      list: 'cards',
     };
     setViewMode(next[viewMode]);
   }, [viewMode, setViewMode]);
@@ -165,10 +165,7 @@ export function AutomationPage() {
     return (
       <div className="flex-1 overflow-hidden">
         <Suspense fallback={<SkeletonPage />}>
-          <AutomationBuilder
-            accountId={activeAccountId}
-            onSaveSuccess={() => {}}
-          />
+          <AutomationBuilder accountId={activeAccountId} onSaveSuccess={() => {}} />
         </Suspense>
       </div>
     );
@@ -180,21 +177,16 @@ export function AutomationPage() {
 
   if (error && rules.length === 0) {
     return (
-      <PageScaffold
-        title={t("automation.title")}
-        subtitle={t("automation.subtitle")}
-      >
+      <PageScaffold title={t('automation.title')} subtitle={t('automation.subtitle')}>
         <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-sm text-danger mb-1">
-            {t("automation.errorTitle")}
-          </p>
+          <p className="text-sm text-danger mb-1">{t('automation.errorTitle')}</p>
           <p className="text-xs text-text-tertiary mb-4 max-w-sm">{error}</p>
           <button
             onClick={() => activeAccountId && loadRules(activeAccountId)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-lg transition-colors"
           >
             <RefreshCw size={14} />
-            {t("automation.retry")}
+            {t('automation.retry')}
           </button>
         </div>
       </PageScaffold>
@@ -203,8 +195,8 @@ export function AutomationPage() {
 
   return (
     <PageScaffold
-      title={t("automation.title")}
-      subtitle={t("automation.subtitle")}
+      title={t('automation.title')}
+      subtitle={t('automation.subtitle')}
       actions={
         <>
           <Button
@@ -213,16 +205,11 @@ export function AutomationPage() {
             icon={<GitBranch size={14} />}
             onClick={openBuilder}
           >
-            {t("automation.visualBuilder")}
+            {t('automation.visualBuilder')}
           </Button>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Sparkles size={14} />}
-            onClick={openAiModal}
-          >
-            {t("automation.generateWithAi")}
+          <Button variant="secondary" size="sm" icon={<Sparkles size={14} />} onClick={openAiModal}>
+            {t('automation.generateWithAi')}
           </Button>
           <Button
             variant="secondary"
@@ -230,15 +217,10 @@ export function AutomationPage() {
             icon={<LayoutTemplate size={14} />}
             onClick={openTemplates}
           >
-            {t("automation.templates")}
+            {t('automation.templates')}
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Plus size={14} />}
-            onClick={openEditor}
-          >
-            {t("automation.addRule")}
+          <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={openEditor}>
+            {t('automation.addRule')}
           </Button>
         </>
       }
@@ -248,21 +230,11 @@ export function AutomationPage() {
           onClick={cycleViewMode}
           className="p-1.5 text-text-tertiary hover:text-text-primary bg-bg-secondary hover:bg-bg-hover rounded-lg border border-border-primary transition-colors"
           aria-label={
-            viewMode === "cards"
-              ? t("automation.switchToList")
-              : t("automation.switchToCard")
+            viewMode === 'cards' ? t('automation.switchToList') : t('automation.switchToCard')
           }
-          title={
-            viewMode === "cards"
-              ? t("automation.viewModeList")
-              : t("automation.viewModeCard")
-          }
+          title={viewMode === 'cards' ? t('automation.viewModeList') : t('automation.viewModeCard')}
         >
-          {viewMode === "cards" ? (
-            <List size={14} />
-          ) : (
-            <LayoutGrid size={14} />
-          )}
+          {viewMode === 'cards' ? <List size={14} /> : <LayoutGrid size={14} />}
         </button>
       }
       isEmpty={rules.length === 0 && !showEditor}
@@ -270,30 +242,39 @@ export function AutomationPage() {
         <div className="space-y-4">
           <EmptyState
             icon={Workflow}
-            title={t("automation.emptyTitle")}
-            subtitle={t("automation.emptySubtitle")}
+            title={t('automation.emptyTitle')}
+            subtitle={t('automation.emptySubtitle')}
             action={
-              <Button
-                variant="primary"
-                size="sm"
-                icon={<Plus size={14} />}
-                onClick={openEditor}
-              >
-                {t("automation.createRule")}
+              <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={openEditor}>
+                {t('automation.createRule')}
               </Button>
             }
           />
           <GlassPanel variant="card" className="p-4 max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-              {t("automation.whatYouCanAutomate")}
+              {t('automation.whatYouCanAutomate')}
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-text-secondary">
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.archive")}</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.starVip")}</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.autoReply")}</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.createTasks")}</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.forwardInvoices")}</li>
-              <li className="flex items-start gap-2"><span className="mt-1 text-accent">•</span> {t("automation.examples.snoozeFollowups")}</li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span> {t('automation.examples.archive')}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span> {t('automation.examples.starVip')}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span> {t('automation.examples.autoReply')}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span> {t('automation.examples.createTasks')}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span>{' '}
+                {t('automation.examples.forwardInvoices')}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-accent">•</span>{' '}
+                {t('automation.examples.snoozeFollowups')}
+              </li>
             </ul>
           </GlassPanel>
         </div>
@@ -302,15 +283,12 @@ export function AutomationPage() {
       {/* Inline Add/Edit Form */}
       {showEditor && activeAccountId && (
         <div className="mb-4">
-          <AutomationRuleEditor
-            accountId={activeAccountId}
-            onSaveSuccess={() => {}}
-          />
+          <AutomationRuleEditor accountId={activeAccountId} onSaveSuccess={() => {}} />
         </div>
       )}
 
       {/* Rules list or empty state */}
-      {viewMode === "cards" ? (
+      {viewMode === 'cards' ? (
         <ErrorBoundary name="AutomationRulesList">
           <GlassPanel variant="card" className="p-4">
             <div className="space-y-2">
@@ -345,9 +323,9 @@ export function AutomationPage() {
         isOpen={deleteTargetId !== null}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title={t("automation.deleteTitle")}
-        message={t("automation.deleteMessage")}
-        confirmLabel={t("automation.delete")}
+        title={t('automation.deleteTitle')}
+        message={t('automation.deleteMessage')}
+        confirmLabel={t('automation.delete')}
         variant="danger"
         loading={deleting}
       />

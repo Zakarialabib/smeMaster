@@ -1,10 +1,10 @@
-import { useMemo } from "react";
-import { Pencil, Check, X } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-import type { DbContact, ContactEngagementRow } from "@features/contacts/db/contacts";
-import { ContactAvatar } from "../ContactAvatar";
-import { ContactQuickActions } from "../ContactQuickActions";
-import { EngagementScoreBar } from "../EngagementScoreBar";
+import { useMemo } from 'react';
+import { Pencil, Check, X } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import type { DbContact, ContactEngagementRow } from '@features/contacts/db/contacts';
+import { ContactAvatar } from '../ContactAvatar';
+import { ContactQuickActions } from '../ContactQuickActions';
+import { EngagementScoreBar } from '../EngagementScoreBar';
 
 export interface ContactInfoCardProps {
   contact: DbContact;
@@ -31,21 +31,15 @@ export function ContactInfoCard({
   const navigate = useNavigate();
 
   const displayName = useMemo(
-    () => contact.display_name ?? contact.email.split("@")[0] ?? "Unknown",
+    () => contact.display_name ?? contact.email.split('@')[0] ?? 'Unknown',
     [contact],
   );
-
-
 
   return (
     <div className="rounded-xl border border-border-primary bg-bg-secondary p-4 sm:p-5">
       {/* Avatar + Name + Email */}
       <div className="flex flex-col items-center text-center mb-4">
-        <ContactAvatar
-          name={displayName}
-          email={contact.email}
-          className="mb-3"
-        />
+        <ContactAvatar name={displayName} email={contact.email} className="mb-3" />
 
         {editingName ? (
           <div className="flex items-center gap-1 mb-1">
@@ -54,8 +48,8 @@ export function ContactInfoCard({
               value={editNameValue}
               onChange={(e) => onEditNameChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") onSaveEditName();
-                if (e.key === "Escape") onCancelEditName();
+                if (e.key === 'Enter') onSaveEditName();
+                if (e.key === 'Escape') onCancelEditName();
               }}
               autoFocus
               className="w-40 text-sm text-center bg-bg-primary border border-border-primary rounded px-1.5 py-0.5 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -99,10 +93,12 @@ export function ContactInfoCard({
       />
 
       <ContactQuickActions
-        actions={["email", "task", "campaign"]}
-        onEmail={() => navigate({ to: "/mail/$label", params: { label: "inbox" }, search: { q: contact.email } })}
-        onTask={() => navigate({ to: "/tasks" })}
-        onCampaign={() => navigate({ to: "/campaigns" })}
+        actions={['email', 'task', 'campaign']}
+        onEmail={() =>
+          navigate({ to: '/mail/$label', params: { label: 'inbox' }, search: { q: contact.email } })
+        }
+        onTask={() => navigate({ to: '/tasks' })}
+        onCampaign={() => navigate({ to: '/campaigns' })}
         size="sm"
       />
     </div>

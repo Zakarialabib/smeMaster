@@ -16,7 +16,7 @@
  */
 
 /** Haptic feedback intensity levels. */
-export type HapticIntensity = "light" | "medium" | "heavy";
+export type HapticIntensity = 'light' | 'medium' | 'heavy';
 
 /**
  * Bridge to the native Android SplashScreen API.
@@ -92,7 +92,7 @@ export interface DeviceInfoBridge {
    * - `"foldable"` → 600dp ≤ sw < 840dp (including foldable in folded state)
    * - `"tablet"`  → sw ≥ 840dp
    */
-  getScreenSizeClass(): "phone" | "foldable" | "tablet";
+  getScreenSizeClass(): 'phone' | 'foldable' | 'tablet';
 }
 
 /**

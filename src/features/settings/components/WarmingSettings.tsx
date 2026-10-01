@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Sparkles,
   Loader2,
@@ -15,29 +15,32 @@ import {
   Zap,
   BarChart3,
   CalendarDays,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getWarmingPlan,
   enableWarming,
   disableWarming,
   getWarmingProgress,
-} from "@features/deliverability/services/warmingService";
-import type { WarmingPlan, WarmingProgress } from "@features/deliverability/services/warmingService";
-import { generateWarmupPreset } from "@shared/services/ai/warmupGenerator";
-import type { WarmupPreset } from "@/constants/warmupPresets";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { UpgradeBadge } from "@shared/components/ui/UpgradeBadge";
-import { cn } from "@shared/utils/cn";
+} from '@features/deliverability/services/warmingService';
+import type {
+  WarmingPlan,
+  WarmingProgress,
+} from '@features/deliverability/services/warmingService';
+import { generateWarmupPreset } from '@shared/services/ai/warmupGenerator';
+import type { WarmupPreset } from '@/constants/warmupPresets';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { UpgradeBadge } from '@shared/components/ui/UpgradeBadge';
+import { cn } from '@shared/utils/cn';
 
 export function WarmingSettings() {
   const { t } = useTranslation();
   const accounts = useAccountStore((s) => s.accounts);
-  const [selectedAccountId, setSelectedAccountId] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState('');
   const [plan, setPlan] = useState<WarmingPlan | null>(null);
   const [progress, setProgress] = useState<WarmingProgress | null>(null);
   const [loading, setLoading] = useState(false);
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiWarmups, setAiWarmups] = useState<WarmupPreset[]>([]);
@@ -82,10 +85,10 @@ export function WarmingSettings() {
     setAiLoading(true);
     setAiError(null);
     try {
-      const result = await generateWarmupPreset({ style: "follow_up" });
+      const result = await generateWarmupPreset({ style: 'follow_up' });
       setAiWarmups((prev) => [result, ...prev]);
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Generation failed");
+      setAiError(err instanceof Error ? err.message : 'Generation failed');
     } finally {
       setAiLoading(false);
     }
@@ -100,7 +103,7 @@ export function WarmingSettings() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative">
           <label className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5 block">
-            {t("settings.warming.targetAccount") || "Target Account"}
+            {t('settings.warming.targetAccount') || 'Target Account'}
           </label>
           <div className="relative">
             <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
@@ -129,12 +132,8 @@ export function WarmingSettings() {
               disabled={aiLoading}
               className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-accent bg-accent/5 hover:bg-accent/10 rounded-xl border border-accent/20 transition-all disabled:opacity-50 active:scale-95"
             >
-              {aiLoading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Sparkles size={14} />
-              )}
-              {aiLoading ? "Generating..." : "AI Generate Warmup"}
+              {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {aiLoading ? 'Generating...' : 'AI Generate Warmup'}
             </button>
           )}
         </div>
@@ -197,7 +196,7 @@ export function WarmingSettings() {
       {loading && (
         <div className="flex items-center justify-center py-12 gap-3">
           <Loader2 size={18} className="text-accent animate-spin" />
-          <span className="text-sm text-text-secondary">{t("common.loading")}</span>
+          <span className="text-sm text-text-secondary">{t('common.loading')}</span>
         </div>
       )}
 
@@ -206,30 +205,32 @@ export function WarmingSettings() {
           {/* ── Main Control Card ─── */}
           <div
             className={cn(
-              "rounded-2xl border p-5 transition-all",
+              'rounded-2xl border p-5 transition-all',
               currentPlan?.enabled
-                ? "bg-accent/5 border-accent/20"
-                : "bg-bg-tertiary/30 border-border/50"
+                ? 'bg-accent/5 border-accent/20'
+                : 'bg-bg-tertiary/30 border-border/50',
             )}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
-                    "p-2.5 rounded-xl transition-colors",
-                    currentPlan?.enabled ? "bg-accent text-white" : "bg-bg-primary text-text-tertiary"
+                    'p-2.5 rounded-xl transition-colors',
+                    currentPlan?.enabled
+                      ? 'bg-accent text-white'
+                      : 'bg-bg-primary text-text-tertiary',
                   )}
                 >
                   {currentPlan?.enabled ? <Zap size={18} /> : <Pause size={18} />}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-text-primary">
-                    {currentPlan?.enabled ? "Warming Active" : "Warming Paused"}
+                    {currentPlan?.enabled ? 'Warming Active' : 'Warming Paused'}
                   </h3>
                   <p className="text-xs text-text-tertiary mt-0.5">
                     {currentPlan?.enabled
                       ? `Sending ${currentProgress?.currentVolume || 0} emails/day`
-                      : "Enable to start building sender reputation"}
+                      : 'Enable to start building sender reputation'}
                   </p>
                 </div>
               </div>
@@ -248,14 +249,14 @@ export function WarmingSettings() {
                 <button
                   onClick={handleToggle}
                   className={cn(
-                    "relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent/30",
-                    currentPlan?.enabled ? "bg-accent" : "bg-bg-tertiary border border-border"
+                    'relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent/30',
+                    currentPlan?.enabled ? 'bg-accent' : 'bg-bg-tertiary border border-border',
                   )}
                 >
                   <span
                     className={cn(
-                      "inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform",
-                      currentPlan?.enabled ? "translate-x-6" : "translate-x-1"
+                      'inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform',
+                      currentPlan?.enabled ? 'translate-x-6' : 'translate-x-1',
                     )}
                   />
                 </button>
@@ -288,7 +289,7 @@ export function WarmingSettings() {
                 <div className="flex items-center gap-2">
                   <CalendarDays size={14} className="text-text-tertiary" />
                   <span className="text-xs text-text-secondary">
-                    {t("settings.warming.dayProgress", {
+                    {t('settings.warming.dayProgress', {
                       day: currentProgress.day,
                       total: currentProgress.totalDays,
                     })}
@@ -310,7 +311,7 @@ export function WarmingSettings() {
                       onClick={() => setShowSchedule((s) => !s)}
                       className="text-[10px] text-accent hover:underline"
                     >
-                      {showSchedule ? "Hide schedule" : "Show schedule"}
+                      {showSchedule ? 'Hide schedule' : 'Show schedule'}
                     </button>
                   </div>
                   <div className="flex items-end gap-[3px] h-20 px-1">
@@ -319,23 +320,20 @@ export function WarmingSettings() {
                       const vol = Math.round(
                         currentProgress.startVolume +
                           (currentProgress.targetVolume - currentProgress.startVolume) *
-                            (dayPct / 100)
+                            (dayPct / 100),
                       );
                       const isCurrent = i + 1 === currentProgress.day;
                       const isPast = i + 1 < currentProgress.day;
                       return (
-                        <div
-                          key={i}
-                          className="flex-1 flex flex-col items-center gap-1 group/bar"
-                        >
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group/bar">
                           <div
                             className={cn(
-                              "w-full rounded-t transition-all duration-300 relative",
+                              'w-full rounded-t transition-all duration-300 relative',
                               isCurrent
-                                ? "bg-accent shadow-[0_0_8px_rgba(var(--accent),0.3)]"
+                                ? 'bg-accent shadow-[0_0_8px_rgba(var(--accent),0.3)]'
                                 : isPast
-                                  ? "bg-accent/40"
-                                  : "bg-bg-tertiary hover:bg-border"
+                                  ? 'bg-accent/40'
+                                  : 'bg-bg-tertiary hover:bg-border',
                             )}
                             style={{ height: `${(vol / currentProgress.targetVolume) * 100}%` }}
                           />
@@ -367,7 +365,7 @@ export function WarmingSettings() {
                         const vol = Math.round(
                           currentProgress.startVolume +
                             (currentProgress.targetVolume - currentProgress.startVolume) *
-                              (dayPct / 100)
+                              (dayPct / 100),
                         );
                         const isCurrent = day === currentProgress.day;
                         const isPast = day < currentProgress.day;
@@ -375,11 +373,11 @@ export function WarmingSettings() {
                           <div
                             key={day}
                             className={cn(
-                              "grid grid-cols-3 gap-2 px-4 py-2 text-xs border-b border-border/20 last:border-0",
-                              isCurrent && "bg-accent/5"
+                              'grid grid-cols-3 gap-2 px-4 py-2 text-xs border-b border-border/20 last:border-0',
+                              isCurrent && 'bg-accent/5',
                             )}
                           >
-                            <span className={cn("font-mono", isCurrent && "font-bold text-accent")}>
+                            <span className={cn('font-mono', isCurrent && 'font-bold text-accent')}>
                               {day}
                             </span>
                             <span className="text-text-secondary">{vol} emails</span>
@@ -410,7 +408,9 @@ export function WarmingSettings() {
             {!currentPlan?.enabled && (
               <div className="mt-5 pt-5 border-t border-border/30 flex items-center gap-3 text-xs text-text-tertiary">
                 <ShieldAlert size={14} className="text-warning" />
-                <span>Warming is disabled. Your sender reputation is not being actively managed.</span>
+                <span>
+                  Warming is disabled. Your sender reputation is not being actively managed.
+                </span>
               </div>
             )}
           </div>
@@ -427,24 +427,24 @@ export function WarmingSettings() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 {
-                  label: "Auto-pause on bounce rate",
-                  value: "> 5%",
-                  desc: "Stops warming if hard bounces exceed threshold",
+                  label: 'Auto-pause on bounce rate',
+                  value: '> 5%',
+                  desc: 'Stops warming if hard bounces exceed threshold',
                 },
                 {
-                  label: "Spam complaint limit",
-                  value: "> 0.1%",
-                  desc: "Halts if recipients mark as spam",
+                  label: 'Spam complaint limit',
+                  value: '> 0.1%',
+                  desc: 'Halts if recipients mark as spam',
                 },
                 {
-                  label: "Daily send window",
-                  value: "9:00 – 17:00",
-                  desc: "Only send during business hours",
+                  label: 'Daily send window',
+                  value: '9:00 – 17:00',
+                  desc: 'Only send during business hours',
                 },
                 {
-                  label: "Max ramp increment",
-                  value: "+20% / day",
-                  desc: "Maximum daily volume increase",
+                  label: 'Max ramp increment',
+                  value: '+20% / day',
+                  desc: 'Maximum daily volume increase',
                 },
               ].map((item) => (
                 <div
@@ -480,7 +480,8 @@ export function WarmingSettings() {
               <div>
                 <p className="text-sm font-medium text-text-tertiary">No recent activity</p>
                 <p className="text-xs text-text-tertiary mt-1 max-w-[280px]">
-                  Once warming is enabled, sent emails, replies, and engagement events will appear here.
+                  Once warming is enabled, sent emails, replies, and engagement events will appear
+                  here.
                 </p>
               </div>
             </div>

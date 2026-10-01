@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Modal } from "@shared/components/ui/Modal";
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
-import { Copy, Check } from "lucide-react";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal } from '@shared/components/ui/Modal';
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
+import { Copy, Check } from 'lucide-react';
 
 interface RawMessageModalProps {
   isOpen: boolean;
@@ -11,12 +11,7 @@ interface RawMessageModalProps {
   accountId: string;
 }
 
-export function RawMessageModal({
-  isOpen,
-  onClose,
-  messageId,
-  accountId,
-}: RawMessageModalProps) {
+export function RawMessageModal({ isOpen, onClose, messageId, accountId }: RawMessageModalProps) {
   const { t } = useTranslation();
   const [raw, setRaw] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +54,7 @@ export function RawMessageModal({
   const handleCopy = useCallback(async () => {
     if (!raw) return;
     try {
-      const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+      const { copyToClipboard } = await import('@shared/hooks/useClipboard');
       await copyToClipboard(raw);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

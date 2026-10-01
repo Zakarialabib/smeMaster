@@ -1,47 +1,36 @@
-import { ThemeTile, type ThemeMode } from "@features/settings/components/cards/ThemeTile";
-import {
-  ColorPickerCircle,
-} from "@features/settings/components/cards/ColorPickerCircle";
+import { ThemeTile, type ThemeMode } from '@features/settings/components/cards/ThemeTile';
+import { ColorPickerCircle } from '@features/settings/components/cards/ColorPickerCircle';
 
 export interface AppearanceSectionProps {
   currentTheme: ThemeMode;
   currentAccent: string;
   onThemeChange: (mode: ThemeMode) => void;
   onAccentChange: (color: string) => void;
-  currentSurface?: "flat" | "glass";
-  onSurfaceChange?: (surface: "flat" | "glass") => void;
-  currentDensity?: "compact" | "normal" | "relaxed";
-  onDensityChange?: (density: "compact" | "normal" | "relaxed") => void;
+  currentSurface?: 'flat' | 'glass';
+  onSurfaceChange?: (surface: 'flat' | 'glass') => void;
+  currentDensity?: 'compact' | 'normal' | 'relaxed';
+  onDensityChange?: (density: 'compact' | 'normal' | 'relaxed') => void;
 }
 
-const PRESET_COLORS = [
-  "#6366f1",
-  "#8b5cf6",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#06b6d4",
-] as const;
+const PRESET_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'] as const;
 
 export function AppearanceSection({
   currentTheme,
   currentAccent,
   onThemeChange,
   onAccentChange,
-  currentSurface = "flat",
+  currentSurface = 'flat',
   onSurfaceChange,
-  currentDensity = "normal",
+  currentDensity = 'normal',
   onDensityChange,
 }: AppearanceSectionProps) {
   return (
     <section className="space-y-6">
       {/* Theme selection */}
       <div>
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
-          Appearance
-        </h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">Appearance</h2>
         <div className="grid grid-cols-3 gap-4">
-          {(["light", "dark", "system"] as const).map((mode) => (
+          {(['light', 'dark', 'system'] as const).map((mode) => (
             <ThemeTile
               key={mode}
               mode={mode}
@@ -54,9 +43,7 @@ export function AppearanceSection({
 
       {/* Accent color selection */}
       <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-          Accent Color
-        </h3>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Accent Color</h3>
         <div className="flex flex-wrap gap-3">
           {PRESET_COLORS.map((color) => (
             <ColorPickerCircle
@@ -72,22 +59,22 @@ export function AppearanceSection({
       {/* Surface style: Flat (default) vs Glass */}
       {onSurfaceChange && (
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-            Surface
-          </h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Surface</h3>
           <div className="flex gap-3">
-            {([
-              { id: "flat", label: "Flat" },
-              { id: "glass", label: "Glass" },
-            ] as const).map((opt) => (
+            {(
+              [
+                { id: 'flat', label: 'Flat' },
+                { id: 'glass', label: 'Glass' },
+              ] as const
+            ).map((opt) => (
               <button
                 key={opt.id}
                 type="button"
                 onClick={() => onSurfaceChange(opt.id)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
                   currentSurface === opt.id
-                    ? "border-accent bg-accent/10 text-accent"
-                    : "border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover"
+                    ? 'border-accent bg-accent/10 text-accent'
+                    : 'border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover'
                 }`}
                 aria-pressed={currentSurface === opt.id}
               >
@@ -104,20 +91,20 @@ export function AppearanceSection({
       {/* UI density */}
       {onDensityChange && (
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-            Density
-          </h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Density</h3>
           <div className="flex gap-3">
-            {([
-              { id: "compact", label: "Compact" },
-              { id: "normal", label: "Normal" },
-              { id: "relaxed", label: "Relaxed" },
-            ] as const).map((opt) => (
+            {(
+              [
+                { id: 'compact', label: 'Compact' },
+                { id: 'normal', label: 'Normal' },
+                { id: 'relaxed', label: 'Relaxed' },
+              ] as const
+            ).map((opt) => (
               <button
                 key={opt.id}
                 type="button"
                 onClick={() => onDensityChange(opt.id)}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${currentDensity === opt.id ? "border-accent bg-accent/10 text-accent" : "border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover"}`}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${currentDensity === opt.id ? 'border-accent bg-accent/10 text-accent' : 'border-border-primary text-[var(--text-secondary)] hover:bg-bg-hover'}`}
                 aria-pressed={currentDensity === opt.id}
               >
                 {opt.label}
@@ -129,4 +116,3 @@ export function AppearanceSection({
     </section>
   );
 }
-

@@ -21,33 +21,33 @@
 
 export interface UiBusEventMap {
   /** Local data changed (was `smemaster-sync-done`) — refresh UI/cache. */
-  "data:changed": void;
+  'data:changed': void;
   /** Toggle the command palette. */
-  "toggle:command-palette": void;
+  'toggle:command-palette': void;
   /** Toggle the keyboard shortcuts help overlay. */
-  "toggle:shortcuts-help": void;
+  'toggle:shortcuts-help': void;
   /** Toggle the Ask-Inbox assistant panel. */
-  "toggle:ask-inbox": void;
+  'toggle:ask-inbox': void;
   /** Toggle the template demo overlay. */
-  "toggle:template-demo": void;
+  'toggle:template-demo': void;
   /** Request moving the given thread IDs to a folder. */
-  "move-to-folder": { threadIds: string[] };
+  'move-to-folder': { threadIds: string[] };
   /** Restore onboarding progress to a given step (multi-tab safety). */
-  "restore-onboarding": { step: number };
+  'restore-onboarding': { step: number };
   /** Activate inline reply in the active thread view. */
-  "inline-reply": { mode: "reply" | "replyAll" | "forward" };
+  'inline-reply': { mode: 'reply' | 'replyAll' | 'forward' };
   /** Open the task-extract dialog for a thread. */
-  "extract-task": { threadId: string };
+  'extract-task': { threadId: string };
   /** View raw message. */
-  "view-raw-message": { messageId: string };
+  'view-raw-message': { messageId: string };
   /** Navigate help. */
-  "navigate-help": { topic: string };
+  'navigate-help': { topic: string };
   /** Calendar sync done. */
-  "calendar:sync:done": void;
+  'calendar:sync:done': void;
   /** Show toast notification. */
-  "toast:show": { message: string };
+  'toast:show': { message: string };
   /** Edit template. */
-  "edit-template": { templateId: string };
+  'edit-template': { templateId: string };
 }
 
 export type UiBusEventName = keyof UiBusEventMap;
@@ -58,7 +58,10 @@ type Handler<K extends UiBusEventName> = (payload: UiBusEventMap[K]) => void;
 
 class UiBus {
   private target = new EventTarget();
-  private listeners = new Map<string, Set<{ original: (...args: any[]) => void; wrapped: EventListener }>>();
+  private listeners = new Map<
+    string,
+    Set<{ original: (...args: any[]) => void; wrapped: EventListener }>
+  >();
 
   /**
    * Subscribe to a UI event. Returns an unsubscribe function.

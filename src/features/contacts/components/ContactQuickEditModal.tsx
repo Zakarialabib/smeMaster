@@ -1,14 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
-import { Save } from "lucide-react";
-import type { DbContact } from "@features/contacts/db/contacts";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
+import { useState, useEffect, useCallback } from 'react';
+import { Save } from 'lucide-react';
+import type { DbContact } from '@features/contacts/db/contacts';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 
 interface ContactQuickEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   contact: DbContact | null;
-  onSave: (updates: { display_name: string | null; email: string; notes: string | null }) => Promise<void>;
+  onSave: (updates: {
+    display_name: string | null;
+    email: string;
+    notes: string | null;
+  }) => Promise<void>;
 }
 
 /**
@@ -21,17 +25,17 @@ export function ContactQuickEditModal({
   contact,
   onSave,
 }: ContactQuickEditModalProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [notes, setNotes] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && contact) {
-      setName(contact.display_name ?? "");
+      setName(contact.display_name ?? '');
       setEmail(contact.email);
-      setNotes(contact.notes ?? "");
+      setNotes(contact.notes ?? '');
       setError(null);
     }
   }, [isOpen, contact]);
@@ -48,7 +52,7 @@ export function ContactQuickEditModal({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -60,9 +64,7 @@ export function ContactQuickEditModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Quick edit" size="sm">
       <div className="p-4 space-y-4">
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            Display name
-          </label>
+          <label className="block text-xs font-medium text-text-secondary mb-1">Display name</label>
           <input
             type="text"
             value={name}
@@ -73,9 +75,7 @@ export function ContactQuickEditModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            Email
-          </label>
+          <label className="block text-xs font-medium text-text-secondary mb-1">Email</label>
           <input
             type="email"
             value={email}
@@ -86,9 +86,7 @@ export function ContactQuickEditModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            Notes
-          </label>
+          <label className="block text-xs font-medium text-text-secondary mb-1">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -98,19 +96,12 @@ export function ContactQuickEditModal({
           />
         </div>
 
-        {error && (
-          <p className="text-xs text-error">{error}</p>
-        )}
+        {error && <p className="text-xs text-error">{error}</p>}
       </div>
 
       {/* Footer */}
       <div className="p-3 border-t border-border-primary flex items-center gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onClose}
-          disabled={saving}
-        >
+        <Button variant="secondary" size="sm" onClick={onClose} disabled={saving}>
           Cancel
         </Button>
         <div className="flex-1" />
@@ -121,7 +112,7 @@ export function ContactQuickEditModal({
           onClick={handleSave}
           disabled={saving}
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
     </Modal>

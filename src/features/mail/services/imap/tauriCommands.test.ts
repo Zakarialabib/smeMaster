@@ -258,7 +258,7 @@ describe('SMTP Tauri commands', () => {
     mockInvoke.mockRejectedValue('SMTP send error: Connection refused');
 
     await expect(smtpSendEmail(testSmtpConfig, 'data')).rejects.toBe(
-      'SMTP send error: Connection refused'
+      'SMTP send error: Connection refused',
     );
   });
 
@@ -266,7 +266,7 @@ describe('SMTP Tauri commands', () => {
     mockInvoke.mockRejectedValue('Login failed: Invalid credentials');
 
     await expect(imapTestConnection(testImapConfig)).rejects.toBe(
-      'Login failed: Invalid credentials'
+      'Login failed: Invalid credentials',
     );
   });
 });

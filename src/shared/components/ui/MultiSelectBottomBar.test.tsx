@@ -10,46 +10,30 @@ const mockActions = [
 describe('MultiSelectBottomBar', () => {
   it('shows selected count', () => {
     render(
-      <MultiSelectBottomBar
-        selectedCount={3}
-        actions={mockActions}
-        onClearSelection={vi.fn()}
-      />
+      <MultiSelectBottomBar selectedCount={3} actions={mockActions} onClearSelection={vi.fn()} />,
     );
     expect(screen.getByText('3 selected')).toBeDefined();
   });
 
   it('renders nothing when count is 0', () => {
     const { container } = render(
-      <MultiSelectBottomBar
-        selectedCount={0}
-        actions={[]}
-        onClearSelection={vi.fn()}
-      />
+      <MultiSelectBottomBar selectedCount={0} actions={[]} onClearSelection={vi.fn()} />,
     );
     expect(container.innerHTML).toBe('');
   });
 
   it('renders action buttons', () => {
     render(
-      <MultiSelectBottomBar
-        selectedCount={2}
-        actions={mockActions}
-        onClearSelection={vi.fn()}
-      />
+      <MultiSelectBottomBar selectedCount={2} actions={mockActions} onClearSelection={vi.fn()} />,
     );
     expect(screen.getByText('Tag')).toBeDefined();
-    expect(screen.getByText("Delete")).toBeDefined();
+    expect(screen.getByText('Delete')).toBeDefined();
   });
 
   it('calls onClearSelection when Cancel clicked', () => {
     const onClear = vi.fn();
     render(
-      <MultiSelectBottomBar
-        selectedCount={2}
-        actions={mockActions}
-        onClearSelection={onClear}
-      />
+      <MultiSelectBottomBar selectedCount={2} actions={mockActions} onClearSelection={onClear} />,
     );
     fireEvent.click(screen.getByText('Cancel'));
     expect(onClear).toHaveBeenCalled();

@@ -2,9 +2,7 @@
  * Generic factory for creating singleton-cached AI provider clients.
  * Handles client caching, invalidation on key change, and cleanup.
  */
-export function createProviderFactory<TClient>(
-  createClient: (apiKey: string) => TClient,
-): {
+export function createProviderFactory<TClient>(createClient: (apiKey: string) => TClient): {
   getClient: (apiKey: string) => TClient;
   clear: () => void;
 } {

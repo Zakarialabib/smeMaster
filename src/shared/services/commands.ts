@@ -7,8 +7,8 @@
 //   const platform = await invoke("get_platform");
 //   const folders = await invoke("imap_list_folders", { config: myConfig });
 
-import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import { isTauriEnvironment, TauriUnavailableError } from "@shared/services/ipc";
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { isTauriEnvironment, TauriUnavailableError } from '@shared/services/ipc';
 import type {
   Contact,
   Invoice,
@@ -23,7 +23,7 @@ import type {
   JournalEntry,
   PnlResult,
   Wallet,
-} from "./db/schema";
+} from './db/schema';
 
 // ==========================================================================
 // Shared Types (mirrors Rust structs used in command signatures)
@@ -316,16 +316,16 @@ export interface DomainHealth {
 }
 
 export type FailureType =
-  | "MissingSpf"
-  | "SpfPermissive"
-  | "SpfLookupLimit"
-  | "MissingDkim"
-  | "WeakDkimKey"
-  | "MissingDmarc"
-  | "WeakDmarcPolicy"
-  | "BlacklistedIp"
-  | "NoPtrMatch"
-  | "MxIssues";
+  | 'MissingSpf'
+  | 'SpfPermissive'
+  | 'SpfLookupLimit'
+  | 'MissingDkim'
+  | 'WeakDkimKey'
+  | 'MissingDmarc'
+  | 'WeakDmarcPolicy'
+  | 'BlacklistedIp'
+  | 'NoPtrMatch'
+  | 'MxIssues';
 
 export interface LocalizedString {
   en: string;
@@ -333,9 +333,9 @@ export interface LocalizedString {
   ar: string;
 }
 
-export type Provider = "Gmail" | "Outlook" | "Yahoo" | "Exchange" | "All";
+export type Provider = 'Gmail' | 'Outlook' | 'Yahoo' | 'Exchange' | 'All';
 
-export type ImpactSeverity = "Critical" | "Warning" | "Info";
+export type ImpactSeverity = 'Critical' | 'Warning' | 'Info';
 
 export interface ProviderImpact {
   provider: Provider;
@@ -343,7 +343,7 @@ export interface ProviderImpact {
   description: string;
 }
 
-export type FixMethod = "SelfService" | "Cpanel" | "Cloudflare" | "Godaddy" | "Ovh" | "Automated";
+export type FixMethod = 'SelfService' | 'Cpanel' | 'Cloudflare' | 'Godaddy' | 'Ovh' | 'Automated';
 
 export interface FixStep {
   step_number: number; // u8
@@ -365,9 +365,9 @@ export interface RemediationNode {
   fix_paths: FixPath[];
 }
 
-export type AlertType = "RegressionDetected" | "KeyExpirationWarning" | "ScoreDropped";
+export type AlertType = 'RegressionDetected' | 'KeyExpirationWarning' | 'ScoreDropped';
 
-export type AlertSeverity = "Critical" | "Warning" | "Info";
+export type AlertSeverity = 'Critical' | 'Warning' | 'Info';
 
 export interface SentinelAlert {
   id: string;
@@ -451,8 +451,8 @@ export type DbBootstrapState = {
 // Mirrors crate::orchestrator::subsystem_lifecycle::SubsystemStatusSnapshot
 export type SubsystemStatusSnapshot = {
   name: string;
-  class: "always_on" | "lazy" | "on_demand";
-  status: "inactive" | "dormant" | "starting" | "active" | "shutting_down" | "failed";
+  class: 'always_on' | 'lazy' | 'on_demand';
+  status: 'inactive' | 'dormant' | 'starting' | 'active' | 'shutting_down' | 'failed';
   reason: string;
   uptimeSecs?: number;
   error?: string;
@@ -472,7 +472,7 @@ export type OfflineAvailabilityEntry = {
   accountId: string;
   folderId: string | null;
   contactId: string | null;
-  reason: "manual" | "recent" | "favorite" | "label";
+  reason: 'manual' | 'recent' | 'favorite' | 'label';
   enabled: number;
   createdAt: number;
   updatedAt: number;
@@ -704,8 +704,14 @@ type TauriCommands = {
   // ── Deliverability ───────────────────────────────────────────────────
   check_dnsbl_cmd: { params: { ip: string }; result: DnsblResult[] };
   check_domain_health: { params: { domain: string; sending_ip?: string }; result: DomainHealth };
-  get_remediation: { params: { domain: string; failure_types: FailureType[] }; result: RemediationNode[] };
-  run_sentinel_check: { params: { domain: string; previous_score: number }; result: SentinelAlert[] };
+  get_remediation: {
+    params: { domain: string; failure_types: FailureType[] };
+    result: RemediationNode[];
+  };
+  run_sentinel_check: {
+    params: { domain: string; previous_score: number };
+    result: SentinelAlert[];
+  };
   get_sentinel_alerts: { params: void; result: SentinelAlert[] };
 
   // ── Device Pairing ───────────────────────────────────────────────────
@@ -1064,11 +1070,21 @@ type TauriCommands = {
   db_ensure_wallet: { params: { companyId: string }; result: Wallet };
   db_get_wallet: { params: { companyId: string }; result: Wallet };
   db_credit_wallet: {
-    params: { companyId: string; amount: number; reference?: string | null; description?: string | null };
+    params: {
+      companyId: string;
+      amount: number;
+      reference?: string | null;
+      description?: string | null;
+    };
     result: Wallet;
   };
   db_debit_wallet: {
-    params: { companyId: string; amount: number; reference?: string | null; description?: string | null };
+    params: {
+      companyId: string;
+      amount: number;
+      reference?: string | null;
+      description?: string | null;
+    };
     result: Wallet;
   };
 };

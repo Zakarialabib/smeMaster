@@ -1,6 +1,6 @@
-import { RuleSummaryCard } from "@shared/components/rule";
-import { safeParseJson } from "@shared/utils/safeParseJson";
-import type { WorkflowRule } from "@features/settings/db/workflowRules";
+import { RuleSummaryCard } from '@shared/components/rule';
+import { safeParseJson } from '@shared/utils/safeParseJson';
+import type { WorkflowRule } from '@features/settings/db/workflowRules';
 
 interface AutomationRuleCardProps {
   rule: WorkflowRule;
@@ -9,12 +9,7 @@ interface AutomationRuleCardProps {
   onDelete: (id: string) => void;
 }
 
-export function AutomationRuleCard({
-  rule,
-  onToggle,
-  onEdit,
-  onDelete,
-}: AutomationRuleCardProps) {
+export function AutomationRuleCard({ rule, onToggle, onEdit, onDelete }: AutomationRuleCardProps) {
   const itemCount = safeParseJson<unknown[]>(rule.actions, []).length;
   return (
     <RuleSummaryCard
@@ -29,4 +24,3 @@ export function AutomationRuleCard({
     />
   );
 }
-

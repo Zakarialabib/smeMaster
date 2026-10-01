@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ChevronDownSquare, ChevronRightSquare } from "lucide-react";
-import { formatFileSize } from "@shared/utils/fileTypeHelpers";
-import type { ContactFile } from "@features/contacts/db/contactFiles";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ChevronDownSquare, ChevronRightSquare } from 'lucide-react';
+import { formatFileSize } from '@shared/utils/fileTypeHelpers';
+import type { ContactFile } from '@features/contacts/db/contactFiles';
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -12,7 +12,7 @@ export interface ContactFilesListProps {
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const CATEGORY_FOLDERS = ["Invoices", "Contracts", "Receipts", "General"];
+const CATEGORY_FOLDERS = ['Invoices', 'Contracts', 'Receipts', 'General'];
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -42,9 +42,7 @@ export function ContactFilesList({ files }: ContactFilesListProps) {
 
   if (files.length === 0) {
     return (
-      <div className="text-xs text-text-tertiary text-center py-6">
-        {t('contact.noVaultFiles')}
-      </div>
+      <div className="text-xs text-text-tertiary text-center py-6">{t('contact.noVaultFiles')}</div>
     );
   }
 

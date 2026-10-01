@@ -6,19 +6,19 @@
  *
  * @spec §3.5
  */
-import { useMemo, useCallback } from "react";
-import { useDroppable } from "@dnd-kit/core";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
+import { useMemo, useCallback } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
 
 /**
  * Priority colors for calendar dots (spec §7.1)
  */
 const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-400",
-  none: "bg-text-tertiary/30",
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-amber-500',
+  low: 'bg-blue-400',
+  none: 'bg-text-tertiary/30',
 };
 
 /**
@@ -102,24 +102,24 @@ export function TaskCalendarDay({
         relative flex flex-col p-1.5 cursor-pointer transition-all min-h-[var(--task-calendar-day-height,_100px)]
         ${
           isOver
-            ? "ring-2 ring-accent bg-accent/10"
+            ? 'ring-2 ring-accent bg-accent/10'
             : isToday
-              ? "bg-accent/5"
+              ? 'bg-accent/5'
               : isCurrentMonth
-                ? "bg-bg-primary hover:bg-bg-hover"
-                : "bg-bg-secondary/50 text-text-tertiary/60"
+                ? 'bg-bg-primary hover:bg-bg-hover'
+                : 'bg-bg-secondary/50 text-text-tertiary/60'
         }
         border-r border-b border-border-secondary
       `}
       role="gridcell"
-      aria-label={`${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} — ${tasks.length} task${tasks.length !== 1 ? "s" : ""}`}
-      aria-current={isToday ? "date" : undefined}
+      aria-label={`${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — ${tasks.length} task${tasks.length !== 1 ? 's' : ''}`}
+      aria-current={isToday ? 'date' : undefined}
     >
       {/* Day number */}
       <span
         className={`
           text-xs font-medium leading-none mb-1
-          ${isToday ? "text-accent font-bold" : isCurrentMonth ? "text-text-primary" : "text-text-tertiary/50"}
+          ${isToday ? 'text-accent font-bold' : isCurrentMonth ? 'text-text-primary' : 'text-text-tertiary/50'}
         `}
       >
         {isToday ? (
@@ -140,12 +140,12 @@ export function TaskCalendarDay({
             className={`
               flex items-center gap-1 px-1 py-0.5 rounded-sm text-start
               hover:bg-bg-tertiary transition-colors
-              ${task.is_completed ? "opacity-50" : ""}
+              ${task.is_completed ? 'opacity-50' : ''}
             `}
-            title={`${task.title}${task.due_date ? ` — ${new Date(task.due_date * 1000).toLocaleDateString()}` : ""}`}
+            title={`${task.title}${task.due_date ? ` — ${new Date(task.due_date * 1000).toLocaleDateString()}` : ''}`}
           >
             <span
-              className={`w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT_COLORS[task.priority as TaskPriority] || "bg-text-tertiary/30"}`}
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT_COLORS[task.priority as TaskPriority] || 'bg-text-tertiary/30'}`}
             />
             <span className="text-[0.625rem] text-text-secondary truncate leading-tight">
               {task.title}
@@ -170,4 +170,3 @@ export function TaskCalendarDay({
     </div>
   );
 }
-

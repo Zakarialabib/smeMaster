@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useCampaignComposerStore } from "../../../stores/campaignComposerStore";
-import { renderEmailHtml } from "../../../services/emailRenderer";
-import { WidthToggle, type PreviewWidth } from "./WidthToggle";
-import { GlassPanel } from "@shared/components/ui";
-import { cn } from "@shared/utils/cn";
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useCampaignComposerStore } from '../../../stores/campaignComposerStore';
+import { renderEmailHtml } from '../../../services/emailRenderer';
+import { WidthToggle, type PreviewWidth } from './WidthToggle';
+import { GlassPanel } from '@shared/components/ui';
+import { cn } from '@shared/utils/cn';
 
 const WIDTHS: Record<PreviewWidth, number> = {
   desktop: 600,
@@ -13,7 +13,7 @@ const WIDTHS: Record<PreviewWidth, number> = {
 
 export function EmailPreview() {
   const { t } = useTranslation();
-  const [width, setWidth] = useState<PreviewWidth>("desktop");
+  const [width, setWidth] = useState<PreviewWidth>('desktop');
   const blocks = useCampaignComposerStore((s) => s.blocks);
 
   const html = useMemo(() => renderEmailHtml(blocks), [blocks]);
@@ -24,12 +24,12 @@ export function EmailPreview() {
       <div className="flex h-full flex-col">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
-            {t("campaign.editor.preview")}
+            {t('campaign.editor.preview')}
           </span>
           <WidthToggle value={width} onChange={setWidth} />
         </div>
         <GlassPanel className="flex flex-1 items-center justify-center p-8">
-          <p className="text-sm text-text-tertiary">{t("campaign.editor.noContent")}</p>
+          <p className="text-sm text-text-tertiary">{t('campaign.editor.noContent')}</p>
         </GlassPanel>
       </div>
     );
@@ -39,19 +39,19 @@ export function EmailPreview() {
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
-          {t("campaign.editor.preview")}
+          {t('campaign.editor.preview')}
         </span>
         <WidthToggle value={width} onChange={setWidth} />
       </div>
       <GlassPanel className="flex flex-1 justify-center overflow-auto p-4">
         <div
           className={cn(
-            "h-full overflow-hidden rounded-xl border border-border-primary bg-white shadow-lg transition-[width] duration-300",
+            'h-full overflow-hidden rounded-xl border border-border-primary bg-white shadow-lg transition-[width] duration-300',
           )}
-          style={{ width: frameWidth, maxWidth: "100%" }}
+          style={{ width: frameWidth, maxWidth: '100%' }}
         >
           <iframe
-            title={t("campaign.editor.preview")}
+            title={t('campaign.editor.preview')}
             srcDoc={html}
             className="h-full w-full border-0 bg-white"
             sandbox=""

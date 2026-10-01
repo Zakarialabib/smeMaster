@@ -14,6 +14,7 @@ export const FIXTURE_TEMPLATES = {
   },
   voiceMode: {
     subject: 'Hello {{first_name}}',
-    body_html: '<p>Hi {{first_name}},</p><p>Check out our CTA: <a href="https://example.com">Click here</a></p><p>Thanks!</p>',
+    body_html:
+      '<p>Hi {{first_name}},</p><p>Check out our CTA: <a href="https://example.com">Click here</a></p><p>Thanks!</p>',
   },
 };

@@ -8,9 +8,9 @@
  * @module
  */
 
-import { useState } from "react";
-import { User, Bot, ChevronDown } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { useState } from 'react';
+import { User, Bot, ChevronDown } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
 // ── Props ───────────────────────────────────────────────────────────
 
@@ -35,9 +35,9 @@ export interface RagResultBubbleProps {
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
-  return d.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
+  return d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -54,13 +54,13 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
       <div className="flex justify-end">
         <div
           className={cn(
-            "max-w-[75%] sm:max-w-[65%]",
-            "px-4 py-3",
-            "bg-accent/10 dark:bg-accent/15",
-            "backdrop-blur-[12px]",
-            "border border-accent/20 dark:border-accent/25",
-            "rounded-2xl rounded-br-md",
-            "transition-all duration-200",
+            'max-w-[75%] sm:max-w-[65%]',
+            'px-4 py-3',
+            'bg-accent/10 dark:bg-accent/15',
+            'backdrop-blur-[12px]',
+            'border border-accent/20 dark:border-accent/25',
+            'rounded-2xl rounded-br-md',
+            'transition-all duration-200',
           )}
         >
           <div className="flex items-start gap-2.5">
@@ -81,11 +81,11 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
       <div className="flex justify-start">
         <div
           className={cn(
-            "max-w-[85%] sm:max-w-[75%]",
-            "px-4 py-3",
-            "frost-surface",
-            "rounded-2xl rounded-bl-md",
-            "transition-all duration-200",
+            'max-w-[85%] sm:max-w-[75%]',
+            'px-4 py-3',
+            'frost-surface',
+            'rounded-2xl rounded-bl-md',
+            'transition-all duration-200',
           )}
         >
           <div className="flex items-start gap-2.5">
@@ -102,8 +102,10 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
               onClick={() => setShowSources((v) => !v)}
               className="mt-2 flex items-center gap-1 text-[10px] text-text-tertiary hover:text-text-secondary"
             >
-              <ChevronDown className={cn("w-3 h-3 transition-transform", showSources && "rotate-180")} />
-              {showSources ? "Hide sources" : "Show sources"}
+              <ChevronDown
+                className={cn('w-3 h-3 transition-transform', showSources && 'rotate-180')}
+              />
+              {showSources ? 'Hide sources' : 'Show sources'}
             </button>
           )}
           {hasSources && showSources && (
@@ -112,7 +114,7 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
             </div>
           )}
           <p className="text-[10px] text-text-tertiary mt-1.5">
-            {formatTime(entry.timestamp)} · {entry.answer ? "AI answer" : "Augmented prompt"}
+            {formatTime(entry.timestamp)} · {entry.answer ? 'AI answer' : 'Augmented prompt'}
           </p>
         </div>
       </div>

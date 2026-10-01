@@ -5,8 +5,8 @@ import {
   updateScheduledEmailStatus as dbUpdateScheduledEmailStatus,
   deleteScheduledEmail as dbDeleteScheduledEmail,
   getPendingScheduledEmails,
-} from "@/shared/services/db/db-invoke";
-import type { ScheduledEmail } from "@shared/services/db/schema";
+} from '@/shared/services/db/db-invoke';
+import type { ScheduledEmail } from '@shared/services/db/schema';
 
 export type DbScheduledEmail = ScheduledEmail;
 
@@ -44,7 +44,7 @@ export async function insertScheduledEmail(email: {
     scheduledAt: email.scheduledAt,
     signatureId: email.signatureId,
     attachmentPaths: email.attachmentPaths ?? null,
-    status: "pending",
+    status: 'pending',
   });
   return id;
 }

@@ -23,8 +23,8 @@
  * - animate-[fadeIn_150ms_ease-out]  — entrance, respects reduced-motion
  */
 
-import { useState, useRef } from "react";
-import { cn } from "@shared/utils/cn";
+import { useState, useRef } from 'react';
+import { cn } from '@shared/utils/cn';
 
 // ── Constants ───────────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export interface UseShortcutTooltipResult {
     onMouseLeave: () => void;
     onFocus: () => void;
     onBlur: () => void;
-    "aria-label": string;
+    'aria-label': string;
   };
   /** Whether the tooltip should be rendered */
   showTooltip: boolean;
@@ -77,7 +77,7 @@ export function useShortcutTooltip(shortcut: string): UseShortcutTooltipResult {
       onMouseLeave: hide,
       onFocus: show,
       onBlur: hide,
-      "aria-label": `Press ${shortcut}`,
+      'aria-label': `Press ${shortcut}`,
     },
     showTooltip,
   };
@@ -108,17 +108,17 @@ export function TooltipPopup({ shortcut, label, className }: TooltipPopupProps) 
     <div
       className={cn(
         // Positioning — above the trigger, centred
-        "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50",
+        'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50',
         // Surface
-        "px-2.5 py-1.5 rounded-lg",
-        "bg-bg-primary border border-border-primary",
-        "text-text-secondary text-[0.6875rem] leading-relaxed",
+        'px-2.5 py-1.5 rounded-lg',
+        'bg-bg-primary border border-border-primary',
+        'text-text-secondary text-[0.6875rem] leading-relaxed',
         // Elevation / interaction
-        "shadow-lg pointer-events-none",
-        "whitespace-nowrap",
+        'shadow-lg pointer-events-none',
+        'whitespace-nowrap',
         // Entrance animation (respects reduced motion)
-        "animate-[fadeIn_150ms_ease-out]",
-        "motion-reduce:animate-none",
+        'animate-[fadeIn_150ms_ease-out]',
+        'motion-reduce:animate-none',
         className,
       )}
       role="tooltip"
@@ -128,9 +128,9 @@ export function TooltipPopup({ shortcut, label, className }: TooltipPopupProps) 
 
       <kbd
         className={cn(
-          "inline-flex items-center px-1 py-0.5 rounded",
-          "bg-bg-tertiary text-text-tertiary",
-          "font-mono text-[0.625rem] leading-none",
+          'inline-flex items-center px-1 py-0.5 rounded',
+          'bg-bg-tertiary text-text-tertiary',
+          'font-mono text-[0.625rem] leading-none',
         )}
       >
         {shortcut}
@@ -139,9 +139,9 @@ export function TooltipPopup({ shortcut, label, className }: TooltipPopupProps) 
       {/* Downward-pointing arrow */}
       <span
         className={cn(
-          "absolute top-full left-1/2 -translate-x-1/2",
-          "border-l-4 border-r-4 border-t-4",
-          "border-transparent border-t-border-primary",
+          'absolute top-full left-1/2 -translate-x-1/2',
+          'border-l-4 border-r-4 border-t-4',
+          'border-transparent border-t-border-primary',
         )}
         aria-hidden="true"
       />

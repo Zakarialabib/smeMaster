@@ -1,5 +1,10 @@
-import { listWarming, upsertWarming, executeSearchQuery, insertWarmingLog } from "@/shared/services/db/db-invoke";
-import type { EmailWarmingRow } from "@/shared/services/db/db-invoke";
+import {
+  listWarming,
+  upsertWarming,
+  executeSearchQuery,
+  insertWarmingLog,
+} from '@/shared/services/db/db-invoke';
+import type { EmailWarmingRow } from '@/shared/services/db/db-invoke';
 
 export type { EmailWarmingRow };
 
@@ -16,7 +21,10 @@ export async function getWarmingPlan(accountId: string): Promise<EmailWarmingRow
   return plans[0] ?? null;
 }
 
-export async function upsertWarmingPlan(accountId: string, plan: Partial<EmailWarmingRow>): Promise<void> {
+export async function upsertWarmingPlan(
+  accountId: string,
+  plan: Partial<EmailWarmingRow>,
+): Promise<void> {
   await upsertWarming({
     accountId,
     enabled: plan.enabled,
@@ -35,15 +43,15 @@ export async function logWarmingVolume(accountId: string, volume: number): Promi
 
 export async function getWarmingLogs(accountId: string): Promise<WarmingLogRow[]> {
   return executeSearchQuery(
-    "SELECT * FROM warming_log WHERE account_id = $1 ORDER BY sent_date ASC",
+    'SELECT * FROM warming_log WHERE account_id = $1 ORDER BY sent_date ASC',
     [accountId],
   ) as unknown as Promise<WarmingLogRow[]>;
 }
 
 export async function getLastWarmingLogDate(accountId: string): Promise<string | null> {
-  const rows = await executeSearchQuery(
-    "SELECT sent_date FROM warming_log WHERE account_id = $1 ORDER BY sent_date DESC LIMIT 1",
+  const rows = (await executeSearchQuery(
+    'SELECT sent_date FROM warming_log WHERE account_id = $1 ORDER BY sent_date DESC LIMIT 1',
     [accountId],
-  ) as unknown as { sent_date: string }[];
+  )) as unknown as { sent_date: string }[];
   return rows[0]?.sent_date ?? null;
 }

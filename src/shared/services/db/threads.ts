@@ -17,7 +17,7 @@ import {
   deleteAllThreadsForAccount as dbInvokeDeleteAllThreadsForAccount,
   getMutedThreadIds as dbInvokeGetMutedThreadIds,
   type Thread,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export interface DbThread {
   id: string;
@@ -98,9 +98,7 @@ export async function getThreadsForAccount(
  * Get all threads for an account (unpaginated).
  * Delegates to the Rust-backed db_get_all_threads command.
  */
-export async function getAllThreadsForAccount(
-  accountId: string,
-): Promise<DbThread[]> {
+export async function getAllThreadsForAccount(accountId: string): Promise<DbThread[]> {
   const threads = await getAllThreads(accountId);
   return threads.map(threadToDbThread);
 }
@@ -184,10 +182,7 @@ export async function setThreadLabels(
  * Get label IDs for a thread.
  * Delegates to the Rust-backed db_get_thread_label_ids command.
  */
-export async function getThreadLabelIds(
-  accountId: string,
-  threadId: string,
-): Promise<string[]> {
+export async function getThreadLabelIds(accountId: string, threadId: string): Promise<string[]> {
   return dbInvokeGetThreadLabelIds(accountId, threadId);
 }
 
@@ -223,10 +218,7 @@ export async function getThreadCountForAccount(accountId: string): Promise<numbe
  * Get unread count for a specific label.
  * Delegates to the Rust-backed db_get_label_unread_count command.
  */
-export async function getLabelUnreadCount(
-  accountId: string,
-  labelId: string,
-): Promise<number> {
+export async function getLabelUnreadCount(accountId: string, labelId: string): Promise<number> {
   return dbInvokeGetLabelUnreadCount(accountId, labelId);
 }
 
@@ -234,9 +226,7 @@ export async function getLabelUnreadCount(
  * Get unread counts grouped by label.
  * Delegates to the Rust-backed db_get_all_label_unread_counts command.
  */
-export async function getAllLabelUnreadCounts(
-  accountId: string,
-): Promise<Record<string, number>> {
+export async function getAllLabelUnreadCounts(accountId: string): Promise<Record<string, number>> {
   const rows = await dbInvokeGetAllLabelUnreadCounts(accountId);
   const counts: Record<string, number> = {};
   for (const row of rows) {
@@ -257,10 +247,7 @@ export async function getUnreadInboxCount(): Promise<number> {
  * Delete a thread by account and thread ID.
  * Delegates to the Rust-backed db_delete_thread command.
  */
-export async function deleteThread(
-  accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function deleteThread(accountId: string, threadId: string): Promise<void> {
   await dbInvokeDeleteThread(accountId, threadId);
 }
 
@@ -268,9 +255,7 @@ export async function deleteThread(
  * Delete all threads for an account.
  * Delegates to the Rust-backed db_delete_account_threads command.
  */
-export async function deleteAllThreadsForAccount(
-  accountId: string,
-): Promise<void> {
+export async function deleteAllThreadsForAccount(accountId: string): Promise<void> {
   await dbInvokeDeleteAllThreadsForAccount(accountId);
 }
 
@@ -278,31 +263,19 @@ export async function deleteAllThreadsForAccount(
  * Pin/unpin/mute/unmute via batchUpdateThreads typed wrapper.
  */
 
-export async function pinThread(
-  _accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function pinThread(_accountId: string, threadId: string): Promise<void> {
   await batchUpdateThreads([threadId], { isPinned: true });
 }
 
-export async function unpinThread(
-  _accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function unpinThread(_accountId: string, threadId: string): Promise<void> {
   await batchUpdateThreads([threadId], { isPinned: false });
 }
 
-export async function muteThread(
-  _accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function muteThread(_accountId: string, threadId: string): Promise<void> {
   await batchUpdateThreads([threadId], { isMuted: true });
 }
 
-export async function unmuteThread(
-  _accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function unmuteThread(_accountId: string, threadId: string): Promise<void> {
   await batchUpdateThreads([threadId], { isMuted: false });
 }
 
@@ -310,9 +283,7 @@ export async function unmuteThread(
  * Get muted thread IDs.
  * Delegates to the Rust-backed db_get_muted_thread_ids command.
  */
-export async function getMutedThreadIds(
-  accountId: string,
-): Promise<Set<string>> {
+export async function getMutedThreadIds(accountId: string): Promise<Set<string>> {
   const ids = await dbInvokeGetMutedThreadIds(accountId);
   return new Set(ids);
 }

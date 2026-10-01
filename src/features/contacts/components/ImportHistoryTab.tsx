@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { History, Download, RefreshCw, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { formatRelativeDate } from "@shared/utils/date";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { Button } from "@shared/components/ui/Button";
+import { useEffect, useState, useCallback } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { History, Download, RefreshCw, Trash2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { formatRelativeDate } from '@shared/utils/date';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { Button } from '@shared/components/ui/Button';
 
 interface ImportHistoryRecord {
   id: string;
@@ -12,7 +12,7 @@ interface ImportHistoryRecord {
   row_count: number;
   imported_count: number;
   failed_count: number;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   created_at: number;
   completed_at: number | null;
   error_log: string | null;
@@ -37,7 +37,7 @@ export function ImportHistoryTab({ accountId }: ImportHistoryTabProps) {
     if (!accountId) return;
     setLoading(true);
     try {
-      const list = await invokeCommand<ImportHistoryRecord[]>("db_list_import_history", {
+      const list = await invokeCommand<ImportHistoryRecord[]>('db_list_import_history', {
         accountId,
       });
       setRecords(list);
@@ -55,27 +55,24 @@ export function ImportHistoryTab({ accountId }: ImportHistoryTabProps) {
 
   const handleDownloadErrors = useCallback((rec: ImportHistoryRecord) => {
     if (!rec.error_log) return;
-    const blob = new Blob([rec.error_log], { type: "application/json" });
+    const blob = new Blob([rec.error_log], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `${rec.file_name}-errors.json`;
     a.click();
     URL.revokeObjectURL(url);
   }, []);
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (!confirm("Remove this import record? Contacts already imported will remain.")) return;
-      try {
-        await invokeCommand("db_delete_import_history", { id });
-        setRecords((prev) => prev.filter((r) => r.id !== id));
-      } catch (err) {
-        console.error("Failed to delete import record:", err);
-      }
-    },
-    [],
-  );
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Remove this import record? Contacts already imported will remain.')) return;
+    try {
+      await invokeCommand('db_delete_import_history', { id });
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error('Failed to delete import record:', err);
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -107,12 +104,7 @@ export function ImportHistoryTab({ accountId }: ImportHistoryTabProps) {
   return (
     <div className="space-y-2">
       <div className="flex justify-end">
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<RefreshCw size={12} />}
-          onClick={load}
-        >
+        <Button variant="secondary" size="sm" icon={<RefreshCw size={12} />} onClick={load}>
           Refresh
         </Button>
       </div>
@@ -124,22 +116,16 @@ export function ImportHistoryTab({ accountId }: ImportHistoryTabProps) {
           >
             {/* Status icon */}
             <div className="shrink-0">
-              {rec.status === "completed" && (
-                <CheckCircle2 size={16} className="text-success" />
-              )}
-              {rec.status === "failed" && (
-                <XCircle size={16} className="text-error" />
-              )}
-              {(rec.status === "pending" || rec.status === "processing") && (
+              {rec.status === 'completed' && <CheckCircle2 size={16} className="text-success" />}
+              {rec.status === 'failed' && <XCircle size={16} className="text-error" />}
+              {(rec.status === 'pending' || rec.status === 'processing') && (
                 <Loader2 size={16} className="text-text-tertiary animate-spin" />
               )}
             </div>
 
             {/* Main info */}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-text-primary truncate">
-                {rec.file_name}
-              </p>
+              <p className="text-xs font-medium text-text-primary truncate">{rec.file_name}</p>
               <div className="flex items-center gap-3 mt-0.5 text-[0.625rem] text-text-tertiary">
                 <span>{formatRelativeDate(rec.created_at)}</span>
                 <span>•</span>
@@ -149,9 +135,7 @@ export function ImportHistoryTab({ accountId }: ImportHistoryTabProps) {
                 {rec.failed_count > 0 && (
                   <>
                     <span>•</span>
-                    <span className="text-error tabular-nums">
-                      {rec.failed_count} failed
-                    </span>
+                    <span className="text-error tabular-nums">{rec.failed_count} failed</span>
                   </>
                 )}
               </div>

@@ -3,24 +3,30 @@
  * a task's full details including contact linking, workflow config, and reminders.
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { X, Save, Trash2, User, Search, AlertCircle, RefreshCw } from "lucide-react";
-import { Modal } from "@shared/components/ui/Modal";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { X, Save, Trash2, User, Search, AlertCircle, RefreshCw } from 'lucide-react';
+import { Modal } from '@shared/components/ui/Modal';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { useNavigate } from '@tanstack/react-router';
 import {
   getTaskById,
   updateTask as dbUpdateTask,
   deleteTask as dbDeleteTask,
   type DbTask,
   type TaskPriority,
-} from "@features/tasks/db/tasks";
-import { getContactById, searchContacts, type DbContact } from "@features/contacts/db/contacts";
-import { getLinkedEntities, type EntityPivot } from "@shared/services/db/db-invoke";
-import { getTemplatesForAccount, type DbTemplate } from "@features/mail/db/templates";
-import { getCampaign } from "@features/campaigns/db/campaigns";
-import { INPUT_BASE, BTN_DANGER, BTN_SECONDARY, BTN_PRIMARY, FOCUS_RING } from "@shared/styles/ui-tokens";
+} from '@features/tasks/db/tasks';
+import { getContactById, searchContacts, type DbContact } from '@features/contacts/db/contacts';
+import { getLinkedEntities, type EntityPivot } from '@shared/services/db/db-invoke';
+import { getTemplatesForAccount, type DbTemplate } from '@features/mail/db/templates';
+import { getCampaign } from '@features/campaigns/db/campaigns';
+import {
+  INPUT_BASE,
+  BTN_DANGER,
+  BTN_SECONDARY,
+  BTN_PRIMARY,
+  FOCUS_RING,
+} from '@shared/styles/ui-tokens';
 import type {
   WorkflowConfig,
   WorkflowTrigger,
@@ -29,7 +35,7 @@ import type {
   ReminderConfig,
   RemindBeforeUnit,
   ReminderNotificationType,
-} from "../services/taskWorkflowEngine";
+} from '../services/taskWorkflowEngine';
 
 // ── Props ──
 
@@ -43,12 +49,12 @@ export interface TaskDetailPanelProps {
 // ── Reminder preset options ──
 
 const REMINDER_PRESETS: { label: string; offsetValue: number; offsetUnit: RemindBeforeUnit }[] = [
-  { label: "15 minutes before", offsetValue: 15, offsetUnit: "minutes" },
-  { label: "1 hour before", offsetValue: 1, offsetUnit: "hours" },
-  { label: "3 hours before", offsetValue: 3, offsetUnit: "hours" },
-  { label: "1 day before", offsetValue: 1, offsetUnit: "days" },
-  { label: "2 days before", offsetValue: 2, offsetUnit: "days" },
-  { label: "Custom", offsetValue: 0, offsetUnit: "minutes" },
+  { label: '15 minutes before', offsetValue: 15, offsetUnit: 'minutes' },
+  { label: '1 hour before', offsetValue: 1, offsetUnit: 'hours' },
+  { label: '3 hours before', offsetValue: 3, offsetUnit: 'hours' },
+  { label: '1 day before', offsetValue: 1, offsetUnit: 'days' },
+  { label: '2 days before', offsetValue: 2, offsetUnit: 'days' },
+  { label: 'Custom', offsetValue: 0, offsetUnit: 'minutes' },
 ];
 
 // ── Component ──
@@ -66,9 +72,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
   const [error, setError] = useState<string | null>(null);
 
   // ── Task fields ──
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("none");
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<TaskPriority>('none');
   const [dueDate, setDueDate] = useState<number | null>(null);
 
   // ── Contact ──
@@ -81,20 +87,21 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
   // ── Contact picker modal ──
   const [showContactPicker, setShowContactPicker] = useState(false);
-  const [contactSearch, setContactSearch] = useState("");
+  const [contactSearch, setContactSearch] = useState('');
   const [contactResults, setContactResults] = useState<DbContact[]>([]);
   const [contactsLoading, setContactsLoading] = useState(false);
 
   // ── Workflow config ──
-  const [workflowTrigger, setWorkflowTrigger] = useState<WorkflowTrigger>("none");
+  const [workflowTrigger, setWorkflowTrigger] = useState<WorkflowTrigger>('none');
   const [workflowActions, setWorkflowActions] = useState<WorkflowActionConfig[]>([]);
 
   // ── Reminder config ──
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderPreset, setReminderPreset] = useState(1); // index into REMINDER_PRESETS
   const [reminderCustomValue, setReminderCustomValue] = useState(30);
-  const [reminderCustomUnit, setReminderCustomUnit] = useState<RemindBeforeUnit>("minutes");
-  const [reminderNotificationType, setReminderNotificationType] = useState<ReminderNotificationType>("os");
+  const [reminderCustomUnit, setReminderCustomUnit] = useState<RemindBeforeUnit>('minutes');
+  const [reminderNotificationType, setReminderNotificationType] =
+    useState<ReminderNotificationType>('os');
 
   // ── Templates for workflow ──
   const [templates, setTemplates] = useState<DbTemplate[]>([]);
@@ -113,12 +120,12 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       try {
         const task = await getTaskById(taskId!);
         if (!task || cancelled) {
-          if (!task) setError("Task not found");
+          if (!task) setError('Task not found');
           return;
         }
         setOriginalTask(task);
         setTitle(task.title);
-        setDescription(task.description ?? "");
+        setDescription(task.description ?? '');
         setPriority(task.priority as TaskPriority);
         setDueDate(task.due_date);
         setContactId(task.contact_id);
@@ -141,7 +148,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
             // Invalid JSON – keep defaults
           }
         } else {
-          setWorkflowTrigger("none");
+          setWorkflowTrigger('none');
           setWorkflowActions([]);
         }
 
@@ -173,7 +180,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
         // Load linked entities (graph)
         if (taskId) {
-          const links = await getLinkedEntities("task", taskId);
+          const links = await getLinkedEntities('task', taskId);
           if (!cancelled) setLinkedEntities(links);
         }
 
@@ -184,7 +191,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load task");
+          setError(err instanceof Error ? err.message : 'Failed to load task');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -192,7 +199,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [taskId]);
 
   // ── Resolve entity names for linked entities ──
@@ -212,22 +221,22 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
           let name: string | null = null;
 
           switch (link.pivot_type) {
-            case "contact": {
+            case 'contact': {
               const contact = await getContactById(link.pivot_id);
               if (contact) {
                 name = contact.display_name ?? contact.email;
               }
               break;
             }
-            case "campaign": {
+            case 'campaign': {
               const campaign = await getCampaign(link.pivot_id);
               if (campaign) {
                 name = campaign.name;
               }
               break;
             }
-            case "email":
-            case "message": {
+            case 'email':
+            case 'message': {
               name = `Email: ${link.pivot_id}`;
               break;
             }
@@ -249,7 +258,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     }
 
     resolveNames();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [linkedEntities, getContactById, getCampaign]);
 
   // ── Contact search ──
@@ -281,7 +292,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     setContactId(contact.id);
     setContactName(contact.display_name ?? contact.email);
     setShowContactPicker(false);
-    setContactSearch("");
+    setContactSearch('');
   }, []);
 
   // ── Remove contact link ──
@@ -293,23 +304,26 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
   // ── Navigate to contact ──
   const handleNavigateToContact = useCallback(() => {
     if (contactId) {
-      navigate({ to: "/people/$contactId", params: { contactId } });
+      navigate({ to: '/people/$contactId', params: { contactId } });
     }
   }, [contactId, navigate]);
 
   // ── Workflow action management ──
   const addWorkflowAction = useCallback(() => {
-    setWorkflowActions((prev) => [...prev, { type: "create_task" }]);
+    setWorkflowActions((prev) => [...prev, { type: 'create_task' }]);
   }, []);
 
-  const updateWorkflowAction = useCallback((index: number, updates: Partial<WorkflowActionConfig>) => {
-    setWorkflowActions((prev) => {
-      const next = [...prev];
-      const existing = next[index]!;
-      next[index] = { ...existing, type: existing.type, ...updates };
-      return next;
-    });
-  }, []);
+  const updateWorkflowAction = useCallback(
+    (index: number, updates: Partial<WorkflowActionConfig>) => {
+      setWorkflowActions((prev) => {
+        const next = [...prev];
+        const existing = next[index]!;
+        next[index] = { ...existing, type: existing.type, ...updates };
+        return next;
+      });
+    },
+    [],
+  );
 
   const removeWorkflowAction = useCallback((index: number) => {
     setWorkflowActions((prev) => prev.filter((_, i) => i !== index));
@@ -317,7 +331,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
   // ── Build config JSONs ──
   const buildWorkflowConfigJson = useCallback((): string | null => {
-    if (workflowTrigger === "none" || workflowActions.length === 0) return null;
+    if (workflowTrigger === 'none' || workflowActions.length === 0) return null;
     const config: WorkflowConfig = {
       trigger: workflowTrigger,
       actions: workflowActions,
@@ -328,12 +342,10 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
   const buildReminderConfigJson = useCallback((): string | null => {
     if (!reminderEnabled) return null;
     const preset = REMINDER_PRESETS[reminderPreset]!;
-    const offsetValue = reminderPreset < REMINDER_PRESETS.length - 1
-      ? preset.offsetValue
-      : reminderCustomValue;
-    const offsetUnit = reminderPreset < REMINDER_PRESETS.length - 1
-      ? preset.offsetUnit
-      : reminderCustomUnit;
+    const offsetValue =
+      reminderPreset < REMINDER_PRESETS.length - 1 ? preset.offsetValue : reminderCustomValue;
+    const offsetUnit =
+      reminderPreset < REMINDER_PRESETS.length - 1 ? preset.offsetUnit : reminderCustomUnit;
     const config: ReminderConfig = {
       enabled: true,
       offsetValue,
@@ -341,7 +353,13 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       notificationType: reminderNotificationType,
     };
     return JSON.stringify(config);
-  }, [reminderEnabled, reminderPreset, reminderCustomValue, reminderCustomUnit, reminderNotificationType]);
+  }, [
+    reminderEnabled,
+    reminderPreset,
+    reminderCustomValue,
+    reminderCustomUnit,
+    reminderNotificationType,
+  ]);
 
   // ── Save ──
   const handleSave = useCallback(async () => {
@@ -350,7 +368,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     setError(null);
     try {
       await dbUpdateTask(taskId, {
-        title: title.trim() || "Untitled",
+        title: title.trim() || 'Untitled',
         description: description.trim() || null,
         priority,
         dueDate,
@@ -361,11 +379,22 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       onTaskUpdated();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save task");
+      setError(err instanceof Error ? err.message : 'Failed to save task');
     } finally {
       setSaving(false);
     }
-  }, [taskId, title, description, priority, dueDate, contactId, buildWorkflowConfigJson, buildReminderConfigJson, onTaskUpdated, onClose]);
+  }, [
+    taskId,
+    title,
+    description,
+    priority,
+    dueDate,
+    contactId,
+    buildWorkflowConfigJson,
+    buildReminderConfigJson,
+    onTaskUpdated,
+    onClose,
+  ]);
 
   // ── Delete ──
   const handleDelete = useCallback(async () => {
@@ -377,14 +406,14 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       onTaskUpdated();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete task");
+      setError(err instanceof Error ? err.message : 'Failed to delete task');
     } finally {
       setDeleting(false);
     }
   }, [taskId, onTaskUpdated, onClose]);
 
   // ── Due date helpers ──
-  const dueDateIso = dueDate ? new Date(dueDate * 1000).toISOString().slice(0, 10) : "";
+  const dueDateIso = dueDate ? new Date(dueDate * 1000).toISOString().slice(0, 10) : '';
 
   // ── Render content ──
   const renderContent = () => {
@@ -395,7 +424,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
         <div className="flex items-center justify-center py-16">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-            <p className="text-sm text-text-tertiary">{t("Loading...")}</p>
+            <p className="text-sm text-text-tertiary">{t('Loading...')}</p>
           </div>
         </div>
       );
@@ -405,21 +434,23 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       return (
         <div className="flex flex-col items-center justify-center h-full gap-3 px-4 py-16">
           <AlertCircle size={40} className="text-danger-text opacity-60" />
-          <p className="text-sm font-medium text-text-primary">{t("common.failedToLoadTask")}</p>
+          <p className="text-sm font-medium text-text-primary">{t('common.failedToLoadTask')}</p>
           <p className="text-xs text-text-tertiary text-center">{error}</p>
           <button
-            onClick={() => { setError(null); /* re-trigger via key change */ }}
+            onClick={() => {
+              setError(null); /* re-trigger via key change */
+            }}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
           >
             <RefreshCw size={13} />
-            {t("common.retry")}
+            {t('common.retry')}
           </button>
         </div>
       );
     }
 
     return (
-      <div className={`flex flex-col ${isMobileDevice ? "" : "min-h-[60vh]"} overflow-hidden`}>
+      <div className={`flex flex-col ${isMobileDevice ? '' : 'min-h-[60vh]'} overflow-hidden`}>
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto space-y-4 p-4 sm:p-5">
           {/* ── Section: Header (Title, Priority, Due Date) ── */}
@@ -428,28 +459,32 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("common.taskTitle")}
+              placeholder={t('common.taskTitle')}
               className={`${INPUT_BASE} text-base font-semibold`}
             />
 
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-medium text-text-tertiary mb-1">{t("common.priority")}</label>
+                <label className="block text-xs font-medium text-text-tertiary mb-1">
+                  {t('common.priority')}
+                </label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as TaskPriority)}
                   className={INPUT_BASE}
                 >
-                  <option value="none">{t("common.none")}</option>
-                  <option value="low">{t("common.low")}</option>
-                  <option value="medium">{t("common.medium")}</option>
-                  <option value="high">{t("common.high")}</option>
-                  <option value="urgent">{t("common.urgent")}</option>
+                  <option value="none">{t('common.none')}</option>
+                  <option value="low">{t('common.low')}</option>
+                  <option value="medium">{t('common.medium')}</option>
+                  <option value="high">{t('common.high')}</option>
+                  <option value="urgent">{t('common.urgent')}</option>
                 </select>
               </div>
 
               <div className="flex-1">
-                <label className="block text-xs font-medium text-text-tertiary mb-1">{t("common.dueDate")}</label>
+                <label className="block text-xs font-medium text-text-tertiary mb-1">
+                  {t('common.dueDate')}
+                </label>
                 <input
                   type="date"
                   value={dueDateIso}
@@ -465,11 +500,13 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
           {/* ── Section: Description ── */}
           <div>
-            <label className="block text-xs font-medium text-text-tertiary mb-1">{t("common.description")}</label>
+            <label className="block text-xs font-medium text-text-tertiary mb-1">
+              {t('common.description')}
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("Add a description...")}
+              placeholder={t('Add a description...')}
               rows={3}
               className={`${INPUT_BASE} resize-none min-h-[72px]`}
             />
@@ -477,7 +514,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
           {/* ── Section: Contact Picker ── */}
           <div>
-            <label className="block text-xs font-medium text-text-tertiary mb-1.5">{t("common.linkedContact")}</label>
+            <label className="block text-xs font-medium text-text-tertiary mb-1.5">
+              {t('common.linkedContact')}
+            </label>
             {contactId && contactName ? (
               <div className="flex items-center gap-2">
                 <button
@@ -485,14 +524,14 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
                   className="flex items-center gap-2 flex-1 min-w-0 p-2 rounded-lg border border-border-primary hover:bg-bg-hover transition-colors text-start"
                 >
                   <span className="w-7 h-7 rounded-full bg-accent/15 text-accent flex items-center justify-center text-xs font-semibold shrink-0">
-                    {(contactName.charAt(0).toUpperCase())}
+                    {contactName.charAt(0).toUpperCase()}
                   </span>
                   <span className="text-sm text-text-primary truncate">{contactName}</span>
                 </button>
                 <button
                   onClick={handleRemoveContact}
                   className="p-2 text-text-tertiary hover:text-danger transition-colors"
-                  aria-label={t("common.removeContact")}
+                  aria-label={t('common.removeContact')}
                 >
                   <X size={14} />
                 </button>
@@ -503,7 +542,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
                 className={`${BTN_SECONDARY} inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md`}
               >
                 <User size={12} />
-                {t("common.linkContact")}
+                {t('common.linkContact')}
               </button>
             )}
           </div>
@@ -511,15 +550,30 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
           {/* ── Section: Graph Connections ── */}
           {linkedEntities.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-text-tertiary mb-1.5">{t("common.connections")}</label>
+              <label className="block text-xs font-medium text-text-tertiary mb-1.5">
+                {t('common.connections')}
+              </label>
               <div className="flex flex-wrap gap-2">
-                {linkedEntities.map(link => {
-                  const displayType = link.pivot_type === "email" || link.pivot_type === "message" ? "Email" : link.pivot_type;
+                {linkedEntities.map((link) => {
+                  const displayType =
+                    link.pivot_type === 'email' || link.pivot_type === 'message'
+                      ? 'Email'
+                      : link.pivot_type;
                   const displayName = entityNames[link.id] ?? link.pivot_id;
                   return (
-                    <div key={link.id} className="flex items-center gap-1.5 px-2.5 py-1 bg-bg-secondary border border-border-primary rounded-md text-xs">
-                      <span className="font-semibold text-text-secondary capitalize">{displayType}:</span>
-                      <span className="text-text-primary max-w-[150px] truncate" title={displayName}>{displayName}</span>
+                    <div
+                      key={link.id}
+                      className="flex items-center gap-1.5 px-2.5 py-1 bg-bg-secondary border border-border-primary rounded-md text-xs"
+                    >
+                      <span className="font-semibold text-text-secondary capitalize">
+                        {displayType}:
+                      </span>
+                      <span
+                        className="text-text-primary max-w-[150px] truncate"
+                        title={displayName}
+                      >
+                        {displayName}
+                      </span>
                     </div>
                   );
                 })}
@@ -529,42 +583,53 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
           {/* ── Section: Workflow Config ── */}
           <div>
-            <label className="block text-xs font-medium text-text-tertiary mb-1.5">{t("common.workflowTrigger")}</label>
+            <label className="block text-xs font-medium text-text-tertiary mb-1.5">
+              {t('common.workflowTrigger')}
+            </label>
             <select
               value={workflowTrigger}
               onChange={(e) => setWorkflowTrigger(e.target.value as WorkflowTrigger)}
               className={INPUT_BASE}
             >
-              <option value="none">{t("common.none")}</option>
-              <option value="on_complete">{t("common.onComplete")}</option>
-              <option value="on_due">{t("common.onDue")}</option>
-              <option value="on_overdue">{t("common.onOverdue")}</option>
+              <option value="none">{t('common.none')}</option>
+              <option value="on_complete">{t('common.onComplete')}</option>
+              <option value="on_due">{t('common.onDue')}</option>
+              <option value="on_overdue">{t('common.onOverdue')}</option>
             </select>
 
-            {workflowTrigger !== "none" && (
+            {workflowTrigger !== 'none' && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-text-tertiary">{t("common.actions")}</span>
+                  <span className="text-xs font-medium text-text-tertiary">
+                    {t('common.actions')}
+                  </span>
                   <button
                     onClick={addWorkflowAction}
                     className="text-xs text-accent hover:text-accent-hover font-medium"
                   >
-                    + {t("common.addAction")}
+                    + {t('common.addAction')}
                   </button>
                 </div>
 
                 {workflowActions.length === 0 && (
-                  <p className="text-xs text-text-tertiary italic">{t("No actions configured. Add an action to run when this trigger fires.")}</p>
+                  <p className="text-xs text-text-tertiary italic">
+                    {t('No actions configured. Add an action to run when this trigger fires.')}
+                  </p>
                 )}
 
                 {workflowActions.map((action, index) => (
-                  <div key={index} className="p-3 rounded-lg border border-border-primary bg-bg-secondary/50 space-y-2">
+                  <div
+                    key={index}
+                    className="p-3 rounded-lg border border-border-primary bg-bg-secondary/50 space-y-2"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-text-primary">{t("common.action")} {index + 1}</span>
+                      <span className="text-xs font-medium text-text-primary">
+                        {t('common.action')} {index + 1}
+                      </span>
                       <button
                         onClick={() => removeWorkflowAction(index)}
                         className="text-text-tertiary hover:text-danger transition-colors"
-                        aria-label={t("common.removeAction")}
+                        aria-label={t('common.removeAction')}
                       >
                         <X size={12} />
                       </button>
@@ -572,46 +637,58 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
 
                     <select
                       value={action.type}
-                      onChange={(e) => updateWorkflowAction(index, { type: e.target.value as WorkflowActionType })}
+                      onChange={(e) =>
+                        updateWorkflowAction(index, { type: e.target.value as WorkflowActionType })
+                      }
                       className={INPUT_BASE}
                     >
-                      <option value="send_email">{t("common.sendEmail")}</option>
-                      <option value="create_notification">{t("common.createNotification")}</option>
-                      <option value="create_task">{t("common.createTask")}</option>
+                      <option value="send_email">{t('common.sendEmail')}</option>
+                      <option value="create_notification">{t('common.createNotification')}</option>
+                      <option value="create_task">{t('common.createTask')}</option>
                     </select>
 
-                    {action.type === "send_email" && (
+                    {action.type === 'send_email' && (
                       <select
-                        value={action.templateId ?? ""}
-                        onChange={(e) => updateWorkflowAction(index, { templateId: e.target.value || undefined })}
+                        value={action.templateId ?? ''}
+                        onChange={(e) =>
+                          updateWorkflowAction(index, { templateId: e.target.value || undefined })
+                        }
                         className={INPUT_BASE}
                       >
-                        <option value="">{t("Select a template...")}</option>
+                        <option value="">{t('Select a template...')}</option>
                         {templates.map((tmpl) => (
-                          <option key={tmpl.id} value={tmpl.id}>{tmpl.name}</option>
+                          <option key={tmpl.id} value={tmpl.id}>
+                            {tmpl.name}
+                          </option>
                         ))}
                         {templates.length === 0 && (
-                          <option value="" disabled>{t("common.noTemplatesAvailable")}</option>
+                          <option value="" disabled>
+                            {t('common.noTemplatesAvailable')}
+                          </option>
                         )}
                       </select>
                     )}
 
-                    {action.type === "create_notification" && (
+                    {action.type === 'create_notification' && (
                       <input
                         type="text"
-                        value={action.notificationText ?? ""}
-                        onChange={(e) => updateWorkflowAction(index, { notificationText: e.target.value })}
-                        placeholder={t("Notification text...")}
+                        value={action.notificationText ?? ''}
+                        onChange={(e) =>
+                          updateWorkflowAction(index, { notificationText: e.target.value })
+                        }
+                        placeholder={t('Notification text...')}
                         className={INPUT_BASE}
                       />
                     )}
 
-                    {action.type === "create_task" && (
+                    {action.type === 'create_task' && (
                       <input
                         type="text"
-                        value={action.taskTitlePreset ?? ""}
-                        onChange={(e) => updateWorkflowAction(index, { taskTitlePreset: e.target.value })}
-                        placeholder={t("Task title preset...")}
+                        value={action.taskTitlePreset ?? ''}
+                        onChange={(e) =>
+                          updateWorkflowAction(index, { taskTitlePreset: e.target.value })
+                        }
+                        placeholder={t('Task title preset...')}
                         className={INPUT_BASE}
                       />
                     )}
@@ -624,9 +701,11 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
           {/* ── Section: Reminder Config ── */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-text-tertiary">{t("common.reminder")}</label>
+              <label className="text-xs font-medium text-text-tertiary">
+                {t('common.reminder')}
+              </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-xs text-text-secondary">{t("common.enable")}</span>
+                <span className="text-xs text-text-secondary">{t('common.enable')}</span>
                 <input
                   type="checkbox"
                   checked={reminderEnabled}
@@ -639,14 +718,18 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
             {reminderEnabled && (
               <div className="space-y-3 mt-2">
                 <div>
-                  <label className="block text-xs text-text-tertiary mb-1">{t("common.remindBeforeDue")}</label>
+                  <label className="block text-xs text-text-tertiary mb-1">
+                    {t('common.remindBeforeDue')}
+                  </label>
                   <select
                     value={reminderPreset}
                     onChange={(e) => setReminderPreset(Number(e.target.value))}
                     className={INPUT_BASE}
                   >
                     {REMINDER_PRESETS.map((preset, idx) => (
-                      <option key={idx} value={idx}>{preset.label}</option>
+                      <option key={idx} value={idx}>
+                        {preset.label}
+                      </option>
                     ))}
                   </select>
 
@@ -656,7 +739,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
                         type="number"
                         min={1}
                         value={reminderCustomValue}
-                        onChange={(e) => setReminderCustomValue(Math.max(1, Number(e.target.value)))}
+                        onChange={(e) =>
+                          setReminderCustomValue(Math.max(1, Number(e.target.value)))
+                        }
                         className={`${INPUT_BASE} w-20`}
                       />
                       <select
@@ -664,24 +749,28 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
                         onChange={(e) => setReminderCustomUnit(e.target.value as RemindBeforeUnit)}
                         className={`${INPUT_BASE} flex-1`}
                       >
-                        <option value="minutes">{t("common.minutes")}</option>
-                        <option value="hours">{t("common.hours")}</option>
-                        <option value="days">{t("common.days")}</option>
+                        <option value="minutes">{t('common.minutes')}</option>
+                        <option value="hours">{t('common.hours')}</option>
+                        <option value="days">{t('common.days')}</option>
                       </select>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-text-tertiary mb-1">{t("common.notificationType")}</label>
+                  <label className="block text-xs text-text-tertiary mb-1">
+                    {t('common.notificationType')}
+                  </label>
                   <select
                     value={reminderNotificationType}
-                    onChange={(e) => setReminderNotificationType(e.target.value as ReminderNotificationType)}
+                    onChange={(e) =>
+                      setReminderNotificationType(e.target.value as ReminderNotificationType)
+                    }
                     className={INPUT_BASE}
                   >
-                    <option value="os">{t("common.oSNotification")}</option>
-                    <option value="email">{t("common.email")}</option>
-                    <option value="both">{t("common.both")}</option>
+                    <option value="os">{t('common.oSNotification')}</option>
+                    <option value="email">{t('common.email')}</option>
+                    <option value="both">{t('common.both')}</option>
                   </select>
                 </div>
               </div>
@@ -704,7 +793,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
             className={`${BTN_PRIMARY} px-4 py-2 text-xs gap-1.5 flex items-center rounded-md`}
           >
             <Save size={13} />
-            {saving ? t("Saving...") : t("common.save")}
+            {saving ? t('Saving...') : t('common.save')}
           </button>
           <button
             onClick={handleDelete}
@@ -712,7 +801,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
             className={`${BTN_DANGER} px-4 py-2 text-xs gap-1.5 flex items-center rounded-md ms-auto`}
           >
             <Trash2 size={13} />
-            {deleting ? t("Deleting...") : t("common.delete")}
+            {deleting ? t('Deleting...') : t('common.delete')}
           </button>
         </div>
       </div>
@@ -723,18 +812,24 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
   const renderContactPicker = () => (
     <Modal
       isOpen={showContactPicker}
-      onClose={() => { setShowContactPicker(false); setContactSearch(""); }}
-      title={t("common.linkContact")}
+      onClose={() => {
+        setShowContactPicker(false);
+        setContactSearch('');
+      }}
+      title={t('common.linkContact')}
       size="md"
     >
       <div className="p-4 space-y-3">
         <div className="relative">
-          <Search size={13} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            size={13}
+            className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
           <input
             type="text"
             value={contactSearch}
             onChange={(e) => setContactSearch(e.target.value)}
-            placeholder={t("Search contacts...")}
+            placeholder={t('Search contacts...')}
             className={`${INPUT_BASE} ps-8`}
             autoFocus
           />
@@ -745,7 +840,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
             <div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
           </div>
         ) : contactSearch.trim() && contactResults.length === 0 ? (
-          <p className="text-xs text-text-tertiary text-center py-8">{t("common.noContactsFound")}</p>
+          <p className="text-xs text-text-tertiary text-center py-8">
+            {t('common.noContactsFound')}
+          </p>
         ) : (
           <div className="max-h-64 overflow-y-auto space-y-1">
             {contactResults.map((contact) => (
@@ -789,11 +886,11 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
         <div className="fixed top-0 inset-inline-end-0 h-full w-full max-w-lg z-50 bg-bg-primary border-s border-border-primary shadow-2xl flex flex-col animate-[slideInRight_250ms_cubic-bezier(0.16,1,0.3,1)]">
           {/* Panel header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-primary shrink-0">
-            <h2 className="text-sm font-semibold text-text-primary">{t("common.taskDetails")}</h2>
+            <h2 className="text-sm font-semibold text-text-primary">{t('common.taskDetails')}</h2>
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors"
-              aria-label={t("common.close")}
+              aria-label={t('common.close')}
             >
               <X size={14} />
             </button>
@@ -811,7 +908,7 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
       <Modal
         isOpen={!!taskId}
         onClose={onClose}
-        title={t("common.taskDetails")}
+        title={t('common.taskDetails')}
         width="w-[calc(100%-1rem)] sm:w-full sm:max-w-lg"
       >
         {renderContent()}

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { getSetting } from "@features/settings/db/settings";
+import { useCallback, useEffect, useRef } from 'react';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { getSetting } from '@features/settings/db/settings';
 
 /** Default undo-send delay if the setting is missing or unparseable. */
 const DEFAULT_UNDO_SEND_SECONDS = 5;
@@ -45,10 +45,7 @@ export interface UseUndoSendResult {
  * await schedule();
  * ```
  */
-export function useUndoSend({
-  onSend,
-  onUndo,
-}: UseUndoSendOptions): UseUndoSendResult {
+export function useUndoSend({ onSend, onUndo }: UseUndoSendOptions): UseUndoSendResult {
   const setUndoSendTimer = useComposerStore((s) => s.setUndoSendTimer);
   const setUndoSendVisible = useComposerStore((s) => s.setUndoSendVisible);
   const visible = useComposerStore((s) => s.undoSendVisible);
@@ -82,11 +79,10 @@ export function useUndoSend({
     // If something is already pending, refuse to overlap.
     if (timerRef.current !== null) return false;
 
-    const rawDelay = await getSetting("undo_send_delay_seconds");
-    const delaySeconds = parseInt(rawDelay ?? "", 10);
-    const seconds = Number.isFinite(delaySeconds) && delaySeconds > 0
-      ? delaySeconds
-      : DEFAULT_UNDO_SEND_SECONDS;
+    const rawDelay = await getSetting('undo_send_delay_seconds');
+    const delaySeconds = parseInt(rawDelay ?? '', 10);
+    const seconds =
+      Number.isFinite(delaySeconds) && delaySeconds > 0 ? delaySeconds : DEFAULT_UNDO_SEND_SECONDS;
     const delayMs = seconds * 1000;
 
     setUndoSendVisible(true);
@@ -118,4 +114,3 @@ export function useUndoSend({
 
   return { schedule, cancel, visible };
 }
-

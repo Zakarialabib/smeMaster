@@ -1,1 +1,1 @@
-export { AutomationPage } from "./pages/AutomationPage";
+export { AutomationPage } from './pages/AutomationPage';

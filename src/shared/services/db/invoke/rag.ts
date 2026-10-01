@@ -18,10 +18,7 @@ import { invokeCommand } from './command';
  * @param filename - File to download (e.g. "model.safetensors")
  * @returns The local file path of the downloaded model
  */
-export async function aiDownloadModel(
-  repoId: string,
-  filename: string,
-): Promise<string> {
+export async function aiDownloadModel(repoId: string, filename: string): Promise<string> {
   return invokeCommand<string>('ai_download_model', { repoId, filename });
 }
 
@@ -77,10 +74,7 @@ export async function aiQueryRag(query: string): Promise<string> {
  * @param query - Original query text for prompt construction
  * @returns Augmented prompt string with context + query
  */
-export async function aiSearchByVector(
-  embedding: number[],
-  query: string,
-): Promise<string> {
+export async function aiSearchByVector(embedding: number[], query: string): Promise<string> {
   return invokeCommand<string>('ai_search_by_vector', { embedding, query });
 }
 
@@ -168,19 +162,16 @@ export async function aiGetSidecarMetrics(): Promise<{
   model_loaded: boolean;
   rss_mb: number;
 } | null> {
-  return invokeCommand<
-    | {
-        embed_count: number;
-        index_count: number;
-        query_count: number;
-        parse_count: number;
-        unload_count: number;
-        last_model_load_ms: number;
-        model_loaded: boolean;
-        rss_mb: number;
-      }
-    | null
-  >('ai_get_sidecar_metrics');
+  return invokeCommand<{
+    embed_count: number;
+    index_count: number;
+    query_count: number;
+    parse_count: number;
+    unload_count: number;
+    last_model_load_ms: number;
+    model_loaded: boolean;
+    rss_mb: number;
+  } | null>('ai_get_sidecar_metrics');
 }
 
 /** Models registered in the sidecar registry (gap #7). */

@@ -1,6 +1,6 @@
-﻿import { create } from "zustand";
-import { getDefaultKeyMap } from "@/constants/shortcuts";
-import { getSetting, setSetting } from "@features/settings/db/settings";
+﻿import { create } from 'zustand';
+import { getDefaultKeyMap } from '@/constants/shortcuts';
+import { getSetting, setSetting } from '@features/settings/db/settings';
 
 interface ShortcutState {
   /** Map of shortcut ID -> current key binding */
@@ -15,7 +15,7 @@ interface ShortcutState {
   resetAll: () => void;
 }
 
-const SETTINGS_KEY = "custom_shortcuts";
+const SETTINGS_KEY = 'custom_shortcuts';
 
 function persistKeyMap(customKeys: Record<string, string>) {
   const defaults = getDefaultKeyMap();
@@ -64,6 +64,6 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
   resetAll: () => {
     const defaults = getDefaultKeyMap();
     set({ keyMap: defaults });
-    setSetting(SETTINGS_KEY, "{}").catch(() => {});
+    setSetting(SETTINGS_KEY, '{}').catch(() => {});
   },
 }));

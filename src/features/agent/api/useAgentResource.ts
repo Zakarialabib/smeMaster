@@ -146,21 +146,18 @@ export function useAgentResource<T>(
  * a discriminated union is that the check narrows; a helper that throws that
  * away is worse than inline `s.kind === '...'`.
  */
-export const isLoading = <T,>(
-  s: LoadState<T>,
-): s is Extract<LoadState<T>, { kind: 'loading' }> => s.kind === 'loading';
+export const isLoading = <T>(s: LoadState<T>): s is Extract<LoadState<T>, { kind: 'loading' }> =>
+  s.kind === 'loading';
 
-export const isUnreachable = <T,>(
+export const isUnreachable = <T>(
   s: LoadState<T>,
 ): s is Extract<LoadState<T>, { kind: 'unreachable' }> => s.kind === 'unreachable';
 
-export const isError = <T,>(
-  s: LoadState<T>,
-): s is Extract<LoadState<T>, { kind: 'error' }> => s.kind === 'error';
+export const isError = <T>(s: LoadState<T>): s is Extract<LoadState<T>, { kind: 'error' }> =>
+  s.kind === 'error';
 
-export const isReady = <T,>(
-  s: LoadState<T>,
-): s is Extract<LoadState<T>, { kind: 'ready' }> => s.kind === 'ready';
+export const isReady = <T>(s: LoadState<T>): s is Extract<LoadState<T>, { kind: 'ready' }> =>
+  s.kind === 'ready';
 
 /**
  * The value, or a safe default while loading/failed.

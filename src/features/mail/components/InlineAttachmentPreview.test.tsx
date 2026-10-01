@@ -1,12 +1,12 @@
-﻿import { render, screen, waitFor } from "@testing-library/react";
-import { InlineAttachmentPreview } from "./InlineAttachmentPreview";
-import type { DbAttachment } from "@shared/services/db/attachments";
+﻿import { render, screen, waitFor } from '@testing-library/react';
+import { InlineAttachmentPreview } from './InlineAttachmentPreview';
+import type { DbAttachment } from '@shared/services/db/attachments';
 
-vi.mock("@features/mail/services/email/providerFactory", () => ({
+vi.mock('@features/mail/services/email/providerFactory', () => ({
   getEmailProvider: vi.fn(),
 }));
 
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
 
 // Mock IntersectionObserver to trigger immediately
 beforeAll(() => {
@@ -28,20 +28,20 @@ beforeAll(() => {
 });
 
 const makeAttachment = (overrides: Partial<DbAttachment> = {}): DbAttachment => ({
-  id: "att-1",
-  message_id: "msg-1",
-  account_id: "acc-1",
-  filename: "photo.png",
-  mime_type: "image/png",
+  id: 'att-1',
+  message_id: 'msg-1',
+  account_id: 'acc-1',
+  filename: 'photo.png',
+  mime_type: 'image/png',
   size: 2048,
-  gmail_attachment_id: "gmail-att-1",
+  gmail_attachment_id: 'gmail-att-1',
   content_id: null,
   is_inline: 0,
   local_path: null,
   ...overrides,
 });
 
-describe("InlineAttachmentPreview", () => {
+describe('InlineAttachmentPreview', () => {
   const mockFetchAttachment = vi.fn();
   const onAttachmentClick = vi.fn();
 
@@ -51,24 +51,24 @@ describe("InlineAttachmentPreview", () => {
       fetchAttachment: mockFetchAttachment,
     } as never);
     // Mock URL.createObjectURL
-    global.URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
+    global.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url');
     global.URL.revokeObjectURL = vi.fn();
   });
 
-  it("renders nothing when no previewable attachments", () => {
+  it('renders nothing when no previewable attachments', () => {
     const { container } = render(
       <InlineAttachmentPreview
         accountId="acc-1"
         messageId="msg-1"
-        attachments={[makeAttachment({ mime_type: "application/zip", filename: "archive.zip" })]}
+        attachments={[makeAttachment({ mime_type: 'application/zip', filename: 'archive.zip' })]}
         onAttachmentClick={onAttachmentClick}
       />,
     );
 
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders nothing when all attachments are true inline (no filename)", () => {
+  it('renders nothing when all attachments are true inline (no filename)', () => {
     const { container } = render(
       <InlineAttachmentPreview
         accountId="acc-1"
@@ -78,25 +78,31 @@ describe("InlineAttachmentPreview", () => {
       />,
     );
 
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders nothing when all attachments have CIDs referenced in the HTML body", () => {
-    const referencedCids = new Set(["img001@example.com"]);
+  it('renders nothing when all attachments have CIDs referenced in the HTML body', () => {
+    const referencedCids = new Set(['img001@example.com']);
     const { container } = render(
       <InlineAttachmentPreview
         accountId="acc-1"
         messageId="msg-1"
-        attachments={[makeAttachment({ content_id: "img001@example.com", filename: "photo.png", mime_type: "image/png" })]}
+        attachments={[
+          makeAttachment({
+            content_id: 'img001@example.com',
+            filename: 'photo.png',
+            mime_type: 'image/png',
+          }),
+        ]}
         referencedCids={referencedCids}
         onAttachmentClick={onAttachmentClick}
       />,
     );
 
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders image thumbnails for image attachments", () => {
+  it('renders image thumbnails for image attachments', () => {
     render(
       <InlineAttachmentPreview
         accountId="acc-1"
@@ -107,28 +113,30 @@ describe("InlineAttachmentPreview", () => {
     );
 
     // Should have an image button (thumbnail container)
-    expect(screen.getByTitle("photo.png")).toBeInTheDocument();
+    expect(screen.getByTitle('photo.png')).toBeInTheDocument();
   });
 
-  it("renders PDF cards for PDF attachments", () => {
+  it('renders PDF cards for PDF attachments', () => {
     render(
       <InlineAttachmentPreview
         accountId="acc-1"
         messageId="msg-1"
-        attachments={[makeAttachment({
-          mime_type: "application/pdf",
-          filename: "report.pdf",
-        })]}
+        attachments={[
+          makeAttachment({
+            mime_type: 'application/pdf',
+            filename: 'report.pdf',
+          }),
+        ]}
         onAttachmentClick={onAttachmentClick}
       />,
     );
 
-    expect(screen.getByText("report.pdf")).toBeInTheDocument();
+    expect(screen.getByText('report.pdf')).toBeInTheDocument();
   });
 
-  it("uses getEmailProvider for thumbnail loading", async () => {
+  it('uses getEmailProvider for thumbnail loading', async () => {
     mockFetchAttachment.mockResolvedValue({
-      data: btoa("fake-image-bytes"),
+      data: btoa('fake-image-bytes'),
       size: 15,
     });
 
@@ -142,14 +150,14 @@ describe("InlineAttachmentPreview", () => {
     );
 
     await waitFor(() => {
-      expect(getEmailProvider).toHaveBeenCalledWith("acc-1");
-      expect(mockFetchAttachment).toHaveBeenCalledWith("msg-1", "gmail-att-1");
+      expect(getEmailProvider).toHaveBeenCalledWith('acc-1');
+      expect(mockFetchAttachment).toHaveBeenCalledWith('msg-1', 'gmail-att-1');
     });
   });
 
-  it("works with IMAP account attachments", async () => {
+  it('works with IMAP account attachments', async () => {
     mockFetchAttachment.mockResolvedValue({
-      data: btoa("imap-image-data"),
+      data: btoa('imap-image-data'),
       size: 14,
     });
 
@@ -157,24 +165,26 @@ describe("InlineAttachmentPreview", () => {
       <InlineAttachmentPreview
         accountId="imap-acc"
         messageId="imap-inbox-42"
-        attachments={[makeAttachment({
-          account_id: "imap-acc",
-          message_id: "imap-inbox-42",
-          gmail_attachment_id: "1.2",
-        })]}
+        attachments={[
+          makeAttachment({
+            account_id: 'imap-acc',
+            message_id: 'imap-inbox-42',
+            gmail_attachment_id: '1.2',
+          }),
+        ]}
         onAttachmentClick={onAttachmentClick}
       />,
     );
 
     await waitFor(() => {
-      expect(getEmailProvider).toHaveBeenCalledWith("imap-acc");
-      expect(mockFetchAttachment).toHaveBeenCalledWith("imap-inbox-42", "1.2");
+      expect(getEmailProvider).toHaveBeenCalledWith('imap-acc');
+      expect(mockFetchAttachment).toHaveBeenCalledWith('imap-inbox-42', '1.2');
     });
   });
 
-  it("calls onAttachmentClick when image thumbnail is clicked", async () => {
+  it('calls onAttachmentClick when image thumbnail is clicked', async () => {
     mockFetchAttachment.mockResolvedValue({
-      data: btoa("image-data"),
+      data: btoa('image-data'),
       size: 10,
     });
 
@@ -190,17 +200,17 @@ describe("InlineAttachmentPreview", () => {
     );
 
     await waitFor(() => {
-      const thumbnail = screen.getByTitle("photo.png");
+      const thumbnail = screen.getByTitle('photo.png');
       thumbnail.click();
     });
 
     expect(onAttachmentClick).toHaveBeenCalledWith(att);
   });
 
-  it("calls onAttachmentClick when PDF card is clicked", () => {
+  it('calls onAttachmentClick when PDF card is clicked', () => {
     const att = makeAttachment({
-      mime_type: "application/pdf",
-      filename: "report.pdf",
+      mime_type: 'application/pdf',
+      filename: 'report.pdf',
     });
 
     render(
@@ -212,7 +222,7 @@ describe("InlineAttachmentPreview", () => {
       />,
     );
 
-    screen.getByText("report.pdf").click();
+    screen.getByText('report.pdf').click();
 
     expect(onAttachmentClick).toHaveBeenCalledWith(att);
   });

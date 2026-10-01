@@ -1,11 +1,11 @@
-import { useCallback, useRef, useState } from "react";
-import { useAsyncEffect } from "./useAsyncEffect";
+import { useCallback, useRef, useState } from 'react';
+import { useAsyncEffect } from './useAsyncEffect';
 
 export type AsyncResource<T> =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "ready"; data: T }
-  | { status: "error"; error: string };
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'ready'; data: T }
+  | { status: 'error'; error: string };
 
 export interface UseAsyncResourceResult<T> {
   resource: AsyncResource<T>;
@@ -31,7 +31,7 @@ export function useAsyncResource<T, Args extends unknown[]>(
   fn: (...args: Args) => Promise<T>,
   args: Args,
 ): UseAsyncResourceResult<T> {
-  const [resource, setResource] = useState<AsyncResource<T>>({ status: "idle" });
+  const [resource, setResource] = useState<AsyncResource<T>>({ status: 'idle' });
   // Refs hold the latest fn and args so `retry` always uses current values.
   const fnRef = useRef(fn);
   const argsRef = useRef(args);
@@ -44,15 +44,15 @@ export function useAsyncResource<T, Args extends unknown[]>(
 
   useAsyncEffect(
     async (isStale) => {
-      setResource({ status: "loading" });
+      setResource({ status: 'loading' });
       try {
         const data = await fnRef.current(...argsRef.current);
         if (isStale()) return;
-        setResource({ status: "ready", data });
+        setResource({ status: 'ready', data });
       } catch (err) {
         if (isStale()) return;
         const message = err instanceof Error ? err.message : String(err);
-        setResource({ status: "error", error: message });
+        setResource({ status: 'error', error: message });
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,4 +61,3 @@ export function useAsyncResource<T, Args extends unknown[]>(
 
   return { resource, retry };
 }
-

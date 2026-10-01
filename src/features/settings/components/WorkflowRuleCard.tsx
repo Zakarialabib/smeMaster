@@ -1,11 +1,11 @@
-﻿import { Trash2, Pencil } from "lucide-react";
-import { Toggle } from "@shared/components/ui/Toggle";
-import type { DbWorkflowRule } from "@features/settings/db/workflowRules";
+﻿import { Trash2, Pencil } from 'lucide-react';
+import { Toggle } from '@shared/components/ui/Toggle';
+import type { DbWorkflowRule } from '@features/settings/db/workflowRules';
 
 const TRIGGER_LABELS: Record<string, string> = {
-  email_received: "Email Received",
-  no_reply_after_days: "No Reply After Days",
-  time_based: "Time Based",
+  email_received: 'Email Received',
+  no_reply_after_days: 'No Reply After Days',
+  time_based: 'Time Based',
 };
 
 interface WorkflowRuleCardProps {
@@ -38,7 +38,11 @@ export function WorkflowRuleCard({ rule, onToggle, onEdit, onDelete }: WorkflowR
           size="sm"
           checked={rule.is_active === 1}
           onChange={(next) => onToggle(rule.id, next)}
-          aria-label={rule.is_active === 1 ? `Disable workflow rule "${rule.name}"` : `Enable workflow rule "${rule.name}"`}
+          aria-label={
+            rule.is_active === 1
+              ? `Disable workflow rule "${rule.name}"`
+              : `Enable workflow rule "${rule.name}"`
+          }
         />
         <button
           onClick={() => onEdit(rule)}

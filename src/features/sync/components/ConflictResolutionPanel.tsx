@@ -9,7 +9,7 @@
  * Uses the shared SlidePanel component for animation, backdrop, and
  * responsive behavior (right sidebar on desktop, bottom sheet on mobile).
  */
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect } from 'react';
 import {
   GitCompareArrows,
   CheckCircle2,
@@ -18,17 +18,17 @@ import {
   User,
   CheckSquare,
   Calendar,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useConflictStore } from "../stores/conflictStore";
-import type { SyncConflict } from "../stores/conflictStore";
-import { cn } from "@shared/utils/cn";
-import { Button } from "@shared/components/ui/Button";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useConflictStore } from '../stores/conflictStore';
+import type { SyncConflict } from '../stores/conflictStore';
+import { cn } from '@shared/utils/cn';
+import { Button } from '@shared/components/ui/Button';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
 
 // ── Entity type icon map ────────────────────────────────────────────────
 
-const ENTITY_ICONS: Record<SyncConflict["entityType"], LucideIcon> = {
+const ENTITY_ICONS: Record<SyncConflict['entityType'], LucideIcon> = {
   thread: Mail,
   contact: User,
   task: CheckSquare,
@@ -37,7 +37,7 @@ const ENTITY_ICONS: Record<SyncConflict["entityType"], LucideIcon> = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-function formatEntityType(type: SyncConflict["entityType"]): string {
+function formatEntityType(type: SyncConflict['entityType']): string {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
@@ -50,10 +50,7 @@ interface ConflictResolutionPanelProps {
 
 // ── Component ────────────────────────────────────────────────────────────
 
-export function ConflictResolutionPanel({
-  isOpen,
-  onClose,
-}: ConflictResolutionPanelProps) {
+export function ConflictResolutionPanel({ isOpen, onClose }: ConflictResolutionPanelProps) {
   const conflicts = useConflictStore((s) => s.conflicts);
   const activeConflictId = useConflictStore((s) => s.activeConflictId);
   const setActiveConflict = useConflictStore((s) => s.setActiveConflict);
@@ -71,20 +68,15 @@ export function ConflictResolutionPanel({
   }, [isOpen, activeConflictId, conflicts, setActiveConflict]);
 
   const unresolvedConflicts = conflicts.filter((c) => !c.resolved);
-  const activeConflict = activeConflictId
-    ? conflicts.find((c) => c.id === activeConflictId)
-    : null;
-  const allResolved =
-    conflicts.length > 0 && unresolvedConflicts.length === 0;
+  const activeConflict = activeConflictId ? conflicts.find((c) => c.id === activeConflictId) : null;
+  const allResolved = conflicts.length > 0 && unresolvedConflicts.length === 0;
 
   const handleResolve = useCallback(
-    (resolution: "local" | "remote" | "merge") => {
+    (resolution: 'local' | 'remote' | 'merge') => {
       if (!activeConflict) return;
       resolveConflict(activeConflict.id, resolution);
       // Move to next unresolved conflict or clear active
-      const remaining = unresolvedConflicts.filter(
-        (c) => c.id !== activeConflict.id,
-      );
+      const remaining = unresolvedConflicts.filter((c) => c.id !== activeConflict.id);
       if (remaining.length > 0) {
         setActiveConflict(remaining[0]!.id);
       } else {
@@ -116,12 +108,8 @@ export function ConflictResolutionPanel({
             <CheckCircle2 size={32} className="text-success" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-text-primary">
-              All conflicts resolved
-            </p>
-            <p className="text-xs text-text-tertiary mt-1">
-              Your data is in sync.
-            </p>
+            <p className="text-sm font-medium text-text-primary">All conflicts resolved</p>
+            <p className="text-xs text-text-tertiary mt-1">Your data is in sync.</p>
           </div>
           <Button variant="secondary" size="sm" onClick={dismissAll}>
             Dismiss
@@ -136,9 +124,7 @@ export function ConflictResolutionPanel({
             <GitCompareArrows size={32} className="text-accent/60" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-text-primary">
-              No conflicts
-            </p>
+            <p className="text-sm font-medium text-text-primary">No conflicts</p>
             <p className="text-xs text-text-tertiary mt-1">
               All sync operations completed without conflicts.
             </p>
@@ -159,26 +145,21 @@ export function ConflictResolutionPanel({
                   key={conflict.id}
                   onClick={() => setActiveConflict(conflict.id)}
                   className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2.5 text-start transition-colors border-l-2",
+                    'w-full flex items-center gap-2 px-3 py-2.5 text-start transition-colors border-l-2',
                     isActive
-                      ? "bg-accent/8 border-l-accent text-accent font-medium"
-                      : "border-l-transparent text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+                      ? 'bg-accent/8 border-l-accent text-accent font-medium'
+                      : 'border-l-transparent text-text-secondary hover:bg-bg-hover hover:text-text-primary',
                   )}
                 >
                   <Icon size={14} className="shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs truncate">
-                      {conflict.localVersion.title}
-                    </p>
+                    <p className="text-xs truncate">{conflict.localVersion.title}</p>
                     <p className="text-[10px] text-text-tertiary mt-0.5">
                       {formatEntityType(conflict.entityType)}
                     </p>
                   </div>
                   {conflict.resolved && (
-                    <CheckCircle2
-                      size={12}
-                      className="shrink-0 text-success"
-                    />
+                    <CheckCircle2 size={12} className="shrink-0 text-success" />
                   )}
                 </button>
               );
@@ -287,7 +268,7 @@ export function ConflictResolutionPanel({
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => handleResolve("local")}
+                    onClick={() => handleResolve('local')}
                     className="flex-1 text-xs"
                   >
                     Keep Local
@@ -295,7 +276,7 @@ export function ConflictResolutionPanel({
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => handleResolve("remote")}
+                    onClick={() => handleResolve('remote')}
                     className="flex-1 text-xs"
                   >
                     Keep Remote
@@ -303,7 +284,7 @@ export function ConflictResolutionPanel({
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => handleResolve("merge")}
+                    onClick={() => handleResolve('merge')}
                     className="flex-1 text-xs"
                   >
                     Merge Both
@@ -327,13 +308,13 @@ export function ConflictResolutionPanel({
 function diffFields(conflict: SyncConflict): string[] {
   const fields: string[] = [];
   if (conflict.localVersion.title !== conflict.remoteVersion.title) {
-    fields.push("Title");
+    fields.push('Title');
   }
   if (conflict.localVersion.summary !== conflict.remoteVersion.summary) {
-    fields.push("Summary");
+    fields.push('Summary');
   }
   if (conflict.localVersion.content !== conflict.remoteVersion.content) {
-    fields.push("Content");
+    fields.push('Content');
   }
   return fields;
 }

@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { useTranslation } from "react-i18next";
-import { RefreshCw, Activity, Trash2, CheckCircle, AlertTriangle } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { InlineTooltip } from "@features/settings/components/HelpCard";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { eventBus } from "@shared/services/events/eventBus";
+import { useState, useCallback, useEffect } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { useTranslation } from 'react-i18next';
+import { RefreshCw, Activity, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { InlineTooltip } from '@features/settings/components/HelpCard';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { eventBus } from '@shared/services/events/eventBus';
 
 interface SyncHealthSummary {
   total_syncs: number;
@@ -25,18 +25,22 @@ export default function SyncOfflineSection() {
   const [health, setHealth] = useState<SyncHealthSummary | null>(null);
   const [heartbeatHealthy, setHeartbeatHealthy] = useState(true);
   const [secondsSinceHeartbeat, setSecondsSinceHeartbeat] = useState<number | null>(null);
-  const [maintenanceResult, setMaintenanceResult] = useState<{ pruned: number; remaining: number } | null>(null);
+  const [maintenanceResult, setMaintenanceResult] = useState<{
+    pruned: number;
+    remaining: number;
+  } | null>(null);
   const [maintaining, setMaintaining] = useState(false);
 
   const loadCounts = useCallback(async () => {
-    const { getPendingOpsCount, getFailedOpsCount } = await import("@features/settings/db/pendingOperations");
+    const { getPendingOpsCount, getFailedOpsCount } =
+      await import('@features/settings/db/pendingOperations');
     setPendingCount(await getPendingOpsCount());
     setFailedCount(await getFailedOpsCount());
   }, []);
 
   const loadHealth = useCallback(async () => {
     try {
-      const result = await invokeCommand<SyncHealthSummary>("get_sync_health_summary");
+      const result = await invokeCommand<SyncHealthSummary>('get_sync_health_summary');
       setHealth(result);
     } catch {
       // Silently fail – health monitoring is optional
@@ -53,7 +57,9 @@ export default function SyncOfflineSection() {
     setMaintaining(true);
     setMaintenanceResult(null);
     try {
-      const result = await invokeCommand<{ pruned_count: number; remaining_count: number }>("sync_log_maintenance");
+      const result = await invokeCommand<{ pruned_count: number; remaining_count: number }>(
+        'sync_log_maintenance',
+      );
       setMaintenanceResult({ pruned: result.pruned_count, remaining: result.remaining_count });
       await loadHealth();
     } catch {
@@ -77,7 +83,7 @@ export default function SyncOfflineSection() {
   const handleRetryFailed = async () => {
     setLoading(true);
     try {
-      const { retryFailedOperations } = await import("@features/settings/db/pendingOperations");
+      const { retryFailedOperations } = await import('@features/settings/db/pendingOperations');
       await retryFailedOperations();
       await loadCounts();
     } finally {
@@ -88,7 +94,7 @@ export default function SyncOfflineSection() {
   const handleClearFailed = async () => {
     setLoading(true);
     try {
-      const { clearFailedOperations } = await import("@features/settings/db/pendingOperations");
+      const { clearFailedOperations } = await import('@features/settings/db/pendingOperations');
       await clearFailedOperations();
       await loadCounts();
     } finally {
@@ -97,14 +103,14 @@ export default function SyncOfflineSection() {
   };
 
   const formatTimestamp = (ts: number | null): string => {
-    if (!ts) return "Never";
+    if (!ts) return 'Never';
     return new Date(ts * 1000).toLocaleString();
   };
 
   const getHealthColor = (rate: number): string => {
-    if (rate >= 90) return "text-green-500";
-    if (rate >= 50) return "text-yellow-500";
-    return "text-red-500";
+    if (rate >= 90) return 'text-green-500';
+    if (rate >= 50) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   return (
@@ -115,9 +121,15 @@ export default function SyncOfflineSection() {
           <Activity className="w-4 h-4 text-text-tertiary" />
           <span className="text-text-secondary">Event Pipeline:</span>
           <InlineTooltip text="The event pipeline processes incoming and outgoing email operations. Heartbeats indicate whether the background sync worker is actively processing." />
-          <div className={`flex items-center gap-1 ${heartbeatHealthy ? "text-green-500" : "text-red-500"}`}>
-            {heartbeatHealthy ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
-            <span>{heartbeatHealthy ? "Healthy" : "Stale"}</span>
+          <div
+            className={`flex items-center gap-1 ${heartbeatHealthy ? 'text-green-500' : 'text-red-500'}`}
+          >
+            {heartbeatHealthy ? (
+              <CheckCircle className="w-3.5 h-3.5" />
+            ) : (
+              <AlertTriangle className="w-3.5 h-3.5" />
+            )}
+            <span>{heartbeatHealthy ? 'Healthy' : 'Stale'}</span>
           </div>
           {secondsSinceHeartbeat !== null && (
             <span className="text-text-tertiary text-xs">({secondsSinceHeartbeat}s ago)</span>
@@ -150,20 +162,15 @@ export default function SyncOfflineSection() {
 
         {/* Maintenance Actions */}
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleMaintenance}
-            disabled={maintaining}
-            variant="secondary"
-            size="sm"
-          >
-            {maintaining ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+          <Button onClick={handleMaintenance} disabled={maintaining} variant="secondary" size="sm">
+            {maintaining ? (
+              <RefreshCw className="w-3 h-3 animate-spin" />
+            ) : (
+              <Trash2 className="w-3 h-3" />
+            )}
             Clean Old Logs
           </Button>
-          <Button
-            onClick={loadHealth}
-            variant="secondary"
-            size="sm"
-          >
+          <Button onClick={loadHealth} variant="secondary" size="sm">
             <RefreshCw className="w-3 h-3" />
             Refresh
           </Button>

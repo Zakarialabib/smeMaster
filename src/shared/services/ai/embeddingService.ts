@@ -12,9 +12,9 @@
  * @module
  */
 
-import { getActiveProvider } from "./providerManager";
-import type { AiProviderClient } from "./types";
-import type { EmbeddingResult } from "./capabilities";
+import { getActiveProvider } from './providerManager';
+import type { AiProviderClient } from './types';
+import type { EmbeddingResult } from './capabilities';
 
 /**
  * Attempt to get an embedding vector from the active AI provider (LM Studio, Ollama, etc.).
@@ -26,7 +26,10 @@ export async function getProviderEmbedding(text: string): Promise<EmbeddingResul
     const provider = await getActiveProvider();
 
     // Check if provider supports embeddings
-    if (typeof (provider as AiProviderClient & { getEmbeddings?: Function }).getEmbeddings !== "function") {
+    if (
+      typeof (provider as AiProviderClient & { getEmbeddings?: Function }).getEmbeddings !==
+      'function'
+    ) {
       return null;
     }
 
@@ -67,4 +70,4 @@ export async function getQueryEmbedding(text: string): Promise<EmbeddingResult |
   return getProviderEmbedding(text);
 }
 
-export type { AiProviderClient } from "./types";
+export type { AiProviderClient } from './types';

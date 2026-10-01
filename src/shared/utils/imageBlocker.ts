@@ -15,10 +15,7 @@ export function stripRemoteImages(html: string): string {
   );
 
   // Replace background-image: url(http...) in inline styles
-  result = result.replace(
-    /url\(\s*(["']?)(https?:\/\/[^)"']*)\1\s*\)/gi,
-    'url($1$1)',
-  );
+  result = result.replace(/url\(\s*(["']?)(https?:\/\/[^)"']*)\1\s*\)/gi, 'url($1$1)');
 
   return result;
 }

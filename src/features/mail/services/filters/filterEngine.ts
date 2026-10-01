@@ -1,17 +1,22 @@
-import type { FilterCriteria, FilterCondition, FilterActions } from "@features/mail/db/filters";
+import type { FilterCriteria, FilterCondition, FilterActions } from '@features/mail/db/filters';
 import {
   getEnabledFiltersForAccount,
   getFilterConditionsForRule,
   logFilterMatch,
-} from "@features/mail/db/filters";
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
-import { addThreadLabel, removeThreadLabel, markThreadRead, starThread } from "@features/mail/services/emailActions";
+} from '@features/mail/db/filters';
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
+import {
+  addThreadLabel,
+  removeThreadLabel,
+  markThreadRead,
+  starThread,
+} from '@features/mail/services/emailActions';
 
 export interface ScoredCondition extends FilterCondition {
   weight: number;
 }
 
-export type ChainingAction = "stop" | "continue" | "continue_on_match" | "continue_on_no_match";
+export type ChainingAction = 'stop' | 'continue' | 'continue_on_match' | 'continue_on_no_match';
 
 export function evaluateCondition(
   condition: FilterCondition,
@@ -20,22 +25,22 @@ export function evaluateCondition(
   let fieldValue: string;
 
   switch (condition.field) {
-    case "from":
-      fieldValue = `${message.fromName ?? ""} ${message.fromAddress ?? ""}`.trim();
+    case 'from':
+      fieldValue = `${message.fromName ?? ''} ${message.fromAddress ?? ''}`.trim();
       break;
-    case "to":
-      fieldValue = message.toAddresses ?? "";
+    case 'to':
+      fieldValue = message.toAddresses ?? '';
       break;
-    case "subject":
-      fieldValue = message.subject ?? "";
+    case 'subject':
+      fieldValue = message.subject ?? '';
       break;
-    case "body":
-      fieldValue = `${message.bodyText ?? ""} ${message.bodyHtml ?? ""}`;
+    case 'body':
+      fieldValue = `${message.bodyText ?? ''} ${message.bodyHtml ?? ''}`;
       break;
-    case "hasAttachment": {
+    case 'hasAttachment': {
       const hasIt = message.hasAttachments ?? false;
       const condVal = condition.value.trim().toLowerCase();
-      const expectedTrue = condVal === "true" || condVal === "1";
+      const expectedTrue = condVal === 'true' || condVal === '1';
       return { passed: hasIt === expectedTrue, matchedText: String(hasIt) };
     }
     default:
@@ -46,41 +51,50 @@ export function evaluateCondition(
   const lowerCondValue = condition.value.toLowerCase();
 
   switch (condition.operator) {
-    case "contains": {
+    case 'contains': {
       const idx = lowerField.indexOf(lowerCondValue);
       if (idx !== -1) {
-        return { passed: true, matchedText: fieldValue.slice(idx, idx + condition.value.length) ?? null };
+        return {
+          passed: true,
+          matchedText: fieldValue.slice(idx, idx + condition.value.length) ?? null,
+        };
       }
       return { passed: false, matchedText: null };
     }
-    case "not_contains": {
+    case 'not_contains': {
       const idx = lowerField.indexOf(lowerCondValue);
       if (idx === -1) {
         return { passed: true, matchedText: null };
       }
-      return { passed: false, matchedText: fieldValue.slice(idx, idx + condition.value.length) ?? null };
+      return {
+        passed: false,
+        matchedText: fieldValue.slice(idx, idx + condition.value.length) ?? null,
+      };
     }
-    case "matches": {
+    case 'matches': {
       try {
-        const regex = new RegExp(condition.value, "i");
+        const regex = new RegExp(condition.value, 'i');
         const match = fieldValue.match(regex);
         if (match && match[0]) {
           return { passed: true, matchedText: match[0] };
         }
       } catch {
-        // Invalid regex ÔÇö treat as no match
+        // Invalid regex ï¿½ï¿½ï¿½ treat as no match
       }
       return { passed: false, matchedText: null };
     }
-    case "starts_with": {
+    case 'starts_with': {
       if (lowerField.startsWith(lowerCondValue)) {
         return { passed: true, matchedText: fieldValue.slice(0, condition.value.length) ?? null };
       }
       return { passed: false, matchedText: null };
     }
-    case "ends_with": {
+    case 'ends_with': {
       if (lowerField.endsWith(lowerCondValue)) {
-        return { passed: true, matchedText: fieldValue.slice(fieldValue.length - condition.value.length) ?? null };
+        return {
+          passed: true,
+          matchedText: fieldValue.slice(fieldValue.length - condition.value.length) ?? null,
+        };
       }
       return { passed: false, matchedText: null };
     }
@@ -96,7 +110,7 @@ export function evaluateCondition(
 export function evaluateScoredConditions(
   conditions: ScoredCondition[],
   message: ParsedMessage,
-  operator: "AND" | "OR" = "AND",
+  operator: 'AND' | 'OR' = 'AND',
 ): { matched: boolean; score: number } {
   let totalScore = 0;
   let anyMatched = false;
@@ -113,7 +127,7 @@ export function evaluateScoredConditions(
     }
   }
 
-  if (operator === "OR") {
+  if (operator === 'OR') {
     return { matched: anyMatched, score: totalScore };
   }
   return { matched: allMatched, score: totalScore };
@@ -125,7 +139,12 @@ export function evaluateScoredConditions(
  * When score_threshold is set on the rule, the rule only matches if score >= threshold.
  */
 export async function evaluateFilterRule(
-  rule: { id: string; group_operator?: string | null; criteria_json?: string; score_threshold?: number | null },
+  rule: {
+    id: string;
+    group_operator?: string | null;
+    criteria_json?: string;
+    score_threshold?: number | null;
+  },
   message: ParsedMessage,
   criteria?: FilterCriteria,
   conditions?: FilterCondition[],
@@ -135,7 +154,7 @@ export async function evaluateFilterRule(
   }
 
   if (conditions.length > 0) {
-    const operator = (rule.group_operator as "AND" | "OR" | undefined) ?? "AND";
+    const operator = (rule.group_operator as 'AND' | 'OR' | undefined) ?? 'AND';
     const scoredConditions: ScoredCondition[] = conditions.map((c) => ({
       ...c,
       weight: (c as ScoredCondition).weight ?? 1.0,
@@ -148,10 +167,16 @@ export async function evaluateFilterRule(
   }
 
   // Fall back to legacy criteria
-  const crit = criteria ?? (() => {
-    if (!rule.criteria_json) return {};
-    try { return JSON.parse(rule.criteria_json) as FilterCriteria; } catch { return {}; }
-  })();
+  const crit =
+    criteria ??
+    (() => {
+      if (!rule.criteria_json) return {};
+      try {
+        return JSON.parse(rule.criteria_json) as FilterCriteria;
+      } catch {
+        return {};
+      }
+    })();
   const legacyMatched = messageMatchesFilter(message, crit);
   return { matched: legacyMatched, score: legacyMatched ? 1 : 0 };
 }
@@ -177,15 +202,15 @@ export async function evaluateChainedRules(
     const { matched, score } = await evaluateFilterRule(rule, message, undefined, conditions);
     results.push({ ruleId: rule.id, matched, score });
 
-    const chainAction = (rule.chaining_action as ChainingAction) ?? "stop";
+    const chainAction = (rule.chaining_action as ChainingAction) ?? 'stop';
 
-    if (chainAction === "stop") {
+    if (chainAction === 'stop') {
       break;
-    } else if (chainAction === "continue") {
+    } else if (chainAction === 'continue') {
       // always continue to next
-    } else if (chainAction === "continue_on_match") {
+    } else if (chainAction === 'continue_on_match') {
       if (!matched) break;
-    } else if (chainAction === "continue_on_no_match") {
+    } else if (chainAction === 'continue_on_no_match') {
       if (matched) break;
     }
   }
@@ -198,68 +223,69 @@ export async function evaluateChainedRules(
  * Supports both legacy flat criteria (AND logic, case-insensitive substring)
  * and new conditions-based format.
  */
-export function messageMatchesFilter(
-  message: ParsedMessage,
-  criteria: FilterCriteria,
-): boolean {
+export function messageMatchesFilter(message: ParsedMessage, criteria: FilterCriteria): boolean {
   // New conditions-based format (via criteria_json)
   if (criteria.conditions && criteria.conditions.length > 0) {
-    const matchType = criteria.matchType ?? "all";
+    const matchType = criteria.matchType ?? 'all';
     const fieldSources: Record<string, string> = {
-      from: `${message.fromName ?? ""} ${message.fromAddress ?? ""}`.toLowerCase(),
-      to: (message.toAddresses ?? "").toLowerCase(),
-      subject: (message.subject ?? "").toLowerCase(),
-      body: `${message.bodyText ?? ""} ${message.bodyHtml ?? ""}`.toLowerCase(),
+      from: `${message.fromName ?? ''} ${message.fromAddress ?? ''}`.toLowerCase(),
+      to: (message.toAddresses ?? '').toLowerCase(),
+      subject: (message.subject ?? '').toLowerCase(),
+      body: `${message.bodyText ?? ''} ${message.bodyHtml ?? ''}`.toLowerCase(),
     };
 
     for (const condition of criteria.conditions) {
-      const searchStr = fieldSources[condition.field] ?? "";
+      const searchStr = fieldSources[condition.field] ?? '';
       const condValue = condition.value.toLowerCase();
       let matches = false;
 
       switch (condition.operator) {
-        case "contains":
+        case 'contains':
           matches = searchStr.includes(condValue);
           break;
-        case "starts_with":
+        case 'starts_with':
           matches = searchStr.startsWith(condValue);
           break;
-        case "ends_with":
+        case 'ends_with':
           matches = searchStr.endsWith(condValue);
           break;
-        case "matches":
-          try { matches = new RegExp(condition.value, "i").test(searchStr); } catch { matches = false; }
+        case 'matches':
+          try {
+            matches = new RegExp(condition.value, 'i').test(searchStr);
+          } catch {
+            matches = false;
+          }
           break;
-        case "not_contains":
+        case 'not_contains':
           matches = !searchStr.includes(condValue);
           break;
       }
 
-      if (matchType === "all" && !matches) return false;
-      if (matchType === "any" && matches) return true;
+      if (matchType === 'all' && !matches) return false;
+      if (matchType === 'any' && matches) return true;
     }
 
-    return matchType === "all";
+    return matchType === 'all';
   }
 
   // Legacy flat fields (backward compatible)
   if (criteria.from) {
-    const fromStr = `${message.fromName ?? ""} ${message.fromAddress ?? ""}`.toLowerCase();
+    const fromStr = `${message.fromName ?? ''} ${message.fromAddress ?? ''}`.toLowerCase();
     if (!fromStr.includes(criteria.from.toLowerCase())) return false;
   }
 
   if (criteria.to) {
-    const toStr = (message.toAddresses ?? "").toLowerCase();
+    const toStr = (message.toAddresses ?? '').toLowerCase();
     if (!toStr.includes(criteria.to.toLowerCase())) return false;
   }
 
   if (criteria.subject) {
-    const subjectStr = (message.subject ?? "").toLowerCase();
+    const subjectStr = (message.subject ?? '').toLowerCase();
     if (!subjectStr.includes(criteria.subject.toLowerCase())) return false;
   }
 
   if (criteria.body) {
-    const bodyStr = `${message.bodyText ?? ""} ${message.bodyHtml ?? ""}`.toLowerCase();
+    const bodyStr = `${message.bodyText ?? ''} ${message.bodyHtml ?? ''}`.toLowerCase();
     if (!bodyStr.includes(criteria.body.toLowerCase())) return false;
   }
 
@@ -289,16 +315,16 @@ export function computeFilterActions(actions: FilterActions): FilterResult {
   }
 
   if (actions.archive) {
-    removeLabelIds.push("INBOX");
+    removeLabelIds.push('INBOX');
   }
 
   if (actions.trash) {
-    addLabelIds.push("TRASH");
-    removeLabelIds.push("INBOX");
+    addLabelIds.push('TRASH');
+    removeLabelIds.push('INBOX');
   }
 
   if (actions.star) {
-    addLabelIds.push("STARRED");
+    addLabelIds.push('STARRED');
   }
 
   return {
@@ -325,12 +351,14 @@ export async function applyFiltersToMessages(
     filters.map(async (filter) => {
       try {
         const conditions = await getFilterConditionsForRule(filter.id);
-        return [{
-          rule: filter,
-          criteria: JSON.parse(filter.criteria_json) as FilterCriteria,
-          actions: JSON.parse(filter.actions_json) as FilterActions,
-          conditions,
-        }];
+        return [
+          {
+            rule: filter,
+            criteria: JSON.parse(filter.criteria_json) as FilterCriteria,
+            actions: JSON.parse(filter.actions_json) as FilterActions,
+            conditions,
+          },
+        ];
       } catch {
         return [];
       }
@@ -360,8 +388,12 @@ export async function applyFiltersToMessages(
         }
       }
 
-      const chainAction = (rule.chaining_action as ChainingAction) ?? "stop";
-      if (chainAction === "stop" || (chainAction === "continue_on_match" && !matched) || (chainAction === "continue_on_no_match" && matched)) {
+      const chainAction = (rule.chaining_action as ChainingAction) ?? 'stop';
+      if (
+        chainAction === 'stop' ||
+        (chainAction === 'continue_on_match' && !matched) ||
+        (chainAction === 'continue_on_no_match' && matched)
+      ) {
         break;
       }
     }
@@ -393,5 +425,3 @@ export async function applyFiltersToMessages(
     }),
   );
 }
-
-

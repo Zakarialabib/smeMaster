@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { CheckSquare, Calendar } from "lucide-react";
-import { cn } from "@shared/utils/cn";
-import { TasksPage } from "@features/tasks/components/TasksPage";
-import { CalendarPage } from "@features/calendar/components/CalendarPage";
+import { useState } from 'react';
+import { CheckSquare, Calendar } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
+import { TasksPage } from '@features/tasks/components/TasksPage';
+import { CalendarPage } from '@features/calendar/components/CalendarPage';
 
-type ScheduleTab = "tasks" | "calendar";
+type ScheduleTab = 'tasks' | 'calendar';
 
 const TABS: { id: ScheduleTab; label: string; icon: typeof CheckSquare }[] = [
-  { id: "tasks", label: "Tasks", icon: CheckSquare },
-  { id: "calendar", label: "Calendar", icon: Calendar },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
 ];
 
 /**
@@ -19,7 +19,7 @@ const TABS: { id: ScheduleTab; label: string; icon: typeof CheckSquare }[] = [
  * component (load effects, empty states, views).
  */
 export function SchedulePage() {
-  const [tab, setTab] = useState<ScheduleTab>("tasks");
+  const [tab, setTab] = useState<ScheduleTab>('tasks');
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -33,10 +33,10 @@ export function SchedulePage() {
               type="button"
               onClick={() => setTab(t.id)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+                'flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
                 active
-                  ? "border-accent text-text-primary"
-                  : "border-transparent text-text-tertiary hover:text-text-secondary",
+                  ? 'border-accent text-text-primary'
+                  : 'border-transparent text-text-tertiary hover:text-text-secondary',
               )}
             >
               <t.icon size={15} />
@@ -48,7 +48,7 @@ export function SchedulePage() {
 
       {/* Active section */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        {tab === "tasks" ? <TasksPage /> : <CalendarPage />}
+        {tab === 'tasks' ? <TasksPage /> : <CalendarPage />}
       </div>
     </div>
   );

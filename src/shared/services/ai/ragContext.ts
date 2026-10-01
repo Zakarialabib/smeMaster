@@ -7,8 +7,8 @@
  * @module
  */
 
-import { aiQueryRag } from "@shared/services/db/invoke/rag";
-import { getProviderEmbedding } from "./embeddingService";
+import { aiQueryRag } from '@shared/services/db/invoke/rag';
+import { getProviderEmbedding } from './embeddingService';
 
 /**
  * Fetch relevant RAG context for a given query.
@@ -18,13 +18,13 @@ import { getProviderEmbedding } from "./embeddingService";
  * @returns Context string with relevant knowledge base snippets, or empty string if unavailable
  */
 export async function fetchRagContext(query: string): Promise<string> {
-  if (!query.trim()) return "";
+  if (!query.trim()) return '';
 
   try {
     const result = await aiQueryRag(query.slice(0, 500));
-    return result || "";
+    return result || '';
   } catch {
-    return "";
+    return '';
   }
 }
 
@@ -75,10 +75,7 @@ export async function enrichPromptWithRag(
  * @param ragQuery - Additional query for vector search
  * @returns Combined context string
  */
-export async function buildFusedContext(
-  ftsContext: string,
-  ragQuery: string,
-): Promise<string> {
+export async function buildFusedContext(ftsContext: string, ragQuery: string): Promise<string> {
   let combined = ftsContext;
 
   try {
@@ -104,7 +101,7 @@ export async function buildFusedContext(
  * @returns relevant context string, or empty string if unavailable
  */
 export async function fetchRagContextWithProviderEmbedding(query: string): Promise<string> {
-  if (!query.trim()) return "";
+  if (!query.trim()) return '';
 
   try {
     const providerEmbedding = await getProviderEmbedding(query);
@@ -113,10 +110,10 @@ export async function fetchRagContextWithProviderEmbedding(query: string): Promi
       return fetchRagContext(query);
     }
 
-    const { aiSearchByVector } = await import("@shared/services/db/invoke/rag");
+    const { aiSearchByVector } = await import('@shared/services/db/invoke/rag');
     const result = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
-    return result || "";
+    return result || '';
   } catch {
-    return "";
+    return '';
   }
 }

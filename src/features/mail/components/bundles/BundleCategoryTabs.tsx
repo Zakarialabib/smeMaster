@@ -1,6 +1,6 @@
-import { Inbox, Bell, Tag, Users, Newspaper, Package } from "lucide-react";
-import { ALL_CATEGORIES } from "@features/mail/db/threadCategories";
-import type { DbBundleRule } from "@features/deliverability/db/bundleRules";
+import { Inbox, Bell, Tag, Users, Newspaper, Package } from 'lucide-react';
+import { ALL_CATEGORIES } from '@features/mail/db/threadCategories';
+import type { DbBundleRule } from '@features/deliverability/db/bundleRules';
 
 export interface BundleCategoryTabsProps {
   /** The currently selected category filter ("All" or one of the bundle categories) */
@@ -35,7 +35,7 @@ export function BundleCategoryTabs({
   const bundleCategorySet = new Set(bundleRules.map((r) => r.category));
 
   // Only the bundle categories that have rules + "All"
-  const tabs = ["All", ...ALL_CATEGORIES.filter((c) => bundleCategorySet.has(c))];
+  const tabs = ['All', ...ALL_CATEGORIES.filter((c) => bundleCategorySet.has(c))];
 
   if (tabs.length <= 1) return null; // Only "All" — no bundles active, don't render
 
@@ -51,12 +51,10 @@ export function BundleCategoryTabs({
             key={cat}
             onClick={() => onBundleCategoryChange(cat)}
             className={`px-2.5 py-1.5 text-xs font-medium transition-colors relative whitespace-nowrap flex items-center gap-1.5 ${
-              isActive
-                ? "text-accent"
-                : "text-text-tertiary hover:text-text-primary"
+              isActive ? 'text-accent' : 'text-text-tertiary hover:text-text-primary'
             }`}
             aria-pressed={isActive}
-            aria-label={`${cat} bundle tab${count > 0 ? `, ${count} unread` : ""}`}
+            aria-label={`${cat} bundle tab${count > 0 ? `, ${count} unread` : ''}`}
           >
             {Icon && <Icon size={13} />}
             {cat}

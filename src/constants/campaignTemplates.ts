@@ -6,17 +6,27 @@ export interface CampaignTemplate {
   id: string;
   name: string;
   description: string;
-  category: "announcement" | "newsletter" | "promotion" | "follow-up" | "event" | "welcome" | "feedback" | "invoice" | "meeting" | "holiday";
+  category:
+    | 'announcement'
+    | 'newsletter'
+    | 'promotion'
+    | 'follow-up'
+    | 'event'
+    | 'welcome'
+    | 'feedback'
+    | 'invoice'
+    | 'meeting'
+    | 'holiday';
   html: string;
 }
 
 /** @deprecated Use DB-backed campaignTemplateCatalog instead. */
 export const campaignTemplates: CampaignTemplate[] = [
   {
-    id: "welcome",
-    name: "Welcome to Our Community",
-    description: "Friendly onboarding email with brand header and getting-started CTA",
-    category: "welcome",
+    id: 'welcome',
+    name: 'Welcome to Our Community',
+    description: 'Friendly onboarding email with brand header and getting-started CTA',
+    category: 'welcome',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -59,10 +69,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "newsletter",
-    name: "Monthly Newsletter",
-    description: "Clean newsletter layout with featured article and secondary links",
-    category: "newsletter",
+    id: 'newsletter',
+    name: 'Monthly Newsletter',
+    description: 'Clean newsletter layout with featured article and secondary links',
+    category: 'newsletter',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -116,10 +126,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "promotion",
-    name: "Special Offer Just for You",
-    description: "Sales and promotion email with discount code and urgency CTA",
-    category: "promotion",
+    id: 'promotion',
+    name: 'Special Offer Just for You',
+    description: 'Sales and promotion email with discount code and urgency CTA',
+    category: 'promotion',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -170,10 +180,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "follow-up",
-    name: "Following Up",
-    description: "Professional follow-up after a meeting or call with notes summary",
-    category: "follow-up",
+    id: 'follow-up',
+    name: 'Following Up',
+    description: 'Professional follow-up after a meeting or call with notes summary',
+    category: 'follow-up',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -224,10 +234,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "event",
+    id: 'event',
     name: "You're Invited!",
-    description: "Event invitation with date, time, location details and RSVP button",
-    category: "event",
+    description: 'Event invitation with date, time, location details and RSVP button',
+    category: 'event',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -273,10 +283,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "announcement",
-    name: "Big News!",
-    description: "Product launch or company announcement with key highlights",
-    category: "announcement",
+    id: 'announcement',
+    name: 'Big News!',
+    description: 'Product launch or company announcement with key highlights',
+    category: 'announcement',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -324,10 +334,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "feedback",
+    id: 'feedback',
     name: "We'd Love Your Feedback",
-    description: "Customer feedback and survey request with star rating visual",
-    category: "feedback",
+    description: 'Customer feedback and survey request with star rating visual',
+    category: 'feedback',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -369,10 +379,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "invoice",
-    name: "Your Invoice",
-    description: "Simple invoice and receipt with line items, totals, and payment CTA",
-    category: "invoice",
+    id: 'invoice',
+    name: 'Your Invoice',
+    description: 'Simple invoice and receipt with line items, totals, and payment CTA',
+    category: 'invoice',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -446,10 +456,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "meeting",
-    name: "Meeting Confirmed",
-    description: "Meeting confirmation with calendar link and preparation checklist",
-    category: "meeting",
+    id: 'meeting',
+    name: 'Meeting Confirmed',
+    description: 'Meeting confirmation with calendar link and preparation checklist',
+    category: 'meeting',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -513,10 +523,10 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
   {
-    id: "holiday",
+    id: 'holiday',
     name: "Season's Greetings",
-    description: "Warm holiday and seasonal greeting with heartfelt message",
-    category: "holiday",
+    description: 'Warm holiday and seasonal greeting with heartfelt message',
+    category: 'holiday',
     html: `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center" style="padding:32px 16px;">
@@ -561,4 +571,3 @@ export const campaignTemplates: CampaignTemplate[] = [
 </table>`,
   },
 ];
-

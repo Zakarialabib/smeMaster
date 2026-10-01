@@ -1,5 +1,5 @@
-import { memo, type ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
+import { memo, type ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
 
 export interface DataTableColumn<T> {
   /** Stable id — also the CSS var hook for column-specific styling. */
@@ -11,7 +11,7 @@ export interface DataTableColumn<T> {
   /** Column width (any CSS width). Optional. */
   width?: string;
   /** Horizontal alignment. */
-  align?: "start" | "center" | "end";
+  align?: 'start' | 'center' | 'end';
   /** Hide below this viewport width (px). Optional responsive guard. */
   hideBelow?: number;
   /** Extra classes. */
@@ -28,7 +28,7 @@ interface DataTableProps<T> {
   /** Empty state. */
   empty?: ReactNode;
   /** Density. */
-  density?: "compact" | "comfortable";
+  density?: 'compact' | 'comfortable';
   className?: string;
 }
 
@@ -44,17 +44,17 @@ export function DataTable<T>({
   rowKey,
   onRowClick,
   empty,
-  density = "comfortable",
+  density = 'comfortable',
   className,
 }: DataTableProps<T>) {
   if (rows.length === 0 && empty) {
-    return <div className={cn("unified-table-empty", className)}>{empty}</div>;
+    return <div className={cn('unified-table-empty', className)}>{empty}</div>;
   }
 
   return (
     <div
       className={cn(
-        "unified-table w-full overflow-hidden rounded-[--radius-lg] border border-border-secondary bg-bg-secondary shadow-[var(--elevation-sm)]",
+        'unified-table w-full overflow-hidden rounded-[--radius-lg] border border-border-secondary bg-bg-secondary shadow-[var(--elevation-sm)]',
         className,
       )}
       role="table"
@@ -65,12 +65,12 @@ export function DataTable<T>({
             key={col.id}
             role="columnheader"
             className={cn(
-              "min-w-0 flex-1 truncate",
-              col.align === "center" && "text-center",
-              col.align === "end" && "text-end",
+              'min-w-0 flex-1 truncate',
+              col.align === 'center' && 'text-center',
+              col.align === 'end' && 'text-end',
               col.className,
             )}
-            style={{ width: col.width, flex: col.width ? "0 0 auto" : undefined }}
+            style={{ width: col.width, flex: col.width ? '0 0 auto' : undefined }}
           >
             {col.header}
           </div>
@@ -84,9 +84,9 @@ export function DataTable<T>({
             role="row"
             onClick={onRowClick ? () => onRowClick(row, i) : undefined}
             className={cn(
-              "unified-table-row flex items-center gap-3 px-4 border-b border-border-secondary/70 last:border-b-0 transition-colors",
-              density === "compact" ? "py-2" : "py-3",
-              onRowClick && "cursor-pointer hover:bg-bg-hover",
+              'unified-table-row flex items-center gap-3 px-4 border-b border-border-secondary/70 last:border-b-0 transition-colors',
+              density === 'compact' ? 'py-2' : 'py-3',
+              onRowClick && 'cursor-pointer hover:bg-bg-hover',
             )}
           >
             {columns.map((col) => (
@@ -94,12 +94,12 @@ export function DataTable<T>({
                 key={col.id}
                 role="cell"
                 className={cn(
-                  "min-w-0 flex-1 truncate",
-                  col.align === "center" && "text-center",
-                  col.align === "end" && "text-end",
+                  'min-w-0 flex-1 truncate',
+                  col.align === 'center' && 'text-center',
+                  col.align === 'end' && 'text-end',
                   col.className,
                 )}
-                style={{ width: col.width, flex: col.width ? "0 0 auto" : undefined }}
+                style={{ width: col.width, flex: col.width ? '0 0 auto' : undefined }}
               >
                 {col.cell(row, i)}
               </div>

@@ -1,7 +1,7 @@
-﻿import { parseSearchQuery } from "./searchParser";
-import { buildSearchQuery } from "./searchQueryBuilder";
-import { getThreadLabelIds, getThreadById } from "@shared/services/db/threads";
-import type { Thread } from "@features/mail/stores/threadStore";
+﻿import { parseSearchQuery } from './searchParser';
+import { buildSearchQuery } from './searchQueryBuilder';
+import { getThreadLabelIds, getThreadById } from '@shared/services/db/threads';
+import type { Thread } from '@features/mail/stores/threadStore';
 
 /**
  * Replace dynamic date tokens in a query string.
@@ -14,26 +14,26 @@ export function resolveQueryTokens(query: string): string {
 
   const formatDate = (d: Date): string => {
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     return `${year}/${month}/${day}`;
   };
 
   let resolved = query;
 
-  if (resolved.includes("__LAST_7_DAYS__")) {
+  if (resolved.includes('__LAST_7_DAYS__')) {
     const d = new Date(now);
     d.setDate(d.getDate() - 7);
     resolved = resolved.replace(/__LAST_7_DAYS__/g, formatDate(d));
   }
 
-  if (resolved.includes("__LAST_30_DAYS__")) {
+  if (resolved.includes('__LAST_30_DAYS__')) {
     const d = new Date(now);
     d.setDate(d.getDate() - 30);
     resolved = resolved.replace(/__LAST_30_DAYS__/g, formatDate(d));
   }
 
-  if (resolved.includes("__TODAY__")) {
+  if (resolved.includes('__TODAY__')) {
     resolved = resolved.replace(/__TODAY__/g, formatDate(now));
   }
 
@@ -71,9 +71,9 @@ export function getSmartFolderUnreadCount(
 
   // Replace SELECT ... FROM with SELECT COUNT(DISTINCT ...) FROM and remove LIMIT
   const countSql = baseSql
-    .replace(/SELECT DISTINCT[\s\S]*?(?=\bFROM\s)/i, "SELECT COUNT(DISTINCT m.id) as count ")
-    .replace(/ORDER BY[\s\S]*?(?=LIMIT|$)/i, "")
-    .replace(/LIMIT \$\d+/i, "");
+    .replace(/SELECT DISTINCT[\s\S]*?(?=\bFROM\s)/i, 'SELECT COUNT(DISTINCT m.id) as count ')
+    .replace(/ORDER BY[\s\S]*?(?=LIMIT|$)/i, '')
+    .replace(/LIMIT \$\d+/i, '');
 
   // Remove the last param (which was the limit)
   const countParams = params.slice(0, -1);

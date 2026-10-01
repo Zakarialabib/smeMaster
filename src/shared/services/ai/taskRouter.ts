@@ -13,29 +13,29 @@
  * @module
  */
 
-import { getSetting, setSetting } from "@features/settings/db/settings";
-import type { AiProvider } from "./types";
-import { MODEL_REGISTRY, type ModelDefinition } from "./modelRegistry";
-import type { FallbackEntry, CostInfo } from "./capabilities";
+import { getSetting, setSetting } from '@features/settings/db/settings';
+import type { AiProvider } from './types';
+import { MODEL_REGISTRY, type ModelDefinition } from './modelRegistry';
+import type { FallbackEntry, CostInfo } from './capabilities';
 
 // ── Task Definitions ───────────────────────────────────────────────────────
 
 export type AiTask =
-  | "email.classify"
-  | "email.summarize"
-  | "email.compose"
-  | "email.reply"
-  | "email.smart_reply"
-  | "email.improve"
-  | "email.shorten"
-  | "email.formalize"
-  | "email.ask_inbox"
-  | "email.extract_task"
-  | "email.smart_label"
-  | "email.quality_check"
-  | "rag.query"
-  | "voice.stt"
-  | "voice.tts";
+  | 'email.classify'
+  | 'email.summarize'
+  | 'email.compose'
+  | 'email.reply'
+  | 'email.smart_reply'
+  | 'email.improve'
+  | 'email.shorten'
+  | 'email.formalize'
+  | 'email.ask_inbox'
+  | 'email.extract_task'
+  | 'email.smart_label'
+  | 'email.quality_check'
+  | 'rag.query'
+  | 'voice.stt'
+  | 'voice.tts';
 
 export interface TaskRoute {
   task: AiTask;
@@ -48,159 +48,155 @@ export interface TaskRoute {
 // ── Default Routing Table ──────────────────────────────────────────────────
 
 export const DEFAULT_TASK_ROUTES: Record<AiTask, TaskRoute> = {
-  "email.classify": {
-    task: "email.classify",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.classify': {
+    task: 'email.classify',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "mistral", model: "mistral-small" },
-      { provider: "gemini", model: "gemini-2.5-flash" },
+      { provider: 'mistral', model: 'mistral-small' },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.summarize": {
-    task: "email.summarize",
-    provider: "openai",
-    model: "gpt-4o-mini",
+  'email.summarize': {
+    task: 'email.summarize',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.15, outputPer1M: 0.6 },
   },
-  "email.compose": {
-    task: "email.compose",
-    provider: "claude",
-    model: "claude-sonnet-4-20250514",
+  'email.compose': {
+    task: 'email.compose',
+    provider: 'claude',
+    model: 'claude-sonnet-4-20250514',
     fallbacks: [
-      { provider: "openai", model: "gpt-4.1" },
-      { provider: "gemini", model: "gemini-2.5-pro" },
+      { provider: 'openai', model: 'gpt-4.1' },
+      { provider: 'gemini', model: 'gemini-2.5-pro' },
     ],
     costInfo: { inputPer1M: 3.0, outputPer1M: 15.0 },
   },
-  "email.reply": {
-    task: "email.reply",
-    provider: "claude",
-    model: "claude-sonnet-4-20250514",
+  'email.reply': {
+    task: 'email.reply',
+    provider: 'claude',
+    model: 'claude-sonnet-4-20250514',
     fallbacks: [
-      { provider: "openai", model: "gpt-4.1" },
-      { provider: "gemini", model: "gemini-2.5-pro" },
+      { provider: 'openai', model: 'gpt-4.1' },
+      { provider: 'gemini', model: 'gemini-2.5-pro' },
     ],
     costInfo: { inputPer1M: 3.0, outputPer1M: 15.0 },
   },
-  "email.smart_reply": {
-    task: "email.smart_reply",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.smart_reply': {
+    task: 'email.smart_reply',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.improve": {
-    task: "email.improve",
-    provider: "openai",
-    model: "gpt-4o-mini",
+  'email.improve': {
+    task: 'email.improve',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.15, outputPer1M: 0.6 },
   },
-  "email.shorten": {
-    task: "email.shorten",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.shorten': {
+    task: 'email.shorten',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.formalize": {
-    task: "email.formalize",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.formalize': {
+    task: 'email.formalize',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.ask_inbox": {
-    task: "email.ask_inbox",
-    provider: "openai",
-    model: "gpt-4o",
+  'email.ask_inbox': {
+    task: 'email.ask_inbox',
+    provider: 'openai',
+    model: 'gpt-4o',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-pro" },
-      { provider: "claude", model: "claude-sonnet-4-20250514" },
+      { provider: 'gemini', model: 'gemini-2.5-pro' },
+      { provider: 'claude', model: 'claude-sonnet-4-20250514' },
     ],
     costInfo: { inputPer1M: 2.5, outputPer1M: 10.0 },
   },
-  "email.extract_task": {
-    task: "email.extract_task",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.extract_task': {
+    task: 'email.extract_task',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.smart_label": {
-    task: "email.smart_label",
-    provider: "openai",
-    model: "gpt-4.1-nano",
+  'email.smart_label': {
+    task: 'email.smart_label',
+    provider: 'openai',
+    model: 'gpt-4.1-nano',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.1, outputPer1M: 0.4 },
   },
-  "email.quality_check": {
-    task: "email.quality_check",
-    provider: "openai",
-    model: "gpt-4o-mini",
+  'email.quality_check': {
+    task: 'email.quality_check',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     fallbacks: [
-      { provider: "gemini", model: "gemini-2.5-flash" },
-      { provider: "mistral", model: "mistral-small" },
+      { provider: 'gemini', model: 'gemini-2.5-flash' },
+      { provider: 'mistral', model: 'mistral-small' },
     ],
     costInfo: { inputPer1M: 0.15, outputPer1M: 0.6 },
   },
-  "rag.query": {
-    task: "rag.query",
-    provider: "openai",
-    model: "text-embedding-3-small",
+  'rag.query': {
+    task: 'rag.query',
+    provider: 'openai',
+    model: 'text-embedding-3-small',
     fallbacks: [
-      { provider: "gemini", model: "gemini-embedding-2" },
-      { provider: "mistral", model: "mistral-embed" },
+      { provider: 'gemini', model: 'gemini-embedding-2' },
+      { provider: 'mistral', model: 'mistral-embed' },
     ],
     costInfo: { inputPer1M: 0.02, outputPer1M: 0 },
   },
-  "voice.stt": {
-    task: "voice.stt",
-    provider: "openai",
-    model: "whisper-1",
-    fallbacks: [
-      { provider: "mistral", model: "voxtral-realtime" },
-    ],
+  'voice.stt': {
+    task: 'voice.stt',
+    provider: 'openai',
+    model: 'whisper-1',
+    fallbacks: [{ provider: 'mistral', model: 'voxtral-realtime' }],
     costInfo: { inputPer1M: 0.006, outputPer1M: 0 },
   },
-  "voice.tts": {
-    task: "voice.tts",
-    provider: "openai",
-    model: "tts-1",
-    fallbacks: [
-      { provider: "byteplus", model: "seed-tts" },
-    ],
+  'voice.tts': {
+    task: 'voice.tts',
+    provider: 'openai',
+    model: 'tts-1',
+    fallbacks: [{ provider: 'byteplus', model: 'seed-tts' }],
     costInfo: { inputPer1M: 0.015, outputPer1M: 0 },
   },
 };
 
 // ── Settings Persistence ───────────────────────────────────────────────────
 
-const TASK_ROUTE_SETTINGS_KEY = "ai_task_routes";
+const TASK_ROUTE_SETTINGS_KEY = 'ai_task_routes';
 
 interface TaskRouteOverrides {
   [task: string]: TaskRoute;
@@ -282,24 +278,18 @@ export function getProvidersForTask(task: AiTask): AiProvider[] {
 
   const cap = model.capabilities;
   if (cap.embeddings) {
-    return MODEL_REGISTRY
-      .filter((m) => m.capabilities.embeddings && !m.deprecated)
-      .map((m) => m.provider);
+    return MODEL_REGISTRY.filter((m) => m.capabilities.embeddings && !m.deprecated).map(
+      (m) => m.provider,
+    );
   }
   if (cap.stt) {
-    return MODEL_REGISTRY
-      .filter((m) => m.capabilities.stt && !m.deprecated)
-      .map((m) => m.provider);
+    return MODEL_REGISTRY.filter((m) => m.capabilities.stt && !m.deprecated).map((m) => m.provider);
   }
   if (cap.tts) {
-    return MODEL_REGISTRY
-      .filter((m) => m.capabilities.tts && !m.deprecated)
-      .map((m) => m.provider);
+    return MODEL_REGISTRY.filter((m) => m.capabilities.tts && !m.deprecated).map((m) => m.provider);
   }
   // text capability
-  return MODEL_REGISTRY
-    .filter((m) => m.capabilities.text && !m.deprecated)
-    .map((m) => m.provider);
+  return MODEL_REGISTRY.filter((m) => m.capabilities.text && !m.deprecated).map((m) => m.provider);
 }
 
 // ── Cost-Aware Routing ─────────────────────────────────────────────────────
@@ -308,10 +298,7 @@ export function getProvidersForTask(task: AiTask): AiProvider[] {
  * Score a provider for a task by (quality × capability_match) / cost.
  * Higher score = better choice.
  */
-export function scoreProviderForTask(
-  provider: AiProvider,
-  task: AiTask,
-): number {
+export function scoreProviderForTask(provider: AiProvider, task: AiTask): number {
   const route = DEFAULT_TASK_ROUTES[task];
   const model = MODEL_REGISTRY.find((m) => m.id === route.model && m.provider === provider);
   if (!model) return 0;
@@ -341,7 +328,7 @@ export function scoreProviderForTask(
   const cost = model.pricing?.inputPer1M ?? 1.0;
   const costScore = 1.0 / (1.0 + cost);
 
-  return (quality * capabilityMatch * costScore * 100);
+  return quality * capabilityMatch * costScore * 100;
 }
 
 /**

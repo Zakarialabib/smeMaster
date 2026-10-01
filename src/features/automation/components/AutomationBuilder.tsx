@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -13,18 +13,18 @@ import {
   type NodeTypes,
   BackgroundVariant,
   MarkerType,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import { Save, X, Plus, LayoutTemplate, Undo2, Redo2 } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { useAutomationStore } from "@features/automation/stores/automationStore";
-import { AutomationTriggerPicker } from "@features/automation/components/AutomationTriggerPicker";
-import { AutomationActionPicker } from "@features/automation/components/AutomationActionPicker";
-import { TriggerNode } from "./flow/TriggerNode";
-import { ConditionNode } from "./flow/ConditionNode";
-import { ActionNode, actionRequiresParam } from "./flow/ActionNode";
-import type { AutomationAction } from "@features/automation/stores/automationStore";
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import { Save, X, Plus, LayoutTemplate, Undo2, Redo2 } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { useAutomationStore } from '@features/automation/stores/automationStore';
+import { AutomationTriggerPicker } from '@features/automation/components/AutomationTriggerPicker';
+import { AutomationActionPicker } from '@features/automation/components/AutomationActionPicker';
+import { TriggerNode } from './flow/TriggerNode';
+import { ConditionNode } from './flow/ConditionNode';
+import { ActionNode, actionRequiresParam } from './flow/ActionNode';
+import type { AutomationAction } from '@features/automation/stores/automationStore';
 
 // ── Node type registry ───────────────────────────────────────────────────────
 
@@ -37,17 +37,17 @@ const nodeTypes: NodeTypes = {
 // ── Node defaults ─────────────────────────────────────────────────────────────
 
 const TRIGGER_NODE_DEFAULTS = {
-  type: "trigger" as const,
+  type: 'trigger' as const,
   position: { x: 250, y: 25 },
 };
 
 const CONDITION_NODE_DEFAULTS = {
-  type: "condition" as const,
+  type: 'condition' as const,
   position: { x: 250, y: 200 },
 };
 
 const ACTION_NODE_DEFAULTS = {
-  type: "action" as const,
+  type: 'action' as const,
   position: { x: 250, y: 375 },
 };
 
@@ -75,7 +75,7 @@ function buildInitialNodes(
 
   // Trigger node
   nodes.push({
-    id: "trigger-1",
+    id: 'trigger-1',
     ...TRIGGER_NODE_DEFAULTS,
     deletable: false,
     data: { event: triggerEvent, conditions: triggerConditions },
@@ -84,15 +84,15 @@ function buildInitialNodes(
   // Condition node (only if conditions exist and are meaningful)
   const hasConditions = (() => {
     try {
-      const parsed = JSON.parse(triggerConditions || "{}");
-      return Object.values(parsed).some((v) => v !== "" && v !== null && v !== undefined);
+      const parsed = JSON.parse(triggerConditions || '{}');
+      return Object.values(parsed).some((v) => v !== '' && v !== null && v !== undefined);
     } catch {
       return false;
     }
   })();
   if (hasConditions) {
     nodes.push({
-      id: "condition-1",
+      id: 'condition-1',
       ...CONDITION_NODE_DEFAULTS,
       data: { conditions: triggerConditions },
     } as Node);
@@ -106,7 +106,9 @@ function buildInitialNodes(
       id: `action-${index}`,
       position: {
         x: 250,
-        y: hasConditions ? ACTION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING : CONDITION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING,
+        y: hasConditions
+          ? ACTION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING
+          : CONDITION_NODE_DEFAULTS.position.y + index * DEFAULT_SPACING,
       },
       data: { index, action, invalid, onUpdate: onActionUpdate, onDelete: onActionDelete },
     } as Node);
@@ -115,24 +117,21 @@ function buildInitialNodes(
   return nodes;
 }
 
-function buildEdges(
-  hasConditions: boolean,
-  actionCount: number,
-): Edge[] {
+function buildEdges(hasConditions: boolean, actionCount: number): Edge[] {
   const edges: Edge[] = [];
-  const edgeStyle = { stroke: "#78716c", strokeWidth: 2 };
-  const markerEnd = { type: MarkerType.ArrowClosed, color: "#78716c" };
+  const edgeStyle = { stroke: '#78716c', strokeWidth: 2 };
+  const markerEnd = { type: MarkerType.ArrowClosed, color: '#78716c' };
 
   if (hasConditions) {
     edges.push({
-      id: "e-trigger-condition",
-      source: "trigger-1",
-      target: "condition-1",
+      id: 'e-trigger-condition',
+      source: 'trigger-1',
+      target: 'condition-1',
       style: edgeStyle,
       markerEnd,
     });
     for (let i = 0; i < actionCount; i++) {
-      const source = i === 0 ? "condition-1" : `action-${i - 1}`;
+      const source = i === 0 ? 'condition-1' : `action-${i - 1}`;
       edges.push({
         id: `e-action-${i}`,
         source,
@@ -143,7 +142,7 @@ function buildEdges(
     }
   } else {
     for (let i = 0; i < actionCount; i++) {
-      const source = i === 0 ? "trigger-1" : `action-${i - 1}`;
+      const source = i === 0 ? 'trigger-1' : `action-${i - 1}`;
       edges.push({
         id: `e-action-${i}`,
         source,
@@ -182,9 +181,7 @@ function MobileStepList({
     <div className="space-y-4">
       {/* Rule name */}
       <div>
-        <label className="text-xs font-medium text-text-secondary mb-1 block">
-          Rule Name
-        </label>
+        <label className="text-xs font-medium text-text-secondary mb-1 block">Rule Name</label>
         <input
           type="text"
           value={ruleName}
@@ -217,10 +214,7 @@ function MobileStepList({
           </div>
           <span className="text-sm font-semibold text-text-primary">Actions</span>
         </div>
-        <AutomationActionPicker
-          actions={actions}
-          onChange={onActionsChange}
-        />
+        <AutomationActionPicker actions={actions} onChange={onActionsChange} />
       </div>
     </div>
   );
@@ -250,9 +244,7 @@ function TabletTwoColumn({
       {/* Left column: Trigger + Name */}
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-medium text-text-secondary mb-1 block">
-            Rule Name
-          </label>
+          <label className="text-xs font-medium text-text-secondary mb-1 block">Rule Name</label>
           <input
             type="text"
             value={ruleName}
@@ -284,10 +276,7 @@ function TabletTwoColumn({
           </div>
           <span className="text-sm font-semibold text-text-primary">Actions</span>
         </div>
-        <AutomationActionPicker
-          actions={actions}
-          onChange={onActionsChange}
-        />
+        <AutomationActionPicker actions={actions} onChange={onActionsChange} />
       </div>
 
       {/* Flow preview */}
@@ -307,7 +296,7 @@ function TabletTwoColumn({
               <>
                 <span className="text-text-tertiary">&rarr;</span>
                 <span className="bg-success/10 text-success px-2 py-1 rounded">
-                  {actions.length} action{actions.length !== 1 ? "s" : ""}
+                  {actions.length} action{actions.length !== 1 ? 's' : ''}
                 </span>
               </>
             )}
@@ -319,19 +308,16 @@ function TabletTwoColumn({
 }
 
 const TRIGGER_EVENT_LABELS: Record<string, string> = {
-  email_received: "Email Received",
-  no_reply_after_days: "No Reply After Days",
-  time_based: "Time Based",
-  label_applied: "Label Applied",
-  starred: "Email Starred",
+  email_received: 'Email Received',
+  no_reply_after_days: 'No Reply After Days',
+  time_based: 'Time Based',
+  label_applied: 'Label Applied',
+  starred: 'Email Starred',
 };
 
 // ── Main Builder Component ────────────────────────────────────────────────────
 
-export function AutomationBuilder({
-  accountId,
-  onSaveSuccess,
-}: AutomationBuilderProps) {
+export function AutomationBuilder({ accountId, onSaveSuccess }: AutomationBuilderProps) {
   const { screen } = usePlatform();
   const isDesktop = screen.isDesktop;
   const isMobile = screen.isMobile;
@@ -368,10 +354,8 @@ export function AutomationBuilder({
   const handleActionUpdate = useCallback(
     (index: number, action: AutomationAction) => {
       withHistory(() => {
-        const next = editor.actions.map((a, i) =>
-          i === index ? action : a,
-        );
-        setEditorField("actions", next);
+        const next = editor.actions.map((a, i) => (i === index ? action : a));
+        setEditorField('actions', next);
       });
     },
     [editor.actions, setEditorField, withHistory],
@@ -381,7 +365,7 @@ export function AutomationBuilder({
     (index: number) => {
       withHistory(() => {
         const next = editor.actions.filter((_, i) => i !== index);
-        setEditorField("actions", next);
+        setEditorField('actions', next);
       });
     },
     [editor.actions, setEditorField, withHistory],
@@ -389,16 +373,16 @@ export function AutomationBuilder({
 
   const handleActionAdd = useCallback(() => {
     withHistory(() => {
-      const newAction: AutomationAction = { type: "apply_label", labelId: "" };
-      setEditorField("actions", [...editor.actions, newAction]);
+      const newAction: AutomationAction = { type: 'apply_label', labelId: '' };
+      setEditorField('actions', [...editor.actions, newAction]);
     });
   }, [editor.actions, setEditorField, withHistory]);
 
   const handleTriggerChange = useCallback(
     (event: string, conditions: string) => {
       withHistory(() => {
-        setEditorField("triggerEvent", event);
-        setEditorField("triggerConditions", conditions);
+        setEditorField('triggerEvent', event);
+        setEditorField('triggerConditions', conditions);
       });
     },
     [setEditorField, withHistory],
@@ -407,7 +391,7 @@ export function AutomationBuilder({
   const handleActionsChange = useCallback(
     (actions: AutomationAction[]) => {
       withHistory(() => {
-        setEditorField("actions", actions);
+        setEditorField('actions', actions);
       });
     },
     [setEditorField, withHistory],
@@ -420,10 +404,8 @@ export function AutomationBuilder({
 
   const hasConditions = useMemo(() => {
     try {
-      const parsed = JSON.parse(editor.triggerConditions || "{}");
-      return Object.values(parsed).some(
-        (v) => v !== "" && v !== null && v !== undefined,
-      );
+      const parsed = JSON.parse(editor.triggerConditions || '{}');
+      return Object.values(parsed).some((v) => v !== '' && v !== null && v !== undefined);
     } catch {
       return false;
     }
@@ -458,8 +440,8 @@ export function AutomationBuilder({
     if (!isDesktop) return;
     setNodes((nds) =>
       nds.map((n) => {
-        if (n.type !== "action") return n;
-        const idx = Number(n.id.replace("action-", ""));
+        if (n.type !== 'action') return n;
+        const idx = Number(n.id.replace('action-', ''));
         const action = editor.actions[idx];
         if (!action) return n;
         const paramKey = actionRequiresParam(action.type);
@@ -486,8 +468,8 @@ export function AutomationBuilder({
         addEdge(
           {
             ...connection,
-            style: { stroke: "#78716c", strokeWidth: 2 },
-            markerEnd: { type: MarkerType.ArrowClosed, color: "#78716c" },
+            style: { stroke: '#78716c', strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#78716c' },
           } as Edge,
           eds,
         ),
@@ -504,14 +486,14 @@ export function AutomationBuilder({
       if (deleted.length === 0) return;
       withHistory(() => {
         for (const node of deleted) {
-          if (node.type === "action") {
-            const idx = Number(node.id.replace("action-", ""));
+          if (node.type === 'action') {
+            const idx = Number(node.id.replace('action-', ''));
             if (!Number.isNaN(idx)) {
               const next = editor.actions.filter((_, i) => i !== idx);
-              setEditorField("actions", next);
+              setEditorField('actions', next);
             }
-          } else if (node.type === "condition") {
-            setEditorField("triggerConditions", "");
+          } else if (node.type === 'condition') {
+            setEditorField('triggerConditions', '');
           }
         }
       });
@@ -522,15 +504,15 @@ export function AutomationBuilder({
   // Dragging action nodes reorders them by vertical position in the store.
   const onNodeDragStop = useCallback(
     (_: unknown, dragged: Node) => {
-      if (dragged.type !== "action") return;
+      if (dragged.type !== 'action') return;
       withHistory(() => {
         const order = nodes
-          .filter((n) => n.type === "action")
+          .filter((n) => n.type === 'action')
           .sort((a, b) => a.position.y - b.position.y)
-          .map((n) => Number(n.id.replace("action-", "")));
+          .map((n) => Number(n.id.replace('action-', '')));
         if (order.length !== editor.actions.length) return;
         const reordered = order.map((i) => editor.actions[i]!);
-        setEditorField("actions", reordered);
+        setEditorField('actions', reordered);
       });
     },
     [nodes, editor.actions, setEditorField, withHistory],
@@ -554,17 +536,17 @@ export function AutomationBuilder({
       const isMod = e.ctrlKey || e.metaKey;
       if (!isMod) return;
 
-      if (e.key === "z" && !e.shiftKey) {
+      if (e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
+      } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
         e.preventDefault();
         redo();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isDesktop, undo, redo]);
 
   // ── Render ────────────────────────────────────────────────────────────
@@ -574,9 +556,7 @@ export function AutomationBuilder({
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-text-primary">
-            Visual Builder
-          </h3>
+          <h3 className="text-sm font-semibold text-text-primary">Visual Builder</h3>
           <button
             type="button"
             onClick={closeBuilder}
@@ -594,7 +574,7 @@ export function AutomationBuilder({
           onTriggerChange={handleTriggerChange}
           onActionsChange={handleActionsChange}
           ruleName={editor.name}
-          onNameChange={(name) => withHistory(() => setEditorField("name", name))}
+          onNameChange={(name) => withHistory(() => setEditorField('name', name))}
         />
 
         <div className="flex items-center gap-2 pt-2">
@@ -621,9 +601,7 @@ export function AutomationBuilder({
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-text-primary">
-            Visual Builder
-          </h3>
+          <h3 className="text-sm font-semibold text-text-primary">Visual Builder</h3>
           <button
             type="button"
             onClick={closeBuilder}
@@ -641,7 +619,7 @@ export function AutomationBuilder({
           onTriggerChange={handleTriggerChange}
           onActionsChange={handleActionsChange}
           ruleName={editor.name}
-          onNameChange={(name) => setEditorField("name", name)}
+          onNameChange={(name) => setEditorField('name', name)}
         />
 
         <div className="flex items-center gap-2 pt-2">
@@ -673,7 +651,7 @@ export function AutomationBuilder({
             type="text"
             value={editor.name}
             onChange={(e) => {
-              withHistory(() => setEditorField("name", e.target.value));
+              withHistory(() => setEditorField('name', e.target.value));
             }}
             placeholder="Rule name (e.g. Auto-archive newsletters)"
             className="flex-1 bg-bg-tertiary text-text-primary text-sm px-3 py-1.5 rounded-lg border border-border-primary outline-none focus:border-accent max-w-sm"
@@ -704,12 +682,7 @@ export function AutomationBuilder({
           <div className="w-px h-5 bg-border-primary mx-0.5" role="separator" />
           {/* Add action node */}
           {editor.actions.length < 8 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Plus size={14} />}
-              onClick={handleActionAdd}
-            >
+            <Button variant="ghost" size="sm" icon={<Plus size={14} />} onClick={handleActionAdd}>
               Action
             </Button>
           )}
@@ -754,15 +727,13 @@ export function AutomationBuilder({
             size={1}
             color="rgba(120, 113, 108, 0.15)"
           />
-          <Controls
-            className="!bg-bg-secondary !border-border-primary !rounded-lg"
-          />
+          <Controls className="!bg-bg-secondary !border-border-primary !rounded-lg" />
           <MiniMap
             nodeColor={(n) => {
-              if (n.type === "trigger") return "#4f46e5";
-              if (n.type === "condition") return "#d97706";
-              if (n.type === "action") return "#059669";
-              return "#78716c";
+              if (n.type === 'trigger') return '#4f46e5';
+              if (n.type === 'condition') return '#d97706';
+              if (n.type === 'action') return '#059669';
+              return '#78716c';
             }}
             className="!bg-bg-secondary !border-border-primary !rounded-lg"
             maskColor="rgba(0,0,0,0.1)"

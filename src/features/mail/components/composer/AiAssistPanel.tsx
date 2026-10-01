@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import type { Editor } from "@tiptap/react";
-import { useTranslation } from "react-i18next";
-import { Wand2, Sparkles, ArrowDown, Briefcase } from "lucide-react";
-import { isAiAvailable } from "@shared/services/ai/providerManager";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { UpgradeBadge } from "@shared/components/ui/UpgradeBadge";
+import { useState, useEffect } from 'react';
+import type { Editor } from '@tiptap/react';
+import { useTranslation } from 'react-i18next';
+import { Wand2, Sparkles, ArrowDown, Briefcase } from 'lucide-react';
+import { isAiAvailable } from '@shared/services/ai/providerManager';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { UpgradeBadge } from '@shared/components/ui/UpgradeBadge';
 import {
   composeFromPrompt,
   generateReply,
   transformText,
   type TransformType,
-} from "@shared/services/ai/aiService";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { fetchRagContext } from "@shared/services/ai/ragContext";
+} from '@shared/services/ai/aiService';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { fetchRagContext } from '@shared/services/ai/ragContext';
 
 interface AiAssistPanelProps {
   editor: Editor | null;
@@ -22,8 +22,8 @@ interface AiAssistPanelProps {
 
 export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistPanelProps) {
   const { t } = useTranslation();
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
-  const [prompt, setPrompt] = useState("");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
+  const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -45,7 +45,9 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
           </div>
           <div>
             <p className="text-sm font-medium text-text-primary">AI Assistant</p>
-            <p className="text-xs text-text-tertiary">Upgrade to Pro to unlock AI-powered writing assistance</p>
+            <p className="text-xs text-text-tertiary">
+              Upgrade to Pro to unlock AI-powered writing assistance
+            </p>
           </div>
         </div>
         <UpgradeBadge variant="pro-only" size="sm" />
@@ -71,7 +73,7 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
         : prompt.trim();
       const result = await composeFromPrompt(enrichedPrompt);
       applyToEditor(result);
-      setPrompt("");
+      setPrompt('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('composer.aiGenerationFailed'));
     } finally {
@@ -85,17 +87,17 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
     setError(null);
     try {
       // Build a RAG query from thread subject + key terms
-      const ragQuery = threadMessages[0]?.slice(0, 200) ?? "";
+      const ragQuery = threadMessages[0]?.slice(0, 200) ?? '';
       const ragContext = await fetchRagContext(ragQuery);
       const instructions = prompt.trim()
-        ? `${prompt.trim()}${ragContext ? `\n\nRelevant context from your data:\n${ragContext.slice(0, 2000)}` : ""}`
+        ? `${prompt.trim()}${ragContext ? `\n\nRelevant context from your data:\n${ragContext.slice(0, 2000)}` : ''}`
         : ragContext
           ? `Use relevant context from your knowledge base:\n${ragContext.slice(0, 2000)}`
           : undefined;
 
       const result = await generateReply(threadMessages, instructions);
       applyToEditor(result);
-      setPrompt("");
+      setPrompt('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('composer.aiGenerationFailed'));
     } finally {
@@ -106,7 +108,7 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
   const handleTransform = async (type: TransformType) => {
     if (!editor || loading) return;
     const html = editor.getHTML();
-    if (!html || html === "<p></p>") return;
+    if (!html || html === '<p></p>') return;
     setLoading(true);
     setError(null);
     try {
@@ -133,13 +135,15 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               if (isReplyMode) handleGenerateReply();
               else handleCompose();
             }
           }}
-          placeholder={isReplyMode ? t('composer.instructionsForReply') : t('composer.describeWhatToWrite')}
+          placeholder={
+            isReplyMode ? t('composer.instructionsForReply') : t('composer.describeWhatToWrite')
+          }
           className="flex-1 px-2 py-1 text-xs bg-bg-tertiary border border-border-primary rounded outline-none focus:border-accent text-text-primary placeholder:text-text-tertiary"
           disabled={loading}
         />
@@ -149,7 +153,7 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
             disabled={loading || !threadMessages?.length}
             className="px-2 py-1 text-xs bg-accent text-white rounded hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center gap-1"
           >
-            {loading ? "..." : t('composer.generateReply')}
+            {loading ? '...' : t('composer.generateReply')}
           </button>
         ) : (
           <button
@@ -157,7 +161,7 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
             disabled={loading || !prompt.trim()}
             className="px-2 py-1 text-xs bg-accent text-white rounded hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center gap-1"
           >
-            {loading ? "..." : t('composer.generate')}
+            {loading ? '...' : t('composer.generate')}
           </button>
         )}
       </div>
@@ -168,26 +172,24 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
         <QuickAction
           icon={<Wand2 size={11} />}
           label={t('composer.improve')}
-          onClick={() => handleTransform("improve")}
+          onClick={() => handleTransform('improve')}
           disabled={loading}
         />
         <QuickAction
           icon={<ArrowDown size={11} />}
           label={t('composer.shorter')}
-          onClick={() => handleTransform("shorten")}
+          onClick={() => handleTransform('shorten')}
           disabled={loading}
         />
         <QuickAction
           icon={<Briefcase size={11} />}
           label={t('composer.formal')}
-          onClick={() => handleTransform("formalize")}
+          onClick={() => handleTransform('formalize')}
           disabled={loading}
         />
       </div>
 
-      {error && (
-        <p className="text-xs text-danger mt-1">{error}</p>
-      )}
+      {error && <p className="text-xs text-danger mt-1">{error}</p>}
     </div>
   );
 }

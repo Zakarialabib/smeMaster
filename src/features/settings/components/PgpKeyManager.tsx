@@ -1,19 +1,19 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { TextField } from "@shared/components/ui/TextField";
-import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
-import { KeyRound, Plus, Upload, Trash2, Copy, Download, Search, AlertCircle } from "lucide-react";
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { TextField } from '@shared/components/ui/TextField';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { KeyRound, Plus, Upload, Trash2, Copy, Download, Search, AlertCircle } from 'lucide-react';
 import {
   generatePgpKey,
   getPgpKeyInfo,
   listPgpKeys,
   deletePgpKeyById,
   importPgpKey,
-} from "@shared/services/pgp/pgpService";
-import type { DbPgpKey } from "@shared/services/pgp/pgpService";
+} from '@shared/services/pgp/pgpService';
+import type { DbPgpKey } from '@shared/services/pgp/pgpService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -24,7 +24,9 @@ function shortId(fp: string): string {
 function formatDate(ts: number): string {
   try {
     return new Date(ts).toLocaleDateString(undefined, {
-      year: "numeric", month: "short", day: "numeric",
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   } catch {
     return String(ts);
@@ -41,7 +43,7 @@ export function PgpKeyManager() {
   const [keys, setKeys] = useState<DbPgpKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Dialogs
   const [showGenerate, setShowGenerate] = useState(false);
@@ -61,21 +63,23 @@ export function PgpKeyManager() {
 
   // ── Generate form state ────────────────────────────────────────────────
   const [genForm, setGenForm] = useState({
-    name: "",
-    email: "",
-    comment: "",
-    passphrase: "",
-    confirmPassphrase: "",
-    keyType: "RSA4096",
+    name: '',
+    email: '',
+    comment: '',
+    passphrase: '',
+    confirmPassphrase: '',
+    keyType: 'RSA4096',
   });
   const [generating, setGenerating] = useState(false);
 
   // ── Import form state ──────────────────────────────────────────────────
-  const [importArmored, setImportArmored] = useState("");
+  const [importArmored, setImportArmored] = useState('');
   const [importFileName, setImportFileName] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importPreview, setImportPreview] = useState<{
-    keyId: string; fingerprint: string; userId: string;
+    keyId: string;
+    fingerprint: string;
+    userId: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -105,8 +109,8 @@ export function PgpKeyManager() {
     return keys.filter(
       (k) =>
         k.key_id.toLowerCase().includes(q) ||
-        (k.fingerprint ?? "").toLowerCase().includes(q) ||
-        (k.user_id ?? "").toLowerCase().includes(q),
+        (k.fingerprint ?? '').toLowerCase().includes(q) ||
+        (k.user_id ?? '').toLowerCase().includes(q),
     );
   }, [keys, searchQuery]);
 
@@ -122,28 +126,24 @@ export function PgpKeyManager() {
     setGenerating(true);
     setError(null);
     try {
-      const commentPart = genForm.comment.trim()
-        ? ` (${genForm.comment.trim()})`
-        : "";
+      const commentPart = genForm.comment.trim() ? ` (${genForm.comment.trim()})` : '';
       const userId = `${genForm.name.trim()}${commentPart} <${genForm.email.trim()}>`;
 
       const [publicArmored, privateArmored] = await generatePgpKey(userId, genForm.passphrase);
       const info = await getPgpKeyInfo(publicArmored);
 
       // Import into DB
-      await importPgpKey(
-        activeAccountId,
-        publicArmored,
-        privateArmored,
-        undefined,
-        info.user_id,
-      );
+      await importPgpKey(activeAccountId, publicArmored, privateArmored, undefined, info.user_id);
 
-      showNotif(t("pgp.generateSuccess"));
+      showNotif(t('pgp.generateSuccess'));
       setShowGenerate(false);
       setGenForm({
-        name: "", email: "", comment: "",
-        passphrase: "", confirmPassphrase: "", keyType: "RSA4096",
+        name: '',
+        email: '',
+        comment: '',
+        passphrase: '',
+        confirmPassphrase: '',
+        keyType: 'RSA4096',
       });
       await loadKeys();
     } catch (err) {
@@ -156,18 +156,18 @@ export function PgpKeyManager() {
   // ── Export handlers ────────────────────────────────────────────────────
   const handleExportClipboard = async (key: DbPgpKey) => {
     try {
-      const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+      const { copyToClipboard } = await import('@shared/hooks/useClipboard');
       await copyToClipboard(key.public_key);
-      showNotif(t("pgp.exportSuccess"));
+      showNotif(t('pgp.exportSuccess'));
     } catch {
-      showNotif("Failed to copy to clipboard");
+      showNotif('Failed to copy to clipboard');
     }
   };
 
   const handleExportFile = (key: DbPgpKey) => {
-    const blob = new Blob([key.public_key], { type: "application/pgp-keys" });
+    const blob = new Blob([key.public_key], { type: 'application/pgp-keys' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `pgp-key-${shortId(key.fingerprint ?? key.key_id)}.asc`;
     a.click();
@@ -181,7 +181,7 @@ export function PgpKeyManager() {
     setError(null);
     try {
       await deletePgpKeyById(deleteTarget.id);
-      showNotif(t("pgp.deleteSuccess"));
+      showNotif(t('pgp.deleteSuccess'));
       setDeleteTarget(null);
       await loadKeys();
     } catch (err) {
@@ -202,7 +202,7 @@ export function PgpKeyManager() {
       // Clear preview — user must click "preview"
       setImportPreview(null);
     } catch {
-      showNotif("Failed to read file");
+      showNotif('Failed to read file');
     }
   };
 
@@ -231,9 +231,9 @@ export function PgpKeyManager() {
     try {
       const info = await getPgpKeyInfo(importArmored.trim());
       await importPgpKey(activeAccountId, importArmored.trim(), undefined, undefined, info.user_id);
-      showNotif(t("pgp.importSuccess"));
+      showNotif(t('pgp.importSuccess'));
       setShowImport(false);
-      setImportArmored("");
+      setImportArmored('');
       setImportFileName(null);
       setImportPreview(null);
       await loadKeys();
@@ -250,13 +250,13 @@ export function PgpKeyManager() {
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
           <KeyRound size={12} />
-          {t("pgp.hasPrivateKey")}
+          {t('pgp.hasPrivateKey')}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-bg-tertiary px-2 py-0.5 text-xs text-text-tertiary">
-        {t("pgp.publicOnly")}
+        {t('pgp.publicOnly')}
       </span>
     );
   };
@@ -266,13 +266,23 @@ export function PgpKeyManager() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-text-tertiary">{t("pgp.pageDescription")}</p>
+        <p className="text-xs text-text-tertiary">{t('pgp.pageDescription')}</p>
         <div className="flex items-center gap-1.5">
-          <Button variant="secondary" size="sm" icon={<Plus size={14} />} onClick={() => setShowGenerate(true)}>
-            {t("pgp.generateKey")}
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Plus size={14} />}
+            onClick={() => setShowGenerate(true)}
+          >
+            {t('pgp.generateKey')}
           </Button>
-          <Button variant="secondary" size="sm" icon={<Upload size={14} />} onClick={() => setShowImport(true)}>
-            {t("pgp.importKey")}
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Upload size={14} />}
+            onClick={() => setShowImport(true)}
+          >
+            {t('pgp.importKey')}
           </Button>
         </div>
       </div>
@@ -289,19 +299,27 @@ export function PgpKeyManager() {
         <div className="flex items-start gap-2 rounded-md bg-danger/10 px-3 py-2 text-xs text-danger">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-          <button className="ms-auto text-danger/60 hover:text-danger" onClick={() => setError(null)}>×</button>
+          <button
+            className="ms-auto text-danger/60 hover:text-danger"
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
         </div>
       )}
 
       {/* Search */}
       {keys.length > 0 && (
         <div className="relative">
-          <Search size={14} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            size={14}
+            className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("pgp.searchKeys")}
+            placeholder={t('pgp.searchKeys')}
             className="w-full rounded-md border border-border-primary bg-bg-tertiary py-1.5 ps-8 pe-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
           />
         </div>
@@ -334,7 +352,7 @@ export function PgpKeyManager() {
                     icon={<Copy size={13} />}
                     iconOnly
                     onClick={() => handleExportClipboard(key)}
-                    title={t("pgp.exportToClipboard")}
+                    title={t('pgp.exportToClipboard')}
                   />
                   <Button
                     variant="ghost"
@@ -342,7 +360,7 @@ export function PgpKeyManager() {
                     icon={<Download size={13} />}
                     iconOnly
                     onClick={() => handleExportFile(key)}
-                    title={t("pgp.exportToFile")}
+                    title={t('pgp.exportToFile')}
                   />
                   <Button
                     variant="ghost"
@@ -350,7 +368,7 @@ export function PgpKeyManager() {
                     icon={<Trash2 size={13} />}
                     iconOnly
                     onClick={() => setDeleteTarget(key)}
-                    title={t("pgp.deleteKey")}
+                    title={t('pgp.deleteKey')}
                   />
                 </div>
               </div>
@@ -359,20 +377,19 @@ export function PgpKeyManager() {
               <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-text-secondary">
                 {key.key_id && (
                   <span>
-                    <span className="text-text-tertiary">{t("pgp.keyId")}:</span>{" "}
+                    <span className="text-text-tertiary">{t('pgp.keyId')}:</span>{' '}
                     <span className="font-mono">{key.key_id}</span>
                   </span>
                 )}
                 <span>
-                  <span className="text-text-tertiary">{t("pgp.userId")}:</span>{" "}
-                  {key.user_id}
+                  <span className="text-text-tertiary">{t('pgp.userId')}:</span> {key.user_id}
                 </span>
                 <span>
-                  <span className="text-text-tertiary">{t("pgp.createdLabel")}:</span>{" "}
+                  <span className="text-text-tertiary">{t('pgp.createdLabel')}:</span>{' '}
                   {formatDate(key.created_at)}
                 </span>
-                <span>{t("pgp.algorithms" as any)}: RSA 4096</span>
-                <span>{t("pgp.noExpiry")}</span>
+                <span>{t('pgp.algorithms' as any)}: RSA 4096</span>
+                <span>{t('pgp.noExpiry')}</span>
               </div>
             </div>
           ))}
@@ -381,14 +398,24 @@ export function PgpKeyManager() {
         /* Empty state */
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border-primary py-12 text-text-tertiary">
           <KeyRound size={40} strokeWidth={1} className="mb-3 opacity-40" />
-          <p className="text-sm font-medium">{t("pgp.emptyTitle")}</p>
-          <p className="mt-1 text-xs">{t("pgp.emptySubtitle")}</p>
+          <p className="text-sm font-medium">{t('pgp.emptyTitle')}</p>
+          <p className="mt-1 text-xs">{t('pgp.emptySubtitle')}</p>
           <div className="mt-4 flex gap-2">
-            <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={() => setShowGenerate(true)}>
-              {t("pgp.generateKey")}
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} />}
+              onClick={() => setShowGenerate(true)}
+            >
+              {t('pgp.generateKey')}
             </Button>
-            <Button variant="secondary" size="sm" icon={<Upload size={14} />} onClick={() => setShowImport(true)}>
-              {t("pgp.importKey")}
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Upload size={14} />}
+              onClick={() => setShowImport(true)}
+            >
+              {t('pgp.importKey')}
             </Button>
           </div>
         </div>
@@ -398,34 +425,32 @@ export function PgpKeyManager() {
       <Modal
         isOpen={showGenerate}
         onClose={() => setShowGenerate(false)}
-        title={t("pgp.generateKeyTitle")}
+        title={t('pgp.generateKeyTitle')}
         width="w-96"
       >
         <div className="space-y-3 p-4">
           <div className="grid grid-cols-2 gap-3">
             <TextField
-              label={t("pgp.nameLabel")}
+              label={t('pgp.nameLabel')}
               placeholder="Alice"
               value={genForm.name}
               onChange={(e) => setGenForm((f) => ({ ...f, name: e.target.value }))}
             />
             <TextField
-              label={t("pgp.emailLabel")}
+              label={t('pgp.emailLabel')}
               placeholder="alice@example.com"
               value={genForm.email}
               onChange={(e) => setGenForm((f) => ({ ...f, email: e.target.value }))}
             />
           </div>
           <TextField
-            label={t("pgp.comment")}
+            label={t('pgp.comment')}
             placeholder="Optional comment"
             value={genForm.comment}
             onChange={(e) => setGenForm((f) => ({ ...f, comment: e.target.value }))}
           />
           <div>
-            <label className="mb-1.5 block text-sm text-text-secondary">
-              {t("pgp.algorithm")}
-            </label>
+            <label className="mb-1.5 block text-sm text-text-secondary">{t('pgp.algorithm')}</label>
             <select
               value={genForm.keyType}
               onChange={(e) => setGenForm((f) => ({ ...f, keyType: e.target.value }))}
@@ -438,19 +463,19 @@ export function PgpKeyManager() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <TextField
-              label={t("pgp.passphrase")}
+              label={t('pgp.passphrase')}
               type="password"
               value={genForm.passphrase}
               onChange={(e) => setGenForm((f) => ({ ...f, passphrase: e.target.value }))}
             />
             <TextField
-              label={t("pgp.confirmPassphrase")}
+              label={t('pgp.confirmPassphrase')}
               type="password"
               value={genForm.confirmPassphrase}
               onChange={(e) => setGenForm((f) => ({ ...f, confirmPassphrase: e.target.value }))}
               error={
                 genForm.confirmPassphrase && genForm.passphrase !== genForm.confirmPassphrase
-                  ? t("pgp.passphraseMismatch")
+                  ? t('pgp.passphraseMismatch')
                   : undefined
               }
             />
@@ -458,14 +483,14 @@ export function PgpKeyManager() {
 
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setShowGenerate(false)}>
-              {t("pgp.cancel")}
+              {t('pgp.cancel')}
             </Button>
             <Button
               variant="primary"
               onClick={handleGenerate}
               disabled={!canGenerate || generating}
             >
-              {generating ? t("pgp.generateProgress") : t("pgp.confirmGenerate")}
+              {generating ? t('pgp.generateProgress') : t('pgp.confirmGenerate')}
             </Button>
           </div>
         </div>
@@ -474,20 +499,28 @@ export function PgpKeyManager() {
       {/* ── Import Key Dialog ───────────────────────────────────────────── */}
       <Modal
         isOpen={showImport}
-        onClose={() => { setShowImport(false); setImportArmored(""); setImportFileName(null); setImportPreview(null); }}
-        title={t("pgp.importKeyTitle")}
+        onClose={() => {
+          setShowImport(false);
+          setImportArmored('');
+          setImportFileName(null);
+          setImportPreview(null);
+        }}
+        title={t('pgp.importKeyTitle')}
         width="w-96"
       >
         <div className="space-y-3 p-4">
           {/* Paste area */}
           <div>
             <label className="mb-1.5 block text-sm text-text-secondary">
-              {t("pgp.importPasteLabel")}
+              {t('pgp.importPasteLabel')}
             </label>
             <textarea
               value={importArmored}
-              onChange={(e) => { setImportArmored(e.target.value); setImportPreview(null); }}
-              placeholder={t("pgp.importPastePlaceholder")}
+              onChange={(e) => {
+                setImportArmored(e.target.value);
+                setImportPreview(null);
+              }}
+              placeholder={t('pgp.importPastePlaceholder')}
               rows={5}
               className="w-full rounded-md border border-border-primary bg-bg-tertiary px-3 py-1.5 text-xs font-mono text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
             />
@@ -496,7 +529,7 @@ export function PgpKeyManager() {
           {/* File upload */}
           <div>
             <label className="mb-1.5 block text-sm text-text-secondary">
-              {t("pgp.importFileLabel")}
+              {t('pgp.importFileLabel')}
             </label>
             <input
               ref={fileInputRef}
@@ -512,7 +545,7 @@ export function PgpKeyManager() {
                 icon={<Upload size={14} />}
                 onClick={() => fileInputRef.current?.click()}
               >
-                {importFileName ?? t("pgp.importKey")}
+                {importFileName ?? t('pgp.importKey')}
               </Button>
               {importFileName && (
                 <span className="truncate text-xs text-text-tertiary">{importFileName}</span>
@@ -523,20 +556,27 @@ export function PgpKeyManager() {
           {/* Preview */}
           {importPreview && (
             <div className="rounded-md bg-bg-tertiary p-2 text-xs text-text-secondary space-y-1">
-              <p><span className="text-text-tertiary">{t("pgp.keyId")}:</span> {importPreview.keyId}</p>
-              <p className="font-mono break-all">{t("pgp.fingerprint")}: {importPreview.fingerprint}</p>
+              <p>
+                <span className="text-text-tertiary">{t('pgp.keyId')}:</span> {importPreview.keyId}
+              </p>
+              <p className="font-mono break-all">
+                {t('pgp.fingerprint')}: {importPreview.fingerprint}
+              </p>
             </div>
           )}
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-1">
-            <Button variant="secondary" onClick={() => {
-              setShowImport(false);
-              setImportArmored("");
-              setImportFileName(null);
-              setImportPreview(null);
-            }}>
-              {t("pgp.cancel")}
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowImport(false);
+                setImportArmored('');
+                setImportFileName(null);
+                setImportPreview(null);
+              }}
+            >
+              {t('pgp.cancel')}
             </Button>
             {!importPreview ? (
               <Button
@@ -544,15 +584,11 @@ export function PgpKeyManager() {
                 onClick={handleImportPreview}
                 disabled={!importArmored.trim() || importing}
               >
-                {importing ? t("pgp.importParsing") : t("pgp.importKey")}
+                {importing ? t('pgp.importParsing') : t('pgp.importKey')}
               </Button>
             ) : (
-              <Button
-                variant="primary"
-                onClick={handleImportConfirm}
-                disabled={importing}
-              >
-                {importing ? t("pgp.importParsing") : t("pgp.confirmImport")}
+              <Button variant="primary" onClick={handleImportConfirm} disabled={importing}>
+                {importing ? t('pgp.importParsing') : t('pgp.confirmImport')}
               </Button>
             )}
           </div>
@@ -564,9 +600,9 @@ export function PgpKeyManager() {
         isOpen={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirm}
-        title={t("pgp.deleteKey")}
-        message={`${t("pgp.deleteConfirm")} ${shortId(deleteTarget?.fingerprint ?? deleteTarget?.key_id ?? "")}`}
-        confirmLabel={t("pgp.deleteKey")}
+        title={t('pgp.deleteKey')}
+        message={`${t('pgp.deleteConfirm')} ${shortId(deleteTarget?.fingerprint ?? deleteTarget?.key_id ?? '')}`}
+        confirmLabel={t('pgp.deleteKey')}
         variant="danger"
         loading={deleting}
       />

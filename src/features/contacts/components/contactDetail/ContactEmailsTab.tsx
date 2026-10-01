@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Mail, MessageSquare, Clock, AlertCircle, RefreshCw } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-import { getRecentThreadsWithContact } from "@features/contacts/db/contacts";
-import { formatRelativeDate } from "@shared/utils/date";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { useState, useEffect } from 'react';
+import { Mail, MessageSquare, Clock, AlertCircle, RefreshCw } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { getRecentThreadsWithContact } from '@features/contacts/db/contacts';
+import { formatRelativeDate } from '@shared/utils/date';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 export interface ContactEmailsTabProps {
   email: string;
@@ -28,7 +28,7 @@ export function ContactEmailsTab({ email }: ContactEmailsTabProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load emails");
+          setError(err instanceof Error ? err.message : 'Failed to load emails');
         }
       })
       .finally(() => {
@@ -71,7 +71,9 @@ export function ContactEmailsTab({ email }: ContactEmailsTabProps) {
             setError(null);
             getRecentThreadsWithContact(email, 20)
               .then(setThreads)
-              .catch((err) => setError(err instanceof Error ? err.message : "Failed to load emails"))
+              .catch((err) =>
+                setError(err instanceof Error ? err.message : 'Failed to load emails'),
+              )
               .finally(() => setLoading(false));
           }}
           className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
@@ -102,8 +104,8 @@ export function ContactEmailsTab({ email }: ContactEmailsTabProps) {
           key={thread.thread_id}
           onClick={() =>
             navigate({
-              to: "/mail/$label/thread/$threadId",
-              params: { label: "inbox", threadId: thread.thread_id },
+              to: '/mail/$label/thread/$threadId',
+              params: { label: 'inbox', threadId: thread.thread_id },
             })
           }
           className="flex items-start gap-3 w-full px-5 py-3 hover:bg-bg-hover transition-colors text-start"
@@ -113,7 +115,7 @@ export function ContactEmailsTab({ email }: ContactEmailsTabProps) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-text-primary truncate">
-              {thread.subject ?? "(No subject)"}
+              {thread.subject ?? '(No subject)'}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               {thread.last_message_at && (

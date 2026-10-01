@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Columns3, RotateCcw } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import {
-  useColumnConfigStore,
-  type ColumnConfigKey,
-} from "@shared/stores/columnConfigStore";
+import { useEffect, useRef, useState } from 'react';
+import { Columns3, RotateCcw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useColumnConfigStore, type ColumnConfigKey } from '@shared/stores/columnConfigStore';
 
 export interface ColumnPickerProps {
   /** Which view's column set to edit — must match a key in `columnConfigStore`. */
@@ -35,13 +32,13 @@ export function ColumnPicker({ configKey, compact = false }: ColumnPickerProps) 
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
 
@@ -52,24 +49,22 @@ export function ColumnPicker({ configKey, compact = false }: ColumnPickerProps) 
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={t("columns.title")}
-        title={t("columns.title")}
+        aria-label={t('columns.title')}
+        title={t('columns.title')}
         className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs transition-colors ${
           open
-            ? "border-accent/40 bg-accent/10 text-accent"
-            : "border-border-primary text-text-tertiary hover:text-text-primary"
+            ? 'border-accent/40 bg-accent/10 text-accent'
+            : 'border-border-primary text-text-tertiary hover:text-text-primary'
         }`}
       >
         <Columns3 size={14} />
-        {!compact && (
-          <span className="hidden sm:inline">{t("columns.title")}</span>
-        )}
+        {!compact && <span className="hidden sm:inline">{t('columns.title')}</span>}
       </button>
 
       {open && (
         <div
           role="menu"
-          aria-label={t("columns.title")}
+          aria-label={t('columns.title')}
           className="absolute end-0 z-50 mt-1 min-w-44 rounded-lg border border-border-primary bg-bg-primary p-1.5 shadow-lg"
         >
           {columns.map((col) => (
@@ -93,7 +88,7 @@ export function ColumnPicker({ configKey, compact = false }: ColumnPickerProps) 
             className="mt-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-text-tertiary transition-colors hover:bg-bg-secondary hover:text-text-primary"
           >
             <RotateCcw size={12} />
-            {t("columns.reset")}
+            {t('columns.reset')}
           </button>
         </div>
       )}

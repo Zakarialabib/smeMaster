@@ -412,8 +412,7 @@ export async function getContactEmailStats(email: string): Promise<ContactEmailS
     [email],
   );
   const row = rows[0] as
-    | { cnt: number; first_date: number | null; last_date: number | null }
-    | undefined;
+    { cnt: number; first_date: number | null; last_date: number | null } | undefined;
   return {
     emailCount: row?.cnt ?? 0,
     firstEmail: row?.first_date ?? null,

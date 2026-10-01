@@ -1,14 +1,6 @@
-import { useNavigate } from "@tanstack/react-router";
-import { toast } from "@shared/stores/toastStore";
-import {
-  Mail,
-  Users,
-  ListChecks,
-  BarChart3,
-  CalendarDays,
-  Settings,
-  Sparkles,
-} from "lucide-react";
+import { useNavigate } from '@tanstack/react-router';
+import { toast } from '@shared/stores/toastStore';
+import { Mail, Users, ListChecks, BarChart3, CalendarDays, Settings, Sparkles } from 'lucide-react';
 
 interface FeatureCard {
   id: string;
@@ -21,52 +13,52 @@ interface FeatureCard {
 
 const FEATURES: FeatureCard[] = [
   {
-    id: "mail",
+    id: 'mail',
     icon: Mail,
-    label: "Mail",
-    description: "Inbox, send & manage emails",
-    path: "/mail/inbox",
-    color: "from-blue-500/20 to-blue-600/10",
+    label: 'Mail',
+    description: 'Inbox, send & manage emails',
+    path: '/mail/inbox',
+    color: 'from-blue-500/20 to-blue-600/10',
   },
   {
-    id: "crm",
+    id: 'crm',
     icon: Users,
-    label: "CRM",
-    description: "Contacts, tasks & campaigns",
-    path: "/people",
-    color: "from-emerald-500/20 to-emerald-600/10",
+    label: 'CRM',
+    description: 'Contacts, tasks & campaigns',
+    path: '/people',
+    color: 'from-emerald-500/20 to-emerald-600/10',
   },
   {
-    id: "tasks",
+    id: 'tasks',
     icon: ListChecks,
-    label: "Tasks",
-    description: "To-dos & follow-ups",
-    path: "/tasks",
-    color: "from-amber-500/20 to-amber-600/10",
+    label: 'Tasks',
+    description: 'To-dos & follow-ups',
+    path: '/tasks',
+    color: 'from-amber-500/20 to-amber-600/10',
   },
   {
-    id: "campaigns",
+    id: 'campaigns',
     icon: BarChart3,
-    label: "Campaigns",
-    description: "Email marketing & analytics",
-    path: "/campaigns",
-    color: "from-rose-500/20 to-rose-600/10",
+    label: 'Campaigns',
+    description: 'Email marketing & analytics',
+    path: '/campaigns',
+    color: 'from-rose-500/20 to-rose-600/10',
   },
   {
-    id: "calendar",
+    id: 'calendar',
     icon: CalendarDays,
-    label: "Calendar",
-    description: "Schedule & events",
-    path: "/calendar",
-    color: "from-violet-500/20 to-violet-600/10",
+    label: 'Calendar',
+    description: 'Schedule & events',
+    path: '/calendar',
+    color: 'from-violet-500/20 to-violet-600/10',
   },
   {
-    id: "settings",
+    id: 'settings',
     icon: Settings,
-    label: "Settings",
-    description: "Account & preferences",
-    path: "/settings/mobile",
-    color: "from-slate-500/20 to-slate-600/10",
+    label: 'Settings',
+    description: 'Account & preferences',
+    path: '/settings/mobile',
+    color: 'from-slate-500/20 to-slate-600/10',
   },
 ];
 

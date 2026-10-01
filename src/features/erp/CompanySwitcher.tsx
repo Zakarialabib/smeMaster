@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
-import {
-  useCompanyStore,
-  getActiveCompany,
-  companyInitials,
-} from './companyStore';
+import { useCompanyStore, getActiveCompany, companyInitials } from './companyStore';
 import { DemoBadge } from './erpShared';
 import { notify } from '@shared/services/notifications/toastHelper';
 
@@ -91,18 +87,14 @@ export default function CompanySwitcher() {
                 >
                   <span
                     className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                      isActive
-                        ? 'bg-accent text-white'
-                        : 'bg-bg-tertiary text-text-secondary'
+                      isActive ? 'bg-accent text-white' : 'bg-bg-tertiary text-text-secondary'
                     }`}
                   >
                     {companyInitials(c.name)}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-primary truncate">{c.name}</p>
-                    <p className="text-[11px] text-text-tertiary truncate">
-                      ICE {c.ice}
-                    </p>
+                    <p className="text-[11px] text-text-tertiary truncate">ICE {c.ice}</p>
                   </div>
                   {isActive ? (
                     <Check size={16} className="text-accent shrink-0" />

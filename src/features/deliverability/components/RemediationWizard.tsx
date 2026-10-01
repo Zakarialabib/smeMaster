@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { ChevronRight, ChevronDown, AlertTriangle, Copy } from "lucide-react";
-import type { RemediationNode } from "@features/deliverability/services/domainHealthService";
+import { useState } from 'react';
+import { ChevronRight, ChevronDown, AlertTriangle, Copy } from 'lucide-react';
+import type { RemediationNode } from '@features/deliverability/services/domainHealthService';
 
 interface Props {
   remediation: RemediationNode[];
 }
 
 function formatFailureType(failureType: string): string {
-  return failureType.replace(/([A-Z])/g, " $1").trim();
+  return failureType.replace(/([A-Z])/g, ' $1').trim();
 }
 
 export function RemediationWizard({ remediation }: Props) {
@@ -18,7 +18,9 @@ export function RemediationWizard({ remediation }: Props) {
       <div className="rounded-lg border border-border-primary bg-success/10 p-4">
         <div className="flex items-center gap-2 text-success">
           <span className="text-base leading-none">&#10003;</span>
-          <span className="text-sm font-medium">No issues found — your deliverability configuration looks good</span>
+          <span className="text-sm font-medium">
+            No issues found — your deliverability configuration looks good
+          </span>
         </div>
       </div>
     );
@@ -43,20 +45,26 @@ export function RemediationWizard({ remediation }: Props) {
                 className="w-full flex items-center justify-between px-4 py-3 bg-bg-secondary hover:bg-bg-hover transition-colors text-start"
               >
                 <div className="flex items-center gap-2">
-                  {isExpanded ? <ChevronDown size={14} className="shrink-0 text-text-tertiary" /> : <ChevronRight size={14} className="shrink-0 text-text-tertiary" />}
+                  {isExpanded ? (
+                    <ChevronDown size={14} className="shrink-0 text-text-tertiary" />
+                  ) : (
+                    <ChevronRight size={14} className="shrink-0 text-text-tertiary" />
+                  )}
                   <span className="text-sm font-medium text-text-primary">
                     {formatFailureType(node.failure_type)}
                   </span>
                   <span className="text-xs text-text-tertiary bg-bg-tertiary px-1.5 py-0.5 rounded">
-                    {node.fix_paths.length} fix{node.fix_paths.length !== 1 ? "es" : ""}
+                    {node.fix_paths.length} fix{node.fix_paths.length !== 1 ? 'es' : ''}
                   </span>
                 </div>
-                <span className="text-xs text-text-tertiary">{isExpanded ? "Hide" : "Show"}</span>
+                <span className="text-xs text-text-tertiary">{isExpanded ? 'Hide' : 'Show'}</span>
               </button>
 
               {isExpanded && (
                 <div className="px-4 py-3 space-y-4 border-t border-border-primary">
-                  <p className="text-sm text-text-secondary leading-relaxed">{node.explanation.en}</p>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    {node.explanation.en}
+                  </p>
 
                   {node.impact.length > 0 && (
                     <div>
@@ -68,11 +76,11 @@ export function RemediationWizard({ remediation }: Props) {
                           <div key={i} className="flex items-center gap-2 text-xs">
                             <span
                               className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
-                                imp.severity === "Critical" || imp.severity === "critical"
-                                  ? "bg-danger"
-                                  : imp.severity === "Warning" || imp.severity === "warning"
-                                  ? "bg-warning"
-                                  : "bg-text-tertiary"
+                                imp.severity === 'Critical' || imp.severity === 'critical'
+                                  ? 'bg-danger'
+                                  : imp.severity === 'Warning' || imp.severity === 'warning'
+                                    ? 'bg-warning'
+                                    : 'bg-text-tertiary'
                               }`}
                             />
                             <span className="font-medium text-text-primary">{imp.provider}:</span>
@@ -105,7 +113,11 @@ export function RemediationWizard({ remediation }: Props) {
                                     {step.copy_value}
                                   </code>
                                   <button
-                                    onClick={() => import("@shared/hooks/useClipboard").then(({ copyToClipboard }) => copyToClipboard(step.copy_value!))}
+                                    onClick={() =>
+                                      import('@shared/hooks/useClipboard').then(
+                                        ({ copyToClipboard }) => copyToClipboard(step.copy_value!),
+                                      )
+                                    }
                                     className="shrink-0 p-1 text-text-tertiary hover:text-text-primary transition-colors"
                                     title="Copy value"
                                   >

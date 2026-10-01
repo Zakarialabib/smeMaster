@@ -1,20 +1,33 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
 import {
-  Plus, Trash2, Pencil, ChevronDown, Eye, Edit3, Copy, Check,
-  Download, Upload, FileText, BarChart3, Clock, ArrowUpDown,
-  BetweenHorizonalEnd, Code,
-} from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { EditorToolbar } from "@features/mail/components/composer/EditorToolbar";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { UpgradeBadge } from "@shared/components/ui/UpgradeBadge";
+  Plus,
+  Trash2,
+  Pencil,
+  ChevronDown,
+  Eye,
+  Edit3,
+  Copy,
+  Check,
+  Download,
+  Upload,
+  FileText,
+  BarChart3,
+  Clock,
+  ArrowUpDown,
+  BetweenHorizonalEnd,
+  Code,
+} from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { EditorToolbar } from '@features/mail/components/composer/EditorToolbar';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { UpgradeBadge } from '@shared/components/ui/UpgradeBadge';
 import {
   getTemplatesPaginated,
   countTemplatesCount,
@@ -26,13 +39,18 @@ import {
   deleteCategory,
   type DbTemplate,
   type DbTemplateCategory,
-} from "@features/mail/db/templates";
-import { TEMPLATE_VARIABLES } from "@shared/utils/templateVariables";
-import { exportTemplateToJson, parseImportedTemplate, importFromFile, toExportableJson } from "@features/campaigns/services/templateShare";
-import { usePagination } from "@shared/hooks/usePagination";
-import { PaginationControls } from "@shared/components/ui/PaginationControls";
+} from '@features/mail/db/templates';
+import { TEMPLATE_VARIABLES } from '@shared/utils/templateVariables';
+import {
+  exportTemplateToJson,
+  parseImportedTemplate,
+  importFromFile,
+  toExportableJson,
+} from '@features/campaigns/services/templateShare';
+import { usePagination } from '@shared/hooks/usePagination';
+import { PaginationControls } from '@shared/components/ui/PaginationControls';
 
-type AnalyticsSort = "usage" | "recent";
+type AnalyticsSort = 'usage' | 'recent';
 
 export function TemplateManager() {
   const { t } = useTranslation();
@@ -40,53 +58,57 @@ export function TemplateManager() {
   const [categories, setCategories] = useState<DbTemplateCategory[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [shortcut, setShortcut] = useState("");
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [shortcut, setShortcut] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [conditionalBlocks, setConditionalBlocks] = useState("");
+  const [conditionalBlocks, setConditionalBlocks] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [editCatName, setEditCatName] = useState("");
-  const [newCatName, setNewCatName] = useState("");
+  const [editCatName, setEditCatName] = useState('');
+  const [newCatName, setNewCatName] = useState('');
   const [showCondBuilder, setShowCondBuilder] = useState(false);
   const [importPreviewData, setImportPreviewData] = useState<string | null>(null);
-  const [importPreviewName, setImportPreviewName] = useState("");
-  const [importPreviewSubject, setImportPreviewSubject] = useState("");
-  const [importPreviewBody, setImportPreviewBody] = useState("");
-  const [importPreviewCat, setImportPreviewCat] = useState("");
+  const [importPreviewName, setImportPreviewName] = useState('');
+  const [importPreviewSubject, setImportPreviewSubject] = useState('');
+  const [importPreviewBody, setImportPreviewBody] = useState('');
+  const [importPreviewCat, setImportPreviewCat] = useState('');
 
   // Editor instance (Tiptap)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: { openOnClick: false } }),
       Image.configure({ inline: true, allowBase64: true }),
-      Placeholder.configure({ placeholder: t("composer.writeYourMessage") }),
+      Placeholder.configure({ placeholder: t('composer.writeYourMessage') }),
     ],
-    content: "",
+    content: '',
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs",
+        class:
+          'prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs',
       },
     },
   });
 
   // Paginated template loading
-  const paginationOptions = useMemo(() => ({
-    fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
-      if (!activeAccountId) return { items: [], total: 0 };
-      const [items, total] = await Promise.all([
-        getTemplatesPaginated(activeAccountId, limit, offset),
-        countTemplatesCount(),
-      ]);
-      return { items, total };
-    },
-    pageSize: 25,
-    deps: [activeAccountId],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [activeAccountId]);
+  const paginationOptions = useMemo(
+    () => ({
+      fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
+        if (!activeAccountId) return { items: [], total: 0 };
+        const [items, total] = await Promise.all([
+          getTemplatesPaginated(activeAccountId, limit, offset),
+          countTemplatesCount(),
+        ]);
+        return { items, total };
+      },
+      pageSize: 25,
+      deps: [activeAccountId],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }),
+    [activeAccountId],
+  );
 
   const {
     items: paginatedTemplates,
@@ -98,12 +120,16 @@ export function TemplateManager() {
     setPageSize: setTmplPageSize,
   } = usePagination(paginationOptions);
 
-  const canCreateTemplate = useFeatureFlagStore((s) => s.canCreate("paginatedTemplates", paginatedTemplates.length));
+  const canCreateTemplate = useFeatureFlagStore((s) =>
+    s.canCreate('paginatedTemplates', paginatedTemplates.length),
+  );
 
   // Load categories separately (non-paginated)
   useEffect(() => {
     if (activeAccountId) {
-      getCategories(activeAccountId).then(setCategories).catch(() => {});
+      getCategories(activeAccountId)
+        .then(setCategories)
+        .catch(() => {});
     }
   }, [activeAccountId]);
 
@@ -113,31 +139,34 @@ export function TemplateManager() {
   }, [paginatedTemplates]);
 
   const resetForm = useCallback(() => {
-    setName("");
-    setSubject("");
-    setShortcut("");
+    setName('');
+    setSubject('');
+    setShortcut('');
     setCategoryId(null);
-    setConditionalBlocks("");
+    setConditionalBlocks('');
     setEditingId(null);
     setShowForm(false);
     setPreviewMode(false);
     setCopied(false);
-    editor?.commands.setContent("");
+    editor?.commands.setContent('');
   }, [editor]);
 
-  const handleEdit = useCallback((tmpl: DbTemplate) => {
-    setEditingId(tmpl.id);
-    setName(tmpl.name);
-    setSubject(tmpl.subject ?? "");
-    setShortcut(tmpl.shortcut ?? "");
-    setCategoryId(tmpl.category_id);
-    setConditionalBlocks(tmpl.conditional_blocks_json ?? "");
-    setShowForm(true);
-    setPreviewMode(false);
-    setCopied(false);
-    setShowCondBuilder(false);
-    editor?.commands.setContent(tmpl.body_html);
-  }, [editor]);
+  const handleEdit = useCallback(
+    (tmpl: DbTemplate) => {
+      setEditingId(tmpl.id);
+      setName(tmpl.name);
+      setSubject(tmpl.subject ?? '');
+      setShortcut(tmpl.shortcut ?? '');
+      setCategoryId(tmpl.category_id);
+      setConditionalBlocks(tmpl.conditional_blocks_json ?? '');
+      setShowForm(true);
+      setPreviewMode(false);
+      setCopied(false);
+      setShowCondBuilder(false);
+      editor?.commands.setContent(tmpl.body_html);
+    },
+    [editor],
+  );
 
   const handleSave = useCallback(async () => {
     if (!activeAccountId || !editor || !name.trim()) return;
@@ -167,59 +196,76 @@ export function TemplateManager() {
 
     resetForm();
     await resetTemplates();
-    notify("Templates", editingId ? "Template updated." : "Template saved.");
-  }, [activeAccountId, editor, name, subject, shortcut, categoryId, conditionalBlocks, editingId, resetForm, resetTemplates]);
+    notify('Templates', editingId ? 'Template updated.' : 'Template saved.');
+  }, [
+    activeAccountId,
+    editor,
+    name,
+    subject,
+    shortcut,
+    categoryId,
+    conditionalBlocks,
+    editingId,
+    resetForm,
+    resetTemplates,
+  ]);
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteTemplate(id);
-    if (editingId === id) resetForm();
-    await resetTemplates();
-    notify("Templates", "Template deleted.");
-  }, [editingId, resetForm, resetTemplates]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteTemplate(id);
+      if (editingId === id) resetForm();
+      await resetTemplates();
+      notify('Templates', 'Template deleted.');
+    },
+    [editingId, resetForm, resetTemplates],
+  );
 
   const handleCopyHtml = useCallback(async () => {
-    const html = editor?.getHTML() ?? "";
-    const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+    const html = editor?.getHTML() ?? '';
+    const { copyToClipboard } = await import('@shared/hooks/useClipboard');
     await copyToClipboard(html);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [editor]);
 
-  const handleExport = useCallback((tmpl: DbTemplate) => {
-    const cat = categories.find((c) => c.id === tmpl.category_id);
-    const json = exportTemplateToJson({
-      name: tmpl.name,
-      subject: tmpl.subject,
-      body_html: tmpl.body_html,
-      shortcut: tmpl.shortcut,
-      categoryName: cat?.name ?? null,
-      conditional_blocks_json: tmpl.conditional_blocks_json,
-      usageCount: tmpl.usage_count,
-      lastUsedAt: tmpl.last_used_at,
-      createdAt: tmpl.created_at,
-    });
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${tmpl.name.replace(/\s+/g, "_")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [categories]);
+  const handleExport = useCallback(
+    (tmpl: DbTemplate) => {
+      const cat = categories.find((c) => c.id === tmpl.category_id);
+      const json = exportTemplateToJson({
+        name: tmpl.name,
+        subject: tmpl.subject,
+        body_html: tmpl.body_html,
+        shortcut: tmpl.shortcut,
+        categoryName: cat?.name ?? null,
+        conditional_blocks_json: tmpl.conditional_blocks_json,
+        usageCount: tmpl.usage_count,
+        lastUsedAt: tmpl.last_used_at,
+        createdAt: tmpl.created_at,
+      });
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tmpl.name.replace(/\s+/g, '_')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    [categories],
+  );
 
   const handleImport = useCallback(async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
       const parsed = await importFromFile(file);
       if (!parsed) return;
       setImportPreviewName(parsed.name);
-      setImportPreviewSubject(parsed.subject ?? "");
+      setImportPreviewSubject(parsed.subject ?? '');
       setImportPreviewBody(parsed.body_html);
-      setImportPreviewCat(parsed.category_name ?? "");
+      setImportPreviewCat(parsed.category_name ?? '');
       setImportPreviewData(toExportableJson(parsed));
     };
     input.click();
@@ -231,8 +277,11 @@ export function TemplateManager() {
     if (!parsed) return;
     // Guard against import when limit reached (e.g., if button was bypassed)
     const storeState = useFeatureFlagStore.getState();
-    if (!storeState.canCreate("paginatedTemplates", paginatedTemplates.length)) {
-      notify("Templates", "Template limit reached. Upgrade to Pro for unlimited paginatedTemplates.");
+    if (!storeState.canCreate('paginatedTemplates', paginatedTemplates.length)) {
+      notify(
+        'Templates',
+        'Template limit reached. Upgrade to Pro for unlimited paginatedTemplates.',
+      );
       setImportPreviewData(null);
       return;
     }
@@ -261,50 +310,59 @@ export function TemplateManager() {
     });
     setImportPreviewData(null);
     await resetTemplates();
-    notify("Templates", "Template imported successfully.");
+    notify('Templates', 'Template imported successfully.');
   }, [activeAccountId, importPreviewData, paginatedTemplates, categories, resetTemplates]);
 
-  const handleCategoryRename = useCallback(async (id: string) => {
-    if (!editCatName.trim()) return;
-    try {
-      await upsertCategory({ id, accountId: activeAccountId, name: editCatName.trim() });
-      setEditingCategoryId(null);
-      await resetTemplates();
-      notify("Templates", "Category renamed.");
-    } catch (err) {
-      console.error("Failed to rename category:", err);
-    }
-  }, [activeAccountId, editCatName, resetTemplates]);
+  const handleCategoryRename = useCallback(
+    async (id: string) => {
+      if (!editCatName.trim()) return;
+      try {
+        await upsertCategory({ id, accountId: activeAccountId, name: editCatName.trim() });
+        setEditingCategoryId(null);
+        await resetTemplates();
+        notify('Templates', 'Category renamed.');
+      } catch (err) {
+        console.error('Failed to rename category:', err);
+      }
+    },
+    [activeAccountId, editCatName, resetTemplates],
+  );
 
-  const handleCategoryDelete = useCallback(async (id: string) => {
-    try {
-      await deleteCategory(id);
-      await resetTemplates();
-      notify("Templates", "Category deleted.");
-    } catch (err) {
-      console.error("Failed to delete category:", err);
-    }
-  }, [resetTemplates]);
+  const handleCategoryDelete = useCallback(
+    async (id: string) => {
+      try {
+        await deleteCategory(id);
+        await resetTemplates();
+        notify('Templates', 'Category deleted.');
+      } catch (err) {
+        console.error('Failed to delete category:', err);
+      }
+    },
+    [resetTemplates],
+  );
 
   const handleAddCategory = useCallback(async () => {
     if (!activeAccountId || !newCatName.trim()) return;
     try {
       await upsertCategory({ accountId: activeAccountId, name: newCatName.trim() });
-      setNewCatName("");
+      setNewCatName('');
       await resetTemplates();
-      notify("Templates", "Category added.");
+      notify('Templates', 'Category added.');
     } catch (err) {
-      console.error("Failed to add category:", err);
+      console.error('Failed to add category:', err);
     }
   }, [activeAccountId, newCatName, resetTemplates]);
 
-  const paginatedTemplatesByCategory = useCallback((catId: string | null) => {
-    return paginatedTemplates.filter((t) => t.category_id === catId);
-  }, [paginatedTemplates]);
+  const paginatedTemplatesByCategory = useCallback(
+    (catId: string | null) => {
+      return paginatedTemplates.filter((t) => t.category_id === catId);
+    },
+    [paginatedTemplates],
+  );
 
   const uncategorized = paginatedTemplates.filter((t) => !t.category_id);
 
-  const templateHtml = editor?.getHTML() ?? "";
+  const templateHtml = editor?.getHTML() ?? '';
 
   return (
     <div className="space-y-4">
@@ -321,10 +379,10 @@ export function TemplateManager() {
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     paginatedTemplates.length >= 10
-                      ? "bg-warning"
+                      ? 'bg-warning'
                       : paginatedTemplates.length >= 7
-                        ? "bg-accent/70"
-                        : "bg-accent/40"
+                        ? 'bg-accent/70'
+                        : 'bg-accent/40'
                   }`}
                   style={{ width: `${Math.min((paginatedTemplates.length / 10) * 100, 100)}%` }}
                 />
@@ -342,7 +400,9 @@ export function TemplateManager() {
       </div>
       {/* Categories */}
       <div>
-        <h4 className="text-xs font-semibold text-text-secondary mb-2">{t("settings.categories")}</h4>
+        <h4 className="text-xs font-semibold text-text-secondary mb-2">
+          {t('settings.categories')}
+        </h4>
         <div className="space-y-2">
           {categories.map((cat) => (
             <div key={cat.id} className="border border-border-primary rounded-md">
@@ -355,24 +415,43 @@ export function TemplateManager() {
                       onChange={(e) => setEditCatName(e.target.value)}
                       className="flex-1 px-2 py-0.5 text-xs bg-bg-tertiary border border-border-primary rounded text-text-primary outline-none focus:border-accent"
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handleCategoryRename(cat.id);
-                        if (e.key === "Escape") setEditingCategoryId(null);
+                        if (e.key === 'Enter') handleCategoryRename(cat.id);
+                        if (e.key === 'Escape') setEditingCategoryId(null);
                       }}
                       autoFocus
                     />
-                    <Button variant="ghost" size="sm" onClick={() => handleCategoryRename(cat.id)} className="text-accent">OK</Button>
-                    <Button variant="ghost" size="sm" onClick={() => setEditingCategoryId(null)} className="text-text-tertiary">{t("common.cancel")}</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCategoryRename(cat.id)}
+                      className="text-accent"
+                    >
+                      OK
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingCategoryId(null)}
+                      className="text-text-tertiary"
+                    >
+                      {t('common.cancel')}
+                    </Button>
                   </div>
                 ) : (
                   <button
                     onClick={() => setExpandedCategory(expandedCategory === cat.id ? null : cat.id)}
                     className="flex items-center gap-1.5 text-sm text-text-primary font-medium"
                   >
-                    <ChevronDown size={12} className={`transition-transform ${expandedCategory === cat.id ? "" : "-rotate-90"}`} />
+                    <ChevronDown
+                      size={12}
+                      className={`transition-transform ${expandedCategory === cat.id ? '' : '-rotate-90'}`}
+                    />
                     {cat.icon && <span>{cat.icon}</span>}
                     {cat.name}
                     {cat.is_system === 1 && (
-                      <span className="text-[0.5rem] px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">{t("settings.tabGroupSystem")}</span>
+                      <span className="text-[0.5rem] px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
+                        {t('settings.tabGroupSystem')}
+                      </span>
                     )}
                   </button>
                 )}
@@ -382,7 +461,10 @@ export function TemplateManager() {
                     size="sm"
                     iconOnly
                     icon={<Pencil size={12} />}
-                    onClick={() => { setEditingCategoryId(cat.id); setEditCatName(cat.name); }}
+                    onClick={() => {
+                      setEditingCategoryId(cat.id);
+                      setEditCatName(cat.name);
+                    }}
                     aria-label="Rename category"
                   />
                   {cat.is_system !== 1 && (
@@ -401,7 +483,9 @@ export function TemplateManager() {
               {expandedCategory === cat.id && (
                 <div className="p-2 space-y-1">
                   {paginatedTemplatesByCategory(cat.id).length === 0 ? (
-                    <p className="text-xs text-text-tertiary px-2 py-1">{t("settings.noTemplatesInCategory")}</p>
+                    <p className="text-xs text-text-tertiary px-2 py-1">
+                      {t('settings.noTemplatesInCategory')}
+                    </p>
                   ) : (
                     paginatedTemplatesByCategory(cat.id).map((tmpl) => (
                       <TemplateListItem
@@ -417,7 +501,10 @@ export function TemplateManager() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => { setCategoryId(cat.id); setShowForm(true); }}
+                      onClick={() => {
+                        setCategoryId(cat.id);
+                        setShowForm(true);
+                      }}
                       className="px-2 py-1"
                     >
                       + Add template
@@ -441,9 +528,11 @@ export function TemplateManager() {
             type="text"
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
-            placeholder={t("settings.newCategoryName")}
+            placeholder={t('settings.newCategoryName')}
             className="flex-1 px-3 py-1.5 text-xs bg-bg-tertiary border border-border-primary rounded text-text-primary outline-none focus:border-accent"
-            onKeyDown={(e) => { if (e.key === "Enter") handleAddCategory(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAddCategory();
+            }}
           />
           <Button
             variant="primary"
@@ -451,7 +540,7 @@ export function TemplateManager() {
             disabled={!newCatName.trim()}
             icon={<Plus size={12} />}
           >
-            {t("settings.addCategory")}
+            {t('settings.addCategory')}
           </Button>
         </div>
       </div>
@@ -459,7 +548,9 @@ export function TemplateManager() {
       {/* Uncategorized paginatedTemplates */}
       {uncategorized.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold text-text-secondary mb-2">{t("settings.uncategorized")}</h4>
+          <h4 className="text-xs font-semibold text-text-secondary mb-2">
+            {t('settings.uncategorized')}
+          </h4>
           <div className="space-y-1">
             {uncategorized.map((tmpl) => (
               <TemplateListItem
@@ -481,9 +572,12 @@ export function TemplateManager() {
             variant="ghost"
             size="sm"
             icon={<Plus size={12} />}
-            onClick={() => { setCategoryId(null); setShowForm(true); }}
+            onClick={() => {
+              setCategoryId(null);
+              setShowForm(true);
+            }}
           >
-            {t("settings.addTemplate")}
+            {t('settings.addTemplate')}
           </Button>
         ) : (
           <UpgradeBadge
@@ -497,10 +591,10 @@ export function TemplateManager() {
           size="sm"
           icon={<Upload size={12} />}
           onClick={canCreateTemplate ? handleImport : undefined}
-          className={!canCreateTemplate ? "opacity-50 cursor-not-allowed" : ""}
+          className={!canCreateTemplate ? 'opacity-50 cursor-not-allowed' : ''}
           disabled={!canCreateTemplate}
         >
-          {t("settings.importTemplate")}
+          {t('settings.importTemplate')}
         </Button>
       </div>
 
@@ -509,27 +603,31 @@ export function TemplateManager() {
         <div className="border border-accent/30 rounded-md p-4 space-y-3 bg-accent/5">
           <h4 className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
             <Eye size={12} />
-            {t("settings.importPreview")}
+            {t('settings.importPreview')}
           </h4>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-text-tertiary w-20">{t("settings.templateName")}</span>
+              <span className="text-xs text-text-tertiary w-20">{t('settings.templateName')}</span>
               <span className="text-xs text-text-primary font-medium">{importPreviewName}</span>
             </div>
             {importPreviewSubject && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-text-tertiary w-20">{t("settings.templateSubject")}</span>
+                <span className="text-xs text-text-tertiary w-20">
+                  {t('settings.templateSubject')}
+                </span>
                 <span className="text-xs text-text-primary">{importPreviewSubject}</span>
               </div>
             )}
             {importPreviewCat && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-text-tertiary w-20">{t("settings.category")}</span>
+                <span className="text-xs text-text-tertiary w-20">{t('settings.category')}</span>
                 <span className="text-xs text-text-primary">{importPreviewCat}</span>
               </div>
             )}
             <div>
-              <span className="text-xs text-text-tertiary block mb-1">{t("settings.templatePreview")}</span>
+              <span className="text-xs text-text-tertiary block mb-1">
+                {t('settings.templatePreview')}
+              </span>
               <div className="bg-bg-tertiary border border-border-primary rounded-md p-3 max-h-[200px] overflow-y-auto">
                 <div
                   className="text-xs text-text-primary prose prose-sm max-w-none"
@@ -539,18 +637,11 @@ export function TemplateManager() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={confirmImport}
-              icon={<Upload size={12} />}
-            >
-              {t("settings.confirmImport")}
+            <Button variant="primary" onClick={confirmImport} icon={<Upload size={12} />}>
+              {t('settings.confirmImport')}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setImportPreviewData(null)}
-            >
-              {t("common.cancel")}
+            <Button variant="secondary" onClick={() => setImportPreviewData(null)}>
+              {t('common.cancel')}
             </Button>
           </div>
         </div>
@@ -563,30 +654,32 @@ export function TemplateManager() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t("settings.templateName")}
+            placeholder={t('settings.templateName')}
             className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
           />
           <input
             type="text"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder={t("settings.templateSubject")}
+            placeholder={t('settings.templateSubject')}
             className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
           />
           <select
-            value={categoryId ?? ""}
+            value={categoryId ?? ''}
             onChange={(e) => setCategoryId(e.target.value || null)}
             className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
           >
-            <option value="">{t("settings.noCategory")}</option>
+            <option value="">{t('settings.noCategory')}</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
           <div className="border border-border-primary rounded overflow-hidden bg-bg-tertiary">
             <div className="flex items-center justify-between">
               {previewMode ? (
-                <span className="px-2 py-1 text-xs text-text-secondary">{t("common.preview")}</span>
+                <span className="px-2 py-1 text-xs text-text-secondary">{t('common.preview')}</span>
               ) : (
                 <EditorToolbar editor={editor} />
               )}
@@ -596,9 +689,15 @@ export function TemplateManager() {
                 iconOnly
                 icon={previewMode ? <Edit3 size={14} /> : <Eye size={14} />}
                 onClick={() => setPreviewMode(!previewMode)}
-                className={previewMode ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-primary"}
-                title={previewMode ? t("settings.editTemplate") : t("settings.previewTemplate")}
-                aria-label={previewMode ? t("settings.editTemplate") : t("settings.previewTemplate")}
+                className={
+                  previewMode
+                    ? 'text-accent bg-accent/10'
+                    : 'text-text-tertiary hover:text-text-primary'
+                }
+                title={previewMode ? t('settings.editTemplate') : t('settings.previewTemplate')}
+                aria-label={
+                  previewMode ? t('settings.editTemplate') : t('settings.previewTemplate')
+                }
               />
             </div>
             {previewMode ? (
@@ -608,7 +707,7 @@ export function TemplateManager() {
                   sandbox="allow-same-origin"
                   className="w-full border-0 rounded bg-bg-primary"
                   style={{ height: 400 }}
-                  title={t("settings.templatePreview")}
+                  title={t('settings.templatePreview')}
                 />
                 <Button
                   variant="ghost"
@@ -616,7 +715,7 @@ export function TemplateManager() {
                   icon={copied ? <Check size={12} /> : <Copy size={12} />}
                   onClick={handleCopyHtml}
                 >
-                  {copied ? t("common.copied") : t("settings.copyHtml")}
+                  {copied ? t('common.copied') : t('settings.copyHtml')}
                 </Button>
               </div>
             ) : (
@@ -632,7 +731,7 @@ export function TemplateManager() {
             type="text"
             value={shortcut}
             onChange={(e) => setShortcut(e.target.value)}
-            placeholder={t("settings.templateShortcut")}
+            placeholder={t('settings.templateShortcut')}
             className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
           />
 
@@ -645,31 +744,24 @@ export function TemplateManager() {
             >
               <span className="flex items-center gap-1.5">
                 <BetweenHorizonalEnd size={12} />
-                {t("settings.conditionalBlocks")}
+                {t('settings.conditionalBlocks')}
               </span>
-              <ChevronDown size={12} className={`transition-transform ${showCondBuilder ? "" : "-rotate-90"}`} />
+              <ChevronDown
+                size={12}
+                className={`transition-transform ${showCondBuilder ? '' : '-rotate-90'}`}
+              />
             </button>
             {showCondBuilder && (
-              <ConditionalBlocksBuilder
-                value={conditionalBlocks}
-                onChange={setConditionalBlocks}
-              />
+              <ConditionalBlocksBuilder value={conditionalBlocks} onChange={setConditionalBlocks} />
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={!name.trim()}
-            >
-              {editingId ? t("common.update") : t("common.save")}
+            <Button variant="primary" onClick={handleSave} disabled={!name.trim()}>
+              {editingId ? t('common.update') : t('common.save')}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={resetForm}
-            >
-              {t("common.cancel")}
+            <Button variant="secondary" onClick={resetForm}>
+              {t('common.cancel')}
             </Button>
           </div>
         </div>
@@ -695,14 +787,22 @@ export function TemplateManager() {
 
 /* ─── Template Usage Analytics ─────────────────────────────── */
 
-function TemplateAnalytics({ paginatedTemplates, maxUsage }: { paginatedTemplates: DbTemplate[]; maxUsage: number }) {
+function TemplateAnalytics({
+  paginatedTemplates,
+  maxUsage,
+}: {
+  paginatedTemplates: DbTemplate[];
+  maxUsage: number;
+}) {
   const { t } = useTranslation();
-  const [sortBy, setSortBy] = useState<AnalyticsSort>("usage");
+  const [sortBy, setSortBy] = useState<AnalyticsSort>('usage');
 
   const sorted = useMemo(() => {
     const list = [...paginatedTemplates];
-    if (sortBy === "usage") {
-      list.sort((a, b) => b.usage_count - a.usage_count || (b.last_used_at ?? 0) - (a.last_used_at ?? 0));
+    if (sortBy === 'usage') {
+      list.sort(
+        (a, b) => b.usage_count - a.usage_count || (b.last_used_at ?? 0) - (a.last_used_at ?? 0),
+      );
     } else {
       list.sort((a, b) => (b.last_used_at ?? 0) - (a.last_used_at ?? 0));
     }
@@ -710,12 +810,12 @@ function TemplateAnalytics({ paginatedTemplates, maxUsage }: { paginatedTemplate
   }, [paginatedTemplates, sortBy]);
 
   function formatTimestamp(ts: number | null): string {
-    if (!ts) return "—";
+    if (!ts) return '—';
     const diff = Date.now() / 1000 - ts;
-    if (diff < 60) return t("settings.justNow");
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ${t("settings.ago")}`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ${t("settings.ago")}`;
-    return `${Math.floor(diff / 86400)}d ${t("settings.ago")}`;
+    if (diff < 60) return t('settings.justNow');
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ${t('settings.ago')}`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ${t('settings.ago')}`;
+    return `${Math.floor(diff / 86400)}d ${t('settings.ago')}`;
   }
 
   return (
@@ -723,34 +823,34 @@ function TemplateAnalytics({ paginatedTemplates, maxUsage }: { paginatedTemplate
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
           <BarChart3 size={12} />
-          {t("settings.templateAnalytics")}
+          {t('settings.templateAnalytics')}
         </h4>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             icon={<ArrowUpDown size={10} />}
-            onClick={() => setSortBy("usage")}
+            onClick={() => setSortBy('usage')}
             className={
-              sortBy === "usage"
-                ? "bg-accent/10 text-accent font-medium"
-                : "text-text-tertiary hover:text-text-secondary"
+              sortBy === 'usage'
+                ? 'bg-accent/10 text-accent font-medium'
+                : 'text-text-tertiary hover:text-text-secondary'
             }
           >
-            {t("settings.mostUsed")}
+            {t('settings.mostUsed')}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             icon={<Clock size={10} />}
-            onClick={() => setSortBy("recent")}
+            onClick={() => setSortBy('recent')}
             className={
-              sortBy === "recent"
-                ? "bg-accent/10 text-accent font-medium"
-                : "text-text-tertiary hover:text-text-secondary"
+              sortBy === 'recent'
+                ? 'bg-accent/10 text-accent font-medium'
+                : 'text-text-tertiary hover:text-text-secondary'
             }
           >
-            {t("settings.recentlyUsed")}
+            {t('settings.recentlyUsed')}
           </Button>
         </div>
       </div>
@@ -808,25 +908,37 @@ function ConditionalBlocksBuilder({
   const [showRaw, setShowRaw] = useState(false);
   const [rawText, setRawText] = useState(value);
 
-  const syncToParent = useCallback((newBlocks: ConditionalBlockEntry[]) => {
-    setBlocks(newBlocks);
-    onChange(newBlocks.length > 0 ? JSON.stringify(newBlocks, null, 2) : "");
-  }, [onChange]);
+  const syncToParent = useCallback(
+    (newBlocks: ConditionalBlockEntry[]) => {
+      setBlocks(newBlocks);
+      onChange(newBlocks.length > 0 ? JSON.stringify(newBlocks, null, 2) : '');
+    },
+    [onChange],
+  );
 
   const addBlock = useCallback(() => {
-    const newBlocks = [...blocks, { variable: TEMPLATE_VARIABLES[0]?.key ?? "{{first_name}}", ifContent: "", elseContent: "" }];
+    const newBlocks = [
+      ...blocks,
+      { variable: TEMPLATE_VARIABLES[0]?.key ?? '{{first_name}}', ifContent: '', elseContent: '' },
+    ];
     syncToParent(newBlocks);
   }, [blocks, syncToParent]);
 
-  const removeBlock = useCallback((idx: number) => {
-    const newBlocks = blocks.filter((_, i) => i !== idx);
-    syncToParent(newBlocks);
-  }, [blocks, syncToParent]);
+  const removeBlock = useCallback(
+    (idx: number) => {
+      const newBlocks = blocks.filter((_, i) => i !== idx);
+      syncToParent(newBlocks);
+    },
+    [blocks, syncToParent],
+  );
 
-  const updateBlock = useCallback((idx: number, field: keyof ConditionalBlockEntry, val: string) => {
-    const newBlocks = blocks.map((b, i) => (i === idx ? { ...b, [field]: val } : b));
-    syncToParent(newBlocks);
-  }, [blocks, syncToParent]);
+  const updateBlock = useCallback(
+    (idx: number, field: keyof ConditionalBlockEntry, val: string) => {
+      const newBlocks = blocks.map((b, i) => (i === idx ? { ...b, [field]: val } : b));
+      syncToParent(newBlocks);
+    },
+    [blocks, syncToParent],
+  );
 
   const handleRawChange = useCallback(() => {
     try {
@@ -851,17 +963,17 @@ function ConditionalBlocksBuilder({
           className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-xs text-text-primary outline-none focus:border-accent font-mono"
         />
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="primary"
-            onClick={handleRawChange}
-          >
-            {t("settings.apply")}
+          <Button variant="primary" onClick={handleRawChange}>
+            {t('settings.apply')}
           </Button>
           <Button
             variant="secondary"
-            onClick={() => { setShowRaw(false); setRawText(value); }}
+            onClick={() => {
+              setShowRaw(false);
+              setRawText(value);
+            }}
           >
-            {t("common.cancel")}
+            {t('common.cancel')}
           </Button>
         </div>
       </div>
@@ -872,28 +984,36 @@ function ConditionalBlocksBuilder({
     <div className="p-2 space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-[0.625rem] text-text-tertiary">
-          {t("settings.conditionalBlocksDesc")}
+          {t('settings.conditionalBlocksDesc')}
         </span>
         <Button
           variant="ghost"
           size="sm"
           icon={<Code size={10} />}
-          onClick={() => { setShowRaw(true); setRawText(value); }}
+          onClick={() => {
+            setShowRaw(true);
+            setRawText(value);
+          }}
         >
-          {t("settings.editRawJson")}
+          {t('settings.editRawJson')}
         </Button>
       </div>
 
       {blocks.map((block, idx) => (
-        <div key={idx} className="border border-border-primary rounded-md p-2 space-y-1.5 bg-bg-secondary">
+        <div
+          key={idx}
+          className="border border-border-primary rounded-md p-2 space-y-1.5 bg-bg-secondary"
+        >
           <div className="flex items-center gap-1.5">
             <select
               value={block.variable}
-              onChange={(e) => updateBlock(idx, "variable", e.target.value)}
+              onChange={(e) => updateBlock(idx, 'variable', e.target.value)}
               className="flex-1 px-2 py-1 text-xs bg-bg-tertiary border border-border-primary rounded text-text-primary outline-none focus:border-accent"
             >
               {TEMPLATE_VARIABLES.map((v) => (
-                <option key={v.key} value={v.key}>{v.key} — {v.desc}</option>
+                <option key={v.key} value={v.key}>
+                  {v.key} — {v.desc}
+                </option>
               ))}
             </select>
             <Button
@@ -908,38 +1028,33 @@ function ConditionalBlocksBuilder({
           </div>
           <div>
             <label className="text-[0.5rem] text-text-tertiary uppercase tracking-wider block mb-0.5">
-              {t("settings.ifBlock")}
+              {t('settings.ifBlock')}
             </label>
             <input
               type="text"
               value={block.ifContent}
-              onChange={(e) => updateBlock(idx, "ifContent", e.target.value)}
-              placeholder={t("settings.ifBlockPlaceholder")}
+              onChange={(e) => updateBlock(idx, 'ifContent', e.target.value)}
+              placeholder={t('settings.ifBlockPlaceholder')}
               className="w-full px-2 py-1 text-xs bg-bg-tertiary border border-border-primary rounded text-text-primary outline-none focus:border-accent"
             />
           </div>
           <div>
             <label className="text-[0.5rem] text-text-tertiary uppercase tracking-wider block mb-0.5">
-              {t("settings.elseBlock")}
+              {t('settings.elseBlock')}
             </label>
             <input
               type="text"
               value={block.elseContent}
-              onChange={(e) => updateBlock(idx, "elseContent", e.target.value)}
-              placeholder={t("settings.elseBlockPlaceholder")}
+              onChange={(e) => updateBlock(idx, 'elseContent', e.target.value)}
+              placeholder={t('settings.elseBlockPlaceholder')}
               className="w-full px-2 py-1 text-xs bg-bg-tertiary border border-border-primary rounded text-text-primary outline-none focus:border-accent"
             />
           </div>
         </div>
       ))}
 
-      <Button
-        variant="ghost"
-        size="sm"
-        icon={<Plus size={10} />}
-        onClick={addBlock}
-      >
-        {t("settings.addConditionalBlock")}
+      <Button variant="ghost" size="sm" icon={<Plus size={10} />} onClick={addBlock}>
+        {t('settings.addConditionalBlock')}
       </Button>
     </div>
   );
@@ -969,9 +1084,7 @@ function TemplateListItem({
               {template.shortcut}
             </kbd>
           )}
-          {template.is_favorite === 1 && (
-            <span className="text-warning">&#9733;</span>
-          )}
+          {template.is_favorite === 1 && <span className="text-warning">&#9733;</span>}
           {template.usage_count > 0 && (
             <span className="text-[0.5rem] text-text-tertiary bg-bg-tertiary px-1.5 py-0.5 rounded-full">
               {template.usage_count}
@@ -983,9 +1096,34 @@ function TemplateListItem({
         )}
       </div>
       <div className="flex items-center gap-1 shrink-0 ms-2">
-        <Button variant="ghost" size="sm" iconOnly icon={<Download size={12} />} onClick={() => onExport(template)} title={t("settings.exportTemplate")} aria-label={t("settings.exportTemplate")} />
-        <Button variant="ghost" size="sm" iconOnly icon={<Pencil size={12} />} onClick={() => onEdit(template)} title={t("common.edit")} aria-label={t("common.edit")} />
-        <Button variant="ghost" size="sm" iconOnly icon={<Trash2 size={12} />} onClick={() => onDelete(template.id)} className="hover:text-danger" title={t("common.delete")} aria-label={t("common.delete")} />
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          icon={<Download size={12} />}
+          onClick={() => onExport(template)}
+          title={t('settings.exportTemplate')}
+          aria-label={t('settings.exportTemplate')}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          icon={<Pencil size={12} />}
+          onClick={() => onEdit(template)}
+          title={t('common.edit')}
+          aria-label={t('common.edit')}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          icon={<Trash2 size={12} />}
+          onClick={() => onDelete(template.id)}
+          className="hover:text-danger"
+          title={t('common.delete')}
+          aria-label={t('common.delete')}
+        />
       </div>
     </div>
   );
@@ -1006,8 +1144,11 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
         onClick={() => setOpen(!open)}
         className="text-accent hover:text-accent-hover"
       >
-        {t("settings.insertVariable")}
-        <ChevronDown size={12} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
+        {t('settings.insertVariable')}
+        <ChevronDown
+          size={12}
+          className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+        />
       </Button>
       {open && (
         <div className="absolute start-0 top-full mt-1 z-10 bg-bg-primary border border-border-primary rounded-md shadow-lg py-1 min-w-[220px]">
@@ -1030,4 +1171,3 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
     </div>
   );
 }
-

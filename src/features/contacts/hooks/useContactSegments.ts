@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { queryKeys } from "@shared/query/keys";
+import { useQuery } from '@tanstack/react-query';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { queryKeys } from '@shared/query/keys';
 
 interface ContactSummary {
   id: string;
@@ -15,7 +15,7 @@ export function useContactSegments(accountId: string | null) {
     queryKey: queryKeys.contacts.segments(accountId),
     queryFn: async () => {
       if (!accountId) return [];
-      return invokeCommand<ContactSummary[]>("db_list_segments", { accountId });
+      return invokeCommand<ContactSummary[]>('db_list_segments', { accountId });
     },
     enabled: !!accountId,
     staleTime: 60_000,

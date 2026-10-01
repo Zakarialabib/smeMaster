@@ -6,8 +6,12 @@ export async function listCampaigns(companyId: string): Promise<Campaign[]> {
   return invokeCommand<Campaign[]>('db_list_campaigns', { companyId });
 }
 
-export async function listCampaignsByContact(contactId: string): Promise<CampaignRecipientWithCampaign[]> {
-  return invokeCommand<CampaignRecipientWithCampaign[]>('db_list_campaigns_by_contact', { contactId });
+export async function listCampaignsByContact(
+  contactId: string,
+): Promise<CampaignRecipientWithCampaign[]> {
+  return invokeCommand<CampaignRecipientWithCampaign[]>('db_list_campaigns_by_contact', {
+    contactId,
+  });
 }
 
 export async function getCampaign(id: string): Promise<Campaign | null> {

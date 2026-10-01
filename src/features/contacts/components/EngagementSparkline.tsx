@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Minus, Loader2, AlertCircle } from "lucide-react";
-import { getEngagementTrend, type EngagementTrendPoint } from "@features/contacts/services/engagement";
+import { useEffect, useState } from 'react';
+import { TrendingUp, TrendingDown, Minus, Loader2, AlertCircle } from 'lucide-react';
+import {
+  getEngagementTrend,
+  type EngagementTrendPoint,
+} from '@features/contacts/services/engagement';
 
 interface EngagementSparklineProps {
   contactId: string;
@@ -10,8 +13,12 @@ interface EngagementSparklineProps {
   className?: string;
 }
 
-function sparklinePath(points: { date: string; score: number }[], width: number, height: number): string {
-  if (points.length < 2) return "";
+function sparklinePath(
+  points: { date: string; score: number }[],
+  width: number,
+  height: number,
+): string {
+  if (points.length < 2) return '';
   const minScore = Math.min(...points.map((p) => p.score));
   const maxScore = Math.max(...points.map((p) => p.score));
   const range = maxScore - minScore || 1;
@@ -22,9 +29,9 @@ function sparklinePath(points: { date: string; score: number }[], width: number,
   const parts = points.map((p, i) => {
     const x = padding + (i / Math.max(points.length - 1, 1)) * drawW;
     const y = padding + drawH - ((p.score - minScore) / range) * drawH;
-    return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
   });
-  return parts.join(" ");
+  return parts.join(' ');
 }
 
 export function EngagementSparkline({
@@ -32,7 +39,7 @@ export function EngagementSparkline({
   days = 30,
   height = 48,
   width = 160,
-  className = "",
+  className = '',
 }: EngagementSparklineProps) {
   const [data, setData] = useState<EngagementTrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,12 +54,14 @@ export function EngagementSparkline({
         if (!cancelled) setData(d);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load trend");
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load trend');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contactId, days]);
 
   if (loading) {
@@ -85,10 +94,11 @@ export function EngagementSparkline({
   const first = data[0]!.score;
   const trend = latest - first;
   const TrendIcon = trend > 0.01 ? TrendingUp : trend < -0.01 ? TrendingDown : Minus;
-  const trendColor = trend > 0.01 ? "text-success" : trend < -0.01 ? "text-danger" : "text-text-tertiary";
+  const trendColor =
+    trend > 0.01 ? 'text-success' : trend < -0.01 ? 'text-danger' : 'text-text-tertiary';
 
   const path = sparklinePath(data, width, height);
-  const gradientId = `tg-${contactId.replace(/[^a-zA-Z0-9-]/g, "")}`;
+  const gradientId = `tg-${contactId.replace(/[^a-zA-Z0-9-]/g, '')}`;
 
   return (
     <div className={`flex items-end gap-2 ${className}`}>
@@ -126,23 +136,31 @@ export function EngagementSparkline({
           />
         )}
         {/* End dot */}
-        {data.length > 0 && (() => {
-          const last = data[data.length - 1]!;
-          const minScore = Math.min(...data.map((p) => p.score));
-          const maxScore = Math.max(...data.map((p) => p.score));
-          const range = maxScore - minScore || 1;
-          const x = width - 2;
-          const y = 2 + (height - 4) - ((last.score - minScore) / range) * (height - 4);
-          return (
-            <circle cx={x.toFixed(1)} cy={y.toFixed(1)} r="2.5" fill="currentColor" className="text-accent" />
-          );
-        })()}
+        {data.length > 0 &&
+          (() => {
+            const last = data[data.length - 1]!;
+            const minScore = Math.min(...data.map((p) => p.score));
+            const maxScore = Math.max(...data.map((p) => p.score));
+            const range = maxScore - minScore || 1;
+            const x = width - 2;
+            const y = 2 + (height - 4) - ((last.score - minScore) / range) * (height - 4);
+            return (
+              <circle
+                cx={x.toFixed(1)}
+                cy={y.toFixed(1)}
+                r="2.5"
+                fill="currentColor"
+                className="text-accent"
+              />
+            );
+          })()}
       </svg>
       <div className="flex flex-col items-start shrink-0">
         <div className="flex items-center gap-1">
           <TrendIcon size={12} className={trendColor} />
           <span className={`text-xs font-semibold ${trendColor}`}>
-            {trend > 0 ? "+" : ""}{(trend * 100).toFixed(1)}%
+            {trend > 0 ? '+' : ''}
+            {(trend * 100).toFixed(1)}%
           </span>
         </div>
         <span className="text-[0.55rem] text-text-tertiary">{days}-day trend</span>

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   Users,
@@ -16,59 +16,65 @@ import {
   X,
   AlertCircle,
   Loader2,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useContactStore, type ContactGroup, type ContactSegment } from "@features/contacts/stores/contactStore";
-import { getAllContacts, countAllContacts, type DbContact } from "@features/contacts/db/contacts";
-import { filterContacts } from "@shared/services/db/invoke/crm";
-import { GroupManager } from "@features/contacts/components/GroupManager";
-import { CsvImportWizard } from "@features/contacts/components/CsvImportWizard";
-import { ContactMergeDialog } from "@features/contacts/components/ContactMergeDialog";
-import { Button } from "@shared/components/ui/Button";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { PageScaffold } from "@shared/components/layout";
-import { findMergeCandidates, mergeContacts, type MergeCandidate } from "@features/contacts/services/merge";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { AddTagModal } from "@features/contacts/components/AddTagModal";
-import { AddSegmentModal } from "@features/contacts/components/AddSegmentModal";
-import { ContactListView } from "@features/contacts/components/ContactListView";
-import { ContactGridView } from "@features/contacts/components/ContactGridView";
-import { ViewToggle } from "@features/contacts/components/ViewToggle";
-import { ContactsToolbar, type BulkAction } from "@features/contacts/components/ContactsToolbar";
-import { FilterChipBar, type ActiveFilter } from "@features/contacts/components/FilterChipBar";
-import { SegmentPreviewDrawer } from "@features/contacts/components/SegmentPreviewDrawer";
-import { GroupMemberModal } from "@features/contacts/components/GroupMemberModal";
-import { ImportHistoryTab } from "@features/contacts/components/ImportHistoryTab";
-import { CreateContactModal } from "@features/contacts/components/CreateContactModal";
-import { SkeletonTable, GlassPanel } from "@shared/components/ui";
-import { useViewPrefs } from "@features/contacts/hooks/useViewPrefs";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import {
+  useContactStore,
+  type ContactGroup,
+  type ContactSegment,
+} from '@features/contacts/stores/contactStore';
+import { getAllContacts, countAllContacts, type DbContact } from '@features/contacts/db/contacts';
+import { filterContacts } from '@shared/services/db/invoke/crm';
+import { GroupManager } from '@features/contacts/components/GroupManager';
+import { CsvImportWizard } from '@features/contacts/components/CsvImportWizard';
+import { ContactMergeDialog } from '@features/contacts/components/ContactMergeDialog';
+import { Button } from '@shared/components/ui/Button';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { PageScaffold } from '@shared/components/layout';
+import {
+  findMergeCandidates,
+  mergeContacts,
+  type MergeCandidate,
+} from '@features/contacts/services/merge';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { AddTagModal } from '@features/contacts/components/AddTagModal';
+import { AddSegmentModal } from '@features/contacts/components/AddSegmentModal';
+import { ContactListView } from '@features/contacts/components/ContactListView';
+import { ContactGridView } from '@features/contacts/components/ContactGridView';
+import { ViewToggle } from '@features/contacts/components/ViewToggle';
+import { ContactsToolbar, type BulkAction } from '@features/contacts/components/ContactsToolbar';
+import { FilterChipBar, type ActiveFilter } from '@features/contacts/components/FilterChipBar';
+import { SegmentPreviewDrawer } from '@features/contacts/components/SegmentPreviewDrawer';
+import { GroupMemberModal } from '@features/contacts/components/GroupMemberModal';
+import { ImportHistoryTab } from '@features/contacts/components/ImportHistoryTab';
+import { CreateContactModal } from '@features/contacts/components/CreateContactModal';
+import { SkeletonTable, GlassPanel } from '@shared/components/ui';
+import { useViewPrefs } from '@features/contacts/hooks/useViewPrefs';
 import {
   exportContactsToCsv,
   exportContactsToVcard,
   exportTasksToCsv,
   exportCalendarToIcs,
-} from "@shared/services/dataExport";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useBulkSelection } from "@features/contacts/hooks/useBulkSelection";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { usePagination } from "@shared/hooks/usePagination";
-import { PaginationControls } from "@shared/components/ui/PaginationControls";
+} from '@shared/services/dataExport';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useBulkSelection } from '@features/contacts/hooks/useBulkSelection';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { usePagination } from '@shared/hooks/usePagination';
+import { PaginationControls } from '@shared/components/ui/PaginationControls';
 
-type ContactsTab = "contacts" | "tags" | "groups" | "segments" | "imports";
+type ContactsTab = 'contacts' | 'tags' | 'groups' | 'segments' | 'imports';
 
 export function ContactsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { screen } = usePlatform();
   const isMobile = screen.isMobile;
-  const primaryAccountId = useAccountStore((s) =>
-    s.accounts.find((a) => a.isActive)?.id ?? "",
-  );
+  const primaryAccountId = useAccountStore((s) => s.accounts.find((a) => a.isActive)?.id ?? '');
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<ContactsTab>("contacts");
+  const [tab, setTab] = useState<ContactsTab>('contacts');
   const [showCsvImport, setShowCsvImport] = useState(false);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const [mergeCandidates, setMergeCandidates] = useState<MergeCandidate[]>([]);
@@ -125,10 +131,7 @@ export function ContactsPage() {
     setPageSize: setContactPageSize,
   } = usePagination({
     fetchFn: async ({ limit, offset }) => {
-      const [items, total] = await Promise.all([
-        getAllContacts(limit, offset),
-        countAllContacts(),
-      ]);
+      const [items, total] = await Promise.all([getAllContacts(limit, offset), countAllContacts()]);
       return { items, total };
     },
     pageSize: 50,
@@ -142,14 +145,14 @@ export function ContactsPage() {
 
   useEffect(() => {
     if (!primaryAccountId) return;
-    if (tab === "tags") loadTags(primaryAccountId);
-    if (tab === "segments") loadSegments(primaryAccountId);
+    if (tab === 'tags') loadTags(primaryAccountId);
+    if (tab === 'segments') loadSegments(primaryAccountId);
   }, [tab, primaryAccountId, loadTags, loadSegments]);
 
   // Re-filter when active filter changes
   useEffect(() => {
     if (tagFilter || groupFilter || segmentFilter) {
-      setTab("contacts");
+      setTab('contacts');
     }
   }, [tagFilter, groupFilter, segmentFilter]);
 
@@ -179,8 +182,8 @@ export function ContactsPage() {
       })
       .catch((err) => {
         if (cancelled) return;
-        console.error("Failed to filter contacts:", err);
-        setFilterError((err as Error)?.message ?? "Failed to filter contacts");
+        console.error('Failed to filter contacts:', err);
+        setFilterError((err as Error)?.message ?? 'Failed to filter contacts');
         setFilteredSource([]);
       })
       .finally(() => {
@@ -205,7 +208,7 @@ export function ContactsPage() {
         setMergeCandidates((prev) => prev.filter((c) => c.mergeId !== mergeId));
         await resetContacts();
       } catch (err) {
-        console.error("Failed to merge contacts:", err);
+        console.error('Failed to merge contacts:', err);
       } finally {
         setMerging(false);
       }
@@ -215,14 +218,14 @@ export function ContactsPage() {
 
   const handleContactClick = useCallback(
     (contactId: string) => {
-      navigate({ to: "/people/$contactId", params: { contactId } });
+      navigate({ to: '/people/$contactId', params: { contactId } });
     },
     [navigate],
   );
 
   const handleViewContact = useCallback(
     (contact: DbContact) => {
-      navigate({ to: "/people/$contactId", params: { contactId: contact.id } });
+      navigate({ to: '/people/$contactId', params: { contactId: contact.id } });
     },
     [navigate],
   );
@@ -234,7 +237,7 @@ export function ContactsPage() {
       const t = tags.find((x) => x.id === tagFilter);
       list.push({
         id: `tag-${tagFilter}`,
-        label: t ? `Tag: ${t.name}` : "Tag",
+        label: t ? `Tag: ${t.name}` : 'Tag',
         color: t?.color ?? undefined,
         onRemove: () => setTagFilter(null),
       });
@@ -243,7 +246,7 @@ export function ContactsPage() {
       const g = groups.find((x) => x.id === groupFilter);
       list.push({
         id: `group-${groupFilter}`,
-        label: g ? `Group: ${g.name}` : "Group",
+        label: g ? `Group: ${g.name}` : 'Group',
         onRemove: () => setGroupFilter(null),
       });
     }
@@ -251,7 +254,7 @@ export function ContactsPage() {
       const s = segments.find((x) => x.id === segmentFilter);
       list.push({
         id: `segment-${segmentFilter}`,
-        label: s ? `Segment: ${s.name}` : "Segment",
+        label: s ? `Segment: ${s.name}` : 'Segment',
         onRemove: () => setSegmentFilter(null),
       });
     }
@@ -276,24 +279,18 @@ export function ContactsPage() {
       const q = search.toLowerCase();
       out = out.filter(
         (c) =>
-          c.email.toLowerCase().includes(q) ||
-          (c.display_name?.toLowerCase().includes(q) ?? false),
+          c.email.toLowerCase().includes(q) || (c.display_name?.toLowerCase().includes(q) ?? false),
       );
     }
     return out;
   }, [sourceContacts, search]);
 
-  const orderedContactIds = useMemo(
-    () => filteredContacts.map((c) => c.id),
-    [filteredContacts],
-  );
+  const orderedContactIds = useMemo(() => filteredContacts.map((c) => c.id), [filteredContacts]);
 
   const allFilteredSelected =
-    orderedContactIds.length > 0 &&
-    orderedContactIds.every((id) => selection.selectedIds.has(id));
+    orderedContactIds.length > 0 && orderedContactIds.every((id) => selection.selectedIds.has(id));
   const someFilteredSelected =
-    orderedContactIds.some((id) => selection.selectedIds.has(id)) &&
-    !allFilteredSelected;
+    orderedContactIds.some((id) => selection.selectedIds.has(id)) && !allFilteredSelected;
 
   const handleSelectAllToggle = useCallback(() => {
     if (allFilteredSelected) {
@@ -316,10 +313,13 @@ export function ContactsPage() {
   );
 
   // Action handlers
-  const handleCompose = useCallback((c: DbContact) => {
-    setSelectedContact(c);
-    openComposer({ to: [c.email], subject: "", mode: "new" });
-  }, [openComposer]);
+  const handleCompose = useCallback(
+    (c: DbContact) => {
+      setSelectedContact(c);
+      openComposer({ to: [c.email], subject: '', mode: 'new' });
+    },
+    [openComposer],
+  );
 
   const handleAddTag = useCallback((c: DbContact) => {
     setSelectedContact(c);
@@ -348,22 +348,22 @@ export function ContactsPage() {
   );
 
   const handleDeleteContact = useCallback((c: DbContact) => {
-    console.warn("Delete requested for", c.id, "(not yet wired)");
+    console.warn('Delete requested for', c.id, '(not yet wired)');
   }, []);
 
   const handleExportVcard = useCallback((c: DbContact) => {
     const vcard = [
-      "BEGIN:VCARD",
-      "VERSION:3.0",
+      'BEGIN:VCARD',
+      'VERSION:3.0',
       `FN:${c.display_name ?? c.email}`,
       `EMAIL:${c.email}`,
-      "END:VCARD",
-    ].join("\n");
-    const blob = new Blob([vcard], { type: "text/vcard" });
+      'END:VCARD',
+    ].join('\n');
+    const blob = new Blob([vcard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `${(c.display_name ?? c.email).replace(/\s+/g, "_")}.vcf`;
+    a.download = `${(c.display_name ?? c.email).replace(/\s+/g, '_')}.vcf`;
     a.click();
     URL.revokeObjectURL(url);
   }, []);
@@ -371,44 +371,44 @@ export function ContactsPage() {
   const handleBulkAction = useCallback(
     (action: BulkAction) => {
       switch (action) {
-        case "tag":
+        case 'tag':
           setSelectedContact(null);
           setShowAddTagModal(true);
           break;
-        case "group":
+        case 'group':
           setSelectedContact(null);
           break;
-        case "export": {
+        case 'export': {
           const selected = contacts.filter((c) => selection.selectedIds.has(c.id));
-          const header = "email,display_name,frequency,last_contacted_at\n";
+          const header = 'email,display_name,frequency,last_contacted_at\n';
           const rows = selected
             .map(
               (c) =>
-                `${c.email},${(c.display_name ?? "").replace(/,/g, ";")},${c.frequency},${
-                  c.last_contacted_at ?? ""
+                `${c.email},${(c.display_name ?? '').replace(/,/g, ';')},${c.frequency},${
+                  c.last_contacted_at ?? ''
                 }`,
             )
-            .join("\n");
-          const blob = new Blob([header + rows], { type: "text/csv" });
+            .join('\n');
+          const blob = new Blob([header + rows], { type: 'text/csv' });
           const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
+          const a = document.createElement('a');
           a.href = url;
           a.download = `contacts-${Date.now()}.csv`;
           a.click();
           URL.revokeObjectURL(url);
           break;
         }
-        case "merge":
+        case 'merge':
           handleFindDuplicates();
           break;
-        case "delete":
+        case 'delete':
           console.warn(
-            "Bulk delete requested for",
+            'Bulk delete requested for',
             selection.selectedCount,
-            "contacts (not yet wired)",
+            'contacts (not yet wired)',
           );
           break;
-        case "clear":
+        case 'clear':
           selection.clear();
           break;
       }
@@ -427,23 +427,28 @@ export function ContactsPage() {
   );
 
   const DESKTOP_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: "contacts", label: t('contacts.tabs.contacts'), icon: Users },
-    { id: "tags", label: t('contacts.tabs.tags'), icon: TagIcon },
-    { id: "groups", label: t('contacts.tabs.groups'), icon: Users },
-    { id: "segments", label: t('contacts.tabs.segments'), icon: Filter },
-    { id: "imports", label: t('contacts.tabs.imports'), icon: History },
+    { id: 'contacts', label: t('contacts.tabs.contacts'), icon: Users },
+    { id: 'tags', label: t('contacts.tabs.tags'), icon: TagIcon },
+    { id: 'groups', label: t('contacts.tabs.groups'), icon: Users },
+    { id: 'segments', label: t('contacts.tabs.segments'), icon: Filter },
+    { id: 'imports', label: t('contacts.tabs.imports'), icon: History },
   ];
 
   const MOBILE_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: "contacts", label: t('contacts.tabs.contacts'), icon: Users },
-    { id: "tags", label: t('contacts.tabs.tags'), icon: TagIcon },
+    { id: 'contacts', label: t('contacts.tabs.contacts'), icon: Users },
+    { id: 'tags', label: t('contacts.tabs.tags'), icon: TagIcon },
   ];
 
   const tabs = isMobile ? MOBILE_TABS : DESKTOP_TABS;
 
   return (
     <PageScaffold
-      title={<span className="flex items-center gap-2"><Users size={18} className="text-accent" />{t('contacts.title')}</span>}
+      title={
+        <span className="flex items-center gap-2">
+          <Users size={18} className="text-accent" />
+          {t('contacts.title')}
+        </span>
+      }
       count={contacts.length}
       actions={
         <>
@@ -470,7 +475,10 @@ export function ContactsPage() {
       toolbar={
         isMobile && showSearch ? (
           <div className="relative w-full">
-            <Search size={14} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search
+              size={14}
+              className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+            />
             <input
               type="text"
               value={search}
@@ -481,7 +489,7 @@ export function ContactsPage() {
             />
             {search && (
               <button
-                onClick={() => setSearch("")}
+                onClick={() => setSearch('')}
                 className="absolute inset-inline-end-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
                 aria-label={t('contacts.clearSearch')}
               >
@@ -492,7 +500,6 @@ export function ContactsPage() {
         ) : undefined
       }
     >
-
       {/* Tabs */}
       <div className="flex items-center border-b border-border-primary bg-bg-primary/30 shrink-0 overflow-x-auto">
         {tabs.map((t) => {
@@ -503,8 +510,8 @@ export function ContactsPage() {
               onClick={() => setTab(t.id)}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${
                 tab === t.id
-                  ? "text-accent border-accent"
-                  : "text-text-tertiary border-transparent hover:text-text-secondary"
+                  ? 'text-accent border-accent'
+                  : 'text-text-tertiary border-transparent hover:text-text-secondary'
               }`}
             >
               <Icon size={14} />
@@ -515,13 +522,16 @@ export function ContactsPage() {
       </div>
 
       {/* Tab: Contacts */}
-      {tab === "contacts" && (
+      {tab === 'contacts' && (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Mobile: Compact header with search (if not using expandable) */}
           {isMobile && !showSearch && (
             <div className="px-4 py-2 border-b border-border-primary bg-bg-primary/30 shrink-0">
               <div className="relative">
-                <Search size={14} className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <Search
+                  size={14}
+                  className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+                />
                 <input
                   type="text"
                   value={search}
@@ -531,7 +541,7 @@ export function ContactsPage() {
                 />
                 {search && (
                   <button
-                    onClick={() => setSearch("")}
+                    onClick={() => setSearch('')}
                     className="absolute inset-inline-end-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
                     aria-label="Clear search"
                   >
@@ -558,7 +568,10 @@ export function ContactsPage() {
                 </div>
                 <div className="flex-1" />
                 <div className="relative w-64">
-                  <Search size={14} className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                  <Search
+                    size={14}
+                    className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+                  />
                   <input
                     type="text"
                     value={search}
@@ -597,33 +610,34 @@ export function ContactsPage() {
                 onExportAllCsv={async () => {
                   try {
                     const r = await exportContactsToCsv();
-                    if (r) notify("Export complete", `Exported ${r.recordCount} contacts (CSV)`);
+                    if (r) notify('Export complete', `Exported ${r.recordCount} contacts (CSV)`);
                   } catch (e) {
-                    notify("Export failed", (e as Error).message);
+                    notify('Export failed', (e as Error).message);
                   }
                 }}
                 onExportAllVcard={async () => {
                   try {
                     const r = await exportContactsToVcard();
-                    if (r) notify("Export complete", `Exported ${r.recordCount} contacts (vCard)`);
+                    if (r) notify('Export complete', `Exported ${r.recordCount} contacts (vCard)`);
                   } catch (e) {
-                    notify("Export failed", (e as Error).message);
+                    notify('Export failed', (e as Error).message);
                   }
                 }}
                 onExportAllTasks={async () => {
                   try {
                     const r = await exportTasksToCsv();
-                    if (r) notify("Export complete", `Exported ${r.recordCount} tasks (CSV)`);
+                    if (r) notify('Export complete', `Exported ${r.recordCount} tasks (CSV)`);
                   } catch (e) {
-                    notify("Export failed", (e as Error).message);
+                    notify('Export failed', (e as Error).message);
                   }
                 }}
                 onExportAllCalendar={async () => {
                   try {
                     const r = await exportCalendarToIcs();
-                    if (r) notify("Export complete", `Exported ${r.recordCount} calendar events (ICS)`);
+                    if (r)
+                      notify('Export complete', `Exported ${r.recordCount} calendar events (ICS)`);
                   } catch (e) {
-                    notify("Export failed", (e as Error).message);
+                    notify('Export failed', (e as Error).message);
                   }
                 }}
                 onSelectAllToggle={handleSelectAllToggle}
@@ -643,7 +657,7 @@ export function ContactsPage() {
 
           {/* Content */}
           <div
-            className={`flex-1 overflow-y-auto ${isMobile ? "safe-area-bottom" : ""}`}
+            className={`flex-1 overflow-y-auto ${isMobile ? 'safe-area-bottom' : ''}`}
             aria-busy={loading && filteredContacts.length === 0}
             aria-live="polite"
             aria-label="Contacts list"
@@ -655,47 +669,45 @@ export function ContactsPage() {
             ) : filteredContacts.length === 0 ? (
               <EmptyState
                 icon={search ? Search : Users}
-                title={search ? "No matching contacts" : "No contacts yet"}
+                title={search ? 'No matching contacts' : 'No contacts yet'}
                 subtitle={
                   search
-                    ? "Try a different search term"
-                    : "Contacts appear as you send and receive emails. Or import them now."
+                    ? 'Try a different search term'
+                    : 'Contacts appear as you send and receive emails. Or import them now.'
                 }
                 action={
-                  search
-                    ? undefined
-                    : (
-                      <div className="flex items-center gap-2 flex-wrap justify-center">
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={<UserPlus size={14} />}
-                          onClick={() => setShowCreateContact(true)}
-                        >
-                          New contact
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          icon={<Upload size={14} />}
-                          onClick={() => setShowCsvImport(true)}
-                        >
-                          Import from CSV
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          icon={<GitMerge size={14} />}
-                          onClick={handleFindDuplicates}
-                          disabled={merging}
-                        >
-                          Find Duplicates
-                        </Button>
-                      </div>
-                    )
+                  search ? undefined : (
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={<UserPlus size={14} />}
+                        onClick={() => setShowCreateContact(true)}
+                      >
+                        New contact
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<Upload size={14} />}
+                        onClick={() => setShowCsvImport(true)}
+                      >
+                        Import from CSV
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<GitMerge size={14} />}
+                        onClick={handleFindDuplicates}
+                        disabled={merging}
+                      >
+                        Find Duplicates
+                      </Button>
+                    </div>
+                  )
                 }
               />
-            ) : isMobile || prefs.viewMode === "grid" ? (
+            ) : isMobile || prefs.viewMode === 'grid' ? (
               <ContactGridView
                 contacts={filteredContacts}
                 density={prefs.density}
@@ -747,7 +759,7 @@ export function ContactsPage() {
       )}
 
       {/* Tab: Tags — interactive cards */}
-      {tab === "tags" && (
+      {tab === 'tags' && (
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-text-tertiary">
@@ -791,7 +803,7 @@ export function ContactsPage() {
                 >
                   <span
                     className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: tag.color ?? "var(--color-accent)" }}
+                    style={{ backgroundColor: tag.color ?? 'var(--color-accent)' }}
                     aria-hidden="true"
                   />
                   <div className="flex-1 min-w-0">
@@ -803,7 +815,7 @@ export function ContactsPage() {
                       {tag.name}
                     </button>
                     <p className="text-[0.625rem] text-text-tertiary">
-                      {tag.contact_count} {tag.contact_count === 1 ? "contact" : "contacts"}
+                      {tag.contact_count} {tag.contact_count === 1 ? 'contact' : 'contacts'}
                     </p>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
@@ -838,12 +850,10 @@ export function ContactsPage() {
       )}
 
       {/* Tab: Groups — cards with member preview */}
-      {tab === "groups" && (
+      {tab === 'groups' && (
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-text-tertiary">
-              Click a group to view its members.
-            </p>
+            <p className="text-xs text-text-tertiary">Click a group to view its members.</p>
           </div>
           <GroupManager
             accountId={primaryAccountId}
@@ -856,7 +866,7 @@ export function ContactsPage() {
       )}
 
       {/* Tab: Segments — cards with preview */}
-      {tab === "segments" && (
+      {tab === 'segments' && (
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-text-tertiary">
@@ -896,12 +906,8 @@ export function ContactsPage() {
                 >
                   <Filter size={14} className="text-accent shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xs font-medium text-text-primary truncate">
-                      {seg.name}
-                    </h3>
-                    <p className="text-[0.625rem] text-text-tertiary truncate">
-                      {seg.query}
-                    </p>
+                    <h3 className="text-xs font-medium text-text-primary truncate">{seg.name}</h3>
+                    <p className="text-[0.625rem] text-text-tertiary truncate">{seg.query}</p>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
                     <button
@@ -938,12 +944,10 @@ export function ContactsPage() {
       )}
 
       {/* Tab: Imports (Phase 4) */}
-      {tab === "imports" && (
+      {tab === 'imports' && (
         <div className="flex-1 overflow-y-auto p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-text-tertiary">
-              History of CSV imports and their results.
-            </p>
+            <p className="text-xs text-text-tertiary">History of CSV imports and their results.</p>
             <Button
               variant="primary"
               size="sm"
@@ -989,10 +993,7 @@ export function ContactsPage() {
       />
 
       {/* Add Segment Modal */}
-      <AddSegmentModal
-        isOpen={showAddSegmentModal}
-        onClose={() => setShowAddSegmentModal(false)}
-      />
+      <AddSegmentModal isOpen={showAddSegmentModal} onClose={() => setShowAddSegmentModal(false)} />
 
       {/* Segment Preview Drawer (Phase 2) */}
       <SegmentPreviewDrawer

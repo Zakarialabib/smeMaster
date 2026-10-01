@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { ThreadView } from "./features/mail/components/ThreadView";
-import { Composer } from "./features/mail/components/composer/Composer";
-import { UndoSendToast } from "./features/mail/components/composer/UndoSendToast";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useWindowInit } from "@shared/hooks/useWindowInit";
-import { getThreadById, getThreadLabelIds } from "./shared/services/db/threads";
-import type { Thread } from "./features/mail/stores/threadStore";
+import { useEffect, useState } from 'react';
+import { ThreadView } from './features/mail/components/ThreadView';
+import { Composer } from './features/mail/components/composer/Composer';
+import { UndoSendToast } from './features/mail/components/composer/UndoSendToast';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useWindowInit } from '@shared/hooks/useWindowInit';
+import { getThreadById, getThreadLabelIds } from './shared/services/db/threads';
+import type { Thread } from './features/mail/stores/threadStore';
 
 export default function ThreadWindow() {
   const { loading: initLoading, error: initError } = useWindowInit({ skipClients: true });
@@ -15,11 +15,11 @@ export default function ThreadWindow() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const threadId = params.get("thread");
-    const accountId = params.get("account");
+    const threadId = params.get('thread');
+    const accountId = params.get('account');
 
     if (!threadId || !accountId) {
-      setFetchError("Missing thread or account parameter");
+      setFetchError('Missing thread or account parameter');
       setFetchDone(true);
       return;
     }
@@ -31,7 +31,7 @@ export default function ThreadWindow() {
 
         const dbThread = await getThreadById(accountId!, threadId!);
         if (!dbThread) {
-          setFetchError("Thread not found");
+          setFetchError('Thread not found');
           setFetchDone(true);
           return;
         }
@@ -54,8 +54,8 @@ export default function ThreadWindow() {
           fromAddress: dbThread.from_address,
         });
       } catch (err) {
-        console.error("Failed to initialize thread window:", err);
-        setFetchError("Failed to load thread");
+        console.error('Failed to initialize thread window:', err);
+        setFetchError('Failed to load thread');
       }
       setFetchDone(true);
     }
@@ -77,7 +77,7 @@ export default function ThreadWindow() {
   if (displayError || !thread) {
     return (
       <div className="flex h-screen items-center justify-center bg-bg-primary text-text-secondary">
-        <span className="text-sm">{displayError ?? "Thread not found"}</span>
+        <span className="text-sm">{displayError ?? 'Thread not found'}</span>
       </div>
     );
   }

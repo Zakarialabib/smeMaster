@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Package, AlertTriangle, Layers, Wallet, Pencil, X, Check, RefreshCw,
-} from 'lucide-react';
+import { Package, AlertTriangle, Layers, Wallet, Pencil, X, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { formatMoney } from '@features/invoicing/utils/format';
 import { useCompanyStore, getActiveCompany } from './companyStore';
@@ -66,7 +64,13 @@ export default function StockView() {
           <LiveBadge />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" icon={<RefreshCw size={15} />} onClick={load} disabled={loading}>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<RefreshCw size={15} />}
+            onClick={load}
+            disabled={loading}
+          >
             Refresh
           </Button>
           <Button
@@ -89,16 +93,38 @@ export default function StockView() {
 
       {!error && items.length === 0 && !loading && (
         <InfoBanner>
-          No products yet for <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span>. Add
-          items in <span className="font-medium">Invoicing → Items</span> and they will appear here with
-          live stock levels and reorder alerts.
+          No products yet for{' '}
+          <span className="font-medium text-text-primary">{company?.name ?? 'this company'}</span>.
+          Add items in <span className="font-medium">Invoicing → Items</span> and they will appear
+          here with live stock levels and reorder alerts.
         </InfoBanner>
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <StatCard label="Total SKUs" value={totalSkus} icon={<Layers size={18} />} tone="accent" hint="active products" format="number" />
-        <StatCard label="Low stock" value={lowStock} icon={<AlertTriangle size={18} />} tone="danger" hint="below alert level" format="number" />
-        <StatCard label="Inventory value" value={inventoryValue} icon={<Wallet size={18} />} tone="success" compact hint="at sell price" />
+        <StatCard
+          label="Total SKUs"
+          value={totalSkus}
+          icon={<Layers size={18} />}
+          tone="accent"
+          hint="active products"
+          format="number"
+        />
+        <StatCard
+          label="Low stock"
+          value={lowStock}
+          icon={<AlertTriangle size={18} />}
+          tone="danger"
+          hint="below alert level"
+          format="number"
+        />
+        <StatCard
+          label="Inventory value"
+          value={inventoryValue}
+          icon={<Wallet size={18} />}
+          tone="success"
+          compact
+          hint="at sell price"
+        />
       </div>
 
       {/* Desktop table */}
@@ -129,10 +155,18 @@ export default function StockView() {
                         <span className="font-medium text-text-primary">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-text-tertiary">{p.sku ?? '—'}</td>
-                    <td className="px-5 py-3.5 text-text-secondary hidden lg:table-cell">{p.unit}</td>
-                    <td className="px-5 py-3.5 text-end font-semibold text-text-primary tabular-nums">{p.stock_qty}</td>
-                    <td className="px-5 py-3.5 text-end text-text-tertiary tabular-nums">{p.stock_alert}</td>
+                    <td className="px-5 py-3.5 font-mono text-xs text-text-tertiary">
+                      {p.sku ?? '—'}
+                    </td>
+                    <td className="px-5 py-3.5 text-text-secondary hidden lg:table-cell">
+                      {p.unit}
+                    </td>
+                    <td className="px-5 py-3.5 text-end font-semibold text-text-primary tabular-nums">
+                      {p.stock_qty}
+                    </td>
+                    <td className="px-5 py-3.5 text-end text-text-tertiary tabular-nums">
+                      {p.stock_alert}
+                    </td>
                     <td className="px-5 py-3.5 text-end font-medium text-text-primary tabular-nums">
                       {formatMoney(p.stock_qty * (p.sell_price || 0))}
                     </td>
@@ -264,7 +298,9 @@ function AdjustStockModal({
         </p>
 
         <div className="flex justify-end gap-2 mt-5">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
           <Button icon={<Check size={15} />} onClick={save} disabled={saving}>
             {saving ? 'Saving…' : 'Save'}
           </Button>

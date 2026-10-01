@@ -3,9 +3,9 @@
  * Factory for OpenAI-compatible providers (custom, lmstudio, ollama, byteplus, mistral).
  * Consolidates the common chat completion pattern with configurable baseURL and auth.
  */
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
-import type { EmbeddingResult } from "../capabilities";
-import { buildSystemPrompt } from "../utils";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from '../types';
+import type { EmbeddingResult } from '../capabilities';
+import { buildSystemPrompt } from '../utils';
 
 interface ChatCompletionRequest {
   model: string;
@@ -28,8 +28,8 @@ interface EmbeddingResponse {
 export function validateUrl(url: string): string {
   try {
     const parsed = new URL(url);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new Error("Only http and https are allowed");
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('Only http and https are allowed');
     }
     return url;
   } catch (err) {
@@ -41,16 +41,16 @@ export function createOpenAICompatibleProvider(
   baseUrl: string,
   apiKey: string,
   model: string,
-  aiLanguage = "auto",
+  aiLanguage = 'auto',
   embeddingModel?: string,
 ): AiProviderClient {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
 
   async function chatCompletion(req: ChatCompletionRequest): Promise<ChatCompletionResponse> {
     const response = await fetch(`${normalizedBaseUrl}/v1/chat/completions`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(req),
@@ -58,9 +58,7 @@ export function createOpenAICompatibleProvider(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `AI provider error (${response.status}) [model=${model}]: ${errorText}`,
-      );
+      throw new Error(`AI provider error (${response.status}) [model=${model}]: ${errorText}`);
     }
 
     return response.json();
@@ -71,9 +69,9 @@ export function createOpenAICompatibleProvider(
     embModel: string,
   ): Promise<EmbeddingResponse> {
     const response = await fetch(`${normalizedBaseUrl}/v1/embeddings`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ model: embModel, input }),
@@ -81,9 +79,7 @@ export function createOpenAICompatibleProvider(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `Embeddings error (${response.status}) [model=${embModel}]: ${errorText}`,
-      );
+      throw new Error(`Embeddings error (${response.status}) [model=${embModel}]: ${errorText}`);
     }
 
     return response.json();
@@ -95,9 +91,9 @@ export function createOpenAICompatibleProvider(
       const messages: { role: string; content: string }[] = [];
 
       if (systemPrompt) {
-        messages.push({ role: "system", content: systemPrompt });
+        messages.push({ role: 'system', content: systemPrompt });
       }
-      messages.push({ role: "user", content: req.userContent });
+      messages.push({ role: 'user', content: req.userContent });
 
       const response = await chatCompletion({
         model,
@@ -105,14 +101,14 @@ export function createOpenAICompatibleProvider(
         max_tokens: req.maxTokens ?? 1024,
       });
 
-      return response.choices[0]?.message?.content ?? "";
+      return response.choices[0]?.message?.content ?? '';
     },
 
     async testConnection(): Promise<boolean> {
       try {
         const response = await chatCompletion({
           model,
-          messages: [{ role: "user", content: "Say hi" }],
+          messages: [{ role: 'user', content: 'Say hi' }],
           max_tokens: 10,
         });
         return !!response.choices[0]?.message?.content;

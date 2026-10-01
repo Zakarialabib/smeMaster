@@ -1,4 +1,4 @@
-﻿import type { SendAsAlias } from "@features/mail/db/sendAsAliases";
+﻿import type { SendAsAlias } from '@features/mail/db/sendAsAliases';
 
 interface FromSelectorProps {
   aliases: SendAsAlias[];
@@ -17,9 +17,7 @@ export function FromSelector({ aliases, selectedEmail, onChange }: FromSelectorP
 
   return (
     <div className="flex items-center gap-2 group">
-      <span className="text-xs text-text-tertiary w-8 shrink-0">
-        From
-      </span>
+      <span className="text-xs text-text-tertiary w-8 shrink-0">From</span>
       <div className="flex-1 relative">
         <select
           value={selectedEmail}
@@ -31,9 +29,7 @@ export function FromSelector({ aliases, selectedEmail, onChange }: FromSelectorP
         >
           {aliases.map((alias) => (
             <option key={alias.id} value={alias.email}>
-              {alias.displayName
-                ? `${alias.email} — ${alias.displayName}`
-                : alias.email}
+              {alias.displayName ? `${alias.email} — ${alias.displayName}` : alias.email}
             </option>
           ))}
         </select>
@@ -46,4 +42,3 @@ export function FromSelector({ aliases, selectedEmail, onChange }: FromSelectorP
     </div>
   );
 }
-

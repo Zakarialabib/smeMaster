@@ -1,14 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 const dashboardState = {
   widgets: [
-    { id: "contacts", title: "Contacts Stats", visible: true, order: 0 },
-    { id: "tasks", title: "Task Summary", visible: true, order: 1 },
+    { id: 'contacts', title: 'Contacts Stats', visible: true, order: 0 },
+    { id: 'tasks', title: 'Task Summary', visible: true, order: 1 },
   ],
   loaded: true,
   rangeDays: 30,
-  density: "comfortable",
+  density: 'comfortable',
   loadPreferences: vi.fn(),
   toggleWidget: vi.fn(),
   reorderWidgets: vi.fn(),
@@ -16,18 +16,19 @@ const dashboardState = {
   setDensity: vi.fn(),
 };
 
-vi.mock("@features/dashboard/stores/dashboardStore", () => ({
-  useDashboardStore: (sel?: (s: unknown) => unknown) => (sel ? sel(dashboardState) : dashboardState),
+vi.mock('@features/dashboard/stores/dashboardStore', () => ({
+  useDashboardStore: (sel?: (s: unknown) => unknown) =>
+    sel ? sel(dashboardState) : dashboardState,
   DASHBOARD_RANGE_OPTIONS: [7, 30, 90],
 }));
 
-vi.mock("@features/accounts/stores/accountStore", () => ({
+vi.mock('@features/accounts/stores/accountStore', () => ({
   useAccountStore: (sel: (s: { activeAccountId: string }) => unknown) =>
-    sel({ activeAccountId: "acc1" }),
+    sel({ activeAccountId: 'acc1' }),
 }));
 
-vi.mock("@shared/services/db/db-invoke", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@shared/services/db/db-invoke")>();
+vi.mock('@shared/services/db/db-invoke', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@shared/services/db/db-invoke')>();
   return {
     ...actual,
     dashboardContactsTotal: vi.fn().mockResolvedValue(0),
@@ -54,9 +55,9 @@ vi.mock("@shared/services/db/db-invoke", async (importOriginal) => {
   };
 });
 
-vi.mock("@shared/hooks/useMobile", () => ({ useMobile: () => false }));
+vi.mock('@shared/hooks/useMobile', () => ({ useMobile: () => false }));
 // SectionCard renders a TanStack Router <Link>; provide a plain <a> stand-in.
-vi.mock("@tanstack/react-router", () => ({
+vi.mock('@tanstack/react-router', () => ({
   Link: ({
     to,
     children,
@@ -65,7 +66,7 @@ vi.mock("@tanstack/react-router", () => ({
     to: string;
     children?: React.ReactNode;
     className?: string;
-    "aria-labelledby"?: string;
+    'aria-labelledby'?: string;
     onClick?: () => void;
   }) => (
     <a href={`#${to}`} {...rest}>
@@ -73,7 +74,7 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
 }));
-vi.mock("@shared/services/events/eventBus", () => ({
+vi.mock('@shared/services/events/eventBus', () => ({
   eventBus: {
     emit: vi.fn(),
     on: vi.fn(() => vi.fn()),
@@ -84,29 +85,29 @@ vi.mock("@shared/services/events/eventBus", () => ({
     destroy: vi.fn(),
   },
 }));
-vi.mock("@/router/navigate", () => ({ navigateToLabel: vi.fn() }));
-vi.mock("@shared/components/ui/EmptyState", () => ({
+vi.mock('@/router/navigate', () => ({ navigateToLabel: vi.fn() }));
+vi.mock('@shared/components/ui/EmptyState', () => ({
   EmptyState: () => <div data-testid="empty-state" />,
 }));
-vi.mock("@shared/components/ui/Modal", () => ({
+vi.mock('@shared/components/ui/Modal', () => ({
   Modal: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock("@shared/components/ui/Button", () => ({
+vi.mock('@shared/components/ui/Button', () => ({
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
     <button onClick={onClick}>{children}</button>
   ),
 }));
-vi.mock("@shared/components/ui/ErrorBoundary", () => ({
+vi.mock('@shared/components/ui/ErrorBoundary', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-import { DashboardPage } from "./DashboardPage";
+import { DashboardPage } from './DashboardPage';
 
-describe("DashboardPage — a11y: aria-busy + aria-live", () => {
-  it("marks the widgets region as not busy when loaded", () => {
+describe('DashboardPage — a11y: aria-busy + aria-live', () => {
+  it('marks the widgets region as not busy when loaded', () => {
     render(<DashboardPage />);
-    const region = screen.getByLabelText("Dashboard widgets");
-    expect(region).toHaveAttribute("aria-busy", "false");
-    expect(region).toHaveAttribute("aria-live", "polite");
+    const region = screen.getByLabelText('Dashboard widgets');
+    expect(region).toHaveAttribute('aria-busy', 'false');
+    expect(region).toHaveAttribute('aria-live', 'polite');
   });
 });

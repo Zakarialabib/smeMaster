@@ -16,7 +16,10 @@ interface UseFormFieldReturn {
   reset: () => void;
 }
 
-export function useFormField({ initialValue = '', validator }: UseFormFieldOptions = {}): UseFormFieldReturn {
+export function useFormField({
+  initialValue = '',
+  validator,
+}: UseFormFieldOptions = {}): UseFormFieldReturn {
   const [value, setValue] = useState(initialValue);
   const [touched, setTouched] = useState(false);
 

@@ -13,9 +13,9 @@ export interface ImapConfig {
 }
 
 export interface ImapFolder {
-  path: string;       // decoded UTF-8 display name
-  raw_path: string;   // original modified UTF-7 path for IMAP commands
-  name: string;       // decoded display name (last segment)
+  path: string; // decoded UTF-8 display name
+  raw_path: string; // original modified UTF-7 path for IMAP commands
+  name: string; // decoded display name (last segment)
   delimiter: string;
   special_use: string | null;
   exists: number;
@@ -136,50 +136,98 @@ export const imapTestConnection = (config: ImapConfig): Promise<string> =>
 export const imapListFolders = (config: ImapConfig): Promise<ImapFolder[]> =>
   imapCmd('list_folders', { config });
 
-export const imapFetchMessages = (config: ImapConfig, folder: string, uids: number[]): Promise<ImapFetchResult> =>
-  imapCmd('fetch_messages', { config, folder, uids });
+export const imapFetchMessages = (
+  config: ImapConfig,
+  folder: string,
+  uids: number[],
+): Promise<ImapFetchResult> => imapCmd('fetch_messages', { config, folder, uids });
 
-export const imapFetchNewUids = (config: ImapConfig, folder: string, sinceUid: number): Promise<number[]> =>
-  imapCmd('fetch_new_uids', { config, folder, sinceUid });
+export const imapFetchNewUids = (
+  config: ImapConfig,
+  folder: string,
+  sinceUid: number,
+): Promise<number[]> => imapCmd('fetch_new_uids', { config, folder, sinceUid });
 
 export const imapSearchAllUids = (config: ImapConfig, folder: string): Promise<number[]> =>
   imapCmd('search_all_uids', { config, folder });
 
-export const imapFetchMessageBody = (config: ImapConfig, folder: string, uid: number): Promise<ImapMessage> =>
-  imapCmd('fetch_message_body', { config, folder, uid });
+export const imapFetchMessageBody = (
+  config: ImapConfig,
+  folder: string,
+  uid: number,
+): Promise<ImapMessage> => imapCmd('fetch_message_body', { config, folder, uid });
 
-export const imapSetFlags = (config: ImapConfig, folder: string, uids: number[], flags: string[], add: boolean): Promise<void> =>
-  imapCmd('set_flags', { config, folder, uids, flags, add });
+export const imapSetFlags = (
+  config: ImapConfig,
+  folder: string,
+  uids: number[],
+  flags: string[],
+  add: boolean,
+): Promise<void> => imapCmd('set_flags', { config, folder, uids, flags, add });
 
-export const imapMoveMessages = (config: ImapConfig, folder: string, uids: number[], destination: string): Promise<void> =>
-  imapCmd('move_messages', { config, folder, uids, destination });
+export const imapMoveMessages = (
+  config: ImapConfig,
+  folder: string,
+  uids: number[],
+  destination: string,
+): Promise<void> => imapCmd('move_messages', { config, folder, uids, destination });
 
-export const imapDeleteMessages = (config: ImapConfig, folder: string, uids: number[]): Promise<void> =>
-  imapCmd('delete_messages', { config, folder, uids });
+export const imapDeleteMessages = (
+  config: ImapConfig,
+  folder: string,
+  uids: number[],
+): Promise<void> => imapCmd('delete_messages', { config, folder, uids });
 
-export const imapAppendMessage = (config: ImapConfig, folder: string, rawMessage: string, flags?: string): Promise<void> =>
-  imapCmd('append_message', { config, folder, flags: flags ?? null, rawMessage });
+export const imapAppendMessage = (
+  config: ImapConfig,
+  folder: string,
+  rawMessage: string,
+  flags?: string,
+): Promise<void> => imapCmd('append_message', { config, folder, flags: flags ?? null, rawMessage });
 
-export const imapGetFolderStatus = (config: ImapConfig, folder: string): Promise<ImapFolderStatus> =>
-  imapCmd('get_folder_status', { config, folder });
+export const imapGetFolderStatus = (
+  config: ImapConfig,
+  folder: string,
+): Promise<ImapFolderStatus> => imapCmd('get_folder_status', { config, folder });
 
-export const imapFetchAttachment = (config: ImapConfig, folder: string, uid: number, partId: string): Promise<string> =>
-  imapCmd('fetch_attachment', { config, folder, uid, partId });
+export const imapFetchAttachment = (
+  config: ImapConfig,
+  folder: string,
+  uid: number,
+  partId: string,
+): Promise<string> => imapCmd('fetch_attachment', { config, folder, uid, partId });
 
-export const imapFetchRawMessage = (config: ImapConfig, folder: string, uid: number): Promise<string> =>
-  imapCmd('fetch_raw_message', { config, folder, uid });
+export const imapFetchRawMessage = (
+  config: ImapConfig,
+  folder: string,
+  uid: number,
+): Promise<string> => imapCmd('fetch_raw_message', { config, folder, uid });
 
-export const imapDeltaCheck = (config: ImapConfig, folders: DeltaCheckRequest[]): Promise<DeltaCheckResult[]> =>
-  imapCmd('delta_check', { config, folders });
+export const imapDeltaCheck = (
+  config: ImapConfig,
+  folders: DeltaCheckRequest[],
+): Promise<DeltaCheckResult[]> => imapCmd('delta_check', { config, folders });
 
-export const imapSyncFolder = (config: ImapConfig, folder: string, batchSize: number, sinceDate?: string | null): Promise<ImapFolderSyncResult> =>
+export const imapSyncFolder = (
+  config: ImapConfig,
+  folder: string,
+  batchSize: number,
+  sinceDate?: string | null,
+): Promise<ImapFolderSyncResult> =>
   imapCmd('sync_folder', { config, folder, batchSize, sinceDate: sinceDate ?? null });
 
-export const imapSearchFolder = (config: ImapConfig, folder: string, sinceDate?: string | null): Promise<ImapFolderSearchResult> =>
+export const imapSearchFolder = (
+  config: ImapConfig,
+  folder: string,
+  sinceDate?: string | null,
+): Promise<ImapFolderSearchResult> =>
   imapCmd('search_folder', { config, folder, sinceDate: sinceDate ?? null });
 
-export const imapRawFetchDiagnostic = (config: ImapConfig, folder: string, uidRange: string): Promise<string> =>
-  imapCmd('raw_fetch_diagnostic', { config, folder, uidRange });
+export const imapRawFetchDiagnostic = (
+  config: ImapConfig,
+  folder: string,
+  uidRange: string,
+): Promise<string> => imapCmd('raw_fetch_diagnostic', { config, folder, uidRange });
 
 // ---------- SMTP commands ----------
 

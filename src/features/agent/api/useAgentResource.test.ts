@@ -57,9 +57,7 @@ describe('useAgentResource', () => {
     expect(s.message).toContain('connection refused');
 
     rerender();
-    const { result: r2 } = renderHook(() =>
-      useAgentResource(() => Promise.reject(apiError()), []),
-    );
+    const { result: r2 } = renderHook(() => useAgentResource(() => Promise.reject(apiError()), []));
     await waitFor(() => expect(r2.current.state.kind).toBe('error'));
     const e = r2.current.state;
     if (e.kind !== 'error') throw new Error('expected error');
@@ -112,9 +110,7 @@ describe('useAgentResource', () => {
       fast.resolve('NEW');
       await fast.promise;
     });
-    await waitFor(() =>
-      expect(result.current.state).toEqual({ kind: 'ready', data: 'NEW' }),
-    );
+    await waitFor(() => expect(result.current.state).toEqual({ kind: 'ready', data: 'NEW' }));
 
     // Now the stale one lands. It must be DISCARDED.
     await act(async () => {

@@ -69,10 +69,9 @@ describe('OpsDigest when the server is unreachable', () => {
     // server is never mistaken for a quiet day.
     __setBaseUrlForTests('http://127.0.0.1:1');
     render(<OpsDigest />);
-    await waitFor(
-      () => expect(screen.getByText('Cannot reach the agent')).toBeDefined(),
-      { timeout: 10_000 },
-    );
+    await waitFor(() => expect(screen.getByText('Cannot reach the agent')).toBeDefined(), {
+      timeout: 10_000,
+    });
     expect(screen.queryByText('Calls')).toBeNull();
   });
 });

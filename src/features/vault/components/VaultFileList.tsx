@@ -1,9 +1,9 @@
-import { VaultFileCard } from "./VaultFileCard";
-import type { VaultFileItem } from "../stores/vaultStore";
+import { VaultFileCard } from './VaultFileCard';
+import type { VaultFileItem } from '../stores/vaultStore';
 
 interface VaultFileListProps {
   entries: VaultFileItem[];
-  viewMode: "grid" | "list";
+  viewMode: 'grid' | 'list';
   onNavigate: (path: string) => void;
   onPreview: (entry: VaultFileItem) => void;
   onDelete: (path: string) => void;
@@ -24,7 +24,7 @@ export function VaultFileList({
 }: VaultFileListProps) {
   if (entries.length === 0) return null;
 
-  if (viewMode === "grid") {
+  if (viewMode === 'grid') {
     return (
       <div
         className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-3"

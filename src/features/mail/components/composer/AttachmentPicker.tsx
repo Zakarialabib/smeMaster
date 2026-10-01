@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Paperclip, X } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { useComposerStore, type ComposerAttachment } from "@features/mail/stores/composerStore";
-import { readFileAsBase64 } from "@shared/utils/fileUtils";
-import { formatFileSize } from "@shared/utils/fileTypeHelpers";
-import { getSetting } from "@features/settings";
+import { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Paperclip, X } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { useComposerStore, type ComposerAttachment } from '@features/mail/stores/composerStore';
+import { readFileAsBase64 } from '@shared/utils/fileUtils';
+import { formatFileSize } from '@shared/utils/fileTypeHelpers';
+import { getSetting } from '@features/settings';
 
 const DEFAULT_MAX_TOTAL_MB = 24;
 const DEFAULT_MAX_PER_FILE_MB = 25;
@@ -28,10 +28,10 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
   useEffect(() => {
     async function loadLimits() {
       try {
-        const totalSetting = await getSetting("max_attachment_size_mb");
+        const totalSetting = await getSetting('max_attachment_size_mb');
         if (totalSetting) setMaxTotalMb(parseInt(totalSetting, 10));
 
-        const perFileSetting = await getSetting("max_attachment_per_file_mb");
+        const perFileSetting = await getSetting('max_attachment_per_file_mb');
         if (perFileSetting) setMaxPerFileMb(parseInt(perFileSetting, 10));
       } catch {
         // use defaults
@@ -61,14 +61,14 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
         id: crypto.randomUUID(),
         file,
         filename: file.name,
-        mimeType: file.type || "application/octet-stream",
+        mimeType: file.type || 'application/octet-stream',
         size: file.size,
         content,
       };
       addAttachment(attachment);
     }
     // Reset input so re-selecting the same file works
-    if (inputRef.current) inputRef.current.value = "";
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   return (
@@ -83,15 +83,17 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
         }}
       />
 
-      <div className={`flex items-center gap-2 flex-wrap rounded-md transition-colors ${isDragging ? "bg-accent/10 border border-dashed border-accent px-2" : ""}`}>
+      <div
+        className={`flex items-center gap-2 flex-wrap rounded-md transition-colors ${isDragging ? 'bg-accent/10 border border-dashed border-accent px-2' : ''}`}
+      >
         <Button
           variant="ghost"
           size="sm"
           onClick={() => inputRef.current?.click()}
-          title={t("composer.attachFiles") + " (drag & drop files here)"}
+          title={t('composer.attachFiles') + ' (drag & drop files here)'}
         >
           <Paperclip size={14} />
-          <span>{t("composer.attach")}</span>
+          <span>{t('composer.attach')}</span>
         </Button>
 
         {attachments.map((att) => (
@@ -99,12 +101,8 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
             key={att.id}
             className="flex items-center gap-1.5 bg-bg-secondary border border-border-secondary rounded-md px-2 py-1 text-xs"
           >
-            <span className="text-text-primary truncate max-w-[150px]">
-              {att.filename}
-            </span>
-            <span className="text-text-tertiary shrink-0">
-              {formatFileSize(att.size)}
-            </span>
+            <span className="text-text-primary truncate max-w-[150px]">{att.filename}</span>
+            <span className="text-text-tertiary shrink-0">{formatFileSize(att.size)}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -118,14 +116,12 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
         ))}
 
         {attachments.length > 0 && (
-          <span className="text-xs text-text-tertiary">
-            {formatFileSize(totalSize)} total
-          </span>
+          <span className="text-xs text-text-tertiary">{formatFileSize(totalSize)} total</span>
         )}
 
         {isDragging && attachments.length === 0 && (
           <span className="text-xs text-accent font-medium ms-1">
-            {t("composer.dropFilesToAttach")}
+            {t('composer.dropFilesToAttach')}
           </span>
         )}
       </div>

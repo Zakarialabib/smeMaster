@@ -17,13 +17,13 @@
  *     storage: createJSONStorage(() => tauriStoreStorage),
  *   });
  */
-import type { StateStorage } from "zustand/middleware";
+import type { StateStorage } from 'zustand/middleware';
 
 /** Tauri runtime detection — duplicated from usePersistentStorage to keep
  *  this module dependency-free for the test environment. */
 function detectTauri(): boolean {
-  if (typeof window === "undefined") return false;
-  return "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  if (typeof window === 'undefined') return false;
+  return '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
 }
 
 // ── localStorage helpers (used as fallback on read, mirror on write) ───────
@@ -59,17 +59,15 @@ async function getTauriStore(): Promise<unknown> {
   if (!detectTauri()) return null;
   if (tauriStore) return tauriStore;
   if (!tauriStorePromise) {
-    tauriStorePromise = import("@tauri-apps/plugin-store")
-      .then(({ load }) =>
-        load("smemaster.prefs.json", { autoSave: true, defaults: {} }),
-      )
+    tauriStorePromise = import('@tauri-apps/plugin-store')
+      .then(({ load }) => load('smemaster.prefs.json', { autoSave: true, defaults: {} }))
       .then((s) => {
         tauriStore = s;
         return s;
       })
       .catch((err) => {
         tauriStorePromise = null;
-        console.warn("[tauriStoreStorage] load failed", err);
+        console.warn('[tauriStoreStorage] load failed', err);
         return null;
       });
   }

@@ -1,9 +1,9 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import type { DbAttachment } from "@shared/services/db/attachments";
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
-import { FileText } from "lucide-react";
-import { formatFileSize, isImage, isPdf } from "@shared/utils/fileTypeHelpers";
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { DbAttachment } from '@shared/services/db/attachments';
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
+import { FileText } from 'lucide-react';
+import { formatFileSize, isImage, isPdf } from '@shared/utils/fileTypeHelpers';
 
 /** Dedup attachments by filename+size (content-based) */
 function dedup(attachments: DbAttachment[]): DbAttachment[] {
@@ -32,12 +32,14 @@ export function InlineAttachmentPreview({
   onAttachmentClick,
 }: InlineAttachmentPreviewProps) {
   // Filter to previewable non-inline attachments, dedup, exclude CID-referenced
-  const previewableAttachments = dedup(attachments.filter((a) => {
-    // Skip attachments whose CID is referenced in the email body
-    if (a.content_id && referencedCids?.has(a.content_id)) return false;
-    if (a.is_inline && !a.filename) return false;
-    return isImage(a.mime_type) || isPdf(a.mime_type, a.filename);
-  }));
+  const previewableAttachments = dedup(
+    attachments.filter((a) => {
+      // Skip attachments whose CID is referenced in the email body
+      if (a.content_id && referencedCids?.has(a.content_id)) return false;
+      if (a.is_inline && !a.filename) return false;
+      return isImage(a.mime_type) || isPdf(a.mime_type, a.filename);
+    }),
+  );
 
   if (previewableAttachments.length === 0) return null;
 
@@ -73,7 +75,7 @@ export function InlineAttachmentPreview({
               <FileText size={16} className="text-danger shrink-0" />
               <div className="min-w-0">
                 <div className="text-xs text-text-primary truncate">
-                  {att.filename ?? "Document.pdf"}
+                  {att.filename ?? 'Document.pdf'}
                 </div>
                 {att.size != null && (
                   <div className="text-[0.625rem] text-text-tertiary">
@@ -116,7 +118,7 @@ function ImageThumbnail({
       const response = await provider.fetchAttachment(messageId, attachment.gmail_attachment_id);
 
       // Normalize URL-safe base64 (Gmail API) to standard base64
-      const base64 = response.data.replace(/-/g, "+").replace(/_/g, "/");
+      const base64 = response.data.replace(/-/g, '+').replace(/_/g, '/');
       const binaryStr = atob(base64);
       const bytes = new Uint8Array(binaryStr.length);
       for (let i = 0; i < binaryStr.length; i++) {
@@ -124,11 +126,11 @@ function ImageThumbnail({
       }
 
       const blob = new Blob([bytes.buffer as ArrayBuffer], {
-        type: attachment.mime_type ?? "image/jpeg",
+        type: attachment.mime_type ?? 'image/jpeg',
       });
       setThumbnailUrl(URL.createObjectURL(blob));
     } catch (err) {
-      console.error("Failed to load thumbnail:", err);
+      console.error('Failed to load thumbnail:', err);
     } finally {
       setLoading(false);
     }
@@ -175,7 +177,7 @@ function ImageThumbnail({
         {thumbnailUrl && (
           <img
             src={thumbnailUrl}
-            alt={attachment.filename ?? "Image"}
+            alt={attachment.filename ?? 'Image'}
             className="max-w-[200px] max-h-[200px] object-cover"
           />
         )}
@@ -188,4 +190,3 @@ function ImageThumbnail({
     </div>
   );
 }
-

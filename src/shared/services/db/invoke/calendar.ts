@@ -122,9 +122,6 @@ export async function updateRemoteCalendarEvent(
 
 // `delete_event` removes the event from the remote provider. The local row
 // should be deleted by the caller in the same flow.
-export async function deleteRemoteCalendarEvent(
-  accountId: string,
-  eventId: string,
-): Promise<void> {
+export async function deleteRemoteCalendarEvent(accountId: string, eventId: string): Promise<void> {
   return invokeCommand<void>('db_calendar_delete_event', { accountId, eventId });
 }

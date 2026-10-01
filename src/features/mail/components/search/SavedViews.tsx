@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from "react";
-import { Plus, Check, Pencil, Trash2 } from "lucide-react";
-import { useLayoutStore } from "@shared/stores/layoutStore";
-import { useActiveLabel } from "@shared/hooks/useRouteNavigation";
-import { navigateToLabel } from "@/router/navigate";
+import { useState, useCallback, useEffect } from 'react';
+import { Plus, Check, Pencil, Trash2 } from 'lucide-react';
+import { useLayoutStore } from '@shared/stores/layoutStore';
+import { useActiveLabel } from '@shared/hooks/useRouteNavigation';
+import { navigateToLabel } from '@/router/navigate';
 
 export interface SavedView {
   id: string;
@@ -19,7 +19,7 @@ export interface SavedView {
   order: number;
 }
 
-const STORAGE_KEY = "smemaster-saved-views";
+const STORAGE_KEY = 'smemaster-saved-views';
 
 function loadViews(): SavedView[] {
   try {
@@ -35,10 +35,10 @@ function saveViews(views: SavedView[]): void {
 }
 
 const DEFAULT_VIEWS: SavedView[] = [
-  { id: "all", name: "All Mail", label: "inbox", order: 0 },
-  { id: "unread", name: "Unread", label: "inbox", category: "Unread", order: 1 },
-  { id: "flagged", name: "Flagged", label: "starred", order: 2 },
-  { id: "newsletters", name: "Newsletters", label: "inbox", category: "Newsletters", order: 4 },
+  { id: 'all', name: 'All Mail', label: 'inbox', order: 0 },
+  { id: 'unread', name: 'Unread', label: 'inbox', category: 'Unread', order: 1 },
+  { id: 'flagged', name: 'Flagged', label: 'starred', order: 2 },
+  { id: 'newsletters', name: 'Newsletters', label: 'inbox', category: 'Newsletters', order: 4 },
 ];
 
 /**
@@ -64,28 +64,30 @@ export function SavedViews() {
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editName, setEditName] = useState('');
 
   useEffect(() => {
     saveViews(views);
   }, [views]);
 
-  const activeViewId = views.find(
-    (v) => v.label === activeLabel || v.category === activeLabel,
-  )?.id ?? "all";
+  const activeViewId =
+    views.find((v) => v.label === activeLabel || v.category === activeLabel)?.id ?? 'all';
 
-  const handleSelectView = useCallback((view: SavedView) => {
-    if (inboxViewMode !== "split") {
-      setInboxViewMode("split");
-    }
-    navigateToLabel(view.label, { category: view.category });
-  }, [inboxViewMode, setInboxViewMode]);
+  const handleSelectView = useCallback(
+    (view: SavedView) => {
+      if (inboxViewMode !== 'split') {
+        setInboxViewMode('split');
+      }
+      navigateToLabel(view.label, { category: view.category });
+    },
+    [inboxViewMode, setInboxViewMode],
+  );
 
   const handleSaveCurrent = useCallback(() => {
     const newView: SavedView = {
       id: `custom-${Date.now()}`,
-      name: activeLabel ?? "View",
-      label: activeLabel ?? "inbox",
+      name: activeLabel ?? 'View',
+      label: activeLabel ?? 'inbox',
       order: views.length,
     };
     setViews((prev) => [...prev, newView]);
@@ -116,16 +118,13 @@ export function SavedViews() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleRename(view.id, editName);
-                  if (e.key === "Escape") setEditingId(null);
+                  if (e.key === 'Enter') handleRename(view.id, editName);
+                  if (e.key === 'Escape') setEditingId(null);
                 }}
                 onBlur={() => handleRename(view.id, editName)}
                 className="w-24 px-1.5 py-0.5 text-xs bg-bg-secondary border border-accent/30 rounded outline-none text-text-primary"
               />
-              <button
-                onClick={() => handleRename(view.id, editName)}
-                className="p-0.5 text-accent"
-              >
+              <button onClick={() => handleRename(view.id, editName)} className="p-0.5 text-accent">
                 <Check size={12} />
               </button>
             </div>
@@ -136,30 +135,37 @@ export function SavedViews() {
               aria-label={`Switch to ${view.name} view`}
               onClick={() => handleSelectView(view)}
               onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter" || e.key === " ") {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleSelectView(view);
                 }
               }}
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                 activeViewId === view.id
-                  ? "bg-accent/15 text-accent border border-accent/30"
-                  : "bg-bg-secondary/60 text-text-secondary border border-border-secondary/50 hover:bg-bg-hover"
+                  ? 'bg-accent/15 text-accent border border-accent/30'
+                  : 'bg-bg-secondary/60 text-text-secondary border border-border-secondary/50 hover:bg-bg-hover'
               }`}
             >
               {view.id === activeViewId && <Check size={10} className="shrink-0" />}
               {view.name}
               {/* Rename/delete for custom views */}
-              {view.id.startsWith("custom-") && (
+              {view.id.startsWith('custom-') && (
                 <span className="hidden group-hover:flex items-center gap-0.5 ms-1">
                   <button
-                    onClick={(e) => { e.stopPropagation(); setEditingId(view.id); setEditName(view.name); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(view.id);
+                      setEditName(view.name);
+                    }}
                     className="p-0.5 text-text-tertiary hover:text-text-primary"
                   >
                     <Pencil size={10} />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(view.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(view.id);
+                    }}
                     className="p-0.5 text-text-tertiary hover:text-danger"
                   >
                     <Trash2 size={10} />

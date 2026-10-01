@@ -1,12 +1,12 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { EmailList } from "./EmailList";
-import { ReadingPane } from "./ReadingPane";
-import { ThreadViewMobile } from "@features/mail/components/ThreadViewMobile";
-import { useLayoutStore } from "@shared/stores/layoutStore";
-import { useScreenInfo } from "@shared/hooks/usePlatform";
-import { useSelectedThreadId } from "@shared/hooks/useRouteNavigation";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
-import { usePlatform } from "@shared/hooks/usePlatform";
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { EmailList } from './EmailList';
+import { ReadingPane } from './ReadingPane';
+import { ThreadViewMobile } from '@features/mail/components/ThreadViewMobile';
+import { useLayoutStore } from '@shared/stores/layoutStore';
+import { useScreenInfo } from '@shared/hooks/usePlatform';
+import { useSelectedThreadId } from '@shared/hooks/useRouteNavigation';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
+import { usePlatform } from '@shared/hooks/usePlatform';
 
 const MIN_LIST_WIDTH = 240;
 const MAX_LIST_WIDTH = 800;
@@ -20,39 +20,42 @@ function ResizableEmailLayout() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOverlay, setDragOverlay] = useState<{ atMin: boolean; atMax: boolean } | null>(null);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = listRef.current?.offsetWidth ?? emailListWidth;
-    setIsDragging(true);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = listRef.current?.offsetWidth ?? emailListWidth;
+      setIsDragging(true);
 
-    const handleMouseMove = (ev: MouseEvent) => {
-      const delta = ev.clientX - startX;
-      const newWidth = Math.min(MAX_LIST_WIDTH, Math.max(MIN_LIST_WIDTH, startWidth + delta));
-      if (listRef.current) listRef.current.style.width = `${newWidth}px`;
-      setDragOverlay({
-        atMin: newWidth <= MIN_LIST_WIDTH,
-        atMax: newWidth >= MAX_LIST_WIDTH,
-      });
-    };
+      const handleMouseMove = (ev: MouseEvent) => {
+        const delta = ev.clientX - startX;
+        const newWidth = Math.min(MAX_LIST_WIDTH, Math.max(MIN_LIST_WIDTH, startWidth + delta));
+        if (listRef.current) listRef.current.style.width = `${newWidth}px`;
+        setDragOverlay({
+          atMin: newWidth <= MIN_LIST_WIDTH,
+          atMax: newWidth >= MAX_LIST_WIDTH,
+        });
+      };
 
-    const handleMouseUp = (ev: MouseEvent) => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      setIsDragging(false);
-      setDragOverlay(null);
-      const delta = ev.clientX - startX;
-      const finalWidth = Math.min(MAX_LIST_WIDTH, Math.max(MIN_LIST_WIDTH, startWidth + delta));
-      setEmailListWidth(finalWidth);
-    };
+      const handleMouseUp = (ev: MouseEvent) => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        setIsDragging(false);
+        setDragOverlay(null);
+        const delta = ev.clientX - startX;
+        const finalWidth = Math.min(MAX_LIST_WIDTH, Math.max(MIN_LIST_WIDTH, startWidth + delta));
+        setEmailListWidth(finalWidth);
+      };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }, [emailListWidth, setEmailListWidth]);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    },
+    [emailListWidth, setEmailListWidth],
+  );
 
   return (
     <div ref={containerRef} className="flex flex-1 min-w-0 flex-row">
@@ -85,7 +88,7 @@ function ResizableEmailLayout() {
       {/* Reading pane with smooth expand/collapse via CSS grid column */}
       <div
         className={`flex flex-1 min-w-0 transition-all duration-200 ease-out ${
-          readingPaneExpanded ? "ms-0" : ""
+          readingPaneExpanded ? 'ms-0' : ''
         }`}
       >
         <ReadingPane />
@@ -113,8 +116,8 @@ export function MailLayout() {
 
   // When reading pane is hidden and user clicks an email, auto-show it
   useEffect(() => {
-    if (readingPanePosition === "hidden" && selectedThreadId) {
-      setReadingPanePosition("right");
+    if (readingPanePosition === 'hidden' && selectedThreadId) {
+      setReadingPanePosition('right');
       setReadingPaneExpanded(true);
     }
   }, [readingPanePosition, selectedThreadId, setReadingPanePosition, setReadingPaneExpanded]);
@@ -134,7 +137,7 @@ export function MailLayout() {
   }
 
   // Screens ≥ 1024 px → multi-pane with reading pane
-  if (readingPanePosition === "right") {
+  if (readingPanePosition === 'right') {
     return (
       <ErrorBoundary name="EmailLayout">
         <ResizableEmailLayout />
@@ -143,20 +146,26 @@ export function MailLayout() {
   }
 
   // Bottom or hidden reading pane
-  const paneVisible = readingPanePosition !== "hidden" && !!selectedThreadId;
+  const paneVisible = readingPanePosition !== 'hidden' && !!selectedThreadId;
 
   return (
     <div
-      data-platform={platform.mobile ? "mobile" : "desktop"}
+      data-platform={platform.mobile ? 'mobile' : 'desktop'}
       className={`flex flex-1 min-w-0 ${
-        readingPanePosition === "bottom" ? "flex-col" : "flex-row"
+        readingPanePosition === 'bottom' ? 'flex-col' : 'flex-row'
       }`}
     >
       <ErrorBoundary name="EmailList">
         <EmailList />
       </ErrorBoundary>
       {paneVisible && (
-        <div className={readingPanePosition === "bottom" ? "min-h-[300px] max-h-[45vh] border-t border-border-secondary overflow-hidden" : ""}>
+        <div
+          className={
+            readingPanePosition === 'bottom'
+              ? 'min-h-[300px] max-h-[45vh] border-t border-border-secondary overflow-hidden'
+              : ''
+          }
+        >
           <ErrorBoundary name="ReadingPane">
             <ReadingPane />
           </ErrorBoundary>

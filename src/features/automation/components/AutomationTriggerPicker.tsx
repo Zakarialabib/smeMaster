@@ -5,11 +5,11 @@ interface AutomationTriggerPickerProps {
 }
 
 const TRIGGER_EVENTS = [
-  { value: "email_received", label: "Email Received" },
-  { value: "no_reply_after_days", label: "No Reply After Days" },
-  { value: "time_based", label: "Time Based" },
-  { value: "label_applied", label: "Label Applied" },
-  { value: "starred", label: "Email Starred" },
+  { value: 'email_received', label: 'Email Received' },
+  { value: 'no_reply_after_days', label: 'No Reply After Days' },
+  { value: 'time_based', label: 'Time Based' },
+  { value: 'label_applied', label: 'Label Applied' },
+  { value: 'starred', label: 'Email Starred' },
 ];
 
 interface TriggerConditions {
@@ -38,22 +38,20 @@ export function AutomationTriggerPicker({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-xs text-text-secondary w-24 shrink-0">
-          Trigger event
-        </span>
+        <span className="text-xs text-text-secondary w-24 shrink-0">Trigger event</span>
         <select
           value={event}
           onChange={(e) => {
             const newEvent = e.target.value;
-            let defaultConditions = "";
-            if (newEvent === "time_based") {
-              defaultConditions = JSON.stringify({ cron: "0 9 * * 1" });
-            } else if (newEvent === "no_reply_after_days") {
+            let defaultConditions = '';
+            if (newEvent === 'time_based') {
+              defaultConditions = JSON.stringify({ cron: '0 9 * * 1' });
+            } else if (newEvent === 'no_reply_after_days') {
               defaultConditions = JSON.stringify({ days: 3 });
             } else {
               defaultConditions = JSON.stringify({
-                from_domain: "",
-                subject_contains: "",
+                from_domain: '',
+                subject_contains: '',
               });
             }
             onChange(newEvent, defaultConditions);
@@ -68,30 +66,24 @@ export function AutomationTriggerPicker({
         </select>
       </div>
 
-      {event === "email_received" && (
+      {event === 'email_received' && (
         <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary w-24 shrink-0">
-              From domain
-            </span>
+            <span className="text-xs text-text-secondary w-24 shrink-0">From domain</span>
             <input
               type="text"
-              value={parsed.from_domain ?? ""}
+              value={parsed.from_domain ?? ''}
               onChange={(e) => updateConditions({ from_domain: e.target.value })}
               placeholder="example.com"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent"
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary w-24 shrink-0">
-              Subject contains
-            </span>
+            <span className="text-xs text-text-secondary w-24 shrink-0">Subject contains</span>
             <input
               type="text"
-              value={parsed.subject_contains ?? ""}
-              onChange={(e) =>
-                updateConditions({ subject_contains: e.target.value })
-              }
+              value={parsed.subject_contains ?? ''}
+              onChange={(e) => updateConditions({ subject_contains: e.target.value })}
               placeholder="keyword"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent"
             />
@@ -99,33 +91,27 @@ export function AutomationTriggerPicker({
         </div>
       )}
 
-      {event === "no_reply_after_days" && (
+      {event === 'no_reply_after_days' && (
         <div className="flex items-center gap-2 ps-2">
-          <span className="text-xs text-text-secondary w-24 shrink-0">
-            Days without reply
-          </span>
+          <span className="text-xs text-text-secondary w-24 shrink-0">Days without reply</span>
           <input
             type="number"
             min={1}
             max={365}
             value={parsed.days ?? 3}
-            onChange={(e) =>
-              updateConditions({ days: Math.max(1, Number(e.target.value)) })
-            }
+            onChange={(e) => updateConditions({ days: Math.max(1, Number(e.target.value)) })}
             className="w-20 bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent"
           />
         </div>
       )}
 
-      {event === "time_based" && (
+      {event === 'time_based' && (
         <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-secondary w-24 shrink-0">
-              Cron expression
-            </span>
+            <span className="text-xs text-text-secondary w-24 shrink-0">Cron expression</span>
             <input
               type="text"
-              value={parsed.cron ?? ""}
+              value={parsed.cron ?? ''}
               onChange={(e) => updateConditions({ cron: e.target.value })}
               placeholder="0 9 * * 1"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-accent"
@@ -137,7 +123,7 @@ export function AutomationTriggerPicker({
         </div>
       )}
 
-      {(event === "label_applied" || event === "starred") && (
+      {(event === 'label_applied' || event === 'starred') && (
         <p className="text-xs text-text-tertiary ps-2">
           This trigger fires when the event occurs on any email in the account.
         </p>

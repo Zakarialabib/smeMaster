@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "@tanstack/react-router";
-import { Toggle } from "@shared/components/ui/Toggle";
-import { ThemeTile } from "@features/settings/components/cards/ThemeTile";
-import { ColorPickerCircle } from "@features/settings/components/cards/ColorPickerCircle";
-import { useThemeStore } from "@shared/theme/themeStore";
-import type { ThemeMode } from "@shared/theme/themeStore";
-import { COLOR_THEMES } from "@/constants/themes";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from '@tanstack/react-router';
+import { Toggle } from '@shared/components/ui/Toggle';
+import { ThemeTile } from '@features/settings/components/cards/ThemeTile';
+import { ColorPickerCircle } from '@features/settings/components/cards/ColorPickerCircle';
+import { useThemeStore } from '@shared/theme/themeStore';
+import type { ThemeMode } from '@shared/theme/themeStore';
+import { COLOR_THEMES } from '@/constants/themes';
 import {
   getBackgroundSyncPrefs,
   setBackgroundSyncPrefs,
-} from "@shared/services/settings/settingsService";
+} from '@shared/services/settings/settingsService';
 import {
   ArrowLeft,
   BookOpen,
@@ -25,7 +25,7 @@ import {
   Filter,
   Plus,
   ChevronRight,
-} from "lucide-react";
+} from 'lucide-react';
 
 // ── iOS-style Grouped Section ─────────────────────────────────────────────
 interface SectionGroupProps {
@@ -33,9 +33,11 @@ interface SectionGroupProps {
   className?: string;
 }
 
-function SectionGroup({ children, className = "" }: SectionGroupProps) {
+function SectionGroup({ children, className = '' }: SectionGroupProps) {
   return (
-    <div className={`rounded-xl overflow-hidden bg-white/10 dark:bg-white/5 backdrop-blur-[12px] border border-white/15 dark:border-white/5 ${className}`}>
+    <div
+      className={`rounded-xl overflow-hidden bg-white/10 dark:bg-white/5 backdrop-blur-[12px] border border-white/15 dark:border-white/5 ${className}`}
+    >
       {children}
     </div>
   );
@@ -59,13 +61,13 @@ function SettingsRow({
   control,
   destructive = false,
 }: SettingsRowProps) {
-  const Comp = onClick ? "button" : "div";
+  const Comp = onClick ? 'button' : 'div';
   return (
     <Comp
       onClick={onClick}
-      type={onClick ? "button" : undefined}
+      type={onClick ? 'button' : undefined}
       className={`flex items-center gap-3 px-4 py-3.5 w-full text-start transition-all duration-150 active:bg-white/10 dark:active:bg-white/5 ${
-        onClick ? "cursor-pointer" : ""
+        onClick ? 'cursor-pointer' : ''
       }`}
     >
       {/* Icon */}
@@ -75,12 +77,12 @@ function SettingsRow({
 
       {/* Label */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate leading-tight ${destructive ? "text-danger" : "text-text-primary"}`}>
+        <p
+          className={`text-sm font-medium truncate leading-tight ${destructive ? 'text-danger' : 'text-text-primary'}`}
+        >
           {title}
         </p>
-        {subtitle && (
-          <p className="text-xs text-text-tertiary truncate mt-0.5">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-text-tertiary truncate mt-0.5">{subtitle}</p>}
       </div>
 
       {/* Control or chevron */}
@@ -102,9 +104,9 @@ function SectionDivider() {
 
 // ── Mode label helper ─────────────────────────────────────────────────────
 const MODE_LABELS: Record<ThemeMode, string> = {
-  light: "Light",
-  dark: "Dark",
-  system: "System",
+  light: 'Light',
+  dark: 'Dark',
+  system: 'System',
 };
 
 // ── Main Component ─────────────────────────────────────────────────────────
@@ -118,7 +120,7 @@ export function MobileSettingsPage() {
   const modeLabel = MODE_LABELS[mode];
 
   const currentThemeName = useMemo(
-    () => COLOR_THEMES.find((ct) => ct.id === colorTheme)?.name ?? "Indigo",
+    () => COLOR_THEMES.find((ct) => ct.id === colorTheme)?.name ?? 'Indigo',
     [colorTheme],
   );
 
@@ -127,7 +129,7 @@ export function MobileSettingsPage() {
   const [syncIntervalMins, setSyncIntervalMins] = useState(15);
 
   /* ── Cache ───────────────────────────────────────────────────────────── */
-  const [cacheSize, setCacheSize] = useState("calculating...");
+  const [cacheSize, setCacheSize] = useState('calculating...');
 
   /* ── Biometric ───────────────────────────────────────────────────────── */
   const [bioAvailable, setBioAvailable] = useState(false);
@@ -146,17 +148,17 @@ export function MobileSettingsPage() {
       setSyncIntervalMins(p.intervalMins);
     });
 
-    import("@shared/services/assets/assetCacheService")
+    import('@shared/services/assets/assetCacheService')
       .then(({ getCacheSizeFormatted }) => {
         getCacheSizeFormatted()
           .then(setCacheSize)
-          .catch(() => setCacheSize("unavailable"));
+          .catch(() => setCacheSize('unavailable'));
       })
-      .catch(() => setCacheSize("desktop only"));
+      .catch(() => setCacheSize('desktop only'));
 
-    import("@shared/services/db/invoke/command")
+    import('@shared/services/db/invoke/command')
       .then(({ invokeCommand }) => {
-        invokeCommand<{ isAvailable: boolean }>("check_biometric")
+        invokeCommand<{ isAvailable: boolean }>('check_biometric')
           .then((r) => {
             setBioAvailable(r.isAvailable);
           })
@@ -183,9 +185,9 @@ export function MobileSettingsPage() {
   );
 
   const handleClearCache = useCallback(() => {
-    import("@shared/services/assets/assetCacheService")
+    import('@shared/services/assets/assetCacheService')
       .then(({ clearCache }) => {
-        clearCache().then(() => setCacheSize("0 B"));
+        clearCache().then(() => setCacheSize('0 B'));
       })
       .catch(() => {});
   }, []);
@@ -211,23 +213,17 @@ export function MobileSettingsPage() {
 
   /* ── Navigation ──────────────────────────────────────────────────────── */
   const goToInbox = useCallback(
-    () => navigate({ to: "/mail/$label", params: { label: "inbox" } }),
+    () => navigate({ to: '/mail/$label', params: { label: 'inbox' } }),
     [navigate],
   );
   const goToAccounts = useCallback(
-    () => navigate({ to: "/settings/$tab", params: { tab: "accounts" } }),
+    () => navigate({ to: '/settings/$tab', params: { tab: 'accounts' } }),
     [navigate],
   );
-  const goToPairing = useCallback(
-    () => navigate({ to: "/settings/device-pairing" }),
-    [navigate],
-  );
-  const goToCampaigns = useCallback(
-    () => navigate({ to: "/campaigns" }),
-    [navigate],
-  );
+  const goToPairing = useCallback(() => navigate({ to: '/settings/device-pairing' }), [navigate]);
+  const goToCampaigns = useCallback(() => navigate({ to: '/campaigns' }), [navigate]);
   const goToMailRules = useCallback(
-    () => navigate({ to: "/settings/$tab", params: { tab: "mail-rules" } }),
+    () => navigate({ to: '/settings/$tab', params: { tab: 'mail-rules' } }),
     [navigate],
   );
 
@@ -242,19 +238,17 @@ export function MobileSettingsPage() {
           type="button"
           onClick={goToInbox}
           className="flex items-center justify-center w-9 h-9 rounded-full text-accent active:bg-accent/10 transition-colors"
-          aria-label={t("common.back")}
+          aria-label={t('common.back')}
         >
           <ArrowLeft size={22} />
         </button>
 
-        <h1 className="text-[17px] font-semibold text-text-primary">
-          Settings
-        </h1>
+        <h1 className="text-[17px] font-semibold text-text-primary">Settings</h1>
 
         <button
           type="button"
           className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary active:bg-white/10 transition-colors"
-          aria-label={t("nav.help")}
+          aria-label={t('nav.help')}
         >
           <BookOpen size={20} />
         </button>
@@ -272,7 +266,7 @@ export function MobileSettingsPage() {
           <SectionGroup>
             <SettingsRow
               icon={Palette}
-              title={t("settings.tabs.general")}
+              title={t('settings.tabs.general')}
               subtitle={`${modeLabel} · ${currentThemeName}`}
               onClick={() => setAppearanceExpanded((prev) => !prev)}
             />
@@ -281,23 +275,21 @@ export function MobileSettingsPage() {
               <div className="px-4 pb-4 pt-2 space-y-5 border-t border-white/10 dark:border-white/5">
                 {/* Theme mode selector */}
                 <div>
-                  <h3 className="text-xs font-semibold text-text-secondary mb-3">
-                    Theme Mode
-                  </h3>
+                  <h3 className="text-xs font-semibold text-text-secondary mb-3">Theme Mode</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <ThemeTile
                       mode="light"
-                      selected={mode === "light"}
+                      selected={mode === 'light'}
                       onSelect={handleThemeModeSelect}
                     />
                     <ThemeTile
                       mode="dark"
-                      selected={mode === "dark"}
+                      selected={mode === 'dark'}
                       onSelect={handleThemeModeSelect}
                     />
                     <ThemeTile
                       mode="system"
-                      selected={mode === "system"}
+                      selected={mode === 'system'}
                       onSelect={handleThemeModeSelect}
                     />
                   </div>
@@ -305,9 +297,7 @@ export function MobileSettingsPage() {
 
                 {/* Accent color picker */}
                 <div>
-                  <h3 className="text-xs font-semibold text-text-secondary mb-3">
-                    Accent Color
-                  </h3>
+                  <h3 className="text-xs font-semibold text-text-secondary mb-3">Accent Color</h3>
                   <div className="flex flex-wrap gap-3 justify-center">
                     {accentColors.map((ct) => (
                       <ColorPickerCircle
@@ -323,21 +313,23 @@ export function MobileSettingsPage() {
                 {/* Surface style: Flat vs Glass */}
                 <div>
                   <h3 className="text-xs font-semibold text-text-secondary mb-3">
-                    {t("settings.surface")}
+                    {t('settings.surface')}
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {([
-                      { id: "flat", label: t("settings.surfaceFlat") },
-                      { id: "glass", label: t("settings.surfaceGlass") },
-                    ] as const).map((opt) => (
+                    {(
+                      [
+                        { id: 'flat', label: t('settings.surfaceFlat') },
+                        { id: 'glass', label: t('settings.surfaceGlass') },
+                      ] as const
+                    ).map((opt) => (
                       <button
                         key={opt.id}
                         type="button"
                         onClick={() => setSurface(opt.id)}
                         className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                           surface === opt.id
-                            ? "border-accent bg-accent/10 text-accent"
-                            : "border-white/15 text-text-secondary active:bg-white/10"
+                            ? 'border-accent bg-accent/10 text-accent'
+                            : 'border-white/15 text-text-secondary active:bg-white/10'
                         }`}
                         aria-pressed={surface === opt.id}
                       >
@@ -346,7 +338,7 @@ export function MobileSettingsPage() {
                     ))}
                   </div>
                   <p className="mt-2 text-[11px] text-text-tertiary">
-                    {t("settings.surfaceGlassHint")}
+                    {t('settings.surfaceGlassHint')}
                   </p>
                 </div>
               </div>
@@ -362,7 +354,7 @@ export function MobileSettingsPage() {
           <SectionGroup>
             <SettingsRow
               icon={UserCircle}
-              title={t("settings.tabs.accounts")}
+              title={t('settings.tabs.accounts')}
               subtitle="Manage email accounts"
               onClick={goToAccounts}
             />
@@ -370,13 +362,13 @@ export function MobileSettingsPage() {
             <SettingsRow
               icon={Database}
               title="Background Sync"
-              subtitle={syncEnabled ? `${syncIntervalMins} min interval` : "Disabled"}
+              subtitle={syncEnabled ? `${syncIntervalMins} min interval` : 'Disabled'}
               control={
                 <Toggle
                   checked={syncEnabled}
                   onChange={(checked) => void handleSyncToggle(checked)}
                   size="sm"
-                  aria-label={t("settings.enableBackgroundSync")}
+                  aria-label={t('settings.enableBackgroundSync')}
                 />
               }
             />
@@ -391,14 +383,14 @@ export function MobileSettingsPage() {
           <SectionGroup>
             <SettingsRow
               icon={Bell}
-              title={t("settings.tabs.notifications")}
+              title={t('settings.tabs.notifications')}
               subtitle="Push alerts & sounds"
               control={
                 <Toggle
                   checked={pushEnabled}
                   onChange={(checked) => setPushEnabled(checked)}
                   size="sm"
-                  aria-label={t("settings.pushNotifications")}
+                  aria-label={t('settings.pushNotifications')}
                 />
               }
             />
@@ -414,14 +406,14 @@ export function MobileSettingsPage() {
             <SectionGroup>
               <SettingsRow
                 icon={Shield}
-                title={t("settings.security")}
-                subtitle={t("settings.biometricLock")}
+                title={t('settings.security')}
+                subtitle={t('settings.biometricLock')}
                 control={
                   <Toggle
                     checked={bioEnabled}
                     onChange={(checked) => setBioEnabled(checked)}
                     size="sm"
-                    aria-label={t("settings.biometricLock")}
+                    aria-label={t('settings.biometricLock')}
                   />
                 }
               />
@@ -438,12 +430,12 @@ export function MobileSettingsPage() {
             <SettingsRow
               icon={Trash2}
               title="Cache"
-              subtitle={cacheSize === "calculating..." ? "Calculating..." : cacheSize}
+              subtitle={cacheSize === 'calculating...' ? 'Calculating...' : cacheSize}
               control={
                 <button
                   type="button"
                   onClick={handleClearCache}
-                  disabled={cacheSize === "0 B" || cacheSize === "calculating..."}
+                  disabled={cacheSize === '0 B' || cacheSize === 'calculating...'}
                   className="text-xs font-medium px-3 py-1.5 rounded-full bg-accent/10 text-accent active:bg-accent/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   Clear
@@ -483,7 +475,7 @@ export function MobileSettingsPage() {
             <SectionDivider />
             <SettingsRow
               icon={Filter}
-              title={t("settings.tabs.mailRules")}
+              title={t('settings.tabs.mailRules')}
               subtitle="Labels & filters"
               onClick={goToMailRules}
             />

@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
-import { SHORTCUTS } from "@/constants/shortcuts";
-import { useShortcutStore } from "@features/settings/stores/shortcutStore";
-import { Modal } from "@shared/components/ui/Modal";
-import { Search } from "lucide-react";
+import { useState, useMemo } from 'react';
+import { SHORTCUTS } from '@/constants/shortcuts';
+import { useShortcutStore } from '@features/settings/stores/shortcutStore';
+import { Modal } from '@shared/components/ui/Modal';
+import { Search } from 'lucide-react';
 
 interface ShortcutsHelpProps {
   isOpen: boolean;
@@ -10,22 +10,22 @@ interface ShortcutsHelpProps {
 }
 
 function getPlatformKey(shortcut: string): string {
-  const isMac = navigator.platform.toLowerCase().includes("mac");
+  const isMac = navigator.platform.toLowerCase().includes('mac');
   if (isMac) {
     return shortcut
-      .replace(/Ctrl\+/gi, "⌘")
-      .replace(/Command\+/gi, "")
-      .replace(/Option\+/gi, "⌥")
-      .replace(/Shift\+/gi, "⇧");
+      .replace(/Ctrl\+/gi, '⌘')
+      .replace(/Command\+/gi, '')
+      .replace(/Option\+/gi, '⌥')
+      .replace(/Shift\+/gi, '⇧');
   }
   return shortcut
-    .replace(/Command\+/gi, "Ctrl+")
-    .replace(/⌘/g, "Ctrl")
-    .replace(/⌥/g, "Alt");
+    .replace(/Command\+/gi, 'Ctrl+')
+    .replace(/⌘/g, 'Ctrl')
+    .replace(/⌥/g, 'Alt');
 }
 
 function getShortcutParts(shortcut: string): { primary: string; hint?: string } {
-  const isMac = navigator.platform.toLowerCase().includes("mac");
+  const isMac = navigator.platform.toLowerCase().includes('mac');
 
   // Handle compound shortcuts like "g then i"
   const thenMatch = shortcut.match(/^(.+?)\s+then\s+(.+)$/i);
@@ -52,7 +52,7 @@ function getShortcutParts(shortcut: string): { primary: string; hint?: string } 
 
 export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
   const keyMap = useShortcutStore((s) => s.keyMap);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredSections = useMemo(() => {
     if (!searchQuery.trim()) return SHORTCUTS;
@@ -65,14 +65,19 @@ export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
           item.keys.toLowerCase().includes(q) ||
           section.category.toLowerCase().includes(q),
       );
-      return matchingItems.length > 0
-        ? { ...section, items: matchingItems }
-        : null;
+      return matchingItems.length > 0 ? { ...section, items: matchingItems } : null;
     }).filter(Boolean) as typeof SHORTCUTS;
   }, [searchQuery]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Keyboard Shortcuts" size="lg" width="w-full max-w-lg" zIndex="z-[60]">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Keyboard Shortcuts"
+      size="lg"
+      width="w-full max-w-lg"
+      zIndex="z-[60]"
+    >
       {/* Search bar */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded-md">
@@ -112,18 +117,14 @@ export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
                       key={item.id}
                       className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-bg-hover transition-colors"
                     >
-                      <span className="text-sm text-text-secondary">
-                        {item.desc}
-                      </span>
+                      <span className="text-sm text-text-secondary">{item.desc}</span>
                       <div className="flex items-center gap-1.5">
                         {/* Primary key */}
                         <kbd className="text-xs text-text-tertiary bg-bg-tertiary px-2 py-0.5 rounded font-mono border border-border-secondary">
                           {parts.primary}
                         </kbd>
                         {parts.hint && (
-                          <span className="text-[0.625rem] text-text-tertiary">
-                            {parts.hint}
-                          </span>
+                          <span className="text-[0.625rem] text-text-tertiary">{parts.hint}</span>
                         )}
                         {/* Windows variant — shown when different from Mac */}
                         {platformKey !== parts.primary && (
@@ -144,10 +145,30 @@ export function ShortcutsHelp({ isOpen, onClose }: ShortcutsHelpProps) {
       {/* Legend footer */}
       <div className="px-4 py-2 border-t border-border-primary bg-bg-secondary/50">
         <div className="flex items-center justify-center gap-3 text-[0.625rem] text-text-tertiary">
-          <span><kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">⌘</kbd> Mac</span>
-          <span><kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">Ctrl</kbd> Windows</span>
-          <span><kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">⇧</kbd> Shift</span>
-          <span><kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">⌥</kbd> Alt</span>
+          <span>
+            <kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">
+              ⌘
+            </kbd>{' '}
+            Mac
+          </span>
+          <span>
+            <kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">
+              Ctrl
+            </kbd>{' '}
+            Windows
+          </span>
+          <span>
+            <kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">
+              ⇧
+            </kbd>{' '}
+            Shift
+          </span>
+          <span>
+            <kbd className="text-text-secondary bg-bg-tertiary px-1 py-0.5 rounded font-mono text-[0.5rem]">
+              ⌥
+            </kbd>{' '}
+            Alt
+          </span>
         </div>
       </div>
     </Modal>

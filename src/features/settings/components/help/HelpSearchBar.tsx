@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import { Search, X } from 'lucide-react';
 
 interface HelpSearchBarProps {
   query: string;
@@ -21,7 +21,7 @@ export function HelpSearchBar({ query, onChange }: HelpSearchBarProps) {
       />
       {query && (
         <button
-          onClick={() => onChange("")}
+          onClick={() => onChange('')}
           className="absolute end-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors"
         >
           <X size={14} />

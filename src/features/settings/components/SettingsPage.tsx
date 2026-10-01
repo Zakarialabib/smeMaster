@@ -1,28 +1,24 @@
-import { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import { useParams } from "@tanstack/react-router";
-import {
-  navigateToLabel,
-  navigateToSettings,
-  navigateToHelp,
-} from "@/router/navigate";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { useSettingsUiStore } from "@shared/stores/settingsUiStore";
-import { useRecentSettingsStore } from "@features/settings/stores/recentSettingsStore";
-import { ArrowLeft, BookOpen, Search, Settings, AlertCircle, RefreshCw } from "lucide-react";
-import { SkeletonPage } from "@shared/components/ui/Skeleton";
-import type { SettingsTabId } from "./SettingsTabRegistry";
+import { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useParams } from '@tanstack/react-router';
+import { navigateToLabel, navigateToSettings, navigateToHelp } from '@/router/navigate';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { useSettingsUiStore } from '@shared/stores/settingsUiStore';
+import { useRecentSettingsStore } from '@features/settings/stores/recentSettingsStore';
+import { ArrowLeft, BookOpen, Search, Settings, AlertCircle, RefreshCw } from 'lucide-react';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
+import type { SettingsTabId } from './SettingsTabRegistry';
 import {
   tabGroups,
   sectionComponents,
   TAB_KEYWORDS,
   getTabLabel,
   getSectionSubtitle,
-} from "./SettingsTabRegistry";
-import { HelpCenterSidebar } from "./HelpCenterSidebar";
-import { SettingsPanel } from "@shared/components/settings/SettingsPanel";
-import { SettingsSidebar } from "./SettingsSidebar";
-import { cn } from "@shared/utils/cn";
+} from './SettingsTabRegistry';
+import { HelpCenterSidebar } from './HelpCenterSidebar';
+import { SettingsPanel } from '@shared/components/settings/SettingsPanel';
+import { SettingsSidebar } from './SettingsSidebar';
+import { cn } from '@shared/utils/cn';
 
 // ── Error Boundary for section content ─────────────────────────────────────
 class SectionErrorBoundary extends Component<
@@ -47,7 +43,7 @@ class SectionErrorBoundary extends Component<
             Failed to load {this.props.sectionName}
           </p>
           <p className="text-xs text-text-tertiary mb-4 max-w-md">
-            {this.state.error?.message ?? "An unexpected error occurred"}
+            {this.state.error?.message ?? 'An unexpected error occurred'}
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
@@ -120,7 +116,7 @@ export function SettingsPage() {
   const { t } = useTranslation();
   const { screen } = usePlatform();
   const isMobile = screen.isMobile;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [helpSidebarOpen, setHelpSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -133,7 +129,7 @@ export function SettingsPage() {
         useSettingsUiStore.getState().init();
         setPageLoading(false);
       } catch (err) {
-        setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+        setPageError(err instanceof Error ? err.message : 'Failed to initialize settings');
         setPageLoading(false);
       }
     }, 100);
@@ -143,16 +139,14 @@ export function SettingsPage() {
   // Cmd+K: focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        const input = document.querySelector<HTMLInputElement>(
-          ".settings-search-input",
-        );
+        const input = document.querySelector<HTMLInputElement>('.settings-search-input');
         input?.focus();
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
   // Navigate-to-help listener
@@ -163,8 +157,8 @@ export function SettingsPage() {
         navigateToHelp(detail.topic);
       }
     };
-    window.addEventListener("smemaster-navigate-help", handler);
-    return () => window.removeEventListener("smemaster-navigate-help", handler);
+    window.addEventListener('smemaster-navigate-help', handler);
+    return () => window.removeEventListener('smemaster-navigate-help', handler);
   }, []);
 
   const labelFor = useCallback((id: string) => getTabLabel(id, t), [t]);
@@ -175,20 +169,17 @@ export function SettingsPage() {
       .map((group) => ({
         ...group,
         tabs: group.tabs.filter((tab) => {
-          const platform = tab.platform ?? "all";
-          if (platform === "all") return true;
-          if (platform === "desktop" && isMobile) return false;
-          if (platform === "mobile" && !isMobile) return false;
+          const platform = tab.platform ?? 'all';
+          if (platform === 'all') return true;
+          if (platform === 'desktop' && isMobile) return false;
+          if (platform === 'mobile' && !isMobile) return false;
           return true;
         }),
       }))
       .filter((group) => group.tabs.length > 0);
   }, [isMobile]);
 
-  const visibleTabs = useMemo(
-    () => visibleTabGroups.flatMap((g) => g.tabs),
-    [visibleTabGroups],
-  );
+  const visibleTabs = useMemo(() => visibleTabGroups.flatMap((g) => g.tabs), [visibleTabGroups]);
 
   // Search filtering
   const filteredTabs = useMemo(() => {
@@ -197,9 +188,7 @@ export function SettingsPage() {
     return visibleTabs.filter((tab) => {
       const label = labelFor(tab.id).toLowerCase();
       const keywords = TAB_KEYWORDS[tab.id] ?? [];
-      return (
-        label.includes(q) || keywords.some((k) => k.toLowerCase().includes(q))
-      );
+      return label.includes(q) || keywords.some((k) => k.toLowerCase().includes(q));
     });
   }, [searchQuery, labelFor, visibleTabs]);
 
@@ -211,10 +200,10 @@ export function SettingsPage() {
   const ActiveSection = activeTab ? sectionComponents[activeTab] : null;
 
   const setActiveTab = (t: SettingsTabId) => {
-    setSearchQuery("");
+    setSearchQuery('');
     // Record in recent settings
     useRecentSettingsStore.getState().visit(t, labelFor(t));
-    if (t === "help-center") {
+    if (t === 'help-center') {
       navigateToHelp();
       return;
     }
@@ -222,7 +211,7 @@ export function SettingsPage() {
   };
 
   const goToHome = () => {
-    setSearchQuery("");
+    setSearchQuery('');
     navigateToSettings();
   };
 
@@ -251,7 +240,7 @@ export function SettingsPage() {
                 useSettingsUiStore.getState().init();
                 setPageLoading(false);
               } catch (err) {
-                setPageError(err instanceof Error ? err.message : "Failed to initialize settings");
+                setPageError(err instanceof Error ? err.message : 'Failed to initialize settings');
                 setPageLoading(false);
               }
             }, 100);
@@ -272,15 +261,15 @@ export function SettingsPage() {
         {!sidebarCollapsed && (
           <>
             <button
-              onClick={() => navigateToLabel("inbox")}
+              onClick={() => navigateToLabel('inbox')}
               className="p-1.5 -ms-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors shrink-0"
-              title={t("settings.backToInbox")}
-              aria-label={t("settings.backToInbox")}
+              title={t('settings.backToInbox')}
+              aria-label={t('settings.backToInbox')}
             >
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-base font-semibold text-text-primary shrink-0">
-              {activeTab ? labelFor(activeTab) : t("search.settings")}
+              {activeTab ? labelFor(activeTab) : t('search.settings')}
             </h1>
           </>
         )}
@@ -317,11 +306,18 @@ export function SettingsPage() {
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => setSearchQuery('')}
               className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
               aria-label="Clear search"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
@@ -333,10 +329,10 @@ export function SettingsPage() {
           <button
             onClick={() => setHelpSidebarOpen((prev) => !prev)}
             className={cn(
-              "p-2 rounded-md transition-colors shrink-0",
+              'p-2 rounded-md transition-colors shrink-0',
               helpSidebarOpen
-                ? "bg-accent/10 text-accent"
-                : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
+                ? 'bg-accent/10 text-accent'
+                : 'text-text-tertiary hover:text-text-primary hover:bg-bg-hover',
             )}
             title="Toggle help sidebar"
             aria-label="Toggle help sidebar"
@@ -376,11 +372,11 @@ export function SettingsPage() {
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Settings size={40} className="text-accent/40 mb-4" />
                 <h2 className="text-lg font-semibold text-text-primary mb-2">
-                  {t("search.settings")}
+                  {t('search.settings')}
                 </h2>
                 <p className="text-sm text-text-tertiary max-w-md">
-                  Select a setting from the sidebar to configure your preferences.
-                  Use the search bar above to find specific settings quickly.
+                  Select a setting from the sidebar to configure your preferences. Use the search
+                  bar above to find specific settings quickly.
                 </p>
               </div>
             </SettingsPanel>
@@ -413,7 +409,7 @@ export function SettingsPage() {
       {/* Help Sidebar */}
       {!isMobile && (
         <HelpCenterSidebar
-          currentTab={activeTab ?? "general"}
+          currentTab={activeTab ?? 'general'}
           isOpen={helpSidebarOpen}
           onClose={() => setHelpSidebarOpen(false)}
         />

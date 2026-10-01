@@ -9,15 +9,13 @@
  * @module
  */
 
-import { getSetting, getSecureSetting } from "@features/settings/db/settings";
-import type {
-  SttOptions,
-  TtsOptions,
-} from "./capabilities";
+import { getSetting, getSecureSetting } from '@features/settings/db/settings';
+import type { SttOptions, TtsOptions } from './capabilities';
 
 // ── Voice Provider Types ───────────────────────────────────────────────────
 
-export type VoiceProviderType = "browser" | "openai" | "elevenlabs" | "lmstudio" | "custom" | "agent-core";
+export type VoiceProviderType =
+  'browser' | 'openai' | 'elevenlabs' | 'lmstudio' | 'custom' | 'agent-core';
 
 export interface VoiceConfig {
   provider: VoiceProviderType;
@@ -32,11 +30,11 @@ export interface VoiceConfig {
 // ── Default Configuration ──────────────────────────────────────────────────
 
 const DEFAULT_VOICE_CONFIG: VoiceConfig = {
-  provider: "browser",
-  baseUrl: "https://api.openai.com/v1",
-  apiKey: "",
-  ttsVoice: "alloy",
-  sttModel: "whisper-1",
+  provider: 'browser',
+  baseUrl: 'https://api.openai.com/v1',
+  apiKey: '',
+  ttsVoice: 'alloy',
+  sttModel: 'whisper-1',
   ttsEnabled: false,
   sttEnabled: false,
 };
@@ -44,13 +42,13 @@ const DEFAULT_VOICE_CONFIG: VoiceConfig = {
 // ── Configuration Loading ──────────────────────────────────────────────────
 
 export async function getVoiceConfig(): Promise<VoiceConfig> {
-  const provider = (await getSetting("voice_provider")) as VoiceProviderType | null;
-  const baseUrl = await getSetting("voice_base_url");
-  const apiKey = await getSecureSetting("voice_api_key");
-  const ttsVoice = await getSetting("voice_tts_voice");
-  const sttModel = await getSetting("voice_stt_model");
-  const ttsEnabled = (await getSetting("voice_tts_enabled")) !== "false";
-  const sttEnabled = (await getSetting("voice_stt_enabled")) !== "false";
+  const provider = (await getSetting('voice_provider')) as VoiceProviderType | null;
+  const baseUrl = await getSetting('voice_base_url');
+  const apiKey = await getSecureSetting('voice_api_key');
+  const ttsVoice = await getSetting('voice_tts_voice');
+  const sttModel = await getSetting('voice_stt_model');
+  const ttsEnabled = (await getSetting('voice_tts_enabled')) !== 'false';
+  const sttEnabled = (await getSetting('voice_stt_enabled')) !== 'false';
 
   return {
     provider: provider ?? DEFAULT_VOICE_CONFIG.provider,
@@ -66,7 +64,7 @@ export async function getVoiceConfig(): Promise<VoiceConfig> {
 // ── Browser Web Speech API (Fallback) ──────────────────────────────────────
 
 export function isBrowserVoiceSupported(): boolean {
-  return typeof window !== "undefined" && "speechSynthesis" in window;
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
 export function speakWithBrowser(text: string, voice?: string): void {
@@ -88,13 +86,13 @@ async function synthesizeWithOpenAI(
   options?: TtsOptions,
 ): Promise<Blob> {
   const response = await fetch(`${config.baseUrl}/audio/speech`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: options?.model ?? "tts-1",
+      model: options?.model ?? 'tts-1',
       input: text,
       voice: options?.voice ?? config.ttsVoice,
     }),
@@ -114,14 +112,14 @@ async function transcribeWithOpenAI(
   options?: SttOptions,
 ): Promise<string> {
   const formData = new FormData();
-  formData.append("file", audio, "audio.webm");
-  formData.append("model", options?.model ?? config.sttModel);
+  formData.append('file', audio, 'audio.webm');
+  formData.append('model', options?.model ?? config.sttModel);
   if (options?.language) {
-    formData.append("language", options.language);
+    formData.append('language', options.language);
   }
 
   const response = await fetch(`${config.baseUrl}/audio/transcriptions`, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${config.apiKey}`,
     },
@@ -133,8 +131,8 @@ async function transcribeWithOpenAI(
     throw new Error(`STT error (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json() as { text?: string };
-  return data.text ?? "";
+  const data = (await response.json()) as { text?: string };
+  return data.text ?? '';
 }
 
 // ── Unified Voice Interface ────────────────────────────────────────────────
@@ -147,19 +145,19 @@ export async function synthesizeSpeech(
   if (!config.ttsEnabled) return null;
 
   switch (config.provider) {
-    case "browser":
+    case 'browser':
       speakWithBrowser(text, options?.voice);
       return null; // Browser TTS doesn't return audio data
-    case "openai":
-    case "custom":
-    case "lmstudio":
+    case 'openai':
+    case 'custom':
+    case 'lmstudio':
       return synthesizeWithOpenAI(text, config, options);
-    case "elevenlabs":
+    case 'elevenlabs':
       // TODO: Implement ElevenLabs TTS
-      throw new Error("ElevenLabs TTS not yet implemented");
-    case "agent-core":
+      throw new Error('ElevenLabs TTS not yet implemented');
+    case 'agent-core':
       // TODO: Proxy through agent-core HTTP API
-      throw new Error("Agent-core TTS not yet implemented");
+      throw new Error('Agent-core TTS not yet implemented');
     default:
       return null;
   }
@@ -173,19 +171,19 @@ export async function transcribeSpeech(
   if (!config.sttEnabled) return null;
 
   switch (config.provider) {
-    case "browser":
+    case 'browser':
       // TODO: Implement browser STT using Web Speech API
-      throw new Error("Browser STT not yet implemented");
-    case "openai":
-    case "custom":
-    case "lmstudio":
+      throw new Error('Browser STT not yet implemented');
+    case 'openai':
+    case 'custom':
+    case 'lmstudio':
       return transcribeWithOpenAI(audio, config, options);
-    case "elevenlabs":
+    case 'elevenlabs':
       // TODO: Implement ElevenLabs STT
-      throw new Error("ElevenLabs STT not yet implemented");
-    case "agent-core":
+      throw new Error('ElevenLabs STT not yet implemented');
+    case 'agent-core':
       // TODO: Proxy through agent-core HTTP API
-      throw new Error("Agent-core STT not yet implemented");
+      throw new Error('Agent-core STT not yet implemented');
     default:
       return null;
   }
@@ -198,17 +196,17 @@ export function getVoiceCapabilities(config: VoiceConfig): {
   tts: boolean;
 } {
   switch (config.provider) {
-    case "browser":
+    case 'browser':
       return { stt: false, tts: isBrowserVoiceSupported() };
-    case "openai":
+    case 'openai':
       return { stt: true, tts: true };
-    case "elevenlabs":
+    case 'elevenlabs':
       return { stt: false, tts: true };
-    case "lmstudio":
+    case 'lmstudio':
       return { stt: true, tts: true };
-    case "custom":
+    case 'custom':
       return { stt: true, tts: true };
-    case "agent-core":
+    case 'agent-core':
       return { stt: true, tts: true };
     default:
       return { stt: false, tts: false };

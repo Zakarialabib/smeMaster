@@ -1,5 +1,9 @@
-import { createArfReport, listArfReports, updateArfReportProcessed } from "@/shared/services/db/db-invoke";
-import type { ArfReportRow } from "@/shared/services/db/db-invoke";
+import {
+  createArfReport,
+  listArfReports,
+  updateArfReportProcessed,
+} from '@/shared/services/db/db-invoke';
+import type { ArfReportRow } from '@/shared/services/db/db-invoke';
 
 export type { ArfReportRow };
 
@@ -29,7 +33,10 @@ export async function saveARFReport(
   });
 }
 
-export async function getARFReports(accountId: string, _limit: number = 50): Promise<ArfReportRow[]> {
+export async function getARFReports(
+  accountId: string,
+  _limit: number = 50,
+): Promise<ArfReportRow[]> {
   return listArfReports(accountId);
 }
 

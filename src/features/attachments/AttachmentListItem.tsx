@@ -1,7 +1,7 @@
-﻿import { useTranslation } from "react-i18next";
-import { Download, Eye, ExternalLink } from "lucide-react";
-import { formatFileSize, getFileIcon, canPreview } from "@shared/utils/fileTypeHelpers";
-import type { AttachmentWithContext } from "@shared/services/db/attachments";
+﻿import { useTranslation } from 'react-i18next';
+import { Download, Eye, ExternalLink } from 'lucide-react';
+import { formatFileSize, getFileIcon, canPreview } from '@shared/utils/fileTypeHelpers';
+import type { AttachmentWithContext } from '@shared/services/db/attachments';
 
 interface AttachmentListItemProps {
   attachment: AttachmentWithContext;
@@ -11,18 +11,24 @@ interface AttachmentListItemProps {
 }
 
 function formatShortDate(timestamp: number | null): string {
-  if (!timestamp) return "";
+  if (!timestamp) return '';
   return new Date(timestamp).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
-export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpToEmail }: AttachmentListItemProps) {
+export function AttachmentListItem({
+  attachment,
+  onPreview,
+  onDownload,
+  onJumpToEmail,
+}: AttachmentListItemProps) {
   const { t } = useTranslation();
   const previewable = canPreview(attachment.mime_type, attachment.filename);
-  const senderName = attachment.from_name || attachment.from_address || t("attachments.senderUnknown");
+  const senderName =
+    attachment.from_name || attachment.from_address || t('attachments.senderUnknown');
 
   return (
     <div className="group flex items-center gap-3 px-3 py-2 hover:bg-bg-hover rounded-md transition-colors">
@@ -30,12 +36,18 @@ export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpTo
       <span className="text-lg shrink-0 w-7 text-center">{getFileIcon(attachment.mime_type)}</span>
 
       {/* Filename */}
-      <span className="text-sm text-text-primary truncate min-w-0 flex-1" title={attachment.filename ?? undefined}>
-        {attachment.filename ?? t("attachments.filenameUnknown")}
+      <span
+        className="text-sm text-text-primary truncate min-w-0 flex-1"
+        title={attachment.filename ?? undefined}
+      >
+        {attachment.filename ?? t('attachments.filenameUnknown')}
       </span>
 
       {/* Sender */}
-      <span className="text-xs text-text-secondary truncate w-36 shrink-0 hidden md:block" title={senderName}>
+      <span
+        className="text-xs text-text-secondary truncate w-36 shrink-0 hidden md:block"
+        title={senderName}
+      >
         {senderName}
       </span>
 
@@ -46,7 +58,7 @@ export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpTo
 
       {/* Size */}
       <span className="text-xs text-text-tertiary w-16 shrink-0 text-end">
-        {attachment.size != null ? formatFileSize(attachment.size) : ""}
+        {attachment.size != null ? formatFileSize(attachment.size) : ''}
       </span>
 
       {/* Actions */}
@@ -55,7 +67,7 @@ export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpTo
           <button
             onClick={onPreview}
             className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
-            title={t("attachments.preview")}
+            title={t('attachments.preview')}
           >
             <Eye size={14} />
           </button>
@@ -63,14 +75,14 @@ export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpTo
         <button
           onClick={onDownload}
           className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
-          title={t("attachments.download")}
+          title={t('attachments.download')}
         >
           <Download size={14} />
         </button>
         <button
           onClick={onJumpToEmail}
           className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
-          title={t("attachments.jumpToEmail")}
+          title={t('attachments.jumpToEmail')}
         >
           <ExternalLink size={14} />
         </button>
