@@ -355,6 +355,11 @@ async fn pick_qwen_gguf(client: &reqwest::Client) -> Result<String> {
 // ── Main ────────────────────────────────────────────────────────────────────
 
 async fn run() -> Result<()> {
+    // reqwest is declared with `rustls-no-provider` in Cargo.toml; the main
+    // app installs the ring provider (lib.rs) before any Client is built —
+    // the example must do the same or `Client::builder().build()` panics.
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
         .try_init()
         .ok();
