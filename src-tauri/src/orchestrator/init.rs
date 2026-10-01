@@ -222,6 +222,10 @@ impl AppLifecycle {
                 log::warn!("[orchestrator] Post-migration health check failed: {e}");
             }
 
+            // ── Downloader: re-queue jobs interrupted by a previous
+            //    shutdown. Safe now — 033_downloader migration has run.
+            crate::downloader::spawn_boot_recovery(handle.clone(), pool.clone());
+
             emit_init_progress(&bus, "Database", "Migrations complete", 10);
 
             // ═══════════════════════════════════════════════════════════════

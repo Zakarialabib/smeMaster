@@ -19,6 +19,7 @@ mod agent;
 mod deliverability;
 mod device;
 mod dns;
+mod downloader;
 mod events;
 mod export;
 mod imap;
@@ -355,6 +356,16 @@ pub fn run() {
 
         // ── Post-migration health check runs inside spawn_orchestrator ──
         app.manage(pool.clone());
+
+        // ── Resumable chunked downloader (AI models + generic assets).
+        //    Registered early so `ai_download_model` and the 7
+        //    `downloader_*` commands resolve state immediately; boot
+        //    recovery of interrupted jobs runs later, inside
+        //    spawn_orchestrator AFTER migrations create the tables.
+        app.manage(crate::downloader::DownloaderState::new(
+            app.handle(),
+            pool.clone(),
+        ));
 
         // ── DataCacheService: in-memory cache layer ──
         // Registered here (early, before spawn_orchestrator) so IPC commands

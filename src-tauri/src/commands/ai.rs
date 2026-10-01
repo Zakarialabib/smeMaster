@@ -22,7 +22,6 @@ use crate::db::ai::schema::{AiCache, AiConfig};
 use crate::error::SerializedError;
 #[cfg(feature = "local-ai")]
 use crate::orchestrator::services::{MlSidecarService, SidecarClient};
-use crate::ai::models::ModelManager;
 use crate::ai::local_engine::LocalEngine;
 use crate::ai::vector_db::VectorDb;
 use crate::ai::indexer::Indexer;
@@ -125,23 +124,15 @@ pub async fn ai_download_model(
     repo_id: String,
     filename: String,
 ) -> CmdResult<String> {
-    // Prefer sidecar if running
-    if let Some(client) = try_sidecar(&app_handle) {
-        client.load_embedding_model(&repo_id).await
-            .map_err(|e| SerializedError::new("AI_DOWNLOAD_ERROR", e.to_string()))?;
-        let models_dir = app_handle.path().app_data_dir()
-            .map_err(|e| SerializedError::new("AI_DOWNLOAD_ERROR", e.to_string()))?
-            .join("models")
-            .join(format!("models--{}", repo_id.replace('/', "--")))
-            .join(&filename);
-        return Ok(models_dir.to_string_lossy().to_string());
-    }
-
-    // Fallback: in-process ModelManager
-    let manager = ModelManager::new(app_handle);
-    let path = manager.download_model(&repo_id, &filename).await
-        .map_err(|e| SerializedError::new("AI_DOWNLOAD_ERROR", e.to_string()))?;
-    Ok(path.to_string_lossy().to_string())
+    // Always route through the resumable Rust downloader. It finalizes into
+    // the hf-hub cache layout (`snapshots/<commit>/<file>` + `refs/<rev>`),
+    // so the sidecar AND the in-process engine both load the file offline.
+    // (The old sidecar-first branch wrote a flat `models--{repo}/{file}` path
+    // that hf-hub never resolves, and dropped chunked resume entirely.)
+    let path = crate::downloader::download_hf_file(&app_handle, &repo_id, &filename)
+        .await
+        .map_err(|e| SerializedError::new("AI_DOWNLOAD_ERROR", e))?;
+    Ok(path)
 }
 
 #[tauri::command]

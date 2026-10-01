@@ -234,6 +234,15 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::vault::ops::db_delete_vault_items_by_account,
             crate::vault::ops::db_count_vault_items,
 
+            // === downloader (7 commands) — resumable model/generic downloads ===
+            crate::downloader::commands::downloader_create_job,
+            crate::downloader::commands::downloader_get_job,
+            crate::downloader::commands::downloader_list_jobs,
+            crate::downloader::commands::downloader_pause_job,
+            crate::downloader::commands::downloader_resume_job,
+            crate::downloader::commands::downloader_cancel_job,
+            crate::downloader::commands::downloader_clear_finished,
+
             // === commands::ai (20 commands, all gated behind local-ai) ===
             #[cfg(feature = "local-ai")]
             ai::ai_download_model,
