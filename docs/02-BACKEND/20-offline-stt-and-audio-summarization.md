@@ -1,186 +1,270 @@
-# Offline STT & Audio Summarization — Local Transcription and "Listen/Summarize" for Long Content
+# Offline Voice — STT & TTS Engine Options, Architecture, and Open Stubs
 
-> **Status:** 📐 **Proposal / spike brief** (2026-10-01) — no code written yet.
-> **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG (feature)](../04-FEATURES/ai-rag.md) · [Voice agent OSS landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) · [Voice agent ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
-> **Companion doc:** [Document & email extraction](./19-document-and-email-extraction.md)
+> **Status:** 📐 **Options + architecture** (2026-10-01). Supersedes the earlier
+> candle-only proposal in this slot — see §3 for the reconciliation.
+> **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Voice agent OSS landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) · [Topology decision](../06-ROADMAP/17-voice-agent-topology-decision.md) · [Self-hosting](../voice/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> **Companion:** [Document & email extraction](./19-document-and-email-extraction.md)
 
-## 1. Goal
+## 1. Why this doc exists
 
-Two user-facing capabilities, one shared engine:
+Two questions were being answered in different places with different answers:
 
-1. **Offline STT** — transcribe audio on-device, with no API key and no data leaving
-   the machine. Today every STT path is either cloud (`openai` / `whisper-1`) or an
-   external local server the user must run themselves (`lmstudio`).
-2. **Listen / summarize long things** — take a long artifact (a long email thread, a
-   call recording, a voice note, a meeting) and produce either a spoken rendition or
-   a summary, so the user can absorb it without reading.
+1. **"Which engine do we use for offline speech?"** — [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 and [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2 answer **sherpa-onnx**. An earlier draft of this doc answered **candle whisper**. That is a contradiction and §3 resolves it.
+2. **"What is actually working today?"** — `voiceService.ts` contains five `throw new Error('... not yet implemented')` stubs, and `getVoiceCapabilities()` reports capabilities for providers that throw. §4 is the verified inventory.
 
-The second is the product value; the first is the enabler. They should share one
-transcription engine, not grow two.
+It also covers **TTS**, not just STT: per [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2, **TTS is 88% of variable voice cost**, so an offline STT-only plan optimises the cheap half.
 
 ## 2. Verified current state (read from source, 2026-10-01)
 
-| Component         | Path                                                 | Reality                                                                                               |
-| ----------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Voice config      | `src/shared/services/ai/voiceService.ts`             | `sttModel: 'whisper-1'` default — a **cloud** model id                                                |
-| Voice settings UI | `src/features/settings/components/VoiceSettings.tsx` | Provider selector + STT/TTS capability badges                                                         |
-| Voice providers   | `voiceService.ts`                                    | `browser` (Web Speech, TTS-only), `openai`, `elevenlabs` (TTS), `lmstudio`, `custom`, `agent-core`    |
-| Browser STT       | `getVoiceCapabilities()`                             | `case 'browser': return { stt: false, tts: ... }` — **STT is hard-disabled** for the zero-config path |
-| Model registry    | `src/shared/services/ai/modelRegistry.ts`            | Lists `whisper-1`, `gpt-4o-transcribe` — both **cloud**                                               |
-| Sidecar           | `src-tauri/crates/ml-sidecar/src/main.rs`            | 20 methods; **no audio/transcription method**                                                         |
-| candle            | `candle-transformers 0.8.3`                          | **`whisper` module is vendored** — already available                                                  |
-| Summarization     | —                                                    | No generic "summarize this" service; `categorizationManager` / `askInbox` are mail-scoped             |
+### 2.1 What works, what throws
 
-**Key finding:** the only fully-offline, zero-config STT path is _disabled in code_
-(`browser` returns `stt: false`), and every enabled path needs either a key or a
-server the user must install. Meanwhile the `whisper` model implementation is
-**already vendored** in an existing dependency.
+| Provider     | STT       | TTS       | Reality                                                       |
+| ------------ | --------- | --------- | ------------------------------------------------------------- |
+| `browser`    | ❌ throws | ✅ real   | TTS via `window.speechSynthesis`; STT is a `TODO` that throws |
+| `openai`     | ✅ real   | ✅ real   | `fetch` → `/audio/transcriptions`, `/audio/speech`            |
+| `custom`     | ✅ real   | ✅ real   | Same OpenAI-compatible `fetch` path                           |
+| `lmstudio`   | ✅ real   | ✅ real   | Same path against a local server                              |
+| `elevenlabs` | ❌ throws | ❌ throws | **No implementation at all**                                  |
+| `agent-core` | ❌ throws | ❌ throws | **No implementation at all**                                  |
 
-## 3. Why candle `whisper` (and not something else)
+**Working STT today = 3 providers, all requiring either an API key (`openai`) or a
+user-installed local server (`lmstudio`/`custom`).** There is **no** zero-config
+offline STT. The one zero-config provider (`browser`) has STT explicitly disabled.
 
-| Option                          | Offline    | New dep            | Notes                                                                                                    |
-| ------------------------------- | ---------- | ------------------ | -------------------------------------------------------------------------------------------------------- |
-| **candle `whisper`** (sidecar)  | ✅         | ❌ none — vendored | Same runtime as the existing BGE embeddings; one sidecar, one lifecycle                                  |
-| `whisper.cpp` via shell sidecar | ✅         | new binary + IPC   | Fast, but a second native process to package/sign per platform                                           |
-| `ort` (ONNX Runtime)            | ✅         | new heavy dep      | Would also unlock PaddleOCR — but a big new surface                                                      |
-| Web Speech API                  | ⚠️ partial | none               | Already wired for TTS; STT quality/support varies by webview, and it is not truly local on all platforms |
-| Cloud (`whisper-1`)             | ❌         | none               | **Keep as an option, not the default** — it is what exists today                                         |
+### 2.2 The five stubs (exact locations)
 
-**Decision: implement STT in the existing `ml-sidecar` using the vendored candle
-`whisper`.** Rationale: the sidecar already exists, already has a model-download
-story (HF Hub + the resumable downloader), already has a lifecycle managed by the
-orchestrator, and adds **no new dependency**. This mirrors the BGE embedding decision
-(D1 in [ai-rag](../04-FEATURES/ai-rag.md)) — local model, lazy-loaded, same plumbing.
+| File:line                 | Stub                                 | Impact                                   |
+| ------------------------- | ------------------------------------ | ---------------------------------------- |
+| `voiceService.ts:156-157` | `ElevenLabs TTS not yet implemented` | Provider selectable in UI, throws on use |
+| `voiceService.ts:159-160` | `Agent-core TTS not yet implemented` | Same                                     |
+| `voiceService.ts:175-176` | `Browser STT not yet implemented`    | The only zero-config STT path is dead    |
+| `voiceService.ts:182-183` | `ElevenLabs STT not yet implemented` | Same                                     |
+| `voiceService.ts:185-186` | `Agent-core STT not yet implemented` | Same                                     |
 
-### Model choice
+### 2.3 The capability-detection bug
 
-Use **multilingual** Whisper, not `.en`. Locales are `en, fr, ar, ja, it`; a `.en`
-model would be a silent regression for four of five. `whisper-small` multilingual is
-the sensible default (~240 MB, CPU-viable); `base` for low-end devices.
+`getVoiceCapabilities()` **reports capabilities that do not exist**:
+
+| Provider     | `getVoiceCapabilities` says | Truth          | Verdict                                     |
+| ------------ | --------------------------- | -------------- | ------------------------------------------- |
+| `elevenlabs` | `{ stt: false, tts: true }` | TTS **throws** | ⚠️ UI shows a green ✓ TTS badge for a stub  |
+| `agent-core` | `{ stt: true, tts: true }`  | Both **throw** | ⚠️ Reports full capability, implements none |
+| `browser`    | `{ stt: false, tts: ... }`  | Honest         | ✅                                          |
+
+Doc [38-voice-settings](../04-FEATURES/38-voice-settings.md) §"Desktop Voice vs Python
+Agent-Core" already admits agent-core is a stub — but the **UI badge still lies**,
+because the badge is driven by this function. A user selects ElevenLabs, sees
+"✓ TTS", and gets a thrown error.
+
+### 2.4 Provider-level STT/TTS (separate from voiceService)
+
+All 10 AI providers declare `transcribe`/`synthesize`. Nine of them implement them as
+**honest refusals** — `throw new Error('STT not supported by this provider')` (claude,
+ollama, copilot, openrouter, …). That is correct behaviour, not a stub: the capability
+interface is satisfied, and the refusal is truthful. Only `openai`/`lmstudio`/`custom`/
+`gemini`/`mistral`/`byteplus` route to real transports.
+
+### 2.5 Model registry
+
+`modelRegistry.ts` lists `whisper-1`, `gpt-4o-transcribe`, `tts-1`, `gpt-4o-mini-tts`
+with `stt: true` / `tts: true`. **All four are cloud (OpenAI).** No local speech model
+is registered. `ModelCapabilities` already has `stt?`, `tts?`, `realtime?` fields, so
+registering local models needs **no type change**.
+
+## 3. Engine options — and the reconciliation
+
+### 3.1 The contradiction
+
+| Source                                                                       | Says                                                                                                                                 | Scope                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 | **sherpa-onnx** in a Tauri sidecar; "the repo already runs `ml-sidecar` over JSON-RPC — the pattern is proven here. RTF < 1 offline" | the **voice-agent** local tier       |
+| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2                              | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
+| earlier draft of this doc                                                    | candle `whisper`                                                                                                                     | the **desktop assistant** STT        |
+
+**These are not actually in conflict once scope is separated** — but the earlier draft
+was wrong to propose a _second_ engine without acknowledging the first. Resolution:
+
+> **One engine, two scopes.** `sherpa-onnx` is the engine for speech in both the
+> desktop assistant and the voice-agent local tier. Do not introduce candle whisper as
+> a parallel speech stack.
+
+### 3.2 Why sherpa-onnx wins
+
+| Criterion               | sherpa-onnx                | candle `whisper`           | `whisper-rs` | `ort` (ONNX RT) |
+| ----------------------- | -------------------------- | -------------------------- | ------------ | --------------- |
+| STT                     | ✅ streaming + offline     | ⚠️ offline only            | ✅ offline   | ✅              |
+| **TTS**                 | ✅ **VITS/Piper voices**   | ❌ none                    | ❌ none      | ✅              |
+| **VAD**                 | ✅ built in                | ❌                         | ❌           | ⚠️ manual       |
+| **Diarization**         | ✅ built in                | ❌                         | ❌           | ❌              |
+| Rust bindings           | ✅ `sherpa-onnx-sys`       | ✅ (in-tree)               | ✅           | ✅              |
+| Crate downloads         | 481k                       | 3.9M (candle-transformers) | 1.38M        | 20.3M           |
+| Licence                 | Apache-2.0                 | Apache-2.0                 | MIT          | MIT             |
+| Already documented here | ✅ topology + SELF-HOSTING | ❌                         | ❌           | ❌              |
+
+**The decisive column is TTS.** Candle's whisper gives STT only — and TTS is 88% of the
+voice cost. Choosing candle would mean adding a _second_ engine later for TTS. sherpa-onnx
+covers STT + TTS + VAD + diarization behind one Rust binding, which is exactly the shape
+`ml-sidecar` already exposes over JSON-RPC.
+
+**Verified French coverage** (from SELF-HOSTING §2, HF registry 2026-09-28):
+
+| Direction | Model                                                             | Kind                      |
+| --------- | ----------------------------------------------------------------- | ------------------------- |
+| STT       | `sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06`             | streaming (live calls)    |
+| STT       | `sherpa-onnx-nemo-canary-180m-flash-en-es-de-fr` (+int8)          | offline, 4 langs incl. FR |
+| STT       | `sherpa-onnx-nemo-ctc-fr-conformer-large`                         | offline, FR-only          |
+| TTS       | `vits-piper-fr_FR-siwis-medium`, `-upmc-medium`, `-gilles-low`, … | 13 FR voices              |
+
+### 3.2.1 Locale coverage — verified 2026-10-01 (HF API)
+
+The app ships `en, fr, ar, ja, it`. French was verified in SELF-HOSTING; the other four
+were checked directly against the HF model registry on 2026-10-01:
+
+| Locale | STT | TTS              | Evidence                                                                                                                                                                                                                                      |
+| ------ | --- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **en** | ✅  | ✅               | Many (`whisper`, `nemo-canary`, `sense-voice`)                                                                                                                                                                                                |
+| **fr** | ✅  | ✅               | 13 Piper voices (SELF-HOSTING §2)                                                                                                                                                                                                             |
+| **ar** | ✅  | ✅               | STT: `streaming-zipformer-ar_en_id_ja_ru_th_vi_zh`, `stt_ar_fastconformer_hybrid_large_pc`, `whisper-large-v3-turbo-arabic-dialectal-v2` · TTS: **6+ Piper voices** (`vits-piper-ar_JO-kareem-low/medium`, `ar_JO-SA_miro-high`, `-dii-high`) |
+| **it** | ✅  | ✅               | STT: `streaming-zipformer-it-kroko-2025-08-06`, `nemo-fast-conformer-…-it-…`, `whisper-distil-large-v3-it` · TTS: `vits-piper-it_IT-paolina-medium`, `-riccardo-x_low`, `-miro-high`, `-dii-high`                                             |
+| **ja** | ✅  | ⚠️ **not found** | STT: `sense-voice-zh-en-ja-ko-yue`, `nemo-parakeet-tdt_ctc-0.6b-ja` · TTS: **no `vits-piper-ja_JP` found**                                                                                                                                    |
+
+**Good news vs. the earlier draft:** Arabic — the hardest and most business-critical
+locale for DGI — has **both** STT and multiple TTS voices. The earlier "Arabic
+unverified" flag is withdrawn.
+
+**One real gap:** **Japanese TTS has no Piper/VITS voice** in the sherpa-onnx ecosystem.
+Japanese TTS would need a different engine (e.g. MeloTTS or a cloud provider) or must be
+marked unavailable. Japanese STT is fine.
+
+⚠️ Model availability is a **per-device capability** — never assume a model is installed
+(`FRONTEND.md` §3.2, `Capabilities`).
+
+### 3.3 What about the browser?
+
+`browser` STT is a `TODO`, but the Web Speech API _does_ expose `SpeechRecognition` on
+Chromium. Two reasons it is still the wrong default: support is inconsistent across
+webviews/platforms, and it is **not verifiably offline** on every platform. Keep it as
+a convenience fallback, not the offline answer.
 
 ## 4. Architecture
 
 ```
-                     ┌─────────────────────────────────────┐
-  audio file ───────►│  ml-sidecar (existing process)       │
-  (voice note,       │  + NEW: "transcribe" method          │
-   call recording,   │    candle-transformers::whisper      │
-   attachment)       │    lazy-load, multilingual           │
-                     └──────────────┬──────────────────────┘
-                                    │ transcript
-                                    ▼
-              ┌────────────────────────────────────────────┐
-              │  Existing AI service layer                  │
-              │  aiService / taskRouter / RAG               │
-              │  → summarize (provider or local)            │
-              │  → index transcript into LanceDB            │
-              │  → speak via existing TTS (voiceService)    │
-              └────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ React 19 — VoiceSettings / assistant / attachments               │
+│   voiceService.ts  ← the single seam (extended, not replaced)    │
+└───────────┬──────────────────────────────┬───────────────────────┘
+            │ cloud providers               │ offline engine
+            ▼                               ▼
+  openai / custom / lmstudio        ml-sidecar (EXISTING process)
+  (fetch, already working)           + NEW methods:
+                                       • transcribe  (sherpa-onnx STT)
+                                       • synthesize  (sherpa-onnx TTS)
+                                       • vad / diarize (later)
+                                     JSON-RPC over stdin/stdout
+                                     model files via hf-hub + resumable
+                                     downloader (already built)
 ```
 
-Three reuse points — **no new pipeline is invented**:
+**Three deliberate reuse points — no new pipeline is invented:**
 
-- **Transcription** extends the sidecar's method table (21st method).
-- **Summarization** reuses `taskRouter` / `aiService` and the existing provider layer.
-  Summaries are a _task_, not a new subsystem — this is exactly what
-  [14-ai-task-router](../02-BACKEND/14-ai-task-router.md) exists for.
-- **Listen** reuses `voiceService`'s existing TTS providers (browser / OpenAI /
-  ElevenLabs).
+| Concern        | Reuse                                       | Why not new                                                                         |
+| -------------- | ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Transport      | `ml-sidecar` JSON-RPC (20 methods today)    | Proven; same lifecycle the orchestrator already manages                             |
+| Model delivery | `hf-hub` + the resumable chunked downloader | Already handles multi-hundred-MB model files                                        |
+| Frontend seam  | `voiceService.ts`                           | Already the single STT/TTS entry point; extend the switch, don't add a parallel API |
 
-## 5. The "listen or summarize long things" feature
+**New voice provider value:** `offline` (alongside `browser`/`openai`/…), so
+`VoiceProviderType` gains one member and `getVoiceCapabilities` gains one honest case.
 
-**Scope it as one feature with two outputs, not two features.**
+### 4.1 The self-hosted tier boundary
 
-| Input                         | Summarize                          | Listen                   |
-| ----------------------------- | ---------------------------------- | ------------------------ |
-| Long email thread             | ✅ summary card in the thread view | ✅ TTS reads the summary |
-| Call recording (voice agent)  | ✅ post-call digest                | ✅                       |
-| Voice note / audio attachment | ✅ transcript + summary            | ✅                       |
-| Any document already in RAG   | ✅ via existing retrieval          | ✅                       |
+Per [topology §6](../06-ROADMAP/17-voice-agent-topology-decision.md), keys live on the
+desktop for the self-hosted tier. Offline speech is a **desktop capability** — nothing
+crosses the network, no key exists. That is the cleanest possible position and it is
+worth stating in the UI.
+
+## 5. Recommended sequence
+
+| Phase | Work                                                                                                                      | Effort | Deliverable                            |
+| ----- | ------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------- |
+| **0** | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider |
+| **1** | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**     |
+| **2** | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half    |
+| **3** | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config           |
+| **4** | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI       |
+| **5** | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                |
+| **6** | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests             |
+
+**Phase 0 is not optional.** Shipping an offline engine behind a UI that already
+misreports capabilities makes the confusion worse, not better.
+
+## 6. Risks
+
+| Risk                                         | Severity | Mitigation                                                                             |
+| -------------------------------------------- | -------- | -------------------------------------------------------------------------------------- |
+| **Japanese TTS: no Piper/VITS voice exists** | Medium   | §3.2.1 — Japanese STT is fine; TTS needs another engine or is marked unavailable       |
+| Model size vs. offline-first promise         | Medium   | Reuse the resumable downloader; show size before download; per-device capability check |
+| CPU RTF on low-end hardware                  | Medium   | SELF-HOSTING §2.1 gate: measure RTF < 1.0 before promising it                          |
+| Two engines drift (sherpa + candle)          | Medium   | §3.1: one engine for speech; candle stays for embeddings only                          |
+| UI claims capability the build lacks         | **High** | Phase 0                                                                                |
+| Scope creep into live/streaming calls        | Medium   | §7 — batch desktop STT is separate from voice-agent P6                                 |
+
+## 7. Relationship to the voice-agent work (do not conflate)
+
+|                | Voice-agent **P6** (live)                                                                   | **This doc** (batch) |
+| -------------- | ------------------------------------------------------------------------------------------- | -------------------- |
+| Latency budget | < 300 ms                                                                                    | seconds–minutes      |
+| Engine         | Deepgram (commercial, per [15-landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) §2) | sherpa-onnx (local)  |
+| Runs on        | VPS                                                                                         | desktop              |
+| Trigger        | during a call                                                                               | after the fact       |
+
+The landscape doc classifies P6 as _"⛔ live / ⚠️ OSS batch"_ and [SELF-HOSTING](../voice/dev/SELF-HOSTING.md)
+§7 keeps self-hosted inference as a **Gate 5 candidate gated on an RTF measurement**.
+This doc **does not change those decisions.** Batch desktop STT ships independently and
+delivers "listen/summarize" value without waiting on the carrier or the streaming work.
+
+## 8. Acceptance criteria (proposed)
+
+- [ ] No provider shows a capability badge for a code path that throws
+- [ ] An audio file transcribes with **no API key and no external server**
+- [ ] Model is multilingual for the shipped locales; **Japanese TTS** gap decided and documented
+- [ ] TTS renders locally (Piper/VITS), not only via a cloud API
+- [ ] Local speech models are registered in `modelRegistry` and selectable in the UI
+- [ ] Transcription emits progress and never freezes the UI
+- [ ] The voice-agent P6 / Gate 5 decisions are untouched
+- [ ] `browser` STT is either implemented or explicitly marked unavailable
+
+## 9. "Listen / summarize long things" (the user-facing goal)
+
+The product value behind offline STT. Scope it as **one** feature with two outputs:
+
+| Input                         | Summarize                      | Listen                   |
+| ----------------------------- | ------------------------------ | ------------------------ |
+| Long email thread             | ✅ summary card in thread view | ✅ TTS reads the summary |
+| Call recording                | ✅ post-call digest            | ✅                       |
+| Voice note / audio attachment | ✅ transcript + summary        | ✅                       |
+| Any RAG document              | ✅ via existing retrieval      | ✅                       |
 
 **Design rules:**
 
-1. **Summarize first, then speak the summary** — not the raw transcript. Reading a
-   3,000-word thread aloud is not a feature, it is a punishment. This is also where
-   the token cost lives, so it should be one LLM pass.
-2. **Transcript is stored and indexed**, so the content becomes RAG-searchable. This
-   is the compounding win: a call recording becomes retrievable knowledge.
-3. **Chunk long audio.** Whisper is trained on 30-second windows; candle's
-   implementation handles longer input, but a multi-hour recording needs chunking +
-   stitching with overlap to avoid boundary word loss. Budget for it.
-4. **Never block the UI.** Transcription is slow on CPU — run it in the sidecar and
-   emit progress events (the pattern already exists: `ai:indexing_started` /
-   `ai:indexing_completed`).
-
-## 6. Relationship to the voice-agent work
-
-`docs/06-ROADMAP/15-voice-agent-oss-landscape.md` (verified 2026-09-28) classifies
-**P6 STT** as _"⛔ live / ⚠️ OSS batch — Commercial Deepgram streaming; OSS
-(faster-whisper) is the budget fallback"_.
-
-That analysis is about **live, streaming, in-call** STT, where latency is
-conversational. This proposal is **batch** STT, where latency is tolerated. They are
-different requirements and should not be conflated:
-
-|                | Live (P6, voice agent) | Batch (this doc)                 |
-| -------------- | ---------------------- | -------------------------------- |
-| Latency budget | < 300 ms               | seconds–minutes                  |
-| Engine         | Deepgram (commercial)  | candle whisper (local)           |
-| Trigger        | during a call          | after the fact                   |
-| Output         | streaming transcript   | transcript + summary + RAG entry |
-
-**Conclusion:** this work does **not** change the P6 decision. Batch STT is additive,
-ships independently, and delivers the "listen/summarize" value without waiting on the
-carrier/streaming work. Do not fold it into the voice-agent critical path.
-
-## 7. Recommended sequence
-
-| Phase | Work                                                                                      | Effort |
-| ----- | ----------------------------------------------------------------------------------------- | ------ |
-| **1** | Sidecar `transcribe` method via candle whisper (multilingual, lazy-load, progress events) | M      |
-| **2** | Voice settings: add an `offline` STT provider; stop hard-disabling local STT              | S      |
-| **3** | Summarize task in `taskRouter` + a `summarizeTranscript()` service                        | S      |
-| **4** | UI: summarize/listen affordance on long threads + audio attachments                       | M      |
-| **5** | Index transcripts into LanceDB so audio becomes RAG-searchable                            | S      |
-| **6** | Chunked long-audio transcription with overlap stitching                                   | M      |
-
-Phase 1+2 alone already deliver the headline: **offline STT with no key and no server.**
-
-## 8. Risks
-
-| Risk                                                  | Severity | Mitigation                                                                              |
-| ----------------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
-| CPU transcription is slow; UI feels hung              | **High** | Sidecar + progress events; never block the main thread                                  |
-| Model download (~240 MB) on a constrained link        | Medium   | Existing resumable downloader; show size before download                                |
-| Multilingual model mistaken for `.en`                 | Medium   | Explicit model id + a test asserting the multilingual variant                           |
-| Long-audio boundary word loss                         | Medium   | Overlap stitching (Phase 6)                                                             |
-| Transcripts silently leak into cloud LLM on summarize | **High** | Respect the existing local/cloud split; summarization must be able to run fully locally |
-| Scope creep into live/streaming STT                   | Medium   | §6 — batch only, separate from P6                                                       |
-
-## 9. Acceptance criteria (proposed)
-
-- [ ] An audio attachment transcribes with **no API key and no external server**
-- [ ] Model is multilingual; a French and an Arabic clip transcribe without switching models
-- [ ] Transcription emits progress and never freezes the UI
-- [ ] A long thread produces a summary that can be read aloud via existing TTS
-- [ ] Transcripts are indexed and return in RAG search
-- [ ] Summarization can run entirely locally (no mandatory cloud round-trip)
-- [ ] The P6 live-STT decision in the voice-agent docs is untouched
+1. **Summarize first, then speak the summary** — never read a raw 3,000-word thread aloud.
+   Also where the token cost lives, so it should be one LLM pass.
+2. **Store and index the transcript** → audio becomes RAG-searchable. That is the
+   compounding win, and it reuses `index_all_attachments`.
+3. **Chunk long audio** with overlap to avoid boundary word loss.
+4. **Never block the UI** — emit progress events (the `ai:indexing_started` pattern
+   already exists).
+5. **Summarization must be able to run fully locally** — respect the local/cloud split.
 
 ## Appendix: HF Spaces survey (audio)
 
-Surveyed `huggingface.co/spaces` (2026-10-01). Audio-relevant entries were mostly
-**demos of models**, which is what informs model choice here:
+Surveyed 2026-10-01. Audio entries were mostly **model demos**, which is what informs
+model choice:
 
-| Space                                   | Relevance                                                                                                  |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `openai/whisper`                        | Reference behaviour for transcribe/translate                                                               |
-| `nvidia/nemotron-diarization`           | **Speaker diarization** — "who said what" in a call recording. Relevant to call digests, _after_ basic STT |
-| Speech-synthesis / voice-cloning spaces | Excluded — TTS is already solved via `voiceService`                                                        |
+| Space                         | Relevance                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `openai/whisper`              | Reference transcribe/translate behaviour                                               |
+| `nvidia/nemotron-diarization` | **Speaker diarization** — "who said what" in a call digest. Relevant _after_ basic STT |
 
-**Sourcing rule:** Spaces inform _model selection_, not runtime dependencies. The app
-runs models locally (candle in the sidecar); it must never call a Space over the network.
-
-**Follow-on worth noting, not scoping now:** speaker diarization would materially
-improve call-recording summaries ("Alice raised the pricing objection"), but it is a
-second model and a second pipeline. Defer past Phase 6.
+**Sourcing rule:** Spaces inform _model selection_, never runtime dependencies. The app
+runs models locally (sherpa-onnx in the sidecar); it must not call a Space over the network.

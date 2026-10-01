@@ -2,6 +2,11 @@
 
 > Desktop voice & speech provider configuration for TTS and STT.
 > **Sources:** `src/features/settings/components/VoiceSettings.tsx`, `src/shared/services/ai/voiceService.ts`
+> **Status note (2026-10-01):** ⚠️ Five of the six providers throw on at least one
+> advertised direction, and the capability badges misreport two of them. See
+> [§Implementation status](#implementation-status-2026-10-01) — the tables below that
+> describe capability are **the intended contract, not the current behaviour**.
+> **Engine decision for offline speech:** [20-offline-stt-and-audio-summarization](../02-BACKEND/20-offline-stt-and-audio-summarization.md)
 
 ## Overview
 
@@ -167,6 +172,55 @@ Direct `fetch` calls to `{baseUrl}/audio/speech` and `{baseUrl}/audio/transcript
 | `voice_stt_model`   | string  | No     | STT model name            |
 | `voice_tts_enabled` | boolean | No     | TTS toggle                |
 | `voice_stt_enabled` | boolean | No     | STT toggle                |
+
+## Implementation status (2026-10-01)
+
+Verified by reading `voiceService.ts`. **This is the current truth; the tables above
+describe the intended contract.**
+
+### What actually works
+
+| Provider     | STT           | TTS           | Auth needed            | Notes                                                    |
+| ------------ | ------------- | ------------- | ---------------------- | -------------------------------------------------------- |
+| `browser`    | ❌ **throws** | ✅ works      | None                   | TTS via `window.speechSynthesis`; STT is a `TODO`        |
+| `openai`     | ✅ works      | ✅ works      | API Key                | Real `fetch` to `/audio/transcriptions`, `/audio/speech` |
+| `custom`     | ✅ works      | ✅ works      | API Key                | Same OpenAI-compatible path                              |
+| `lmstudio`   | ✅ works      | ✅ works      | None, **URL required** | Same path against a local server                         |
+| `elevenlabs` | ❌ **throws** | ❌ **throws** | API Key                | No implementation at all                                 |
+| `agent-core` | ❌ **throws** | ❌ **throws** | None                   | No implementation at all                                 |
+
+**Consequence:** there is **no zero-config offline STT**. Every working STT path needs
+either an API key or a user-installed local server.
+
+### The five stubs (exact locations)
+
+| Location                  | Message                              |
+| ------------------------- | ------------------------------------ |
+| `voiceService.ts:156-157` | `ElevenLabs TTS not yet implemented` |
+| `voiceService.ts:159-160` | `Agent-core TTS not yet implemented` |
+| `voiceService.ts:175-176` | `Browser STT not yet implemented`    |
+| `voiceService.ts:182-183` | `ElevenLabs STT not yet implemented` |
+| `voiceService.ts:185-186` | `Agent-core STT not yet implemented` |
+
+### Capability badges misreport two providers
+
+`getVoiceCapabilities()` is what drives the ✓/✗ badges, and it disagrees with reality:
+
+| Provider     | Badge says                  | Reality    | Problem                                     |
+| ------------ | --------------------------- | ---------- | ------------------------------------------- |
+| `elevenlabs` | `{ stt: false, tts: true }` | TTS throws | ⚠️ Green **✓ TTS** on a stub                |
+| `agent-core` | `{ stt: true, tts: true }`  | Both throw | ⚠️ Reports full capability, implements none |
+| `browser`    | `{ stt: false, tts: … }`    | Honest     | ✅                                          |
+
+A user selects ElevenLabs, sees "✓ TTS", and gets a thrown error. Fixing this is
+**Phase 0** of [the offline-voice plan](../02-BACKEND/20-offline-stt-and-audio-summarization.md#5-recommended-sequence).
+
+### Model registry: no local speech models
+
+`modelRegistry.ts` registers `whisper-1`, `gpt-4o-transcribe`, `tts-1` and
+`gpt-4o-mini-tts` — **all cloud (OpenAI)**. No local speech model is registered, so the
+offline engine has no registry entry yet. `ModelCapabilities` already declares
+`stt?` / `tts?` / `realtime?`, so adding local entries needs **no type change**.
 
 ## Desktop Voice vs Python Agent-Core
 
