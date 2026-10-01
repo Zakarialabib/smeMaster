@@ -41,13 +41,13 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.129.0",
+    "@anthropic-ai/sdk": "0.131.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
-    "@google/genai": "^2.24.0",
+    "@google/genai": "^2.25.0",
     "@mistralai/mistralai": "^2.7.0",
     "@tanstack/react-query": "5.104.0",
-    "@tanstack/react-router": "1.170.40",
+    "@tanstack/react-router": "1.170.41",
     "@tanstack/react-virtual": "3.14.13",
     "@tauri-apps/api": "2.12.0",
     "@tauri-apps/plugin-biometric": "2.4.0",
@@ -76,8 +76,8 @@
     "d3-force": "^3.0.0",
     "dompurify": "3.4.16",
     "i18next": "26.4.2",
-    "lucide-react": "^0.563.0",
-    "openai": "^6.38.0",
+    "lucide-react": "^1.49.0",
+    "openai": "^7.25.0",
     "papaparse": "5.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -85,9 +85,9 @@
     "react-intersection-observer": "11.0.1",
     "react-transition-group": "^4.4.5",
     "recharts": "3.10.1",
-    "tsdav": "2.3.4",
+    "tsdav": "2.3.5",
     "uuid": "14.0.2",
-    "zod": "^3.23.8",
+    "zod": "^4.6.5",
     "zustand": "5.0.15"
   },
   "overrides": {
@@ -97,9 +97,9 @@
     "@rollup/rollup-win32-x64-msvc": "4.63.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "4.3.3",
-    "@tauri-apps/cli": "2.12.0",
+    "@tauri-apps/cli": "2.12.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
@@ -112,17 +112,18 @@
     "@types/react-transition-group": "^4.4.12",
     "@types/uuid": "11.0.0",
     "@typescript-eslint/parser": "8.71.0",
-    "@vitejs/plugin-react": "5.2.0",
-    "eslint": "9.39.5",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.11.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "husky": "^9.1.7",
-    "jsdom": "28.1.0",
+    "jsdom": "30.1.1",
     "lint-staged": "17.6.0",
     "prettier": "3.9.9",
     "tailwindcss": "4.3.3",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.5",
-    "vitest": "4.1.11"
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "5.0.3"
   }
 }
