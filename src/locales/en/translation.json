@@ -1264,7 +1264,13 @@
     "undoSendQuickPick": "Quick pick",
     "calendarDesc": "Calendar preferences and sync",
     "expiresIn": "Expires in {{count}}",
-    "pairingUnavailableDev": "Pairing is unavailable in development mode"
+    "pairingUnavailableDev": "Pairing is unavailable in development mode",
+    "pairingTitle": "settings.pairingTitle",
+    "providerByteplus": "settings.providerByteplus",
+    "byteplusApiKey": "settings.byteplusApiKey",
+    "byteplusKeyPlaceholder": "settings.byteplusKeyPlaceholder",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -2379,5 +2385,8 @@
     "promotions": "Promotions",
     "social": "Social",
     "newsletters": "Newsletters"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
   }
 }

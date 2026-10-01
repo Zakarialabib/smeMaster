@@ -249,15 +249,15 @@
     "all": "All",
     "unread": "Unread",
     "read": "Read",
-    "toggleSelectAll": "[TODO] email.toggleSelectAll",
-    "markReadSelected": "[TODO] email.markReadSelected",
-    "markUnreadSelected": "[TODO] email.markUnreadSelected",
-    "addLabelSelected": "[TODO] email.addLabelSelected",
-    "noLabels": "[TODO] email.noLabels",
-    "moveToSelected": "[TODO] email.moveToSelected",
-    "focused": "[TODO] email.focused",
-    "allMail": "[TODO] email.allMail",
-    "loading": "[TODO] email.loading"
+    "toggleSelectAll": "すべて選択 / 未選択",
+    "markReadSelected": "既読にする",
+    "markUnreadSelected": "未読にする",
+    "addLabelSelected": "ラベルを追加",
+    "noLabels": "ラベルなし",
+    "moveToSelected": "フォルダーに移動",
+    "focused": "ピン留め",
+    "allMail": "すべてのメール",
+    "loading": "読み込み中..."
   },
   "actionBar": {
     "reply": "返信",
@@ -540,8 +540,8 @@
         "desc": "Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
       },
       "pgp": {
-        "name": "[TODO] PGP Encryption",
-        "desc": "[TODO] End-to-end encryption with Sequoia OpenPGP key management"
+        "name": "PGP Encryption",
+        "desc": "End-to-end encryption with Sequoia OpenPGP key management"
       },
       "compliance": {
         "name": "Compliance",
@@ -1084,7 +1084,7 @@
     "composing": {
       "setupGuide": "Setup Guide",
       "step": "Step",
-      "of": "[TODO] of",
+      "of": "の",
       "why": "A consistent composing setup saves time and keeps your brand voice uniform.",
       "how": "Set your default editor, signatures, quick replies, and pre-send checklist in Composing.",
       "when": "Review these when adding a new signature or changing your writing style."
@@ -1281,9 +1281,9 @@
         "when": "Configure when sending to regulated regions or lists."
       },
       "pgp": {
-        "why": "[TODO] PGP gives true end-to-end privacy for sensitive mail.",
+        "why": "PGPは機密性の高いメールに真のエンドツーエンドのプライバシーを提供します。",
         "how": "Generate or import a key pair, then share your public key.",
-        "when": "[TODO] Set up PGP before exchanging confidential messages."
+        "when": "機密メッセージを交換する前にPGPを設定してください。"
       },
       "presend": {
         "why": "A pre-send checklist catches mistakes before they ship.",
@@ -1331,18 +1331,22 @@
       "when": "When"
     },
     "cacheTab": {
-      "overview": "[TODO] settings.cacheTab.overview",
-      "enabled": "[TODO] settings.cacheTab.enabled",
-      "enabledDesc": "[TODO] settings.cacheTab.enabledDesc",
-      "lastSync": "[TODO] settings.cacheTab.lastSync",
-      "lastSyncDesc": "[TODO] settings.cacheTab.lastSyncDesc",
-      "domains": "[TODO] settings.cacheTab.domains",
-      "actions": "[TODO] settings.cacheTab.actions",
-      "runBenchmark": "[TODO] settings.cacheTab.runBenchmark",
-      "clearCaches": "[TODO] settings.cacheTab.clearCaches",
-      "actionsHint": "[TODO] settings.cacheTab.actionsHint"
+      "overview": "キャッシュの概要",
+      "enabled": "データキャッシュが有効",
+      "enabledDesc": "メモリ内TTLキャッシュ層（連絡先、アカウント、ラベル、スレッド）。",
+      "lastSync": "最後の同期",
+      "lastSyncDesc": "最後のバックグラウンド同期試行（同期モニターから）。",
+      "domains": "キャッシュドメイン",
+      "actions": "アクション",
+      "runBenchmark": "ベンチマーク実行",
+      "clearCaches": "キャッシュをクリア",
+      "actionsHint": "ベンチマークはキャッシュ/DBパスの読み取り遅延を測定します。キャッシュをクリアすると、次回のアクセス時にデータベースからの完全なリロードが強制されます。"
     },
-    "undoSendQuickPick": "[TODO] Quick pick"
+    "undoSendQuickPick": "クイックピック",
+    "pairingTitle": "settings.pairingTitle",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle",
+    "pairNewDeviceComingSoon": "デバイスのペアリング設定は近日公開予定"
   },
   "addAccount": {
     "easySetup": "簡単セットアップ IMAP + アプリパスワード ",
@@ -1402,21 +1406,21 @@
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
-    "goToCalendar": "[TODO] search.goToCalendar",
-    "goToCampaigns": "[TODO] search.goToCampaigns",
-    "goToPeople": "[TODO] search.goToPeople",
-    "goToAutomation": "[TODO] search.goToAutomation",
-    "goToDashboard": "[TODO] search.goToDashboard",
-    "goToSettingsInbox": "[TODO] search.goToSettingsInbox",
-    "goToSettingsComposing": "[TODO] search.goToSettingsComposing",
-    "searchMail": "[TODO] search.searchMail",
-    "reloadMail": "[TODO] search.reloadMail",
-    "toggleFocused": "[TODO] search.toggleFocused",
-    "toggleSplitInbox": "[TODO] search.toggleSplitInbox",
-    "snoozeThread": "[TODO] search.snoozeThread",
-    "starThread": "[TODO] search.starThread",
-    "archiveThread": "[TODO] search.archiveThread",
-    "markReadThread": "[TODO] search.markReadThread",
+    "goToCalendar": "カレンダーへ移動",
+    "goToCampaigns": "キャンペーンへ移動",
+    "goToPeople": "People / Contactsへ移動",
+    "goToAutomation": "オートメーションへ移動",
+    "goToDashboard": "ダッシュボードへ移動",
+    "goToSettingsInbox": "設定 › 受信箱を開く",
+    "goToSettingsComposing": "設定 › 作成を開く",
+    "searchMail": "メール検索",
+    "reloadMail": "メールを再読み込み",
+    "toggleFocused": "ピン留め受信箱の切替",
+    "toggleSplitInbox": "分割 / 統合受信箱の切替",
+    "snoozeThread": "選択したスレッドをスヌーズ",
+    "starThread": "選択したスレッドに星を付ける",
+    "archiveThread": "選抬中のスレッドをアーカイブ",
+    "markReadThread": "選択したスレッドを既読にする",
     "templateDesc": "一貫したメッセージングのための変数プレースホルダーを備えた再利用可能なメールテンプレートを作成します。"
   },
   "empty": {
@@ -1726,7 +1730,8 @@
       "lineHeight": "Line height",
       "title": "Email Editor",
       "desktop": "Desktop",
-      "mobile": "Mobile"
+      "mobile": "Mobile",
+      "fromVaultComingSoon": "Vaultから添付は近日公開予定"
     }
   },
   "filter": {
@@ -1909,8 +1914,8 @@
     "recurringLower": "繰り返し",
     "editPreset": "Edit preset",
     "newPreset": "New preset",
-    "naturalLanguage": "[TODO] Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)",
-    "nlPlaceholder": "[TODO] tomorrow 9am"
+    "naturalLanguage": "または時間を入力してください（例：「明日午前9時」、「金曜日」、「3時間後」）",
+    "nlPlaceholder": "明日午前9時"
   },
   "compliance": {
     "violations": "違反",
@@ -1960,7 +1965,14 @@
     "refresh": "更新",
     "updatedSeconds": "{{count}}秒前に更新されました",
     "updatedMinutes": "{{count}}分前に更新されました",
-    "updatedHours": "{{count}}時間前に更新されました"
+    "updatedHours": "{{count}}時間前に更新されました",
+    "cards": {
+      "openSection": "セクションを開く"
+    },
+    "sections": {
+      "consoleTitle": "セクション",
+      "consoleDescription": "セクションに直接ジャンプ — 各カードはライブ統計とクイック概要を表示します。"
+    }
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
@@ -2139,61 +2151,61 @@
   "Loading": {
     "": {
       "": {
-        "": "[TODO] Loading..."
+        "": "読み込み中..."
       }
     }
   },
   "Add a description": {
     "": {
       "": {
-        "": "[TODO] Add a description..."
+        "": "説明を追加..."
       }
     }
   },
   "No actions configured": {
     " Add an action to run when this trigger fires": {
-      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+      "": "アクションが設定されていません。このトリガーが発火時に実行するアクションを追加してください。"
     }
   },
   "Select a template": {
     "": {
       "": {
-        "": "[TODO] Select a template..."
+        "": "テンプレートを選択..."
       }
     }
   },
   "Notification text": {
     "": {
       "": {
-        "": "[TODO] Notification text..."
+        "": "通知テキスト..."
       }
     }
   },
   "Task title preset": {
     "": {
       "": {
-        "": "[TODO] Task title preset..."
+        "": "タスクタイトルのプリセット..."
       }
     }
   },
   "Saving": {
     "": {
       "": {
-        "": "[TODO] Saving..."
+        "": "保存中..."
       }
     }
   },
   "Deleting": {
     "": {
       "": {
-        "": "[TODO] Deleting..."
+        "": "削除中..."
       }
     }
   },
   "Search contacts": {
     "": {
       "": {
-        "": "[TODO] Search contacts..."
+        "": "連絡先を検索..."
       }
     }
   },
@@ -2331,5 +2343,12 @@
     "promotions": "プロモーション",
     "social": "ソーシャル",
     "newsletters": "ニュースレター"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
+  },
+  "columns": {
+    "title": "列",
+    "reset": "デフォルトにリセット"
   }
 }

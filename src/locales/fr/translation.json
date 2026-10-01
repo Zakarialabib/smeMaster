@@ -249,15 +249,15 @@
     "all": "All",
     "unread": "Unread",
     "read": "Read",
-    "toggleSelectAll": "[TODO] email.toggleSelectAll",
-    "markReadSelected": "[TODO] email.markReadSelected",
-    "markUnreadSelected": "[TODO] email.markUnreadSelected",
-    "addLabelSelected": "[TODO] email.addLabelSelected",
-    "noLabels": "[TODO] email.noLabels",
-    "moveToSelected": "[TODO] email.moveToSelected",
-    "focused": "[TODO] email.focused",
-    "allMail": "[TODO] email.allMail",
-    "loading": "[TODO] email.loading"
+    "toggleSelectAll": "Tout sélectionner / aucun",
+    "markReadSelected": "Marquer comme lu",
+    "markUnreadSelected": "Marquer comme non lu",
+    "addLabelSelected": "Ajouter un libellé",
+    "noLabels": "Aucun libellé",
+    "moveToSelected": "Déplacer vers le dossier",
+    "focused": "Principale",
+    "allMail": "Tous les courriels",
+    "loading": "Chargement..."
   },
   "actionBar": {
     "reply": "Répondre",
@@ -544,8 +544,8 @@
         "desc": "Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
       },
       "pgp": {
-        "name": "[TODO] PGP Encryption",
-        "desc": "[TODO] End-to-end encryption with Sequoia OpenPGP key management"
+        "name": "Chiffrement PGP",
+        "desc": "Chiffrement de bout en bout avec gestion des clés OpenPGP Sequoia"
       },
       "compliance": {
         "name": "Compliance",
@@ -1085,7 +1085,7 @@
     "composing": {
       "setupGuide": "Setup Guide",
       "step": "Step",
-      "of": "[TODO] of",
+      "of": "de",
       "why": "A consistent composing setup saves time and keeps your brand voice uniform.",
       "how": "Set your default editor, signatures, quick replies, and pre-send checklist in Composing.",
       "when": "Review these when adding a new signature or changing your writing style."
@@ -1282,9 +1282,9 @@
         "when": "Configure when sending to regulated regions or lists."
       },
       "pgp": {
-        "why": "[TODO] PGP gives true end-to-end privacy for sensitive mail.",
+        "why": "Le PGP offre une véritable confidentialité de bout en bout pour les courriels sensibles.",
         "how": "Generate or import a key pair, then share your public key.",
-        "when": "[TODO] Set up PGP before exchanging confidential messages."
+        "when": "Configurez le PGP avant d'échanger des messages confidentiels."
       },
       "presend": {
         "why": "A pre-send checklist catches mistakes before they ship.",
@@ -1332,18 +1332,22 @@
       "when": "When"
     },
     "cacheTab": {
-      "overview": "[TODO] settings.cacheTab.overview",
-      "enabled": "[TODO] settings.cacheTab.enabled",
-      "enabledDesc": "[TODO] settings.cacheTab.enabledDesc",
-      "lastSync": "[TODO] settings.cacheTab.lastSync",
-      "lastSyncDesc": "[TODO] settings.cacheTab.lastSyncDesc",
-      "domains": "[TODO] settings.cacheTab.domains",
-      "actions": "[TODO] settings.cacheTab.actions",
-      "runBenchmark": "[TODO] settings.cacheTab.runBenchmark",
-      "clearCaches": "[TODO] settings.cacheTab.clearCaches",
-      "actionsHint": "[TODO] settings.cacheTab.actionsHint"
+      "overview": "Aperçu du cache",
+      "enabled": "Cache de données activé",
+      "enabledDesc": "Couche de cache en mémoire TTL (contacts, comptes, libellés, conversations).",
+      "lastSync": "Dernse synchronisation",
+      "lastSyncDesc": "Dernière tentative de synchronisation en arrière-plan (depuis le moniteur de sync).",
+      "domains": "Cache Domains",
+      "actions": "Actions",
+      "runBenchmark": "Run Benchmark",
+      "clearCaches": "Clear Caches",
+      "actionsHint": "Benchmark measures read latency through the cache/DB path. Clearing caches forces a fresh reload from the database on next access."
     },
-    "undoSendQuickPick": "[TODO] Quick pick"
+    "undoSendQuickPick": "Sélection rapide",
+    "pairingTitle": "settings.pairingTitle",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle",
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon"
   },
   "search": {
     "typeACommand": "Tapez une commande...",
@@ -1370,21 +1374,21 @@
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
-    "goToCalendar": "[TODO] search.goToCalendar",
-    "goToCampaigns": "[TODO] search.goToCampaigns",
-    "goToPeople": "[TODO] search.goToPeople",
-    "goToAutomation": "[TODO] search.goToAutomation",
-    "goToDashboard": "[TODO] search.goToDashboard",
-    "goToSettingsInbox": "[TODO] search.goToSettingsInbox",
-    "goToSettingsComposing": "[TODO] search.goToSettingsComposing",
-    "searchMail": "[TODO] search.searchMail",
-    "reloadMail": "[TODO] search.reloadMail",
-    "toggleFocused": "[TODO] search.toggleFocused",
-    "toggleSplitInbox": "[TODO] search.toggleSplitInbox",
-    "snoozeThread": "[TODO] search.snoozeThread",
-    "starThread": "[TODO] search.starThread",
-    "archiveThread": "[TODO] search.archiveThread",
-    "markReadThread": "[TODO] search.markReadThread",
+    "goToCalendar": "Go to Calendar",
+    "goToCampaigns": "Go to Campaigns",
+    "goToPeople": "Go to People / Contacts",
+    "goToAutomation": "Go to Automation",
+    "goToDashboard": "Go to Dashboard",
+    "goToSettingsInbox": "Open Settings › Inbox",
+    "goToSettingsComposing": "Open Settings › Composing",
+    "searchMail": "Search Mail",
+    "reloadMail": "Reload Mail",
+    "toggleFocused": "Toggle Focused Inbox",
+    "toggleSplitInbox": "Toggle Split / Unified Inbox",
+    "snoozeThread": "Snooze Selected Thread",
+    "starThread": "Star Selected Thread",
+    "archiveThread": "Archive Selected Thread",
+    "markReadThread": "Mark Selected Thread as Read",
     "templateDesc": "Créez des modèles d’e-mails réutilisables avec des espaces réservés pour un message cohérent."
   },
   "empty": {
@@ -1615,7 +1619,8 @@
       "leftColumn": "Left column",
       "rightColumn": "Right column",
       "gap": "Gap",
-      "lineHeight": "Line height"
+      "lineHeight": "Line height",
+      "fromVaultComingSoon": "Attach from Vault is coming soon"
     },
     "campaigns": "Campagnes",
     "newCampaign": "Nouvelle campagne",
@@ -1853,8 +1858,8 @@
     "recurringLower": "récurrent",
     "editPreset": "Edit preset",
     "newPreset": "New preset",
-    "naturalLanguage": "[TODO] Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)",
-    "nlPlaceholder": "[TODO] tomorrow 9am"
+    "naturalLanguage": "Ou tapez un horaire (ex. « demain 9h », « vendredi », « dans 3 heures »)",
+    "nlPlaceholder": "demain 9h"
   },
   "compliance": {
     "violations": "Violations",
@@ -1904,7 +1909,14 @@
     "refresh": "Refresh",
     "updatedSeconds": "Mis à jour il y a {{count}}s",
     "updatedMinutes": "Mis à jour il y a {{count}}m",
-    "updatedHours": "Mis à jour il y a {{count}}h"
+    "updatedHours": "Mis à jour il y a {{count}}h",
+    "cards": {
+      "openSection": "Open section"
+    },
+    "sections": {
+      "consoleTitle": "Sections",
+      "consoleDescription": "Jump straight into a section — each card shows live stats and a quick overview."
+    }
   },
   "addAccount": {
     "easySetup": "Configuration facile (IMAP + Mot de passe d'application)",
@@ -2140,61 +2152,61 @@
   "Loading": {
     "": {
       "": {
-        "": "[TODO] Loading..."
+        "": "Loading..."
       }
     }
   },
   "Add a description": {
     "": {
       "": {
-        "": "[TODO] Add a description..."
+        "": "Add a description..."
       }
     }
   },
   "No actions configured": {
     " Add an action to run when this trigger fires": {
-      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+      "": "No actions configured. Add an action to run when this trigger fires."
     }
   },
   "Select a template": {
     "": {
       "": {
-        "": "[TODO] Select a template..."
+        "": "Select a template..."
       }
     }
   },
   "Notification text": {
     "": {
       "": {
-        "": "[TODO] Notification text..."
+        "": "Notification text..."
       }
     }
   },
   "Task title preset": {
     "": {
       "": {
-        "": "[TODO] Task title preset..."
+        "": "Task title preset..."
       }
     }
   },
   "Saving": {
     "": {
       "": {
-        "": "[TODO] Saving..."
+        "": "Saving..."
       }
     }
   },
   "Deleting": {
     "": {
       "": {
-        "": "[TODO] Deleting..."
+        "": "Deleting..."
       }
     }
   },
   "Search contacts": {
     "": {
       "": {
-        "": "[TODO] Search contacts..."
+        "": "Search contacts..."
       }
     }
   },
@@ -2332,5 +2344,12 @@
     "promotions": "Promotions",
     "social": "Social",
     "newsletters": "Newsletters"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
+  },
+  "columns": {
+    "title": "Columns",
+    "reset": "Reset to defaults"
   }
 }
