@@ -8,6 +8,8 @@
 >
 |> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
 |>
+|> ✅ **Vite 8 Upgrade — Complete (2026-10-01):** Upgraded from v7.3.6 → v8.0.5. Fixed `@rolldown/binding-win32-x64-msvc` extraction failure by deleting `package-lock.json`, running `npm cache verify`, and reinstalling (the npm optional-dependency lockfile bug). Fixed `manualChunks` object→function format for Rolldown compatibility in `vite.config.ts`. Build: clean 5.16s. TSC: zero errors.
+|>
 |> ✅ **AI Capabilities Architecture (2026-10-01):** Complete capability interface system — 14 narrow composable interfaces (Text, Streaming, Embeddings with space pinning, Structured Output, Tool Calling, Reasoning, Vision, Context Caching, Batch Processing, STT, TTS, Realtime Voice, Model Discovery, Connection Test) with type guards. Task router with fallback chains, cost-aware scoring, and exponential backoff retry. 30+ model registry entries across 10 providers. 74 new TS tests added.
 |>
 |> ✅ **BytePlus Embedding Support (2026-10-01):** Added `EmbeddingCapable` to BytePlus provider — uses OpenAI-compatible `/embeddings` endpoint with Seed embedding models. Space pinning: `byteplus-<model>-<dims>`. Model registry updated with embedding dimensions for Doubao Pro/Lite 32K.

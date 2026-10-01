@@ -15,7 +15,7 @@
 | RTL Fixes | 141 physical-direction violations across 106 files | ✅ 0 remaining in `src/` |
 | i18n Sync | `npm run translate:sync` + translated all TODOs | ✅ 0 `[TODO]` tags in all 5 locales |
 | Tauri Version Alignment | 11 Rust crates aligned with NPM packages | ✅ `cargo check` clean |
-| Vite 8 | Attempted upgrade | ❌ Blocked by `@rolldown/binding-win32-x64-msvc` extraction failure |
+| Vite 8 | Attempted upgrade | ✅ **Upgraded to v8.0.5** — `@rolldown/binding-win32-x64-msvc` extraction fixed by deleting package-lock + npm cache verify + fresh install |
 | AI Capabilities Architecture | 14 capability interfaces, 30+ model registry, task router, cost-aware fallback chains | ✅ 11 files created, 31+43 tests |
 | Provider Implementations | All 10 providers (OpenAI, Gemini, Mistral, BytePlus, Claude, OpenRouter, Ollama, LM Studio, Copilot, Custom) extended with full capability matrix | ✅ 12 commits |
 
@@ -58,12 +58,12 @@ Target: **unsigned Windows MSI + Android APK** (signed is post-v1.0 per security
 ## 🔜 What's Next (Priority Order)
 
 ```
-NEXT:    Validation suite — tsc/lint/vitest (deferred during package chaos)
-         + Implement EmbeddingCapable in BytePlus provider
-         + Update docs/STATUS.md remaining stale metrics
+NEXT:    1. Vite 8 now UPGRADED ✅ — run full validation (tsc/lint/vitest/build) on v8
+         2. Implement EmbeddingCapable in BytePlus provider (remaining gap)
+         3. Update docs/STATUS.md remaining stale metrics (969→977 Rust, 3344→3533 TS)
+
 AFTER:   Start Gate 3 cert purchase + pubkey generation
-         + Assign Gate 9 dogfooding (7 days) + beta testing (7 days) to operators
-BLOCKERS: Vite 8 rolldown binary, code signing cert purchase, human operators for dogfooding/beta
+BLOCKERS: dogfooding (7 days) + beta testing (7 days) — need human operators
 ```
 
 ## 📊 Updated Metrics
@@ -85,10 +85,9 @@ BLOCKERS: Vite 8 rolldown binary, code signing cert purchase, human operators fo
 
 ## 🛑 Blockers & Risks
 
-1. **Vite 8 rolldown binary** — `@rolldown/binding-win32-x64-msvc` fails extraction on Windows. Stay on Vite 7.3.6 until resolved.
-2. **macOS/iOS builds** — macOS target deferred to post-v1.0 (no Mac for notarization).
-3. **Dogfooding + beta** — require human operators, can't be automated.
-4. **Code signing certs** — require purchase (Windows EV cert ~\$150-300/yr).
+1. **Code signing certs** — Windows EV cert requires purchase (~\$150-300/yr)
+2. **Dogfooding + beta** — require human operators (can't be automated)
+3. **macOS/iOS builds** — macOS target deferred to post-v1.0 (no Mac for notarization)
 
 ---
 
