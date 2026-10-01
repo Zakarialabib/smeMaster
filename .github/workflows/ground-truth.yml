@@ -18,8 +18,8 @@
 #
 # What this workflow deliberately does NOT do
 #   - typecheck / eslint / cargo / vite build. Those are owned by `ci.yml`
-#     (job `lint-and-test`, windows-latest: `npx tsc --noEmit`, `npx eslint src`,
-#     `npx vitest run --project unit`, cargo check + test, `npm run build`).
+#     (job `lint-and-test`, windows-latest: `bun run typecheck`, `bun run lint`,
+#     `bun run test --project unit`, cargo check + test, `bun run build`).
 #     This workflow stays focused on the metrics check + summary-gated tests —
 #     do not duplicate ci.yml's jobs here.
 #
@@ -33,11 +33,8 @@
 #      `docs/06-ROADMAP/09-master-plan.md` and `AGENTS.md` if they cite them.
 #   4. Re-run the checker until it PASSes, then commit baseline + docs together.
 #
-# NOTE on npm install: `package-lock.json` is intentionally absent while the
-# dependency refactor is in flight, so `npm ci` would fail here — jobs install
-# with `npm install --package-lock=false`. Once the lock file returns, switch
-# this workflow (and re-add `cache: 'npm'` to setup-node, which requires a
-# lock file for its cache key) back to `npm ci`.
+# NOTE on the package manager: bun is authoritative (`bun.lock`). Jobs install
+# with `bun install --frozen-lockfile`; `package-lock.json` is no longer used.
 # ============================================================================
 
 name: Ground Truth
@@ -63,8 +60,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-        # No `npm ci` / cache here: the checker uses node builtins only,
-        # and setup-node's npm cache key needs a lock file (currently absent).
+        # No install here: the checker uses node builtins only.
 
       - name: Check ground-truth metrics + docs/00-INDEX.md header
         run: node scripts/check-ground-truth.mjs
@@ -75,22 +71,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
+          bun-version: latest
 
       - name: Install dependencies
-        # `npm ci` needs package-lock.json, which is intentionally deleted
-        # during the dependency refactor. Revert to `npm ci` when it returns.
-        run: npm install --package-lock=false --no-audit --no-fund
+        run: bun install --frozen-lockfile
 
       - name: Run vitest (capture output; process exit code is NOT the verdict)
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
           $env:NO_COLOR = '1'
-          npx vitest run --exclude integration 2>&1 |
+          bunx vitest run --exclude integration 2>&1 |
             Tee-Object -FilePath vitest-output.log |
             ForEach-Object { Write-Host $_ }
           Write-Host "vitest exit code: $LASTEXITCODE (reported only - the next step gates on the summary line)"

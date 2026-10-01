@@ -28,23 +28,22 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: bun run typecheck
 
       - name: ESLint
-        run: npx eslint src
+        run: bun run lint
 
       - name: Frontend tests
-        run: npx vitest run --project unit --reporter=default
+        run: bun run test --project unit --reporter=default
 
       # Tauri's build script validates externalBin paths even during cargo check.
       # Create a placeholder so the core app compiles without the ML sidecar.
@@ -63,7 +62,7 @@ jobs:
         working-directory: src-tauri
 
       - name: Vite build
-        run: npm run build
+        run: bun run build
 
   # ── Desktop Build (Windows) ────────────────────────────────────────────
   build-desktop:
@@ -83,17 +82,16 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install protoc
         run: choco install protoc -y --no-progress
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       # Override vendored PROTOC path with system-installed protoc
       - name: Set PROTOC env var
@@ -139,11 +137,10 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -162,7 +159,7 @@ jobs:
           sdkmanager "build-tools;35.0.0"
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Init Android project
         run: cargo tauri android init
