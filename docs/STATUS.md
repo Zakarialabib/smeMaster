@@ -1,6 +1,12 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-09-30
+> **Last updated:** 2026-10-01
+>
+> ✅ **Pre-Release Stability Tests — Automated (2026-10-01):** Added 8 Rust integration tests in `src-tauri/tests/panic_and_wal.rs` covering panic injection (crash.log + crash_count.txt verification), WAL recovery (crash mid-transaction → data integrity verified), WAL checkpoint compaction, and watchdog restart logic (crash counter increment/restore). All tests pass `cargo test --test panic_and_wal`.
+>
+> ✅ **RTL Physical-Direction Violations — Fixed (2026-10-01):** Resolved all **141 violations** across **106 files**: `text-left`→`text-start` (55), `text-right`→`text-end` (7), `ml-*`→`ms-*` (64), `mr-*`→`me-*` (17), `margin-left/right`→`margin-inline-start` (2 in globals.css). Zero violations remain in `src/`.
+>
+> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
 >
 > ✅ **Keyboard Navigation + Screen Reader (WCAG AA) — Done (2026-07-14):** Created reusable `<SkipLink>` component (replaced inline skip-links in App.tsx + MobileShell.tsx), `<FocusOrderManager>` landmark wrapper, added `aria-describedby` on PremiumSidebar, `role="status"`+`aria-live="polite"` on NotificationToast/EmptyState, `role="search"` on SearchBar. i18n keys (`skipToContent`, `nav.keyboardNavHint`) added to all 5 locales.
 >

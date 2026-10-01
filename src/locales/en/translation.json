@@ -47,13 +47,13 @@
     "setupWizard": "Setup wizard",
     "steps": {
       "welcome": "Welcome",
-      "features": "Features",
+      "tools": "Features",
       "account": "Account",
-      "ready": "Ready",
+      "complete": "Ready",
       "welcomeDesc": "Theme & Profile",
-      "featuresDesc": "Choose Capabilities",
+      "toolsDesc": "Choose Capabilities",
       "accountDesc": "Connect Email",
-      "readyDesc": "Launch"
+      "completeDesc": "Launch"
     },
     "welcomeTitle": "Welcome to SMEMaster",
     "welcomeDesc": "All-in-one mail, CRM, and campaign management for your business",

@@ -1,6 +1,7 @@
 
 import { listen } from "@tauri-apps/api/event";
 import { invokeCommand } from "@shared/services/db/invoke/command";
+import { isTauriEnvironment } from "@shared/services/ipc/environment";
 import { isAndroid } from "@shared/services/nativeBridges";
 import { escapeHtml } from "@shared/utils/sanitize";
 import { useComposerStore } from "@features/mail/stores/composerStore";
@@ -27,6 +28,11 @@ async function handleShare(payload: SharePayload): Promise<void> {
 }
 
 export async function initShareHandler(): Promise<() => void> {
+  // The share plugin and its `share:received` event are Tauri-only — outside
+  // a Tauri shell `listen()` throws the `transformCallback` TypeError. The
+  // browser dev server has no share extension to subscribe to, so no-op.
+  if (!isTauriEnvironment()) return () => {};
+
   const cleanups: Array<() => void> = [];
 
   try {
