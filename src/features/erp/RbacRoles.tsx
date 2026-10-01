@@ -61,7 +61,7 @@ export default function RbacRoles() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-primary">
-                <th className="px-5 py-3 text-left text-[11px] uppercase tracking-wide text-text-tertiary font-semibold">
+                <th className="px-5 py-3 text-start text-[11px] uppercase tracking-wide text-text-tertiary font-semibold">
                   Permission
                 </th>
                 {ROLES.map((r) => (

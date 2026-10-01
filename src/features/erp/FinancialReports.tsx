@@ -172,7 +172,7 @@ export default function FinancialReports() {
                           <span className="font-mono text-[11px] text-text-tertiary shrink-0">{a.code}</span>
                           <span className="truncate">{a.name}</span>
                         </span>
-                        <span className="text-[10px] font-semibold uppercase text-text-tertiary shrink-0 ml-2">
+                        <span className="text-[10px] font-semibold uppercase text-text-tertiary shrink-0 ms-2">
                           {a.normal_balance}
                         </span>
                       </div>

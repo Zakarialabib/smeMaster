@@ -202,7 +202,7 @@ export function ThreadCalendarView({
                     key={thread.id}
                     type="button"
                     onClick={() => onThreadClick(thread)}
-                    className={`flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left text-[0.6875rem] transition-colors hover:bg-bg-hover ${
+                    className={`flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-start text-[0.6875rem] transition-colors hover:bg-bg-hover ${
                       thread.id === selectedThreadId
                         ? "bg-accent/10 text-accent"
                         : thread.isRead

@@ -63,7 +63,7 @@ export function UndoSendToast() {
           <span className="text-sm">Sending email{elapsed > 0 ? ` in ${Math.ceil(delay - elapsed)}s` : "..."}</span>
           <button
             onClick={handleUndo}
-            className="text-sm font-medium text-accent hover:text-accent-hover underline ml-auto"
+            className="text-sm font-medium text-accent hover:text-accent-hover underline ms-auto"
           >
             Undo
           </button>

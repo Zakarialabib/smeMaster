@@ -164,13 +164,13 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
                       <button
                         key={msg.message_id}
                         onClick={() => handleNavigateToThread(msg.thread_id)}
-                        className="w-full text-left px-3 py-2 rounded-md bg-bg-secondary hover:bg-bg-hover transition-colors group"
+                        className="w-full text-start px-3 py-2 rounded-md bg-bg-secondary hover:bg-bg-hover transition-colors group"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-medium text-text-primary truncate">
                             {msg.from_name ?? msg.from_address ?? "Unknown"}
                           </span>
-                          <span className="text-[0.625rem] text-text-tertiary shrink-0 ml-2">
+                          <span className="text-[0.625rem] text-text-tertiary shrink-0 ms-2">
                             {new Date(msg.date).toLocaleDateString()}
                           </span>
                         </div>

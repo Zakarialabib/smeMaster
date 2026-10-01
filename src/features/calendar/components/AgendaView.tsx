@@ -183,7 +183,7 @@ export function AgendaView({
                   key={`${type}-${item.id}`}
                   onClick={() => onEventClick(item, type)}
                   role="listitem"
-                  className="w-full flex items-start gap-3 px-4 py-3.5 min-h-[52px] text-left
+                  className="w-full flex items-start gap-3 px-4 py-3.5 min-h-[52px] text-start
                     active:bg-white/10 dark:active:bg-white/5
                     transition-all duration-150
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"

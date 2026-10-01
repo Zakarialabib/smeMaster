@@ -195,7 +195,7 @@ export function TypographyConfig({
               onChange={(e) => set("lineHeight", Number(e.target.value))}
               className="flex-1 accent-accent"
             />
-            <span className="w-10 text-right text-xs text-text-tertiary">
+            <span className="w-10 text-end text-xs text-text-tertiary">
               {value.lineHeight ?? 1.4}
             </span>
           </div>

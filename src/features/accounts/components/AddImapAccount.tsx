@@ -863,7 +863,7 @@ export function AddImapAccount({
           Accept self-signed certificates
         </label>
       </div>
-      <p className="text-xs text-text-tertiary -mt-2 ml-6">
+      <p className="text-xs text-text-tertiary -mt-2 ms-6">
         Enable for local mail bridges like ProtonMail Bridge
       </p>
     </div>

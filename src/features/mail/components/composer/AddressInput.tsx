@@ -129,7 +129,7 @@ export function AddressInput({
                   </span>
                 )}
                 {isNewMode && info?.displayName && (
-                  <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-text-tertiary/60 border-l border-border-secondary pl-1.5 ml-0.5">
+                  <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-text-tertiary/60 border-l border-border-secondary pl-1.5 ms-0.5">
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true">
                       <rect x="1" y="2" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
                       <path d="M2 2V1.5C2 1.22 2.22 1 2.5 1h3C5.78 1 6 1.22 6 1.5V2" stroke="currentColor" strokeWidth="0.8" fill="none" />
@@ -174,7 +174,7 @@ export function AddressInput({
                 key={contact.id}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => addAddress(contact.email)}
-                className={`w-full text-left px-3 py-1.5 text-sm hover:bg-bg-hover ${
+                className={`w-full text-start px-3 py-1.5 text-sm hover:bg-bg-hover ${
                   i === selectedIdx ? "bg-bg-hover" : ""
                 }`}
               >

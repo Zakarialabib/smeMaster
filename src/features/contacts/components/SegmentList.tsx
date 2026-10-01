@@ -41,7 +41,7 @@ export function SegmentList({ segments, onSelect, onRefresh }: SegmentListProps)
               <div className="text-[0.625rem] text-text-tertiary truncate flex items-center gap-1">
                 {segment.query}
                 {segment.isDynamic && segment.memberCount != null && (
-                  <span className="inline-flex items-center gap-0.5 ml-1 px-1 py-0.5 bg-bg-tertiary rounded-full">
+                  <span className="inline-flex items-center gap-0.5 ms-1 px-1 py-0.5 bg-bg-tertiary rounded-full">
                     <Users size={8} />
                     {segment.memberCount}
                   </span>

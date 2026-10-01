@@ -93,7 +93,7 @@ export function DeliverabilityPanel() {
       {isLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-text-tertiary" />
-          <span className="ml-2 text-sm text-text-tertiary">
+          <span className="ms-2 text-sm text-text-tertiary">
             Running deliverability diagnostics...
           </span>
         </div>

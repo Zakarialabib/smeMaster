@@ -129,7 +129,7 @@ export function ComposerAddressSection({
           variant="ghost"
           size="sm"
           onClick={onToggleCcBcc}
-          className="ml-10 text-accent hover:text-accent-hover"
+          className="ms-10 text-accent hover:text-accent-hover"
         >
           {t('composer.ccBcc')}
         </Button>

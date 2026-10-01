@@ -128,7 +128,7 @@ export function UnifiedInbox() {
     <div className="unified-inbox flex flex-col h-full bg-bg-primary text-text-primary">
       {/* TOP NAVIGATION (replaces left sidebar) */}
       <header className="unified-topnav flex items-center gap-2 px-4 py-2.5 border-b border-border-secondary bg-bg-secondary/60 backdrop-blur shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-accent text-white grid place-items-center font-bold mr-2">S</div>
+        <div className="w-9 h-9 rounded-xl bg-accent text-white grid place-items-center font-bold me-2">S</div>
         <nav className="flex items-center gap-1" role="tablist" aria-label="Unified sections">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
@@ -148,7 +148,7 @@ export function UnifiedInbox() {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-2">
           <div className="flex items-center gap-2 bg-bg-tertiary rounded-lg px-3 py-1.5 text-sm text-text-tertiary w-64">
             <Search size={14} /> <span className="truncate">Search… from: to: has:att</span>
           </div>

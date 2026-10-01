@@ -154,10 +154,19 @@ Already bumped in Phase 1 (all `@tauri-apps/*` to 2.12.0)
 | store | 2.4.2 | **2.5.0** | 2.5.0 |
 | global-shortcut | 2.2.1 | **2.4.0** | 2.4.0 |
 
-**All packages verified:**
-- Production deps: 21/21 ✅
-- Dev deps: 24/24 ✅
-- Total: 45/45 ✅
+**RTL & i18n fix: COMPLETE** — 141 violations fixed across 106 files:
+- `text-left` → `text-start` (55 occurrences)
+- `text-right` → `text-end` (7 occurrences)
+- `ml-*` → `ms-*` (64 occurrences)
+- `mr-*` → `me-*` (17 occurrences)
+- CSS: `margin-left`/`margin-right` → `margin-inline-start`
+
+**Cargo check: COMPLETE** — zero errors, compiles in ~1m30s
+
+**npm run dev: RUNNING** — localhost:1420, HTTP 200, clean build
+
+**Blocked:**
+- `vite@8` — `@rolldown/binding-win32-x64-msvc` native binary extraction fails (same Windows native binary/SSL issue)
 
 ---
 

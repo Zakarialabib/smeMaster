@@ -1122,7 +1122,7 @@ export default function AiTab() {
             }}
           >
             <RefreshCw size={13} className={cn(aiRouterRefreshing && "animate-spin")} />
-            <span className="ml-1">{t("commands.refresh")}</span>
+            <span className="ms-1">{t("commands.refresh")}</span>
           </Button>
         </>
       )}

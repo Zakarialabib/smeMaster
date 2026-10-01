@@ -50,7 +50,7 @@ export function SettingsRow({
         SETTINGS_ROW_MIN_H,
         "px-3 -mx-3 rounded-lg transition-colors",
         "border-b border-border-primary/10 last:border-b-0",
-        "text-left",
+        "text-start",
         onClick && !disabled && "cursor-pointer",
         !disabled && "hover:bg-bg-hover/50",
         disabled && "opacity-50 cursor-not-allowed",

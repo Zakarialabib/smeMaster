@@ -165,7 +165,7 @@ export function ViewToggle({
         <div
           role="radiogroup"
           aria-label="Change density"
-          className="flex items-center bg-bg-tertiary rounded-lg p-0.5 ml-1"
+          className="flex items-center bg-bg-tertiary rounded-lg p-0.5 ms-1"
         >
           {DENSITY_OPTIONS.map((option) => {
             const isActive = density === option.value;
@@ -205,7 +205,7 @@ export function ViewToggle({
           <span>Try Kanban for better overview</span>
           <button
             onClick={() => handleViewModeClick("kanban")}
-            className="ml-2 text-accent hover:underline text-xs font-medium"
+            className="ms-2 text-accent hover:underline text-xs font-medium"
           >
             Switch now
           </button>

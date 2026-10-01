@@ -147,7 +147,7 @@ export function BusinessHealthWidget() {
               <button
                 key={m.key}
                 onClick={() => navigateToLabel(m.to)}
-                className="flex items-center gap-2.5 p-3 rounded-lg bg-bg-secondary border border-border-primary hover:border-accent/30 transition-colors text-left"
+                className="flex items-center gap-2.5 p-3 rounded-lg bg-bg-secondary border border-border-primary hover:border-accent/30 transition-colors text-start"
               >
                 <span className="text-accent shrink-0">{m.icon}</span>
                 <span className="min-w-0">
@@ -169,7 +169,7 @@ export function BusinessHealthWidget() {
             <button
               key={m.key}
               onClick={() => navigateToLabel(m.to)}
-              className="flex items-center gap-2.5 p-3 rounded-lg bg-bg-secondary border border-border-primary hover:border-accent/30 transition-colors text-left group"
+              className="flex items-center gap-2.5 p-3 rounded-lg bg-bg-secondary border border-border-primary hover:border-accent/30 transition-colors text-start group"
             >
               <span className="text-accent shrink-0">{m.icon}</span>
               <span className="min-w-0 flex-1">

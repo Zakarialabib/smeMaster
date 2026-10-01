@@ -99,7 +99,7 @@ export default function ClientList() {
           <EmptyState hasClients={clients.length > 0} onNew={openNew} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Name</th>
@@ -135,7 +135,7 @@ export default function ClientList() {
                     <td className="px-5 py-3.5 text-text-tertiary font-mono text-xs hidden lg:table-cell">
                       {c.tax_id ?? '—'}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-5 py-3.5 text-end">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <IconBtn
                           title="Delete"

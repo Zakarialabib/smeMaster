@@ -68,7 +68,7 @@ export const MODAL_CLOSE_BTN = "absolute top-3 right-3 z-10 w-7 h-7 flex items-c
 
 /* ─── Context menu ─── */
 export const MENU_BASE = "glass-dropdown rounded-lg py-1 min-w-[200px] z-[100]";
-export const MENU_ITEM = "flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors";
+export const MENU_ITEM = "flex items-center gap-2 w-full px-3 py-1.5 text-xs text-start transition-colors";
 export const MENU_SEPARATOR = "my-1 border-t border-border-secondary";
 
 /* ─── Help education card (matches .education-block pattern) ─── */

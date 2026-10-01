@@ -144,7 +144,7 @@ export function SegmentManager({ accountId }: SegmentManagerProps) {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0 ml-2">
+              <div className="flex items-center gap-1 shrink-0 ms-2">
                 <button
                   onClick={() =>
                     handleEdit(segment.id, segment.name, segment.query)

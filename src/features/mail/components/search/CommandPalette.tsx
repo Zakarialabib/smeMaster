@@ -464,7 +464,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                         aria-selected={globalIdx === selectedIdx}
                         onClick={() => executeWithLearning(cmd)}
                         onMouseMove={() => setSelectedIdx(globalIdx)}
-                        className={`w-full text-left px-4 py-2 flex items-center justify-between hover:bg-bg-hover text-sm ${
+                        className={`w-full text-start px-4 py-2 flex items-center justify-between hover:bg-bg-hover text-sm ${
                           isMobile ? "min-h-[44px]" : ""
                         } ${
                           globalIdx === selectedIdx ? "bg-accent/10 ring-1 ring-accent/30" : ""

@@ -260,7 +260,7 @@ export default function HealthDashboard() {
                 size={14}
                 className={cn(loading && "animate-spin")}
               />
-              <span className="ml-1 hidden sm:inline">Refresh</span>
+              <span className="ms-1 hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </div>

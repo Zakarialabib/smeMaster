@@ -299,7 +299,7 @@ export function AttachmentPreview({
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2 shrink-0 ml-4">
+      <div className="flex items-center gap-2 shrink-0 ms-4">
         {fromAddress && (
           <button
             onClick={handleSaveToVault}

@@ -124,7 +124,7 @@ export function TooltipPopup({ shortcut, label, className }: TooltipPopupProps) 
       role="tooltip"
       aria-hidden={true}
     >
-      {label && <span className="mr-1">{label}</span>}
+      {label && <span className="me-1">{label}</span>}
 
       <kbd
         className={cn(

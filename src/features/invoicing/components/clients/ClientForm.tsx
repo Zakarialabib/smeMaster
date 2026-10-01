@@ -335,7 +335,7 @@ function Field({
     <label className={`block ${className}`}>
       <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
         {label}
-        {required && <span className="text-danger ml-0.5">*</span>}
+        {required && <span className="text-danger ms-0.5">*</span>}
       </span>
       <div className="mt-1.5">{children}</div>
     </label>

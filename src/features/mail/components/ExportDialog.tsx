@@ -104,7 +104,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                   <button
                     key={f.value}
                     onClick={() => setFormat(f.value)}
-                    className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
+                    className={`w-full flex items-start gap-3 p-3 rounded-lg border text-start transition-colors ${
                       isSelected
                         ? "border-accent bg-accent/5"
                         : "border-border-primary hover:bg-bg-hover"

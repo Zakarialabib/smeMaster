@@ -185,7 +185,7 @@ export function PaginationControls({
 
         {/* Page size selector */}
         {onPageSizeChange && (
-          <div className="ml-2 pl-2 border-l border-border-primary">
+          <div className="ms-2 pl-2 border-l border-border-primary">
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}

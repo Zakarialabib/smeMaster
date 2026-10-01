@@ -40,12 +40,12 @@ export function AttachmentListItem({ attachment, onPreview, onDownload, onJumpTo
       </span>
 
       {/* Date */}
-      <span className="text-xs text-text-tertiary w-24 shrink-0 text-right hidden md:block">
+      <span className="text-xs text-text-tertiary w-24 shrink-0 text-end hidden md:block">
         {formatShortDate(attachment.date)}
       </span>
 
       {/* Size */}
-      <span className="text-xs text-text-tertiary w-16 shrink-0 text-right">
+      <span className="text-xs text-text-tertiary w-16 shrink-0 text-end">
         {attachment.size != null ? formatFileSize(attachment.size) : ""}
       </span>
 

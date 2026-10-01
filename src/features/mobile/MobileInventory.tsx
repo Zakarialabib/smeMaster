@@ -102,7 +102,7 @@ function MobileInventoryCard({ entry }: { entry: MobileEntry }) {
     <div className="rounded-lg border border-border-primary bg-bg-secondary p-3 text-sm">
       <div className="flex items-center justify-between mb-1">
         <code className="font-semibold text-accent text-xs">{entry.name}</code>
-        <span className="text-[10px] text-text-tertiary font-mono truncate ml-2 max-w-[240px]">
+        <span className="text-[10px] text-text-tertiary font-mono truncate ms-2 max-w-[240px]">
           {entry.path}
         </span>
       </div>

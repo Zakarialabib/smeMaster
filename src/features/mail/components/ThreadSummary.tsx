@@ -55,7 +55,7 @@ export function ThreadSummary({ threadId, accountId, messages }: ThreadSummaryPr
     <div className="mx-4 my-2 p-3 rounded-lg bg-accent/5 border border-accent/20">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full text-left"
+        className="flex items-center gap-2 w-full text-start"
       >
         <Sparkles size={14} className="text-accent shrink-0" />
         <span className="text-xs font-medium text-accent flex-1">AI Summary</span>

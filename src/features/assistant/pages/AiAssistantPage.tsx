@@ -75,7 +75,7 @@ export function AiAssistantPage() {
             onClick={() => navigate({ to: "/settings/$tab", params: { tab: "ai" } })}
             className="mx-auto"
           >
-            <Settings className="w-4 h-4 mr-1.5" />
+            <Settings className="w-4 h-4 me-1.5" />
             Open AI Settings
           </Button>
         </GlassPanel>
@@ -116,7 +116,7 @@ export function AiAssistantPage() {
             onClick={clearHistory}
             aria-label="Clear conversation history"
           >
-            <Trash2 className="w-4 h-4 mr-1" />
+            <Trash2 className="w-4 h-4 me-1" />
             Clear
           </Button>
         )}
@@ -147,7 +147,7 @@ export function AiAssistantPage() {
               navigate({ to: "/settings/$tab", params: { tab: "ai" } })
             }
           >
-            <Settings className="w-3.5 h-3.5 mr-1" />
+            <Settings className="w-3.5 h-3.5 me-1" />
             Settings
           </Button>
         </div>

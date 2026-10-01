@@ -189,7 +189,7 @@ export function AudienceStep({
                   <button
                     key={c.id}
                     onClick={() => onToggleContact(c.id)}
-                    className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left text-sm hover:bg-bg-hover transition-colors"
+                    className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-start text-sm hover:bg-bg-hover transition-colors"
                   >
                     {isSelected ? (
                       <CheckSquare size={14} className="text-accent shrink-0" />
@@ -221,7 +221,7 @@ export function AudienceStep({
               <button
                 key={g.id}
                 onClick={() => onGroupSelect(g.id)}
-                className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${
+                className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-start text-sm transition-colors ${
                   selectedGroupId === g.id
                     ? "bg-accent/10 border border-accent text-accent"
                     : "bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50"
@@ -244,7 +244,7 @@ export function AudienceStep({
               <button
                 key={s.id}
                 onClick={() => onSegmentSelect(s.id)}
-                className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${
+                className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-start text-sm transition-colors ${
                   selectedSegmentId === s.id
                     ? "bg-accent/10 border border-accent text-accent"
                     : "bg-bg-secondary border border-border-primary text-text-secondary hover:border-accent/50"

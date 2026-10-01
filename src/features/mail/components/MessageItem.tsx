@@ -100,7 +100,7 @@ return (
       {/* Header — always visible, click to expand/collapse */}
       <button
         onClick={handleToggle}
-        className={`w-full text-left hover:bg-bg-hover transition-colors ${isMobile ? "px-3 py-2" : "px-4 py-3"}`}
+        className={`w-full text-start hover:bg-bg-hover transition-colors ${isMobile ? "px-3 py-2" : "px-4 py-3"}`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
@@ -117,7 +117,7 @@ return (
               )}
             </div>
           </div>
-          <span className="text-xs text-text-tertiary whitespace-nowrap shrink-0 ml-2">
+          <span className="text-xs text-text-tertiary whitespace-nowrap shrink-0 ms-2">
             {formatFullDate(message.date)}
           </span>
         </div>

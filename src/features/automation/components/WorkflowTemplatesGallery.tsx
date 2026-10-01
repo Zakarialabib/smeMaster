@@ -111,7 +111,7 @@ export function WorkflowTemplatesGallery({
                 : "text-text-tertiary hover:text-text-primary"
             }`}
           >
-            <Sparkles size={12} className="inline mr-1" />
+            <Sparkles size={12} className="inline me-1" />
             {t("automation.templatesAiEnhanced", "AI Enhanced")}
           </button>
         </div>

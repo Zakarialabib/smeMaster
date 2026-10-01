@@ -104,7 +104,7 @@ function AccountRow({ account, isActive, onSelect }: AccountRowProps) {
       key={account.id}
       onClick={() => onSelect(account.id)}
       className={cn(
-        "flex items-center gap-2.5 w-full px-3 py-2 text-left transition-all duration-150",
+        "flex items-center gap-2.5 w-full px-3 py-2 text-start transition-all duration-150",
         isActive
           ? "glass-accent-tint text-accent"
           : "text-text-primary hover:glass-accent-tint",
@@ -270,7 +270,7 @@ export function AccountSwitcher({
           <ActiveAvatar account={activeAccount} />
           {!collapsed && activeAccount && (
             <>
-              <div className="flex-1 min-w-0 text-left">
+              <div className="flex-1 min-w-0 text-start">
                 <div className="text-sm font-medium text-sidebar-text truncate leading-tight">
                   {activeAccount.displayName || activeAccount.email.split("@")[0]}
                 </div>
@@ -312,7 +312,7 @@ export function AccountSwitcher({
         <div
           className={cn(
             "absolute z-50 mt-1 py-1 rounded-lg glass-dropdown animate-in fade-in duration-100",
-            collapsed ? "left-full ml-1 top-0 w-64" : "left-2 right-2",
+            collapsed ? "left-full ms-1 top-0 w-64" : "left-2 right-2",
           )}
         >
           {effectiveAccounts.length > 1 && (

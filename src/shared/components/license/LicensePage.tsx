@@ -263,7 +263,7 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
                   </span>
                   {isOnTrial && (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20">
-                      <Clock size={9} className="inline -mt-0.5 mr-1" />
+                      <Clock size={9} className="inline -mt-0.5 me-1" />
                       Trial
                     </span>
                   )}

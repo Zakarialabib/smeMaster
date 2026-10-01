@@ -90,7 +90,7 @@ export function VaultFilePicker({ isOpen, onClose, onPick }: VaultFilePickerProp
                 type="button"
                 disabled={resolving === file.path}
                 onClick={() => void handlePick(file.path)}
-                className="group flex flex-col overflow-hidden rounded-xl border border-border-primary bg-bg-secondary text-left transition-colors hover:border-accent disabled:opacity-60"
+                className="group flex flex-col overflow-hidden rounded-xl border border-border-primary bg-bg-secondary text-start transition-colors hover:border-accent disabled:opacity-60"
               >
                 <div className="flex h-24 items-center justify-center bg-bg-primary">
                   <ImageIcon className="h-8 w-8 text-text-tertiary group-hover:text-accent" />

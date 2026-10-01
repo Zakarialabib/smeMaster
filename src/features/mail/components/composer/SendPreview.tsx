@@ -128,7 +128,7 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
                 className="flex items-center justify-between text-xs text-text-secondary"
               >
                 <span className="truncate flex-1">{att.filename}</span>
-                <span className="text-text-tertiary ml-2 shrink-0">{formatFileSize(att.size)}</span>
+                <span className="text-text-tertiary ms-2 shrink-0">{formatFileSize(att.size)}</span>
               </div>
             ))}
           </div>

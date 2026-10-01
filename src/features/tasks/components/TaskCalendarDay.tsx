@@ -123,7 +123,7 @@ export function TaskCalendarDay({
         `}
       >
         {isToday ? (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white -mt-0.5 -ml-0.5">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white -mt-0.5 -ms-0.5">
             {day}
           </span>
         ) : (
@@ -138,7 +138,7 @@ export function TaskCalendarDay({
             key={task.id}
             onClick={(e) => handleTaskClick(e, task.id)}
             className={`
-              flex items-center gap-1 px-1 py-0.5 rounded-sm text-left
+              flex items-center gap-1 px-1 py-0.5 rounded-sm text-start
               hover:bg-bg-tertiary transition-colors
               ${task.is_completed ? "opacity-50" : ""}
             `}

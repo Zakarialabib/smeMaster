@@ -41,7 +41,7 @@ export function CalendarList({ calendars, onVisibilityChange }: CalendarListProp
               {cal.display_name ?? "Calendar"}
             </span>
             {!!cal.is_primary && (
-              <span className="text-[0.6rem] text-text-tertiary ml-auto shrink-0">Primary</span>
+              <span className="text-[0.6rem] text-text-tertiary ms-auto shrink-0">Primary</span>
             )}
           </label>
         ))}

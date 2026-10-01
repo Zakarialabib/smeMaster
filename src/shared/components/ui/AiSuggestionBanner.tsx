@@ -139,7 +139,7 @@ export function AiSuggestionBanner({
                 <CheckCircle2 size={15} className="text-ai shrink-0" aria-hidden="true" />
                 <span className="text-text-primary truncate">{item.title}</span>
                 {item.source && (
-                  <span className="text-xs text-text-tertiary shrink-0 ml-auto truncate max-w-[40%]">
+                  <span className="text-xs text-text-tertiary shrink-0 ms-auto truncate max-w-[40%]">
                     {item.source}
                   </span>
                 )}

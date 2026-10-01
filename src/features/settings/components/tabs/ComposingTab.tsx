@@ -90,7 +90,7 @@ function LivePreview({ undoSendDelay, showSignature }: { undoSendDelay: number; 
           <div className="w-2 h-2 rounded-full bg-success" />
           <span className="text-xs font-medium text-text-primary">me@example.com</span>
         </div>
-        <span className="text-[0.625rem] text-text-tertiary ltr:ml-auto rtl:mr-auto">to: recipient@example.com</span>
+        <span className="text-[0.625rem] text-text-tertiary ltr:ms-auto rtl:me-auto">to: recipient@example.com</span>
       </div>
       {/* Email body — white background mimics actual email render */}
       <div className="p-5 bg-white dark:bg-slate-900">

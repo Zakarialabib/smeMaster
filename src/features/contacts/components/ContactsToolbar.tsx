@@ -108,7 +108,7 @@ function Dropdown({ trigger, items, align = "left" }: DropdownProps) {
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-primary hover:bg-bg-hover transition-colors"
               >
                 {Icon ? <Icon size={12} /> : <span className="w-3" />}
-                <span className="flex-1 text-left">{item.label}</span>
+                <span className="flex-1 text-start">{item.label}</span>
                 {item.selected && <Check size={12} className="text-accent" />}
               </button>
             );

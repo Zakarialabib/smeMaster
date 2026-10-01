@@ -207,7 +207,7 @@ export function TaskItem({
 
       {/* Subtasks */}
       {expanded && hasSubtasks && (
-        <div className="ml-7 mt-0.5 space-y-0.5">
+        <div className="ms-7 mt-0.5 space-y-0.5">
           {subtasks.map((sub) => (
             <TaskItem
               key={sub.id}

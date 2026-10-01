@@ -187,7 +187,7 @@ export function ContactInfoTab({
                     params: { label: "inbox", threadId: thread.thread_id },
                   })
                 }
-                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-bg-hover transition-colors text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-bg-hover transition-colors text-start"
               >
                 <Mail size={12} className="text-text-tertiary shrink-0" />
                 <span className="flex-1 text-xs text-text-primary truncate">

@@ -36,7 +36,7 @@ export function AdaptiveTable<T>({ data, columns, keyExtractor, onRowClick, empt
           <button
             key={keyExtractor(item)}
             onClick={() => onRowClick?.(item)}
-            className={`w-full text-left p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98] ${rowClassName}`}
+            className={`w-full text-start p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98] ${rowClassName}`}
           >
             {cardTitle && (
               <div className="text-sm font-semibold mb-2 text-gray-900 dark:text-gray-100">
@@ -61,7 +61,7 @@ export function AdaptiveTable<T>({ data, columns, keyExtractor, onRowClick, empt
         <thead>
           <tr className="border-b border-gray-200 dark:border-gray-700">
             {columns.map((col) => (
-              <th key={col.key} className={`px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400 ${isTablet && (col.priority ?? 99) > 2 ? 'hidden md:table-cell' : ''} ${col.className ?? ''}`}>
+              <th key={col.key} className={`px-4 py-3 text-start font-medium text-gray-500 dark:text-gray-400 ${isTablet && (col.priority ?? 99) > 2 ? 'hidden md:table-cell' : ''} ${col.className ?? ''}`}>
                 {col.header}
               </th>
             ))}

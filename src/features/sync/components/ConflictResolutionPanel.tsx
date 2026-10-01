@@ -159,7 +159,7 @@ export function ConflictResolutionPanel({
                   key={conflict.id}
                   onClick={() => setActiveConflict(conflict.id)}
                   className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors border-l-2",
+                    "w-full flex items-center gap-2 px-3 py-2.5 text-start transition-colors border-l-2",
                     isActive
                       ? "bg-accent/8 border-l-accent text-accent font-medium"
                       : "border-l-transparent text-text-secondary hover:bg-bg-hover hover:text-text-primary",

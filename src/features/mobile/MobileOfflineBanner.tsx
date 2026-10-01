@@ -57,7 +57,7 @@ export function MobileOfflineBanner({ className = "" }: MobileOfflineBannerProps
       <span className="font-medium">
         You're offline
         {pendingOpsCount > 0 && (
-          <span className="ml-1 opacity-80">
+          <span className="ms-1 opacity-80">
             — {pendingOpsCount} {pendingOpsCount === 1 ? "change" : "changes"} pending
           </span>
         )}

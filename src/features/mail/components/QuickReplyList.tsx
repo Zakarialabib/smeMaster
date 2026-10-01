@@ -52,7 +52,7 @@ export function QuickReplyList({ accountId, onInsert }: QuickReplyListProps) {
               <button
                 key={qr.id}
                 onClick={() => handleInsert(qr)}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors text-left"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors text-start"
               >
                 <Zap size={12} className="text-accent shrink-0" />
                 <span className="flex-1 truncate">{qr.title}</span>

@@ -289,7 +289,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
     <div className="w-72 h-full border-s border-border-primary bg-bg-secondary overflow-y-auto shrink-0">
       <div className="p-4">
         {/* Close button */}
-        <div className="flex justify-end -mt-1 -mr-1 mb-1">
+        <div className="flex justify-end -mt-1 -me-1 mb-1">
           <button
             onClick={onClose}
             title={t('contact.closeSidebar')}

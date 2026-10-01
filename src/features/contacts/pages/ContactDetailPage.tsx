@@ -382,7 +382,7 @@ export function ContactDetailPage() {
       <div className={`flex items-center gap-2 px-4 py-2 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm ${isMobile ? "safe-area-top" : ""}`}>
         <button
           onClick={() => navigate({ to: "/people" })}
-          className={`p-1 -ml-1 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors ${isMobile ? "min-h-[44px] min-w-[44px] flex items-center justify-center" : ""}`}
+          className={`p-1 -ms-1 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors ${isMobile ? "min-h-[44px] min-w-[44px] flex items-center justify-center" : ""}`}
           aria-label="Back to contacts"
         >
           <ArrowLeft size={18} />

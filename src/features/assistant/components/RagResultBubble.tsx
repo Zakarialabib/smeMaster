@@ -71,7 +71,7 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
             </div>
             <User className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
           </div>
-          <p className="text-[10px] text-text-tertiary text-right mt-1.5">
+          <p className="text-[10px] text-text-tertiary text-end mt-1.5">
             {formatTime(entry.timestamp)}
           </p>
         </div>

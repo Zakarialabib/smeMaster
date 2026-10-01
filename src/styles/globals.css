@@ -1884,7 +1884,7 @@ html:not(.mobile) .settings-card:hover {
     background 150ms ease,
     color 150ms ease;
   flex-shrink: 0;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .info-tooltip-trigger:hover {
@@ -1975,7 +1975,7 @@ html:not(.mobile) .composer-toolbar button {
 html:not(.mobile) .composer-toolbar .shortcut-badge {
   font-size: 10px;
   color: var(--color-text-tertiary);
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 /* ============================================

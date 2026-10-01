@@ -221,7 +221,7 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
               key={m.key}
               onClick={() => setFeatured(m.key)}
               aria-pressed={isFeatured}
-              className={`flex flex-col text-left rounded-lg p-3 border transition-colors ${
+              className={`flex flex-col text-start rounded-lg p-3 border transition-colors ${
                 isFeatured
                   ? 'border-accent/40 bg-accent/5'
                   : 'border-border-primary bg-bg-secondary hover:border-accent/30'

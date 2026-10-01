@@ -48,7 +48,7 @@ export function AutomationRulesWidget() {
         </div>
         <Link
           to="/automation"
-          className="ml-3 text-xs text-accent hover:text-accent/80 flex items-center gap-1 transition-colors"
+          className="ms-3 text-xs text-accent hover:text-accent/80 flex items-center gap-1 transition-colors"
         >
           Manage
         </Link>

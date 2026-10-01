@@ -26,7 +26,7 @@ export default function InvoiceTotals({
   }
 
   return (
-    <div className="w-full sm:w-72 ml-auto space-y-2.5">
+    <div className="w-full sm:w-72 ms-auto space-y-2.5">
       {rows.map((r) => (
         <div
           key={r.label}

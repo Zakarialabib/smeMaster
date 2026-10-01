@@ -124,7 +124,7 @@ export function AttachmentPicker({ isDragging }: AttachmentPickerProps) {
         )}
 
         {isDragging && attachments.length === 0 && (
-          <span className="text-xs text-accent font-medium ml-1">
+          <span className="text-xs text-accent font-medium ms-1">
             {t("composer.dropFilesToAttach")}
           </span>
         )}

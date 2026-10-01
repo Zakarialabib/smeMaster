@@ -226,7 +226,7 @@ export function MoveToFolderDialog({
                   key={dest.id}
                   role="option"
                   aria-selected={isSelected}
-                  className={`flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-left cursor-pointer transition-colors ${
+                  className={`flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-start cursor-pointer transition-colors ${
                     isSelected
                       ? "bg-bg-selected text-text-primary"
                       : "text-text-secondary hover:bg-bg-hover"
@@ -244,7 +244,7 @@ export function MoveToFolderDialog({
                   />
                   <span className="truncate">{dest.label}</span>
                   {dest.type === "system" && (
-                    <span className="ml-auto text-[10px] text-text-tertiary uppercase tracking-wider">
+                    <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
                       System
                     </span>
                   )}

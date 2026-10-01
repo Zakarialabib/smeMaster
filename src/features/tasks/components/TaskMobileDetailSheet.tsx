@@ -275,7 +275,7 @@ export function TaskMobileDetailSheet({
           <div className="mb-4">
             <button
               onClick={() => toggleSection("meta")}
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Details
@@ -348,7 +348,7 @@ export function TaskMobileDetailSheet({
           <div className="mb-4">
             <button
               onClick={() => toggleSection("description")}
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Description
@@ -377,7 +377,7 @@ export function TaskMobileDetailSheet({
           <div className="mb-4">
             <button
               onClick={() => toggleSection("subtasks")}
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Subtasks
@@ -402,7 +402,7 @@ export function TaskMobileDetailSheet({
           <div className="mb-4">
             <button
               onClick={() => toggleSection("context")}
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 w-full text-start"
             >
               <span className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex-1">
                 Context

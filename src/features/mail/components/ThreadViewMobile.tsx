@@ -148,7 +148,7 @@ export function ThreadViewMobile() {
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border-primary bg-sidebar-bg safe-area-top shadow-sm">
           <button
             onClick={() => navigate({ to: ".." })}
-            className="p-2 -ml-2 active:scale-90 transition-transform duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 -ms-2 active:scale-90 transition-transform duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Go back"
           >
             <ArrowLeft size={22} />

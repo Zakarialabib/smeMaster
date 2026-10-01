@@ -100,7 +100,7 @@ export function MobileDashboardPage() {
             <button
               key={card.id}
               onClick={() => handleCardPress(card)}
-              className={`relative flex flex-col items-start gap-2 p-4 rounded-2xl bg-white/8 dark:bg-white/5 backdrop-blur-[12px] border border-white/15 dark:border-white/8 text-left active:scale-[0.96] transition-all duration-150 ios-tap animate-[cardSpringIn_500ms_cubic-bezier(0.16,1,0.3,1)_both] ios-stagger-${index + 1}`}
+              className={`relative flex flex-col items-start gap-2 p-4 rounded-2xl bg-white/8 dark:bg-white/5 backdrop-blur-[12px] border border-white/15 dark:border-white/8 text-start active:scale-[0.96] transition-all duration-150 ios-tap animate-[cardSpringIn_500ms_cubic-bezier(0.16,1,0.3,1)_both] ios-stagger-${index + 1}`}
             >
               {/* Gradient accent */}
               <div

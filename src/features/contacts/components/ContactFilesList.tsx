@@ -70,7 +70,7 @@ export function ContactFilesList({ files }: ContactFilesListProps) {
               </span>
             </button>
             {isExpanded && (
-              <div className="ml-4 space-y-0.5">
+              <div className="ms-4 space-y-0.5">
                 {categoryFiles.map((file) => (
                   <div
                     key={file.id}

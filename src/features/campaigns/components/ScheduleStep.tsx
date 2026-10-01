@@ -112,7 +112,7 @@ export function ScheduleStep({
           </div>
           <button
             onClick={onToggleTracking}
-            className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ml-4 ${
+            className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ms-4 ${
               trackingEnabled ? "bg-accent" : "bg-bg-tertiary"
             }`}
           >

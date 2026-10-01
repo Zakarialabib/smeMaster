@@ -272,7 +272,7 @@ export function CampaignPatterns({ onSelectPattern, onLaunchBlank }: CampaignPat
             <button
               key={pattern.id}
               onClick={() => onSelectPattern(pattern)}
-              className="group relative text-left bg-bg-secondary/20 hover:bg-bg-secondary border border-border-primary
+              className="group relative text-start bg-bg-secondary/20 hover:bg-bg-secondary border border-border-primary
                 hover:border-accent/40 rounded-lg p-3 transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5"
             >
               {/* Gradient top accent */}
@@ -306,7 +306,7 @@ export function CampaignPatterns({ onSelectPattern, onLaunchBlank }: CampaignPat
                     </span>
                     <ChevronRight
                       size={11}
-                      className="text-text-tertiary ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-text-tertiary ms-auto opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                   </div>
                 </div>

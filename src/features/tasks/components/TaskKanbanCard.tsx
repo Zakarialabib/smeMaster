@@ -237,7 +237,7 @@ export const TaskKanbanCard = memo(function TaskKanbanCard({
           {/* Complete checkbox */}
           <button
             onClick={handleToggleComplete}
-            className="shrink-0 ml-1"
+            className="shrink-0 ms-1"
             aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
           >
             {task.is_completed ? (

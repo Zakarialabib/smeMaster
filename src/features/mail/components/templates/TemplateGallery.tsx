@@ -222,7 +222,7 @@ export function TemplateGallery({ onSelect, filterType, mode, onClose, isOpen }:
             {f.label}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ms-auto flex items-center gap-1">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-secondary"}`}

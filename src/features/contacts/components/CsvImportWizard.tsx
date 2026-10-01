@@ -163,8 +163,8 @@ export function CsvImportWizard({ isOpen, onClose }: CsvImportWizardProps) {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-bg-tertiary">
-                    <th className="text-left px-3 py-1.5 text-text-secondary font-medium">{t('modals.csvImport.email')}</th>
-                    <th className="text-left px-3 py-1.5 text-text-secondary font-medium">{t('modals.csvImport.name')}</th>
+                    <th className="text-start px-3 py-1.5 text-text-secondary font-medium">{t('modals.csvImport.email')}</th>
+                    <th className="text-start px-3 py-1.5 text-text-secondary font-medium">{t('modals.csvImport.name')}</th>
                   </tr>
                 </thead>
                 <tbody>

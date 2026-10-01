@@ -87,7 +87,7 @@ export function ThreadKanbanView({
                 <div className="flex items-center gap-2">
                   <Icon size={15} className="text-accent" />
                   <h3 className="text-sm font-semibold text-text-primary">{column.label}</h3>
-                  <span className="ml-auto rounded-full bg-bg-tertiary px-2 py-0.5 text-[0.6875rem] font-medium text-text-tertiary">
+                  <span className="ms-auto rounded-full bg-bg-tertiary px-2 py-0.5 text-[0.6875rem] font-medium text-text-tertiary">
                     {column.threads.length}
                   </span>
                 </div>

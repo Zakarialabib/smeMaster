@@ -29,7 +29,7 @@ export function TagPill({ name, color, onRemove, size = "sm" }: TagPillProps) {
             e.stopPropagation();
             onRemove();
           }}
-          className="ml-0.5 hover:opacity-70 transition-opacity"
+          className="ms-0.5 hover:opacity-70 transition-opacity"
         >
           <X size={size === "sm" ? 10 : 12} />
         </button>

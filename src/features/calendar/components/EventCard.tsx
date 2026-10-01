@@ -54,7 +54,7 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
     return (
       <button
         onClick={onClick}
-        className="w-full text-left text-[0.625rem] px-1 py-0.5 rounded truncate hover:opacity-80 transition-all flex items-center gap-1"
+        className="w-full text-start text-[0.625rem] px-1 py-0.5 rounded truncate hover:opacity-80 transition-all flex items-center gap-1"
         style={{
           backgroundColor: `${bgColor}18`,
           color: bgColor,
@@ -77,7 +77,7 @@ export function EventCard({ event, type = 'event', compact, calendarColor, onCli
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2 rounded-md border border-border-secondary hover:bg-bg-hover transition-colors"
+      className="w-full text-start px-3 py-2 rounded-md border border-border-secondary hover:bg-bg-hover transition-colors"
     >
       <div className="flex items-start gap-2">
         <div

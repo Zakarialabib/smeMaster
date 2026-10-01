@@ -119,7 +119,7 @@ export function ContactActions({
           >
             <TagIcon size={iconSize} />
             {selectedCount !== undefined && (
-              <span className="ml-1 text-[0.625rem] font-medium">{selectedCount}</span>
+              <span className="ms-1 text-[0.625rem] font-medium">{selectedCount}</span>
             )}
           </button>
         )}

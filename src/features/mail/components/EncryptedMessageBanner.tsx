@@ -138,7 +138,7 @@ export function EncryptedMessageBanner({
                 <button
                   onClick={handleDecrypt}
                   disabled={!passphrase.trim()}
-                  className="ml-auto text-xs px-2.5 py-1 rounded-md border border-accent/30 text-accent hover:bg-accent/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="ms-auto text-xs px-2.5 py-1 rounded-md border border-accent/30 text-accent hover:bg-accent/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Decrypt
                 </button>

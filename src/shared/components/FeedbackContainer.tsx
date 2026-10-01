@@ -92,7 +92,7 @@ const FeedbackToast: React.FC<FeedbackToastProps> = ({ feedback, onClose }) => {
         <span className="font-medium">{feedback.message}</span>
         <button
           onClick={onClose}
-          className="ml-2 font-bold hover:opacity-70"
+          className="ms-2 font-bold hover:opacity-70"
         >
           ×
         </button>

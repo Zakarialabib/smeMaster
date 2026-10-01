@@ -106,7 +106,7 @@ export function ContactEmailsTab({ email }: ContactEmailsTabProps) {
               params: { label: "inbox", threadId: thread.thread_id },
             })
           }
-          className="flex items-start gap-3 w-full px-5 py-3 hover:bg-bg-hover transition-colors text-left"
+          className="flex items-start gap-3 w-full px-5 py-3 hover:bg-bg-hover transition-colors text-start"
         >
           <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
             <Mail size={14} className="text-accent" />

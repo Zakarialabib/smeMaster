@@ -124,7 +124,7 @@ export const BundleRow = memo(function BundleRow({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="w-full text-left px-4 py-3 hover:bg-bg-hover transition-colors flex items-center gap-3 group"
+        className="w-full text-start px-4 py-3 hover:bg-bg-hover transition-colors flex items-center gap-3 group"
         aria-expanded={isExpanded}
         aria-label={`${rule.category} bundle, ${summary.count} threads`}
       >
@@ -168,7 +168,7 @@ export const BundleRow = memo(function BundleRow({
         <button
           onClick={handleDeliverNow}
           disabled={delivering}
-          className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full transition-all mr-1 ${
+          className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full transition-all me-1 ${
             delivered
               ? "bg-success/15 text-success"
               : "bg-accent/10 text-accent hover:bg-accent/20"

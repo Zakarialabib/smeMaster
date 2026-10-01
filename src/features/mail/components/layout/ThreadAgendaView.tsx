@@ -103,7 +103,7 @@ export function ThreadAgendaView({
               aria-expanded={!isCollapsed}
             >
               <Calendar size={14} className="shrink-0 text-accent" />
-              <span className="flex-1 text-left text-xs font-semibold uppercase text-text-tertiary">
+              <span className="flex-1 text-start text-xs font-semibold uppercase text-text-tertiary">
                 {group.label}
               </span>
               <span className="rounded-full bg-bg-tertiary px-1.5 py-0.5 text-[0.625rem] font-medium text-text-tertiary">

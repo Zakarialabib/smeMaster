@@ -151,7 +151,7 @@ export function SavedViews() {
               {view.name}
               {/* Rename/delete for custom views */}
               {view.id.startsWith("custom-") && (
-                <span className="hidden group-hover:flex items-center gap-0.5 ml-1">
+                <span className="hidden group-hover:flex items-center gap-0.5 ms-1">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingId(view.id); setEditName(view.name); }}
                     className="p-0.5 text-text-tertiary hover:text-text-primary"

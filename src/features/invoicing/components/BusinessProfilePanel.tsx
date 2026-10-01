@@ -131,7 +131,7 @@ function Input({ label, value, onChange, hint, mono }: { label: string; value: s
   return (
     <label className="block">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">{label}</span>
-      {hint && <span className="text-[10px] text-text-tertiary/70 ml-2 normal-case font-normal">{hint}</span>}
+      {hint && <span className="text-[10px] text-text-tertiary/70 ms-2 normal-case font-normal">{hint}</span>}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}

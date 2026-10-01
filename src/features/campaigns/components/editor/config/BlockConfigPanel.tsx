@@ -72,7 +72,7 @@ function SliderField({
           onChange={(e) => onChange(Number(e.target.value))}
           className="flex-1 accent-accent"
         />
-        <span className="w-12 text-right text-xs text-text-tertiary">
+        <span className="w-12 text-end text-xs text-text-tertiary">
           {value}
           {suffix}
         </span>

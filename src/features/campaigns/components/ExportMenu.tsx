@@ -79,14 +79,14 @@ export function ExportMenu({ campaignId, campaignName, analytics }: ExportMenuPr
         <div className="absolute right-0 top-full mt-1 w-52 glass-modal rounded-lg py-1 z-50 shadow-xl border border-border-primary">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-text-primary hover:bg-bg-hover transition-colors text-left"
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-text-primary hover:bg-bg-hover transition-colors text-start"
           >
             <FileDown size={14} className="text-text-tertiary" />
             <span>CSV (raw data)</span>
           </button>
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-text-primary hover:bg-bg-hover transition-colors text-left"
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-text-primary hover:bg-bg-hover transition-colors text-start"
           >
             <FileText size={14} className="text-text-tertiary" />
             <span>PDF (report)</span>

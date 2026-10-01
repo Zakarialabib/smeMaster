@@ -185,7 +185,7 @@ export function TokenStatusBar({ accountIds }: TokenStatusBarProps) {
       role="group"
       aria-label="Account token status"
     >
-      <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider mr-1">
+      <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider me-1">
         Tokens
       </span>
       {accountIds.map((id) => (

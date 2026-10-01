@@ -176,7 +176,7 @@ export function AccountImportScanner({ onSelectAccount, onClose }: AccountImport
                   <button
                     key={`${account.email}-${idx}`}
                     onClick={() => setSelectedEmail(isSelected ? null : account.email)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-left ${
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors text-start ${
                       isSelected
                         ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
                         : "border-border-primary bg-bg-secondary hover:bg-bg-hover"

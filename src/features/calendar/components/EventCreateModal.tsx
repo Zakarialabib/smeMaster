@@ -135,7 +135,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
                       {cal.display_name ?? t("calendar.calendar")}
                     </span>
                     {cal.is_primary && (
-                      <span className="text-[0.5rem] uppercase tracking-wider text-text-tertiary ml-0.5">
+                      <span className="text-[0.5rem] uppercase tracking-wider text-text-tertiary ms-0.5">
                         {t("settings.default")}
                       </span>
                     )}

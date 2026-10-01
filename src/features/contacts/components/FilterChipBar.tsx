@@ -45,7 +45,7 @@ export function FilterChipBar({ filters, onClearAll }: FilterChipBarProps) {
           <button
             type="button"
             onClick={f.onRemove}
-            className="ml-0.5 hover:opacity-70 transition-opacity"
+            className="ms-0.5 hover:opacity-70 transition-opacity"
             aria-label={`Remove filter ${f.label}`}
           >
             <X size={10} />
@@ -56,7 +56,7 @@ export function FilterChipBar({ filters, onClearAll }: FilterChipBarProps) {
         <button
           type="button"
           onClick={onClearAll}
-          className="text-[0.625rem] text-text-tertiary hover:text-text-primary underline ml-1"
+          className="text-[0.625rem] text-text-tertiary hover:text-text-primary underline ms-1"
         >
           Clear all
         </button>

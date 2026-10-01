@@ -164,7 +164,7 @@ export function AiAssistPanel({ editor, isReplyMode, threadMessages }: AiAssistP
 
       {/* Quick actions */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs text-text-tertiary mr-1">{t('composer.transform')}</span>
+        <span className="text-xs text-text-tertiary me-1">{t('composer.transform')}</span>
         <QuickAction
           icon={<Wand2 size={11} />}
           label={t('composer.improve')}

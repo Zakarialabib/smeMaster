@@ -40,7 +40,7 @@ export function RemediationWizard({ remediation }: Props) {
             >
               <button
                 onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-bg-secondary hover:bg-bg-hover transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 bg-bg-secondary hover:bg-bg-hover transition-colors text-start"
               >
                 <div className="flex items-center gap-2">
                   {isExpanded ? <ChevronDown size={14} className="shrink-0 text-text-tertiary" /> : <ChevronRight size={14} className="shrink-0 text-text-tertiary" />}

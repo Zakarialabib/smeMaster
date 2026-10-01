@@ -201,7 +201,7 @@ export function ContactEditor() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-text-tertiary mr-2">
+                        <span className="text-xs text-text-tertiary me-2">
                           {contact.frequency}x
                         </span>
                         <Button
@@ -272,7 +272,7 @@ export function ContactEditor() {
                   }}
                 >
                   {tag.name}
-                  <span className="text-text-tertiary ml-0.5">
+                  <span className="text-text-tertiary ms-0.5">
                     ({tag.contact_count})
                   </span>
                 </span>

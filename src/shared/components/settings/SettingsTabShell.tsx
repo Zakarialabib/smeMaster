@@ -118,7 +118,7 @@ function HelpCard({ items, open, onToggle }: HelpCardInternalProps) {
       <button
         type="button"
         onClick={onToggle}
-        className="w-full text-left bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 hover:bg-accent/10 transition-colors cursor-pointer"
+        className="w-full text-start bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 hover:bg-accent/10 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
           <ChevronRight size={14} className="text-accent shrink-0" />
@@ -126,7 +126,7 @@ function HelpCard({ items, open, onToggle }: HelpCardInternalProps) {
           <span className="text-xs font-medium text-text-secondary">
             Learn more
           </span>
-          <span className="ml-auto text-[10px] text-text-tertiary uppercase tracking-wider">
+          <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
             {items.length} {items.length === 1 ? "item" : "items"}
           </span>
         </div>

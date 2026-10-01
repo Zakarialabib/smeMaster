@@ -87,7 +87,7 @@ export function BlockPalette({ afterIndex, variant = "floating" }: BlockPaletteP
               key={item.type}
               type="button"
               onClick={() => pick(item.type)}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-text-primary transition-colors hover:bg-bg-tertiary"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm text-text-primary transition-colors hover:bg-bg-tertiary"
             >
               <span className="text-text-secondary">{ICONS[item.type]}</span>
               {t(`campaign.editor.${item.type}`)}

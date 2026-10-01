@@ -56,7 +56,7 @@ export default function CompanySwitcher() {
         <span className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
           {companyInitials(displayCompany.name)}
         </span>
-        <span className="text-left min-w-0 hidden sm:block">
+        <span className="text-start min-w-0 hidden sm:block">
           <span className="block text-sm font-semibold text-text-primary truncate max-w-[160px]">
             {displayCompany.name}
           </span>

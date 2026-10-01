@@ -78,7 +78,7 @@ export function GroupManager({ accountId, onGroupClick }: GroupManagerProps) {
                   <button
                     type="button"
                     onClick={() => onGroupClick?.(group)}
-                    className="text-xs text-text-primary truncate hover:text-accent transition-colors text-left w-full"
+                    className="text-xs text-text-primary truncate hover:text-accent transition-colors text-start w-full"
                   >
                     {group.name}
                   </button>

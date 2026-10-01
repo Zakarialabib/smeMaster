@@ -118,7 +118,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
         <button
           type="button"
           onClick={() => onNext(tools)}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
+          className="ms-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
         >
           {t("onboarding.continue")} <ArrowRight className="h-3.5 w-3.5" />
         </button>

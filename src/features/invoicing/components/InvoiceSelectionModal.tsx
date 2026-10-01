@@ -53,7 +53,7 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
            <button
              onClick={onQuickCreate}
-             className="w-full p-4 rounded-xl border-2 border-dashed border-border-primary hover:border-accent hover:bg-accent/5 transition-all text-left flex items-center gap-4 group"
+             className="w-full p-4 rounded-xl border-2 border-dashed border-border-primary hover:border-accent hover:bg-accent/5 transition-all text-start flex items-center gap-4 group"
            >
               <div className="w-10 h-10 rounded-full bg-bg-secondary flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors">
                 <Plus size={20} />
@@ -78,7 +78,7 @@ export function InvoiceSelectionModal({ onSelect, onQuickCreate, onClose }: Invo
                  key={inv.id}
                  onClick={() => handlePick(inv)}
                  disabled={generatingId !== null}
-                 className="w-full p-3 rounded-xl border border-border-primary hover:bg-bg-hover transition-colors text-left flex items-center justify-between group disabled:opacity-60"
+                 className="w-full p-3 rounded-xl border border-border-primary hover:bg-bg-hover transition-colors text-start flex items-center justify-between group disabled:opacity-60"
                >
                  <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-bg-tertiary flex items-center justify-center text-text-tertiary">

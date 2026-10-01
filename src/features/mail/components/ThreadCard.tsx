@@ -191,7 +191,7 @@ export const ThreadCard = memo(function ThreadCard({ thread, isSelected, onClick
           handleClick(e as any);
         }
       }}
-      className={`glass-thread-row w-full text-left border-b border-border-secondary/70 group cursor-pointer transition-all duration-200 ease-out relative ${
+      className={`glass-thread-row w-full text-start border-b border-border-secondary/70 group cursor-pointer transition-all duration-200 ease-out relative ${
         emailDensity === "compact" ? "px-3 py-1.5" : emailDensity === "spacious" ? "px-4 py-4" : "px-4 py-2.5"
       } ${
         isDragging

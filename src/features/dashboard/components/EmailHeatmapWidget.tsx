@@ -169,7 +169,7 @@ export function EmailHeatmapWidget() {
       <div className="overflow-x-auto max-h-48 overflow-y-hidden">
         <div className="inline-flex gap-0.5">
           {/* Left gutter for day labels */}
-          <div className="flex flex-col gap-0.5 mr-1 pt-5">
+          <div className="flex flex-col gap-0.5 me-1 pt-5">
             {DAY_LABELS.map((label, i) => (
               <div
                 key={i}

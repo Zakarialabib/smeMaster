@@ -322,7 +322,7 @@ export function PreSendChecklist({
               <div>
                 <div className={`text-lg font-bold ${v.color}`}>
                   {score}/100
-                  {checking && <Loader2 size={14} className="inline animate-spin ml-2" />}
+                  {checking && <Loader2 size={14} className="inline animate-spin ms-2" />}
                 </div>
                 <div className="text-xs text-text-tertiary mt-0.5">{v.label}</div>
               </div>
@@ -396,7 +396,7 @@ export function PreSendChecklist({
                     {rec.label}
                   </span>
                   {rec.value && (
-                    <span className="text-[10px] text-text-tertiary truncate flex-1 ml-1">{rec.value}</span>
+                    <span className="text-[10px] text-text-tertiary truncate flex-1 ms-1">{rec.value}</span>
                   )}
                 </div>
               ))}
