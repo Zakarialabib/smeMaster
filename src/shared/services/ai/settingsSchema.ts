@@ -94,8 +94,8 @@ export const AI_SETTINGS_SCHEMA = {
   voice_stt_enabled: { type: 'boolean', secure: false, description: 'STT toggle' },
 
   // RAG settings
-  rag_chunk_size: { type: 'string', secure: false, description: 'RAG chunk size' },
-  rag_chunk_overlap: { type: 'string', secure: false, description: 'RAG chunk overlap' },
+  rag_chunk_size: { type: 'number', secure: false, description: 'RAG chunk size' },
+  rag_chunk_overlap: { type: 'number', secure: false, description: 'RAG chunk overlap' },
   rag_splitter: { type: 'string', secure: false, description: 'RAG splitter type' },
 
   // Task routing (NEW - Phase 2)

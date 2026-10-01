@@ -6,8 +6,6 @@ vi.mock('@shared/services/db/threads', () => ({
   getAllLabelUnreadCounts: vi.fn(),
 }));
 
-import { getAllLabelUnreadCounts } from '@shared/services/db/threads';
-
 beforeEach(() => {
   useSyncStore.setState({
     isOnline: true,

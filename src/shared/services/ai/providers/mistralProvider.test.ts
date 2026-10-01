@@ -1,12 +1,12 @@
 // providers/__tests__/mistralProvider.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMistralProvider } from '../mistralProvider';
+import { createMistralProvider } from './mistralProvider';
 
-vi.mock('../openAiCompatibleProvider', () => ({
+vi.mock('./openAiCompatibleProvider', () => ({
   createOpenAICompatibleProvider: vi.fn(),
 }));
 
-import { createOpenAICompatibleProvider } from '../openAiCompatibleProvider';
+import { createOpenAICompatibleProvider } from './openAiCompatibleProvider';
 
 describe('createMistralProvider', () => {
   beforeEach(() => {

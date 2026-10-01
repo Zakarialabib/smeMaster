@@ -14,7 +14,7 @@ import {
   isVisionCapable,
   isContextCachingCapable,
   isBatchProcessingCapable,
-} from '../capabilities';
+} from './capabilities';
 import {
   MODEL_REGISTRY,
   getModelsForProvider,
@@ -23,15 +23,15 @@ import {
   getModelsByCapability,
   getEmbeddingSpaceId,
   getEmbeddingDimensions,
-} from '../modelRegistry';
+} from './modelRegistry';
 import {
   DEFAULT_TASK_ROUTES,
   getAllTasks,
   getProvidersForTask,
   scoreProviderForTask,
   getBestProviderForTask,
-} from '../taskRouter';
-import type { AiProvider } from '../types';
+} from './taskRouter';
+import type { AiProvider } from './types';
 
 describe('capability type guards', () => {
   it('isTextCapable returns true for object with complete()', () => {

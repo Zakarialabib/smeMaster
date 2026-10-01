@@ -1,12 +1,12 @@
 // providers/__tests__/openrouterProvider.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createOpenRouterProvider } from '../openrouterProvider';
+import { createOpenRouterProvider } from './openrouterProvider';
 
-vi.mock('../openAiCompatibleProvider', () => ({
+vi.mock('./openAiCompatibleProvider', () => ({
   createOpenAICompatibleProvider: vi.fn(),
 }));
 
-import { createOpenAICompatibleProvider } from '../openAiCompatibleProvider';
+import { createOpenAICompatibleProvider } from './openAiCompatibleProvider';
 
 describe('createOpenRouterProvider', () => {
   beforeEach(() => {

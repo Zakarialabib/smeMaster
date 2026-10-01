@@ -9,6 +9,7 @@ vi.mock('@features/settings/db/settings', () => {
 });
 
 import { createMockAiProvider } from '@/test/mocks';
+import { DEFAULT_MODELS } from './types';
 
 vi.mock('./providers/claudeProvider', () => ({
   createClaudeProvider: vi.fn(() => createMockAiProvider('claude response')),
@@ -110,7 +111,7 @@ describe('providerManager', () => {
       await getActiveProvider();
       expect(createClaudeProvider).toHaveBeenCalledWith(
         'sk-ant-test',
-        'claude-haiku-4-5-20251001',
+        DEFAULT_MODELS.claude,
         'auto',
       );
     });
@@ -123,7 +124,7 @@ describe('providerManager', () => {
       });
 
       await getActiveProvider();
-      expect(createOpenAIProvider).toHaveBeenCalledWith('sk-test', 'gpt-4o-mini', 'auto');
+      expect(createOpenAIProvider).toHaveBeenCalledWith('sk-test', DEFAULT_MODELS.openai, 'auto');
     });
 
     it('creates gemini provider with default model', async () => {
@@ -134,11 +135,7 @@ describe('providerManager', () => {
       });
 
       await getActiveProvider();
-      expect(createGeminiProvider).toHaveBeenCalledWith(
-        'AItest',
-        'gemini-2.5-flash-preview-05-20',
-        'auto',
-      );
+      expect(createGeminiProvider).toHaveBeenCalledWith('AItest', DEFAULT_MODELS.gemini, 'auto');
     });
 
     it('uses custom model from settings when configured', async () => {
@@ -191,7 +188,7 @@ describe('providerManager', () => {
       await getActiveProvider();
       expect(createCopilotProvider).toHaveBeenCalledWith(
         'ghp_test123',
-        'openai/gpt-4o-mini',
+        DEFAULT_MODELS.copilot,
         'auto',
       );
     });

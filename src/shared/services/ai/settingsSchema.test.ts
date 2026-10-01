@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateSetting, getSecureSettingKeys, getProviderSettingKeys } from '../settingsSchema';
+import { validateSetting, getSecureSettingKeys, getProviderSettingKeys } from './settingsSchema';
 
 describe('settings schema', () => {
   it('validateSetting returns true for valid boolean', () => {

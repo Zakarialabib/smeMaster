@@ -1,12 +1,8 @@
 // providers/__tests__/byteplusProvider.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  createBytePlusProvider,
-  BYTEPLUS_BASE_URL,
-  VOLCENGINE_BASE_URL,
-} from '../byteplusProvider';
+import { createBytePlusProvider, BYTEPLUS_BASE_URL, VOLCENGINE_BASE_URL } from './byteplusProvider';
 
-vi.mock('../openAiCompatibleProvider', () => ({
+vi.mock('./openAiCompatibleProvider', () => ({
   createOpenAICompatibleProvider: vi.fn((baseUrl: string, apiKey: string, model: string) => ({
     complete: vi.fn(),
     testConnection: vi.fn(),
@@ -17,7 +13,7 @@ vi.mock('../openAiCompatibleProvider', () => ({
   })),
 }));
 
-import { createOpenAICompatibleProvider } from '../openAiCompatibleProvider';
+import { createOpenAICompatibleProvider } from './openAiCompatibleProvider';
 
 describe('createBytePlusProvider', () => {
   beforeEach(() => {

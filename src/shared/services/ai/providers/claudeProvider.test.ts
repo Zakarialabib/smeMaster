@@ -1,6 +1,6 @@
 // providers/__tests__/claudeProvider.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createClaudeProvider, clearClaudeProvider } from '../claudeProvider';
+import { createClaudeProvider, clearClaudeProvider } from './claudeProvider';
 
 // Mock the Anthropic SDK
 const mockCreate = vi.fn();
@@ -9,14 +9,18 @@ const mockGetClient = vi.fn(() => ({
 }));
 
 vi.mock('@anthropic-ai/sdk', () => ({
-  default: vi.fn(() => mockGetClient()),
+  default: vi.fn(function () {
+    return mockGetClient();
+  }),
 }));
 
 vi.mock('../providerFactory', () => ({
-  createProviderFactory: vi.fn((createClient) => ({
-    getClient: (key: string) => createClient(key),
-    clear: vi.fn(),
-  })),
+  createProviderFactory: vi.fn(function (createClient: (key: string) => unknown) {
+    return {
+      getClient: (key: string) => createClient(key),
+      clear: vi.fn(),
+    };
+  }),
 }));
 
 vi.mock('../utils', () => ({

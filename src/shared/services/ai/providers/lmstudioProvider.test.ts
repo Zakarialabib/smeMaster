@@ -25,7 +25,7 @@ describe('createLMStudioProvider.getEmbeddings', () => {
 
     const result = await client.getEmbeddings({ input: 'hello' });
 
-    expect(result).toEqual([[0.1, 0.2]]);
+    expect(result?.vectors).toEqual([[0.1, 0.2]]);
     const [, init] = fetchMock.mock.calls[0];
     expect(JSON.parse(init.body as string).model).toBe('nomic-embed');
   });

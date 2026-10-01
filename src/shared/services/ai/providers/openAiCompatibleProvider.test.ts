@@ -1,6 +1,6 @@
 // providers/__tests__/openAiCompatibleProvider.test.ts (enhanced)
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createOpenAICompatibleProvider, validateUrl } from '../openAiCompatibleProvider';
+import { createOpenAICompatibleProvider, validateUrl } from './openAiCompatibleProvider';
 
 describe('validateUrl', () => {
   it('accepts valid http URLs', () => {
@@ -130,7 +130,7 @@ describe('createOpenAICompatibleProvider', () => {
     );
 
     const result = await provider.getEmbeddings!({ input: 'test' });
-    expect(result).toEqual([[0.1, 0.2, 0.3]]);
+    expect(result?.vectors).toEqual([[0.1, 0.2, 0.3]]);
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:1234/v1/embeddings',
       expect.objectContaining({

@@ -1,13 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('@features/settings/db/settings', () => ({
+  getSetting: vi.fn(async () => null),
+  getSecureSetting: vi.fn(async () => null),
+}));
+
 import {
   getVoiceConfig,
   getVoiceCapabilities,
   isBrowserVoiceSupported,
   speakWithBrowser,
-} from '../voiceService';
-import type { VoiceConfig } from '../voiceService';
+} from './voiceService';
+import type { VoiceConfig } from './voiceService';
 
 describe('voice service', () => {
+  beforeEach(() => {
+    // jsdom does not implement the Web Speech API; the browser provider
+    // capability check reads `speechSynthesis` off `window`.
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: { getVoices: () => [], speak: vi.fn(), cancel: vi.fn() },
+    });
+  });
+
   it('getVoiceConfig returns default config', async () => {
     const config = await getVoiceConfig();
     expect(config).toBeDefined();
