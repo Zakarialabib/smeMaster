@@ -45,25 +45,26 @@ How the system is built.
 
 Rust & Tauri — the native layer.
 
-| Doc                                                                                | Covers                                                         |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [01-imap-engine](02-BACKEND/01-imap-engine.md)                                     | async-imap, MIME parsing, delta sync                           |
-| [02-smtp-client](02-BACKEND/02-smtp-client.md)                                     | lettre transport, OAuth2                                       |
-| [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                                       | PGP key gen, encrypt/decrypt                                   |
-| [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                                       | PKCE OAuth, localhost server, token refresh                    |
-| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)                         | 14 Tauri plugins + mobile                                      |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md)                       | 831 IPC commands (35 invoicing + 12 POS)                       |
-| [07-key-management](02-BACKEND/07-key-management.md)                               | AES-256-GCM, PGP, security model                               |
-| [08-mobile-build](02-BACKEND/08-mobile-build.md)                                   | APK generation, platform targets                               |
-| [10-error-system](02-BACKEND/10-error-system.md)                                   | SerializedError type system                                    |
-| [11-event-system](02-BACKEND/11-event-system.md)                                   | EventBus, AppEvent enum, DomainEventProcessor                  |
-| [12-diagnostics](02-BACKEND/12-diagnostics.md)                                     | Backend tech-debt & diagnostics tracking                       |
-| [ai-rag](02-BACKEND/ai-rag.md)                                                     | Rust: candle, LanceDB, parser, indexer                         |
-| [13-ai-capability-architecture](02-BACKEND/13-ai-capability-architecture.md)       | Capability interfaces, type guards, provider composition       |
-| [14-ai-task-router](02-BACKEND/14-ai-task-router.md)                               | Per-task provider+model routing, fallback chains, cost scoring |
-| [15-ai-model-registry](02-BACKEND/15-ai-model-registry.md)                         | Data-driven model definitions, embedding space pinning         |
-| [16-ai-rag-dimensions](02-BACKEND/16-ai-rag-dimensions.md)                         | Multi-dimension RAG, three embedding spaces, migration guide   |
-| [17-ai-provider-capability-matrix](02-BACKEND/17-ai-provider-capability-matrix.md) | Complete capability matrix: provider × capability coverage     |
+| Doc                                                                                            | Covers                                                          |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [01-imap-engine](02-BACKEND/01-imap-engine.md)                                                 | async-imap, MIME parsing, delta sync                            |
+| [02-smtp-client](02-BACKEND/02-smtp-client.md)                                                 | lettre transport, OAuth2                                        |
+| [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                                                   | PGP key gen, encrypt/decrypt                                    |
+| [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                                                   | PKCE OAuth, localhost server, token refresh                     |
+| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)                                     | 14 Tauri plugins + mobile                                       |
+| [06-commands-reference](02-BACKEND/06-commands-reference.md)                                   | 831 IPC commands (35 invoicing + 12 POS)                        |
+| [07-key-management](02-BACKEND/07-key-management.md)                                           | AES-256-GCM, PGP, security model                                |
+| [08-mobile-build](02-BACKEND/08-mobile-build.md)                                               | APK generation, platform targets                                |
+| [10-error-system](02-BACKEND/10-error-system.md)                                               | SerializedError type system                                     |
+| [11-event-system](02-BACKEND/11-event-system.md)                                               | EventBus, AppEvent enum, DomainEventProcessor                   |
+| [12-diagnostics](02-BACKEND/12-diagnostics.md)                                                 | Backend tech-debt & diagnostics tracking                        |
+| [ai-rag](02-BACKEND/ai-rag.md)                                                                 | Rust: candle, LanceDB, parser, indexer                          |
+| [13-ai-capability-architecture](02-BACKEND/13-ai-capability-architecture.md)                   | Capability interfaces, type guards, provider composition        |
+| [14-ai-task-router](02-BACKEND/14-ai-task-router.md)                                           | Per-task provider+model routing, fallback chains, cost scoring  |
+| [15-ai-model-registry](02-BACKEND/15-ai-model-registry.md)                                     | Data-driven model definitions, embedding space pinning          |
+| [16-ai-rag-dimensions](02-BACKEND/16-ai-rag-dimensions.md)                                     | Multi-dimension RAG, three embedding spaces, migration guide    |
+| [19-document-and-email-extraction](02-BACKEND/19-document-and-email-extraction.md)             | 📐 Proposal — OCR, scanned-invoice capture, DOCX stub defect    |
+| [20-offline-stt-and-audio-summarization](02-BACKEND/20-offline-stt-and-audio-summarization.md) | 📐 Proposal — local Whisper STT + listen/summarize long content |
 
 ## Frontend
 
