@@ -1,4 +1,4 @@
-//! Core types for the resumabl e downloader.
+//! Core types for the resumable downloader.
 //!
 //! Ported from SignageMaster `plugin-downloader`, trimmed to SMEMaster needs
 //! (AI model files + generic assets — no media/app-update categories).
@@ -10,16 +10,11 @@ use std::fmt;
 pub enum DownloadError {
     #[error("Invalid or malicious HTTP Range header: end < start or size overflow")]
     InvalidRangeHeader,
-    #[error("Disk I/O error during download: {0}")]
-    IoError(String),
     #[error("Transfer stalled: no data received for {0}s")]
     Stalled(u64),
     #[error("Job interrupted by pause/cancel")]
     Interrupted,
 }
-
-/// Convenience for `Result<_, DownloadError>`.
-pub type DLResult<T> = Result<T, DownloadError>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

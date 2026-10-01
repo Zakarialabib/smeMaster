@@ -182,16 +182,35 @@ export function EmailRenderer({
     resizeObserver.observe(doc.body);
     observerRef.current = resizeObserver;
 
-    // Open links in external browser via Tauri opener
+    // Open links in external browser via Tauri opener.
+    //
+    // SECURITY: email bodies are attacker-controlled. `anchor.href` is the
+    // *resolved* URL, so a body containing `<a href="javascript:...">` or a
+    // `data:`/`vbscript:`/`file:` URL would otherwise be handed straight to
+    // openUrl and executed/launched by the OS. Only http(s) is forwarded.
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest('a');
-      if (anchor?.href) {
-        e.preventDefault();
-        openUrl(anchor.href).catch((err) => {
-          console.error('Failed to open link:', err);
-        });
+      if (!anchor?.href) return;
+
+      e.preventDefault();
+
+      const href = anchor.href.trim();
+      let scheme: string;
+      try {
+        scheme = new URL(href).protocol;
+      } catch {
+        return; // unparseable — drop it
       }
+
+      if (scheme !== 'http:' && scheme !== 'https:') {
+        console.warn('[EmailRenderer] blocked non-http(s) link scheme:', scheme, href);
+        return;
+      }
+
+      openUrl(href).catch((err) => {
+        console.error('Failed to open link:', err);
+      });
     };
     doc.addEventListener('click', handleClick);
 

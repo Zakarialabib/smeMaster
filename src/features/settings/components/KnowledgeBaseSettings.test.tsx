@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import KnowledgeBaseSettings from './KnowledgeBaseSettings';
+import type { DownloaderProgressEvent } from '@shared/services/db/invoke/downloader';
 
 const fullStore = {
   enabled: true,
@@ -8,6 +9,7 @@ const fullStore = {
   modelPath: '',
   tokenizerPath: '',
   modelError: null,
+  downloadProgress: null as DownloaderProgressEvent | null,
   embeddingSource: null,
   modelsDir: '',
   indexingStatus: 'idle' as const,
@@ -76,5 +78,60 @@ describe('KnowledgeBaseSettings — engine mode', () => {
     expect(screen.getByText('Local Models Folder')).toBeInTheDocument();
     // Provider-only controls stay hidden.
     expect(screen.queryByText('Provider Embeddings')).not.toBeInTheDocument();
+  });
+
+  it('shows the inline download progress bar for an active download', () => {
+    fullStore.embeddingSource = 'rust_bge';
+    fullStore.downloadProgress = {
+      jobId: 'job-1',
+      url: 'https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/main/model.safetensors',
+      fileName: 'model.safetensors',
+      destinationPath: '/data/models/snapshots/abc/model.safetensors',
+      category: 'ai_model',
+      status: 'downloading',
+      totalBytes: 100_000_000,
+      downloadedBytes: 25_000_000,
+      transferRateBytesPerSec: 2_000_000,
+      etaSeconds: 37,
+      progressPercentage: 25,
+      activeConnections: 4,
+      priority: 5,
+      error: null,
+      createdAt: '2026-10-01T00:00:00Z',
+      updatedAt: '2026-10-01T00:00:10Z',
+    };
+    render(<KnowledgeBaseSettings />);
+
+    const bar = screen.getByTestId('model-download-progress');
+    expect(bar).toBeInTheDocument();
+    expect(bar).toHaveAttribute('aria-valuenow', '25');
+    expect(screen.getByText('model.safetensors')).toBeInTheDocument();
+    fullStore.downloadProgress = null;
+  });
+
+  it('hides the progress bar once the job is terminal', () => {
+    fullStore.embeddingSource = 'rust_bge';
+    fullStore.downloadProgress = {
+      jobId: 'job-2',
+      url: 'https://example.com/f',
+      fileName: 'model.safetensors',
+      destinationPath: '/data/f',
+      category: 'ai_model',
+      status: 'completed',
+      totalBytes: 100,
+      downloadedBytes: 100,
+      transferRateBytesPerSec: 0,
+      etaSeconds: null,
+      progressPercentage: 100,
+      activeConnections: 0,
+      priority: 5,
+      error: null,
+      createdAt: '2026-10-01T00:00:00Z',
+      updatedAt: '2026-10-01T00:00:01Z',
+    };
+    render(<KnowledgeBaseSettings />);
+
+    expect(screen.queryByTestId('model-download-progress')).not.toBeInTheDocument();
+    fullStore.downloadProgress = null;
   });
 });

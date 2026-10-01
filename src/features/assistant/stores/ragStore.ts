@@ -22,6 +22,10 @@ import {
   aiGetEmailChunks,
   aiInsertProviderVectors,
 } from '@shared/services/db/invoke/rag';
+import {
+  downloaderListJobs,
+  type DownloaderProgressEvent,
+} from '@shared/services/db/invoke/downloader';
 import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
 import { RAG_ANSWER_SYSTEM_PROMPT } from '@shared/services/ai/prompts';
 import { TestEmbeddingResult } from '@/shared/services/ai/types';
@@ -63,6 +67,8 @@ export interface RagState {
   modelPath: string | null;
   tokenizerPath: string | null;
   modelError: string | null;
+  /** Live progress of the BGE model download (`downloader:progress`). */
+  downloadProgress: DownloaderProgressEvent | null;
   embeddingSource: EmbeddingSource;
   modelsDir: string | null;
 
@@ -101,6 +107,9 @@ export interface RagState {
 
 let entryCounter = 0;
 
+/** True while `downloadBgeModel` awaits the backend (guards listener re-entry). */
+let downloadRunning = false;
+
 function nextEntryId(): string {
   entryCounter += 1;
   return `rag-entry-${entryCounter}-${Date.now()}`;
@@ -115,6 +124,7 @@ export const useRagStore = create<RagState>((set, get) => ({
   modelPath: null,
   tokenizerPath: null,
   modelError: null,
+  downloadProgress: null,
   embeddingSource: null,
   modelsDir: null,
   indexingStatus: 'idle',
@@ -169,14 +179,54 @@ export const useRagStore = create<RagState>((set, get) => ({
       void tauriStoreStorage.setItem(RAG_LAST_INDEXED_KEY, now);
     });
 
-    // Store cleanup function on window for teardown
+    // Live model-download progress (resumable Rust downloader)
+    const unlistenDownload = await safeListen<DownloaderProgressEvent>(
+      'downloader:progress',
+      (event) => {
+        const ev = event.payload;
+        if (!ev?.jobId) return; // boot-recovery ping — no job attached
+        set({ downloadProgress: ev });
+        if (ev.status === 'failed' || ev.status === 'cancelled') {
+          // Only relevant after a webview reload (an awaited download gets
+          // its error via the rejected `aiDownloadModel` promise instead).
+          if (!downloadRunning && get().modelStatus === 'downloading') {
+            set({ modelStatus: 'error', modelError: ev.error ?? 'Download failed' });
+          }
+        } else if (
+          ev.status === 'completed' &&
+          !downloadRunning &&
+          get().modelStatus === 'downloading'
+        ) {
+          // Webview reloaded mid-download: the Rust engine finished the job,
+          // but no promise is awaiting — the cache-hit path completes state.
+          void get().downloadBgeModel();
+        }
+      },
+    );
+
+    // Store cleanup functions on window for teardown
     if (typeof window !== 'undefined') {
       const win = window as unknown as Record<string, unknown>;
-      const unlisteners = win.__rag_unlisteners as UnlistenFn[] | undefined;
-      if (!unlisteners) {
-        win.__rag_unlisteners = [unlistenStart, unlistenComplete];
-      }
+      const unlisteners = (win.__rag_unlisteners as UnlistenFn[] | undefined) ?? [];
+      unlisteners.push(unlistenStart, unlistenComplete, unlistenDownload);
+      win.__rag_unlisteners = unlisteners;
     }
+
+    // Rehydrate an in-flight download — the Rust engine keeps running
+    // through webview reloads, so the bar must come back too.
+    void (async () => {
+      try {
+        const jobs = await downloaderListJobs('ai_model');
+        const active = jobs.find(
+          (j) => j.status === 'downloading' || j.status === 'probing' || j.status === 'queued',
+        );
+        if (active && get().modelStatus !== 'loaded') {
+          set({ downloadProgress: active, modelStatus: 'downloading' });
+        }
+      } catch {
+        /* backend not ready — the next download click retries */
+      }
+    })();
   },
 
   // ── Toggle RAG enabled ──
@@ -187,7 +237,8 @@ export const useRagStore = create<RagState>((set, get) => ({
 
   // ── Download BGE-Small model ──
   downloadBgeModel: async () => {
-    set({ modelStatus: 'downloading', modelError: null });
+    set({ modelStatus: 'downloading', modelError: null, downloadProgress: null });
+    downloadRunning = true;
     try {
       const modelPath = await aiDownloadModel(BGE_REPO_ID, BGE_MODEL_FILE);
       const tokenizerPath = await aiDownloadModel(BGE_REPO_ID, BGE_TOKENIZER_FILE);
@@ -203,6 +254,8 @@ export const useRagStore = create<RagState>((set, get) => ({
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       set({ modelStatus: 'error', modelError: msg });
+    } finally {
+      downloadRunning = false;
     }
   },
 
@@ -385,7 +438,13 @@ export const useRagStore = create<RagState>((set, get) => ({
   removeModel: async () => {
     try {
       await aiDeleteModel(BGE_REPO_ID);
-      set({ modelPath: null, tokenizerPath: null, modelStatus: 'idle', modelError: null });
+      set({
+        modelPath: null,
+        tokenizerPath: null,
+        modelStatus: 'idle',
+        modelError: null,
+        downloadProgress: null,
+      });
       await tauriStoreStorage.removeItem(RAG_MODEL_PATH_KEY);
       await tauriStoreStorage.removeItem(RAG_TOKENIZER_PATH_KEY);
     } catch (err) {

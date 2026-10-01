@@ -197,7 +197,7 @@ pub fn repo_dir(cache_dir: &Path, repo_id: &str) -> PathBuf {
 pub fn snapshot_path(
     cache_dir: &Path,
     repo_id: &str,
-    revision: &str,
+    _revision: &str,
     commit_hash: &str,
     filename: &str,
 ) -> PathBuf {
@@ -228,7 +228,9 @@ pub fn cached_file(cache_dir: &Path, repo_id: &str, revision: &str, filename: &s
     }
 }
 
-/// True when *every* listed file is already in the cache.
+/// True when *every* listed file is already in the cache. Used by the
+/// multi-file cache-hit unit test.
+#[cfg(test)]
 pub fn all_cached(
     cache_dir: &Path,
     repo_id: &str,

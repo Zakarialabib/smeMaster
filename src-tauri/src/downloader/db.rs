@@ -250,9 +250,9 @@ const JOB_COLUMNS: &str = r#"id, url, destination_path, category, status, total_
         options_json, error_message, created_at, updated_at, completed_at"#;
 
 pub async fn get_job(pool: &Pool<Sqlite>, job_id: &str) -> Result<Option<DownloadJob>> {
-    let row = sqlx::query_as::<_, JobRow>(&format!(
+    let row = sqlx::query_as::<_, JobRow>(sqlx::AssertSqlSafe(format!(
         "SELECT {JOB_COLUMNS} FROM download_jobs WHERE id = ?"
-    ))
+    )))
     .bind(job_id)
     .fetch_optional(pool)
     .await?;
@@ -264,11 +264,11 @@ pub async fn get_active_job_by_url(
     pool: &Pool<Sqlite>,
     url: &str,
 ) -> Result<Option<DownloadJob>> {
-    let row = sqlx::query_as::<_, JobRow>(&format!(
+    let row = sqlx::query_as::<_, JobRow>(sqlx::AssertSqlSafe(format!(
         "SELECT {JOB_COLUMNS} FROM download_jobs
          WHERE url = ? AND status NOT IN ('completed', 'cancelled')
          ORDER BY created_at DESC LIMIT 1"
-    ))
+    )))
     .bind(url)
     .fetch_optional(pool)
     .await?;
@@ -280,10 +280,10 @@ pub async fn get_latest_job_by_url(
     pool: &Pool<Sqlite>,
     url: &str,
 ) -> Result<Option<DownloadJob>> {
-    let row = sqlx::query_as::<_, JobRow>(&format!(
+    let row = sqlx::query_as::<_, JobRow>(sqlx::AssertSqlSafe(format!(
         "SELECT {JOB_COLUMNS} FROM download_jobs
          WHERE url = ? ORDER BY created_at DESC LIMIT 1"
-    ))
+    )))
     .bind(url)
     .fetch_optional(pool)
     .await?;
@@ -298,12 +298,12 @@ pub async fn list_jobs(
     let cat_str = category.map(|c| c.as_str().to_string());
     let status_str = status.map(|s| s.as_str().to_string());
 
-    let rows = sqlx::query_as::<_, JobRow>(&format!(
+    let rows = sqlx::query_as::<_, JobRow>(sqlx::AssertSqlSafe(format!(
         "SELECT {JOB_COLUMNS} FROM download_jobs
          WHERE (? IS NULL OR category = ?)
            AND (? IS NULL OR status = ?)
          ORDER BY priority DESC, created_at DESC"
-    ))
+    )))
     .bind(&cat_str)
     .bind(&cat_str)
     .bind(&status_str)

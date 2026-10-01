@@ -190,4 +190,41 @@ describe('EmailRenderer', () => {
 
     expect(mockFetchAttachment).not.toHaveBeenCalled();
   });
+
+  describe('link scheme guard (email bodies are attacker-controlled)', () => {
+    /** Render, then click the first anchor inside the sanitised iframe body. */
+    async function clickFirstLink(html: string) {
+      const { openUrl } = await import('@tauri-apps/plugin-opener');
+      const { container } = render(
+        <EmailRenderer html={html} text={null} accountId="acc-1" messageId="msg-1" />,
+      );
+
+      const iframe = container.querySelector('iframe');
+      await waitFor(() => expect(iframe?.contentDocument?.body).toBeTruthy());
+
+      const anchor = iframe!.contentDocument!.querySelector('a');
+      expect(anchor).toBeTruthy();
+      anchor!.dispatchEvent(
+        new iframe!.contentWindow!.MouseEvent('click', { bubbles: true, cancelable: true }),
+      );
+      return { openUrl: vi.mocked(openUrl) };
+    }
+
+    it('forwards http(s) links to the opener', async () => {
+      const { openUrl } = await clickFirstLink('<a href="https://example.com/x">go</a>');
+      await waitFor(() => expect(openUrl).toHaveBeenCalledWith('https://example.com/x'));
+    });
+
+    it.each([
+      'javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'file:///C:/Windows/System32/calc.exe',
+      'vbscript:msgbox(1)',
+    ])('blocks %s', async (href) => {
+      const { openUrl } = await clickFirstLink(`<a href="${href}">x</a>`);
+      // Give any (incorrect) async call a chance to land before asserting.
+      await new Promise((r) => setTimeout(r, 0));
+      expect(openUrl).not.toHaveBeenCalled();
+    });
+  });
 });

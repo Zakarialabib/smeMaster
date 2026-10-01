@@ -155,7 +155,7 @@ pub async fn downloader_resume_job(
     if job.status == JobStatus::Completed {
         return Err(SerializedError::new(
             "DOWNLOADER_ERROR",
-            "Job already completed".into(),
+            "Job already completed".to_string(),
         ));
     }
     db::update_job_status(state.pool(), &job_id, JobStatus::Queued, None, None)

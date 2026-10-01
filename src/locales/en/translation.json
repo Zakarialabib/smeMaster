@@ -677,6 +677,8 @@
     "bgeModelDescription": "Download and load the BGE-small-en-v1.5 embedding model locally.",
     "modelStatus": "Model Status",
     "downloadBge": "Download BGE-Small",
+    "downloadSpeed": "Speed",
+    "downloadRemaining": "Remaining",
     "kbLoading": "Loading…",
     "loadModel": "Load Model",
     "localModelsFolder": "Local Models Folder",

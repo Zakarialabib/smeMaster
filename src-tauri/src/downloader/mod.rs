@@ -25,7 +25,6 @@ pub mod types;
 use anyhow::{anyhow, Result};
 use engine::{EngineContext, ExecuteOutcome};
 use sqlx::{Pool, Sqlite};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
 use tauri::{Emitter, Manager};
@@ -280,7 +279,12 @@ pub async fn download_hf_file(
         .await
         .map_err(|e| e.to_string())?
     {
-        existing if !matches!(existing.status, JobStatus::Completed | JobStatus::Cancelled) => {
+        Some(existing)
+            if !matches!(
+                existing.status,
+                JobStatus::Completed | JobStatus::Cancelled
+            ) =>
+        {
             // Refresh identity: destination (new commit), checksum, options.
             // Chunk bytes survive only if the ETag still matches — the engine
             // invalidates them otherwise.
@@ -301,14 +305,11 @@ pub async fn download_hf_file(
                 .map_err(|e| e.to_string())?
                 .ok_or_else(|| "job disappeared".to_string())?
         }
-        _ => {
+        stale => {
             // Fresh job (or the previous run completed but its ref/finalize
             // never landed — the cache check in step 1 already proved the
             // file is not usable yet).
-            if let Some(stale) = db::get_latest_job_by_url(&pool, &url)
-                .await
-                .map_err(|e| e.to_string())?
-            {
+            if let Some(stale) = stale {
                 db::delete_job(&pool, &stale.id)
                     .await
                     .map_err(|e| e.to_string())?;

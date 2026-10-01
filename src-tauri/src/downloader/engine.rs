@@ -20,6 +20,7 @@
 use crate::downloader::db;
 use crate::downloader::types::{DownloadChunk, DownloadError, DownloadJob, JobStatus};
 use anyhow::{anyhow, Context, Result};
+use rand::Rng;
 use reqwest::header::{ACCEPT_RANGES, CONTENT_LENGTH, RANGE};
 use reqwest::Client;
 use sha2::{Digest, Sha256};
@@ -156,6 +157,8 @@ impl ConcurrencyGate {
         }
     }
 
+    /// Current adaptive width — asserted by the gate unit tests.
+    #[cfg(test)]
     pub fn current_limit(&self) -> usize {
         self.inner.limit.load(Ordering::Acquire)
     }
@@ -223,7 +226,7 @@ fn emit_progress(
 
 /// Emit a status-only snapshot (probe/start/pause/fail/complete transitions)
 /// so the UI can react even when no bytes move.
-fn emit_status(app: &Option<tauri::AppHandle>, job: &DownloadJob) {
+pub fn emit_job_status(app: &Option<tauri::AppHandle>, job: &DownloadJob) {
     let rate = 0;
     let eta = None;
     emit_progress(
@@ -404,8 +407,13 @@ fn etag_mismatch(stored: Option<&str>, probed: Option<&str>) -> bool {
     }
 }
 
-fn fresh_chunk_plan(job_id: &str, total_bytes: i64, max_conn: usize) -> Vec<DownloadChunk> {
-    calculate_chunks(total_bytes, max_conn)
+fn fresh_chunk_plan(
+    job_id: &str,
+    total_bytes: i64,
+    max_conn: usize,
+) -> Result<Vec<DownloadChunk>> {
+    let ranges = calculate_chunks_validated(total_bytes, max_conn)?;
+    Ok(ranges
         .into_iter()
         .enumerate()
         .map(|(idx, (s, e))| DownloadChunk {
@@ -419,7 +427,7 @@ fn fresh_chunk_plan(job_id: &str, total_bytes: i64, max_conn: usize) -> Vec<Down
             sha256: None,
             updated_at: chrono::Utc::now().to_rfc3339(),
         })
-        .collect()
+        .collect())
 }
 
 fn planned_connections(probe: &ProbeResult, job: &DownloadJob) -> usize {
@@ -441,11 +449,11 @@ async fn resolve_chunks_for_resume(
 
     // No prior chunks → fresh plan
     if existing.is_empty() {
-        return Ok(fresh_chunk_plan(
+        return fresh_chunk_plan(
             &job.id,
             probe.total_bytes,
             planned_connections(probe, job),
-        ));
+        );
     }
 
     // ETag mismatch → file rotated on server, invalidate resumed bytes
@@ -463,11 +471,11 @@ async fn resolve_chunks_for_resume(
             let _ = fs::remove_file(&p).await;
         }
         db::delete_chunks(pool, &job.id).await?;
-        return Ok(fresh_chunk_plan(
+        return fresh_chunk_plan(
             &job.id,
             probe.total_bytes,
             planned_connections(probe, job),
-        ));
+        );
     }
 
     // ETag matches (or absent) → validate each chunk's on-disk progress
@@ -529,11 +537,11 @@ async fn resolve_chunks_for_resume(
                 let _ = fs::remove_file(&p).await;
             }
             db::delete_chunks(pool, &job.id).await?;
-            return Ok(fresh_chunk_plan(
-                &job.id,
-                probe.total_bytes,
-                planned_connections(probe, job),
-            ));
+        return fresh_chunk_plan(
+            &job.id,
+            probe.total_bytes,
+            planned_connections(probe, job),
+        );
         }
     }
 
@@ -570,7 +578,7 @@ async fn still_downloading(pool: &Pool<Sqlite>, job_id: &str) -> bool {
 pub async fn execute_download_job(ctx: &EngineContext, job: &DownloadJob) -> Result<ExecuteOutcome> {
     let pool = &ctx.pool;
     db::update_job_status(pool, &job.id, JobStatus::Probing, None, None).await?;
-    emit_status(&ctx.app, job);
+    emit_job_status(&ctx.app, job);
 
     let probe = probe_url(&ctx.client, &job.url, job_headers_map(job).as_ref()).await?;
     let total_bytes = probe.total_bytes;
@@ -608,7 +616,7 @@ pub async fn execute_download_job(ctx: &EngineContext, job: &DownloadJob) -> Res
         .sum();
     db::update_job_progress(pool, &job.id, already_done, total_bytes).await?;
     db::update_job_status(pool, &job.id, JobStatus::Downloading, None, None).await?;
-    emit_status(&ctx.app, job);
+    emit_job_status(&ctx.app, job);
 
     // Fast-path: all chunks already completed (crash after merge failed)
     if chunks.iter().all(|c| c.status == "completed") {
@@ -645,7 +653,7 @@ pub async fn execute_download_job(ctx: &EngineContext, job: &DownloadJob) -> Res
             )
             .await;
             match res {
-                Ok(()) => ExecuteOutcome::Completed,
+                Ok(()) => Ok(ExecuteOutcome::Completed),
                 Err(e) => Err(e),
             }
         });
@@ -683,7 +691,7 @@ pub async fn execute_download_job(ctx: &EngineContext, job: &DownloadJob) -> Res
         {
             db::update_job_status(pool, &job.id, JobStatus::Failed, Some(&msg), None).await?;
             let failed_job = db::get_job(pool, &job.id).await?.unwrap_or_else(|| job.clone());
-            emit_status(&ctx.app, &failed_job);
+            emit_job_status(&ctx.app, &failed_job);
         }
         return Err(e);
     }
@@ -784,7 +792,7 @@ async fn execute_single_stream(
     }
 
     db::update_job_status(pool, &job.id, JobStatus::Downloading, None, None).await?;
-    emit_status(&ctx.app, job);
+    emit_job_status(&ctx.app, job);
 
     let part_path = dest_path.with_extension("part");
     let resume_offset = fs::metadata(&part_path).await.map(|m| m.len() as i64).unwrap_or(0);
@@ -808,7 +816,7 @@ async fn execute_single_stream(
         let msg = format!("HTTP {}", resp.status());
         db::update_job_status(pool, &job.id, JobStatus::Failed, Some(&msg), None).await?;
         let failed_job = db::get_job(pool, &job.id).await?.unwrap_or_else(|| job.clone());
-        emit_status(&ctx.app, &failed_job);
+        emit_job_status(&ctx.app, &failed_job);
         return Err(anyhow!(msg));
     }
 
@@ -899,7 +907,7 @@ async fn execute_single_stream(
             let err = format!("Checksum mismatch: expected {expected}, got {actual_sha256}");
             db::update_job_status(pool, &job.id, JobStatus::Failed, Some(&err), None).await?;
             let failed_job = db::get_job(pool, &job.id).await?.unwrap_or_else(|| job.clone());
-            emit_status(&ctx.app, &failed_job);
+            emit_job_status(&ctx.app, &failed_job);
             return Err(anyhow!(err));
         }
     }

@@ -24,6 +24,7 @@ import {
   type EmbeddingSource,
   type ModelStatus,
 } from '@features/assistant/stores/ragStore';
+import type { DownloaderProgressEvent } from '@shared/services/db/invoke/downloader';
 import { getSetting } from '@features/settings/db/settings';
 import { aiGetVectorDbPath, aiResetVectorDb } from '@shared/services/db/invoke/rag';
 import {
@@ -125,6 +126,72 @@ function IndexingProgress({ status }: { status: string }) {
   );
 }
 
+// ── Model Download Progress ─────────────────────────────────────────────────
+
+const DOWNLOAD_ACTIVE_STATUSES = new Set(['queued', 'probing', 'downloading']);
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+/** Locale-neutral `mm:ss` (or `h:mm:ss`) countdown. */
+function formatEta(seconds: number | null): string | null {
+  if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return null;
+  const total = Math.ceil(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mmss = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return h > 0 ? `${h}:${mmss}` : mmss;
+}
+
+/** Inline progress bar below the BGE model row (no download dashboard). */
+function ModelDownloadProgress({ progress }: { progress: DownloaderProgressEvent }) {
+  const { t } = useTranslation();
+  if (!DOWNLOAD_ACTIVE_STATUSES.has(progress.status)) return null;
+
+  const pct = Math.max(0, Math.min(100, progress.progressPercentage));
+  const eta = formatEta(progress.etaSeconds);
+
+  return (
+    <div
+      className="mt-2 space-y-1.5"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(pct)}
+      aria-label={t('settings.downloadBge')}
+      data-testid="model-download-progress"
+    >
+      <div className="flex items-center justify-between gap-2 text-xs text-text-secondary">
+        <span className="truncate" title={progress.fileName}>
+          {progress.fileName}
+        </span>
+        <span className="tabular-nums shrink-0">{Math.round(pct)}%</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-white/10 dark:bg-white/5 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-accent transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className={cn(TEXT_HINT, 'flex items-center justify-between gap-2')}>
+        <span className="tabular-nums">
+          {t('settings.downloadSpeed')}: {formatBytes(progress.transferRateBytesPerSec)}/s
+        </span>
+        {eta !== null && (
+          <span className="tabular-nums">
+            {t('settings.downloadRemaining')}: {eta}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function KnowledgeBaseSettings() {
@@ -135,6 +202,7 @@ export default function KnowledgeBaseSettings() {
     modelPath,
     tokenizerPath,
     modelError,
+    downloadProgress,
     embeddingSource,
     modelsDir,
     indexingStatus,
@@ -348,6 +416,7 @@ export default function KnowledgeBaseSettings() {
             <SettingRow label={t('settings.modelStatus')}>
               <StatusDot status={modelStatus} />
             </SettingRow>
+            {downloadProgress && <ModelDownloadProgress progress={downloadProgress} />}
             {modelPath && (
               <div className="text-xs font-mono text-text-tertiary bg-white/5 dark:bg-white/5 px-2.5 py-1.5 rounded-md border border-border-primary truncate">
                 {modelPath}
