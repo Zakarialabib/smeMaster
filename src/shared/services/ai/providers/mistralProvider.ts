@@ -105,7 +105,7 @@ export function createMistralProvider(
       tools: ToolDefinition[],
       _options?: { toolChoice?: 'auto' | 'required' | 'none' | { name: string } },
     ): Promise<ToolCallResult> {
-      const { buildSystemPrompt } = await import('../utils');
+      const { buildSystemPrompt, zodToJsonSchema } = await import('../utils');
       const systemPrompt = buildSystemPrompt(req.systemPrompt, aiLanguage);
       const response = await fetch(`${MISTRAL_BASE_URL}/v1/chat/completions`, {
         method: 'POST',
@@ -472,49 +472,6 @@ function getReasoningPrompt(effort: ReasoningEffort): string {
       return 'Think through the problem step by step before responding.';
     case 'high':
       return 'Think deeply and thoroughly about this problem. Consider multiple approaches, evaluate trade-offs, and provide a well-reasoned response.';
-  }
-}
-
-function zodToJsonSchema(schema: z.ZodSchema): Record<string, unknown> {
-  const def = schema._def as Record<string, unknown>;
-  const typeName = def.typeName as string;
-  switch (typeName) {
-    case 'ZodObject': {
-      const shape = def.shape as () => Record<string, z.ZodSchema>;
-      const s = shape();
-      return {
-        type: 'object',
-        properties: Object.fromEntries(
-          Object.entries(s).map(([key, value]) => [key, zodToJsonSchema(value)]),
-        ),
-        required: Object.keys(s),
-        additionalProperties: false,
-      };
-    }
-    case 'ZodString':
-      return { type: 'string' };
-    case 'ZodNumber':
-      return { type: 'number' };
-    case 'ZodBoolean':
-      return { type: 'boolean' };
-    case 'ZodArray': {
-      const itemType = def.type as z.ZodSchema;
-      return { type: 'array', items: zodToJsonSchema(itemType) };
-    }
-    case 'ZodEnum': {
-      const values = def.values as string[];
-      return { type: 'string', enum: values };
-    }
-    case 'ZodOptional': {
-      const innerType = def.innerType as z.ZodSchema;
-      return zodToJsonSchema(innerType);
-    }
-    case 'ZodNullable': {
-      const innerType = def.innerType as z.ZodSchema;
-      return { ...zodToJsonSchema(innerType), nullable: true };
-    }
-    default:
-      return { type: 'object' };
   }
 }
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Globe,
-  Github,
   Mail,
   ExternalLink,
   Scale,
@@ -235,7 +234,7 @@ export default function AboutTab() {
             href="https://smemaster.app"
           />
           <LinkRow
-            icon={Github}
+            icon={ExternalLink}
             label={t('settings.githubRepo')}
             sublabel="Zakarialabib/smeMaster"
             href="https://github.com/Zakarialabib/smeMaster"

@@ -7,7 +7,7 @@ import type {
   ModelOption,
 } from '../types';
 import { createProviderFactory } from '../providerFactory';
-import { buildSystemPrompt } from '../utils';
+import { buildSystemPrompt, zodToJsonSchema } from '../utils';
 import type {
   StructuredOutputCapable,
   ToolCallingCapable,
@@ -357,64 +357,6 @@ function blobToBase64(blob: Blob): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-}
-
-/**
- * Convert a Zod schema to JSON Schema for OpenAI structured output.
- * This is a simplified conversion — for production use, consider zod-to-json-schema.
- */
-function zodToJsonSchema(schema: z.ZodSchema): Record<string, unknown> {
-  // Basic Zod to JSON Schema conversion
-  // For production, use zod-to-json-schema package
-  const def = schema._def as Record<string, unknown>;
-  const typeName = def.typeName as string;
-  switch (typeName) {
-    case 'ZodObject': {
-      const shape = def.shape as () => Record<string, z.ZodSchema>;
-      const s = shape();
-      return {
-        type: 'object',
-        properties: Object.fromEntries(
-          Object.entries(s).map(([key, value]) => [key, zodToJsonSchema(value)]),
-        ),
-        required: Object.keys(s),
-        additionalProperties: false,
-      };
-    }
-    case 'ZodString':
-      return { type: 'string' };
-    case 'ZodNumber':
-      return { type: 'number' };
-    case 'ZodBoolean':
-      return { type: 'boolean' };
-    case 'ZodArray': {
-      const itemType = def.type as z.ZodSchema;
-      return {
-        type: 'array',
-        items: zodToJsonSchema(itemType),
-      };
-    }
-    case 'ZodEnum': {
-      const values = def.values as string[];
-      return {
-        type: 'string',
-        enum: values,
-      };
-    }
-    case 'ZodOptional': {
-      const innerType = def.innerType as z.ZodSchema;
-      return zodToJsonSchema(innerType);
-    }
-    case 'ZodNullable': {
-      const innerType = def.innerType as z.ZodSchema;
-      return {
-        ...zodToJsonSchema(innerType),
-        nullable: true,
-      };
-    }
-    default:
-      return { type: 'object' };
-  }
 }
 
 export function clearOpenAIProvider(): void {
