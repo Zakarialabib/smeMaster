@@ -4,7 +4,10 @@ import type { DbAttachment } from '@shared/services/db/attachments';
 
 // Mock dependencies
 vi.mock('@tauri-apps/plugin-opener', () => ({
-  openUrl: vi.fn(),
+  // Must return a Promise: EmailRenderer does `openUrl(href).catch(...)`.
+  // A bare vi.fn() returns undefined and throws inside the click listener,
+  // which vitest reports as an unhandled error and turns into a non-zero exit.
+  openUrl: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@shared/utils/sanitize', () => ({
