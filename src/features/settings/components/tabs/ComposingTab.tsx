@@ -252,14 +252,17 @@ export default function ComposingTab() {
     load();
   }, []);
 
-  const handleUndoDelayChange = useCallback(async (value: number) => {
-    setUndoSendDelay(value);
-    await setSetting('undo_send_delay_seconds', String(value));
-    notify(
-      t('settings.tabs.composing'),
-      `${t('settings.undoSendDelaySet', 'Undo send delay set to')} ${value}s.`,
-    );
-  }, []);
+  const handleUndoDelayChange = useCallback(
+    async (value: number) => {
+      setUndoSendDelay(value);
+      await setSetting('undo_send_delay_seconds', String(value));
+      notify(
+        t('settings.tabs.composing'),
+        `${t('settings.undoSendDelaySet', 'Undo send delay set to')} ${value}s.`,
+      );
+    },
+    [t],
+  );
 
   // AI generation modals state
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -287,7 +290,7 @@ export default function ComposingTab() {
         t('settings.signaturesSavedToast', 'AI signature saved to your account.'),
       );
     },
-    [activeAccountId],
+    [activeAccountId, t],
   );
 
   // ── Setup step tracking ─────────────────────────────────

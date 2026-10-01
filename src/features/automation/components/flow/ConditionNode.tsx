@@ -1,4 +1,4 @@
-import { memo, useCallback, type ChangeEvent } from 'react';
+import { memo, useCallback, useMemo, type ChangeEvent } from 'react';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import { Filter } from 'lucide-react';
 import { useAutomationStore } from '@features/automation/stores/automationStore';
@@ -13,13 +13,13 @@ export type ConditionNodeData = Node<
 export const ConditionNode = memo(function ConditionNode({ data }: NodeProps<ConditionNodeData>) {
   const setEditorField = useAutomationStore((s) => s.setEditorField);
 
-  const conditions = (() => {
+  const conditions = useMemo(() => {
     try {
       return JSON.parse(data.conditions || '{}') as Record<string, unknown>;
     } catch {
       return {};
     }
-  })();
+  }, [data.conditions]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +28,7 @@ export const ConditionNode = memo(function ConditionNode({ data }: NodeProps<Con
       const parsed = { ...conditions, [field]: value };
       setEditorField('triggerConditions', JSON.stringify(parsed));
     },
-    [data.conditions, setEditorField],
+    [conditions, setEditorField],
   );
 
   return (

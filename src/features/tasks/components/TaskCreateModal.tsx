@@ -193,7 +193,7 @@ export function TaskCreateModal({
     if (prefill?.dueDate) setDueDate(fromTimestampToLocalISO(prefill.dueDate));
     if (prefill?.contactId) setContactId(prefill.contactId);
     if (prefill?.contactName) setContactName(prefill.contactName);
-  }, [prefill]);
+  }, [prefill, titleField]);
 
   // ── Focus contact search input when opened ──
   useEffect(() => {

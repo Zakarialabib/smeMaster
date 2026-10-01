@@ -105,7 +105,6 @@ export function TemplateManager() {
       },
       pageSize: 25,
       deps: [activeAccountId],
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
     [activeAccountId],
   );

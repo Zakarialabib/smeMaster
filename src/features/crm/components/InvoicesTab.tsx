@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
   Search,
@@ -38,8 +38,10 @@ export default function InvoicesTab() {
     fetchClients(ACTIVE_COMPANY_ID);
   }, [fetchInvoices, fetchClients]);
 
-  const clientName = (id: string) =>
-    clients.find((c) => c.id === id)?.display_name ?? 'Unassigned client';
+  const clientName = useCallback(
+    (id: string) => clients.find((c) => c.id === id)?.display_name ?? 'Unassigned client',
+    [clients],
+  );
 
   const stats = useMemo(() => {
     const total = invoices.reduce((a, i) => a + i.total_amount, 0);
@@ -64,7 +66,7 @@ export default function InvoicesTab() {
         i.invoice_number.toLowerCase().includes(q) ||
         clientName(i.client_id).toLowerCase().includes(q),
     );
-  }, [invoices, search, clients]);
+  }, [invoices, search, clientName]);
 
   const openEditor = (id: string) =>
     navigate({ to: '/invoicing/edit/$invoiceId', params: { invoiceId: id } });

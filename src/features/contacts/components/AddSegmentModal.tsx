@@ -27,7 +27,7 @@ export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
       queryField.reset();
       setCreating(false);
     }
-  }, [isOpen]);
+  }, [isOpen, nameField, queryField]);
 
   const handleCreate = useCallback(async () => {
     // Touch both fields so validation messages surface.

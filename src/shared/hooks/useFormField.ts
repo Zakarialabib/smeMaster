@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 type Validator = (value: string) => string | undefined;
 
@@ -38,5 +38,11 @@ export function useFormField({
     setTouched(false);
   }, [initialValue]);
 
-  return { value, error, touched, onChange, onBlur, reset };
+  // Memoised so the returned object is referentially stable while its
+  // contents are unchanged. Without this every consumer re-created the object
+  // each render, making it unusable as a hook dependency.
+  return useMemo(
+    () => ({ value, error, touched, onChange, onBlur, reset }),
+    [value, error, touched, onChange, onBlur, reset],
+  );
 }

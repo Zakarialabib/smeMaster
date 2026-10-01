@@ -277,7 +277,7 @@ export function ThreadView({ thread }: ThreadViewProps) {
   useEffect(() => {
     setFocusedMsgIdx(-1);
     setContactSidebarVisible(false);
-  }, [thread.id]);
+  }, [thread.id, setContactSidebarVisible]);
 
   // Scroll focused message into view
   useEffect(() => {

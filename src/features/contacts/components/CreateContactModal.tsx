@@ -34,7 +34,7 @@ export function CreateContactModal({ isOpen, onClose, onCreated }: CreateContact
       nameField.reset();
       setSaving(false);
     }
-  }, [isOpen]);
+  }, [isOpen, emailField, nameField]);
 
   useEffect(() => {
     if (!isOpen) return;

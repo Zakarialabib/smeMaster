@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 interface UsePersistentStateOptions<T> {
   key: string;
@@ -34,7 +34,7 @@ export const usePersistentState = <T>(
     syncAcrossTabs = true,
   } = options;
 
-  const storageInstance = getStorage(storage);
+  const storageInstance = useMemo(() => getStorage(storage), [storage]);
 
   const [state, setState] = useState<T>(() => {
     if (storage === 'memory') {
@@ -55,20 +55,24 @@ export const usePersistentState = <T>(
 
   const setPersistentState = useCallback(
     (value: T | ((prev: T) => T)) => {
-      const newValue = typeof value === 'function' ? (value as (prev: T) => T)(state) : value;
+      // Functional update form: reads the previous value from React rather
+      // than the render closure, so back-to-back calls cannot clobber each
+      // other and `state` is not needed as a dependency.
+      setState((prev) => {
+        const newValue = typeof value === 'function' ? (value as (prev: T) => T)(prev) : value;
 
-      try {
-        if (storage === 'memory') {
-          setState(newValue);
-        } else {
-          storageInstance?.setItem(key, serializer(newValue));
-          setState(newValue);
+        try {
+          if (storage !== 'memory') {
+            storageInstance?.setItem(key, serializer(newValue));
+          }
+        } catch (error) {
+          console.error(`Error writing persistent state for key '${key}':`, error);
         }
-      } catch (error) {
-        console.error(`Error writing persistent state for key '${key}':`, error);
-      }
+
+        return newValue;
+      });
     },
-    [key, serializer, storage, state],
+    [key, serializer, storage, storageInstance],
   );
 
   useEffect(() => {

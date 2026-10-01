@@ -30,7 +30,7 @@ export function InvoiceSelectionModal({
   useEffect(() => {
     fetchInvoices('demo-company-1');
     fetchClients('demo-company-1');
-  }, []);
+  }, [fetchInvoices, fetchClients]);
 
   const handlePick = async (inv: Invoice) => {
     setGeneratingId(inv.id);

@@ -55,7 +55,6 @@ export function useAsyncResource<T, Args extends unknown[]>(
         setResource({ status: 'error', error: message });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [retryToken, ...args],
   );
 

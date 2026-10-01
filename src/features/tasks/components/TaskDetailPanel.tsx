@@ -261,7 +261,9 @@ export function TaskDetailPanel({ taskId, onClose, onTaskUpdated }: TaskDetailPa
     return () => {
       cancelled = true;
     };
-  }, [linkedEntities, getContactById, getCampaign]);
+    // getContactById / getCampaign are stable store actions — listing them
+    // only re-ran this effect needlessly.
+  }, [linkedEntities]);
 
   // ── Contact search ──
   useEffect(() => {

@@ -21,6 +21,13 @@ export const EventHandlerWrapper: React.FC<EventHandlerProps> = ({
     handlerRef.current = handler;
   }, [handler]);
 
+  // A spread dependency array cannot be statically verified by the linter, and
+  // a caller passing a fresh array literal would resubscribe on every render.
+  // Keying the subscription on a stable serialisation of the declared
+  // dependencies keeps the "resubscribe when these change" contract without
+  // either hazard.
+  const depsKey = JSON.stringify(dependencies ?? []);
+
   useEffect(() => {
     offRef.current = uiBus.on(event, (...args) => {
       handlerRef.current(...args);
@@ -29,7 +36,7 @@ export const EventHandlerWrapper: React.FC<EventHandlerProps> = ({
     return () => {
       if (offRef.current) offRef.current();
     };
-  }, [event, ...dependencies]);
+  }, [event, depsKey]);
 
   return children || null;
 };

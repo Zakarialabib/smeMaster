@@ -142,7 +142,6 @@ export function TemplateGallery({
       },
       pageSize: viewMode === 'grid' ? 25 : 50,
       deps: [activeAccountId, typeFilter, originFilter, viewMode],
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
     [activeAccountId, typeFilter, originFilter, viewMode],
   );
