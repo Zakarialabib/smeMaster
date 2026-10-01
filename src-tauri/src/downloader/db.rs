@@ -415,7 +415,7 @@ mod tests {
     use super::*;
 
     async fn test_pool() -> Pool<Sqlite> {
-        let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+        let pool = Pool::<Sqlite>::connect("sqlite::memory:").await.unwrap();
         crate::db::migrations::run_migrations(&pool).await.unwrap();
         pool
     }
@@ -502,7 +502,7 @@ mod tests {
     #[tokio::test]
     async fn chunk_upsert_and_status_probe() {
         let pool = test_pool().await;
-        insert_job(&pool, sample_job("job-c")).await.unwrap();
+        insert_job(&pool, &sample_job("job-c")).await.unwrap();
 
         let chunk = DownloadChunk {
             id: "job-c_0".to_string(),
