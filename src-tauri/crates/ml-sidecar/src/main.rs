@@ -637,6 +637,14 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                 Ok(engine) => {
                     let load_ms = start.elapsed().as_millis() as u64;
                     let threads = engine.num_threads();
+                    // Report which files were picked: sherpa-onnx naming is not
+                    // uniform, so this makes the selection auditable rather than
+                    // a silent guess.
+                    let files: serde_json::Map<String, serde_json::Value> = paths
+                        .file_names()
+                        .into_iter()
+                        .map(|(k, v)| (k.to_string(), serde_json::Value::String(v)))
+                        .collect();
                     resources.stt = Some(engine);
                     if let Ok(mut m) = metrics().lock() {
                         m.last_model_load_ms = load_ms;
@@ -648,6 +656,7 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                             "model_dir": dir,
                             "num_threads": threads,
                             "load_ms": load_ms,
+                            "files": files,
                         }),
                     )
                 }

@@ -54,16 +54,78 @@ pub struct SttModelPaths {
 impl SttModelPaths {
     /// Build the conventional four paths inside a model directory.
     ///
-    /// sherpa-onnx model releases use a stable naming convention; this is a
-    /// convenience, not a guess — `load` still verifies every path exists.
+    /// **This is a convenience, not a guess that can be trusted blindly.**
+    /// sherpa-onnx releases do NOT use a single naming convention:
+    /// `encoder.onnx`, `encoder-epoch-99-avg-1.onnx` and
+    /// `encoder-epoch-99-avg-1.int8.onnx` all occur in the wild. Assuming the
+    /// bare name fails on most published models (found by the JSON-RPC E2E
+    /// test — the direct-API smoke test passed explicit paths and never hit it).
+    ///
+    /// So this tries the exact names first, then falls back to discovering a
+    /// file whose name *contains* the role token. `load` still verifies every
+    /// path, and `load`'s error names what was missing.
     pub fn in_dir(dir: &str) -> Self {
-        let join = |name: &str| Path::new(dir).join(name).to_string_lossy().to_string();
+        let base = Path::new(dir);
+        let join = |name: &str| base.join(name).to_string_lossy().to_string();
+
+        let discover = |role: &str, exact: &str| -> String {
+            let exact_path = base.join(exact);
+            if exact_path.exists() {
+                return exact_path.to_string_lossy().to_string();
+            }
+            // Look for `<role>...onnx`. Prefer int8 (smaller + faster on CPU,
+            // and what the sherpa-onnx CPU models ship), then shortest name for
+            // determinism — never an arbitrary directory-order pick.
+            let mut candidates: Vec<String> = std::fs::read_dir(base)
+                .map(|rd| {
+                    rd.filter_map(|e| e.ok())
+                        .filter_map(|e| {
+                            let name = e.file_name().to_string_lossy().to_string();
+                            let lower = name.to_lowercase();
+                            (lower.contains(role) && lower.ends_with(".onnx")).then_some(name)
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+            if candidates.is_empty() {
+                // Nothing found — return the exact name so `missing()` reports
+                // the conventional one the caller probably expected.
+                return join(exact);
+            }
+            candidates.sort_by_key(|n| {
+                let is_int8 = n.to_lowercase().contains("int8");
+                // int8 first (false sorts before true → invert), then by length.
+                (!is_int8, n.len(), n.clone())
+            });
+            join(&candidates[0])
+        };
+
         Self {
-            encoder: join("encoder.onnx"),
-            decoder: join("decoder.onnx"),
-            joiner: join("joiner.onnx"),
+            encoder: discover("encoder", "encoder.onnx"),
+            decoder: discover("decoder", "decoder.onnx"),
+            joiner: discover("joiner", "joiner.onnx"),
             tokens: join("tokens.txt"),
         }
+    }
+
+    /// Filenames (not full paths) actually selected, for logging/telemetry.
+    ///
+    /// Exposed so the chosen files are never a silent guess — `load_stt_model`
+    /// returns this, and a caller can see that it picked
+    /// `encoder-epoch-99-avg-1.int8.onnx` rather than `encoder.onnx`.
+    pub fn file_names(&self) -> [(&'static str, String); 4] {
+        let name = |p: &str| {
+            Path::new(p)
+                .file_name()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_else(|| p.to_string())
+        };
+        [
+            ("encoder", name(&self.encoder)),
+            ("decoder", name(&self.decoder)),
+            ("joiner", name(&self.joiner)),
+            ("tokens", name(&self.tokens)),
+        ]
     }
 
     /// Return every path that does not exist on disk.

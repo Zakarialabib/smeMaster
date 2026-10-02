@@ -60,14 +60,57 @@ pub struct TtsModelPaths {
 impl TtsModelPaths {
     /// Build the conventional paths inside a model directory.
     ///
-    /// Convenience only — `load` still verifies each required path exists, so a
-    /// wrong guess surfaces as a named missing file rather than a crash.
+    /// Same caveat as `SttModelPaths::in_dir`: VITS/Piper releases name the
+    /// acoustic model after the voice (`fr_FR-siwis-medium.onnx`,
+    /// `en_US-amy-low.onnx`), not `model.onnx`. So discover it rather than
+    /// assuming — a bare `model.onnx` only exists in repackaged bundles.
+    ///
+    /// `load` still verifies each required path, so a wrong pick surfaces as a
+    /// named missing file rather than a crash.
     pub fn in_dir(dir: &str) -> Self {
-        let join = |name: &str| Path::new(dir).join(name).to_string_lossy().to_string();
+        let base = Path::new(dir);
+        let join = |name: &str| base.join(name).to_string_lossy().to_string();
+
+        // Prefer an exact `model.onnx`; otherwise take the largest `.onnx` in
+        // the directory. Largest is the right heuristic here: the acoustic
+        // model dwarfs any auxiliary onnx file, and unlike a name pattern it
+        // works for every voice naming scheme.
+        let model = {
+            let exact = base.join("model.onnx");
+            if exact.exists() {
+                exact.to_string_lossy().to_string()
+            } else {
+                let mut onnx: Vec<(u64, String)> = std::fs::read_dir(base)
+                    .map(|rd| {
+                        rd.filter_map(|e| e.ok())
+                            .filter_map(|e| {
+                                let p = e.path();
+                                let is_onnx = p
+                                    .extension()
+                                    .map(|x| x.eq_ignore_ascii_case("onnx"))
+                                    .unwrap_or(false);
+                                if !is_onnx {
+                                    return None;
+                                }
+                                let len = e.metadata().map(|m| m.len()).unwrap_or(0);
+                                Some((len, p.to_string_lossy().to_string()))
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                if onnx.is_empty() {
+                    join("model.onnx")
+                } else {
+                    onnx.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.cmp(&b.1)));
+                    onnx[0].1.clone()
+                }
+            }
+        };
+
         let lexicon = join("lexicon.txt");
         let dict_dir = join("dict");
         Self {
-            model: join("model.onnx"),
+            model,
             tokens: join("tokens.txt"),
             data_dir: join("espeak-ng-data"),
             lexicon: Path::new(&lexicon).exists().then_some(lexicon),
