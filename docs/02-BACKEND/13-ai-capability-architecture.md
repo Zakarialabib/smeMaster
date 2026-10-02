@@ -43,9 +43,7 @@ Two layers are genuinely **unimplemented**, and both are tracked:
    two of them; fixed 2026-10-01 so the UI badge matches reality. See
    [Voice settings](../04-FEATURES/38-voice-settings.md) §Implementation status.
 2. **No local/offline speech engine** — every working path needs an API key or a
-   user-run server. Engine decision and phase plan:
-   [18-offline-speech-engine-decision](../06-ROADMAP/18-offline-speech-engine-decision.md),
-   product framing and locale coverage:
+   user-run server. Engine decision, phase plan and locale coverage:
    [20-offline-stt-and-audio-summarization](20-offline-stt-and-audio-summarization.md).
 
 ### Voice Helper Types

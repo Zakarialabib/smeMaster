@@ -1,21 +1,45 @@
 # Offline Voice — STT & TTS Engine Options, Architecture, and Open Stubs
 
-> **Status:** 📐 **Options + architecture** (2026-10-01). Supersedes the earlier
-> candle-only proposal in this slot — see §3 for the reconciliation.
-> **Engine decision brief:** [18-offline-speech-engine-decision](../06-ROADMAP/18-offline-speech-engine-decision.md)
-> reaches the same conclusion (sherpa-onnx) and adds the capability matrix + phase plan;
-> this doc carries the product framing, the stub inventory and the verified locale matrix.
+> **Status:** 📐 **Options + architecture + decision** (2026-10-01). Consolidates the
+> former `06-ROADMAP/18-offline-speech-engine-decision.md` brief — one doc, not two.
 > **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Voice agent OSS landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) · [Topology decision](../06-ROADMAP/17-voice-agent-topology-decision.md) · [Self-hosting](../voice/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > **Companion:** [Document & email extraction](./19-document-and-email-extraction.md)
 
 ## 1. Why this doc exists
 
-Two questions were being answered in different places with different answers:
+Three pieces of prior work each assumed a different offline speech engine, and nobody
+reconciled them:
 
-1. **"Which engine do we use for offline speech?"** — [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 and [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2 answer **sherpa-onnx**. An earlier draft of this doc answered **candle whisper**. That is a contradiction and §3 resolves it.
-2. **"What is actually working today?"** — `voiceService.ts` contains five `throw new Error('... not yet implemented')` stubs, and `getVoiceCapabilities()` reports capabilities for providers that throw. §4 is the verified inventory.
+| Doc                                                                          | Assumed engine                               | Scope it covered                            |
+| ---------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
+| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2                              | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
+| [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 | **sherpa-onnx** (Rust binding, in a sidecar) | Desktop local tier for the voice agent      |
+| an earlier draft of this doc                                                 | **candle whisper**                           | Desktop batch STT for the mail/AI assistant |
 
-It also covers **TTS**, not just STT: per [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2, **TTS is 88% of variable voice cost**, so an offline STT-only plan optimises the cheap half.
+The topology doc and SELF-HOSTING agree on sherpa-onnx; this doc was the outlier. §3
+resolves it. This doc also carries the **product framing**, the **stub inventory** and
+the **verified locale matrix** — and, since 2026-10-01, the **capability decomposition**
+that previously lived in a duplicate brief.
+
+It covers **TTS**, not just STT: per [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2,
+**TTS is 88% of variable voice cost**, so an offline STT-only plan optimises the cheap half.
+
+## 1.1 What "offline speech" must cover
+
+Do not treat these as one requirement — they have different latency budgets and therefore
+potentially different engines:
+
+| #   | Capability                                        | Latency budget  | Used by                                                            |
+| --- | ------------------------------------------------- | --------------- | ------------------------------------------------------------------ |
+| C1  | **Batch STT** — transcribe a recorded file        | seconds–minutes | Mail/AI assistant: voice notes, audio attachments, call recordings |
+| C2  | **Batch TTS** — speak text aloud                  | seconds         | "Listen to this summary"                                           |
+| C3  | **Live streaming STT** — transcribe during a call | < 300 ms        | Voice agent (VPS side, P6)                                         |
+| C4  | **VAD** — detect speech boundaries                | ms              | Both batch (chunking) and live (turn detection)                    |
+| C5  | **Diarization** — who spoke when                  | batch           | Call digests                                                       |
+| C6  | **Realtime bidirectional voice**                  | < 300 ms        | `RealtimeVoiceCapable` (implemented by nobody)                     |
+
+**C1 + C2 + C5 are the desktop/offline scope of this doc.** C3/C6 stay with the
+voice-agent work — see §7.
 
 ## 2. Verified current state (read from source, 2026-10-01)
 
@@ -241,7 +265,7 @@ delivers "listen/summarize" value without waiting on the carrier or the streamin
 
 ## 8. Acceptance criteria (proposed)
 
-- [ ] No provider shows a capability badge for a code path that throws
+- [x] No provider shows a capability badge for a code path that throws ✅ _(Phase 0)_
 - [ ] An audio file transcribes with **no API key and no external server**
 - [ ] Model is multilingual for the shipped locales; **Japanese TTS** gap decided and documented
 - [ ] TTS renders locally (Piper/VITS), not only via a cloud API
@@ -284,3 +308,30 @@ model choice:
 
 **Sourcing rule:** Spaces inform _model selection_, never runtime dependencies. The app
 runs models locally (sherpa-onnx in the sidecar); it must not call a Space over the network.
+
+## 10. What is NOT verified
+
+Kept deliberately, so nobody reads the plan above as measured fact:
+
+- **sherpa-onnx was not built or benchmarked on this host.** The crate exists with Rust
+  bindings (checked on crates.io 2026-10-01: `sherpa-onnx` 1.13.8, ~481k downloads);
+  **no RTF figure here is ours.**
+- **No ONNX model has been downloaded or run.** Model _existence_ was verified via the HF
+  API; model _behaviour_ was not.
+- **Whisper multilingual quality per locale was not measured.**
+- **The `ort` crate's version could not be read** from the crates.io API (returned null),
+  so any dependency-footprint claim is directional, not a pinned size.
+- **onnxruntime footprint on the smallest supported desktop** is unmeasured — it is a real
+  new dependency (the repo has none today).
+- **SELF-HOSTING §2.1's RTF gate is still open** for the voice-agent tier, and it is the
+  same measurement this doc needs before promising offline speech on low-end hardware.
+
+## 11. Decision log
+
+| Question                                                | Answer                                                                                                                        |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Engine for offline speech?                              | **sherpa-onnx**, Rust binding, inside the existing `ml-sidecar` (§3)                                                          |
+| One engine or two?                                      | **One.** Candle stays for embeddings only; do not add a second speech stack                                                   |
+| Is the engine implemented yet?                          | **No.** Phase 1 is the first real step; §10 lists what is unmeasured                                                          |
+| Does this change the voice-agent P6 / Gate 5 decisions? | **No** (§7)                                                                                                                   |
+| Is a candle-whisper spike still wanted?                 | Optional as a _throwaway_ proof that batch STT works on this host — **not** a destination, and never shipped alongside sherpa |
