@@ -349,6 +349,36 @@ likely thing to break a naive packaging attempt.
 right rate and duration; whether the French *sounds* correct is a human judgement. The WAV is
 written to disk (`fr_siwis_smoke.wav`) for listening.
 
+#### TTS verified end-to-end, including the `espeak-ng-data` subset (2026-10-01)
+
+The STT path was proven (download → prepare → load) but TTS was not, and TTS has a specific
+hazard the catalog could get wrong: `espeak-ng-data/`.
+
+The **full** directory is 355 files / 18 MB — mostly voice styles and dictionaries for
+languages this app does not speak. The catalog ships a **9-file subset**. A subset is exactly
+what failed earlier with `Failed to set eSpeak-ng voice`, so it had to be proven rather than
+assumed. `crates/ml-sidecar/examples/tts_smoke.rs` now builds a directory containing *only*
+those 9 files and synthesises from it:
+
+| Check | Result |
+| --- | --- |
+| Directory contents | exactly the 9 catalog files (`espeak: 7 entries`) |
+| Load | ok, 2716 ms, 22050 Hz, 1 speaker |
+| Synthesise | 4.58 s of audio, **peak 0.57** (non-silent) |
+| **Verdict** | **PASS — the shipped subset is sufficient** |
+
+So the hand-picked list is correct: `phondata`, `phonindex`, `phontab`, `intonations`,
+`<lang>_dict`, `en_dict`, and the `lang/<family>/<code>` voice definition. The 348 files left
+out are voice *styles* (`voices/!v/*`) and other languages' dictionaries — not needed.
+
+**Also verified:** the **release** sidecar binary (`scripts/build-sidecar.sh --release`,
+98 MB) passes all 8 JSON-RPC E2E checks — STT transcribe and TTS synthesise both route
+correctly from the artefact that actually ships.
+
+⚠️ **Still a human judgement:** intelligibility. The harness proves non-silent audio of the
+right rate and duration; whether the French sounds right needs listening
+(`tts_minimal_out.wav`).
+
 #### JSON-RPC dispatch verification (2026-10-01)
 
 The Rust examples above call the engine API **directly**. Neither they nor the TypeScript

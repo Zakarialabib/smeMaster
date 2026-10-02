@@ -18,7 +18,7 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:dev:mcp": "tauri dev --features mcp-bridge",
-    "tauri:build": "tauri build",
+    "tauri:build": "bun run sidecar:build:release && tauri build",
     "translate:sync": "node scripts/sync-translations.js",
     "translate:clean": "node scripts/clean-unused-translations.js",
     "check:event-contract": "node scripts/check-event-contract.mjs",
@@ -28,11 +28,13 @@
     "android:build:apk": "cargo tauri android build --apk",
     "android:init": "cargo tauri android init",
     "generate-icons": "tauri icon src-tauri/icons/icon.png",
-    "windows:build": "cargo tauri build --target x86_64-pc-windows-msvc",
-    "windows:portable": "cargo tauri build --bundles nsis --target x86_64-pc-windows-msvc",
+    "windows:build": "bun run sidecar:build:release && cargo tauri build --target x86_64-pc-windows-msvc",
+    "windows:portable": "bun run sidecar:build:release && cargo tauri build --bundles nsis --target x86_64-pc-windows-msvc",
     "prepare": "husky",
     "test:integration": "vitest run --project integration",
-    "test:all": "vitest run"
+    "test:all": "vitest run",
+    "sidecar:build": "bash scripts/build-sidecar.sh",
+    "sidecar:build:release": "bash scripts/build-sidecar.sh --release"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

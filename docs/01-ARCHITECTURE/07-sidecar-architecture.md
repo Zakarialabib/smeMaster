@@ -259,18 +259,39 @@ Auto-restart
 
 ### Build
 
+**Use the script.** It builds the sidecar AND installs it with the triple-suffixed
+name Tauri resolves, so a bundled app can never ship without it:
+
 ```bash
-# Build only the sidecar
-cargo build -p ml-sidecar --release
+bun run sidecar:build:release     # → src-tauri/binaries/ml-sidecar-<triple>.exe
+# or directly:
+SHERPA_ONNX_ARCHIVE_DIR=<dir> scripts/build-sidecar.sh --release
+```
 
-# The binary lands at:
-#   src-tauri/target/release/ml-sidecar.exe  (Windows)
-#   src-tauri/target/release/ml-sidecar      (Linux/macOS)
+`tauri:build`, `windows:build` and `windows:portable` all run
+`sidecar:build:release` first, so the bundling prerequisite cannot be forgotten.
 
-# Copy to binaries/ for Tauri bundling:
+⚠️ **`--release` is the supported path on Windows.** A debug build of this crate
+links ~234 objects and emits a PDB large enough to fail MSVC with
+`LNK1318: Unexpected PDB error; FILE_SYSTEM (3)`. That is a PDB/filesystem limit,
+not a code error, and it only shows up once the disk is tight.
+
+⚠️ **`offline-speech` is ON by default in the script.** Without it the sidecar
+compiles and runs but answers `unknown method` to `load_stt_model` /
+`load_tts_voice` / `synthesize` — which looks like a broken feature rather than a
+wrong binary. Pass `--no-speech` only if you deliberately want a smaller build.
+
+⚠️ **Disk.** A full Rust build of this workspace needs ~10 GB free. The sidecar
+alone is ~98 MB release / ~157 MB debug; the intermediate `app_lib.lib` can reach
+5 GB.
+
+#### Manual equivalent (if you must)
+
+```bash
+cargo build -p ml-sidecar --release --features offline-speech
 mkdir -p src-tauri/binaries
-cp src-tauri/target/release/ml-sidecar* src-tauri/binaries/
-# Tauri expects: src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe
+cp src-tauri/target/release/ml-sidecar* \
+   src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe
 ```
 
 ### CI Integration
