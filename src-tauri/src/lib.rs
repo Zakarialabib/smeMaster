@@ -212,6 +212,19 @@ pub fn run() {
         // ── Record app start time as early as possible for accurate uptime
         crate::commands::db::set_app_start_time();
 
+        // ═════════════════════════════════════════════════════════════
+        // EventBus – single source of truth for Rust→React events
+        // ═════════════════════════════════════════════════════════════
+        // Managed FIRST, before anything can call `app.state::<EventBus>()`.
+        // It used to be managed ~200 lines below, after the change tracker had
+        // already requested it — so `state()` panicked with
+        // "state() called before manage() for EventBus" and the app never
+        // reached the window. Ordering here is load-bearing: everything below
+        // (change tracker, sync monitor, subsystem lifecycle, AppState) reads
+        // this state.
+        let (event_bus, bus_rx) = events::EventBus::new(10_000);
+        app.manage(event_bus);
+
         // ── Database pool – created synchronously (fast, <50ms). ─────
         // Migration runs in background (non‑blocking) to avoid ANR.
         // Moved early because change_tracker::spawn_tracker needs the pool.
@@ -408,11 +421,8 @@ pub fn run() {
 
         // NOTE: rust:init:complete + migration is handled in AppLifecycle::spawn_orchestrator
 
-        // ═════════════════════════════════════════════════════════════
-        // EventBus – single source of truth for Rust→React events
-        // ═════════════════════════════════════════════════════════════
-        let (event_bus, bus_rx) = events::EventBus::new(10_000);
-        app.manage(event_bus);
+        // (EventBus is created and managed at the TOP of this closure — see the
+        // note there. It must precede the change tracker, which reads it.)
 
         // SyncMonitorService observes the EventBus
         let sync_monitor = std::sync::Arc::new(orchestrator::SyncMonitorService::new());
