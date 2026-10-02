@@ -302,6 +302,16 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_synthesize_speech,
             #[cfg(feature = "local-ai")]
             ai::ai_unload_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_sidecar_control_status,
+            #[cfg(feature = "local-ai")]
+            ai::ai_start_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_stop_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_prepare_model_dir,
+            #[cfg(feature = "local-ai")]
+            ai::ai_remove_model_dir,
 
             // === commands::calendar (15 commands) ===
             calendar::db_list_calendars,

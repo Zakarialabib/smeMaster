@@ -23,7 +23,12 @@ import { SettingGroup, SettingRow } from '@features/settings/components/Settings
 import { HelpCard } from '@features/settings/components/HelpCard';
 import { Button } from '@shared/components/ui/Button';
 import { Badge } from '@shared/components/ui/Badge';
-import { aiDownloadModel, aiGetModelsDir } from '@shared/services/db/invoke/rag';
+import {
+  aiDownloadModel,
+  aiGetModelsDir,
+  aiPrepareModelDir,
+  aiRemoveModelDir,
+} from '@shared/services/db/invoke/rag';
 import {
   LOCAL_MODELS,
   LOCAL_MODEL_KIND_DESCRIPTIONS,
@@ -77,6 +82,8 @@ export default function LocalModelsSettings() {
   const [states, setStates] = useState<Record<string, DownloadState>>({});
   const [progress, setProgress] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  /** Flat model directory per model id, once materialised. */
+  const [preparedDirs, setPreparedDirs] = useState<Record<string, string>>({});
 
   useEffect(() => {
     (async () => {
@@ -95,22 +102,53 @@ export default function LocalModelsSettings() {
     setErrors((e) => ({ ...e, [model.id]: '' }));
 
     const required = model.files.filter((f) => f.required !== false);
-    let done = 0;
+    const resolved: { source: string; dest: string }[] = [];
 
     try {
       for (const file of required) {
         setProgress((p) => ({
           ...p,
-          [model.id]: `${done + 1}/${required.length} · ${file.dest}`,
+          [model.id]: `${resolved.length + 1}/${required.length} · ${file.dest}`,
         }));
         // The Rust downloader finalises into the hf-hub cache layout and
-        // returns the resolved path. Going through it (rather than fetch)
-        // is what makes a dropped connection resume.
-        await aiDownloadModel(model.repoId, file.path);
-        done += 1;
+        // returns the resolved absolute path. Going through it (rather than
+        // fetch) is what makes a dropped connection resume.
+        const cachePath = await aiDownloadModel(model.repoId, file.path);
+        resolved.push({ source: cachePath, dest: file.dest });
       }
+
+      // The engines do NOT read the hf-hub cache layout — they expect a flat
+      // directory. Without this step the model downloads but cannot be loaded,
+      // which looks like a working download and a broken engine.
+      setProgress((p) => ({ ...p, [model.id]: 'preparing model directory…' }));
+      const prepared = await aiPrepareModelDir(model.id, resolved);
+
+      if (prepared.missing.length > 0) {
+        // A partially materialised directory is worse than none: the engine
+        // fails later with an opaque onnxruntime error. Report it now.
+        setStates((s) => ({ ...s, [model.id]: 'error' }));
+        setErrors((e) => ({
+          ...e,
+          [model.id]: `Downloaded, but ${prepared.missing.length} file(s) were not in the cache: ${prepared.missing.join(', ')}`,
+        }));
+        return;
+      }
+
       setStates((s) => ({ ...s, [model.id]: 'done' }));
-      setProgress((p) => ({ ...p, [model.id]: `all ${required.length} files` }));
+      setPreparedDirs((d) => ({ ...d, [model.id]: prepared.model_dir }));
+      setProgress((p) => ({ ...p, [model.id]: prepared.model_dir }));
+    } catch (err) {
+      setStates((s) => ({ ...s, [model.id]: 'error' }));
+      setErrors((e) => ({ ...e, [model.id]: describeError(err) }));
+    }
+  }, []);
+
+  const remove = useCallback(async (model: LocalModelEntry) => {
+    try {
+      await aiRemoveModelDir(model.id);
+      setStates((s) => ({ ...s, [model.id]: 'idle' }));
+      setProgress((p) => ({ ...p, [model.id]: '' }));
+      setPreparedDirs((d) => ({ ...d, [model.id]: '' }));
     } catch (err) {
       setStates((s) => ({ ...s, [model.id]: 'error' }));
       setErrors((e) => ({ ...e, [model.id]: describeError(err) }));
@@ -188,13 +226,11 @@ export default function LocalModelsSettings() {
                           )}
 
                           {state === 'downloading' && progress[model.id] && (
-                            <p className="text-[11px] text-accent mt-1">
-                              Downloading {progress[model.id]}…
-                            </p>
+                            <p className="text-[11px] text-accent mt-1">{progress[model.id]}…</p>
                           )}
                           {state === 'done' && (
-                            <p className="text-[11px] text-success mt-1">
-                              All files fetched. Configure the engine to use this directory.
+                            <p className="text-[11px] text-success mt-1 break-all">
+                              Ready at <code>{preparedDirs[model.id] ?? progress[model.id]}</code>
                             </p>
                           )}
                           {state === 'error' && errors[model.id] && (
@@ -204,19 +240,26 @@ export default function LocalModelsSettings() {
                           )}
                         </div>
 
-                        <Button
-                          size="sm"
-                          variant={state === 'done' ? 'secondary' : 'primary'}
-                          disabled={state === 'downloading'}
-                          onClick={() => void download(model)}
-                          className={cn(state === 'downloading' && 'opacity-60')}
-                        >
-                          {state === 'downloading'
-                            ? 'Downloading…'
-                            : state === 'done'
-                              ? 'Re-download'
-                              : 'Download'}
-                        </Button>
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            variant={state === 'done' ? 'secondary' : 'primary'}
+                            disabled={state === 'downloading'}
+                            onClick={() => void download(model)}
+                            className={cn(state === 'downloading' && 'opacity-60')}
+                          >
+                            {state === 'downloading'
+                              ? 'Downloading…'
+                              : state === 'done'
+                                ? 'Re-download'
+                                : 'Download'}
+                          </Button>
+                          {state === 'done' && (
+                            <Button size="sm" variant="ghost" onClick={() => void remove(model)}>
+                              Remove
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

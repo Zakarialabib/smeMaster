@@ -16,7 +16,7 @@
  * @module
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SettingGroup, SettingRow, ToggleRow } from '@features/settings/components/SettingsHelpers';
 import { HelpCard } from '@features/settings/components/HelpCard';
 import { Button } from '@shared/components/ui/Button';
@@ -27,6 +27,13 @@ import {
   getVoiceCapabilities,
   type VoiceProviderType,
 } from '@shared/services/ai/voiceService';
+import {
+  aiSidecarControlStatus,
+  aiStartSidecar,
+  aiStopSidecar,
+  type SidecarControlStatus,
+} from '@shared/services/db/invoke/rag';
+import { Badge } from '@shared/components/ui/Badge';
 
 type VoiceProvider = VoiceProviderType;
 
@@ -42,6 +49,34 @@ function logVoiceError(scope: string, err: unknown): void {
   console.warn(`[VoiceSettings] ${scope} failed:`, err);
 }
 
+/** True when the failure is just "no Tauri backend" (plain browser / dev server). */
+function isBackendMissing(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'isTauriUnavailable' in err;
+}
+
+/**
+ * Readable text for an IPC rejection.
+ *
+ * Tauri rejects with a `SerializedError` OBJECT (`{code, message}`), so
+ * `String(err)` yields "[object Object]" — which is what a download error
+ * showed before this existed. Unwrap `.message`.
+ */
+function describeIpcError(err: unknown): string {
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object') {
+    const e = err as { message?: unknown; code?: unknown };
+    if (typeof e.message === 'string' && e.message) {
+      return typeof e.code === 'string' && e.code ? `${e.code}: ${e.message}` : e.message;
+    }
+  }
+  if (err instanceof Error) return err.message;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return 'Unknown error';
+  }
+}
+
 export default function VoiceSettings() {
   const [provider, setProvider] = useState<VoiceProvider>('browser');
   const [baseUrl, setBaseUrl] = useState('https://api.openai.com/v1');
@@ -54,10 +89,29 @@ export default function VoiceSettings() {
   const [offlineSttDir, setOfflineSttDir] = useState('');
   const [ttsSpeed, setTtsSpeed] = useState('1.0');
   const [saved, setSaved] = useState(false);
+  const [sidecar, setSidecar] = useState<SidecarControlStatus | null>(null);
+  const [sidecarBusy, setSidecarBusy] = useState(false);
+  const [sidecarError, setSidecarError] = useState('');
   const [capabilities, setCapabilities] = useState<{ stt: boolean; tts: boolean }>({
     stt: false,
     tts: false,
   });
+
+  /**
+   * Refresh sidecar state. Swallows the "no Tauri backend" case — in a plain
+   * browser every IPC call rejects and that is expected, not an error.
+   */
+  const refreshSidecar = useCallback(async () => {
+    try {
+      setSidecar(await aiSidecarControlStatus());
+      setSidecarError('');
+    } catch (err) {
+      if (!isBackendMissing(err)) {
+        setSidecarError(describeIpcError(err));
+      }
+      setSidecar(null);
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -82,7 +136,8 @@ export default function VoiceSettings() {
         logVoiceError('getVoiceConfig', err);
       }
     })();
-  }, []);
+    void refreshSidecar();
+  }, [refreshSidecar]);
 
   function isValidUrl(str: string): boolean {
     try {
@@ -177,6 +232,118 @@ export default function VoiceSettings() {
 
         {isOffline && (
           <>
+            {/* ── On-device engine (ml-sidecar) ─────────────────────────── */}
+            {/* The sidecar is OnDemand — it does NOT run until started, and
+                until it does every speech call fails. Showing that state (and
+                the control) here is the difference between "it's broken" and
+                "start it". */}
+            <div className="p-3 rounded-xl border border-border-primary bg-bg-secondary">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-text-primary">
+                    On-device engine (ml-sidecar)
+                  </p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {sidecar === null ? (
+                      <Badge variant="warning" size="sm">
+                        status unavailable
+                      </Badge>
+                    ) : !sidecar.feature_enabled ? (
+                      <Badge variant="danger" size="sm">
+                        not built in
+                      </Badge>
+                    ) : !sidecar.registered ? (
+                      <Badge variant="danger" size="sm">
+                        not registered
+                      </Badge>
+                    ) : sidecar.reachable ? (
+                      <Badge variant="success" size="sm">
+                        running
+                      </Badge>
+                    ) : sidecar.running ? (
+                      <Badge variant="warning" size="sm">
+                        running, not answering
+                      </Badge>
+                    ) : (
+                      <Badge variant="warning" size="sm">
+                        stopped
+                      </Badge>
+                    )}
+                    {sidecar?.version && (
+                      <span className="text-[11px] text-text-tertiary">v{sidecar.version}</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-text-tertiary mt-1">
+                    {sidecar === null
+                      ? 'Could not read engine status.'
+                      : !sidecar.feature_enabled
+                        ? 'This build has no local-AI engine. Rebuild with the local-ai feature.'
+                        : !sidecar.registered
+                          ? 'The engine service did not register at startup.'
+                          : sidecar.reachable
+                            ? 'Ready. Speech runs locally — no key, no network.'
+                            : sidecar.running
+                              ? 'The process is alive but not responding. Try Restart.'
+                              : 'Stopped. Start it to use offline speech.'}
+                  </p>
+                  {sidecarError && (
+                    <p className="text-[11px] text-danger mt-1 break-all">{sidecarError}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-1.5 shrink-0">
+                  {sidecar?.reachable ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={sidecarBusy}
+                      onClick={async () => {
+                        setSidecarBusy(true);
+                        try {
+                          await aiStopSidecar();
+                        } catch (err) {
+                          setSidecarError(describeIpcError(err));
+                        } finally {
+                          await refreshSidecar();
+                          setSidecarBusy(false);
+                        }
+                      }}
+                    >
+                      {sidecarBusy ? 'Stopping…' : 'Stop'}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      disabled={sidecarBusy || sidecar === null || !sidecar.feature_enabled}
+                      onClick={async () => {
+                        setSidecarBusy(true);
+                        setSidecarError('');
+                        try {
+                          await aiStartSidecar();
+                        } catch (err) {
+                          setSidecarError(describeIpcError(err));
+                        } finally {
+                          await refreshSidecar();
+                          setSidecarBusy(false);
+                        }
+                      }}
+                    >
+                      {sidecarBusy ? 'Starting…' : 'Start'}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={sidecarBusy}
+                    onClick={() => void refreshSidecar()}
+                  >
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+            </div>
+
             <TextField
               label="Offline TTS voice directory"
               size="md"

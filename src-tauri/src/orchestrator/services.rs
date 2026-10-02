@@ -598,6 +598,15 @@ pub struct MlSidecarService<R: tauri::Runtime = tauri::Wry> {
     // shared rather than copied.
     running: Arc<std::sync::atomic::AtomicBool>,
     healthy: Arc<std::sync::atomic::AtomicBool>,
+    /// Whether the sidecar SHOULD be running — the user's intent, as distinct
+    /// from `running` (the observed process state).
+    ///
+    /// Without this, `stop()` was silently undone: it set `running=false`, and
+    /// `health_check()` reads that as "crashed" and restarts via the watchdog
+    /// ~2s later. The user pressed Stop, saw "stopped", and the process came
+    /// back — a lie in the UI. The watchdog now only restarts when this is true,
+    /// so an unexpected crash still recovers but a deliberate stop sticks.
+    desired_running: Arc<std::sync::atomic::AtomicBool>,
     /// Maps JSON-RPC request IDs to oneshot senders for response matching.
     pending: Arc<dashmap::DashMap<u64, tokio::sync::oneshot::Sender<anyhow::Result<serde_json::Value>>>>,
     /// Monotonically increasing request ID counter.
@@ -685,6 +694,10 @@ impl<R: tauri::Runtime> MlSidecarService<R> {
             child: tokio::sync::Mutex::new(None),
             running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             healthy: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            // Not desired until someone starts it — matches the OnDemand
+            // registration, and stops the watchdog from resurrecting a sidecar
+            // the user never asked for.
+            desired_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             pending: Arc::new(dashmap::DashMap::new()),
             next_id: std::sync::atomic::AtomicU64::new(1),
             memory_limit_mb,
@@ -1047,6 +1060,13 @@ impl<R: tauri::Runtime> MlSidecarService<R> {
             let h = handle.clone();
             Box::pin(async move {
                 if let Some(svc) = h.try_state::<Arc<MlSidecarService>>() {
+                    // Respect a deliberate stop: the reader task fires this on
+                    // process exit, which is exactly what stop() causes. Without
+                    // the intent check, Stop was undone ~2s later.
+                    if !svc.desired_running.load(std::sync::atomic::Ordering::Acquire) {
+                        log::info!("[ml-sidecar] Watchdog: not restarting (stopped by request)");
+                        return;
+                    }
                     log::info!("[ml-sidecar] Watchdog: executing restart...");
                     if let Err(e) = svc.restart().await {
                         log::error!("[ml-sidecar] Watchdog restart failed: {e}");
@@ -1089,6 +1109,9 @@ impl<R: tauri::Runtime> Service for MlSidecarService<R> {
 
     async fn init(&self) -> anyhow::Result<()> {
         log::info!("[ml-sidecar] Initializing service...");
+        // An explicit start IS the intent to keep it running, so the watchdog
+        // may recover it from here on.
+        self.desired_running.store(true, std::sync::atomic::Ordering::Release);
         match self.spawn_sidecar().await {
             Ok(()) => {
                 // Verify with a ping after spawn
@@ -1118,6 +1141,10 @@ impl<R: tauri::Runtime> Service for MlSidecarService<R> {
 
     async fn stop(&self) -> anyhow::Result<()> {
         log::info!("[ml-sidecar] Stopping sidecar...");
+        // Record the INTENT first. `running=false` alone is indistinguishable
+        // from a crash, so the watchdog would restart it ~2s later and the UI's
+        // "stopped" would be a lie (verified live before this flag existed).
+        self.desired_running.store(false, std::sync::atomic::Ordering::Release);
         self.running.store(false, std::sync::atomic::Ordering::Release);
         self.healthy.store(false, std::sync::atomic::Ordering::Release);
 
@@ -1135,6 +1162,13 @@ impl<R: tauri::Runtime> Service for MlSidecarService<R> {
 
     async fn health_check(&self) -> HealthStatus {
         if !self.running.load(std::sync::atomic::Ordering::Acquire) {
+            // Distinguish "crashed" from "deliberately stopped". Without this
+            // check a user-initiated stop is resurrected by the watchdog.
+            if !self.desired_running.load(std::sync::atomic::Ordering::Acquire) {
+                return super::HealthStatus::Degraded(
+                    "ml-sidecar stopped by request".to_string(),
+                );
+            }
             log::info!("[ml-sidecar] Health check: not running, attempting restart...");
             match self.restart().await {
                 Ok(()) => {

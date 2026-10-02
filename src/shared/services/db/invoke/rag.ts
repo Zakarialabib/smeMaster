@@ -259,3 +259,67 @@ export async function aiSynthesizeSpeech(
 export async function aiUnloadTtsVoice(): Promise<{ status: string }> {
   return invokeCommand<{ status: string }>('ai_unload_tts_voice');
 }
+
+// ── ml-sidecar lifecycle ───────────────────────────────────────────────────
+// The sidecar is OnDemand — it does NOT run until started. These expose that
+// state and control it, so the Voice tab can explain itself instead of showing
+// a bare failure.
+
+export interface SidecarControlStatus {
+  /** False when the app was built without the `local-ai` feature. */
+  feature_enabled: boolean;
+  /** False when the feature is on but the service never registered. */
+  registered: boolean;
+  running: boolean;
+  healthy: boolean;
+  version: string | null;
+  /** A real ping — distinguishes "process alive" from "process answering". */
+  reachable: boolean;
+}
+
+export async function aiSidecarControlStatus(): Promise<SidecarControlStatus> {
+  return invokeCommand<SidecarControlStatus>('ai_sidecar_control_status');
+}
+
+export async function aiStartSidecar(): Promise<{
+  status: string;
+  started_in_ms?: number;
+  healthy?: boolean;
+}> {
+  return invokeCommand<{ status: string; started_in_ms?: number; healthy?: boolean }>(
+    'ai_start_sidecar',
+  );
+}
+
+export async function aiStopSidecar(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_stop_sidecar');
+}
+
+// ── Model directory preparation ────────────────────────────────────────────
+// Downloads land in the hf-hub cache layout; the engines need a flat directory.
+// These bridge the two.
+
+export interface PrepareModelDirResult {
+  model_dir: string;
+  linked: number;
+  copied: number;
+  missing: string[];
+}
+
+/**
+ * Materialise a flat model directory from downloaded cache files.
+ *
+ * `files` maps a resolved cache path to its destination name inside the model
+ * directory. Without this step a downloaded model cannot be loaded — the cache
+ * layout (`models--<repo>/snapshots/<sha>/…`) is not what the engines read.
+ */
+export async function aiPrepareModelDir(
+  modelId: string,
+  files: { source: string; dest: string }[],
+): Promise<PrepareModelDirResult> {
+  return invokeCommand<PrepareModelDirResult>('ai_prepare_model_dir', { modelId, files });
+}
+
+export async function aiRemoveModelDir(modelId: string): Promise<{ removed: string }> {
+  return invokeCommand<{ removed: string }>('ai_remove_model_dir', { modelId });
+}
