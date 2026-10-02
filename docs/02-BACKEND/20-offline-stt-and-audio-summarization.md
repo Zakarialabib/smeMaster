@@ -219,7 +219,7 @@ worth stating in the UI.
 | **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ✅ **Verified end-to-end** (RTF 0.033, 99.8%) |
 | **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ✅ **Verified end-to-end** (FR, RTF 0.573) |
 | **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ✅ **Done**                   |
-| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜                            |
+| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ✅ **Done**                   |
 | **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜                            |
 | **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜                            |
 
