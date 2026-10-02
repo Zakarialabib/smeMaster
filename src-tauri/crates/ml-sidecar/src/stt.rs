@@ -111,7 +111,7 @@ impl SttEngine {
                     joiner: Some(paths.joiner.clone()),
                 },
                 tokens: Some(paths.tokens.clone()),
-                model_type: "zipformer".to_string(),
+                model_type: Some("zipformer".to_string()),
                 num_threads,
                 debug: false,
                 provider: Some("cpu".to_string()),

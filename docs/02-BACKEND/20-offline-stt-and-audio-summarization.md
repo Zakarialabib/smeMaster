@@ -212,16 +212,16 @@ worth stating in the UI.
 
 ## 5. Recommended sequence
 
-| Phase  | Work                                                                                                                      | Effort | Deliverable                              | Status      |
-| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------- |
-| **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done** |
-| **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done** |
-| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | 🟡 **Code written, build unproven** |
-| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ⬜          |
-| **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ⬜          |
-| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜          |
-| **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜          |
-| **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜          |
+| Phase  | Work                                                                                                                      | Effort | Deliverable                              | Status                        |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------------------------- |
+| **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done**                   |
+| **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done**                   |
+| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ✅ **Compiles** (model unrun) |
+| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ⬜                            |
+| **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ⬜                            |
+| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜                            |
+| **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜                            |
+| **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜                            |
 
 **Phase 0 is not optional.** Shipping an offline engine behind a UI that already
 misreports capabilities makes the confusion worse, not better.
@@ -230,11 +230,11 @@ misreports capabilities makes the confusion worse, not better.
 
 **Written** (`src-tauri/crates/ml-sidecar/`, behind the new optional `offline-speech` feature):
 
-| Piece | File | Notes |
-| --- | --- | --- |
-| `SttEngine` over `sherpa_onnx::OfflineRecognizer` | `src/stt.rs` | Validates all four model files up front and names the missing one; empty transcript is a legitimate result, not an error |
-| `load_stt_model` / `transcribe` / `unload_stt_model` JSON-RPC methods | `src/main.rs` | `transcribe` takes 16 kHz mono f32 samples — audio-container decoding stays app-side |
-| STT in `list_models` | `src/main.rs` | Lets a caller distinguish "feature not built" from "built, no model loaded" |
+| Piece                                                                 | File          | Notes                                                                                                                    |
+| --------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `SttEngine` over `sherpa_onnx::OfflineRecognizer`                     | `src/stt.rs`  | Validates all four model files up front and names the missing one; empty transcript is a legitimate result, not an error |
+| `load_stt_model` / `transcribe` / `unload_stt_model` JSON-RPC methods | `src/main.rs` | `transcribe` takes 16 kHz mono f32 samples — audio-container decoding stays app-side                                     |
+| STT in `list_models`                                                  | `src/main.rs` | Lets a caller distinguish "feature not built" from "built, no model loaded"                                              |
 
 The API was written against the **real docs.rs signatures**, not guessed:
 `OfflineRecognizer::create(&config) -> Option<Self>`, `decode(&self, &OfflineStream)`,
@@ -256,22 +256,46 @@ thread 'main' panicked at sherpa-onnx-sys-1.13.8/build.rs:42:9: cannot decrypt p
 
 This is **the network, not the code** — the same `SEC_E_DECRYPT_FAILURE` class of failure.
 It also **corrects §10's earlier assumption**: the concern was "builds onnxruntime from source
-(needs cmake + C++ toolchain)"; the reality is a ~100 MB download, which is *easier* to build
-but *harder* on a flaky link.
+(needs cmake + C++ toolchain)"; the reality is a ~100 MB download, which is _easier_ to build
+but _harder_ on a flaky link.
 
 **Workaround (documented, not yet executed):** `build.rs` honours two env vars that bypass the
 download entirely —
 
-| Env var | Effect |
-| --- | --- |
-| `SHERPA_ONNX_ARCHIVE_DIR` | Directory containing the expected archive; skips the download |
-| `SHERPA_ONNX_LIB_DIR` | Point directly at extracted libs; skips both download and extract |
+| Env var                   | Effect                                                            |
+| ------------------------- | ----------------------------------------------------------------- |
+| `SHERPA_ONNX_ARCHIVE_DIR` | Directory containing the expected archive; skips the download     |
+| `SHERPA_ONNX_LIB_DIR`     | Point directly at extracted libs; skips both download and extract |
 
 **Also a real constraint:** disk was at **99% (3.3 GB free)** during the attempt. This build
 needs several GB, and the same condition already corrupted the cargo cache once this session.
 
-**Conclusion:** Phase 1 is *written* but **not proven to compile on this host**. Do not mark it
-done until `cargo check -p ml-sidecar --features offline-speech` succeeds.
+**Conclusion:** Phase 1 is _written_ and **now proven to compile on this host** — see the
+resolution below.
+
+#### Resolution (2026-10-01, same session)
+
+The blocker was cleared and the feature **compiles**:
+
+| Step                                                  | Result                                                                                                                                                                                                               |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Download the archive                                  | ✅ via **parallel range requests** (8 chunks) — the single-connection download died at 10 MB and again at 63 MB (`EXIT=56`, connection closed); 8 parallel ranges completed it to the exact byte count (123,206,268) |
+| Verify integrity                                      | ✅ `bzip2 -t` passes; contains `onnxruntime.lib`                                                                                                                                                                     |
+| Point `SHERPA_ONNX_ARCHIVE_DIR` at it                 | ✅ build.rs used it and **skipped the download entirely**                                                                                                                                                            |
+| `cargo check -p ml-sidecar --features offline-speech` | ✅ **EXIT=0**                                                                                                                                                                                                        |
+| `cargo check -p ml-sidecar` (feature off)             | ✅ **EXIT=0** — default build unaffected                                                                                                                                                                             |
+
+One real compile error was found and fixed in the process: `OfflineModelConfig.model_type`
+is `Option<String>`, not `String` (the compiler named it exactly).
+
+**So the engine is reachable.** What is _still_ not done: no ONNX model has been downloaded
+or run, so there is **no RTF measurement and no transcription has actually happened**. The
+scaffolding compiles; the capability is unproven.
+
+**Practical note for CI/other machines:** `sherpa-onnx-sys` will try to download 117 MB at
+build time. On a flaky link, pre-fetch the archive (parallel ranges work) and set
+`SHERPA_ONNX_ARCHIVE_DIR`. The archive for this host is cached at
+`~/AppData/Local/hermes/cache/sherpa/archive/`.
 
 ### Phase 0 + 0b — what shipped (2026-10-01)
 
