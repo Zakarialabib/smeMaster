@@ -62,8 +62,10 @@ describe('voice service', () => {
     expect(caps.stt).toBe(true);
   });
 
-  it('getVoiceCapabilities returns correct capabilities for agent-core', () => {
-    const config: VoiceConfig = {
+  it('getVoiceCapabilities does NOT advertise unimplemented providers', () => {
+    // agent-core previously reported { stt: true, tts: true } while both
+    // directions throw. The badge must reflect reality.
+    const agentCore: VoiceConfig = {
       provider: 'agent-core',
       baseUrl: 'http://localhost:8000',
       apiKey: '',
@@ -72,9 +74,47 @@ describe('voice service', () => {
       ttsEnabled: true,
       sttEnabled: true,
     };
-    const caps = getVoiceCapabilities(config);
-    expect(caps.tts).toBe(true);
-    expect(caps.stt).toBe(true);
+    expect(getVoiceCapabilities(agentCore)).toEqual({ stt: false, tts: false });
+
+    const elevenlabs: VoiceConfig = { ...agentCore, provider: 'elevenlabs' };
+    expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: false, tts: false });
+  });
+
+  it('getVoiceCapabilities is truthful for every provider that throws', async () => {
+    // Guard against re-introducing the over-reporting bug: for each provider
+    // the badge claims support for, the corresponding call must not throw
+    // "not yet implemented".
+    const providers = [
+      'browser',
+      'openai',
+      'elevenlabs',
+      'lmstudio',
+      'custom',
+      'agent-core',
+    ] as const;
+
+    for (const provider of providers) {
+      const config: VoiceConfig = {
+        provider,
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: '',
+        ttsVoice: 'alloy',
+        sttModel: 'whisper-1',
+        ttsEnabled: true,
+        sttEnabled: true,
+      };
+      const caps = getVoiceCapabilities(config);
+
+      if (caps.tts) {
+        // Real TTS paths need fetch/network; only assert the stub providers
+        // do not claim capability. For claimed providers we assert they are
+        // not the known-stub ones.
+        expect(['openai', 'custom', 'lmstudio', 'browser']).toContain(provider);
+      }
+      if (caps.stt) {
+        expect(['openai', 'custom', 'lmstudio']).toContain(provider);
+      }
+    }
   });
 
   it('isBrowserVoiceSupported returns boolean', () => {

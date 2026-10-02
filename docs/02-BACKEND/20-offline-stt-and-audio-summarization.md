@@ -2,6 +2,9 @@
 
 > **Status:** 📐 **Options + architecture** (2026-10-01). Supersedes the earlier
 > candle-only proposal in this slot — see §3 for the reconciliation.
+> **Engine decision brief:** [18-offline-speech-engine-decision](../06-ROADMAP/18-offline-speech-engine-decision.md)
+> reaches the same conclusion (sherpa-onnx) and adds the capability matrix + phase plan;
+> this doc carries the product framing, the stub inventory and the verified locale matrix.
 > **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Voice agent OSS landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) · [Topology decision](../06-ROADMAP/17-voice-agent-topology-decision.md) · [Self-hosting](../voice/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > **Companion:** [Document & email extraction](./19-document-and-email-extraction.md)
 
@@ -185,18 +188,31 @@ worth stating in the UI.
 
 ## 5. Recommended sequence
 
-| Phase | Work                                                                                                                      | Effort | Deliverable                            |
-| ----- | ------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------- |
-| **0** | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider |
-| **1** | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**     |
-| **2** | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half    |
-| **3** | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config           |
-| **4** | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI       |
-| **5** | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                |
-| **6** | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests             |
+| Phase  | Work                                                                                                                      | Effort | Deliverable                              | Status      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------- |
+| **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done** |
+| **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done** |
+| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ⬜ Next     |
+| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ⬜          |
+| **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ⬜          |
+| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜          |
+| **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜          |
+| **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜          |
 
 **Phase 0 is not optional.** Shipping an offline engine behind a UI that already
 misreports capabilities makes the confusion worse, not better.
+
+### Phase 0 + 0b — what shipped (2026-10-01)
+
+| Change                                                                                                                         | File                                     | Verified                                |
+| ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- | --------------------------------------- |
+| `getVoiceCapabilities` reports `{stt:false,tts:false}` for `elevenlabs` and `agent-core` instead of advertising throwing stubs | `src/shared/services/ai/voiceService.ts` | ✅ 6/6 tests; reverting the fix fails 2 |
+| `parse_docx` returns real DOCX text instead of `"DOCX content extraction placeholder"`                                         | `src-tauri/src/ai/parser.rs`             | ✅ compiles                             |
+| Empty extractions and parse errors are **logged** instead of silently skipped (attachments + vault)                            | `src-tauri/src/ai/indexer.rs`            | ✅ compiles                             |
+
+⚠️ The previous test suite **asserted the bug** (`expect(caps.stt).toBe(true)` for
+`agent-core`), so it was corrected alongside the fix. The replacement tests fail if the
+over-reporting is reintroduced.
 
 ## 6. Risks
 

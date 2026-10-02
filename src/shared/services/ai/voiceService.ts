@@ -191,23 +191,39 @@ export async function transcribeSpeech(
 
 // ── Capability Detection ──────────────────────────────────────────────────
 
+/**
+ * Which speech directions a provider can actually perform **today**.
+ *
+ * TRUTHFULNESS CONTRACT: this function drives the ✓/✗ badges in VoiceSettings.
+ * It must describe what the dispatch in `synthesizeSpeech`/`transcribeSpeech`
+ * really does, not what the provider is intended to do eventually. Returning
+ * `true` for a code path that throws shows the user a green badge and then
+ * fails at call time — see the stub inventory in
+ * `docs/06-ROADMAP/18-offline-speech-engine-decision.md` §6.
+ *
+ * When a stub in `synthesizeSpeech`/`transcribeSpeech` is implemented, flip the
+ * corresponding flag here in the same change.
+ */
 export function getVoiceCapabilities(config: VoiceConfig): {
   stt: boolean;
   tts: boolean;
 } {
   switch (config.provider) {
     case 'browser':
+      // TTS: real (window.speechSynthesis). STT: throws — not implemented.
       return { stt: false, tts: isBrowserVoiceSupported() };
     case 'openai':
+    case 'custom':
+    case 'lmstudio':
+      // All three route through the OpenAI-compatible fetch path.
       return { stt: true, tts: true };
     case 'elevenlabs':
-      return { stt: false, tts: true };
-    case 'lmstudio':
-      return { stt: true, tts: true };
-    case 'custom':
-      return { stt: true, tts: true };
+      // Both directions throw ("not yet implemented") — do not advertise them.
+      return { stt: false, tts: false };
     case 'agent-core':
-      return { stt: true, tts: true };
+      // Both directions throw ("not yet implemented") — do not advertise them.
+      // This previously reported { stt: true, tts: true } for two stubs.
+      return { stt: false, tts: false };
     default:
       return { stt: false, tts: false };
   }
