@@ -51,6 +51,8 @@ use lopdf::Document;
 // ── Offline speech (feature `offline-speech`) ──────────────────────────────
 #[cfg(feature = "offline-speech")]
 mod stt;
+#[cfg(feature = "offline-speech")]
+mod tts;
 
 // ── JSON-RPC types ──────────────────────────────────────────────────────────
 
@@ -106,6 +108,10 @@ struct MlResources {
     /// `None` until a model is loaded via `load_stt_model`.
     #[cfg(feature = "offline-speech")]
     stt: Option<crate::stt::SttEngine>,
+    /// Offline text-to-speech engine (feature `offline-speech`).
+    /// `None` until a voice is loaded via `load_tts_voice`.
+    #[cfg(feature = "offline-speech")]
+    tts: Option<crate::tts::TtsEngine>,
 }
 
 /// Lightweight handle for a registered generation model. The real causal-LM
@@ -130,6 +136,8 @@ impl MlResources {
             app_data_dir: None,
             #[cfg(feature = "offline-speech")]
             stt: None,
+            #[cfg(feature = "offline-speech")]
+            tts: None,
         }
     }
 
@@ -706,6 +714,131 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
             ok(id, serde_json::json!({ "status": "unloaded" }))
         }
 
+        // ── Offline TTS (feature `offline-speech`) ────────────────────
+        // TTS is 88% of the variable voice cost (SELF-HOSTING §2), so this is
+        // the larger of the two offline wins. `load_tts_voice` takes a model
+        // directory (VITS/Piper layout) — sherpa-onnx resolves the files, not a
+        // repo id. `synthesize` returns raw mono f32 samples plus their rate;
+        // the caller encodes the container so this stays dependency-free.
+        #[cfg(feature = "offline-speech")]
+        "load_tts_voice" => {
+            let dir = req
+                .params
+                .get("model_dir")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            if dir.is_empty() {
+                return err(id, -32602, "Missing 'model_dir' parameter", None);
+            }
+
+            let num_threads = req
+                .params
+                .get("num_threads")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(2) as i32;
+
+            let paths = crate::tts::TtsModelPaths::in_dir(&dir);
+            let start = std::time::Instant::now();
+            match crate::tts::TtsEngine::load(&paths, &dir, num_threads) {
+                Ok(engine) => {
+                    let load_ms = start.elapsed().as_millis() as u64;
+                    let sample_rate = engine.sample_rate();
+                    let num_speakers = engine.num_speakers();
+                    let threads = engine.num_threads();
+                    resources.tts = Some(engine);
+                    if let Ok(mut m) = metrics().lock() {
+                        m.last_model_load_ms = load_ms;
+                    }
+                    ok(
+                        id,
+                        serde_json::json!({
+                            "status": "loaded",
+                            "model_dir": dir,
+                            "sample_rate": sample_rate,
+                            "num_speakers": num_speakers,
+                            "num_threads": threads,
+                            "load_ms": load_ms,
+                        }),
+                    )
+                }
+                Err(e) => err(id, -32060, format!("Failed to load TTS voice: {e}"), None),
+            }
+        }
+
+        #[cfg(feature = "offline-speech")]
+        "synthesize" => {
+            let engine = match resources.tts.as_ref() {
+                Some(e) => e,
+                None => {
+                    return err(
+                        id,
+                        -32061,
+                        "No TTS voice loaded — call load_tts_voice first",
+                        None,
+                    )
+                }
+            };
+
+            let text = match req.params.get("text").and_then(|v| v.as_str()) {
+                Some(t) => t,
+                None => return err(id, -32602, "Missing 'text' parameter", None),
+            };
+
+            let opts = crate::tts::SynthOptions {
+                speed: req
+                    .params
+                    .get("speed")
+                    .and_then(|v| v.as_f64())
+                    .unwrap_or(1.0) as f32,
+                speaker_id: req
+                    .params
+                    .get("speaker_id")
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(0) as i32,
+            };
+
+            let start = std::time::Instant::now();
+            match engine.synthesize(text, &opts) {
+                Ok(audio) => {
+                    let synth_ms = start.elapsed().as_millis() as u64;
+                    let duration_secs = audio.duration_secs();
+                    if let Ok(mut m) = metrics().lock() {
+                        m.parse_count += 1;
+                    }
+                    // RTF here is synthesis_time / audio_duration. Same gate as
+                    // STT (< 1.0 = faster than real time), reported so the
+                    // caller can see whether local TTS is viable for live calls.
+                    let rtf = if duration_secs > 0.0 {
+                        synth_ms as f64 / 1000.0 / duration_secs
+                    } else {
+                        0.0
+                    };
+                    ok(
+                        id,
+                        serde_json::json!({
+                            "samples": audio.samples,
+                            "sample_rate": audio.sample_rate,
+                            "duration_secs": duration_secs,
+                            "synth_ms": synth_ms,
+                            "rtf": rtf,
+                            "chars": text.chars().count(),
+                        }),
+                    )
+                }
+                Err(e) => err(id, -32062, format!("Synthesis failed: {e}"), None),
+            }
+        }
+
+        #[cfg(feature = "offline-speech")]
+        "unload_tts_voice" => {
+            resources.tts = None;
+            if let Ok(mut m) = metrics().lock() {
+                m.unload_count += 1;
+            }
+            ok(id, serde_json::json!({ "status": "unloaded" }))
+        }
+
         // ── Model management ──────────────────────────────────────────
         "load_embedding_model" => {
             let repo_id = req
@@ -912,6 +1045,22 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                     })),
                     None => models.push(serde_json::json!({
                         "kind": "stt",
+                        "model_dir": serde_json::Value::Null,
+                        "loaded": false,
+                    })),
+                }
+
+                match resources.tts.as_ref() {
+                    Some(engine) => models.push(serde_json::json!({
+                        "kind": "tts",
+                        "model_dir": engine.model_dir(),
+                        "sample_rate": engine.sample_rate(),
+                        "num_speakers": engine.num_speakers(),
+                        "num_threads": engine.num_threads(),
+                        "loaded": true,
+                    })),
+                    None => models.push(serde_json::json!({
+                        "kind": "tts",
                         "model_dir": serde_json::Value::Null,
                         "loaded": false,
                     })),

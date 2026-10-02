@@ -21,11 +21,14 @@ cuda = ["gpu"]
 metal = ["candle-core/metal", "candle-nn/metal", "candle-transformers/metal"]
 
 # ── offline-speech ─────────────────────────────────────────────────────────
-# Offline STT/TTS via sherpa-onnx (Apache-2.0). OFF by default, deliberately:
-# the crate's `static` feature builds onnxruntime from source, which needs
-# cmake + a C++ toolchain and several GB of disk. Keeping it optional means the
-# default `local-ai` build is unaffected until the dependency is proven on the
-# target host. See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+# Offline STT + TTS via sherpa-onnx (Apache-2.0). OFF by default, deliberately:
+# `sherpa-onnx-sys`'s build script DOWNLOADS a prebuilt ~117 MB onnxruntime
+# archive from GitHub releases at build time. That download is the fragile part
+# on a flaky link (it fails with `cannot decrypt peer's message`), so the
+# dependency stays optional until the archive is available on the target host.
+# To build without network, pre-fetch the archive and set
+# SHERPA_ONNX_ARCHIVE_DIR (or SHERPA_ONNX_LIB_DIR for extracted libs).
+# See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
 offline-speech = ["dep:sherpa-onnx"]
 
 [dependencies]

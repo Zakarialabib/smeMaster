@@ -216,8 +216,8 @@ worth stating in the UI.
 | ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------------------------- |
 | **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done**                   |
 | **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done**                   |
-| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ✅ **Compiles** (model unrun) |
-| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ⬜                            |
+| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ✅ **Verified end-to-end** (RTF 0.033, 99.8%) |
+| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ✅ **Verified end-to-end** (FR, RTF 0.573) |
 | **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ⬜                            |
 | **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜                            |
 | **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜                            |
@@ -317,6 +317,37 @@ concurrent calls. It is one real data point, not a general claim.
 
 **Still unverified:** any non-English locale end-to-end (the locale matrix in §3.2.1 is model
 *existence*, not measured quality), and TTS entirely.
+
+#### Phase 2 verification — offline TTS MEASURED (2026-10-01)
+
+| Item | Value |
+| --- | --- |
+| Voice | `csukuangfj/vits-piper-fr_FR-siwis-medium` (VITS/Piper, French) |
+| Voice size | ~81 MB (model 63.2 MB + `espeak-ng-data/` 18 MB) |
+| Harness | `crates/ml-sidecar/examples/tts_smoke.rs` |
+| Text | *"Bonjour, ceci est un test de synthèse vocale hors ligne pour la facturation."* (76 chars) |
+| **Load time** | 3049 ms (2 threads) |
+| **Synth time** | **2.489 s** for 4.35 s of audio |
+| **RTF** | **0.573** — ~1.7× faster than real time |
+| Output | 95,813 samples @ 22050 Hz, mono 16-bit WAV, peak 0.52, RMS 0.0996 |
+| **Throughput** | 17 chars/sec of audio; 31 chars/sec of compute |
+
+**Interpretation, carefully:** RTF 0.573 clears the `< 1.0` gate, but with far less headroom
+than STT's 0.033. Local TTS is viable for *batch* generation (reading an invoice aloud,
+summarising a thread) and marginal for live conversational use, where 0.573 plus STT plus
+network would approach real time. The `medium` voice is also the slow end — `low` voices
+exist for exactly this trade-off. **Measure a `low` voice before committing to live calls.**
+
+**A real integration pitfall, found by running it:** the first attempt failed with
+`Failed to phonemize ... Failed to set eSpeak-ng voice`. The cause was downloading a
+hand-picked subset of `espeak-ng-data/`. That directory is **355 files** (18 MB) and includes
+`lang/roa/fr` — the voice *definition*. Without it Piper cannot phonemise at all. **Vendors
+must ship the complete `espeak-ng-data/` directory, not a subset.** This is the single most
+likely thing to break a naive packaging attempt.
+
+**Still not machine-verified:** intelligibility. The harness confirms non-silent audio of the
+right rate and duration; whether the French *sounds* correct is a human judgement. The WAV is
+written to disk (`fr_siwis_smoke.wav`) for listening.
 
 **Practical note for CI/other machines:** `sherpa-onnx-sys` will try to download 117 MB at
 build time. On a flaky link, pre-fetch the archive (parallel ranges work) and set
