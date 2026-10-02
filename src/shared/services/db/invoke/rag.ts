@@ -178,3 +178,84 @@ export async function aiGetSidecarMetrics(): Promise<{
 export async function aiListSidecarModels(): Promise<any> {
   return invokeCommand<any>('ai_list_sidecar_models');
 }
+
+// ── Offline speech (STT/TTS) ───────────────────────────────────────────────
+// These forward to the ml-sidecar's `offline-speech` methods. The sidecar
+// binary must have been built with that feature; otherwise the calls reject
+// with "unknown method", which callers must handle as "offline speech not
+// available on this install" rather than a bug.
+//
+// See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+
+/** Result of loading an offline STT model. */
+export interface SttModelInfo {
+  status: string;
+  model_dir: string;
+  num_threads: number;
+  load_ms: number;
+}
+
+/** Result of loading an offline TTS voice. */
+export interface TtsVoiceInfo {
+  status: string;
+  model_dir: string;
+  sample_rate: number;
+  num_speakers: number;
+  num_threads: number;
+  load_ms: number;
+}
+
+/** Result of a transcription. `empty` is true for legitimate silence. */
+export interface TranscriptionResult {
+  text: string;
+  empty: boolean;
+  samples: number;
+  sample_rate: number;
+  transcribe_ms: number;
+}
+
+/** Result of a synthesis. `samples` are mono f32 in [-1, 1]. */
+export interface SynthesisResult {
+  samples: number[];
+  sample_rate: number;
+  duration_secs: number;
+  synth_ms: number;
+  /** synthesis_time / audio_duration. < 1.0 is faster than real time. */
+  rtf: number;
+  chars: number;
+}
+
+/** Load an offline STT model (transducer layout). */
+export async function aiLoadSttModel(modelDir: string, numThreads?: number): Promise<SttModelInfo> {
+  return invokeCommand<SttModelInfo>('ai_load_stt_model', { modelDir, numThreads });
+}
+
+/** Transcribe mono f32 samples. The caller decodes the audio container. */
+export async function aiTranscribeAudio(
+  samples: number[],
+  sampleRate?: number,
+): Promise<TranscriptionResult> {
+  return invokeCommand<TranscriptionResult>('ai_transcribe_audio', { samples, sampleRate });
+}
+
+export async function aiUnloadSttModel(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_unload_stt_model');
+}
+
+/** Load an offline TTS voice (VITS/Piper layout). */
+export async function aiLoadTtsVoice(modelDir: string, numThreads?: number): Promise<TtsVoiceInfo> {
+  return invokeCommand<TtsVoiceInfo>('ai_load_tts_voice', { modelDir, numThreads });
+}
+
+/** Synthesise speech. Returns raw mono f32 samples + sample_rate. */
+export async function aiSynthesizeSpeech(
+  text: string,
+  speed?: number,
+  speakerId?: number,
+): Promise<SynthesisResult> {
+  return invokeCommand<SynthesisResult>('ai_synthesize_speech', { text, speed, speakerId });
+}
+
+export async function aiUnloadTtsVoice(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_unload_tts_voice');
+}

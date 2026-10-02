@@ -563,3 +563,155 @@ pub async fn ai_list_sidecar_models(app_handle: AppHandle) -> CmdResult<Option<s
     }
 }
 
+// ── Offline speech (STT/TTS) ───────────────────────────────────────────────
+// These forward to the ml-sidecar's `offline-speech` methods. The sidecar
+// binary must have been built with that feature; if it wasn't, the sidecar
+// answers "unknown method" and these return a normal Err. That is intentional —
+// the app must not need the 117 MB sherpa-onnx archive just to compile, so
+// there is no `offline-speech` cargo feature on the Tauri crate itself.
+
+/// Load an offline STT model (transducer layout: encoder/decoder/joiner/tokens).
+#[tauri::command]
+pub async fn ai_load_stt_model(
+    app_handle: AppHandle,
+    model_dir: String,
+    num_threads: Option<i32>,
+) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .load_stt_model(&model_dir, num_threads.unwrap_or(2))
+            .await
+            .map_err(|e| format!("load_stt_model failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = (app_handle, model_dir, num_threads);
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+
+/// Transcribe mono f32 audio samples. The caller decodes the audio container.
+#[tauri::command]
+pub async fn ai_transcribe_audio(
+    app_handle: AppHandle,
+    samples: Vec<f32>,
+    sample_rate: Option<i32>,
+) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .transcribe(samples, sample_rate.unwrap_or(16000))
+            .await
+            .map_err(|e| format!("transcribe failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = (app_handle, samples, sample_rate);
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn ai_unload_stt_model(app_handle: AppHandle) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .unload_stt_model()
+            .await
+            .map_err(|e| format!("unload_stt_model failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = app_handle;
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+
+/// Load an offline TTS voice (VITS/Piper: model.onnx, tokens.txt,
+/// espeak-ng-data/). `espeak-ng-data/` must be the COMPLETE directory (355
+/// files) — a subset fails at phonemisation with "Failed to set eSpeak-ng
+/// voice". See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+#[tauri::command]
+pub async fn ai_load_tts_voice(
+    app_handle: AppHandle,
+    model_dir: String,
+    num_threads: Option<i32>,
+) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .load_tts_voice(&model_dir, num_threads.unwrap_or(2))
+            .await
+            .map_err(|e| format!("load_tts_voice failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = (app_handle, model_dir, num_threads);
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+
+/// Synthesise speech. Returns raw mono f32 samples + sample_rate; the caller
+/// encodes the container (the sidecar stays dependency-free).
+#[tauri::command]
+pub async fn ai_synthesize_speech(
+    app_handle: AppHandle,
+    text: String,
+    speed: Option<f32>,
+    speaker_id: Option<i32>,
+) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .synthesize(&text, speed.unwrap_or(1.0), speaker_id.unwrap_or(0))
+            .await
+            .map_err(|e| format!("synthesize failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = (app_handle, text, speed, speaker_id);
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn ai_unload_tts_voice(app_handle: AppHandle) -> CmdResult<serde_json::Value> {
+    #[cfg(feature = "local-ai")]
+    {
+        let service = app_handle
+            .try_state::<Arc<MlSidecarService>>()
+            .ok_or("ml-sidecar is not running")?;
+        let client = SidecarClient::new(service.inner().clone());
+        client
+            .unload_tts_voice()
+            .await
+            .map_err(|e| format!("unload_tts_voice failed: {e}"))
+    }
+    #[cfg(not(feature = "local-ai"))]
+    {
+        let _ = app_handle;
+        Err("local-ai feature is not enabled".to_string())
+    }
+}
+

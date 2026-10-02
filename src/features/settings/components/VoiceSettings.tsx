@@ -3,8 +3,12 @@
  *
  * AnythingLLM-style section covering Text-to-Speech (TTS) and
  * Speech-to-Text (STT) providers, base URL, auth token, and voice/model
- * selection. Config is persisted via the settings store; no audio engine is
- * bundled yet, so this section manages provider connection details.
+ * selection. Config is persisted via the settings store.
+ *
+ * An on-device engine IS bundled: the `offline` provider routes through the
+ * ml-sidecar's sherpa-onnx support (`offline-speech` cargo feature). It needs
+ * no key and no network, but it does need a model directory on disk, so this
+ * section exposes those paths.
  *
  * Integrates with the capability system: shows which providers support
  * which voice capabilities, and allows reusing AI provider API keys.
@@ -17,7 +21,7 @@ import { SettingGroup, SettingRow, ToggleRow } from '@features/settings/componen
 import { HelpCard } from '@features/settings/components/HelpCard';
 import { Button } from '@shared/components/ui/Button';
 import { TextField } from '@shared/components/ui/TextField';
-import { setSetting, setSecureSetting } from '@features/settings/db/settings';
+import { setSetting, setSecureSetting, getSetting } from '@features/settings/db/settings';
 import {
   getVoiceConfig,
   getVoiceCapabilities,
@@ -46,6 +50,9 @@ export default function VoiceSettings() {
   const [sttModel, setSttModel] = useState('whisper-1');
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [sttEnabled, setSttEnabled] = useState(false);
+  const [offlineTtsDir, setOfflineTtsDir] = useState('');
+  const [offlineSttDir, setOfflineSttDir] = useState('');
+  const [ttsSpeed, setTtsSpeed] = useState('1.0');
   const [saved, setSaved] = useState(false);
   const [capabilities, setCapabilities] = useState<{ stt: boolean; tts: boolean }>({
     stt: false,
@@ -64,6 +71,12 @@ export default function VoiceSettings() {
         setTtsEnabled(config.ttsEnabled);
         setSttEnabled(config.sttEnabled);
         setCapabilities(getVoiceCapabilities(config));
+
+        // Offline engine paths live in settings, not in VoiceConfig — they are
+        // device-local facts, not provider configuration.
+        setOfflineTtsDir((await getSetting('voice_offline_tts_dir')) ?? '');
+        setOfflineSttDir((await getSetting('voice_offline_stt_dir')) ?? '');
+        setTtsSpeed(String(config.ttsSpeed));
       } catch (err) {
         // Keep the component defaults when settings can't be read.
         logVoiceError('getVoiceConfig', err);
@@ -89,6 +102,12 @@ export default function VoiceSettings() {
       await setSetting('voice_stt_model', sttModel.trim());
       await setSetting('voice_tts_enabled', ttsEnabled ? 'true' : 'false');
       await setSetting('voice_stt_enabled', sttEnabled ? 'true' : 'false');
+      await setSetting('voice_offline_tts_dir', offlineTtsDir.trim());
+      await setSetting('voice_offline_stt_dir', offlineSttDir.trim());
+      const speed = Number.parseFloat(ttsSpeed);
+      if (Number.isFinite(speed) && speed > 0) {
+        await setSetting('voice_tts_speed', String(speed));
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -96,8 +115,10 @@ export default function VoiceSettings() {
     }
   }
 
-  const needsKey = provider !== 'browser' && provider !== 'lmstudio';
+  // The offline provider needs no key and no URL; it needs model paths instead.
+  const needsKey = provider !== 'browser' && provider !== 'lmstudio' && provider !== 'offline';
   const needsUrl = provider === 'custom' || provider === 'lmstudio';
+  const isOffline = provider === 'offline';
 
   return (
     <>
@@ -118,6 +139,7 @@ export default function VoiceSettings() {
             className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
           >
             <option value="browser">Browser (Web Speech)</option>
+            <option value="offline">Offline (on-device, no key)</option>
             <option value="openai">OpenAI</option>
             <option value="elevenlabs">ElevenLabs</option>
             <option value="lmstudio">LM Studio (local)</option>
@@ -142,14 +164,60 @@ export default function VoiceSettings() {
         <p className="text-xs text-text-tertiary">
           {provider === 'browser'
             ? "Uses the browser's built-in Web Speech API. No API key or server required — runs fully on-device."
-            : provider === 'lmstudio'
-              ? 'Connects to a local LM Studio server exposing OpenAI-compatible TTS/STT endpoints.'
-              : provider === 'custom'
-                ? 'Any OpenAI-compatible TTS/STT endpoint. Provide a base URL and auth token.'
-                : provider === 'elevenlabs'
-                  ? 'High-quality TTS via ElevenLabs. STT uses a compatible endpoint.'
-                  : 'OpenAI Whisper (STT) + TTS voices.'}
+            : provider === 'offline'
+              ? 'On-device speech via sherpa-onnx (ml-sidecar). No API key and no network — audio never leaves this machine. Requires model directories below.'
+              : provider === 'lmstudio'
+                ? 'Connects to a local LM Studio server exposing OpenAI-compatible TTS/STT endpoints.'
+                : provider === 'custom'
+                  ? 'Any OpenAI-compatible TTS/STT endpoint. Provide a base URL and auth token.'
+                  : provider === 'elevenlabs'
+                    ? 'High-quality TTS via ElevenLabs. STT uses a compatible endpoint.'
+                    : 'OpenAI Whisper (STT) + TTS voices.'}
         </p>
+
+        {isOffline && (
+          <>
+            <TextField
+              label="Offline TTS voice directory"
+              size="md"
+              value={offlineTtsDir}
+              onChange={(e) => setOfflineTtsDir(e.target.value)}
+              placeholder="…/models/vits-piper-fr_FR-siwis-medium"
+            />
+            <p className="text-xs text-text-tertiary -mt-1">
+              A VITS/Piper voice directory: <code>model.onnx</code>, <code>tokens.txt</code>, and
+              the <strong>complete</strong> <code>espeak-ng-data/</code> folder. A partial
+              <code> espeak-ng-data</code> fails at phonemisation.
+            </p>
+
+            <TextField
+              label="Offline STT model directory"
+              size="md"
+              value={offlineSttDir}
+              onChange={(e) => setOfflineSttDir(e.target.value)}
+              placeholder="…/models/zipformer-small-en"
+            />
+            <p className="text-xs text-text-tertiary -mt-1">
+              A transducer model directory: <code>encoder</code>, <code>decoder</code>,{' '}
+              <code>joiner</code> <code>.onnx</code> files and <code>tokens.txt</code>.
+            </p>
+
+            <SettingRow label="Speaking rate">
+              <input
+                type="text"
+                value={ttsSpeed}
+                onChange={(e) => setTtsSpeed(e.target.value)}
+                placeholder="1.0"
+                className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+              />
+            </SettingRow>
+
+            <p className="text-xs text-text-tertiary">
+              Requires the ml-sidecar built with its <code>offline-speech</code> feature. If it
+              isn&apos;t, these calls fail with &ldquo;unknown method&rdquo;.
+            </p>
+          </>
+        )}
 
         {needsUrl && (
           <TextField

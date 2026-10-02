@@ -41,6 +41,8 @@ describe('voice service', () => {
       sttModel: 'whisper-1',
       ttsEnabled: true,
       sttEnabled: false,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
     };
     const caps = getVoiceCapabilities(config);
     expect(caps.tts).toBe(true);
@@ -56,6 +58,8 @@ describe('voice service', () => {
       sttModel: 'whisper-1',
       ttsEnabled: true,
       sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
     };
     const caps = getVoiceCapabilities(config);
     expect(caps.tts).toBe(true);
@@ -73,6 +77,8 @@ describe('voice service', () => {
       sttModel: 'whisper-1',
       ttsEnabled: true,
       sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
     };
     expect(getVoiceCapabilities(agentCore)).toEqual({ stt: false, tts: false });
 
@@ -91,6 +97,7 @@ describe('voice service', () => {
       'lmstudio',
       'custom',
       'agent-core',
+      'offline',
     ] as const;
 
     for (const provider of providers) {
@@ -102,19 +109,57 @@ describe('voice service', () => {
         sttModel: 'whisper-1',
         ttsEnabled: true,
         sttEnabled: true,
+        ttsSpeed: 1.0,
+        offlineSttSampleRate: 16000,
       };
       const caps = getVoiceCapabilities(config);
 
       if (caps.tts) {
-        // Real TTS paths need fetch/network; only assert the stub providers
-        // do not claim capability. For claimed providers we assert they are
-        // not the known-stub ones.
-        expect(['openai', 'custom', 'lmstudio', 'browser']).toContain(provider);
+        // Real TTS paths need fetch/network (or, for `offline`, the ml-sidecar);
+        // only assert the stub providers do not claim capability.
+        expect(['openai', 'custom', 'lmstudio', 'browser', 'offline']).toContain(provider);
       }
       if (caps.stt) {
-        expect(['openai', 'custom', 'lmstudio']).toContain(provider);
+        expect(['openai', 'custom', 'lmstudio', 'offline']).toContain(provider);
       }
     }
+  });
+
+  it('getVoiceCapabilities advertises offline for both directions', () => {
+    // The offline provider has real implementations in both directions
+    // (sherpa-onnx via ml-sidecar), so unlike the stub providers it must
+    // report true. This is a deliberate flip of the previous behaviour for a
+    // provider that used to not exist.
+    const config: VoiceConfig = {
+      provider: 'offline',
+      baseUrl: '',
+      apiKey: '',
+      ttsVoice: '',
+      sttModel: '',
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
+    };
+    expect(getVoiceCapabilities(config)).toEqual({ stt: true, tts: true });
+  });
+
+  it('offline provider needs neither API key nor base URL', () => {
+    // Regression guard for the settings UI: `offline` is on-device, so showing
+    // it an API-key field would be asking for a secret it never uses.
+    const config: VoiceConfig = {
+      provider: 'offline',
+      baseUrl: '',
+      apiKey: '',
+      ttsVoice: '',
+      sttModel: '',
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
+    };
+    const caps = getVoiceCapabilities(config);
+    expect(caps.stt && caps.tts).toBe(true);
   });
 
   it('isBrowserVoiceSupported returns boolean', () => {

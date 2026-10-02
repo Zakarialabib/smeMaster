@@ -290,6 +290,18 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_get_sidecar_metrics,
             #[cfg(feature = "local-ai")]
             ai::ai_list_sidecar_models,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_transcribe_audio,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_synthesize_speech,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_tts_voice,
 
             // === commands::calendar (15 commands) ===
             calendar::db_list_calendars,

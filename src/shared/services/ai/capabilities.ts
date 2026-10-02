@@ -196,6 +196,8 @@ export interface SttOptions {
 export interface TtsOptions {
   voice?: string;
   model?: string;
+  /** Speaking rate. 1.0 is natural pace; only the `offline` provider honours it. */
+  speed?: number;
 }
 
 export interface RealtimeOptions {

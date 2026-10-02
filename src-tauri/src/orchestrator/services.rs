@@ -1260,6 +1260,58 @@ impl SidecarClient {
         Ok(resp.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string())
     }
 
+    // ── Offline speech (feature `offline-speech` on ml-sidecar) ───────────
+    // These forward to the sidecar's `load_stt_model` / `transcribe` /
+    // `load_tts_voice` / `synthesize` methods. They are plain `send_request`
+    // calls, so they compile regardless of whether the sidecar binary was built
+    // with `offline-speech` — a sidecar built without it answers with a
+    // "unknown method" error, which surfaces as a normal `Err` here rather than
+    // a build failure. That is deliberate: the Tauri app must not require the
+    // 117 MB sherpa-onnx archive just to compile.
+
+    /// Load an offline STT model. `model_dir` must contain encoder/decoder/
+    /// joiner/tokens (transducer layout).
+    pub async fn load_stt_model(&self, model_dir: &str, num_threads: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("load_stt_model", serde_json::json!({
+            "model_dir": model_dir,
+            "num_threads": num_threads,
+        })).await
+    }
+
+    /// Transcribe 16 kHz mono f32 samples.
+    pub async fn transcribe(&self, samples: Vec<f32>, sample_rate: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("transcribe", serde_json::json!({
+            "samples": samples,
+            "sample_rate": sample_rate,
+        })).await
+    }
+
+    pub async fn unload_stt_model(&self) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("unload_stt_model", serde_json::json!({})).await
+    }
+
+    /// Load an offline TTS voice (VITS/Piper layout: model.onnx, tokens.txt,
+    /// espeak-ng-data/).
+    pub async fn load_tts_voice(&self, model_dir: &str, num_threads: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("load_tts_voice", serde_json::json!({
+            "model_dir": model_dir,
+            "num_threads": num_threads,
+        })).await
+    }
+
+    /// Synthesise speech. Returns raw mono f32 samples + sample_rate.
+    pub async fn synthesize(&self, text: &str, speed: f32, speaker_id: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("synthesize", serde_json::json!({
+            "text": text,
+            "speed": speed,
+            "speaker_id": speaker_id,
+        })).await
+    }
+
+    pub async fn unload_tts_voice(&self) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("unload_tts_voice", serde_json::json!({})).await
+    }
+
     /// Fetch the sidecar's own aggregate metrics (`metrics` JSON-RPC method).
     /// Returns None if the sidecar binary doesn't support it.
     pub async fn metrics(&self) -> Option<serde_json::Value> {
