@@ -22,6 +22,32 @@ This design follows the **Interface Segregation Principle**: a text-only embeddi
 | `ModelDiscoveryCapable` | `listModels(): Promise<ModelOption[]>`                          | List available models from the provider                      |
 | `ConnectionTestable`    | `testConnection(): Promise<boolean>`                            | Connection health check                                      |
 
+### Voice capability — current truth (2026-10-01)
+
+Declaring an interface and **implementing** it are different things, and for voice they
+diverge. Verified by reading the providers:
+
+| Interface              | Real implementations                                            | Declared-but-refusing                                                                      |
+| ---------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `SpeechToTextCapable`  | `openai`, `gemini`, `mistral`, `byteplus`, `lmstudio`, `custom` | `claude`, `ollama`, `copilot`, `openrouter` (throw `'STT not supported by this provider'`) |
+| `TextToSpeechCapable`  | `openai`, `gemini`, `mistral`, `byteplus`, `lmstudio`, `custom` | `claude`, `ollama`, `copilot`, `openrouter` (same pattern)                                 |
+| `RealtimeVoiceCapable` | **none**                                                        | all providers throw                                                                        |
+
+The refusals are **correct behaviour**, not stubs: the interface is satisfied and the
+error is truthful, so type guards can be used safely.
+
+Two layers are genuinely **unimplemented**, and both are tracked:
+
+1. **`voiceService.ts` provider dispatch** — five stubs that throw (`elevenlabs` TTS/STT,
+   `agent-core` TTS/STT, `browser` STT). Its `getVoiceCapabilities()` used to _advertise_
+   two of them; fixed 2026-10-01 so the UI badge matches reality. See
+   [Voice settings](../04-FEATURES/38-voice-settings.md) §Implementation status.
+2. **No local/offline speech engine** — every working path needs an API key or a
+   user-run server. Engine decision and phase plan:
+   [18-offline-speech-engine-decision](../06-ROADMAP/18-offline-speech-engine-decision.md),
+   product framing and locale coverage:
+   [20-offline-stt-and-audio-summarization](20-offline-stt-and-audio-summarization.md).
+
 ### Voice Helper Types
 
 ```typescript
