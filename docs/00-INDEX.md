@@ -64,7 +64,7 @@ Rust & Tauri — the native layer.
 | [15-ai-model-registry](02-BACKEND/15-ai-model-registry.md)                                     | Data-driven model definitions, embedding space pinning                 |
 | [16-ai-rag-dimensions](02-BACKEND/16-ai-rag-dimensions.md)                                     | Multi-dimension RAG, three embedding spaces, migration guide           |
 | [19-document-and-email-extraction](02-BACKEND/19-document-and-email-extraction.md)             | 📐 Proposal — OCR, scanned-invoice capture, DOCX stub defect           |
-| [20-offline-stt-and-audio-summarization](02-BACKEND/20-offline-stt-and-audio-summarization.md) | 📐 Options — sherpa-onnx STT/TTS engine, stub inventory, locale matrix |
+| [20-offline-stt-and-audio-summarization](02-BACKEND/20-offline-stt-and-audio-summarization.md) | ✅ Implemented — sherpa-onnx STT/TTS, verified RTF, model catalog, settings UI |
 
 ## Frontend
 

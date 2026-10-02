@@ -59,7 +59,7 @@ jobs:
 
       # Build ML sidecar first (required by externalBin)
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release --no-default-features
+        run: cargo build -p ml-sidecar --release --no-default-features --features offline-speech
         working-directory: src-tauri
 
       - name: Copy sidecar to binaries/
@@ -122,7 +122,7 @@ jobs:
 
       # Build ML sidecar
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release --no-default-features
+        run: cargo build -p ml-sidecar --release --no-default-features --features offline-speech
         working-directory: src-tauri
 
       - name: Copy sidecar to binaries/
@@ -188,7 +188,7 @@ jobs:
 
       # Build ML sidecar
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release --no-default-features ${{ matrix.args }}
+        run: cargo build -p ml-sidecar --release --no-default-features --features offline-speech ${{ matrix.args }}
         working-directory: src-tauri
 
       - name: Copy sidecar to binaries/

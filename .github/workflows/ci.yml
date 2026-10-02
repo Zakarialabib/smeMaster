@@ -77,7 +77,12 @@ jobs:
         run: choco install protoc -y --no-progress
 
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release --no-default-features
+      # NOTE: --features offline-speech pulls sherpa-onnx, whose build script
+      # DOWNLOADS a ~117 MB prebuilt archive. If CI ever fails here with
+      # "cannot decrypt peer's message", pre-fetch the archive and set
+      # SHERPA_ONNX_ARCHIVE_DIR (see scripts/build-sidecar.sh). Without this
+      # feature the sidecar answers "unknown method" to every speech call.
+        run: cargo build -p ml-sidecar --release --no-default-features --features offline-speech
         working-directory: src-tauri
 
       - name: Copy to binaries/

@@ -1,6 +1,20 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
+>
+> ✅ **Offline Speech — STT + TTS verified end-to-end (2026-10-02):** sherpa-onnx (Apache-2.0) behind an optional `offline-speech` feature in `ml-sidecar`. **Measured, not asserted:** STT (Zipformer Small en, int8) RTF **0.033** at **0.998** similarity vs published transcript; TTS (Piper fr_FR-siwis-medium) RTF **0.573**. A JSON-RPC E2E harness (`examples/e2e_speech.py`) drives the **real shipped binary** and passes 8/8 checks. The `espeak-ng-data` **9-file subset** was proven sufficient (full dir is 355 files/18 MB). Docs: `02-BACKEND/20-offline-stt-and-audio-summarization.md`.
+>
+> ✅ **Model download → engine wiring (2026-10-02):** Downloads land in the hf-hub cache layout but the engines read a **flat** directory — `ai_prepare_model_dir` bridges them (hard-link, copy fallback). Verified: a model downloaded through the UI loads with `status:"loaded"`.
+>
+> ✅ **Settings IA — AI split into three tabs (2026-10-02):** `AI & Automation` → **Text Generation** / **Voice** / **Local Models**. New `localModelCatalog.ts` (llm/stt/tts/embedding, real HF repos, byte sizes, licences, measured-or-"not measured") and `LocalModelsSettings.tsx` (resumable download + prepare). i18n keys added to all 5 locales.
+>
+> ✅ **Sidecar lifecycle control + Stop fix (2026-10-02):** Voice tab shows engine state (`not built in` / `not registered` / `stopped` / `running, not answering` / `running`) with Start/Stop/Refresh. **Fixed:** `stop()` was silently undone ~2 s later — the watchdog read `running=false` as a crash and restarted it, so the UI said "stopped" while the process lived. Added a `desired_running` intent flag; the watchdog now only restarts unexpected deaths.
+>
+> ✅ **Tauri MCP bridge (dev tooling) (2026-10-02):** `tauri-mcp` can now drive the running app (execute JS, DOM snapshot, IPC monitor), behind `mcp-bridge` + `debug_assertions`. Required vendoring `tauri-plugin-mcp-bridge` (upstream pins `webview2-com 0.38`, wry 0.57 needs `0.39`). **This is what found the two bugs above** — both were invisible to typecheck, lint and 3,432 passing tests.
+>
+> ✅ **Sidecar build script (2026-10-02):** `scripts/build-sidecar.sh` builds with `offline-speech` and installs to the triple-suffixed name Tauri's `externalBin` resolves. Wired into `tauri:build` / `windows:build` / `windows:portable`. **CI gap fixed:** all 5 workflow build lines used `--no-default-features`, which DROPPED `offline-speech` — CI would have shipped a sidecar with zero speech methods.
+>
+> ⚠️ **Pre-existing startup panic fixed (2026-10-02):** `state() called before manage() for EventBus` — the change tracker read the bus ~200 lines above where it was managed, so **the app could not start at all** (`tauri dev` exited 101). Latent since `1f007dd` (2026-07-18); `cargo check` cannot catch an ordering fault.
 >
 > ✅ **Pre-Release Stability Tests — Automated (2026-10-01):** Added 8 Rust integration tests in `src-tauri/tests/panic_and_wal.rs` covering panic injection (crash.log + crash_count.txt verification), WAL recovery (crash mid-transaction → data integrity verified), WAL checkpoint compaction, and watchdog restart logic (crash counter increment/restore). All tests pass `cargo test --test panic_and_wal`.
 >
