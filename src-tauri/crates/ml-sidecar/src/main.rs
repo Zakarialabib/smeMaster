@@ -48,6 +48,10 @@ use std::sync::Arc;
 use calamine::{open_workbook, Data, Reader, Xlsx};
 use lopdf::Document;
 
+// ── Offline speech (feature `offline-speech`) ──────────────────────────────
+#[cfg(feature = "offline-speech")]
+mod stt;
+
 // ── JSON-RPC types ──────────────────────────────────────────────────────────
 
 #[derive(Deserialize)]
@@ -98,6 +102,10 @@ struct MlResources {
     conn: Option<Connection>,
     /// The app data directory (set by init).
     app_data_dir: Option<String>,
+    /// Offline speech-to-text recognizer (feature `offline-speech`).
+    /// `None` until a model is loaded via `load_stt_model`.
+    #[cfg(feature = "offline-speech")]
+    stt: Option<crate::stt::SttEngine>,
 }
 
 /// Lightweight handle for a registered generation model. The real causal-LM
@@ -120,6 +128,8 @@ impl MlResources {
             gen_model: None,
             conn: None,
             app_data_dir: None,
+            #[cfg(feature = "offline-speech")]
+            stt: None,
         }
     }
 
@@ -590,6 +600,112 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
             std::process::exit(0);
         }
 
+        // ── Offline speech (feature `offline-speech`) ─────────────────
+        // `load_stt_model` takes explicit file paths because sherpa-onnx does
+        // not resolve HF repo ids the way the BGE flow does. `transcribe`
+        // accepts 16 kHz mono f32 samples as a JSON array — the caller (Rust
+        // app side) decodes the audio container, so this stays dependency-free.
+        #[cfg(feature = "offline-speech")]
+        "load_stt_model" => {
+            let dir = req
+                .params
+                .get("model_dir")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            if dir.is_empty() {
+                return err(id, -32602, "Missing 'model_dir' parameter", None);
+            }
+
+            let num_threads = req
+                .params
+                .get("num_threads")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(2) as i32;
+
+            let paths = crate::stt::SttModelPaths::in_dir(&dir);
+            let start = std::time::Instant::now();
+            match crate::stt::SttEngine::load(&paths, &dir, num_threads) {
+                Ok(engine) => {
+                    let load_ms = start.elapsed().as_millis() as u64;
+                    let threads = engine.num_threads();
+                    resources.stt = Some(engine);
+                    if let Ok(mut m) = metrics().lock() {
+                        m.last_model_load_ms = load_ms;
+                    }
+                    ok(
+                        id,
+                        serde_json::json!({
+                            "status": "loaded",
+                            "model_dir": dir,
+                            "num_threads": threads,
+                            "load_ms": load_ms,
+                        }),
+                    )
+                }
+                Err(e) => err(id, -32050, format!("Failed to load STT model: {e}"), None),
+            }
+        }
+
+        #[cfg(feature = "offline-speech")]
+        "transcribe" => {
+            let engine = match resources.stt.as_ref() {
+                Some(e) => e,
+                None => {
+                    return err(
+                        id,
+                        -32051,
+                        "No STT model loaded — call load_stt_model first",
+                        None,
+                    )
+                }
+            };
+
+            let samples: Vec<f32> = match req.params.get("samples").and_then(|v| v.as_array()) {
+                Some(arr) => arr.iter().filter_map(|v| v.as_f64()).map(|f| f as f32).collect(),
+                None => return err(id, -32602, "Missing 'samples' array parameter", None),
+            };
+
+            let sample_rate = req
+                .params
+                .get("sample_rate")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(16000) as i32;
+
+            let start = std::time::Instant::now();
+            match engine.transcribe_samples(&samples, sample_rate) {
+                Ok(text) => {
+                    let transcribe_ms = start.elapsed().as_millis() as u64;
+                    if let Ok(mut m) = metrics().lock() {
+                        m.parse_count += 1;
+                    }
+                    // An empty transcript is a legitimate result (silence), not
+                    // an error — report it with `"empty": true` so the caller
+                    // can distinguish it from a failure.
+                    ok(
+                        id,
+                        serde_json::json!({
+                            "text": text,
+                            "empty": text.is_empty(),
+                            "samples": samples.len(),
+                            "sample_rate": sample_rate,
+                            "transcribe_ms": transcribe_ms,
+                        }),
+                    )
+                }
+                Err(e) => err(id, -32052, format!("Transcription failed: {e}"), None),
+            }
+        }
+
+        #[cfg(feature = "offline-speech")]
+        "unload_stt_model" => {
+            resources.stt = None;
+            if let Ok(mut m) = metrics().lock() {
+                m.unload_count += 1;
+            }
+            ok(id, serde_json::json!({ "status": "unloaded" }))
+        }
+
         // ── Model management ──────────────────────────────────────────
         "load_embedding_model" => {
             let repo_id = req
@@ -781,6 +897,27 @@ fn handle_request(req: Request, resources: &mut MlResources) -> Response {
                     "loaded": false,
                 }));
             }
+
+            // Offline STT is only compiled in behind the `offline-speech`
+            // feature; report it so a caller can tell "not built" from
+            // "built but no model loaded".
+            #[cfg(feature = "offline-speech")]
+            {
+                match resources.stt.as_ref() {
+                    Some(engine) => models.push(serde_json::json!({
+                        "kind": "stt",
+                        "model_dir": engine.model_dir(),
+                        "num_threads": engine.num_threads(),
+                        "loaded": true,
+                    })),
+                    None => models.push(serde_json::json!({
+                        "kind": "stt",
+                        "model_dir": serde_json::Value::Null,
+                        "loaded": false,
+                    })),
+                }
+            }
+
             ok(
                 id,
                 serde_json::json!({
