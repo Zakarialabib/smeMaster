@@ -581,17 +581,17 @@ pub async fn ai_load_stt_model(
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .load_stt_model(&model_dir, num_threads.unwrap_or(2))
             .await
-            .map_err(|e| format!("load_stt_model failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("load_stt_model failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = (app_handle, model_dir, num_threads);
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
@@ -606,17 +606,17 @@ pub async fn ai_transcribe_audio(
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .transcribe(samples, sample_rate.unwrap_or(16000))
             .await
-            .map_err(|e| format!("transcribe failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("transcribe failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = (app_handle, samples, sample_rate);
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
@@ -626,17 +626,17 @@ pub async fn ai_unload_stt_model(app_handle: AppHandle) -> CmdResult<serde_json:
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .unload_stt_model()
             .await
-            .map_err(|e| format!("unload_stt_model failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("unload_stt_model failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = app_handle;
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
@@ -654,17 +654,17 @@ pub async fn ai_load_tts_voice(
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .load_tts_voice(&model_dir, num_threads.unwrap_or(2))
             .await
-            .map_err(|e| format!("load_tts_voice failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("load_tts_voice failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = (app_handle, model_dir, num_threads);
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
@@ -681,17 +681,17 @@ pub async fn ai_synthesize_speech(
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .synthesize(&text, speed.unwrap_or(1.0), speaker_id.unwrap_or(0))
             .await
-            .map_err(|e| format!("synthesize failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("synthesize failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = (app_handle, text, speed, speaker_id);
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
@@ -701,17 +701,17 @@ pub async fn ai_unload_tts_voice(app_handle: AppHandle) -> CmdResult<serde_json:
     {
         let service = app_handle
             .try_state::<Arc<MlSidecarService>>()
-            .ok_or("ml-sidecar is not running")?;
+            .ok_or_else(|| SerializedError::new("AI_SIDECAR_UNAVAILABLE", "ml-sidecar is not running"))?;
         let client = SidecarClient::new(service.inner().clone());
         client
             .unload_tts_voice()
             .await
-            .map_err(|e| format!("unload_tts_voice failed: {e}"))
+            .map_err(|e| SerializedError::new("AI_SPEECH_ERROR", format!("unload_tts_voice failed: {e}")))
     }
     #[cfg(not(feature = "local-ai"))]
     {
         let _ = app_handle;
-        Err("local-ai feature is not enabled".to_string())
+        Err(SerializedError::new("AI_FEATURE_DISABLED", "local-ai feature is not enabled"))
     }
 }
 
