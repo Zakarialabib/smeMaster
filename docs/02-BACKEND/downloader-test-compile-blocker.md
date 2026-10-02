@@ -20,9 +20,13 @@
 > argument; `/MANIFESTINPUT` alone fails LNK1220 without `/MANIFEST:EMBED`).
 > Proven via the `hf_smoke` example — same mechanism as the test targets —
 > which now loads and runs the real-model suite (see _Phase 5 results_ below).
-> A full `cargo test` invocation should now launch through the same link args;
-> it has not been re-run since the fix (host disk pressure made it the next
-> candidate gate).
+> A full `cargo test --lib downloader` was **attempted 2026-10-02 and aborted
+> on disk, not on the fix**: it queued behind the shared build-dir lock, then
+> died at `os error 112` archiving `datafusion` (C: hit ~10 MB free while a
+> concurrent agent's build ran alongside). **Retry conditions**: C: ≥ 12 GB
+> free AND `Get-Process cargo` empty, from `src-tauri/`:
+> `cargo test --lib downloader` → expect `test result: ok` as the
+> resurrection proof.
 
 Found while running `cargo test -p smemaster --no-default-features --features rustls-tls`
 on 2026-10-01, on the plugin/capability audit pass (commit `8fe84ce`, later folded
