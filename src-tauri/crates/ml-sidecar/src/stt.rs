@@ -111,7 +111,11 @@ impl SttEngine {
                     joiner: Some(paths.joiner.clone()),
                 },
                 tokens: Some(paths.tokens.clone()),
-                model_type: Some("zipformer".to_string()),
+                // Leave the architecture to sherpa-onnx. Any explicit value here
+                // ("zipformer", "auto") makes it log
+                // `Invalid model_type: <x>. Trying to load the model to get its type`
+                // and fall back to inference anyway — so don't set one.
+                model_type: None,
                 num_threads,
                 debug: false,
                 provider: Some("cpu".to_string()),

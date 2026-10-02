@@ -288,9 +288,35 @@ The blocker was cleared and the feature **compiles**:
 One real compile error was found and fixed in the process: `OfflineModelConfig.model_type`
 is `Option<String>`, not `String` (the compiler named it exactly).
 
-**So the engine is reachable.** What is _still_ not done: no ONNX model has been downloaded
+**So the engine is reachable.** What is *still* not done: no ONNX model has been downloaded
 or run, so there is **no RTF measurement and no transcription has actually happened**. The
 scaffolding compiles; the capability is unproven.
+
+#### End-to-end verification — MEASURED (2026-10-01)
+
+That gap is now closed. A real model was downloaded and a real transcription was run:
+
+| Item | Value |
+| --- | --- |
+| Model | `csukuangfj/sherpa-onnx-zipformer-small-en-2023-06-26` (int8 transducer) |
+| Model size | ~29 MB total (encoder 26.0 MB, decoder 1.3 MB, joiner 0.26 MB, tokens 5 KB) |
+| Harness | `crates/ml-sidecar/examples/stt_smoke.rs` (run manually; needs a model on disk) |
+| Audio | the model's own `test_wavs/1.wav` (16.7 s, 16 kHz) |
+| **Load time** | measured and printed by the harness |
+| **Decode time** | **0.482 s** |
+| **RTF** | **0.029** — ~34× faster than real time |
+| **Accuracy** | **0.998 similarity** vs the repo's published `trans.txt` |
+
+The single difference from ground truth was `FOR EVER` → `FOREVER` — a whitespace
+normalisation artefact, not a recognition error.
+
+**Interpretation, carefully:** RTF 0.029 is comfortably below the `< 1.0` gate in
+SELF-HOSTING §2.1, on this host, for a *small English* model at batch latency. It does **not**
+transfer to: the streaming French model, the larger multilingual models, a loaded VPS, or
+concurrent calls. It is one real data point, not a general claim.
+
+**Still unverified:** any non-English locale end-to-end (the locale matrix in §3.2.1 is model
+*existence*, not measured quality), and TTS entirely.
 
 **Practical note for CI/other machines:** `sherpa-onnx-sys` will try to download 117 MB at
 build time. On a flaky link, pre-fetch the archive (parallel ranges work) and set
