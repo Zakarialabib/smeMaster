@@ -394,6 +394,47 @@ variance is unexplained (plausibly sherpa-onnx lazy initialisation, or CPU conte
 the earlier run). **Plan with the conservative 0.573, not the flattering 0.105** — and treat
 any single RTF figure here as one sample, not a benchmark.
 
+#### Live `tauri dev` run (2026-10-01) — and two bugs it exposed
+
+The TS↔sidecar seam needed a running app, so the app was built and launched for real
+(1078 crates, `--features rustls-tls,local-ai`). It did not start. Two genuine bugs surfaced,
+neither of which `cargo check` or `vitest` could see:
+
+**Bug 1 — the speech commands did not compile with `local-ai` enabled.**
+Six `E0308` errors: `CmdResult<T>` is `Result<T, SerializedError>`, but the new commands
+returned `Err(String)`. Earlier `cargo check -p smemaster --no-default-features --features
+rustls-tls --lib` passed because `--no-default-features` **drops `local-ai`**, and the whole
+block is behind `#[cfg(feature = "local-ai")]` — so the check compiled none of the new code.
+Fixed (commit `c0c9111`). **Lesson: checking a non-default feature set is not a substitute
+for checking the default one when the new code is feature-gated. The gate is where the bug
+hides.**
+
+**Bug 2 — the app could not start at all (pre-existing).**
+```
+[panic] state() called before manage() for app_lib::events::EventBus
+```
+`db::change_tracker::spawn_tracker(...)` reads `app.state::<EventBus>()` ~200 lines *above*
+where `app.manage(event_bus)` sat in the same setup closure. `state()` panics for an
+unmanaged type, so the process died before the window. Introduced in `1f007dd` (2026-07-18) —
+**unrelated to the speech work**, and invisible to `cargo check` because it is a runtime
+ordering fault. Fixed (commit `649b770`) by managing the EventBus at the top of the closure.
+
+**After both fixes:**
+
+| Check | Result |
+| --- | --- |
+| `cargo check -p smemaster --features rustls-tls,local-ai --lib` | EXIT=0, 0 errors |
+| `tauri dev` build (1078 crates) | succeeded |
+| App startup | `[System] 100% — Initialization complete` |
+| Panics | 0 |
+| `smemaster.exe` | running |
+
+**Still not exercised end-to-end:** an actual `ai_synthesize_speech` / `ai_transcribe_audio`
+call *through the webview*. The app runs, the commands compile, and the sidecar speaks
+correct JSON-RPC — but the click-to-audio path has not been driven, because the app has no
+MCP bridge to automate the webview. That requires either the tauri-mcp plugin or a manual
+test. Stated rather than implied.
+
 **Practical note for CI/other machines:** `sherpa-onnx-sys` will try to download 117 MB at
 build time. On a flaky link, pre-fetch the archive (parallel ranges work) and set
 `SHERPA_ONNX_ARCHIVE_DIR`. The archive for this host is cached at
