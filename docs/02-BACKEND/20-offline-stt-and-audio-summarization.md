@@ -216,7 +216,7 @@ worth stating in the UI.
 | ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------- |
 | **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done** |
 | **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done** |
-| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ⬜ Next     |
+| **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | 🟡 **Code written, build unproven** |
 | **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ⬜          |
 | **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ⬜          |
 | **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ⬜          |
@@ -225,6 +225,53 @@ worth stating in the UI.
 
 **Phase 0 is not optional.** Shipping an offline engine behind a UI that already
 misreports capabilities makes the confusion worse, not better.
+
+### Phase 1 — what was written, and what is still unproven (2026-10-01)
+
+**Written** (`src-tauri/crates/ml-sidecar/`, behind the new optional `offline-speech` feature):
+
+| Piece | File | Notes |
+| --- | --- | --- |
+| `SttEngine` over `sherpa_onnx::OfflineRecognizer` | `src/stt.rs` | Validates all four model files up front and names the missing one; empty transcript is a legitimate result, not an error |
+| `load_stt_model` / `transcribe` / `unload_stt_model` JSON-RPC methods | `src/main.rs` | `transcribe` takes 16 kHz mono f32 samples — audio-container decoding stays app-side |
+| STT in `list_models` | `src/main.rs` | Lets a caller distinguish "feature not built" from "built, no model loaded" |
+
+The API was written against the **real docs.rs signatures**, not guessed:
+`OfflineRecognizer::create(&config) -> Option<Self>`, `decode(&self, &OfflineStream)`,
+`OfflineStream::accept_waveform(&self, i32, &[f32])`, `get_result() -> Option<OfflineRecognizerResult>`.
+
+**Verified:** the default build (`cargo check -p ml-sidecar`, feature **off**) is `EXIT=0` — the
+default `local-ai` build is unaffected.
+
+**NOT verified — and this is a new, concrete finding:**
+
+`sherpa-onnx-sys` does **not** build onnxruntime from source. Its `build.rs` **downloads a
+prebuilt archive** from GitHub releases. That download failed on this host with the same TLS
+fault seen throughout the session:
+
+```
+Downloading sherpa-onnx libs from .../v1.13.8/sherpa-onnx-v1.13.8-win-x64-static-MT-Release-lib.tar.bz2
+thread 'main' panicked at sherpa-onnx-sys-1.13.8/build.rs:42:9: cannot decrypt peer's message
+```
+
+This is **the network, not the code** — the same `SEC_E_DECRYPT_FAILURE` class of failure.
+It also **corrects §10's earlier assumption**: the concern was "builds onnxruntime from source
+(needs cmake + C++ toolchain)"; the reality is a ~100 MB download, which is *easier* to build
+but *harder* on a flaky link.
+
+**Workaround (documented, not yet executed):** `build.rs` honours two env vars that bypass the
+download entirely —
+
+| Env var | Effect |
+| --- | --- |
+| `SHERPA_ONNX_ARCHIVE_DIR` | Directory containing the expected archive; skips the download |
+| `SHERPA_ONNX_LIB_DIR` | Point directly at extracted libs; skips both download and extract |
+
+**Also a real constraint:** disk was at **99% (3.3 GB free)** during the attempt. This build
+needs several GB, and the same condition already corrupted the cargo cache once this session.
+
+**Conclusion:** Phase 1 is *written* but **not proven to compile on this host**. Do not mark it
+done until `cargo check -p ml-sidecar --features offline-speech` succeeds.
 
 ### Phase 0 + 0b — what shipped (2026-10-01)
 
