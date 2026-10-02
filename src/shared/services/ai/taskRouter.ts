@@ -270,26 +270,40 @@ export function getAllTasks(): AiTask[] {
 
 /**
  * Get all providers that support a given task's required capability.
+ *
+ * NOTE: `local` is deliberately excluded from every branch. It holds on-device
+ * *speech* models (sherpa-onnx STT/TTS), not chat providers, and this function
+ * feeds chat routing — returning it here would offer a provider that
+ * `getProviderClient` refuses. Its speech models are reached through
+ * `voiceService` instead.
  */
 export function getProvidersForTask(task: AiTask): AiProvider[] {
   const route = DEFAULT_TASK_ROUTES[task];
   const model = MODEL_REGISTRY.find((m) => m.id === route.model);
   if (!model) return [route.provider];
 
+  const routable = (m: { provider: AiProvider }) => m.provider !== 'local';
+
   const cap = model.capabilities;
   if (cap.embeddings) {
-    return MODEL_REGISTRY.filter((m) => m.capabilities.embeddings && !m.deprecated).map(
+    return MODEL_REGISTRY.filter(
+      (m) => m.capabilities.embeddings && !m.deprecated && routable(m),
+    ).map((m) => m.provider);
+  }
+  if (cap.stt) {
+    return MODEL_REGISTRY.filter((m) => m.capabilities.stt && !m.deprecated && routable(m)).map(
       (m) => m.provider,
     );
   }
-  if (cap.stt) {
-    return MODEL_REGISTRY.filter((m) => m.capabilities.stt && !m.deprecated).map((m) => m.provider);
-  }
   if (cap.tts) {
-    return MODEL_REGISTRY.filter((m) => m.capabilities.tts && !m.deprecated).map((m) => m.provider);
+    return MODEL_REGISTRY.filter((m) => m.capabilities.tts && !m.deprecated && routable(m)).map(
+      (m) => m.provider,
+    );
   }
   // text capability
-  return MODEL_REGISTRY.filter((m) => m.capabilities.text && !m.deprecated).map((m) => m.provider);
+  return MODEL_REGISTRY.filter((m) => m.capabilities.text && !m.deprecated && routable(m)).map(
+    (m) => m.provider,
+  );
 }
 
 // ── Cost-Aware Routing ─────────────────────────────────────────────────────

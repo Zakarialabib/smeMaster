@@ -25,7 +25,10 @@ import {
   type AiCapability,
 } from './capabilities';
 
-const API_KEY_SETTINGS: Record<Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio'>, string> = {
+const API_KEY_SETTINGS: Record<
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
+  string
+> = {
   claude: 'claude_api_key',
   openai: 'openai_api_key',
   gemini: 'gemini_api_key',
@@ -60,6 +63,18 @@ export async function getActiveProviderName(): Promise<AiProvider> {
 export async function getActiveProvider(): Promise<AiProviderClient> {
   const providerName = await getActiveProviderName();
   const aiLanguage = (await getSetting('ai_language')) ?? 'auto';
+
+  if (providerName === 'local') {
+    // `local` is not a chat provider — it holds the on-device speech models
+    // (sherpa-onnx STT/TTS), which are reached through `voiceService`, not this
+    // router. It also has no API-key or model setting, so the generic path
+    // below cannot index for it. Fail with a clear message rather than an
+    // undefined-settings error.
+    throw new AiError(
+      'NOT_CONFIGURED',
+      'Local is not a chat provider — it serves on-device speech models only',
+    );
+  }
 
   if (providerName === 'ollama') {
     const serverUrl = (await getSetting('ollama_server_url')) ?? 'http://localhost:11434';
@@ -174,6 +189,14 @@ export async function isAiAvailable(): Promise<boolean> {
     if (providerName === 'custom') {
       const key = await getSecureSetting('custom_api_key');
       return !!key;
+    }
+
+    if (providerName === 'local') {
+      // `local` has no API key. "Configured" for it means an on-device speech
+      // model directory is set — the thing that actually gates its use.
+      const ttsDir = await getSetting('voice_offline_tts_dir');
+      const sttDir = await getSetting('voice_offline_stt_dir');
+      return !!(ttsDir || sttDir);
     }
 
     const keySetting = API_KEY_SETTINGS[providerName];

@@ -10,7 +10,18 @@ export type AiProvider =
   | 'copilot'
   | 'custom'
   | 'lmstudio'
-  | 'openrouter';
+  | 'openrouter'
+  /**
+   * On-device models that are NOT chat providers — currently the sherpa-onnx
+   * speech models (STT/TTS) served by the ml-sidecar. It exists so
+   * `ModelDefinition.provider` stays type-safe for local models, and so the
+   * model list can group them.
+   *
+   * It must never be offered as a chat route: `getProvidersForTask` filters it
+   * out, and `getProviderClient` refuses it. Local *chat* models (candle) would
+   * be a separate concern.
+   */
+  | 'local';
 
 export interface AiCompletionRequest {
   systemPrompt: string;
@@ -60,6 +71,8 @@ export const DEFAULT_MODELS: Record<AiProvider, string> = {
   custom: 'gpt-6.1-sol',
   lmstudio: '',
   openrouter: 'openai/gpt-6.1-sol',
+  // Local speech models are selected by directory, not by a model id string.
+  local: '',
 };
 
 export interface ModelOption {
@@ -68,7 +81,10 @@ export interface ModelOption {
 }
 
 export const PROVIDER_MODELS: Record<
-  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio'>,
+  // `local` is excluded for the same reason as ollama/custom/lmstudio: it is
+  // not a chat provider, so it has no chat model list. Its speech models live
+  // in MODEL_REGISTRY.
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
   ModelOption[]
 > = {
   claude: [
@@ -121,7 +137,7 @@ export const PROVIDER_MODELS: Record<
 };
 
 export const MODEL_SETTINGS: Record<
-  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio'>,
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
   string
 > = {
   claude: 'claude_model',

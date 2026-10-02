@@ -379,6 +379,65 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
     },
     contextWindow: 32_000,
   },
+
+  // ── Local (on-device, via ml-sidecar `offline-speech`) ────────────────────
+  //
+  // These are REAL, measured models — not placeholders. STT was verified at
+  // RTF 0.033 / 0.998 accuracy; the French TTS voice at RTF 0.573. See
+  // docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+  //
+  // `contextWindow: 0` matches the other speech models (whisper-1, tts-1).
+  // The RTF figures live in the label because `ModelCapabilities` has no field
+  // for measured performance, and inventing one for two models would be
+  // premature — the doc holds the detail.
+  //
+  // No key, no network, no cost. `provider: 'local'` is excluded from chat
+  // routing by `getProvidersForTask`.
+  {
+    id: 'sherpa-onnx-zipformer-small-en',
+    provider: 'local',
+    label: 'Offline STT — Zipformer Small (en) · RTF 0.033',
+    tier: 'fast',
+    capabilities: {
+      text: false,
+      streaming: false,
+      vision: false,
+      jsonMode: false,
+      toolCalling: false,
+      stt: true,
+    },
+    contextWindow: 0,
+  },
+  {
+    id: 'sherpa-onnx-nemo-canary-180m-flash',
+    provider: 'local',
+    label: 'Offline STT — NeMo Canary 180M (en/es/de/fr)',
+    tier: 'balanced',
+    capabilities: {
+      text: false,
+      streaming: false,
+      vision: false,
+      jsonMode: false,
+      toolCalling: false,
+      stt: true,
+    },
+    contextWindow: 0,
+  },
+  {
+    id: 'vits-piper-fr_FR-siwis-medium',
+    provider: 'local',
+    label: 'Offline TTS — Piper Siwis (fr_FR) · RTF 0.573',
+    tier: 'balanced',
+    capabilities: {
+      text: false,
+      streaming: false,
+      vision: false,
+      jsonMode: false,
+      toolCalling: false,
+      tts: true,
+    },
+    contextWindow: 0,
+  },
 ];
 
 // ── Lookup Helpers ─────────────────────────────────────────────────────────

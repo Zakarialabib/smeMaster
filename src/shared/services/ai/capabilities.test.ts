@@ -249,4 +249,56 @@ describe('task router', () => {
     expect(provider).toBeDefined();
     expect(typeof provider).toBe('string');
   });
+
+  // ── `local` provider containment ────────────────────────────────────────
+  // `local` holds the on-device sherpa-onnx speech models. It is NOT a chat
+  // provider, so it must never leak into chat routing. These tests are the
+  // guard against that: adding a local model to MODEL_REGISTRY must not make
+  // `local` selectable as a text/embedding provider.
+
+  it('registers the local speech models with the right capabilities', () => {
+    const stt = getModelById('sherpa-onnx-zipformer-small-en');
+    expect(stt).toBeDefined();
+    expect(stt?.provider).toBe('local');
+    expect(stt?.capabilities.stt).toBe(true);
+    expect(stt?.capabilities.text).toBe(false);
+
+    const tts = getModelById('vits-piper-fr_FR-siwis-medium');
+    expect(tts).toBeDefined();
+    expect(tts?.provider).toBe('local');
+    expect(tts?.capabilities.tts).toBe(true);
+    expect(tts?.capabilities.text).toBe(false);
+  });
+
+  it('never offers `local` as a chat provider for any task', () => {
+    // The whole point of the `local` provider value is that it is excluded from
+    // routing. If this fails, a text task could be routed to a provider that
+    // `getProviderClient` refuses — a runtime dead end.
+    for (const task of getAllTasks()) {
+      expect(getProvidersForTask(task)).not.toContain('local');
+    }
+  });
+
+  it('never offers `local` via capability queries used for routing', () => {
+    for (const cap of ['text', 'embedding'] as const) {
+      const providers = getModelsByCapability(cap).map((m) => m.provider);
+      expect(providers).not.toContain('local');
+    }
+  });
+
+  it('local models still appear under the stt/tts capability queries', () => {
+    // Containment must not mean invisibility: the models are real and should be
+    // discoverable by their actual capability.
+    expect(getModelsByCapability('stt').map((m) => m.provider)).toContain('local');
+    expect(getModelsByCapability('tts').map((m) => m.provider)).toContain('local');
+  });
+
+  it('getModelsForProvider(local) returns only speech models', () => {
+    const models = getModelsForProvider('local');
+    expect(models.length).toBeGreaterThan(0);
+    for (const m of models) {
+      expect(m.capabilities.text).toBe(false);
+      expect(m.capabilities.embeddings).toBeUndefined();
+    }
+  });
 });
