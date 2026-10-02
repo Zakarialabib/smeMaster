@@ -1,9 +1,15 @@
 //! Offline speech-to-text via `sherpa-onnx`.
 //!
-//! Gated behind the `offline-speech` cargo feature. The crate's default
-//! `static` feature builds onnxruntime from source (cmake + a C++ toolchain +
-//! several GB), so it stays optional until proven on the target host — see
-//! `docs/02-BACKEND/20-offline-stt-and-audio-summarization.md` §10.
+//! Gated behind the `offline-speech` cargo feature. `sherpa-onnx-sys` does not
+//! build onnxruntime from source — its `build.rs` **downloads a prebuilt ~117 MB
+//! archive** from GitHub releases. That download is the fragile part on a flaky
+//! link, so the dependency stays optional until it is proven on the target host.
+//! See `docs/02-BACKEND/20-offline-stt-and-audio-summarization.md` §10.
+//!
+//! To supply the archive without network, set `SHERPA_ONNX_ARCHIVE_DIR` (a
+//! directory containing the expected `.tar.bz2`) or `SHERPA_ONNX_LIB_DIR`
+//! (already-extracted libs) — both are honoured by `sherpa-onnx-sys`'s build
+//! script and skip the download entirely.
 //!
 //! ## Why sherpa-onnx and not candle whisper
 //!
