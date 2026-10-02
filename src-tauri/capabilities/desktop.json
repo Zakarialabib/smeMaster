@@ -57,6 +57,7 @@
     "global-shortcut:allow-register-all",
     "global-shortcut:allow-unregister-all",
     "biometric:default",
-    "window-state:default"
+    "window-state:default",
+    "mcp-bridge:default"
   ]
 }

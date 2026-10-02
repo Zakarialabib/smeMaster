@@ -17,6 +17,7 @@
     "test:watch": "vitest --project unit",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
+    "tauri:dev:mcp": "tauri dev --features mcp-bridge",
     "tauri:build": "tauri build",
     "translate:sync": "node scripts/sync-translations.js",
     "translate:clean": "node scripts/clean-unused-translations.js",

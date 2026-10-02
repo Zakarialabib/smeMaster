@@ -31,7 +31,8 @@
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://*.googleapis.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://*.gravatar.com https://login.microsoftonline.com https://graph.microsoft.com https://api.login.yahoo.com https://models.github.ai https://openrouter.ai https://api.mistral.ai https://ark.ap-southeast.bytepluses.com https://ark.cn-beijing.volces.com http://localhost:11434 http://localhost:1234; img-src 'self' data: https://*.gravatar.com https://lh3.googleusercontent.com https://*.googleusercontent.com; font-src 'self' data:; frame-src 'self'",
       "devCsp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://localhost:1420 http://localhost:1420 https://*.googleapis.com https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://*.gravatar.com https://login.microsoftonline.com https://graph.microsoft.com https://api.login.yahoo.com https://models.github.ai https://openrouter.ai https://api.mistral.ai https://ark.ap-southeast.bytepluses.com https://ark.cn-beijing.volces.com http://localhost:11434 http://localhost:1234; img-src 'self' data: https://*.gravatar.com https://lh3.googleusercontent.com https://*.googleusercontent.com; font-src 'self' data:; frame-src 'self'"
-    }
+    },
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,

@@ -40,6 +40,31 @@ type DownloadState = 'idle' | 'downloading' | 'done' | 'error';
 const KIND_ORDER: LocalModelKind[] = ['llm', 'stt', 'tts', 'embedding'];
 
 /**
+ * Turn whatever the IPC layer rejected with into a readable string.
+ *
+ * Tauri commands reject with a `SerializedError` — an OBJECT of
+ * `{ code, message, details? }`, not an `Error`. `String(err)` on it yields
+ * "[object Object]", which is what this used to show. Unwrap `.message`.
+ */
+function describeError(err: unknown): string {
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object') {
+    const withMessage = err as { message?: unknown; code?: unknown };
+    if (typeof withMessage.message === 'string' && withMessage.message) {
+      return typeof withMessage.code === 'string' && withMessage.code
+        ? `${withMessage.code}: ${withMessage.message}`
+        : withMessage.message;
+    }
+  }
+  if (err instanceof Error) return err.message;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return 'Unknown error';
+  }
+}
+
+/**
  * Settings read/write failures are expected in a plain browser (no Tauri
  * backend) — swallow those rather than surfacing page errors in the dev console.
  */
@@ -87,9 +112,8 @@ export default function LocalModelsSettings() {
       setStates((s) => ({ ...s, [model.id]: 'done' }));
       setProgress((p) => ({ ...p, [model.id]: `all ${required.length} files` }));
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
       setStates((s) => ({ ...s, [model.id]: 'error' }));
-      setErrors((e) => ({ ...e, [model.id]: message }));
+      setErrors((e) => ({ ...e, [model.id]: describeError(err) }));
     }
   }, []);
 
