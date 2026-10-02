@@ -114,12 +114,33 @@ tauri = { version = "2.11", features = ["tray-icon", "test"] }
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Shell"] }
 
+# ── Tauri MCP bridge (dev tooling, opt-in) ─────────────────────────────────
+# Lets the `tauri-mcp` MCP server drive the running app: webview DOM/JS
+# execution, screenshots, IPC monitoring. That is what makes the frontend
+# verifiable end-to-end instead of only type-checked.
+#
+# Gated behind the `mcp-bridge` feature AND `debug_assertions` (see lib.rs), so
+# a release build can never ship it even if the feature is left on. Off by
+# default because it opens a WebSocket listener.
+#
+# VENDORED, not from crates.io. Upstream 0.13.0 (latest) pins `webview2-com 0.38`
+# while `wry 0.57` (via tauri 2.12) needs `0.39`. Those are semver-incompatible,
+# so two `webview2-com` crates land in the graph and the plugin's screenshot
+# module fails with:
+#   the trait bound `&IStream: Param<IStream, InterfaceType>` is not satisfied
+# The vendored copy only bumps webview2-com/windows/windows-core to 0.62 to match
+# wry — the APIs it uses (`CapturePreviewCompletedHandler`, `CreateStreamOnHGlobal`)
+# are unchanged between 0.38 and 0.39. See vendor/README.md.
+tauri-plugin-mcp-bridge = { version = "0.13", path = "vendor/tauri-plugin-mcp-bridge", optional = true }
+
 [features]
 default = ["rustls-tls", "local-ai"]
 native-tls = ["dep:native-tls", "dep:tokio-native-tls"]
 rustls-tls = []
 updater = ["dep:tauri-plugin-updater"]
 devtools = ["tauri/devtools"]
+# Dev-only: expose the MCP bridge so an agent can drive the app's webview.
+mcp-bridge = ["dep:tauri-plugin-mcp-bridge"]
 
 # ── local-ai ───────────────────────────────────────────────────────────────
 # Enables the on-device RAG / local LLM inference sidecar (candle + BGE-small

@@ -184,6 +184,20 @@ pub fn run() {
     {
         builder = builder.plugin(native_events::init());
     }
+
+    // ── MCP bridge (dev tooling) ──────────────────────────────────────
+    // Lets the `tauri-mcp` MCP server drive this app: webview JS execution,
+    // DOM inspection, screenshots, IPC monitoring. Without it the frontend can
+    // only be type-checked, never exercised.
+    //
+    // Double-gated on purpose: the cargo feature (opt-in, opens a WebSocket
+    // listener) AND `debug_assertions`, so a release build cannot expose it
+    // even if someone leaves the feature enabled.
+    #[cfg(all(feature = "mcp-bridge", debug_assertions))]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+        log::info!("[mcp-bridge] Dev bridge enabled (tauri-mcp can drive this app)");
+    }
     
     // NOTE: invoke_handler is registered ONCE via commands::register below.
     // All #[tauri::command] functions (including the lib.rs-level ones) are
