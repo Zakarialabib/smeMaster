@@ -1194,7 +1194,9 @@
       "hardware": "Hardware monitoring and diagnostics",
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
-      "about": "Version, license, and credits"
+      "about": "Version, license, and credits",
+      "voice": "音声プロバイダーとオンデバイスエンジン",
+      "localModels": "オンデバイスモデルのダウンロードと管理"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",

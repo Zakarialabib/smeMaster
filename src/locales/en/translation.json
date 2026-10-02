@@ -1128,7 +1128,9 @@
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
-      "cache": "Data cache status, hit rate, and benchmarks"
+      "cache": "Data cache status, hit rate, and benchmarks",
+      "voice": "Speech providers and on-device engines",
+      "localModels": "Download and manage on-device models"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",

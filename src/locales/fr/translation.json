@@ -1195,7 +1195,9 @@
       "hardware": "Hardware monitoring and diagnostics",
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
-      "about": "Version, license, and credits"
+      "about": "Version, license, and credits",
+      "voice": "Fournisseurs vocaux et moteurs locaux",
+      "localModels": "Télécharger et gérer les modèles locaux"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",

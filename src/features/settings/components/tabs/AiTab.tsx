@@ -30,7 +30,6 @@ import {
 } from 'lucide-react';
 import BundleSettings from '../BundleSettings';
 import KnowledgeBaseSettings from '../KnowledgeBaseSettings';
-import VoiceSettings from '../VoiceSettings';
 import { useRagStore } from '@features/assistant/stores/ragStore';
 import { refreshAiSidecarRuntime } from '@features/assistant/services/aiSidecar';
 
@@ -1242,7 +1241,6 @@ export default function AiTab() {
             />
             <BundleSettings />
           </SettingGroup>
-          <VoiceSettings />
         </>
       )}
 
