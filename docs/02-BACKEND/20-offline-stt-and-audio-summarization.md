@@ -349,6 +349,51 @@ likely thing to break a naive packaging attempt.
 right rate and duration; whether the French *sounds* correct is a human judgement. The WAV is
 written to disk (`fr_siwis_smoke.wav`) for listening.
 
+#### JSON-RPC dispatch verification (2026-10-01)
+
+The Rust examples above call the engine API **directly**. Neither they nor the TypeScript
+type-checks could prove that the JSON-RPC dispatch in `main.rs` actually routes
+`load_stt_model` / `transcribe` / `load_tts_voice` / `synthesize` correctly. That gap is now
+closed by `crates/ml-sidecar/examples/e2e_speech.py`, which drives the **real sidecar binary**
+over stdin/stdout exactly as the Tauri app does.
+
+**It immediately found a real bug**, which is the point of having it:
+
+```
+load_stt_model -> error -32050:
+  incomplete STT model: missing encoder, decoder, joiner
+  (expected encoder.onnx, decoder.onnx, joiner.onnx, tokens.txt)
+```
+
+`SttModelPaths::in_dir` guessed the bare name `encoder.onnx`, but real sherpa-onnx releases
+ship `encoder-epoch-99-avg-1.int8.onnx`. `TtsModelPaths` had the same latent bug
+(`model.onnx` vs `fr_FR-siwis-medium.onnx`). **The smoke examples passed explicit paths, so
+they never exercised `in_dir` — only the dispatch path uses it.** The tested path and the real
+path had silently diverged, which is exactly the failure mode a type-check cannot catch.
+
+Fixed by discovering rather than assuming: STT tries the exact name then the file containing
+the role token (int8 preferred, then shortest for determinism); TTS takes the largest `.onnx`.
+`load_stt_model` now returns a `files` map naming what it picked, so the choice is auditable.
+
+**Final E2E result — all eight checks pass:**
+
+| Step | Result |
+| --- | --- |
+| `ping` | ok |
+| `load_stt_model` | ok, 3040 ms |
+| `transcribe` | 477 ms, correct text |
+| `list_models` | reports `stt: true` |
+| `load_tts_voice` | ok, 2864 ms, 22050 Hz |
+| `synthesize` | 461 ms, non-silent (peak 0.55), 4.38 s of audio |
+| `list_models` | reports `tts: true` |
+| `unload_*` | ok |
+
+⚠️ **RTF discrepancy, recorded honestly.** This run measured TTS **RTF 0.105**, whereas the
+earlier smoke example measured **0.573**. Both are real measurements of the same voice; the
+variance is unexplained (plausibly sherpa-onnx lazy initialisation, or CPU contention during
+the earlier run). **Plan with the conservative 0.573, not the flattering 0.105** — and treat
+any single RTF figure here as one sample, not a benchmark.
+
 **Practical note for CI/other machines:** `sherpa-onnx-sys` will try to download 117 MB at
 build time. On a flaky link, pre-fetch the archive (parallel ranges work) and set
 `SHERPA_ONNX_ARCHIVE_DIR`. The archive for this host is cached at
