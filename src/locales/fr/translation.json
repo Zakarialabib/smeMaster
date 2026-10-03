@@ -39,7 +39,17 @@
     "spam": "Spam",
     "allMail": "Tous les messages",
     "attachments": "Pièces jointes",
-    "agentConsole": "Console Agent"
+    "agentConsole": "Console Agent",
+    "unified": "Unifié",
+    "schedule": "Planificateur",
+    "tasks": "Tâches",
+    "calendar": "Calendrier",
+    "tasksToday": "Aujourd'hui",
+    "tasksUpcoming": "À venir",
+    "calendarMonth": "Mois",
+    "calendarAgenda": "Agenda",
+    "contacts": "Contacts",
+    "sell": "Ventes"
   },
   "onboarding": {
     "setupWizard": "Assistant de configuration",
@@ -358,6 +368,7 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
+      "agents": "Agents",
       "cache": "Cache"
     },
     "appearance": "Apparence",
@@ -1198,7 +1209,8 @@
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
       "voice": "Fournisseurs vocaux et moteurs locaux",
-      "localModels": "Télécharger et gérer les modèles locaux"
+      "localModels": "Télécharger et gérer les modèles locaux",
+      "agents": "Roster d'agents et portée"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1210,6 +1222,7 @@
       "backup": "Create backups and restore your data when needed.",
       "deliverabilityDashboard": "Track domain health, reputation, and deliverability.",
       "ai": "Set up AI providers, smart replies, and automation.",
+      "agents": "Create and configure AI agents with role, scope, tools, and budget.",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
       "pgp": "Manage PGP keys for end-to-end encryption.",
@@ -1273,6 +1286,11 @@
         "why": "AI assists with drafting, replies, and organization.",
         "how": "Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
         "when": "Enable AI when you want help writing or triaging mail."
+      },
+      "agents": {
+        "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
+        "how": "Create agents here, then assign them to channels (voice, chat, cron). The Rust service layer enforces scope at call time.",
+        "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {
         "why": "Rules automate the busywork of sorting incoming mail.",
@@ -2296,7 +2314,16 @@
     "addCompany": "Add Company",
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "stock": "Stock",
+      "accounting": "Comptabilité",
+      "reports": "Rapports",
+      "wallet": "Trésorerie",
+      "roles": "Rôles",
+      "company": "Société"
+    }
   },
   "attachments": {
     "senderUnknown": "Unknown",

@@ -39,7 +39,17 @@
     "spam": "スパム",
     "allMail": "すべてのメール",
     "attachments": "添付ファイル",
-    "agentConsole": "エージェントコンソール"
+    "agentConsole": "エージェントコンソール",
+    "unified": "統合",
+    "schedule": "スケジュール",
+    "tasks": "タスク",
+    "calendar": "カレンダー",
+    "tasksToday": "今日",
+    "tasksUpcoming": "今後",
+    "calendarMonth": "月",
+    "calendarAgenda": "アジェンダ",
+    "contacts": "連絡先",
+    "sell": "販売"
   },
   "onboarding": {
     "setupWizard": "セットアップウィザード",
@@ -358,7 +368,8 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "キャッシュ"
+      "cache": "キャッシュ",
+      "agents": "エージェント"
     },
     "appearance": "外観",
     "theme": "テーマ",
@@ -1197,7 +1208,8 @@
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
       "voice": "音声プロバイダーとオンデバイスエンジン",
-      "localModels": "オンデバイスモデルのダウンロードと管理"
+      "localModels": "オンデバイスモデルのダウンロードと管理",
+      "agents": "エージェントロスターとスコープ"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1209,6 +1221,7 @@
       "backup": "Create backups and restore your data when needed.",
       "deliverabilityDashboard": "Track domain health, reputation, and deliverability.",
       "ai": "Set up AI providers, smart replies, and automation.",
+      "agents": "エージェントのロスターとスコープを構成",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
       "pgp": "Manage PGP keys for end-to-end encryption.",
@@ -1272,6 +1285,11 @@
         "why": "AI assists with drafting, replies, and organization.",
         "how": "Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
         "when": "Enable AI when you want help writing or triaging mail."
+      },
+      "agents": {
+        "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
+        "how": "Create agents here, then assign them to channels (voice, chat, cron). The Rust service layer enforces scope at call time.",
+        "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {
         "why": "Rules automate the busywork of sorting incoming mail.",
@@ -1424,7 +1442,8 @@
     "starThread": "選択したスレッドに星を付ける",
     "archiveThread": "選抬中のスレッドをアーカイブ",
     "markReadThread": "選択したスレッドを既読にする",
-    "templateDesc": "一貫したメッセージングのための変数プレースホルダーを備えた再利用可能なメールテンプレートを作成します。"
+    "templateDesc": "一貫したメッセージングのための変数プレースホルダーを備えた再利用可能なメールテンプレートを作成します。",
+    "agents": "エージェント"
   },
   "empty": {
     "noImportantConversations": "重要な会話はありません",
@@ -2320,7 +2339,16 @@
     "addCompany": "Add Company",
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "tabs": {
+      "overview": "概要",
+      "stock": "在庫",
+      "accounting": "会計",
+      "reports": "レポート",
+      "wallet": "現金",
+      "roles": "ロール",
+      "company": "会社"
+    }
   },
   "invoicing": {
     "tabs": {

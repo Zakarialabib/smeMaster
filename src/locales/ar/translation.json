@@ -39,7 +39,17 @@
     "spam": "الرسائل غير المرغوبة",
     "allMail": "كل البريد",
     "attachments": "المرفقات",
-    "agentConsole": "واجهة الوكيل"
+    "agentConsole": "واجهة الوكيل",
+    "unified": "موحّد",
+    "schedule": "الجدول",
+    "tasks": "المهام",
+    "calendar": "التقويم",
+    "tasksToday": "اليوم",
+    "tasksUpcoming": "القادم",
+    "calendarMonth": "الشهر",
+    "calendarAgenda": "جدول زمني",
+    "contacts": "جهات الاتصال",
+    "sell": "المبيعات"
   },
   "onboarding": {
     "setupWizard": "معالج الإعداد",
@@ -358,7 +368,8 @@
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "الذاكرة المؤقتة"
+      "cache": "الذاكرة المؤقتة",
+      "agents": "الوكلاء"
     },
     "appearance": "المظهر",
     "surface": "Surface",
@@ -1198,7 +1209,8 @@
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
       "voice": "موفرو الصوت والمحركات المحلية",
-      "localModels": "تنزيل وإدارة النماذج المحلية"
+      "localModels": "تنزيل وإدارة النماذج المحلية",
+      "agents": "روستر الوكلاء ونطاقهم"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1210,6 +1222,7 @@
       "backup": "Create backups and restore your data when needed.",
       "deliverabilityDashboard": "Track domain health, reputation, and deliverability.",
       "ai": "Set up AI providers, smart replies, and automation.",
+      "agents": "إنشاء وتكوين وكلاء الذكاء الاصطناعي مع الدور والنطاق والأدوات وسياسة النموذج",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
       "pgp": "Manage PGP keys for end-to-end encryption.",
@@ -1273,6 +1286,11 @@
         "why": "AI assists with drafting, replies, and organization.",
         "how": "Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
         "when": "Enable AI when you want help writing or triaging mail."
+      },
+      "agents": {
+        "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
+        "how": "Create agents here, then assign them to channels (voice, chat, cron). The Rust service layer enforces scope at call time.",
+        "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {
         "why": "Rules automate the busywork of sorting incoming mail.",
@@ -1392,7 +1410,8 @@
     "starThread": "Star Selected Thread",
     "archiveThread": "Archive Selected Thread",
     "markReadThread": "Mark Selected Thread as Read",
-    "templateDesc": "أنشئ قوالب بريد إلكتروني قابلة لإعادة الاستخدام مع عناصر نائبة للرسائل المتسقة."
+    "templateDesc": "أنشئ قوالب بريد إلكتروني قابلة لإعادة الاستخدام مع عناصر نائبة للرسائل المتسقة.",
+    "agents": "الوكلاء"
   },
   "empty": {
     "noImportantConversations": "لا توجد محادثات مهمة",
@@ -2296,7 +2315,16 @@
     "addCompany": "Add Company",
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "stock": "المخزون",
+      "accounting": "المحاسبة",
+      "reports": "التقارير",
+      "wallet": "النقد",
+      "roles": "الأدوار",
+      "company": "الشركة"
+    }
   },
   "attachments": {
     "senderUnknown": "Unknown",

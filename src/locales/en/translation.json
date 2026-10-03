@@ -42,7 +42,17 @@
     "attachments": "Attachments",
     "nMore": "{{count}} more",
     "nPending": "{{count}} pending",
-    "agentConsole": "Agent Console"
+    "agentConsole": "Agent Console",
+    "unified": "Unified",
+    "schedule": "Schedule",
+    "tasks": "Tasks",
+    "calendar": "Calendar",
+    "tasksToday": "Today",
+    "tasksUpcoming": "Upcoming",
+    "calendarMonth": "Month",
+    "calendarAgenda": "Agenda",
+    "contacts": "Contacts",
+    "sell": "Sales"
   },
   "onboarding": {
     "setupWizard": "Setup wizard",
@@ -1206,6 +1216,11 @@
         "why": "AI assists with drafting, replies, and organization.",
         "how": "Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
         "when": "Enable AI when you want help writing or triaging mail."
+      },
+      "agents": {
+        "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
+        "how": "Create agents here, then assign them to channels (voice, chat, cron). The Rust service layer enforces scope at call time.",
+        "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {
         "why": "Rules automate the busywork of sorting incoming mail.",
@@ -2383,7 +2398,16 @@
     "addCompany": "Add Company",
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "tabs": {
+      "overview": "Overview",
+      "stock": "Stock",
+      "accounting": "Accounting",
+      "reports": "Reports",
+      "wallet": "Cash",
+      "roles": "Roles",
+      "company": "Company"
+    }
   },
   "categories": {
     "primary": "Primary",
