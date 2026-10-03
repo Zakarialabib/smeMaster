@@ -254,6 +254,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_index_emails,
             #[cfg(feature = "local-ai")]
             ai::ai_query_rag,
+            ai::ai_query_rag_hybrid,
             #[cfg(feature = "local-ai")]
             ai::ai_search_by_vector,
             #[cfg(feature = "local-ai")]

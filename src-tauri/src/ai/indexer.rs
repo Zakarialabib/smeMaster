@@ -354,6 +354,7 @@ impl Indexer {
             engine.get_embeddings(text).await?
         };
 
+        // Write to LanceDB (vector index)
         let schema = table.schema().await?;
         let id_array = StringArray::from(vec![id.to_string()]);
         let text_array = StringArray::from(vec![text.to_string()]);
@@ -377,6 +378,14 @@ impl Indexer {
 
         let reader: Box<dyn arrow::array::RecordBatchReader + Send> = Box::new(RecordBatchIterator::new(vec![Ok(batch)], schema));
         table.add(reader).execute().await?;
+
+        // Write to SQLite FTS5 (BM25 index) for hybrid search
+        sqlx::query("INSERT INTO knowledge_base_fts(id, text) VALUES (?, ?)")
+            .bind(id)
+            .bind(text)
+            .execute(&self.pool)
+            .await?;
+
         Ok(())
     }
 

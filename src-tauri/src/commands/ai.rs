@@ -225,7 +225,7 @@ pub async fn ai_query_rag(
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine_handle());
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
     rag.generate_augmented_prompt(&query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }
@@ -249,8 +249,28 @@ pub async fn ai_search_by_vector(
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine_handle());
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
     rag.generate_augmented_prompt_from_vector(embedding, &query).await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
+}
+
+/// Hybrid RAG search: BM25 (SQLite FTS5) + vector similarity (LanceDB),
+/// merged with Reciprocal Rank Fusion (RRF).
+///
+/// Returns an augmented prompt string with context + query.
+#[tauri::command]
+pub async fn ai_query_rag_hybrid(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+    query: String,
+) -> CmdResult<String> {
+    state.ensure_engine_loaded().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
+    rag.generate_augmented_prompt_hybrid(&query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }
 

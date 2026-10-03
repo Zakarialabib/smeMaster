@@ -52,6 +52,8 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("032_deals_pipeline", include_str!("032_deals_pipeline.sql")),
     ("033_downloader", include_str!("033_downloader.sql")),
     ("034_agents", include_str!("034_agents.sql")),
+    ("035_calendar_account_id", include_str!("035_calendar_account_id.sql")),
+    ("036_knowledge_base_fts", include_str!("036_knowledge_base_fts.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────
