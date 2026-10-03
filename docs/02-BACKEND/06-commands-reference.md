@@ -111,7 +111,7 @@ The invoicing module (`src-tauri/src/commands/invoicing.rs`) exposes 35 Tauri IP
 | **Company**          | `db_get_company`, `db_update_company`                                                                                                                                                                                                                                                     | Company profile incl. ICE/IF/RC/CNSS legal identifiers                                                                                                            |
 | **Workflows**        | `db_list_workflow_rules`, `db_list_workflow_rules_paginated`, `db_count_workflow_rules`, `db_list_active_workflow_rules`, `db_get_workflow_rule`, `db_upsert_workflow_rule`, `db_update_workflow_rule_active`, `db_delete_workflow_rule` | Automation rules: CRUD + active-only lookup used by the runtime engine; plus follow-up reminders and pending-operation retry machinery |
 
-> See [Automation feature doc](../04-FEATURES/Core/05-automation.md).
+> See [Automation feature doc](../04-FEATURES/05-automation.md).
 
 ## POS Domain (12 Commands)
 

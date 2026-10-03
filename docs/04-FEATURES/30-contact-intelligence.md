@@ -12,7 +12,7 @@ This page covers:
 - insight-oriented helpers
 - contact-centric interpretation of activity and relevance
 
-The canonical contact/CRM surface remains `Core/03-crm-contacts.md`.
+The canonical contact/CRM surface remains `03-crm-contacts.md`.
 
 ## Current Ownership
 
@@ -38,8 +38,8 @@ That can include:
 
 Keep these responsibilities separate:
 
-- core CRUD, groups, tags, and contact management belong to `Core/03-crm-contacts.md`
-- task follow-up logic belongs to `Core/08-tasks.md`
+- core CRUD, groups, tags, and contact management belong to `03-crm-contacts.md`
+- task follow-up logic belongs to `08-tasks.md`
 - AI-generated insight behavior belongs to `22-ai-integration.md` when applicable
 
 ## AI-Powered CRM Intelligence (Planned)

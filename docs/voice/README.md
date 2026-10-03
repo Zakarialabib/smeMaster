@@ -7,10 +7,8 @@
 > **they block the pilot, not the build** ([`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) §10).
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 > **Decisions:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> **Glossary:** [`glossary-voice-agent.md`](../glossary/glossary-voice-agent.md) ·
-> **OSS landscape:** [`docs/06-ROADMAP/15-voice-agent-oss-landscape.md`](../06-ROADMAP/15-voice-agent-oss-landscape.md) ·
-> **WhatsApp channel landscape:** [`docs/06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md) ·
-> **Topology decision:** [`docs/06-ROADMAP/17-voice-agent-topology-decision.md`](../06-ROADMAP/17-voice-agent-topology-decision.md)
+> **Glossary:** [`glossary-voice-agent.md`](../glossary/glossary-voice-agent.md)
+> (OSS/WhatsApp/topology landscape docs 15–17 removed 2026-10-03 — decisions captured in ADR-001; git history)
 
 An inbound AI receptionist for a French-speaking SME. Two channels, one agent: WhatsApp
 (text) + inbound voice on a dedicated FR number. Delivered as a **managed service** run by

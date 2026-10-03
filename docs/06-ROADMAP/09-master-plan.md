@@ -254,8 +254,8 @@ Delivered as a **managed service** operated by us, not a desktop feature.
 > [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md) ·
 > **Decisions:** [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > **Living status:** [`docs/voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md) ·
-> **Glossary:** [`docs/glossary/glossary-voice-agent.md`](../glossary/glossary-voice-agent.md) ·
-> **Landscapes:** [`15-`](15-voice-agent-oss-landscape.md) [`16-`](16-voice-agent-whatsapp-oss-landscape.md) [`17-`](17-voice-agent-topology-decision.md)
+> **Glossary:** [`docs/glossary/glossary-voice-agent.md`](../glossary/glossary-voice-agent.md)
+> **Landscapes (15/16/17):** removed 2026-10-03 — research complete, decisions captured in ADR-001 and this spec (git history)
 >
 > **Real state (2026-09-30):** Gate 0 ✅ · **Phases A–B closed** (agent-core built, four provider
 > seams proven by config-only swap, endpoints + WS + licence gate + migrations 0002–0004) ·
@@ -369,7 +369,7 @@ Preserved for context; the tables above are authoritative.
 - **Template engine** (was `07-template-engine.md`): 3 systems → one `TemplateCatalog`, SQLite + `template_type`. Still Phase 7.4, not started.
 - **Competitive analysis** (was `11-top-apps-comparison.md`): sub-100ms interactions, command discoverability, offline queue UX, keyboard-first — Phases 1/2 cover most.
 - **Spec-driven dev** (was `12-spec-driven-dev-plan.md`): Spec → Files → Workflow → Acceptance per phase.
-- **Correction (2026-09-30):** the old "37-settings-redesign-spec.md MISSING" note is stale — the spec exists (`docs/04-FEATURES/37-settings-redesign-spec.md`); `36-onboarding-reboot-plan.md` is still ⚠️ MISSING (spec not yet written).
+- **Correction (2026-09-30):** the old "37-settings-redesign-spec.md MISSING" note is stale — the spec exists (`docs/04-FEATURES/37-settings-redesign-spec.md`); `36-onboarding-reboot-plan.md` also exists now (written 2026-10-03).
 
 ---
 

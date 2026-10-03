@@ -78,7 +78,7 @@ Keep these responsibilities separate:
 - composer UX belongs to `34-mail-composer.md`
 - reusable content belongs to `24-templates.md`
 - regulatory/policy checks belong to `23-compliance-engine.md`
-- general email behavior belongs to `Core/01-email-management.md`
+- general email behavior belongs to `01-email-management.md`
 
 This page should describe the shared AI layer and its product touchpoints, not duplicate every consumer feature.
 

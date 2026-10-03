@@ -101,7 +101,7 @@ What the app does, grouped by functional area.
 | [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)    | Campaign builder, block editor, mail merge    |
 | [Calendar](04-FEATURES/07-calendar.md)                 | Calendars, events, views, CalDAV              |
 | [Tasks](04-FEATURES/08-tasks.md)                       | Priorities, recurrence, kanban, AI extraction |
-| [Automation](04-FEATURES/Core/05-automation.md)        | Trigger/action rules                          |
+| [Automation](04-FEATURES/05-automation.md)        | Trigger/action rules                          |
 | [Account Cleaning](04-FEATURES/06-account-cleaning.md) | Retention policies and cleanup rules          |
 | [Dashboard](04-FEATURES/09-dashboard.md)               | Cross-feature overview, 10 widgets            |
 

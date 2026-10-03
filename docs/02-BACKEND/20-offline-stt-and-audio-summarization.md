@@ -2,7 +2,7 @@
 
 > **Status:** 📐 **Options + architecture + decision** (2026-10-01). Consolidates the
 > former `06-ROADMAP/18-offline-speech-engine-decision.md` brief — one doc, not two.
-> **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Voice agent OSS landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) · [Topology decision](../06-ROADMAP/17-voice-agent-topology-decision.md) · [Self-hosting](../voice/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> **Related:** [Voice settings](../04-FEATURES/38-voice-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Self-hosting](../voice/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > **Companion:** [Document & email extraction](./19-document-and-email-extraction.md)
 
 ## 1. Why this doc exists
@@ -10,11 +10,11 @@
 Three pieces of prior work each assumed a different offline speech engine, and nobody
 reconciled them:
 
-| Doc                                                                          | Assumed engine                               | Scope it covered                            |
-| ---------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
-| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2                              | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
-| [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 | **sherpa-onnx** (Rust binding, in a sidecar) | Desktop local tier for the voice agent      |
-| an earlier draft of this doc                                                 | **candle whisper**                           | Desktop batch STT for the mail/AI assistant |
+| Doc                                                       | Assumed engine                               | Scope it covered                            |
+| --------------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
+| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2           | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
+| 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** (Rust binding, in a sidecar) | Desktop local tier for the voice agent      |
+| an earlier draft of this doc                              | **candle whisper**                           | Desktop batch STT for the mail/AI assistant |
 
 The topology doc and SELF-HOSTING agree on sherpa-onnx; this doc was the outlier. §3
 resolves it. This doc also carries the **product framing**, the **stub inventory** and
@@ -102,11 +102,11 @@ registering local models needs **no type change**.
 
 ### 3.1 The contradiction
 
-| Source                                                                       | Says                                                                                                                                 | Scope                                |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| [17-topology-decision](../06-ROADMAP/17-voice-agent-topology-decision.md) §3 | **sherpa-onnx** in a Tauri sidecar; "the repo already runs `ml-sidecar` over JSON-RPC — the pattern is proven here. RTF < 1 offline" | the **voice-agent** local tier       |
-| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2                              | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
-| earlier draft of this doc                                                    | candle `whisper`                                                                                                                     | the **desktop assistant** STT        |
+| Source                                                    | Says                                                                                                                                 | Scope                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** in a Tauri sidecar; "the repo already runs `ml-sidecar` over JSON-RPC — the pattern is proven here. RTF < 1 offline" | the **voice-agent** local tier       |
+| [SELF-HOSTING](../voice/dev/SELF-HOSTING.md) §2           | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
+| earlier draft of this doc                                 | candle `whisper`                                                                                                                     | the **desktop assistant** STT        |
 
 **These are not actually in conflict once scope is separated** — but the earlier draft
 was wrong to propose a _second_ engine without acknowledging the first. Resolution:
@@ -205,23 +205,23 @@ a convenience fallback, not the offline answer.
 
 ### 4.1 The self-hosted tier boundary
 
-Per [topology §6](../06-ROADMAP/17-voice-agent-topology-decision.md), keys live on the
+Per topology §6 (removed 2026-10-03, git history), keys live on the
 desktop for the self-hosted tier. Offline speech is a **desktop capability** — nothing
 crosses the network, no key exists. That is the cleanest possible position and it is
 worth stating in the UI.
 
 ## 5. Recommended sequence
 
-| Phase  | Work                                                                                                                      | Effort | Deliverable                              | Status                        |
-| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | ----------------------------- |
-| **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done**                   |
-| **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done**                   |
+| Phase  | Work                                                                                                                      | Effort | Deliverable                              | Status                                        |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------- | --------------------------------------------- |
+| **0**  | **Fix the lying badges.** `getVoiceCapabilities` must reflect reality (or the stubs must be marked unavailable in the UI) | S      | No more "✓ TTS" on a throwing provider   | ✅ **Done**                                   |
+| **0b** | Fix `ai/parser.rs::parse_docx` stub + stop silently skipping empty extractions                                            | S      | DOCX indexes real text; skips are logged | ✅ **Done**                                   |
 | **1**  | Add `sherpa-onnx` + `sherpa-onnx-sys` to `ml-sidecar`; `transcribe` method                                                | M      | **Offline STT, no key, no server**       | ✅ **Verified end-to-end** (RTF 0.033, 99.8%) |
-| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ✅ **Verified end-to-end** (FR, RTF 0.573) |
-| **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ✅ **Done**                   |
-| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ✅ **Done**                   |
-| **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜                            |
-| **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜                            |
+| **2**  | `synthesize` method (Piper/VITS voice)                                                                                    | M      | **Offline TTS** — the 88%-cost half      | ✅ **Verified end-to-end** (FR, RTF 0.573)    |
+| **3**  | `offline` provider in `voiceService` + VoiceSettings UI                                                                   | S      | User-selectable, zero-config             | ✅ **Done**                                   |
+| **4**  | Register local speech models in `modelRegistry` (`stt`/`tts` flags already exist)                                         | S      | Models appear in the existing UI         | ✅ **Done**                                   |
+| **5**  | Implement the `elevenlabs` TTS stub (cloud, but currently dead)                                                           | S      | Provider stops throwing                  | ⬜                                            |
+| **6**  | VAD/diarization for call recordings                                                                                       | L      | "Who said what" in digests               | ⬜                                            |
 
 **Phase 0 is not optional.** Shipping an offline engine behind a UI that already
 misreports capabilities makes the confusion worse, not better.
@@ -288,7 +288,7 @@ The blocker was cleared and the feature **compiles**:
 One real compile error was found and fixed in the process: `OfflineModelConfig.model_type`
 is `Option<String>`, not `String` (the compiler named it exactly).
 
-**So the engine is reachable.** What is *still* not done: no ONNX model has been downloaded
+**So the engine is reachable.** What is _still_ not done: no ONNX model has been downloaded
 or run, so there is **no RTF measurement and no transcription has actually happened**. The
 scaffolding compiles; the capability is unproven.
 
@@ -296,44 +296,44 @@ scaffolding compiles; the capability is unproven.
 
 That gap is now closed. A real model was downloaded and a real transcription was run:
 
-| Item | Value |
-| --- | --- |
-| Model | `csukuangfj/sherpa-onnx-zipformer-small-en-2023-06-26` (int8 transducer) |
-| Model size | ~29 MB total (encoder 26.0 MB, decoder 1.3 MB, joiner 0.26 MB, tokens 5 KB) |
-| Harness | `crates/ml-sidecar/examples/stt_smoke.rs` (run manually; needs a model on disk) |
-| Audio | the model's own `test_wavs/1.wav` (16.7 s, 16 kHz) |
-| **Load time** | measured and printed by the harness |
-| **Decode time** | **0.482 s** |
-| **RTF** | **0.029** — ~34× faster than real time |
-| **Accuracy** | **0.998 similarity** vs the repo's published `trans.txt` |
+| Item            | Value                                                                           |
+| --------------- | ------------------------------------------------------------------------------- |
+| Model           | `csukuangfj/sherpa-onnx-zipformer-small-en-2023-06-26` (int8 transducer)        |
+| Model size      | ~29 MB total (encoder 26.0 MB, decoder 1.3 MB, joiner 0.26 MB, tokens 5 KB)     |
+| Harness         | `crates/ml-sidecar/examples/stt_smoke.rs` (run manually; needs a model on disk) |
+| Audio           | the model's own `test_wavs/1.wav` (16.7 s, 16 kHz)                              |
+| **Load time**   | measured and printed by the harness                                             |
+| **Decode time** | **0.482 s**                                                                     |
+| **RTF**         | **0.029** — ~34× faster than real time                                          |
+| **Accuracy**    | **0.998 similarity** vs the repo's published `trans.txt`                        |
 
 The single difference from ground truth was `FOR EVER` → `FOREVER` — a whitespace
 normalisation artefact, not a recognition error.
 
 **Interpretation, carefully:** RTF 0.029 is comfortably below the `< 1.0` gate in
-SELF-HOSTING §2.1, on this host, for a *small English* model at batch latency. It does **not**
+SELF-HOSTING §2.1, on this host, for a _small English_ model at batch latency. It does **not**
 transfer to: the streaming French model, the larger multilingual models, a loaded VPS, or
 concurrent calls. It is one real data point, not a general claim.
 
 **Still unverified:** any non-English locale end-to-end (the locale matrix in §3.2.1 is model
-*existence*, not measured quality), and TTS entirely.
+_existence_, not measured quality), and TTS entirely.
 
 #### Phase 2 verification — offline TTS MEASURED (2026-10-01)
 
-| Item | Value |
-| --- | --- |
-| Voice | `csukuangfj/vits-piper-fr_FR-siwis-medium` (VITS/Piper, French) |
-| Voice size | ~81 MB (model 63.2 MB + `espeak-ng-data/` 18 MB) |
-| Harness | `crates/ml-sidecar/examples/tts_smoke.rs` |
-| Text | *"Bonjour, ceci est un test de synthèse vocale hors ligne pour la facturation."* (76 chars) |
-| **Load time** | 3049 ms (2 threads) |
-| **Synth time** | **2.489 s** for 4.35 s of audio |
-| **RTF** | **0.573** — ~1.7× faster than real time |
-| Output | 95,813 samples @ 22050 Hz, mono 16-bit WAV, peak 0.52, RMS 0.0996 |
-| **Throughput** | 17 chars/sec of audio; 31 chars/sec of compute |
+| Item           | Value                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| Voice          | `csukuangfj/vits-piper-fr_FR-siwis-medium` (VITS/Piper, French)                             |
+| Voice size     | ~81 MB (model 63.2 MB + `espeak-ng-data/` 18 MB)                                            |
+| Harness        | `crates/ml-sidecar/examples/tts_smoke.rs`                                                   |
+| Text           | _"Bonjour, ceci est un test de synthèse vocale hors ligne pour la facturation."_ (76 chars) |
+| **Load time**  | 3049 ms (2 threads)                                                                         |
+| **Synth time** | **2.489 s** for 4.35 s of audio                                                             |
+| **RTF**        | **0.573** — ~1.7× faster than real time                                                     |
+| Output         | 95,813 samples @ 22050 Hz, mono 16-bit WAV, peak 0.52, RMS 0.0996                           |
+| **Throughput** | 17 chars/sec of audio; 31 chars/sec of compute                                              |
 
 **Interpretation, carefully:** RTF 0.573 clears the `< 1.0` gate, but with far less headroom
-than STT's 0.033. Local TTS is viable for *batch* generation (reading an invoice aloud,
+than STT's 0.033. Local TTS is viable for _batch_ generation (reading an invoice aloud,
 summarising a thread) and marginal for live conversational use, where 0.573 plus STT plus
 network would approach real time. The `medium` voice is also the slow end — `low` voices
 exist for exactly this trade-off. **Measure a `low` voice before committing to live calls.**
@@ -341,12 +341,12 @@ exist for exactly this trade-off. **Measure a `low` voice before committing to l
 **A real integration pitfall, found by running it:** the first attempt failed with
 `Failed to phonemize ... Failed to set eSpeak-ng voice`. The cause was downloading a
 hand-picked subset of `espeak-ng-data/`. That directory is **355 files** (18 MB) and includes
-`lang/roa/fr` — the voice *definition*. Without it Piper cannot phonemise at all. **Vendors
+`lang/roa/fr` — the voice _definition_. Without it Piper cannot phonemise at all. **Vendors
 must ship the complete `espeak-ng-data/` directory, not a subset.** This is the single most
 likely thing to break a naive packaging attempt.
 
 **Still not machine-verified:** intelligibility. The harness confirms non-silent audio of the
-right rate and duration; whether the French *sounds* correct is a human judgement. The WAV is
+right rate and duration; whether the French _sounds_ correct is a human judgement. The WAV is
 written to disk (`fr_siwis_smoke.wav`) for listening.
 
 #### TTS verified end-to-end, including the `espeak-ng-data` subset (2026-10-01)
@@ -357,19 +357,19 @@ hazard the catalog could get wrong: `espeak-ng-data/`.
 The **full** directory is 355 files / 18 MB — mostly voice styles and dictionaries for
 languages this app does not speak. The catalog ships a **9-file subset**. A subset is exactly
 what failed earlier with `Failed to set eSpeak-ng voice`, so it had to be proven rather than
-assumed. `crates/ml-sidecar/examples/tts_smoke.rs` now builds a directory containing *only*
+assumed. `crates/ml-sidecar/examples/tts_smoke.rs` now builds a directory containing _only_
 those 9 files and synthesises from it:
 
-| Check | Result |
-| --- | --- |
+| Check              | Result                                            |
+| ------------------ | ------------------------------------------------- |
 | Directory contents | exactly the 9 catalog files (`espeak: 7 entries`) |
-| Load | ok, 2716 ms, 22050 Hz, 1 speaker |
-| Synthesise | 4.58 s of audio, **peak 0.57** (non-silent) |
-| **Verdict** | **PASS — the shipped subset is sufficient** |
+| Load               | ok, 2716 ms, 22050 Hz, 1 speaker                  |
+| Synthesise         | 4.58 s of audio, **peak 0.57** (non-silent)       |
+| **Verdict**        | **PASS — the shipped subset is sufficient**       |
 
 So the hand-picked list is correct: `phondata`, `phonindex`, `phontab`, `intonations`,
 `<lang>_dict`, `en_dict`, and the `lang/<family>/<code>` voice definition. The 348 files left
-out are voice *styles* (`voices/!v/*`) and other languages' dictionaries — not needed.
+out are voice _styles_ (`voices/!v/*`) and other languages' dictionaries — not needed.
 
 **Also verified:** the **release** sidecar binary (`scripts/build-sidecar.sh --release`,
 98 MB) passes all 8 JSON-RPC E2E checks — STT transcribe and TTS synthesise both route
@@ -407,16 +407,16 @@ the role token (int8 preferred, then shortest for determinism); TTS takes the la
 
 **Final E2E result — all eight checks pass:**
 
-| Step | Result |
-| --- | --- |
-| `ping` | ok |
-| `load_stt_model` | ok, 3040 ms |
-| `transcribe` | 477 ms, correct text |
-| `list_models` | reports `stt: true` |
-| `load_tts_voice` | ok, 2864 ms, 22050 Hz |
-| `synthesize` | 461 ms, non-silent (peak 0.55), 4.38 s of audio |
-| `list_models` | reports `tts: true` |
-| `unload_*` | ok |
+| Step             | Result                                          |
+| ---------------- | ----------------------------------------------- |
+| `ping`           | ok                                              |
+| `load_stt_model` | ok, 3040 ms                                     |
+| `transcribe`     | 477 ms, correct text                            |
+| `list_models`    | reports `stt: true`                             |
+| `load_tts_voice` | ok, 2864 ms, 22050 Hz                           |
+| `synthesize`     | 461 ms, non-silent (peak 0.55), 4.38 s of audio |
+| `list_models`    | reports `tts: true`                             |
+| `unload_*`       | ok                                              |
 
 ⚠️ **RTF discrepancy, recorded honestly.** This run measured TTS **RTF 0.105**, whereas the
 earlier smoke example measured **0.573**. Both are real measurements of the same voice; the
@@ -440,10 +440,12 @@ for checking the default one when the new code is feature-gated. The gate is whe
 hides.**
 
 **Bug 2 — the app could not start at all (pre-existing).**
+
 ```
 [panic] state() called before manage() for app_lib::events::EventBus
 ```
-`db::change_tracker::spawn_tracker(...)` reads `app.state::<EventBus>()` ~200 lines *above*
+
+`db::change_tracker::spawn_tracker(...)` reads `app.state::<EventBus>()` ~200 lines _above_
 where `app.manage(event_bus)` sat in the same setup closure. `state()` panics for an
 unmanaged type, so the process died before the window. Introduced in `1f007dd` (2026-07-18) —
 **unrelated to the speech work**, and invisible to `cargo check` because it is a runtime
@@ -451,16 +453,16 @@ ordering fault. Fixed (commit `649b770`) by managing the EventBus at the top of 
 
 **After both fixes:**
 
-| Check | Result |
-| --- | --- |
-| `cargo check -p smemaster --features rustls-tls,local-ai --lib` | EXIT=0, 0 errors |
-| `tauri dev` build (1078 crates) | succeeded |
-| App startup | `[System] 100% — Initialization complete` |
-| Panics | 0 |
-| `smemaster.exe` | running |
+| Check                                                           | Result                                    |
+| --------------------------------------------------------------- | ----------------------------------------- |
+| `cargo check -p smemaster --features rustls-tls,local-ai --lib` | EXIT=0, 0 errors                          |
+| `tauri dev` build (1078 crates)                                 | succeeded                                 |
+| App startup                                                     | `[System] 100% — Initialization complete` |
+| Panics                                                          | 0                                         |
+| `smemaster.exe`                                                 | running                                   |
 
 **Still not exercised end-to-end:** an actual `ai_synthesize_speech` / `ai_transcribe_audio`
-call *through the webview*. The app runs, the commands compile, and the sidecar speaks
+call _through the webview_. The app runs, the commands compile, and the sidecar speaks
 correct JSON-RPC — but the click-to-audio path has not been driven, because the app has no
 MCP bridge to automate the webview. That requires either the tauri-mcp plugin or a manual
 test. Stated rather than implied.
@@ -495,12 +497,12 @@ over-reporting is reintroduced.
 
 ## 7. Relationship to the voice-agent work (do not conflate)
 
-|                | Voice-agent **P6** (live)                                                                   | **This doc** (batch) |
-| -------------- | ------------------------------------------------------------------------------------------- | -------------------- |
-| Latency budget | < 300 ms                                                                                    | seconds–minutes      |
-| Engine         | Deepgram (commercial, per [15-landscape](../06-ROADMAP/15-voice-agent-oss-landscape.md) §2) | sherpa-onnx (local)  |
-| Runs on        | VPS                                                                                         | desktop              |
-| Trigger        | during a call                                                                               | after the fact       |
+|                | Voice-agent **P6** (live)                                                    | **This doc** (batch) |
+| -------------- | ---------------------------------------------------------------------------- | -------------------- |
+| Latency budget | < 300 ms                                                                     | seconds–minutes      |
+| Engine         | Deepgram (commercial, per 15-landscape §2 — removed 2026-10-03, git history) | sherpa-onnx (local)  |
+| Runs on        | VPS                                                                          | desktop              |
+| Trigger        | during a call                                                                | after the fact       |
 
 The landscape doc classifies P6 as _"⛔ live / ⚠️ OSS batch"_ and [SELF-HOSTING](../voice/dev/SELF-HOSTING.md)
 §7 keeps self-hosted inference as a **Gate 5 candidate gated on an RTF measurement**.

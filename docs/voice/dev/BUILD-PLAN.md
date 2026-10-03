@@ -1,8 +1,8 @@
 # Build Plan — from prototype to product
 
 > **Written:** 2026-09-28 · **For:** whoever implements Gate 3 onward, and any agent delegated a piece
-> **Read first:** [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) · [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> [`17-voice-agent-topology-decision.md`](../../06-ROADMAP/17-voice-agent-topology-decision.md)
+> **Read first:** [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) · [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> (17-topology-decision removed 2026-10-03 — decisions captured in ADR-001; git history)
 > **The screens are already decided.** This plan is only about building them.
 
 ---

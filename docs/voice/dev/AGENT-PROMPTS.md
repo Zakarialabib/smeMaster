@@ -4,8 +4,8 @@
 > decided state instead of re-deriving it. One prompt per gate, self-contained.
 > **Read first (every gate):** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`spec`](../../specs/2026-09-28-voice-agent.md) ·
-> [`OSS landscape`](../../06-ROADMAP/15-voice-agent-oss-landscape.md) ·
 > [`glossary`](../../glossary/glossary-voice-agent.md)
+> (OSS landscape doc removed 2026-10-03 — git history)
 > **Last updated:** 2026-09-28
 
 ## Rules that apply to every gate below

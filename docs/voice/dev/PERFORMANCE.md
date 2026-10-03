@@ -4,18 +4,18 @@
 > It was adjudicated against primary sources and against the decisions already signed in
 > this project. **Several of its load-bearing claims do not hold.** Verified findings:
 >
-> | Claim in this document | Verdict |
-> |---|---|
-> | Voxtral TTS is "an open-weight model licensed for commercial use" (Phase 3, and the TTS table) | ❌ **FALSE.** `mistralai/Voxtral-4B-TTS-2603` is **CC-BY-NC-4.0 — non-commercial** (HuggingFace registry, 2026-09-28). The same paragraph later admits it. Hard reject for a paid client product. |
-> | "For the `smeMaster` application … leveraging WebRTC via LiveKit is the correct choice" | ❌ **Wrong for this architecture.** The caller is on the PSTN; media arrives as carrier μ-law ~8 kHz over a WebSocket media stream (spec Gate 4). There is no browser in the media path in v1. WebRTC describes an SFU topology we do not have. |
-> | Cartesia as the Phase-1 primary TTS | ⚠️ **Contradicts a signed decision.** The spec fixes ElevenLabs as primary with the seam behind it. Cartesia is a legitimate *candidate behind the seam* — it does not un-settle the seam. |
-> | Deepgram as primary STT | ⚠️ Already the signed choice; presented here as if new. |
-> | Deepgram Flux "saves 200–600 ms" end-of-turn detection; Cartesia "40–90 ms" TTFA; the pricing rows | ⚠️ **Vendor and competitor-blog sourced** (deepgram.com, elevenlabs.io, coval.ai, gladia.io). Treat as unverified until measured on our audio — the same rule `COST-MODEL.md` §6 applies to every vendor number. |
-> | Optimising for "high-volume" self-hosting economics | ⚠️ **Inverted for our problem.** Our constraint is *pilot* volume (200–600 min/mo) where **fixed cost dominates** (`COST-MODEL.md` §2) — adding a GPU VPS *raises* cost. See Part 6 for the option that does not. |
+> | Claim in this document                                                                             | Verdict                                                                                                                                                                                                                                         |
+> | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | Voxtral TTS is "an open-weight model licensed for commercial use" (Phase 3, and the TTS table)     | ❌ **FALSE.** `mistralai/Voxtral-4B-TTS-2603` is **CC-BY-NC-4.0 — non-commercial** (HuggingFace registry, 2026-09-28). The same paragraph later admits it. Hard reject for a paid client product.                                               |
+> | "For the `smeMaster` application … leveraging WebRTC via LiveKit is the correct choice"            | ❌ **Wrong for this architecture.** The caller is on the PSTN; media arrives as carrier μ-law ~8 kHz over a WebSocket media stream (spec Gate 4). There is no browser in the media path in v1. WebRTC describes an SFU topology we do not have. |
+> | Cartesia as the Phase-1 primary TTS                                                                | ⚠️ **Contradicts a signed decision.** The spec fixes ElevenLabs as primary with the seam behind it. Cartesia is a legitimate _candidate behind the seam_ — it does not un-settle the seam.                                                      |
+> | Deepgram as primary STT                                                                            | ⚠️ Already the signed choice; presented here as if new.                                                                                                                                                                                         |
+> | Deepgram Flux "saves 200–600 ms" end-of-turn detection; Cartesia "40–90 ms" TTFA; the pricing rows | ⚠️ **Vendor and competitor-blog sourced** (deepgram.com, elevenlabs.io, coval.ai, gladia.io). Treat as unverified until measured on our audio — the same rule `COST-MODEL.md` §6 applies to every vendor number.                                |
+> | Optimising for "high-volume" self-hosting economics                                                | ⚠️ **Inverted for our problem.** Our constraint is _pilot_ volume (200–600 min/mo) where **fixed cost dominates** (`COST-MODEL.md` §2) — adding a GPU VPS _raises_ cost. See Part 6 for the option that does not.                               |
 >
 > **What holds and is worth adopting:** (1) **TTS audio caching** for greetings, confirmations
 > and the disclosure line — the cheapest lever on the dominant cost line; (2) **context
-> compounding** means the per-minute LLM figure in `COST-MODEL.md` §1 is a *floor*, not an
+> compounding** means the per-minute LLM figure in `COST-MODEL.md` §1 is a _floor_, not an
 > average; (3) Cartesia and integrated turn-detection as **evaluation candidates** at Gate 4/5;
 > (4) the residency/DPA checklist, which sharpens the questions in `VENDOR-QUOTE-REQUEST.md`.
 > **HDS certification is out of scope** — this client is not a health-data processor.
@@ -27,8 +27,8 @@
 > ([`XDcobra/react-native-sherpa-onnx`](https://github.com/XDcobra/react-native-sherpa-onnx), MIT).
 >
 > Related: [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> [`OSS landscape`](../../06-ROADMAP/15-voice-agent-oss-landscape.md) ·
 > [`COST-MODEL.md`](../client/COST-MODEL.md)
+> (OSS landscape doc removed 2026-10-03 — git history)
 
 # Optimizing Voice Agent Performance: A Blueprint for Low-Cost, Low-Latency, and EU-Compliant French AI Assistants
 
@@ -39,29 +39,29 @@ load-bearing claim in them is classified below. Nothing in Parts 1–5 may be qu
 used in a pricing decision, or treated as a design input without a class of PRIMARY or
 MEASURED.
 
-| Class | Meaning |
-|---|---|
-| **PRIMARY** | From a vendor's own first-party technical documentation, API, or model card — read at the source, dated |
-| **VENDOR** | Vendor marketing or pricing page. Directionally useful, **not independently verified**, and a vendor's own number for their own product is the weakest form of vendor evidence |
-| **COMPETITOR-BLOG** | A vendor *blogging about a competitor*. A marketing artefact on both counts. Zero weight |
-| **UNVERIFIED** | Asserted in the draft with no source we could reach. Carries the same force as `COST-MODEL.md` §6's unchecked boxes |
+| Class               | Meaning                                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **PRIMARY**         | From a vendor's own first-party technical documentation, API, or model card — read at the source, dated                                                                        |
+| **VENDOR**          | Vendor marketing or pricing page. Directionally useful, **not independently verified**, and a vendor's own number for their own product is the weakest form of vendor evidence |
+| **COMPETITOR-BLOG** | A vendor _blogging about a competitor_. A marketing artefact on both counts. Zero weight                                                                                       |
+| **UNVERIFIED**      | Asserted in the draft with no source we could reach. Carries the same force as `COST-MODEL.md` §6's unchecked boxes                                                            |
 
 ### 0.2 Decision-relevant claims, with their class
 
 The editorial note already adjudicated six claims. These are the remaining load-bearing ones,
 classified claim by claim.
 
-| # | Claim | Location | Class | Status 2026-09-28 |
-|---|---|---|---|---|
-| C1 | Deepgram has an **EU data-residency endpoint**, hostname unstated | Part 1 | **UNVERIFIED** | ⚠️ **Re-verification attempted and inconclusive.** `api.deepgram.com` and `api.eu.deepgram.com` both answer `404` to an unauthenticated probe and `api.deepgram.eu` fails TLS — so the `api.eu.` form *resolves and responds*, but an unauthenticated 404 cannot distinguish a real EU host from a wildcard, and the docs pages are JS-rendered and yielded no text. **The flag stays.** The exact hostname is a Gate 4 blocker, not a footnote: it decides whether we can claim EU residency for STT at all. |
-| C2 | **Cartesia TTFA "40–90 ms"** | Part 2, TTS table | **VENDOR** | Flag kept. A vendor's own latency figure, unreplicated, on unspecified hardware, with a warm/cold cache unstated. |
-| C3 | **Deepgram Flux saves 200–600 ms** on end-of-turn detection | Part 2 | **VENDOR** | Flag kept. Same shape as C2 — and it is the *integrated* turn-detection claim, which matters more because turn detection dominates perceived latency. |
-| C4 | **Integrated end-of-turn detection is available and worth using** | Part 2 | **UNVERIFIED** | ⚠️ **Not re-verifiable from documentation alone.** This is a *capability* claim, and a capability claim is settled by integration, not by a benchmark. |
-| C5 | STT per-hour and TTS per-character pricing rows | Parts 1–2 | **VENDOR** | Flag kept, and **decay fast**. `COST-MODEL.md` §6 remains the checklist; these rows are not a substitute for a dated screenshot. |
-| C6 | **Voxtral TTS is open-weight and commercially licensed** | Part 3, TTS table | ❌ **FALSE** | Adjudicated in the editorial note: CC-BY-NC-4.0. Hard reject. |
-| C7 | WebRTC/LiveKit is the correct media choice for this app | Part 2 | ❌ **FALSE** | Adjudicated: the caller is on the PSTN; no browser is in the media path. |
-| C8 | Cartesia as Phase-1 primary TTS | Part 2 | ⚠️ **CONTRADICTS A SIGNED DECISION** | ElevenLabs is primary; Cartesia is a candidate *behind the seam*. |
-| C9 | High-volume self-hosting economics | Part 4 | ⚠️ **INVERTED for our problem** | Our volume is pilot-scale, where fixed cost dominates. |
+| #   | Claim                                                             | Location          | Class                                | Status 2026-09-28                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ----------------------------------------------------------------- | ----------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Deepgram has an **EU data-residency endpoint**, hostname unstated | Part 1            | **UNVERIFIED**                       | ⚠️ **Re-verification attempted and inconclusive.** `api.deepgram.com` and `api.eu.deepgram.com` both answer `404` to an unauthenticated probe and `api.deepgram.eu` fails TLS — so the `api.eu.` form _resolves and responds_, but an unauthenticated 404 cannot distinguish a real EU host from a wildcard, and the docs pages are JS-rendered and yielded no text. **The flag stays.** The exact hostname is a Gate 4 blocker, not a footnote: it decides whether we can claim EU residency for STT at all. |
+| C2  | **Cartesia TTFA "40–90 ms"**                                      | Part 2, TTS table | **VENDOR**                           | Flag kept. A vendor's own latency figure, unreplicated, on unspecified hardware, with a warm/cold cache unstated.                                                                                                                                                                                                                                                                                                                                                                                             |
+| C3  | **Deepgram Flux saves 200–600 ms** on end-of-turn detection       | Part 2            | **VENDOR**                           | Flag kept. Same shape as C2 — and it is the _integrated_ turn-detection claim, which matters more because turn detection dominates perceived latency.                                                                                                                                                                                                                                                                                                                                                         |
+| C4  | **Integrated end-of-turn detection is available and worth using** | Part 2            | **UNVERIFIED**                       | ⚠️ **Not re-verifiable from documentation alone.** This is a _capability_ claim, and a capability claim is settled by integration, not by a benchmark.                                                                                                                                                                                                                                                                                                                                                        |
+| C5  | STT per-hour and TTS per-character pricing rows                   | Parts 1–2         | **VENDOR**                           | Flag kept, and **decay fast**. `COST-MODEL.md` §6 remains the checklist; these rows are not a substitute for a dated screenshot.                                                                                                                                                                                                                                                                                                                                                                              |
+| C6  | **Voxtral TTS is open-weight and commercially licensed**          | Part 3, TTS table | ❌ **FALSE**                         | Adjudicated in the editorial note: CC-BY-NC-4.0. Hard reject.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| C7  | WebRTC/LiveKit is the correct media choice for this app           | Part 2            | ❌ **FALSE**                         | Adjudicated: the caller is on the PSTN; no browser is in the media path.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| C8  | Cartesia as Phase-1 primary TTS                                   | Part 2            | ⚠️ **CONTRADICTS A SIGNED DECISION** | ElevenLabs is primary; Cartesia is a candidate _behind the seam_.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| C9  | High-volume self-hosting economics                                | Part 4            | ⚠️ **INVERTED for our problem**      | Our volume is pilot-scale, where fixed cost dominates.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 **C1, C4 are the two that could change an architecture decision. Both stay flagged.** The rest
 are cost or marketing claims that the `COST-MODEL.md` §6 process already governs.
@@ -72,12 +72,13 @@ Written now, so the pilot is not the first time anyone asks these questions. Eac
 experiment with a pass criterion, not a literature review.
 
 **C1 — Deepgram EU residency.** Settled in two steps, in order:
-1. *Cheap, do first:* authenticated request to the candidate host with a single short FR audio
+
+1. _Cheap, do first:_ authenticated request to the candidate host with a single short FR audio
    clip, then read the **inbound Webhook/Request-URI region field** Deepgram returns, and
    confirm the host in the response matches the EU one. If Deepgram echoes a region, that is the
    answer; if not, the question is unanswerable from the API and must be answered by their
    DPA.
-2. *Decisive:* written confirmation in the DPA or contract that STT audio for our traffic is
+2. _Decisive:_ written confirmation in the DPA or contract that STT audio for our traffic is
    processed in the EU. This is the only evidence that survives an audit, and it belongs in
    `VENDOR-QUOTE-REQUEST.md` question 6.
    **Pass:** DPA names an EU region for audio. **Fail:** US-only processing → the EU-residency
@@ -85,23 +86,23 @@ experiment with a pass criterion, not a literature review.
 
 **C4 / C3 — integrated end-of-turn detection.** A/B on **our own audio**, never a vendor demo:
 take ≥ 30 FR calls' worth of recorded caller audio (transcripts only — the no-audio rule applies
-to *product* retention, not to a test fixture, and the fixture is deleted after the test).
+to _product_ retention, not to a test fixture, and the fixture is deleted after the test).
 Measure, for each configuration, `turn_gap` p50 and p95:
+
 - **A:** our current endpointing (VAD + silence threshold)
 - **B:** Deepgram Flux end-of-turn, same audio, same TTS, same LLM
-**Pass:** B reduces `turn_gap` p50 by ≥ 200 ms **without** raising barge-in (a cut-off caller).
-**A latency win that raises barge-in is a regression** — a caller interrupted mid-sentence is
-worse than a half-second of silence, and that is a UX judgement, not a number.
+  **Pass:** B reduces `turn_gap` p50 by ≥ 200 ms **without** raising barge-in (a cut-off caller).
+  **A latency win that raises barge-in is a regression** — a caller interrupted mid-sentence is
+  worse than a half-second of silence, and that is a UX judgement, not a number.
 
 **C2 — Cartesia TTFA.** Only measured, only on the same fixture: p50/p95 TTFA for the actual FR
 voice at 8 kHz μ-law, cold and warm cache, ≥ 100 requests. **Pass:** ≤ 150 ms p95 warm, and a
-provider error rate under 0.5%. Cartesia stays *behind the seam* either way — the seam is what
+provider error rate under 0.5%. Cartesia stays _behind the seam_ either way — the seam is what
 makes this a 30-minute test rather than a re-architecture.
 
-**A note on what no test here can settle:** whether Cartesia's *voice quality* is better for
+**A note on what no test here can settle:** whether Cartesia's _voice quality_ is better for
 French is a listening test with the client, not a metric. Add it to the Gate 4 walkthrough
 rather than pretending a TTFA number answers it.
-
 
 ## Comparative Analysis of Speech-to-Text Providers for French Call Management
 
@@ -115,14 +116,14 @@ ElevenLabs, primarily renowned for its state-of-the-art Text-to-Speech (TTS) syn
 
 Beyond the primary candidates of Deepgram and ElevenLabs, several alternative providers present compelling value propositions, particularly for teams prioritizing specific aspects of compliance, cost, or multilingual support. Gladia stands out as a strong contender for European projects due to its Paris-based origin and focus on data privacy [[63](https://europeanstack.com/software/gladia)]. Its Solaria-3 model is ranked #1 for accuracy on noisy, real-world business audio across core European languages, including French, outperforming competitors on challenging datasets [[1](https://www.gladia.io/blog/best-speech-to-text-apis), [37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]. Gladia's asynchronous-first architecture is designed for call-center recordings and sales calls, aligning well with many agent use cases [[1](https://www.gladia.io/blog/best-speech-to-text-apis)]. A key differentiator is its pricing model, which bundles essential audio intelligence features like speaker diarization, sentiment analysis, and named entity recognition into a single per-hour rate on its Growth plan, avoiding the hidden costs associated with modular add-ons [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared), [37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]. On paid plans, Gladia defaults to not using customer audio for model training, a significant compliance advantage [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]. Like Deepgram, Gladia offers EU data residency as a standard configuration for its paid plans, simplifying compliance efforts [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]. AssemblyAI is another major player offering a Universal-3 Pro Streaming model that supports French among six other languages [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)]. Its pricing follows a modular model, where features like speaker diarization are billed separately, which can increase the total cost [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared)]. AssemblyAI provides self-serve options for US or EU regions, with its EU processing center located in Dublin [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)]. Soniox offers a "Sovereign Cloud" solution where audio and transcripts are processed and stored exclusively within the EU jurisdiction, preventing any cross-border data transfers [[3](https://soniox.com/europe)]. This makes it an excellent choice for projects with the strictest data sovereignty requirements, though its availability might be limited to enterprise tiers. Finally, open-source models like NVIDIA's Parakeet-TDT-0.6B-v3 provide the ultimate control and potential for long-term cost savings by eliminating per-minute API fees entirely, shifting the cost burden to GPU hardware [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]. However, this approach demands significant engineering resources for self-hosting, maintenance, and scaling [[6](https://comparevoiceai.com/blog/cost-optimisation-voice-agent/)].
 
-| Provider | Core Model(s) | Key Latency Feature | French Language Support | EU Data Residency | Typical Pricing (per min/hr) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Deepgram** | Nova-3, Flux | Integrated end-of-turn detection saves 200-600ms [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Enhanced model available; supports multilingual code-switching [[44](https://deepgram.com/learn/enhanced-french), [77](https://deepgram.com/learn/nova-3-multilingual-major-wer-improvements-across-languages)] | Yes, via dedicated EU endpoint (`api.eu.deepgram.com`) [[36](https://deepgram.com/learn/deepgram-eu-endpoint-now-generally-available)] | ~$0.0092/min (~$0.55/hr) + add-ons [[40](https://deepgram.com/pricing)] |
-| **ElevenLabs** | Scribe v2 Realtime | Sub-150ms first-partial latency [[18](https://elevenlabs.io/speech-to-text)] | Excellent accuracy (≤5% WER); supports mid-conversation switching [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared), [18](https://elevenlabs.io/speech-to-text)] | Enterprise-only; requires ZRM and EU API keys [[33](https://elevenlabs.io/docs/overview/administration/data-residency)] | Tiered subscription; $0.40/hr public vs. ~$0.22/hr leaderboard [[18](https://elevenlabs.io/speech-to-text), [20](https://www.digitalapplied.com/blog/openai-gpt-transcribe-stt-model-comparison-2026)] |
-| **Gladia** | Solaria-3 (async), Solaria-1 (streaming) | Async model has lower WER; Realtime latency <103ms partial [[1](https://www.gladia.io/blog/best-speech-to-text-apis)] | Ranked #1 for business audio; supports >100 languages with code-switching [[1](https://www.gladia.io/blog/best-speech-to-text-apis), [63](https://europeanstack.com/software/gladia)] | Yes, default on paid plans [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)] | Bundled pricing (~$0.20-$0.25/hr on Growth plan) [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)] |
-| **AssemblyAI** | Universal-3 Pro Streaming | ~150ms P50 latency [[28](https://www.cekura.ai/blogs/best-voice-ai-apis-real-time-audio-processing)] | Supports French and 5 other languages in its streaming model [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)] | Yes, self-serve EU region option [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)] | Base rate + add-ons (e.g., diarization at extra cost) [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared)] |
-| **Soniox** | Proprietary Models | Processes audio in real-time memory, not stored [[3](https://soniox.com/europe)] | Native-speaker accuracy for French and many other European languages [[3](https://soniox.com/europe)] | Yes, via Sovereign Cloud solution [[3](https://soniox.com/europe)] | Information not available in provided sources |
-| **Open Source** | NVIDIA Parakeet-TDT-0.6B-v3 | Latency depends on hardware; no per-minute fees [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Supports 25 EU languages [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Full control over infrastructure location [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Based on GPU hardware costs [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] |
+| Provider        | Core Model(s)                            | Key Latency Feature                                                                                                                                               | French Language Support                                                                                                                                                                                                              | EU Data Residency                                                                                                                                          | Typical Pricing (per min/hr)                                                                                                                                                                           |
+| :-------------- | :--------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deepgram**    | Nova-3, Flux                             | Integrated end-of-turn detection saves 200-600ms [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Enhanced model available; supports multilingual code-switching [[44](https://deepgram.com/learn/enhanced-french), [77](https://deepgram.com/learn/nova-3-multilingual-major-wer-improvements-across-languages)]                      | Yes, via dedicated EU endpoint (`api.eu.deepgram.com`) [[36](https://deepgram.com/learn/deepgram-eu-endpoint-now-generally-available)]                     | ~$0.0092/min (~$0.55/hr) + add-ons [[40](https://deepgram.com/pricing)]                                                                                                                                |
+| **ElevenLabs**  | Scribe v2 Realtime                       | Sub-150ms first-partial latency [[18](https://elevenlabs.io/speech-to-text)]                                                                                      | Excellent accuracy (≤5% WER); supports mid-conversation switching [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared), [18](https://elevenlabs.io/speech-to-text)] | Enterprise-only; requires ZRM and EU API keys [[33](https://elevenlabs.io/docs/overview/administration/data-residency)]                                    | Tiered subscription; $0.40/hr public vs. ~$0.22/hr leaderboard [[18](https://elevenlabs.io/speech-to-text), [20](https://www.digitalapplied.com/blog/openai-gpt-transcribe-stt-model-comparison-2026)] |
+| **Gladia**      | Solaria-3 (async), Solaria-1 (streaming) | Async model has lower WER; Realtime latency <103ms partial [[1](https://www.gladia.io/blog/best-speech-to-text-apis)]                                             | Ranked #1 for business audio; supports >100 languages with code-switching [[1](https://www.gladia.io/blog/best-speech-to-text-apis), [63](https://europeanstack.com/software/gladia)]                                                | Yes, default on paid plans [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]                     | Bundled pricing (~$0.20-$0.25/hr on Growth plan) [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]                                           |
+| **AssemblyAI**  | Universal-3 Pro Streaming                | ~150ms P50 latency [[28](https://www.cekura.ai/blogs/best-voice-ai-apis-real-time-audio-processing)]                                                              | Supports French and 5 other languages in its streaming model [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)]                                                                                               | Yes, self-serve EU region option [[45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)]                                                 | Base rate + add-ons (e.g., diarization at extra cost) [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared)]                           |
+| **Soniox**      | Proprietary Models                       | Processes audio in real-time memory, not stored [[3](https://soniox.com/europe)]                                                                                  | Native-speaker accuracy for French and many other European languages [[3](https://soniox.com/europe)]                                                                                                                                | Yes, via Sovereign Cloud solution [[3](https://soniox.com/europe)]                                                                                         | Information not available in provided sources                                                                                                                                                          |
+| **Open Source** | NVIDIA Parakeet-TDT-0.6B-v3              | Latency depends on hardware; no per-minute fees [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]  | Supports 25 EU languages [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]                                                                                            | Full control over infrastructure location [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)] | Based on GPU hardware costs [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]                                                           |
 
 In summary, the choice of an STT provider for `smeMaster` involves navigating a landscape of competing priorities. Deepgram emerges as a powerful and technically sophisticated option, especially with its Flux model, offering a direct path to low-latency, real-time interaction and clear EU data residency. Its modular pricing requires careful tracking but allows for granular control. ElevenLabs offers superior French language accuracy and a seamless experience if its entire stack is used, but this comes at the cost of enterprise-level commitments for full compliance and a potentially more complex pricing structure. Gladia presents a compelling alternative, particularly for its transparent, bundled pricing and strong focus on European data privacy, backed by impressive benchmark results on relevant audio types. For the `smeMaster` project, a pragmatic approach would be to conduct hands-on testing with Deepgram's Nova-3/Flux and Gladia's Solaria models using representative French call audio to validate real-world performance before committing to a final choice.
 
@@ -138,14 +139,14 @@ Deepgram's Aura-2 TTS service represents a solid middle-ground option, offering 
 
 Beyond the major commercial APIs, the rise of open-weight and niche providers offers additional strategic options. Voxtral TTS, developed by Mistral, is an open-weight model licensed for commercial use that has demonstrated superior performance on French in blind listening tests, winning preference 54.4% of the time [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]. Self-hosting this model provides complete control over data privacy, ensuring full compliance with GDPR and other EU regulations by deploying it on private infrastructure [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]. While it requires a 16GB+ VRAM GPU and has a non-commercial license that may require a separate agreement for ordinary commercial use, the long-term cost savings for high-volume applications can be substantial, with infrastructure costs estimated at $200-500/month compared to $1,500-$3,000/month on ElevenLabs [[14](https://huggingface.co/blog/azhan77168/voxtral-tts), [15](https://pinggy.io/blog/best_open_source_self_hosted_text_to_speech_models/)]. Another low-cost entry point is FreeTTS, a service priced at $19/month for its PRO plan. It offers native neural voices for four French regions (France, Quebec, Belgium, Switzerland) hosted on servers in Germany, making it a simple and affordable way to initiate an EU-compliant project without significant upfront investment [[61](https://freetts.org/best-french-text-to-speech-tools)]. Other notable providers include Google Cloud TTS, which offers broad language coverage and integrates well with its cloud ecosystem, and Microsoft Azure Cognitive Services, known for its containerized on-premise deployment options suitable for regulated industries [[43](https://deepgram.com/learn/best-text-to-speech-apis-2026), [45](https://deepgram.com/learn/deepgram-vs-speechmatics-vs-assemblyai)].
 
-| Provider | Key Technology | Time-to-First-Audio (TTFA) | French Language Support | EU Compliance Path | Pricing Model |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Cartesia** | State Space Model (SSM) [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] | ~40-90 ms [[69](https://www.codesota.com/speech/elevenlabs-vs-cartesia), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)] | Yes, supports French [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] | Subscription-based; details on enterprise plans required | Usage-based (per 1,000 chars) [[13](https://inworld.ai/resources/elevenlabs-alternatives)] |
-| **ElevenLabs** | Diffusion-based Model [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] | ~75 ms (Flash v2.5); 250-300ms+ (Turbo/v3) [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025), [51](https://hamming.ai/resources/best-voice-agent-stack)] | Yes, extensive support for French variants [[60](https://elevenlabs.io/text-to-speech/french)] | Enterprise contract required for data residency/ZRM [[33](https://elevenlabs.io/docs/overview/administration/data-residency)] | Tiered subscription [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] |
-| **Deepgram** | Not specified | Sub-200ms baseline, down to 90ms [[16](https://deepgram.com/learn/deepgram-vs-elevenlabs), [43](https://deepgram.com/learn/best-text-to-speech-apis-2026)] | Yes, Aura-2 supports French [[43](https://deepgram.com/learn/best-text-to-speech-apis-2026)] | Available through EU endpoint and dedicated clusters [[16](https://deepgram.com/learn/deepgram-vs-elevenlabs)] | Pay-as-you-go ($0.030/1k chars) [[43](https://deepgram.com/learn/best-text-to-speech-apis-2026)] |
-| **Voxtral TTS** | Open-weight model (4B parameters) [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)] | ~70 ms (on H200 GPU) [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)] | Yes, supports French [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)] | Self-hosting on private EU infrastructure [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)] | Infrastructure/GPU costs only [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)] |
-| **FreeTTS** | Commercial Neural TTS | Not specified | Yes, regional voices for France, Quebec, Belgium, Switzerland [[61](https://freetts.org/best-french-text-to-speech-tools)] | Hosted on Hetzner Cloud in Germany [[61](https://freetts.org/best-french-text-to-speech-tools)] | PRO plan at $19/month [[61](https://freetts.org/best-french-text-to-speech-tools)] |
-| **Google Cloud** | Chirp 3 / Gemini TTS [[27](https://inworld.ai/resources/best-speech-to-speech-apis)] | Not specified | Yes, supports French [[61](https://freetts.org/best-french-text-to-speech-tools)] | Via GCP EU regions and DPA [[30](https://www.lumay.ai/blogs/best-ai-voice-agents-for-businesses-in-europe)] | Pay-as-you-go (per million characters) [[61](https://freetts.org/best-french-text-to-speech-tools)] |
+| Provider         | Key Technology                                                                                                    | Time-to-First-Audio (TTFA)                                                                                                                                                                                                        | French Language Support                                                                                                    | EU Compliance Path                                                                                                            | Pricing Model                                                                                                 |
+| :--------------- | :---------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **Cartesia**     | State Space Model (SSM) [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] | ~40-90 ms [[69](https://www.codesota.com/speech/elevenlabs-vs-cartesia), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)] | Yes, supports French [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)]             | Subscription-based; details on enterprise plans required                                                                      | Usage-based (per 1,000 chars) [[13](https://inworld.ai/resources/elevenlabs-alternatives)]                    |
+| **ElevenLabs**   | Diffusion-based Model [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)]   | ~75 ms (Flash v2.5); 250-300ms+ (Turbo/v3) [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025), [51](https://hamming.ai/resources/best-voice-agent-stack)]                           | Yes, extensive support for French variants [[60](https://elevenlabs.io/text-to-speech/french)]                             | Enterprise contract required for data residency/ZRM [[33](https://elevenlabs.io/docs/overview/administration/data-residency)] | Tiered subscription [[72](https://www.autointerviewai.com/blog/cartesia-vs-elevenlabs-tts-voice-agents-2026)] |
+| **Deepgram**     | Not specified                                                                                                     | Sub-200ms baseline, down to 90ms [[16](https://deepgram.com/learn/deepgram-vs-elevenlabs), [43](https://deepgram.com/learn/best-text-to-speech-apis-2026)]                                                                        | Yes, Aura-2 supports French [[43](https://deepgram.com/learn/best-text-to-speech-apis-2026)]                               | Available through EU endpoint and dedicated clusters [[16](https://deepgram.com/learn/deepgram-vs-elevenlabs)]                | Pay-as-you-go ($0.030/1k chars) [[43](https://deepgram.com/learn/best-text-to-speech-apis-2026)]              |
+| **Voxtral TTS**  | Open-weight model (4B parameters) [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]                      | ~70 ms (on H200 GPU) [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]                                                                                                                                                   | Yes, supports French [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]                                            | Self-hosting on private EU infrastructure [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]                          | Infrastructure/GPU costs only [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]                      |
+| **FreeTTS**      | Commercial Neural TTS                                                                                             | Not specified                                                                                                                                                                                                                     | Yes, regional voices for France, Quebec, Belgium, Switzerland [[61](https://freetts.org/best-french-text-to-speech-tools)] | Hosted on Hetzner Cloud in Germany [[61](https://freetts.org/best-french-text-to-speech-tools)]                               | PRO plan at $19/month [[61](https://freetts.org/best-french-text-to-speech-tools)]                            |
+| **Google Cloud** | Chirp 3 / Gemini TTS [[27](https://inworld.ai/resources/best-speech-to-speech-apis)]                              | Not specified                                                                                                                                                                                                                     | Yes, supports French [[61](https://freetts.org/best-french-text-to-speech-tools)]                                          | Via GCP EU regions and DPA [[30](https://www.lumay.ai/blogs/best-ai-voice-agents-for-businesses-in-europe)]                   | Pay-as-you-go (per million characters) [[61](https://freetts.org/best-french-text-to-speech-tools)]           |
 
 Ultimately, the choice of a TTS provider for `smeMaster` should be guided by the project's primary constraint: latency versus quality. If the goal is to build the snappiest possible conversational loop to ensure a natural, uninterrupted dialogue, Cartesia is the unequivocal choice due to its industry-leading TTFA [[69](https://www.codesota.com/speech/elevenlabs-vs-cartesia)]. Its SSM architecture is purpose-built for the demands of a live voice agent. If, however, the priority is achieving the highest possible voice quality for a more expressive and engaging interaction, even at the cost of increased latency, ElevenLabs' Flash v2.5 model is the best option [[70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)]. A hybrid strategy, using Cartesia for real-time turns and ElevenLabs for pre-rendered, high-quality confirmations or greetings, could offer the best of both worlds but adds complexity to the orchestration logic. For projects with strict budget constraints or a mandate for maximum data sovereignty, evaluating the feasibility of self-hosting the open-weight Voxtral model presents a powerful long-term strategy, despite the initial engineering investment [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)].
 
@@ -183,14 +184,14 @@ For applications that may handle special-category data, such as personal health 
 
 In addition to technical and contractual safeguards, transparency and user consent are critical under both GDPR and the upcoming EU AI Act. The French data protection authority, CNIL, expects clear transparency, requiring systems to explicitly state they are AI-powered and explain what data they collect and how it is used [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)]. For call recording, a specific consent announcement is legally required, informing participants that the call may be recorded for service improvement and providing a mechanism to refuse [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)]. Under French law, recording private communications without consent is a criminal offense, punishable by imprisonment and fines [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)]. The system must also be able to handle data subject rights requests, such as erasure. A Data Protection Impact Assessment (DPIA) is mandatory for certain AI voice processing operations under CNIL guidelines, particularly those involving innovative technologies or large-scale processing [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)]. Given the distributed nature of agentic AI, which can create opaque "memory instances" across multiple agents, exercising these rights becomes technically challenging and requires robust traceability mechanisms to reconstruct data flows and manage deletions effectively [[38](https://www.insideprivacy.com/artificial-intelligence/french-cnil-publishes-note-on-agentic-ai-and-data-protection/)]. For `smeMaster`, this means the architecture must be designed with compliance in mind from the outset, incorporating features for audit logging, granular user controls, and mechanisms to partition and expire memory instances [[11](https://joshuafields.uk/blog/building-real-time-voice-ai-applications-livekit-fastapi), [38](https://www.insideprivacy.com/artificial-intelligence/french-cnil-publishes-note-on-agentic-ai-and-data-protection/)].
 
-| Compliance Aspect | Requirement | Key Considerations for smeMaster |
-| :--- | :--- | :--- |
-| **Data Residency** | Personal data must be processed and stored within the EEA [[52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)]. | Verify provider contracts explicitly name an EEA region and prohibit cross-border transfers. Use providers with dedicated EU endpoints (e.g., Deepgram, Gladia) or self-hosting options. |
-| **Model Training** | Customer data should not be used for model training without explicit opt-out [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)]. | Confirm this policy is disabled by default on paid plans. Be aware that opting out may affect pricing (e.g., Deepgram) [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared)]. |
-| **Certifications** | Look for GDPR, SOC 2 Type II, and ISO 27001 [[1](https://www.gladia.io/blog/best-speech-to-text-apis)]. | Request SOC 2 reports under NDA to verify internal controls. For healthcare, HDS certification is mandatory [[68](https://scalingo.com/blog/health-data-hosting)]. |
-| **Health Data (HDS)** | Hosting PHI requires an HDS-certified provider in France [[52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)]. | If applicable, select a provider with a named HDS scope covering all necessary activities. Major clouds like Azure and Google Cloud are HDS certified [[65](https://learn.microsoft.com/en-us/compliance/regulatory/offering-hds-france), [67](https://security.googlecloudcommunity.com/ciso-blog-77/google-cloud-achieves-hds-v2-0-certification-raising-the-bar-for-secure-health-data-hosting-in-france-5906)]. |
-| **Transparency & Consent** | Must inform users they are interacting with an AI and obtain consent for recording [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)]. | Implement a pre-call announcement. Hardcode a disclosure message in the first TTS response to comply with the EU AI Act [[46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)]. Provide a clear opt-out to a human agent. |
-| **User Rights** | Must support data subject rights, including access and erasure [[38](https://www.insideprivacy.com/artificial-intelligence/french-cnil-publishes-note-on-agentic-ai-and-data-protection/)]. | Design the architecture with traceability to manage deletion requests across all components of the agent stack. |
+| Compliance Aspect          | Requirement                                                                                                                                                                                 | Key Considerations for smeMaster                                                                                                                                                                                                                                                                                                                                                                                    |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Data Residency**         | Personal data must be processed and stored within the EEA [[52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)].                              | Verify provider contracts explicitly name an EEA region and prohibit cross-border transfers. Use providers with dedicated EU endpoints (e.g., Deepgram, Gladia) or self-hosting options.                                                                                                                                                                                                                            |
+| **Model Training**         | Customer data should not be used for model training without explicit opt-out [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency)].   | Confirm this policy is disabled by default on paid plans. Be aware that opting out may affect pricing (e.g., Deepgram) [[17](https://www.gladia.io/blog/best-elevenlabs-alternatives-for-speech-to-text-gladia-deepgram-assemblyai-compared)].                                                                                                                                                                      |
+| **Certifications**         | Look for GDPR, SOC 2 Type II, and ISO 27001 [[1](https://www.gladia.io/blog/best-speech-to-text-apis)].                                                                                     | Request SOC 2 reports under NDA to verify internal controls. For healthcare, HDS certification is mandatory [[68](https://scalingo.com/blog/health-data-hosting)].                                                                                                                                                                                                                                                  |
+| **Health Data (HDS)**      | Hosting PHI requires an HDS-certified provider in France [[52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)].                               | If applicable, select a provider with a named HDS scope covering all necessary activities. Major clouds like Azure and Google Cloud are HDS certified [[65](https://learn.microsoft.com/en-us/compliance/regulatory/offering-hds-france), [67](https://security.googlecloudcommunity.com/ciso-blog-77/google-cloud-achieves-hds-v2-0-certification-raising-the-bar-for-secure-health-data-hosting-in-france-5906)]. |
+| **Transparency & Consent** | Must inform users they are interacting with an AI and obtain consent for recording [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide)].                              | Implement a pre-call announcement. Hardcode a disclosure message in the first TTS response to comply with the EU AI Act [[46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)]. Provide a clear opt-out to a human agent.                                                                                                                 |
+| **User Rights**            | Must support data subject rights, including access and erasure [[38](https://www.insideprivacy.com/artificial-intelligence/french-cnil-publishes-note-on-agentic-ai-and-data-protection/)]. | Design the architecture with traceability to manage deletion requests across all components of the agent stack.                                                                                                                                                                                                                                                                                                     |
 
 In conclusion, ensuring compliance for `smeMaster` is an ongoing process of due diligence, contractual negotiation, and architectural design. The project should prioritize working with providers that have a proven track record in the EU, offer clear data residency guarantees, and are transparent about their data usage policies. Engaging legal counsel to review DPAs and provider contracts is highly advisable. By embedding compliance principles into the core of the system design—from data handling and retention policies to user consent workflows—the project can build a trustworthy voice assistant that meets the highest standards of data protection in Europe.
 
@@ -203,48 +204,48 @@ This section provides a concrete, phased implementation roadmap for integrating 
 The initial phase focuses on establishing a working prototype that validates the core conversational flow with acceptable latency and French language support. The goal is to achieve a Minimum Viable Product (MVP) quickly to gather real-world feedback.
 
 1.  **Core Architecture and API Selection:**
-    *   **STT Provider:** Select **Deepgram** as the primary Speech-to-Text provider. Utilize the **Flux model** for its integrated end-of-turn detection, which is critical for reducing agent response time by 200-600ms [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]. Explicitly route all API calls to the official EU endpoint, `api.eu.deepgram.com`, to guarantee data residency within the EEA from day one [[36](https://deepgram.com/learn/deepgram-eu-endpoint-now-generally-available)].
-    *   **TTS Provider:** Select **Cartesia** as the primary Text-to-Speech provider. Leverage its **Sonic model** for its industry-leading Time-to-First-Audio (TTFA) of ~40-90ms, which is essential for maintaining a natural conversational rhythm [[69](https://www.codesota.com/speech/elevenlabs-vs-cartesia), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)].
-    *   **Orchestration:** Build the pipeline using the existing FastAPI/LiveKit sidecar architecture. The architecture should follow a fully streaming model: Audio -> Deepgram STT (Streaming) -> FastAPI Orchestrator -> Groq-hosted Llama 3.1 or another fast LLM (Streaming) -> Cartesia TTS (Streaming) -> Audio [[27](https://inworld.ai/resources/best-speech-to-speech-apis), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)].
+    - **STT Provider:** Select **Deepgram** as the primary Speech-to-Text provider. Utilize the **Flux model** for its integrated end-of-turn detection, which is critical for reducing agent response time by 200-600ms [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/)]. Explicitly route all API calls to the official EU endpoint, `api.eu.deepgram.com`, to guarantee data residency within the EEA from day one [[36](https://deepgram.com/learn/deepgram-eu-endpoint-now-generally-available)].
+    - **TTS Provider:** Select **Cartesia** as the primary Text-to-Speech provider. Leverage its **Sonic model** for its industry-leading Time-to-First-Audio (TTFA) of ~40-90ms, which is essential for maintaining a natural conversational rhythm [[69](https://www.codesota.com/speech/elevenlabs-vs-cartesia), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)].
+    - **Orchestration:** Build the pipeline using the existing FastAPI/LiveKit sidecar architecture. The architecture should follow a fully streaming model: Audio -> Deepgram STT (Streaming) -> FastAPI Orchestrator -> Groq-hosted Llama 3.1 or another fast LLM (Streaming) -> Cartesia TTS (Streaming) -> Audio [[27](https://inworld.ai/resources/best-speech-to-speech-apis), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)].
 
 2.  **Initial Compliance Setup:**
-    *   Draft a preliminary Data Processing Agreement (DPA) with Deepgram and Cartesia, focusing on data residency in the EU and the prohibition of data usage for model training on paid tiers [[62](https://dev.to/jamesanderson121/choosing-a-gdpr-compliant-speech-to-text-api-with-eu-data-residency-2nh7)].
-    *   Implement a mandatory pre-call announcement, using a hardcoded TTS utterance, to inform callers that they are interacting with an AI, complying with CNIL transparency guidelines [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)].
+    - Draft a preliminary Data Processing Agreement (DPA) with Deepgram and Cartesia, focusing on data residency in the EU and the prohibition of data usage for model training on paid tiers [[62](https://dev.to/jamesanderson121/choosing-a-gdpr-compliant-speech-to-text-api-with-eu-data-residency-2nh7)].
+    - Implement a mandatory pre-call announcement, using a hardcoded TTS utterance, to inform callers that they are interacting with an AI, complying with CNIL transparency guidelines [[39](https://ainora.lt/blog/ai-voice-agent-cnil-compliance-france-guide), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)].
 
 3.  **Immediate Optimization - TTS Caching:**
-    *   Begin developing a local, in-memory or file-based TTS audio cache. Populate it with a small set of frequently used French phrases, such as greetings ("Bonjour", "Comment allez-vous ?"), confirmations ("OK", "Je confirme"), and common errors ("Je ne comprends pas"). This will immediately reduce latency and future API costs for these interactions [[7](https://hamming.ai/resources/voice-ai-latency-whats-fast-whats-slow-how-to-fix-it), [9](https://www.cognigy.com/glossary/what-is-tts-caching)].
+    - Begin developing a local, in-memory or file-based TTS audio cache. Populate it with a small set of frequently used French phrases, such as greetings ("Bonjour", "Comment allez-vous ?"), confirmations ("OK", "Je confirme"), and common errors ("Je ne comprends pas"). This will immediately reduce latency and future API costs for these interactions [[7](https://hamming.ai/resources/voice-ai-latency-whats-fast-whats-slow-how-to-fix-it), [9](https://www.cognigy.com/glossary/what-is-tts-caching)].
 
 **Phase 2: Optimization and Scaling**
 
 Once the MVP is stable, this phase focuses on enhancing performance, managing costs at scale, and improving the quality of the interaction.
 
 1.  **Advanced Context Management:**
-    *   Implement a sliding-window or summarization strategy for the LLM context. To mitigate the "context compounding" problem, older conversation turns should be summarized and replaced with a concise representation before being passed to the LLM on subsequent turns. This will prevent exponential growth in input token counts and stabilize costs [[50](https://flexprice.io/blog/what-your-voice-ai-stack-actually-costs), [55](https://metadesignsolutions.com/blog/livekit-voice-agent-latency-context-optimization)].
+    - Implement a sliding-window or summarization strategy for the LLM context. To mitigate the "context compounding" problem, older conversation turns should be summarized and replaced with a concise representation before being passed to the LLM on subsequent turns. This will prevent exponential growth in input token counts and stabilize costs [[50](https://flexprice.io/blog/what-your-voice-ai-stack-actually-costs), [55](https://metadesignsolutions.com/blog/livekit-voice-agent-latency-context-optimization)].
 
 2.  **Multi-Model Orchestration:**
-    *   Introduce a model routing layer within the FastAPI orchestrator. Route simple, factual queries to a fast, low-cost LLM tier (e.g., GPT-4o-mini, Claude Haiku) [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025)]. Implement confidence scoring to escalate more complex or ambiguous queries to a more capable and expensive model (e.g., GPT-4o, Claude Sonnet) [[26](https://www.sigmamind.ai/blog/how-to-optimize-stt-tts-llm-layers-for-cost-and-quality)]. This balances performance and cost effectively.
+    - Introduce a model routing layer within the FastAPI orchestrator. Route simple, factual queries to a fast, low-cost LLM tier (e.g., GPT-4o-mini, Claude Haiku) [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025)]. Implement confidence scoring to escalate more complex or ambiguous queries to a more capable and expensive model (e.g., GPT-4o, Claude Sonnet) [[26](https://www.sigmamind.ai/blog/how-to-optimize-stt-tts-llm-layers-for-cost-and-quality)]. This balances performance and cost effectively.
 
 3.  **Expanded Caching and Monitoring:**
-    *   Expand the TTS cache to cover a wider range of common phrases based on call analytics.
-    *   Implement comprehensive observability. Track key metrics like end-to-end turn latency percentiles, STT finalization time, LLM Time-to-First-Token (TTFT), and TTS Time-to-First-Byte (TTFB) [[11](https://joshuafields.uk/blog/building-real-time-voice-ai-applications-livekit-fastapi), [27](https://inworld.ai/resources/best-speech-to-speech-apis)]. Use structured logs keyed by session ID to enable replayable debugging.
+    - Expand the TTS cache to cover a wider range of common phrases based on call analytics.
+    - Implement comprehensive observability. Track key metrics like end-to-end turn latency percentiles, STT finalization time, LLM Time-to-First-Token (TTFT), and TTS Time-to-First-Byte (TTFB) [[11](https://joshuafields.uk/blog/building-real-time-voice-ai-applications-livekit-fastapi), [27](https://inworld.ai/resources/best-speech-to-speech-apis)]. Use structured logs keyed by session ID to enable replayable debugging.
 
 4.  **Evaluation of Alternatives:**
-    *   If budget permits and voice quality is a higher priority than absolute lowest latency, evaluate replacing Cartesia with **ElevenLabs Flash v2.5**. This would provide access to a larger voice library and potentially more natural-sounding prosody, albeit with a slightly higher latency [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)].
-    *   If the project handles any form of personal health data, proactively investigate migrating the STT/TTS workloads to an HDS-certified provider like **Gladia**, which holds the necessary certifications and has demonstrated strong performance on French audio [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency), [52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)].
+    - If budget permits and voice quality is a higher priority than absolute lowest latency, evaluate replacing Cartesia with **ElevenLabs Flash v2.5**. This would provide access to a larger voice library and potentially more natural-sounding prosody, albeit with a slightly higher latency [[8](https://introl.com/blog/voice-ai-infrastructure-real-time-speech-agents-asr-tts-guide-2025), [70](https://www.famulor.io/fr/blog/cartesia-sonic-elevenlabs-and-minimax-the-ultimate-comparison-for-ai-voice-agents-and-famulors-strategic-advantage)].
+    - If the project handles any form of personal health data, proactively investigate migrating the STT/TTS workloads to an HDS-certified provider like **Gladia**, which holds the necessary certifications and has demonstrated strong performance on French audio [[37](https://www.gladia.io/blog/enterprise-and-on-premise-speech-to-text-security-sla-and-data-residency), [52](https://www.gladia.io/blog/hds-and-french-healthcare-data-residency-for-voice-transcription)].
 
 **Phase 3: Advanced Compliance and System Resilience**
 
 This final phase focuses on enterprise-grade features, ensuring long-term reliability, and solidifying the compliance posture.
 
 1.  **Formalize Compliance and Contracts:**
-    *   Engage legal counsel to finalize and execute the DPAs with all AI service providers. Ensure all contractual terms explicitly reference the HDS framework if applicable and specify the exact scope of the provider's certifications [[62](https://dev.to/jamesanderson121/choosing-a-gdpr-compliant-speech-to-text-api-with-eu-data-residency-2nh7), [79](https://www.galeon.care/blog/title-health-data-hosting-how-to-choose-your-hds-provider-in-2026)].
+    - Engage legal counsel to finalize and execute the DPAs with all AI service providers. Ensure all contractual terms explicitly reference the HDS framework if applicable and specify the exact scope of the provider's certifications [[62](https://dev.to/jamesanderson121/choosing-a-gdpr-compliant-speech-to-text-api-with-eu-data-residency-2nh7), [79](https://www.galeon.care/blog/title-health-data-hosting-how-to-choose-your-hds-provider-in-2026)].
 
 2.  **Implement Multi-Provider Failover:**
-    *   Build a resilient AI API layer that functions as an intelligent router [[47](https://www.linkedin.com/posts/yash-upadhyayy1_ai-voice-calling-tools-comparison-activity-7504500725339631616-Rawx)]. Implement a fallback chain where, if the primary STT provider fails or exceeds a latency threshold, the system automatically routes the request to a secondary provider (e.g., AssemblyAI or Soniox) [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)]. This enhances system reliability and prevents service outages.
+    - Build a resilient AI API layer that functions as an intelligent router [[47](https://www.linkedin.com/posts/yash-upadhyayy1_ai-voice-calling-tools-comparison-activity-7504500725339631616-Rawx)]. Implement a fallback chain where, if the primary STT provider fails or exceeds a latency threshold, the system automatically routes the request to a secondary provider (e.g., AssemblyAI or Soniox) [[5](https://www.coval.ai/blog/best-speech-to-text-providers-in-2026-independent-benchmarks-and-how-to-choose/), [46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181)]. This enhances system reliability and prevents service outages.
 
 3.  **Explore Advanced Architectural Options:**
-    *   **Self-Hosting for Cost Control:** For very high-volume use cases, conduct a proof-of-concept on self-hosting an open-source TTS model like **Voxtral TTS**. This would eliminate API costs entirely and provide maximum data sovereignty, representing a significant long-term cost saving [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]. This requires an assessment of the team's infrastructure and DevOps capabilities.
-    *   **Hybrid Architectures:** Experiment with a hybrid architecture, using the low-latency cascade (STT->LLM->TTS) for most of the conversation, but switching to a native speech-to-speech (S2S) model for simple, chit-chat turns to achieve even lower latency [[46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181), [51](https://hamming.ai/resources/best-voice-agent-stack)].
+    - **Self-Hosting for Cost Control:** For very high-volume use cases, conduct a proof-of-concept on self-hosting an open-source TTS model like **Voxtral TTS**. This would eliminate API costs entirely and provide maximum data sovereignty, representing a significant long-term cost saving [[14](https://huggingface.co/blog/azhan77168/voxtral-tts)]. This requires an assessment of the team's infrastructure and DevOps capabilities.
+    - **Hybrid Architectures:** Experiment with a hybrid architecture, using the low-latency cascade (STT->LLM->TTS) for most of the conversation, but switching to a native speech-to-speech (S2S) model for simple, chit-chat turns to achieve even lower latency [[46](https://autognosi.medium.com/sub-second-voice-ai-agent-architecture-no-frameworks-75-lower-per-session-cost-a51e0605a181), [51](https://hamming.ai/resources/best-voice-agent-stack)].
 
 By following this phased roadmap, the `smeMaster` project can systematically build a sophisticated, cost-effective, and compliant AI voice assistant. Starting with a high-performance, low-latency stack from Day 1 ensures a positive user experience, while the subsequent phases of optimization and resilience-building will ensure the system remains scalable and economically viable as it grows.
 
@@ -267,16 +268,16 @@ one — and the arithmetic says that is the whole game at our volume.
 
 `COST-MODEL.md` §1's variable line, recomputed from its own components (2026-09-28):
 
-| Component (pilot volume) | $/min |
-|---|---|
-| Carrier (Telnyx inbound FR) | 0.004–0.009 |
-| Transfer leg (~15% of calls) | 0.003–0.008 |
-| STT (Deepgram Nova) | 0.004–0.007 |
-| LLM (Gemini Flash via OpenRouter) | 0.002–0.005 |
-| **Non-TTS floor** | **0.013–0.029** |
-| TTS (ElevenLabs, Creator/Pro tier) | 0.100–0.210 |
-| **All-in as signed** | **0.113–0.239** |
-| **TTS share of the variable cost** | **88%** |
+| Component (pilot volume)           | $/min           |
+| ---------------------------------- | --------------- |
+| Carrier (Telnyx inbound FR)        | 0.004–0.009     |
+| Transfer leg (~15% of calls)       | 0.003–0.008     |
+| STT (Deepgram Nova)                | 0.004–0.007     |
+| LLM (Gemini Flash via OpenRouter)  | 0.002–0.005     |
+| **Non-TTS floor**                  | **0.013–0.029** |
+| TTS (ElevenLabs, Creator/Pro tier) | 0.100–0.210     |
+| **All-in as signed**               | **0.113–0.239** |
+| **TTS share of the variable cost** | **88%**         |
 
 **TTS is 88% of the variable cost.** Every other optimisation in this document — caching,
 routing, context windowing, co-location — competes for the remaining 12%. Replacing the TTS
@@ -284,11 +285,11 @@ line is not an incremental win; it is the only order-of-magnitude lever availabl
 
 At pilot volume the monthly effect:
 
-| Monthly minutes | Current all-in (vendor TTS) | With self-hosted TTS | Recovered |
-|---|---|---|---|
-| 200 | $22.60 – 47.80 | $2.60 – 5.80 | **$20 – 42** |
-| 400 | $45.20 – 95.60 | $5.20 – 11.60 | **$40 – 84** |
-| 600 | $67.80 – 143.40 | $7.80 – 17.40 | **$60 – 126** |
+| Monthly minutes | Current all-in (vendor TTS) | With self-hosted TTS | Recovered     |
+| --------------- | --------------------------- | -------------------- | ------------- |
+| 200             | $22.60 – 47.80              | $2.60 – 5.80         | **$20 – 42**  |
+| 400             | $45.20 – 95.60              | $5.20 – 11.60        | **$40 – 84**  |
+| 600             | $67.80 – 143.40             | $7.80 – 17.40        | **$60 – 126** |
 
 **And it reopens a pricing shape we had to reject.** `COST-MODEL.md` §3 discarded Shape A
 (€150/mo + €0.25/min) as "leaves no margin for 24/7 ops" — because at a $0.113–0.239/min
@@ -299,20 +300,20 @@ conversation we can now have rather than one we have to avoid.
 
 ## 6.2 What sherpa-onnx is
 
-| Property | Value (verified 2026-09-28) |
-|---|---|
-| Licence | **Apache-2.0** — permissive, direct dependency OK, no copyleft |
-| Repo | `k2-fsa/sherpa-onnx` — C++, 15,012★, last push **2026-09-22** (active) |
-| Scope | STT (offline **and streaming**), TTS (batch **and streaming**), **VAD**, speaker diarization, speech enhancement, source separation, keyword spotting |
-| Runtime | onnxruntime, **no Internet connection required** |
-| Targets | x86_64 servers, Android, iOS, HarmonyOS, embedded/Raspberry Pi, RISC-V, RK/Axera/Ascend NPU |
-| Bindings | 12 languages — C API, **Python**, **Rust**, Java, Kotlin, Swift, Go, .NET, Node.js, Pascal |
-| Distribution | pip wheel (`setup.py` at repo root), prebuilt shared libs, Rust crates, model files as ONNX on HF + GitHub Releases |
+| Property     | Value (verified 2026-09-28)                                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Licence      | **Apache-2.0** — permissive, direct dependency OK, no copyleft                                                                                        |
+| Repo         | `k2-fsa/sherpa-onnx` — C++, 15,012★, last push **2026-09-22** (active)                                                                                |
+| Scope        | STT (offline **and streaming**), TTS (batch **and streaming**), **VAD**, speaker diarization, speech enhancement, source separation, keyword spotting |
+| Runtime      | onnxruntime, **no Internet connection required**                                                                                                      |
+| Targets      | x86_64 servers, Android, iOS, HarmonyOS, embedded/Raspberry Pi, RISC-V, RK/Axera/Ascend NPU                                                           |
+| Bindings     | 12 languages — C API, **Python**, **Rust**, Java, Kotlin, Swift, Go, .NET, Node.js, Pascal                                                            |
+| Distribution | pip wheel (`setup.py` at repo root), prebuilt shared libs, Rust crates, model files as ONNX on HF + GitHub Releases                                   |
 
 **Two properties make this a fit for `smeMaster` that the alternatives in Parts 1–5 lack:**
 it is **CPU-capable** (no GPU line item — the reason the draft's "self-host at high volume"
 argument does not transfer), and it ships **both a Python and a Rust binding**, so the same
-engine can serve the server-side agent *and* the desktop.
+engine can serve the server-side agent _and_ the desktop.
 
 ## 6.3 French coverage — verified, not assumed
 
@@ -321,14 +322,14 @@ both directions:
 
 **French ASR (speech → text):**
 
-| Model (HF, `csukuangfj/`) | Kind | Note |
-|---|---|---|
-| `sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06` | **streaming** | The live-call model. Streaming is what the low-latency argument in Part 3 needs |
-| `sherpa-onnx-nemo-canary-180m-flash-en-es-de-fr` (+ `-int8`) | offline, multilingual | 4 languages incl. FR; contains an int8 build |
-| `sherpa-onnx-nemo-fast-conformer-ctc-en-de-es-fr-14288` (+ `-int8`) | offline | CTC variant |
-| `sherpa-onnx-nemo-fast-conformer-transducer-en-de-es-fr-14288` (+ `-int8`) | offline | transducer variant |
-| `sherpa-onnx-nemo-ctc-fr-conformer-large` | offline, FR-only | largest French-specific |
-| 19 × `sherpa-onnx-whisper-*` | offline | Whisper converted to ONNX — the multilingual fallback |
+| Model (HF, `csukuangfj/`)                                                  | Kind                  | Note                                                                            |
+| -------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `sherpa-onnx-streaming-zipformer-fr-kroko-2025-08-06`                      | **streaming**         | The live-call model. Streaming is what the low-latency argument in Part 3 needs |
+| `sherpa-onnx-nemo-canary-180m-flash-en-es-de-fr` (+ `-int8`)               | offline, multilingual | 4 languages incl. FR; contains an int8 build                                    |
+| `sherpa-onnx-nemo-fast-conformer-ctc-en-de-es-fr-14288` (+ `-int8`)        | offline               | CTC variant                                                                     |
+| `sherpa-onnx-nemo-fast-conformer-transducer-en-de-es-fr-14288` (+ `-int8`) | offline               | transducer variant                                                              |
+| `sherpa-onnx-nemo-ctc-fr-conformer-large`                                  | offline, FR-only      | largest French-specific                                                         |
+| 19 × `sherpa-onnx-whisper-*`                                               | offline               | Whisper converted to ONNX — the multilingual fallback                           |
 
 **French TTS (text → speech):** 13 French VITS/Piper voices are published, including
 `vits-piper-fr_FR-siwis-medium`, `vits-piper-fr_FR-upmc-medium`, `vits-piper-fr_FR-gilles-low`,
@@ -339,7 +340,7 @@ Kokoro / Kitten / Matcha / Melo TTS families (confirmed in the C++ source tree:
 served by this engine**, rather than needing its own integration.
 
 ⚠️ **Honest quality caveat.** Piper `-low`/`-medium` voices are **not** ElevenLabs quality.
-They are clear and intelligible; they are not warm. That is why §6.6 treats this as a *tier*
+They are clear and intelligible; they are not warm. That is why §6.6 treats this as a _tier_
 rather than a replacement — a French caller noticing a robotic receptionist is a business
 problem, not a latency problem.
 
@@ -347,30 +348,30 @@ problem, not a latency problem.
 
 The React Native wrapper is a good project and **the wrong dependency for this repo**:
 
-| | `XDcobra/react-native-sherpa-onnx` | `k2-fsa/sherpa-onnx` Rust API |
-|---|---|---|
-| Licence | MIT (ships `THIRD_PARTY_LICENSES`) | Apache-2.0 |
-| Momentum | 40★, TypeScript, pushed 2026-09-22 | 15,012★, C++, pushed 2026-09-22 |
-| Requires | a **React Native** app | any Rust or Python host |
-| Fit here | ❌ `smeMaster` is **Tauri v2 + Rust**, not React Native | ✅ matches `ml-sidecar` |
+|          | `XDcobra/react-native-sherpa-onnx`                      | `k2-fsa/sherpa-onnx` Rust API   |
+| -------- | ------------------------------------------------------- | ------------------------------- |
+| Licence  | MIT (ships `THIRD_PARTY_LICENSES`)                      | Apache-2.0                      |
+| Momentum | 40★, TypeScript, pushed 2026-09-22                      | 15,012★, C++, pushed 2026-09-22 |
+| Requires | a **React Native** app                                  | any Rust or Python host         |
+| Fit here | ❌ `smeMaster` is **Tauri v2 + Rust**, not React Native | ✅ matches `ml-sidecar`         |
 
 The Rust binding is real and publishable (`sherpa-onnx/rust/` contains `Cargo.toml`,
 `sherpa-onnx-sys` for the FFI layer and `sherpa-onnx` for the safe wrapper; runnable examples
 live in `rust-api-examples/`). That matters because **`src-tauri/crates/ml-sidecar` already
 proves the pattern** in this repo: a Rust binary, launched as a Tauri sidecar, JSON-RPC over
-stdio. Offline French STT/TTS on the desktop is therefore an *addition to an existing
-proven seam*, not a new subsystem.
+stdio. Offline French STT/TTS on the desktop is therefore an _addition to an existing
+proven seam_, not a new subsystem.
 
 **Port the patterns, not the code** (`SPEC` invariant 5). The wrapper's own docs directory is
 the useful artifact — these are the shapes worth reimplementing in our types:
 
-| Pattern in the wrapper (`docs/`) | Why it is worth porting |
-|---|---|
-| `execution-providers.md` — CPU / NNAPI / XNNPACK / QNN as **explicit config** | Same discipline as our provider seams: the compute backend is a config value, not a build decision |
-| `download-manager.md` — resumable, background-capable model downloads with progress + a foreground service on Android | Exactly the problem `aiSidecar.ts` / `ragStore.ts` hit today with `aiDownloadModel` |
-| `hotwords.md` | **Per-tenant bias lists** — boost the client's product names, staff names and place names. Direct containment win on a receptionist KB |
-| `stt-streaming.md`, `tts-streaming.md`, `pcm-live-stream.md` | The streaming PCM contract our four seams already need |
-| `vad.md`, `diarization.md`, `tts-alignment.md` | VAD is the `VAD` stage mark in `CALL-FLOW.md` §3; alignment supports word-level latency attribution |
+| Pattern in the wrapper (`docs/`)                                                                                      | Why it is worth porting                                                                                                                |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `execution-providers.md` — CPU / NNAPI / XNNPACK / QNN as **explicit config**                                         | Same discipline as our provider seams: the compute backend is a config value, not a build decision                                     |
+| `download-manager.md` — resumable, background-capable model downloads with progress + a foreground service on Android | Exactly the problem `aiSidecar.ts` / `ragStore.ts` hit today with `aiDownloadModel`                                                    |
+| `hotwords.md`                                                                                                         | **Per-tenant bias lists** — boost the client's product names, staff names and place names. Direct containment win on a receptionist KB |
+| `stt-streaming.md`, `tts-streaming.md`, `pcm-live-stream.md`                                                          | The streaming PCM contract our four seams already need                                                                                 |
+| `vad.md`, `diarization.md`, `tts-alignment.md`                                                                        | VAD is the `VAD` stage mark in `CALL-FLOW.md` §3; alignment supports word-level latency attribution                                    |
 
 Do **not** copy its field names, its module layout, or its transport. The shape migrates; the
 names do not.
@@ -379,10 +380,10 @@ names do not.
 
 Two placements are legitimate, and they are not the same decision:
 
-| Placement | Binding | Boundary | When |
-|---|---|---|---|
-| **Server-side** — `agent-core` calls a local sherpa-onnx engine | Python API, or a local **websocket server process** (the repo ships `streaming_server.py`, `http_server.py`, plus websocket clients: `online-websocket-client-microphone.py`, `two-pass-wss.py`) | Same host, loopback. Keeps the C++ runtime out of the FastAPI process — the same reasoning as `ADR-001` D1 | To make the **budget/off-hours tier** cheap |
-| **Desktop-side** — offline STT/TTS in the app | **Rust API**, following the `ml-sidecar` pattern | Existing Tauri sidecar contract, stdio JSON-RPC | For the desktop's local RAG/knowledge workflows, and any future offline capture |
+| Placement                                                       | Binding                                                                                                                                                                                          | Boundary                                                                                                   | When                                                                            |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Server-side** — `agent-core` calls a local sherpa-onnx engine | Python API, or a local **websocket server process** (the repo ships `streaming_server.py`, `http_server.py`, plus websocket clients: `online-websocket-client-microphone.py`, `two-pass-wss.py`) | Same host, loopback. Keeps the C++ runtime out of the FastAPI process — the same reasoning as `ADR-001` D1 | To make the **budget/off-hours tier** cheap                                     |
+| **Desktop-side** — offline STT/TTS in the app                   | **Rust API**, following the `ml-sidecar` pattern                                                                                                                                                 | Existing Tauri sidecar contract, stdio JSON-RPC                                                            | For the desktop's local RAG/knowledge workflows, and any future offline capture |
 
 **The websocket server/client split is the architecturally interesting one**: it lets the
 realtime audio path live in a C++ process while the orchestration stays in Python, with a
@@ -393,15 +394,15 @@ loopback IPC seam. That is the same shape the spec chose for telephony, applied 
 **Recommendation: add a `selfhosted` tier to the Gate 5 `ProviderTier` chain; do not change the
 primary seams.**
 
-| Tier | STT | TTS | Sells as |
-|---|---|---|---|
+| Tier               | STT                                | TTS                                   | Sells as                                                       |
+| ------------------ | ---------------------------------- | ------------------------------------- | -------------------------------------------------------------- |
 | budget / off-hours | sherpa-onnx streaming FR zipformer | sherpa-onnx Piper FR (`siwis-medium`) | matches `COST-MODEL.md` Shape C's **€0.12/min off-hours** rate |
-| standard | Deepgram Nova | ElevenLabs Flash | the signed default |
-| premium | Deepgram Nova | ElevenLabs Multilingual v2 | the signed premium |
+| standard           | Deepgram Nova                      | ElevenLabs Flash                      | the signed default                                             |
+| premium            | Deepgram Nova                      | ElevenLabs Multilingual v2            | the signed premium                                             |
 
 This composes with, rather than confronts, three decisions already made: the 4-seam invariant
 (`ADR-001` D3) is untouched; `COST-MODEL.md` Shape C's "night receptionist at a discount"
-becomes *profitable* rather than a margin sacrifice; and the pilot's ±20% realized-cost
+becomes _profitable_ rather than a margin sacrifice; and the pilot's ±20% realized-cost
 criterion (`PILOT-CRITERIA.md`) gets a lever that vendor pricing changes cannot take away.
 
 **Sequencing: do not build this in v1.** It is Gate 5 work at the earliest, and only if the
@@ -413,7 +414,7 @@ before the first real call is a second system to debug while debugging the first
 **1. Our box has 4 vCPU.** Verified 2026-09-28 against the EU VPS: **4 vCPU (AMD EPYC), 6.3 GB
 available RAM, load average 0.36, Python 3.12.3 present.** There is headroom, but "no
 per-minute fee" does not mean "no cost" — it converts a vendor bill into a **concurrency
-ceiling**. Real-time ASR *and* TTS on 4 cores, alongside the agent's own orchestration, caps
+ceiling**. Real-time ASR _and_ TTS on 4 cores, alongside the agent's own orchestration, caps
 simultaneous calls in a way a hosted API does not. **Before any of this is quoted to the
 client, measure it:**
 
@@ -421,6 +422,7 @@ client, measure it:**
 # on the target box, with the streaming FR zipformer + a Piper FR voice loaded
 # measure: real-time factor (RTF) per stream, and the call count at which RTF > 1.0
 ```
+
 The deliverable of that experiment is one number: **maximum concurrent calls at RTF < 1.0.**
 If it is below the client's expected peak, the tier is not viable and this part is closed.
 
@@ -430,7 +432,7 @@ for. Adding a latency-sensitive realtime inference workload to the SaaS box mean
 Laravel query can cost a phone call. If the tier is built, it belongs on its **own** EU VPS.
 
 **3. CPU cost is not zero and not invisible.** Amortised CPU on a €25–60/mo VPS is what the
-saving is *made of*. The saving is real, but it is a swap of vendor bill for instance
+saving is _made of_. The saving is real, but it is a swap of vendor bill for instance
 footprint — model it as such.
 
 **4. The 12-language / NPU / embedded support is not evidence for our use case.** Support for
@@ -443,15 +445,15 @@ client before choosing the tier.
 
 ## 6.8 What to do, and at which gate
 
-| Gate | Action |
-|---|---|
-| **Gate 4** | Keep Deepgram as primary. Add the **turn-detection** evaluation (`CALL-FLOW.md` §3's `VAD` mark) — both the integrated-model option (Part 1/4) and self-hosted VAD are candidates; measure on our audio |
-| **Gate 5** | Add `selfhosted` to the `ProviderTier` chain. Run the RTF/concurrency experiment (§6.7) **before** it is offered to the client. Reuse the existing `STTProvider`/`TTSProvider` seams — `ADR-001` D3 means no new architecture |
-| **Gate 5** | Adopt **TTS caching** for the greeting, the AI-disclosure line and confirmations — self-hosted rendering makes populating the cache free. Combine with `hotwords` bias lists for containment |
-| **Gate 1** | Add **`completion_tokens`/context growth** to the metering events: Part 5's context-compounding point means the per-minute LLM estimate in `COST-MODEL.md` §1 is a floor, and the model should say so |
-| **Desktop (separate)** | If offline French speech is ever wanted locally, the **Rust binding** + the existing `ml-sidecar` contract is the path — not the React Native wrapper |
+| Gate                   | Action                                                                                                                                                                                                                        |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gate 4**             | Keep Deepgram as primary. Add the **turn-detection** evaluation (`CALL-FLOW.md` §3's `VAD` mark) — both the integrated-model option (Part 1/4) and self-hosted VAD are candidates; measure on our audio                       |
+| **Gate 5**             | Add `selfhosted` to the `ProviderTier` chain. Run the RTF/concurrency experiment (§6.7) **before** it is offered to the client. Reuse the existing `STTProvider`/`TTSProvider` seams — `ADR-001` D3 means no new architecture |
+| **Gate 5**             | Adopt **TTS caching** for the greeting, the AI-disclosure line and confirmations — self-hosted rendering makes populating the cache free. Combine with `hotwords` bias lists for containment                                  |
+| **Gate 1**             | Add **`completion_tokens`/context growth** to the metering events: Part 5's context-compounding point means the per-minute LLM estimate in `COST-MODEL.md` §1 is a floor, and the model should say so                         |
+| **Desktop (separate)** | If offline French speech is ever wanted locally, the **Rust binding** + the existing `ml-sidecar` contract is the path — not the React Native wrapper                                                                         |
 
 **Cross-references:** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-[`OSS landscape`](../../06-ROADMAP/15-voice-agent-oss-landscape.md) (sherpa-onnx added as a
-candidate under P2/P6/P7) · [`COST-MODEL.md`](../client/COST-MODEL.md) · [`RAG-FORK.md`](RAG-FORK.md) ·
+[`COST-MODEL.md`](../client/COST-MODEL.md) · [`RAG-FORK.md`](RAG-FORK.md) ·
 [`CALL-FLOW.md`](CALL-FLOW.md) §3 · [`AGENT-PROMPTS.md`](AGENT-PROMPTS.md)
+(OSS landscape doc removed 2026-10-03 — sherpa-onnx candidacy captured in git history)

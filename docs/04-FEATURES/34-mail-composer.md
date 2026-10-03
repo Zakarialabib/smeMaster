@@ -15,8 +15,8 @@ The composer owns the message-authoring experience:
 
 This page intentionally avoids duplicating the full behavior of:
 
-- account/auth lifecycle: `Core/04-accounts.md`
-- inbox/thread behavior: `Core/01-email-management.md`
+- account/auth lifecycle: `04-accounts.md`
+- inbox/thread behavior: `01-email-management.md`
 - templates: `24-templates.md`
 - AI behavior: `22-ai-integration.md`
 - compliance checks: `23-compliance-engine.md`
@@ -46,7 +46,7 @@ The goal is one compose state system with multiple shells, not multiple competin
 | IMAP/SMTP       | Supported                                              | Uses IMAP/SMTP provider-backed send flows.                                                        |
 | Microsoft Graph | Not yet supported for provider-backed send/draft flows | Current provider selection throws a descriptive unsupported error for `microsoft_graph` accounts. |
 
-If provider support changes, update this matrix and `Core/01-email-management.md` together.
+If provider support changes, update this matrix and `01-email-management.md` together.
 
 ## Main Responsibilities
 
@@ -79,7 +79,7 @@ The canonical send execution code lives in:
 
 ### Scheduled send and undo-send
 
-These are compose features, not separate mail subsystems. Keep detailed scheduling semantics here and keep general mail behavior in `Core/01-email-management.md`.
+These are compose features, not separate mail subsystems. Keep detailed scheduling semantics here and keep general mail behavior in `01-email-management.md`.
 
 ### Presentation modes
 

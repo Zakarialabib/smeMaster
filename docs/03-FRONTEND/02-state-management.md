@@ -89,4 +89,4 @@ Before creating a new store, ask:
 > Company is currently demo/mock-scoped (Platform-tier multi-company is future);
 > `company_id` is already threaded through the data layer. See
 > [Company & ERP](../04-FEATURES/Invoicing-ERP/01-company-tenant.md) and
-> [Automation](../04-FEATURES/Core/05-automation.md).
+> [Automation](../04-FEATURES/05-automation.md).

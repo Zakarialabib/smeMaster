@@ -91,5 +91,5 @@ Provider auto-discovery lives in `services/imap/autoDiscovery.ts` and `services/
 - [Composer](34-mail-composer.md) — drafting, send, schedule
 - [Templates](24-templates.md) — reusable content
 - [Filters](28-filters.md) — rule-based filtering
-- [Automation](Core/05-automation.md) — trigger/action rules
+- [Automation](05-automation.md) — trigger/action rules
 - [AI Integration](22-ai-integration.md) — providers and helpers

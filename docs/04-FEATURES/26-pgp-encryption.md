@@ -39,7 +39,7 @@ Cryptographic heavy lifting is backend-owned and should stay documented as a sec
 Keep these responsibilities separate:
 
 - general message composition belongs to `34-mail-composer.md`
-- account credential storage belongs to `Core/04-accounts.md`
+- account credential storage belongs to `04-accounts.md`
 - vault/file workflows belong to `25-attachment-vault.md`
 
 ## Key Files

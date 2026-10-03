@@ -27,7 +27,7 @@ Current docs should describe it as a device-linking flow owned by settings and n
 Keep these responsibilities separate:
 
 - mobile bridge and native capability docs belong to `35-mobile-native-features.md`
-- account/provider setup belongs to `Core/04-accounts.md`
+- account/provider setup belongs to `04-accounts.md`
 
 ## Key Files
 
