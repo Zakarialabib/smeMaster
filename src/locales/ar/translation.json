@@ -331,8 +331,15 @@
     "clearAiDraft": "مسح المسودة بالذكاء الاصطناعي",
     "via": "عبر",
     "insertTemplate": "Insert template",
-    "templates": "Templates"
-  },
+    "templates": "Templates",
+    "voiceCompose": "تأليف صوتي",
+    "voiceComposeTitle": "تأليف صوتي",
+    "voiceComposePlaceholder": "اضغط الميكروفون وابدأ بالتحدث...",
+    "voiceComposeClear": "مسح",
+    "voiceComposeCancel": "إلغاء",
+    "voiceComposeInsert": "إدراج",
+        "voiceComposeLastResult": "آخر نتيجة: {result}"
+      },
   "settings": {
     "tabs": {
       "general": "عام",

@@ -15,6 +15,7 @@ import {
   Rows3,
   Trash2,
   ReceiptText,
+  Mic,
 } from 'lucide-react';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
@@ -24,6 +25,7 @@ import {
 } from '@features/mail/db/quickReplies';
 import { useComposerStore } from '@features/mail/stores/composerStore';
 import { EmojiPicker } from './EmojiPicker';
+import { VoiceModal } from './VoiceModal';
 import { InvoiceSelectionModal } from '../../../invoicing/components/InvoiceSelectionModal';
 import { Invoice } from '../../../invoicing/types';
 import { formatMoney, formatDate } from '../../../invoicing/utils/format';
@@ -49,6 +51,7 @@ export function EditorToolbar({
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const qrMenuRef = useRef<HTMLDivElement | null>(null);
   const tableMenuRef = useRef<HTMLDivElement | null>(null);
@@ -266,6 +269,18 @@ export function EditorToolbar({
         () => imageInputRef.current?.click(),
         t('composer.insertImage'),
       )}
+
+      <div className="w-px h-4 bg-border-primary mx-1" />
+
+      {/* Voice compose */}
+      <button
+        type="button"
+        onClick={() => setVoiceModalOpen(true)}
+        title={t('composer.voiceCompose')}
+        className="p-1 rounded hover:bg-bg-hover transition-colors text-text-secondary hover:text-accent"
+      >
+        <Mic size={14} />
+      </button>
 
       <div className="w-px h-4 bg-border-primary mx-1" />
 
@@ -492,6 +507,16 @@ export function EditorToolbar({
           }}
         />
       )}
+
+      {/* Voice compose modal */}
+      <VoiceModal
+        isOpen={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onTranscribe={(text) => {
+          editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
+          useComposerStore.getState().setBodyHtml(editor.getHTML());
+        }}
+      />
 
       {btn(t('composer.undo'), false, () => editor.chain().focus().undo().run())}
       {btn(t('composer.redo'), false, () => editor.chain().focus().redo().run())}

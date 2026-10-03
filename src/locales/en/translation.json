@@ -343,8 +343,15 @@
     "clearAiDraft": "Clear AI draft",
     "via": "Via",
     "insertTemplate": "Insert template",
-    "templates": "Templates"
-  },
+    "templates": "Templates",
+    "voiceCompose": "Compose from voice",
+    "voiceComposeTitle": "Voice compose",
+    "voiceComposePlaceholder": "Tap the mic and start speaking...",
+    "voiceComposeClear": "Clear",
+        "voiceComposeCancel": "Cancel",
+        "voiceComposeInsert": "Insert",
+        "voiceComposeLastResult": "Last result: {result}"
+      },
   "settings": {
     "syncStatusIdle": "Idle",
     "syncStatusSuccess": "Sync complete",

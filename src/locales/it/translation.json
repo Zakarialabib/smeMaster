@@ -331,8 +331,15 @@
     "clearAiDraft": "Cancella bozza AI",
     "via": "Via",
     "insertTemplate": "Inserisci template",
-    "templates": "Template"
-  },
+    "templates": "Template",
+    "voiceCompose": "Composizione vocale",
+    "voiceComposeTitle": "Composizione vocale",
+    "voiceComposePlaceholder": "Premi il microfono e parla...",
+    "voiceComposeClear": "Cancella",
+    "voiceComposeCancel": "Annulla",
+    "voiceComposeInsert": "Inserisci",
+        "voiceComposeLastResult": "Ultimo risultato: {result}"
+      },
   "settings": {
     "tabs": {
       "general": "Generali",

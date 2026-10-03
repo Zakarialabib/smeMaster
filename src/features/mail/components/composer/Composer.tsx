@@ -28,6 +28,7 @@ import { ZenMode } from '@shared/components/ui/ZenMode';
 import { useComposerStore } from '@features/mail/stores/composerStore';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import { useLayoutStore } from '@shared/stores/layoutStore';
+import { VoiceModal } from './VoiceModal';
 import {
   sendEmail,
   archiveThread,
@@ -104,6 +105,7 @@ export function Composer() {
     isBulk: boolean;
   } | null>(null);
   const [showAiAssist, setShowAiAssist] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [aliases, setAliases] = useState<SendAsAlias[]>([]);
@@ -831,6 +833,16 @@ export function Composer() {
           )}
         </div>
       </CSSTransition>
+
+      {/* Voice compose modal */}
+      <VoiceModal
+        isOpen={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onTranscribe={(text) => {
+          editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
+          useComposerStore.getState().setBodyHtml(editor.getHTML());
+        }}
+      />
     </ZenMode>
   );
 }

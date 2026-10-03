@@ -331,8 +331,15 @@
     "clearAiDraft": "AI下書きをクリア",
     "via": "経由",
     "insertTemplate": "Insert template",
-    "templates": "Templates"
-  },
+    "templates": "Templates",
+    "voiceCompose": "音声で作成",
+    "voiceComposeTitle": "音声作成",
+    "voiceComposePlaceholder": "マイクを押して話してください...",
+    "voiceComposeClear": "クリア",
+    "voiceComposeCancel": "キャンセル",
+    "voiceComposeInsert": "挿入",
+        "voiceComposeLastResult": "前回の結果: {result}"
+      },
   "settings": {
     "tabs": {
       "general": "一般",

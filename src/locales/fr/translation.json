@@ -331,8 +331,15 @@
     "clearAiDraft": "Effacer le brouillon IA",
     "via": "Via",
     "insertTemplate": "Insert template",
-    "templates": "Templates"
-  },
+    "templates": "Templates",
+    "voiceCompose": "Composer par voix",
+    "voiceComposeTitle": "Composition vocale",
+    "voiceComposePlaceholder": "Appuyez sur le micro et parlez...",
+    "voiceComposeClear": "Effacer",
+    "voiceComposeCancel": "Annuler",
+    "voiceComposeInsert": "Insérer",
+        "voiceComposeLastResult": "Dernier résultat : {result}"
+      },
   "settings": {
     "tabs": {
       "general": "Général",
