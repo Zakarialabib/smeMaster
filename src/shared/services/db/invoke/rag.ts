@@ -19,7 +19,7 @@ import { invokeCommand } from './command';
  * @returns The local file path of the downloaded model
  */
 export async function aiDownloadModel(repoId: string, filename: string): Promise<string> {
-  return invokeCommand<string>('ai_download_model', { repoId, filename });
+  return invokeCommand<string>('ai_download_model', { repoId, filename }, 120_000);
 }
 
 /**
