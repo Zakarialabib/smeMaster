@@ -11,8 +11,10 @@ import { RemediationWizard } from './RemediationWizard';
 export function DeliverabilityPanel() {
   const [domain, setDomain] = useState('');
   const prevDomain = useRef<string | null>(null);
-  const { currentDomain, remediation, getRemediationForDomain, setCurrentDomain } =
-    useDomainHealthStore();
+  const currentDomain = useDomainHealthStore((s) => s.currentDomain);
+  const remediation = useDomainHealthStore((s) => s.remediation);
+  const getRemediationForDomain = useDomainHealthStore((s) => s.getRemediationForDomain);
+  const setCurrentDomain = useDomainHealthStore((s) => s.setCurrentDomain);
 
   const { data: health, isLoading, error } = useHealthScore(currentDomain);
 

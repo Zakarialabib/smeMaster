@@ -7,7 +7,10 @@ interface VaultSearchBarProps {
 }
 
 export function VaultSearchBar({ className = '' }: VaultSearchBarProps) {
-  const { searchQuery, setSearchQuery, executeSearch, clearSearch } = useVaultStore();
+  const searchQuery = useVaultStore((s) => s.searchQuery);
+  const setSearchQuery = useVaultStore((s) => s.setSearchQuery);
+  const executeSearch = useVaultStore((s) => s.executeSearch);
+  const clearSearch = useVaultStore((s) => s.clearSearch);
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

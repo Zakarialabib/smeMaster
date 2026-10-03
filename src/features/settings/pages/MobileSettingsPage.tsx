@@ -115,7 +115,12 @@ export function MobileSettingsPage() {
   const navigate = useNavigate();
 
   /* ── Theme ───────────────────────────────────────────────────────────── */
-  const { mode, colorTheme, setMode, setColorTheme, surface, setSurface } = useThemeStore();
+  const mode = useThemeStore((s) => s.mode);
+  const colorTheme = useThemeStore((s) => s.colorTheme);
+  const setMode = useThemeStore((s) => s.setMode);
+  const setColorTheme = useThemeStore((s) => s.setColorTheme);
+  const surface = useThemeStore((s) => s.surface);
+  const setSurface = useThemeStore((s) => s.setSurface);
 
   const modeLabel = MODE_LABELS[mode];
 

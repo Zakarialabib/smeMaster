@@ -48,7 +48,9 @@ import { SectionConsole } from '@features/dashboard/components/SectionConsole';
 
 function WidgetCustomizeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { t } = useTranslation();
-  const { widgets, toggleWidget, reorderWidgets } = useDashboardStore();
+  const widgets = useDashboardStore((s) => s.widgets);
+  const toggleWidget = useDashboardStore((s) => s.toggleWidget);
+  const reorderWidgets = useDashboardStore((s) => s.reorderWidgets);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('dashboard.customize')} size="md">
@@ -326,8 +328,13 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  const { widgets, loaded, loadPreferences, rangeDays, density, setRangeDays, setDensity } =
-    useDashboardStore();
+  const widgets = useDashboardStore((s) => s.widgets);
+  const loaded = useDashboardStore((s) => s.loaded);
+  const loadPreferences = useDashboardStore((s) => s.loadPreferences);
+  const rangeDays = useDashboardStore((s) => s.rangeDays);
+  const density = useDashboardStore((s) => s.density);
+  const setRangeDays = useDashboardStore((s) => s.setRangeDays);
+  const setDensity = useDashboardStore((s) => s.setDensity);
   const [modalOpen, setModalOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);

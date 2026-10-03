@@ -196,30 +196,28 @@ function ModelDownloadProgress({ progress }: { progress: DownloaderProgressEvent
 
 export default function KnowledgeBaseSettings() {
   const { t } = useTranslation();
-  const {
-    enabled,
-    modelStatus,
-    modelPath,
-    tokenizerPath,
-    modelError,
-    downloadProgress,
-    embeddingSource,
-    modelsDir,
-    indexingStatus,
-    lastIndexedAt,
-    indexingError,
-    embeddingTest,
-    embeddingTesting,
-    hydrate,
-    setEnabled,
-    setEmbeddingSource,
-    fetchModelsDir,
-    removeModel,
-    downloadBgeModel,
-    loadEmbeddingModel,
-    indexAll,
-    testEmbedding,
-  } = useRagStore();
+  const enabled = useRagStore((s) => s.enabled);
+  const modelStatus = useRagStore((s) => s.modelStatus);
+  const modelPath = useRagStore((s) => s.modelPath);
+  const tokenizerPath = useRagStore((s) => s.tokenizerPath);
+  const modelError = useRagStore((s) => s.modelError);
+  const downloadProgress = useRagStore((s) => s.downloadProgress);
+  const embeddingSource = useRagStore((s) => s.embeddingSource);
+  const modelsDir = useRagStore((s) => s.modelsDir);
+  const indexingStatus = useRagStore((s) => s.indexingStatus);
+  const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
+  const indexingError = useRagStore((s) => s.indexingError);
+  const embeddingTest = useRagStore((s) => s.embeddingTest);
+  const embeddingTesting = useRagStore((s) => s.embeddingTesting);
+  const hydrate = useRagStore((s) => s.hydrate);
+  const setEnabled = useRagStore((s) => s.setEnabled);
+  const setEmbeddingSource = useRagStore((s) => s.setEmbeddingSource);
+  const fetchModelsDir = useRagStore((s) => s.fetchModelsDir);
+  const removeModel = useRagStore((s) => s.removeModel);
+  const downloadBgeModel = useRagStore((s) => s.downloadBgeModel);
+  const loadEmbeddingModel = useRagStore((s) => s.loadEmbeddingModel);
+  const indexAll = useRagStore((s) => s.indexAll);
+  const testEmbedding = useRagStore((s) => s.testEmbedding);
   // ── Vector DB + chunking (local UI state) ──
   const [kbPath, setKbPath] = useState<string | null>(null);
   const [chunkSize, setChunkSize] = useState<number>(1000);

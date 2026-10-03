@@ -16,16 +16,14 @@ const CATEGORIES = [
 ];
 
 export function VaultToolbar({ className = '' }: VaultToolbarProps) {
-  const {
-    viewMode,
-    setViewMode,
-    sortField,
-    setSortField,
-    sortDirection,
-    toggleSortDirection,
-    categoryFilter,
-    setCategoryFilter,
-  } = useVaultStore();
+  const viewMode = useVaultStore((s) => s.viewMode);
+  const setViewMode = useVaultStore((s) => s.setViewMode);
+  const sortField = useVaultStore((s) => s.sortField);
+  const setSortField = useVaultStore((s) => s.setSortField);
+  const sortDirection = useVaultStore((s) => s.sortDirection);
+  const toggleSortDirection = useVaultStore((s) => s.toggleSortDirection);
+  const categoryFilter = useVaultStore((s) => s.categoryFilter);
+  const setCategoryFilter = useVaultStore((s) => s.setCategoryFilter);
 
   const sortOptions: { field: VaultSortField; label: string }[] = [
     { field: 'name', label: 'Name' },

@@ -20,7 +20,11 @@ export function InvoiceSelectionModal({
   onQuickCreate,
   onClose,
 }: InvoiceSelectionModalProps) {
-  const { invoices, clients, fetchInvoices, fetchClients, listLoading } = useInvoicingStore();
+  const invoices = useInvoicingStore((s) => s.invoices);
+  const clients = useInvoicingStore((s) => s.clients);
+  const fetchInvoices = useInvoicingStore((s) => s.fetchInvoices);
+  const fetchClients = useInvoicingStore((s) => s.fetchClients);
+  const listLoading = useInvoicingStore((s) => s.listLoading);
   /* `clients` come from the single unified contacts registry with
    * `contact_type='client'`. Invoice payment/credit settings are stored on the
    * same contact row; this modal only reads display data from that list. */

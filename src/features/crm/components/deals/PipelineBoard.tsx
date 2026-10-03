@@ -8,17 +8,15 @@ import { DealColumn } from './DealColumn';
 import type { DealStage, Deal } from '@shared/services/db/schema';
 
 export function PipelineBoard() {
-  const {
-    pipelines,
-    stages,
-    deals,
-    activePipelineId,
-    isLoading,
-    loadPipelines,
-    loadStages,
-    loadDeals,
-    moveDeal,
-  } = useDealStore();
+  const pipelines = useDealStore((s) => s.pipelines);
+  const stages = useDealStore((s) => s.stages);
+  const deals = useDealStore((s) => s.deals);
+  const activePipelineId = useDealStore((s) => s.activePipelineId);
+  const isLoading = useDealStore((s) => s.isLoading);
+  const loadPipelines = useDealStore((s) => s.loadPipelines);
+  const loadStages = useDealStore((s) => s.loadStages);
+  const loadDeals = useDealStore((s) => s.loadDeals);
+  const moveDeal = useDealStore((s) => s.moveDeal);
 
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);

@@ -5,8 +5,10 @@ import { getSetting } from '@features/settings/db/settings';
 import { deleteOperation } from '@features/settings/db/pendingOperations';
 
 export function UndoSendToast() {
-  const { undoSendVisible, pendingSendOpId, setPendingSendOpId, setUndoSendVisible } =
-    useComposerStore();
+  const undoSendVisible = useComposerStore((s) => s.undoSendVisible);
+  const pendingSendOpId = useComposerStore((s) => s.pendingSendOpId);
+  const setPendingSendOpId = useComposerStore((s) => s.setPendingSendOpId);
+  const setUndoSendVisible = useComposerStore((s) => s.setUndoSendVisible);
   const toastRef = useRef<HTMLDivElement>(null);
   const [delay, setDelay] = useState(5);
   const [elapsed, setElapsed] = useState(0);

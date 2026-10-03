@@ -27,20 +27,18 @@ import { TEXT_HINT } from '@shared/styles/ui-tokens';
 
 export function AiAssistantPage() {
   const navigate = useNavigate();
-  const {
-    enabled,
-    conversation,
-    isSearching,
-    searchError,
-    modelStatus,
-    downloadProgress,
-    search,
-    clearHistory,
-    hydrate,
-    pauseDownload,
-    resumeDownload,
-    cancelDownload,
-  } = useRagStore();
+  const enabled = useRagStore((s) => s.enabled);
+  const conversation = useRagStore((s) => s.conversation);
+  const isSearching = useRagStore((s) => s.isSearching);
+  const searchError = useRagStore((s) => s.searchError);
+  const modelStatus = useRagStore((s) => s.modelStatus);
+  const downloadProgress = useRagStore((s) => s.downloadProgress);
+  const search = useRagStore((s) => s.search);
+  const clearHistory = useRagStore((s) => s.clearHistory);
+  const hydrate = useRagStore((s) => s.hydrate);
+  const pauseDownload = useRagStore((s) => s.pauseDownload);
+  const resumeDownload = useRagStore((s) => s.resumeDownload);
+  const cancelDownload = useRagStore((s) => s.cancelDownload);
 
   const [query, setQuery] = useState('');
   const resultsEndRef = useRef<HTMLDivElement>(null);

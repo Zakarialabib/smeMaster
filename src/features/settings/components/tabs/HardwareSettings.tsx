@@ -11,7 +11,9 @@ import { notify } from '@shared/services/notifications/toastHelper';
 import { HelpCard } from '@features/settings/components/HelpCard';
 
 export const HardwareSettings: React.FC = () => {
-  const { configs, addConfig, removeConfig } = useHardwareStore();
+  const configs = useHardwareStore((s) => s.configs);
+  const addConfig = useHardwareStore((s) => s.addConfig);
+  const removeConfig = useHardwareStore((s) => s.removeConfig);
   const [isAdding, setIsAdding] = useState(false);
   const [newConfig, setNewConfig] = useState<Partial<HardwareConfig>>({
     name: '',
