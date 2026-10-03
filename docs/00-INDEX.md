@@ -230,7 +230,6 @@ Deep-dive guides for complex subsystems.
 | [Ops Commands Tables Refactor](superpowers/specs/2026-07-09-ops-commands-tables-refactor-design.md) | Design spec for ops command/table refactor       |
 | [AI RAG LM Studio](superpowers/specs/2026-07-12-ai-rag-lmstudio-design.md)                          | Design spec for LM Studio RAG integration        |
 | [AI Settings Refactor](superpowers/specs/2026-07-13-ai-settings-refactor-design.md)                 | Design spec for AI settings refactor             |
-| [AI Provider Capability Architecture](plans/AI-PROVIDER-CAPABILITY-ARCHITECTURE-PLAN.md)            | Implementation plan for capability architecture  |
 
 ## Development
 
@@ -263,12 +262,8 @@ For contributors and AI agents.
 | [Simplified Core Spec](06-ROADMAP/smeMaster_Simplified_Core_Spec.md)                        | Simplified core product spec                                           |
 | [Monetization Style](monetization-style.md)                                                 | Monetization visual/voice style guide                                  |
 | [Navigation Redesign Recommendation](navigation-redesign/IA-RECOMMENDATION.md)              | IA recommendation for navigation redesign                              |
-| [Plans — Deals Pipeline & Lead Scoring](plans/DEALS-PIPELINE-LEAD-SCORING-PLAN.md)          | Plan for deals pipeline + lead scoring                                 |
 | [Plans — Design UI/UX Spec](plans/DESIGN_UI_UX_SPEC.md)                                     | Design UI/UX specification                                             |
-| [Plans — MVP Launch](plans/MVP_LAUNCH_PLAN.md)                                              | MVP launch plan                                                        |
 | [Plans — Production Hardening](plans/PRODUCTION_HARDENING_PLAN.md)                          | Production hardening plan                                              |
-| [Plans — Settings IA Proposal](plans/SETTINGS-IA-PROPOSAL.md)                               | Settings IA proposal                                                   |
-| [AI Provider Capability Architecture](plans/AI-PROVIDER-CAPABILITY-ARCHITECTURE-PLAN.md) 🆕 | Capability interfaces, task router, model registry, provider expansion |
 | [Analysis](analysis.md)                                                                     | Misc analysis notes                                                    |
 
 ## Production Readiness

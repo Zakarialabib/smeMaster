@@ -118,7 +118,7 @@
 
 ### 🚀 Phase B backend core shipped (2026-07-15) — email UX parity foundation
 
-Rust-side groundwork for Gmail/Outlook-grade email UX (per `docs/plans/MVP_LAUNCH_PLAN.md` Phase B):
+Rust-side groundwork for Gmail/Outlook-grade email UX (Phase B):
 
 - Migration `031_thread_importance_score.sql` adds a nullable `importance_score` to `threads` for Focused-inbox ranking.
 - `threads.categorize_thread` + `derive_category` auto-classify a thread into **Promotions / Social / Updates / Primary** from the sender domain on ingest (idempotent; writes `thread_categories` + `bundled_threads`; non-fatal so it never breaks ingest). Wired into `upsert_thread` via the new optional `UpsertThreadRequest.from_address`.
