@@ -142,7 +142,9 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">{t(`onboarding.tools.${opt.key}`)}</p>
+                  <p className="font-semibold text-sm">
+                    {t(`onboarding.tools.${opt.key}`, { defaultValue: t(`common.${opt.key}`) })}
+                  </p>
                   <p className="text-xs text-muted-foreground/70 mt-0.5">
                     {t(`onboarding.tools.${opt.key}Desc`)}
                   </p>
@@ -171,7 +173,7 @@ export function ToolsStep({ initial, onNext, onBack }: ToolsStepProps) {
           onClick={onBack}
           className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> {t('onboarding.back')}
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('common.back')}
         </button>
         <button
           type="button"

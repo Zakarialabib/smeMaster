@@ -178,7 +178,7 @@ function HeroMetrics({
           { key: 'newContacts', label: t('dashboard.heroNewContacts'), value: newWeek },
           { key: 'tasksDue', label: t('dashboard.heroTasksDue'), value: dueToday },
           { key: 'overdue', label: t('dashboard.heroOverdue'), value: overdue },
-          { key: 'campaigns', label: t('dashboard.heroCampaigns'), value: campaignsTotal },
+          { key: 'campaigns', label: t('common.campaigns'), value: campaignsTotal },
         ]);
       } catch {
         // Hero metrics are decorative — fail silently

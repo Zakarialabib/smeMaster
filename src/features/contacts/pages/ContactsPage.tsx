@@ -427,7 +427,7 @@ export function ContactsPage() {
   );
 
   const DESKTOP_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: 'contacts', label: t('contacts.tabs.contacts'), icon: Users },
+    { id: 'contacts', label: t('common.contacts'), icon: Users },
     { id: 'tags', label: t('contacts.tabs.tags'), icon: TagIcon },
     { id: 'groups', label: t('contacts.tabs.groups'), icon: Users },
     { id: 'segments', label: t('contacts.tabs.segments'), icon: Filter },
@@ -435,7 +435,7 @@ export function ContactsPage() {
   ];
 
   const MOBILE_TABS: { id: ContactsTab; label: string; icon: typeof Users }[] = [
-    { id: 'contacts', label: t('contacts.tabs.contacts'), icon: Users },
+    { id: 'contacts', label: t('common.contacts'), icon: Users },
     { id: 'tags', label: t('contacts.tabs.tags'), icon: TagIcon },
   ];
 
@@ -446,7 +446,7 @@ export function ContactsPage() {
       title={
         <span className="flex items-center gap-2">
           <Users size={18} className="text-accent" />
-          {t('contacts.title')}
+          {t('common.contacts')}
         </span>
       }
       count={contacts.length}

@@ -57,7 +57,7 @@ const FEATURES: FeatureCard[] = [
     icon: Settings,
     label: 'Settings',
     description: 'Account & preferences',
-    path: '/settings/mobile',
+    path: '/settings',
     color: 'from-slate-500/20 to-slate-600/10',
   },
 ];

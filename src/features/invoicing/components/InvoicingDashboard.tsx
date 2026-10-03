@@ -35,7 +35,7 @@ export default function InvoicingDashboard() {
     { id: 'invoices', label: t('invoicing.tabs.documents'), icon: ReceiptText },
     { id: 'clients', label: t('invoicing.tabs.clients'), icon: Users },
     { id: 'items', label: t('invoicing.tabs.items'), icon: Package },
-    { id: 'settings', label: t('invoicing.tabs.settings'), icon: Settings2 },
+    { id: 'settings', label: t('common.settings'), icon: Settings2 },
   ];
 
   const [tab, setTab] = useState<TabId>('invoices');
@@ -108,7 +108,7 @@ export default function InvoicingDashboard() {
       title={
         <span className="flex items-center gap-1.5 sm:gap-2">
           <ReceiptText size={16} className="text-accent shrink-0 sm:size-[18]" />
-          {t('invoicing.title')}
+          {t('common.invoicing')}
         </span>
       }
       subtitle={
@@ -185,7 +185,7 @@ export default function InvoicingDashboard() {
             </p>
             <p className="text-sm text-text-tertiary max-w-md text-center">{loadError}</p>
             <Button icon={<RefreshCw size={16} />} onClick={handleRetry}>
-              {t('invoicing.retry')}
+              {t('common.retry')}
             </Button>
           </div>
         )}

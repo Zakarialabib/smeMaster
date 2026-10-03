@@ -716,11 +716,6 @@ export const TAB_HELP_KEYS: Record<string, string[]> = {
   composing: ['composer-templates', 'composer-compliance', 'composer-schedule'],
   accounts: ['pgp-encryption', 'calendar-sync'],
   'deliverability-dashboard': ['deliverability-dns', 'deliverability-warming'],
-  notifications: ['smart-notifications'],
-  'mail-rules': ['smart-folders', 'workflow-automation'],
+  'mail-rules': ['smart-folders'],
   pgp: ['pgp-encryption'],
-  backups: ['backup-restore'],
-  ai: ['ai-features'],
-  queue: ['sync-status'],
-  'account-cleaning': ['backup-restore'],
 };

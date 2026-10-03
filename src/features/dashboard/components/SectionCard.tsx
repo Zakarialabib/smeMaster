@@ -23,7 +23,7 @@ import { StatBox } from './StatBox';
  */
 
 export interface SectionStat {
-  /** i18n key (e.g. `dashboard.cards.stat.unread`) — translated by the card. */
+  /** i18n key (e.g. `common.unread`) — translated by the card. */
   label: string;
   /** `null` renders an em-dash placeholder (loading / unavailable). */
   value: string | number | null;

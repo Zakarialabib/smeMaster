@@ -24,8 +24,8 @@ export function SchedulePage() {
   const tab: ScheduleTab = param === 'calendar' ? 'calendar' : 'tasks';
 
   const tabs: CardTabItem<ScheduleTab>[] = [
-    { id: 'tasks', label: t('tasks.tasks'), icon: CheckSquare },
-    { id: 'calendar', label: t('calendar.calendar'), icon: Calendar },
+    { id: 'tasks', label: t('common.tasks'), icon: CheckSquare },
+    { id: 'calendar', label: t('common.calendar'), icon: Calendar },
   ];
 
   const handleTabChange = (next: ScheduleTab) => {
@@ -41,7 +41,7 @@ export function SchedulePage() {
           tabs={tabs}
           activeTab={tab}
           onTabChange={handleTabChange}
-          ariaLabel={t('nav.schedule')}
+          ariaLabel={t('common.schedule')}
         />
       </div>
 
