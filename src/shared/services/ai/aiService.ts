@@ -1,4 +1,5 @@
-import { getActiveProvider } from './providerManager';
+import { getActiveProvider, getProviderClient } from './providerManager';
+import type { AiProvider } from './types';
 import { getAiCache, setAiCache } from '@features/mail/db/aiCache';
 import { getSetting } from '@features/settings/db/settings';
 import { AiError } from './errors';
@@ -105,12 +106,19 @@ function sanitizeErrorMessage(raw: string): string {
   return sanitized;
 }
 
-export async function callAi(systemPrompt: string, userContent: string): Promise<string> {
+export async function callAi(
+  systemPrompt: string,
+  userContent: string,
+  provider?: AiProvider,
+  model?: string,
+): Promise<string> {
   return withRetry(
     async () => {
       try {
-        const provider = await getActiveProvider();
-        return await provider.complete({ systemPrompt, userContent });
+        const client = provider
+          ? await getProviderClient(provider, model)
+          : await getActiveProvider();
+        return await client.complete({ systemPrompt, userContent });
       } catch (err) {
         if (err instanceof AiError) throw err;
         const message = err instanceof Error ? err.message : String(err);
@@ -329,6 +337,8 @@ export async function askInbox(
   question: string,
   _accountId: string,
   context: string,
+  provider?: AiProvider,
+  model?: string,
 ): Promise<string> {
   const askInboxEnabled = await getSetting('ai_ask_inbox_enabled');
   if (askInboxEnabled === 'false') throw new Error('Ask Inbox is disabled in settings');
@@ -338,7 +348,7 @@ export async function askInbox(
   // falls back to FTS-only when RAG is unavailable.
   const fusedContext = await buildFusedContext(ftsContext, question);
   const userContent = `${fusedContext}\n\nQuestion: ${question}`;
-  return callAi(ASK_INBOX_PROMPT, userContent);
+  return callAi(ASK_INBOX_PROMPT, userContent, provider, model);
 }
 
 const VALID_CATEGORIES = new Set(['Primary', 'Updates', 'Promotions', 'Social', 'Newsletters']);

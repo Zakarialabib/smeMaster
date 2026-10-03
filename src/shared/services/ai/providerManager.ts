@@ -259,16 +259,64 @@ export async function isCapabilityAvailable(cap: AiCapability): Promise<boolean>
 }
 
 /**
- * Get the active provider if it supports the required capability.
- * Throws AiError if the provider doesn't support the capability.
+ * Get a provider client for a specific provider and model.
+ * Used when the user explicitly selects a provider/model in a chat surface.
  */
-export async function getProviderForCapability<T extends AiCapability>(
-  cap: T,
+export async function getProviderClient(
+  provider: AiProvider,
+  model?: string,
 ): Promise<AiProviderClient> {
-  const provider = await getActiveProvider();
-  const available = await isCapabilityAvailable(cap);
-  if (!available) {
-    throw new AiError('NOT_CONFIGURED', `Active provider does not support ${cap}`);
+  const aiLanguage = (await getSetting('ai_language')) ?? 'auto';
+
+  if (provider === 'ollama') {
+    const serverUrl = (await getSetting('ollama_server_url')) ?? 'http://localhost:11434';
+    const ollamaModel = model ?? (await getSetting('ollama_model')) ?? 'llama3.2';
+    return createOllamaProvider(serverUrl, ollamaModel, aiLanguage);
   }
-  return provider;
+
+  if (provider === 'lmstudio') {
+    const serverUrl = (await getSetting('lmstudio_server_url')) ?? 'http://localhost:1234';
+    const lmModel = model ?? (await getSetting('lmstudio_model')) ?? '';
+    const lmEmb = (await getSetting('lmstudio_embedding_model')) ?? '';
+    return createLMStudioProvider(
+      serverUrl,
+      { chatModel: lmModel, embeddingModel: lmEmb },
+      aiLanguage,
+    );
+  }
+
+  if (provider === 'custom') {
+    const baseUrl = (await getSetting('custom_base_url')) ?? 'https://api.openai.com/v1';
+    const apiKey = await getSecureSetting('custom_api_key');
+    if (!apiKey) throw new AiError('NOT_CONFIGURED', 'Custom AI provider API key not configured');
+    const customModel = model ?? (await getSetting('custom_model')) ?? 'gpt-4o-mini';
+    return createCustomProvider(baseUrl, apiKey, customModel, aiLanguage);
+  }
+
+  const keySetting =
+    API_KEY_SETTINGS[provider as Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>];
+  const apiKey = await getSecureSetting(keySetting);
+  if (!apiKey) throw new AiError('NOT_CONFIGURED', `${provider} API key not configured`);
+
+  const modelSetting =
+    MODEL_SETTINGS[provider as Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>];
+  const selectedModel = model ?? (await getSetting(modelSetting)) ?? DEFAULT_MODELS[provider];
+  switch (provider) {
+    case 'claude':
+      return createClaudeProvider(apiKey, selectedModel, aiLanguage);
+    case 'openai':
+      return createOpenAIProvider(apiKey, selectedModel, aiLanguage);
+    case 'gemini':
+      return createGeminiProvider(apiKey, selectedModel, aiLanguage);
+    case 'mistral':
+      return createMistralProvider(apiKey, selectedModel, aiLanguage);
+    case 'byteplus':
+      return createBytePlusProvider(apiKey, selectedModel, aiLanguage);
+    case 'copilot':
+      return createCopilotProvider(apiKey, selectedModel, aiLanguage);
+    case 'openrouter':
+      return createOpenRouterProvider(apiKey, selectedModel, aiLanguage);
+    default:
+      throw new AiError('NOT_CONFIGURED', `Unknown provider: ${provider}`);
+  }
 }

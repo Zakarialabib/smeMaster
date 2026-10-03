@@ -2,10 +2,13 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, X, Send, ExternalLink, Download } from 'lucide-react';
 import { askMyInbox, type AskInboxResult } from '@shared/services/ai/askInbox';
+import type { AiProvider } from '@shared/services/ai/types';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import { navigateToLabel } from '@/router/navigate';
 import { ensureAiSidecar, activateAiSidecar } from '@features/assistant/services/aiSidecar';
 import { useAiSidecarStore } from '@features/assistant/stores/aiSidecarStore';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
+import { ProviderModelPicker } from '@features/assistant/components/ProviderModelPicker';
 
 interface AskInboxProps {
   isOpen: boolean;
@@ -16,6 +19,8 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AskInboxResult | null>(null);
+  const [provider, setProvider] = useState('claude');
+  const [model, setModel] = useState('claude-sonnet-5-5');
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
@@ -59,7 +64,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await askMyInbox(question.trim(), activeAccountId);
+      const res = await askMyInbox(question.trim(), activeAccountId, provider as AiProvider, model);
       setResult(res);
     } catch (err) {
       console.error('Ask inbox failed:', err);
@@ -70,7 +75,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
     } finally {
       setLoading(false);
     }
-  }, [question, activeAccountId, loading]);
+  }, [question, activeAccountId, loading, provider, model]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -118,6 +123,16 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
 
         {/* Input */}
         <div className="px-4 py-3 border-b border-border-secondary flex items-center gap-2">
+          <ProviderModelPicker
+            provider={provider as any}
+            model={model}
+            onChange={(p, m) => {
+              setProvider(p);
+              setModel(m);
+            }}
+            disabled={loading}
+            compact
+          />
           <input
             ref={inputRef}
             autoFocus
@@ -127,6 +142,14 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ask a question about your emails..."
             className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+          />
+          <VoiceButton
+            mode="input"
+            onTranscript={(text) => {
+              setQuestion(text);
+              handleAsk();
+            }}
+            disabled={loading}
           />
           <button
             onClick={handleAsk}
@@ -149,8 +172,11 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
           {result && (
             <div className="p-4 space-y-4">
               {/* Answer */}
-              <div className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
-                {result.answer}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                  {result.answer}
+                </div>
+                <VoiceButton mode="output" text={result.answer} size="sm" />
               </div>
 
               {/* Source messages */}

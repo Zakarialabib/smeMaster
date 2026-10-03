@@ -1,6 +1,7 @@
 ﻿import { searchMessages, type SearchResult } from '@shared/services/db/search';
 import { askInbox as callAskInbox } from './aiService';
 import { fetchRagContext } from './ragContext';
+import type { AiProvider } from './types';
 
 /**
  * Extract key search terms from a natural language question.
@@ -143,7 +144,12 @@ export interface AskInboxResult {
  * Answer a natural language question by searching the user's inbox
  * and using AI to synthesize an answer from the results.
  */
-export async function askMyInbox(question: string, accountId: string): Promise<AskInboxResult> {
+export async function askMyInbox(
+  question: string,
+  accountId: string,
+  provider?: AiProvider,
+  model?: string,
+): Promise<AskInboxResult> {
   // Extract search terms
   const terms = extractSearchTerms(question);
   if (!terms.trim()) {
@@ -201,7 +207,7 @@ export async function askMyInbox(question: string, accountId: string): Promise<A
   }
 
   // Call AI with fused context
-  const answer = await callAskInbox(question, accountId, fusedContext);
+  const answer = await callAskInbox(question, accountId, fusedContext, provider, model);
 
   return { answer, sourceMessages: results };
 }
