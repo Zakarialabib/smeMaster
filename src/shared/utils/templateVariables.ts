@@ -1,5 +1,5 @@
-﻿import { getContactByEmail, getContactById } from "../../features/contacts/db/contacts.ts";
-import { escapeHtml } from "@shared/utils/sanitize";
+﻿import { getContactByEmail, getContactById } from '../../features/contacts/db/contacts.ts';
+import { escapeHtml } from '@shared/utils/sanitize';
 
 /**
  * Unified context for all template variable interpolation.
@@ -41,47 +41,47 @@ export interface TemplateVariable {
 }
 
 export const TEMPLATE_VARIABLES: TemplateVariable[] = [
-  { key: "{{first_name}}", desc: "Recipient's first name" },
-  { key: "{{last_name}}", desc: "Recipient's last name" },
-  { key: "{{email}}", desc: "Recipient's email address" },
-  { key: "{{company}}", desc: "Recipient's company/domain" },
-  { key: "{{display_name}}", desc: "Recipient's display name" },
-  { key: "{{my_name}}", desc: "Your display name" },
-  { key: "{{my_email}}", desc: "Your email address" },
-  { key: "{{my_title}}", desc: "Your job title" },
-  { key: "{{my_phone}}", desc: "Your phone number" },
-  { key: "{{subject}}", desc: "Thread subject" },
-  { key: "{{date}}", desc: "Today's date" },
-  { key: "{{date_long}}", desc: "Today's long date (with weekday)" },
-  { key: "{{day}}", desc: "Day of week" },
-  { key: "{{day_of_week}}", desc: "Day of week (long format)" },
-  { key: "{{random_greeting}}", desc: "Random greeting" },
+  { key: '{{first_name}}', desc: "Recipient's first name" },
+  { key: '{{last_name}}', desc: "Recipient's last name" },
+  { key: '{{email}}', desc: "Recipient's email address" },
+  { key: '{{company}}', desc: "Recipient's company/domain" },
+  { key: '{{display_name}}', desc: "Recipient's display name" },
+  { key: '{{my_name}}', desc: 'Your display name' },
+  { key: '{{my_email}}', desc: 'Your email address' },
+  { key: '{{my_title}}', desc: 'Your job title' },
+  { key: '{{my_phone}}', desc: 'Your phone number' },
+  { key: '{{subject}}', desc: 'Thread subject' },
+  { key: '{{date}}', desc: "Today's date" },
+  { key: '{{date_long}}', desc: "Today's long date (with weekday)" },
+  { key: '{{day}}', desc: 'Day of week' },
+  { key: '{{day_of_week}}', desc: 'Day of week (long format)' },
+  { key: '{{random_greeting}}', desc: 'Random greeting' },
 ];
 
 const GREETINGS: Record<string, string[]> = {
-  en: ["Hello", "Hi", "Hey", "Greetings"],
-  fr: ["Bonjour", "Salut", "Coucou"],
-  de: ["Hallo", "Hallo", "Guten Tag"],
-  es: ["Hola", "Buenos días"],
-  zh: ["您好", "你好"],
-  ja: ["こんにちは"],
-  ar: ["مرحبا", "أهلا"],
-  pt: ["Olá", "Oi"],
-  it: ["Ciao", "Buongiorno"],
-  nl: ["Hallo", "Hoi"],
+  en: ['Hello', 'Hi', 'Hey', 'Greetings'],
+  fr: ['Bonjour', 'Salut', 'Coucou'],
+  de: ['Hallo', 'Hallo', 'Guten Tag'],
+  es: ['Hola', 'Buenos días'],
+  zh: ['您好', '你好'],
+  ja: ['こんにちは'],
+  ar: ['مرحبا', 'أهلا'],
+  pt: ['Olá', 'Oi'],
+  it: ['Ciao', 'Buongiorno'],
+  nl: ['Hallo', 'Hoi'],
 };
 
 function getGreetings(locale: string): string[] {
-  const lang = locale.split("-")[0] ?? "en";
-  return GREETINGS[lang] ?? GREETINGS["en"]!;
+  const lang = locale.split('-')[0] ?? 'en';
+  return GREETINGS[lang] ?? GREETINGS['en']!;
 }
 
 function splitName(fullName: string | undefined): { first: string; last: string } {
-  if (!fullName) return { first: "", last: "" };
+  if (!fullName) return { first: '', last: '' };
   const parts = fullName.trim().split(/\s+/);
   return {
-    first: parts[0] ?? "",
-    last: parts.length > 1 ? parts.slice(1).join(" ") : "",
+    first: parts[0] ?? '',
+    last: parts.length > 1 ? parts.slice(1).join(' ') : '',
   };
 }
 
@@ -89,19 +89,15 @@ function splitName(fullName: string | undefined): { first: string; last: string 
  * Evaluate conditional blocks in template.
  * Supports {{#if var}}...{{else}}...{{/if}} syntax.
  */
-export function evaluateConditionalBlocks(
-  template: string,
-  vars: Record<string, string>,
-): string {
+export function evaluateConditionalBlocks(template: string, vars: Record<string, string>): string {
   let result = template;
-  const blockRegex =
-    /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
+  const blockRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g;
   result = result.replace(blockRegex, (_match, varName, ifBlock, elseBlock) => {
     const value = vars[varName];
     if (value && value.trim().length > 0) {
-      return ifBlock ?? "";
+      return ifBlock ?? '';
     }
-    return elseBlock ?? "";
+    return elseBlock ?? '';
   });
   return result;
 }
@@ -112,17 +108,14 @@ export function evaluateConditionalBlocks(
  * Supports both email-style and campaign-style variables.
  * Resolves recipient info from contacts DB via contactId or recipientEmail.
  */
-export async function interpolateVariables(
-  html: string,
-  ctx: TemplateContext,
-): Promise<string> {
+export async function interpolateVariables(html: string, ctx: TemplateContext): Promise<string> {
   // Only do work if there are variables to replace
-  if (!html.includes("{{")) return html;
+  if (!html.includes('{{')) return html;
 
-  const locale = ctx.locale ?? "en-US";
-  let recipientName = ctx.recipientName ?? "";
-  let email = ctx.recipientEmail ?? "";
-  let displayName = ctx.displayName ?? "";
+  const locale = ctx.locale ?? 'en-US';
+  let recipientName = ctx.recipientName ?? '';
+  let email = ctx.recipientEmail ?? '';
+  let displayName = ctx.displayName ?? '';
 
   // Look up contact from DB if contactId is provided
   if (ctx.contactId) {
@@ -143,56 +136,54 @@ export async function interpolateVariables(
     try {
       const contact = await getContactByEmail(email);
       if (contact) {
-        recipientName = contact.display_name ?? "";
+        recipientName = contact.display_name ?? '';
       }
     } catch {
       // Fallback to empty
     }
   }
 
-  const firstName = displayName.split(/\s+/)[0] ?? email.split("@")[0] ?? "";
+  const firstName = displayName.split(/\s+/)[0] ?? email.split('@')[0] ?? '';
   const { first, last } = splitName(recipientName || displayName);
 
   // Derive company from email if not provided
   const company =
-    ctx.company ??
-    (email.includes("@") ? email.split("@")[1]?.split(".")[0] ?? "" : "");
+    ctx.company ?? (email.includes('@') ? (email.split('@')[1]?.split('.')[0] ?? '') : '');
 
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
   const dateLongStr = now.toLocaleDateString(locale, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
-  const dayStr = now.toLocaleDateString(locale, { weekday: "long" });
+  const dayStr = now.toLocaleDateString(locale, { weekday: 'long' });
   const greetings = getGreetings(locale);
-  const randomGreeting =
-    greetings[Math.floor(Math.random() * greetings.length)] ?? "Hello";
+  const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)] ?? 'Hello';
 
   const { first: senderFirst } = splitName(ctx.senderName);
 
   const replacements: Record<string, string> = {
-    "{{first_name}}": first || firstName,
-    "{{last_name}}": last,
-    "{{email}}": email,
-    "{{company}}": company,
-    "{{display_name}}": displayName || recipientName,
-    "{{my_name}}": ctx.senderName ?? senderFirst,
-    "{{my_email}}": ctx.senderEmail ?? "",
-    "{{my_title}}": ctx.myTitle ?? "",
-    "{{my_phone}}": ctx.myPhone ?? "",
-    "{{subject}}": ctx.subject ?? "",
-    "{{date}}": dateStr,
-    "{{date_long}}": dateLongStr,
-    "{{day}}": dayStr,
-    "{{day_of_week}}": dayStr,
-    "{{random_greeting}}": randomGreeting,
+    '{{first_name}}': first || firstName,
+    '{{last_name}}': last,
+    '{{email}}': email,
+    '{{company}}': company,
+    '{{display_name}}': displayName || recipientName,
+    '{{my_name}}': ctx.senderName ?? senderFirst,
+    '{{my_email}}': ctx.senderEmail ?? '',
+    '{{my_title}}': ctx.myTitle ?? '',
+    '{{my_phone}}': ctx.myPhone ?? '',
+    '{{subject}}': ctx.subject ?? '',
+    '{{date}}': dateStr,
+    '{{date_long}}': dateLongStr,
+    '{{day}}': dayStr,
+    '{{day_of_week}}': dayStr,
+    '{{random_greeting}}': randomGreeting,
   };
 
   let result = html;
@@ -208,53 +199,48 @@ export async function interpolateVariables(
  * Uses only the context provided (no contact resolution).
  * Supports both email-style and campaign-style variables.
  */
-export function interpolateVariablesSync(
-  html: string,
-  ctx: TemplateContext,
-): string {
-  if (!html.includes("{{")) return html;
+export function interpolateVariablesSync(html: string, ctx: TemplateContext): string {
+  if (!html.includes('{{')) return html;
 
-  const locale = ctx.locale ?? "en-US";
+  const locale = ctx.locale ?? 'en-US';
   const { first, last } = splitName(ctx.recipientName);
 
-  const email = ctx.recipientEmail ?? "";
+  const email = ctx.recipientEmail ?? '';
   const company =
-    ctx.company ??
-    (email.includes("@") ? email.split("@")[1]?.split(".")[0] ?? "" : "");
+    ctx.company ?? (email.includes('@') ? (email.split('@')[1]?.split('.')[0] ?? '') : '');
 
   const now = new Date();
   const dateStr = now.toLocaleDateString(locale, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
   const dateLongStr = now.toLocaleDateString(locale, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
-  const dayStr = now.toLocaleDateString(locale, { weekday: "long" });
+  const dayStr = now.toLocaleDateString(locale, { weekday: 'long' });
   const greetings = getGreetings(locale);
-  const randomGreeting =
-    greetings[Math.floor(Math.random() * greetings.length)] ?? "Hello";
+  const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)] ?? 'Hello';
 
   const replacements: Record<string, string> = {
-    "{{first_name}}": first,
-    "{{last_name}}": last,
-    "{{email}}": email,
-    "{{company}}": company,
-    "{{display_name}}": ctx.recipientName ?? "",
-    "{{my_name}}": ctx.senderName ?? "",
-    "{{my_email}}": ctx.senderEmail ?? "",
-    "{{my_title}}": ctx.myTitle ?? "",
-    "{{my_phone}}": ctx.myPhone ?? "",
-    "{{subject}}": ctx.subject ?? "",
-    "{{date}}": dateStr,
-    "{{date_long}}": dateLongStr,
-    "{{day}}": dayStr,
-    "{{day_of_week}}": dayStr,
-    "{{random_greeting}}": randomGreeting,
+    '{{first_name}}': first,
+    '{{last_name}}': last,
+    '{{email}}': email,
+    '{{company}}': company,
+    '{{display_name}}': ctx.recipientName ?? '',
+    '{{my_name}}': ctx.senderName ?? '',
+    '{{my_email}}': ctx.senderEmail ?? '',
+    '{{my_title}}': ctx.myTitle ?? '',
+    '{{my_phone}}': ctx.myPhone ?? '',
+    '{{subject}}': ctx.subject ?? '',
+    '{{date}}': dateStr,
+    '{{date_long}}': dateLongStr,
+    '{{day}}': dayStr,
+    '{{day_of_week}}': dayStr,
+    '{{random_greeting}}': randomGreeting,
   };
 
   let result = html;
@@ -264,4 +250,3 @@ export function interpolateVariablesSync(
 
   return result;
 }
-

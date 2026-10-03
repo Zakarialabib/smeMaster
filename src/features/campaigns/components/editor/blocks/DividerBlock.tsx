@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import type { DividerBlock as DividerBlockT } from "../types";
+import { useTranslation } from 'react-i18next';
+import type { DividerBlock as DividerBlockT } from '../types';
 
 interface DividerBlockProps {
   block: DividerBlockT;
@@ -11,20 +11,24 @@ export function DividerBlock({ block, onChange }: DividerBlockProps) {
 
   return (
     <div className="w-full">
-      <div style={{ padding: `${block.padding.top}px ${block.padding.right}px ${block.padding.bottom}px ${block.padding.left}px` }}>
+      <div
+        style={{
+          padding: `${block.padding.top}px ${block.padding.right}px ${block.padding.bottom}px ${block.padding.left}px`,
+        }}
+      >
         <div style={{ width: `${block.width}%` }}>
           <div
             style={{
               height: `${block.thickness}px`,
               backgroundColor: block.color,
-              borderRadius: "9999px",
+              borderRadius: '9999px',
             }}
           />
         </div>
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-3 opacity-0 transition-opacity group-hover/block:opacity-100">
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.thickness")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.thickness')}</span>
           <input
             type="range"
             min={1}
@@ -36,7 +40,7 @@ export function DividerBlock({ block, onChange }: DividerBlockProps) {
           <span className="w-6 text-text-tertiary">{block.thickness}px</span>
         </label>
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.width")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.width')}</span>
           <input
             type="range"
             min={10}
@@ -49,7 +53,7 @@ export function DividerBlock({ block, onChange }: DividerBlockProps) {
           <span className="w-8 text-text-tertiary">{block.width}%</span>
         </label>
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.bgColor")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.bgColor')}</span>
           <input
             type="color"
             value={block.color}

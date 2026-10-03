@@ -1,4 +1,4 @@
-import { SidebarContentLayoutProps } from "../types";
+import { SidebarContentLayoutProps } from '../types';
 
 export function SidebarContentLayout({
   className,
@@ -9,8 +9,8 @@ export function SidebarContentLayout({
   headerHeight = 48,
   sidebarWidth = 340,
 }: SidebarContentLayoutProps) {
-  const headerHeightPx = typeof headerHeight === "number" ? `${headerHeight}px` : headerHeight;
-  const sidebarWidthPx = typeof sidebarWidth === "number" ? `${sidebarWidth}px` : sidebarWidth;
+  const headerHeightPx = typeof headerHeight === 'number' ? `${headerHeight}px` : headerHeight;
+  const sidebarWidthPx = typeof sidebarWidth === 'number' ? `${sidebarWidth}px` : sidebarWidth;
 
   return (
     <div
@@ -29,7 +29,7 @@ export function SidebarContentLayout({
         {sidebar !== undefined && (
           <div
             className={`flex-shrink-0 border-r border-border-primary overflow-x-hidden overflow-y-auto transition-all duration-200 ${
-              collapsed ? "translate-x-[-100%]" : ""
+              collapsed ? 'translate-x-[-100%]' : ''
             }`}
             style={{ width: sidebarWidthPx }}
           >
@@ -38,11 +38,7 @@ export function SidebarContentLayout({
         )}
 
         {/* Content */}
-        {content !== undefined && (
-          <div className="flex-1 overflow-y-auto">
-            {content}
-          </div>
-        )}
+        {content !== undefined && <div className="flex-1 overflow-y-auto">{content}</div>}
       </div>
     </div>
   );

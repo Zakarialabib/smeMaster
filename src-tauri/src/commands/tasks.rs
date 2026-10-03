@@ -495,6 +495,68 @@ pub async fn db_get_subtasks(
 }
 
 #[tauri::command]
+/// Filter tasks for a company with optional priority / date / search predicates
+/// and a sort order (backend counterpart to the Tasks UI SmartFilterBar).
+///
+/// Delegates to `tasks::filter` and maps each `(Task, name, avatar, email)`
+/// tuple into [`TaskWithContactResponse`]. Returns `Vec<TaskWithContactResponse>`.
+pub async fn db_filter_tasks(
+    pool: State<'_, SqlitePool>,
+    company_id: Option<String>,
+    include_completed: Option<bool>,
+    priority: Option<String>,
+    date_filter: Option<String>,
+    search: Option<String>,
+    sort_field: Option<String>,
+    sort_direction: Option<String>,
+    limit: i64,
+    offset: i64,
+) -> CmdResult<Vec<TaskWithContactResponse>> {
+    let results = crate::db::tables::tasks::tasks::filter(
+        &pool,
+        company_id.as_deref(),
+        include_completed.unwrap_or(false),
+        priority.as_deref(),
+        date_filter.as_deref(),
+        search.as_deref(),
+        sort_field.as_deref().unwrap_or("sort_order"),
+        sort_direction.as_deref().unwrap_or("asc"),
+        limit,
+        offset,
+    )
+    .await?;
+
+    Ok(results
+        .into_iter()
+        .map(|(t, name, avatar, email)| TaskWithContactResponse {
+            id: t.id,
+            company_id: t.company_id,
+            title: t.title,
+            description: t.description,
+            priority: t.priority,
+            is_completed: t.is_completed,
+            completed_at: t.completed_at,
+            due_date: t.due_date,
+            parent_id: t.parent_id,
+            contact_id: t.contact_id,
+            thread_id: t.thread_id,
+            thread_account_id: t.thread_account_id,
+            sort_order: t.sort_order,
+            recurrence_rule: t.recurrence_rule,
+            next_recurrence_at: t.next_recurrence_at,
+            tags_json: t.tags_json,
+            workflow_config_json: t.workflow_config_json,
+            reminder_config_json: t.reminder_config_json,
+            created_at: t.created_at,
+            updated_at: t.updated_at,
+            contact_name: name,
+            contact_avatar: avatar,
+            contact_email: email,
+        })
+        .collect())
+}
+
+#[tauri::command]
 /// Count tasks grouped by contact.
 ///
 /// Delegates to `tasks::count_by_contact` and maps each pair into

@@ -1,5 +1,5 @@
-﻿import type { ImapFolder } from "./tauriCommands";
-import { upsertLabel } from "@shared/services/db/labels";
+﻿import type { ImapFolder } from './tauriCommands';
+import { upsertLabel } from '@shared/services/db/labels';
 
 /**
  * Regex patterns for folder names that are non-selectable or shared.
@@ -12,15 +12,15 @@ const NON_SELECTABLE_PATTERNS = /(^|\/)(groups|shared|public)(\/|$)/i;
  * Mapping from IMAP special-use flags to Gmail-style label IDs.
  */
 const SPECIAL_USE_MAP: Record<string, { labelId: string; labelName: string; type: string }> = {
-  "\\Inbox": { labelId: "INBOX", labelName: "Inbox", type: "system" },
-  "\\Sent": { labelId: "SENT", labelName: "Sent", type: "system" },
-  "\\Drafts": { labelId: "DRAFT", labelName: "Drafts", type: "system" },
-  "\\Trash": { labelId: "TRASH", labelName: "Trash", type: "system" },
-  "\\Junk": { labelId: "SPAM", labelName: "Spam", type: "system" },
-  "\\Archive": { labelId: "archive", labelName: "Archive", type: "system" },
-  "\\Flagged": { labelId: "STARRED", labelName: "Starred", type: "system" },
-  "\\All": { labelId: "all-mail", labelName: "All Mail", type: "system" },
-  "\\Important": { labelId: "IMPORTANT", labelName: "Important", type: "system" },
+  '\\Inbox': { labelId: 'INBOX', labelName: 'Inbox', type: 'system' },
+  '\\Sent': { labelId: 'SENT', labelName: 'Sent', type: 'system' },
+  '\\Drafts': { labelId: 'DRAFT', labelName: 'Drafts', type: 'system' },
+  '\\Trash': { labelId: 'TRASH', labelName: 'Trash', type: 'system' },
+  '\\Junk': { labelId: 'SPAM', labelName: 'Spam', type: 'system' },
+  '\\Archive': { labelId: 'archive', labelName: 'Archive', type: 'system' },
+  '\\Flagged': { labelId: 'STARRED', labelName: 'Starred', type: 'system' },
+  '\\All': { labelId: 'all-mail', labelName: 'All Mail', type: 'system' },
+  '\\Important': { labelId: 'IMPORTANT', labelName: 'Important', type: 'system' },
 };
 
 /**
@@ -28,35 +28,35 @@ const SPECIAL_USE_MAP: Record<string, { labelId: string; labelName: string; type
  * report special-use attributes.
  */
 const FOLDER_NAME_MAP: Record<string, string> = {
-  inbox: "\\Inbox",
-  sent: "\\Sent",
-  "sent items": "\\Sent",
-  "sent mail": "\\Sent",
-  drafts: "\\Drafts",
-  draft: "\\Drafts",
-  draftbox: "\\Drafts",
-  brouillons: "\\Drafts",
-  trash: "\\Trash",
-  "deleted items": "\\Trash",
-  "deleted messages": "\\Trash",
-  bin: "\\Trash",
-  corbeille: "\\Trash",
-  unsolbox: "\\Trash",
-  junk: "\\Junk",
-  "junk e-mail": "\\Junk",
-  spam: "\\Junk",
-  archive: "\\Archive",
-  archives: "\\Archive",
-  flagged: "\\Flagged",
-  starred: "\\Flagged",
-  "all mail": "\\All",
-  "[gmail]/all mail": "\\All",
-  "[gmail]/sent mail": "\\Sent",
-  "[gmail]/drafts": "\\Drafts",
-  "[gmail]/spam": "\\Junk",
-  "[gmail]/trash": "\\Trash",
-  "[gmail]/starred": "\\Flagged",
-  "[gmail]/important": "\\Important",
+  inbox: '\\Inbox',
+  sent: '\\Sent',
+  'sent items': '\\Sent',
+  'sent mail': '\\Sent',
+  drafts: '\\Drafts',
+  draft: '\\Drafts',
+  draftbox: '\\Drafts',
+  brouillons: '\\Drafts',
+  trash: '\\Trash',
+  'deleted items': '\\Trash',
+  'deleted messages': '\\Trash',
+  bin: '\\Trash',
+  corbeille: '\\Trash',
+  unsolbox: '\\Trash',
+  junk: '\\Junk',
+  'junk e-mail': '\\Junk',
+  spam: '\\Junk',
+  archive: '\\Archive',
+  archives: '\\Archive',
+  flagged: '\\Flagged',
+  starred: '\\Flagged',
+  'all mail': '\\All',
+  '[gmail]/all mail': '\\All',
+  '[gmail]/sent mail': '\\Sent',
+  '[gmail]/drafts': '\\Drafts',
+  '[gmail]/spam': '\\Junk',
+  '[gmail]/trash': '\\Trash',
+  '[gmail]/starred': '\\Flagged',
+  '[gmail]/important': '\\Important',
 };
 
 export interface FolderLabelMapping {
@@ -95,7 +95,7 @@ export function mapFolderToLabel(folder: ImapFolder): FolderLabelMapping {
   return {
     labelId: `folder-${folder.path}`,
     labelName: folder.name,
-    type: "user",
+    type: 'user',
   };
 }
 
@@ -113,15 +113,15 @@ export function getLabelsForMessage(
   const labels: string[] = [folderMapping.labelId];
 
   if (!isRead) {
-    labels.push("UNREAD");
+    labels.push('UNREAD');
   }
 
   if (isStarred) {
-    labels.push("STARRED");
+    labels.push('STARRED');
   }
 
   if (isDraft) {
-    labels.push("DRAFT");
+    labels.push('DRAFT');
   }
 
   return labels;
@@ -131,10 +131,7 @@ export function getLabelsForMessage(
  * Sync IMAP folders to the labels table in the DB.
  * Creates/updates label entries for each folder.
  */
-export async function syncFoldersToLabels(
-  accountId: string,
-  folders: ImapFolder[],
-): Promise<void> {
+export async function syncFoldersToLabels(accountId: string, folders: ImapFolder[]): Promise<void> {
   for (const folder of folders) {
     const mapping = mapFolderToLabel(folder);
     await upsertLabel({
@@ -149,10 +146,10 @@ export async function syncFoldersToLabels(
 
   // Also ensure the UNREAD pseudo-label exists
   await upsertLabel({
-    id: "UNREAD",
+    id: 'UNREAD',
     accountId,
-    name: "Unread",
-    type: "system",
+    name: 'Unread',
+    type: 'system',
   });
 }
 
@@ -165,7 +162,7 @@ export function isSelectableFolder(folder: ImapFolder): boolean {
   const lowerPath = folder.path.toLowerCase();
   if (NON_SELECTABLE_PATTERNS.test(lowerPath)) return false;
   // Skip folders that are clearly system containers
-  if (lowerPath.startsWith("[nostromo]")) return false;
+  if (lowerPath.startsWith('[nostromo]')) return false;
   return true;
 }
 
@@ -178,9 +175,9 @@ export function getSyncableFolders(folders: ImapFolder[]): ImapFolder[] {
   return folders.filter((f) => {
     const lowerPath = f.path.toLowerCase();
     // Skip the Gmail parent container folder
-    if (lowerPath === "[gmail]" || lowerPath === "[google mail]") return false;
+    if (lowerPath === '[gmail]' || lowerPath === '[google mail]') return false;
     // Skip Nostromo-style virtual folders
-    if (lowerPath.startsWith("[nostromo]")) return false;
+    if (lowerPath.startsWith('[nostromo]')) return false;
     // Skip non-selectable/shared folders
     if (!isSelectableFolder(f)) return false;
     return true;

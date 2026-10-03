@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useCallback, useState } from "react";
-import { RefreshCw, Plus } from "lucide-react";
-import { useDealStore } from "@features/crm/stores/dealStore";
-import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
-import { Button } from "@shared/components/ui/Button";
-import { SkeletonPage } from "@shared/components/ui/Skeleton";
-import { DealColumn } from "./DealColumn";
-import type { DealStage, Deal } from "@shared/services/db/schema";
+import { useEffect, useMemo, useCallback, useState } from 'react';
+import { RefreshCw, Plus } from 'lucide-react';
+import { useDealStore } from '@features/crm/stores/dealStore';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
+import { Button } from '@shared/components/ui/Button';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
+import { DealColumn } from './DealColumn';
+import type { DealStage, Deal } from '@shared/services/db/schema';
 
 export function PipelineBoard() {
   const {
@@ -37,7 +37,7 @@ export function PipelineBoard() {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load pipeline");
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load pipeline');
       });
     return () => {
       cancelled = true;
@@ -83,7 +83,7 @@ export function PipelineBoard() {
 
   const handleOpenDeal = useCallback((id: string) => {
     // Future: route to deal detail panel
-    console.log("Open deal", id);
+    console.log('Open deal', id);
   }, []);
 
   if (!activePipeline) {

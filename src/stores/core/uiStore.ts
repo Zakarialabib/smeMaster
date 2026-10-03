@@ -1,6 +1,6 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-export type ReadingPanePosition = "right" | "bottom" | "hidden";
+export type ReadingPanePosition = 'right' | 'bottom' | 'hidden';
 
 export interface SidebarNavItem {
   id: string;
@@ -37,16 +37,18 @@ export const useUIStore = create<UIState>()((set) => ({
 
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
-  toggleContactSidebar: () => set((state) => ({ contactSidebarVisible: !state.contactSidebarVisible })),
+  toggleContactSidebar: () =>
+    set((state) => ({ contactSidebarVisible: !state.contactSidebarVisible })),
   setContactSidebarVisible: (contactSidebarVisible) => set({ contactSidebarVisible }),
   toggleTaskSidebar: () => set((state) => ({ taskSidebarVisible: !state.taskSidebarVisible })),
   setTaskSidebarVisible: (taskSidebarVisible) => set({ taskSidebarVisible }),
   setReadingPaneExpanded: (readingPaneExpanded) => set({ readingPaneExpanded }),
 
-  reset: () => set({
-    sidebarCollapsed: false,
-    contactSidebarVisible: true,
-    taskSidebarVisible: false,
-    readingPaneExpanded: false,
-  }),
+  reset: () =>
+    set({
+      sidebarCollapsed: false,
+      contactSidebarVisible: true,
+      taskSidebarVisible: false,
+      readingPaneExpanded: false,
+    }),
 }));

@@ -19,7 +19,7 @@ const DISMISS_HOURS = 24;
 export function LicenseBanner() {
   const license = useLicenseStore((s) => s.license);
   const loading = useLicenseStore((s) => s.loading);
-  const [dismissedAtStr, setDismissedAt] = useSetting("license_banner_dismissed_at", "0");
+  const [dismissedAtStr, setDismissedAt] = useSetting('license_banner_dismissed_at', '0');
 
   const dismissedAt = parseInt(dismissedAtStr, 10) || null;
 
@@ -140,4 +140,3 @@ export function LicenseBanner() {
     </div>
   );
 }
-

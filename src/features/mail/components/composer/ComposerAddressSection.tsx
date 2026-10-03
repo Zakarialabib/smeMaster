@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@shared/components/ui/Button";
-import { AddressInput, type ContactLookupInfo } from "./AddressInput";
-import { FromSelector } from "./FromSelector";
-import { getContactByEmail } from "@features/contacts/db/contacts";
-import type { SendAsAlias } from "@features/mail/db/sendAsAliases";
-import type { Account } from "@features/accounts/stores/accountStore";
-import type { ComposerMode } from "@features/mail/stores/composerStore";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@shared/components/ui/Button';
+import { AddressInput, type ContactLookupInfo } from './AddressInput';
+import { FromSelector } from './FromSelector';
+import { getContactByEmail } from '@features/contacts/db/contacts';
+import type { SendAsAlias } from '@features/mail/db/sendAsAliases';
+import type { Account } from '@features/accounts/stores/accountStore';
+import type { ComposerMode } from '@features/mail/stores/composerStore';
 
 interface ComposerAddressSectionProps {
   aliases: SendAsAlias[];
@@ -48,7 +48,7 @@ export function ComposerAddressSection({
   cc,
   bcc,
   showCcBcc,
-  mode = "new",
+  mode = 'new',
   onFromChange,
   onToChange,
   onCcChange,
@@ -59,7 +59,7 @@ export function ComposerAddressSection({
   const [contactInfo, setContactInfo] = useState<Record<string, ContactLookupInfo | null>>({});
   const pendingLookupRef = useRef<Set<string>>(new Set());
 
-  const isNewMode = mode === "new";
+  const isNewMode = mode === 'new';
 
   /**
    * Enqueue contact lookups for a list of addresses.
@@ -67,7 +67,7 @@ export function ComposerAddressSection({
    */
   const lookupAddresses = useCallback(async (addresses: string[]) => {
     const emailsToLookup = addresses.filter(
-      (addr) => addr.includes("@") && !(addr in contactInfo) && !pendingLookupRef.current.has(addr),
+      (addr) => addr.includes('@') && !(addr in contactInfo) && !pendingLookupRef.current.has(addr),
     );
     if (emailsToLookup.length === 0) return;
 
@@ -115,21 +115,39 @@ export function ComposerAddressSection({
     <div className="px-5 py-3 space-y-2 border-b border-border-secondary">
       <FromSelector
         aliases={aliases}
-        selectedEmail={fromEmail ?? activeAccount?.email ?? ""}
+        selectedEmail={fromEmail ?? activeAccount?.email ?? ''}
         onChange={(alias: SendAsAlias) => onFromChange(alias.email)}
       />
-      <AddressInput label="To" addresses={to} onChange={onToChange} contactInfo={contactInfo} isNewMode={isNewMode} />
+      <AddressInput
+        label="To"
+        addresses={to}
+        onChange={onToChange}
+        contactInfo={contactInfo}
+        isNewMode={isNewMode}
+      />
       {showCcBcc ? (
         <>
-          <AddressInput label="Cc" addresses={cc} onChange={onCcChange} contactInfo={contactInfo} isNewMode={isNewMode} />
-          <AddressInput label="Bcc" addresses={bcc} onChange={onBccChange} contactInfo={contactInfo} isNewMode={isNewMode} />
+          <AddressInput
+            label="Cc"
+            addresses={cc}
+            onChange={onCcChange}
+            contactInfo={contactInfo}
+            isNewMode={isNewMode}
+          />
+          <AddressInput
+            label="Bcc"
+            addresses={bcc}
+            onChange={onBccChange}
+            contactInfo={contactInfo}
+            isNewMode={isNewMode}
+          />
         </>
       ) : (
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleCcBcc}
-          className="ml-10 text-accent hover:text-accent-hover"
+          className="ms-10 text-accent hover:text-accent-hover"
         >
           {t('composer.ccBcc')}
         </Button>

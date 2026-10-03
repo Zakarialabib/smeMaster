@@ -3,7 +3,7 @@ import {
   upsertWritingStyleProfile as dbUpsert,
   deleteWritingStyleProfile as dbDelete,
   type WritingStyleProfile,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type DbWritingStyleProfile = WritingStyleProfile;
 
@@ -22,9 +22,7 @@ export async function upsertWritingStyleProfile(
   await dbUpsert({ accountId, profileText, sampleCount });
 }
 
-export async function deleteWritingStyleProfile(
-  accountId: string,
-): Promise<void> {
+export async function deleteWritingStyleProfile(accountId: string): Promise<void> {
   const profiles = await dbList(accountId);
   const first = profiles[0];
   if (first) {

@@ -1,6 +1,6 @@
-import { useState, useRef, type ReactNode } from "react";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { TOOLTIP_BASE, FOCUS_RING } from "@shared/styles/ui-tokens";
+import { useState, useRef, type ReactNode } from 'react';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { TOOLTIP_BASE, FOCUS_RING } from '@shared/styles/ui-tokens';
 
 /**
  * @deprecated Use InlineTooltip from "@features/settings/components/HelpCard" instead.
@@ -8,7 +8,7 @@ import { TOOLTIP_BASE, FOCUS_RING } from "@shared/styles/ui-tokens";
  * It uses the same visual tokens as InlineTooltip but with a different API.
  */
 
-type TooltipSide = "top" | "bottom" | "left" | "right";
+type TooltipSide = 'top' | 'bottom' | 'left' | 'right';
 
 interface InfoTooltipProps {
   content: string;
@@ -18,23 +18,29 @@ interface InfoTooltipProps {
   delay?: number;
 }
 
+// NOTE: the centered `left` + `translate-x` pairing below is intentionally
+// physical — it is geometrically symmetric, so it renders identically under
+// RTL. Anchoring it to the inline start instead would break centering because
+// `translate-x` does not flip.
 const SIDE_STYLES: Record<TooltipSide, string> = {
-  top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-  bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-  left: "end-full top-1/2 -translate-y-1/2 me-2",
-  right: "start-full top-1/2 -translate-y-1/2 ms-2",
+  top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+  bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
+  left: 'end-full top-1/2 -translate-y-1/2 me-2',
+  right: 'start-full top-1/2 -translate-y-1/2 ms-2',
 };
 
 const ARROW_STYLES: Record<TooltipSide, string> = {
-  top: "top-full left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-border-primary",
-  bottom: "bottom-full left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-transparent border-b-border-primary",
-  left: "end-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-l-4 border-transparent border-l-border-primary",
-  right: "start-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-r-4 border-transparent border-r-border-primary",
+  top: 'top-full left-1/2 -translate-x-1/2 border-s-4 border-e-4 border-t-4 border-transparent border-t-border-primary',
+  bottom:
+    'bottom-full left-1/2 -translate-x-1/2 border-s-4 border-e-4 border-b-4 border-transparent border-b-border-primary',
+  left: 'end-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-s-4 border-transparent border-s-border-primary',
+  right:
+    'start-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-e-4 border-transparent border-e-border-primary',
 };
 
 export function InfoTooltip({
   content,
-  side = "top",
+  side = 'top',
   icon = false,
   children,
   delay = 300,
@@ -43,7 +49,7 @@ export function InfoTooltip({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  
+
   const show = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setVisible(true), delay);
@@ -63,9 +69,12 @@ export function InfoTooltip({
     ? {
         onClick: toggle,
         onKeyDown: (e: React.KeyboardEvent) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggle();
+          }
         },
-        "aria-expanded": visible,
+        'aria-expanded': visible,
       }
     : {
         onMouseEnter: show,

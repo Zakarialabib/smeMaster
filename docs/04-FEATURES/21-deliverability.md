@@ -80,7 +80,7 @@ Deliverability should stay focused on sender health and send quality, not on dup
 | Pre-send quality     | `src/features/deliverability/services/preSendChecklist.ts`, `contentQuality.ts`                                                                      |
 | UI                   | `src/features/deliverability/components/DeliverabilityPanel.tsx`, `HealthScoreCard.tsx`, `ProviderMatrix.tsx`                                        |
 | Related settings/UI  | `src/features/settings/components/BlacklistChecker.tsx`, `BounceManager.tsx`, `WarmingSettings.tsx`                                                  |
-| Settings tabs        | `src/features/settings/components/tabs/DeliverabilityTab.tsx`, `DnsTab.tsx`, `PresendTab.tsx`, `BlacklistTab.tsx`, `BounceTab.tsx`, `WarmingTab.tsx` |
+| Settings tabs        | `src/features/settings/components/tabs/DeliverabilityTab.tsx`, `PresendTab.tsx` (DNS/Blacklist/Bounce/Warming were merged into `DeliverabilityTab`) |
 | Backend commands     | `src-tauri/src/commands/deliverability.rs`                                                                                                           |
 | Backend DB domain    | `src-tauri/src/db/deliverability/`                                                                                                                   |
 
@@ -92,3 +92,9 @@ Update this page when:
 - new deliverability UIs become primary
 - warming or bounce flows move to different ownership
 - pre-send quality checks shift between deliverability and compliance
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| Settings tabs: `DnsTab/BounceTab/BlacklistTab/WarmingTab.tsx` | Only `DeliverabilityTab.tsx` + `PresendTab.tsx` exist; the sub-tools were merged into `DeliverabilityTab` | `ls src/features/settings/components/tabs/` (grep deliver/dns/black/bounce/warm/presend) → only `DeliverabilityTab`, `PresendTab` |

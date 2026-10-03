@@ -1,19 +1,19 @@
-import { useCallback, useMemo } from "react";
-import { useDroppable } from "@dnd-kit/core";
-import { Plus } from "lucide-react";
-import type { DbTask } from "@features/tasks/db/tasks";
-import { TaskKanbanCard } from "./TaskKanbanCard";
+import { useCallback, useMemo } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { Plus } from 'lucide-react';
+import type { DbTask } from '@features/tasks/db/tasks';
+import { TaskKanbanCard } from './TaskKanbanCard';
 
 /**
  * Priority column configuration.
  * @spec §7.1
  */
 const COLUMN_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  urgent: { label: "Urgent", color: "text-red-500", bg: "bg-red-500/10" },
-  high: { label: "High", color: "text-orange-500", bg: "bg-orange-500/10" },
-  medium: { label: "Medium", color: "text-amber-500", bg: "bg-amber-500/10" },
-  low: { label: "Low", color: "text-blue-400", bg: "bg-blue-400/10" },
-  none: { label: "No Priority", color: "text-text-tertiary", bg: "bg-bg-tertiary" },
+  urgent: { label: 'Urgent', color: 'text-red-500', bg: 'bg-red-500/10' },
+  high: { label: 'High', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  medium: { label: 'Medium', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  low: { label: 'Low', color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  none: { label: 'No Priority', color: 'text-text-tertiary', bg: 'bg-bg-tertiary' },
 };
 
 /**
@@ -62,8 +62,8 @@ export function TaskKanbanColumn({
 }: TaskKanbanColumnProps) {
   const config = COLUMN_CONFIG[columnId] ?? {
     label: columnId.charAt(0).toUpperCase() + columnId.slice(1),
-    color: "text-text-secondary",
-    bg: "bg-bg-tertiary",
+    color: 'text-text-secondary',
+    bg: 'bg-bg-tertiary',
   };
 
   const { setNodeRef, isOver } = useDroppable({
@@ -87,7 +87,7 @@ export function TaskKanbanColumn({
         flex flex-col bg-bg-secondary border border-border-primary rounded-lg
         w-[var(--task-kanban-column-width,_280px)] shrink-0
         transition-all duration-150
-        ${isOver ? "ring-2 ring-accent" : ""}
+        ${isOver ? 'ring-2 ring-accent' : ''}
       `}
       role="region"
       aria-label={`${config.label} column with ${tasks.length} tasks`}

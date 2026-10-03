@@ -1,5 +1,10 @@
-﻿import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
-import { upsertFollowUpReminder as dbUpsertFollowUpReminder, executeSearchQuery, updateFollowUpStatus as dbUpdateFollowUpStatus, cancelFollowUpForThread as dbCancelFollowUpForThread } from "@/shared/services/db/db-invoke";
+﻿import { getCurrentUnixTimestamp } from '@shared/utils/timestamp';
+import {
+  upsertFollowUpReminder as dbUpsertFollowUpReminder,
+  executeSearchQuery,
+  updateFollowUpStatus as dbUpdateFollowUpStatus,
+  cancelFollowUpForThread as dbCancelFollowUpForThread,
+} from '@/shared/services/db/db-invoke';
 
 export interface DbFollowUpReminder {
   id: string;
@@ -37,24 +42,21 @@ export async function getFollowUpForThread(
   accountId: string,
   threadId: string,
 ): Promise<DbFollowUpReminder | null> {
-  const rows = await executeSearchQuery(
+  const rows = (await executeSearchQuery(
     "SELECT * FROM follow_up_reminders WHERE account_id = $1 AND thread_id = $2 AND status = 'pending' LIMIT 1",
     [accountId, threadId],
-  ) as unknown as DbFollowUpReminder[];
+  )) as unknown as DbFollowUpReminder[];
   return rows[0] ?? null;
 }
 
 export async function updateFollowUpStatus(
   id: string,
-  status: "triggered" | "cancelled",
+  status: 'triggered' | 'cancelled',
 ): Promise<void> {
   await dbUpdateFollowUpStatus(id, status);
 }
 
-export async function cancelFollowUpForThread(
-  accountId: string,
-  threadId: string,
-): Promise<void> {
+export async function cancelFollowUpForThread(accountId: string, threadId: string): Promise<void> {
   await dbCancelFollowUpForThread(accountId, threadId);
 }
 
@@ -94,10 +96,10 @@ export async function getActiveFollowUpThreadIds(
   threadIds: string[],
 ): Promise<Set<string>> {
   if (threadIds.length === 0) return new Set();
-  const placeholders = threadIds.map((_, i) => `$${i + 2}`).join(",");
-  const rows = await executeSearchQuery(
+  const placeholders = threadIds.map((_, i) => `$${i + 2}`).join(',');
+  const rows = (await executeSearchQuery(
     `SELECT thread_id FROM follow_up_reminders WHERE account_id = $1 AND status = 'pending' AND thread_id IN (${placeholders})`,
     [accountId, ...threadIds],
-  ) as { thread_id: string }[];
+  )) as { thread_id: string }[];
   return new Set(rows.map((r) => r.thread_id));
 }

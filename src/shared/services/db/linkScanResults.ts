@@ -2,7 +2,7 @@ import {
   deleteLinkScanResults as dbInvokeDeleteLinkScanResults,
   getLinkScanResult,
   upsertLinkScanResult,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export async function getCachedScanResult(
   accountId: string,

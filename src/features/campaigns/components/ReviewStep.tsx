@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { Eye, Users, SplitSquareHorizontal, Variable } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { TEMPLATE_VARIABLES } from "@shared/utils/templateVariables";
-import type { Template } from "@shared/services/db/schema";
+import { useState } from 'react';
+import { Eye, Users, SplitSquareHorizontal, Variable } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { TEMPLATE_VARIABLES } from '@shared/utils/templateVariables';
+import type { Template } from '@shared/services/db/schema';
 
 const MAIL_MERGE_VARIABLES = [
-  { key: "{{firstName}}", label: "First Name" },
-  { key: "{{lastName}}", label: "Last Name" },
-  { key: "{{company}}", label: "Company" },
-  { key: "{{email}}", label: "Email" },
-  { key: "{{unsubscribeUrl}}", label: "Unsubscribe Link" },
+  { key: '{{firstName}}', label: 'First Name' },
+  { key: '{{lastName}}', label: 'Last Name' },
+  { key: '{{company}}', label: 'Company' },
+  { key: '{{email}}', label: 'Email' },
+  { key: '{{unsubscribeUrl}}', label: 'Unsubscribe Link' },
 ];
 
 interface ReviewStepProps {
@@ -47,7 +47,7 @@ export function ReviewStep({
       <div className="glass-panel rounded-lg p-4 space-y-3 text-sm">
         <div className="flex justify-between items-center">
           <span className="text-text-tertiary">{t('common.name')}</span>
-          <span className="text-text-primary font-medium">{name.trim() || "—"}</span>
+          <span className="text-text-primary font-medium">{name.trim() || '—'}</span>
         </div>
         <div className="border-t border-border-primary" />
         <div className="flex justify-between items-center">
@@ -66,7 +66,9 @@ export function ReviewStep({
         <div className="border-t border-border-primary" />
         <div className="flex justify-between items-center">
           <span className="text-text-tertiary">{t('campaign.stepTemplate')}</span>
-          <span className="text-text-primary">{selectedTemplate?.name ?? t('campaign.noTemplate')}</span>
+          <span className="text-text-primary">
+            {selectedTemplate?.name ?? t('campaign.noTemplate')}
+          </span>
         </div>
         <div className="border-t border-border-primary" />
         <div className="flex justify-between items-center">
@@ -76,7 +78,7 @@ export function ReviewStep({
         <div className="border-t border-border-primary" />
         <div className="flex justify-between items-center">
           <span className="text-text-tertiary">{t('campaign.tracking')}</span>
-          <span className={`text-sm ${trackingEnabled ? "text-success" : "text-text-tertiary"}`}>
+          <span className={`text-sm ${trackingEnabled ? 'text-success' : 'text-text-tertiary'}`}>
             {trackingEnabled ? t('campaign.enabled') : t('common.disabled')}
           </span>
         </div>
@@ -125,7 +127,7 @@ export function ReviewStep({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-text-tertiary text-xs">{t('common.name')}</span>
-              <p className="text-text-primary font-medium mt-0.5">{name.trim() || "—"}</p>
+              <p className="text-text-primary font-medium mt-0.5">{name.trim() || '—'}</p>
             </div>
             <div>
               <span className="text-text-tertiary text-xs">{t('campaign.audience')}</span>
@@ -133,7 +135,9 @@ export function ReviewStep({
             </div>
             <div>
               <span className="text-text-tertiary text-xs">{t('campaign.stepTemplate')}</span>
-              <p className="text-text-primary mt-0.5">{selectedTemplate?.name ?? t('campaign.noTemplate')}</p>
+              <p className="text-text-primary mt-0.5">
+                {selectedTemplate?.name ?? t('campaign.noTemplate')}
+              </p>
             </div>
             <div>
               <span className="text-text-tertiary text-xs">{t('campaign.schedule')}</span>
@@ -163,7 +167,10 @@ export function ReviewStep({
               </label>
               <div className="border border-border-primary rounded-lg overflow-hidden">
                 <iframe
-                  srcDoc={selectedTemplate.body_html.replace(/\{\{content\}\}/g, t('campaign.templatePreviewContent'))}
+                  srcDoc={selectedTemplate.body_html.replace(
+                    /\{\{content\}\}/g,
+                    t('campaign.templatePreviewContent'),
+                  )}
                   className="w-full min-h-[300px]"
                   sandbox="allow-same-origin"
                   title={t('settings.templatePreview')}
@@ -193,7 +200,9 @@ export function ReviewStep({
           </p>
 
           <div className="space-y-1">
-            <span className="text-xs font-medium text-text-primary">{t('campaign.standardVariables')}</span>
+            <span className="text-xs font-medium text-text-primary">
+              {t('campaign.standardVariables')}
+            </span>
             <div className="grid grid-cols-2 gap-2 mt-1.5">
               {TEMPLATE_VARIABLES.map((v) => (
                 <div
@@ -209,7 +218,9 @@ export function ReviewStep({
           </div>
 
           <div className="border-t border-border-primary pt-3">
-            <span className="text-xs font-medium text-text-primary">{t('campaign.additionalVariables')}</span>
+            <span className="text-xs font-medium text-text-primary">
+              {t('campaign.additionalVariables')}
+            </span>
             <div className="grid grid-cols-2 gap-2 mt-1.5">
               {MAIL_MERGE_VARIABLES.map((v) => (
                 <div

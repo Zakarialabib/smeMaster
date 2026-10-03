@@ -1,6 +1,6 @@
-import { Clock } from "lucide-react";
-import { getHealthStyle } from "@shared/utils/scoreVariant";
-import { formatRelativeDate } from "@shared/utils/date";
+import { Clock } from 'lucide-react';
+import { getHealthStyle } from '@shared/utils/scoreVariant';
+import { formatRelativeDate } from '@shared/utils/date';
 
 interface EngagementScoreBarProps {
   /** Score from 0.0 to 1.0 */
@@ -10,25 +10,29 @@ interface EngagementScoreBarProps {
   /** When the contact was last engaged (optional) */
   lastEngagedAt?: number | string | null;
   /** Size variant */
-  size?: "sm" | "md";
+  size?: 'sm' | 'md';
 }
 
 export function EngagementScoreBar({
   score,
   healthStatus,
   lastEngagedAt,
-  size = "md",
+  size = 'md',
 }: EngagementScoreBarProps) {
   const health = getHealthStyle(healthStatus);
   const percentage = Math.round(score * 100);
 
   return (
-    <div className={`space-y-2 ${size === "sm" ? "mb-3" : "mb-4"}`}>
+    <div className={`space-y-2 ${size === 'sm' ? 'mb-3' : 'mb-4'}`}>
       <div className="flex items-center justify-between">
-        <span className={`font-semibold uppercase tracking-wider text-text-tertiary ${size === "sm" ? "text-[0.625rem]" : "text-xs"}`}>
+        <span
+          className={`font-semibold uppercase tracking-wider text-text-tertiary ${size === 'sm' ? 'text-[0.625rem]' : 'text-xs'}`}
+        >
           Engagement Score
         </span>
-        <span className={`px-1.5 py-0.5 rounded font-medium ${health.bg} ${health.text} ${size === "sm" ? "text-[0.55rem]" : "text-[0.625rem]"}`}>
+        <span
+          className={`px-1.5 py-0.5 rounded font-medium ${health.bg} ${health.text} ${size === 'sm' ? 'text-[0.55rem]' : 'text-[0.625rem]'}`}
+        >
           {health.label}
         </span>
       </div>

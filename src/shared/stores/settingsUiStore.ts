@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { getSetting, setSetting } from "@features/settings/db/settings";
+import { create } from 'zustand';
+import { getSetting, setSetting } from '@features/settings/db/settings';
 
 interface SettingsUiState {
   advancedMode: boolean;
@@ -13,12 +13,12 @@ export const useSettingsUiStore = create<SettingsUiState>((set) => ({
   setAdvancedMode: (val) => {
     set({ advancedMode: val });
     // Also persist to DB
-    setSetting("advanced_settings_mode", val ? "true" : "false");
+    setSetting('advanced_settings_mode', val ? 'true' : 'false');
   },
   init: async () => {
     try {
-      const val = await getSetting("advanced_settings_mode");
-      set({ advancedMode: val === "true" });
+      const val = await getSetting('advanced_settings_mode');
+      set({ advancedMode: val === 'true' });
     } catch {
       // DB setting unavailable — stay in simple mode
       set({ advancedMode: false });

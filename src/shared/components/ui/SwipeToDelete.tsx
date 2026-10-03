@@ -1,6 +1,6 @@
-import { useRef, useCallback, useState, type ReactNode, type TouchEvent } from "react";
-import { Trash2 } from "lucide-react";
-import { useHaptics } from "@shared/hooks/useHaptics";
+import { useRef, useCallback, useState, type ReactNode, type TouchEvent } from 'react';
+import { Trash2 } from 'lucide-react';
+import { useHaptics } from '@shared/hooks/useHaptics';
 
 interface SwipeToDeleteProps {
   /** Called when the user finishes a swipe that exceeds the threshold */
@@ -89,10 +89,7 @@ export function SwipeToDelete({
   );
 
   return (
-    <div
-      ref={containerRef}
-      className="relative overflow-hidden"
-    >
+    <div ref={containerRef} className="relative overflow-hidden">
       {/* Delete button revealed behind the content */}
       <div className="absolute inset-y-0 right-0 flex items-stretch">
         <button
@@ -117,8 +114,8 @@ export function SwipeToDelete({
         style={{
           transform: `translateX(-${translateX}px)`,
           transition: isDraggingRef.current
-            ? "none"
-            : "transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
+            ? 'none'
+            : 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
         className="relative bg-inherit"
       >

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   X,
   Download,
@@ -8,8 +8,8 @@ import {
   RefreshCw,
   FileQuestion,
   Loader2,
-} from "lucide-react";
-import { readVaultFile, copyVaultToDownloads } from "@shared/services/vault/vaultService";
+} from 'lucide-react';
+import { readVaultFile, copyVaultToDownloads } from '@shared/services/vault/vaultService';
 
 interface VaultFilePreviewProps {
   filePath: string;
@@ -17,21 +17,36 @@ interface VaultFilePreviewProps {
   onClose: () => void;
 }
 
-type PreviewState = "loading" | "ready" | "error" | "unsupported";
+type PreviewState = 'loading' | 'ready' | 'error' | 'unsupported';
 
 const TEXT_EXTENSIONS = new Set([
-  ".txt", ".md", ".csv", ".json", ".xml", ".html", ".css", ".js", ".ts",
-  ".yaml", ".yml", ".toml", ".ini", ".cfg", ".log", ".env", ".sh", ".bat",
-  ".sql", ".svg",
+  '.txt',
+  '.md',
+  '.csv',
+  '.json',
+  '.xml',
+  '.html',
+  '.css',
+  '.js',
+  '.ts',
+  '.yaml',
+  '.yml',
+  '.toml',
+  '.ini',
+  '.cfg',
+  '.log',
+  '.env',
+  '.sh',
+  '.bat',
+  '.sql',
+  '.svg',
 ]);
 
-const IMAGE_EXTENSIONS = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico",
-]);
+const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico']);
 
 function getExtension(name: string): string {
-  const idx = name.lastIndexOf(".");
-  return idx === -1 ? "" : name.slice(idx).toLowerCase();
+  const idx = name.lastIndexOf('.');
+  return idx === -1 ? '' : name.slice(idx).toLowerCase();
 }
 
 function formatFileSize(bytes: number): string {
@@ -42,7 +57,7 @@ function formatFileSize(bytes: number): string {
 
 export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePreviewProps) {
   const ext = getExtension(fileName);
-  const [previewState, setPreviewState] = useState<PreviewState>("loading");
+  const [previewState, setPreviewState] = useState<PreviewState>('loading');
   const [content, setContent] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -52,20 +67,20 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
 
   const isImage = IMAGE_EXTENSIONS.has(ext);
   const isText = TEXT_EXTENSIONS.has(ext);
-  const isPdf = ext === ".pdf";
+  const isPdf = ext === '.pdf';
 
   const loadPreview = useCallback(async () => {
-    setPreviewState("loading");
+    setPreviewState('loading');
     setErrorMsg(null);
     try {
       const b64 = await readVaultFile(filePath);
       setContent(b64);
       // Estimate file size from base64 length
       setFileSize(Math.round((b64.length * 3) / 4));
-      setPreviewState("ready");
+      setPreviewState('ready');
     } catch (e) {
-      setPreviewState("error");
-      setErrorMsg(e instanceof Error ? e.message : "Failed to load file");
+      setPreviewState('error');
+      setErrorMsg(e instanceof Error ? e.message : 'Failed to load file');
     }
   }, [filePath]);
 
@@ -73,7 +88,7 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
     if (isImage || isText || isPdf) {
       loadPreview();
     } else {
-      setPreviewState("unsupported");
+      setPreviewState('unsupported');
       // Try to at least get file size
       loadPreview().catch(() => {});
     }
@@ -85,7 +100,7 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
     try {
       await copyVaultToDownloads(filePath);
     } catch (e) {
-      console.error("Download failed:", e);
+      console.error('Download failed:', e);
     } finally {
       setDownloading(false);
     }
@@ -98,7 +113,7 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       if (fullscreen) setFullscreen(false);
       else onClose();
     }
@@ -186,13 +201,13 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
 
   const renderPreview = () => {
     switch (previewState) {
-      case "loading":
+      case 'loading':
         return renderLoading();
-      case "error":
+      case 'error':
         return renderError();
-      case "unsupported":
+      case 'unsupported':
         return renderUnsupported();
-      case "ready":
+      case 'ready':
         if (isImage) return renderImage();
         if (isText) return renderText();
         if (isPdf) return renderPdf();
@@ -206,9 +221,10 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
     <div
       className={`
         flex flex-col bg-bg-primary
-        ${fullscreen
-          ? "fixed inset-0 z-[100] rounded-none"
-          : "relative max-w-4xl w-full mx-2 rounded-xl shadow-2xl max-h-[90vh]"
+        ${
+          fullscreen
+            ? 'fixed inset-0 z-[100] rounded-none'
+            : 'relative max-w-4xl w-full mx-2 rounded-xl shadow-2xl max-h-[90vh]'
         }
       `}
     >
@@ -225,7 +241,7 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
         <button
           onClick={() => setFullscreen(!fullscreen)}
           className="p-1.5 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded transition-colors"
-          title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+          title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
         >
           {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
         </button>
@@ -237,7 +253,7 @@ export function VaultFilePreview({ filePath, fileName, onClose }: VaultFilePrevi
           className="p-1.5 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded transition-colors disabled:opacity-40"
           title="Download"
         >
-          <Download size={16} className={downloading ? "animate-pulse" : ""} />
+          <Download size={16} className={downloading ? 'animate-pulse' : ''} />
         </button>
 
         {/* Close */}

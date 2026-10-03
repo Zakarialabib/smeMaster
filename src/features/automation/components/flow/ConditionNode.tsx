@@ -1,36 +1,34 @@
-import { memo, useCallback, type ChangeEvent } from "react";
-import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { Filter } from "lucide-react";
-import { useAutomationStore } from "@features/automation/stores/automationStore";
+import { memo, useCallback, useMemo, type ChangeEvent } from 'react';
+import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
+import { Filter } from 'lucide-react';
+import { useAutomationStore } from '@features/automation/stores/automationStore';
 
 export type ConditionNodeData = Node<
   {
     conditions: string;
   },
-  "condition"
+  'condition'
 >;
 
-export const ConditionNode = memo(function ConditionNode({
-  data,
-}: NodeProps<ConditionNodeData>) {
+export const ConditionNode = memo(function ConditionNode({ data }: NodeProps<ConditionNodeData>) {
   const setEditorField = useAutomationStore((s) => s.setEditorField);
 
-  const conditions = (() => {
+  const conditions = useMemo(() => {
     try {
-      return JSON.parse(data.conditions || "{}") as Record<string, unknown>;
+      return JSON.parse(data.conditions || '{}') as Record<string, unknown>;
     } catch {
       return {};
     }
-  })();
+  }, [data.conditions]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const field = e.target.name;
       const value = e.target.value;
       const parsed = { ...conditions, [field]: value };
-      setEditorField("triggerConditions", JSON.stringify(parsed));
+      setEditorField('triggerConditions', JSON.stringify(parsed));
     },
-    [data.conditions, setEditorField],
+    [conditions, setEditorField],
   );
 
   return (
@@ -49,7 +47,7 @@ export const ConditionNode = memo(function ConditionNode({
         <input
           type="text"
           name="from_domain"
-          value={(conditions.from_domain as string) ?? ""}
+          value={(conditions.from_domain as string) ?? ''}
           onChange={handleChange}
           placeholder="From domain"
           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-warning"
@@ -57,7 +55,7 @@ export const ConditionNode = memo(function ConditionNode({
         <input
           type="text"
           name="subject_contains"
-          value={(conditions.subject_contains as string) ?? ""}
+          value={(conditions.subject_contains as string) ?? ''}
           onChange={handleChange}
           placeholder="Subject contains"
           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary outline-none focus:border-warning"

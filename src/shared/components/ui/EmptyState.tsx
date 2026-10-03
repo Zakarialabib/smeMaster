@@ -1,19 +1,15 @@
-import { AlertCircle, type LucideIcon } from "lucide-react";
-import { memo, type ComponentType, type ReactNode, createElement } from "react";
-import {
-  EMPTY_STATE,
-  EMPTY_ICON,
-  EMPTY_ILLUSTRATION,
-} from "@shared/styles/ui-tokens";
+import { AlertCircle, type LucideIcon } from 'lucide-react';
+import { memo, type ComponentType, type ReactNode, createElement } from 'react';
+import { EMPTY_STATE, EMPTY_ICON, EMPTY_ILLUSTRATION } from '@shared/styles/ui-tokens';
 import {
   GenericEmptyIllustration,
   InboxClearIllustration,
   NoAccountIllustration,
   NoSearchResultsIllustration,
   ReadingPaneIllustration,
-} from "./illustrations";
+} from './illustrations';
 
-export type EmptyStateSize = "sm" | "md" | "lg";
+export type EmptyStateSize = 'sm' | 'md' | 'lg';
 
 /**
  * Pre-defined empty state variants that auto-select illustration + default text.
@@ -25,7 +21,8 @@ export type EmptyStateSize = "sm" | "md" | "lg";
  * - "inbox-zero": All items processed (inbox zero)
  * - "error": Error state (use ErrorState component instead for complex errors)
  */
-export type EmptyStateVariant = "empty" | "search" | "no-selection" | "no-account" | "offline" | "inbox-zero";
+export type EmptyStateVariant =
+  'empty' | 'search' | 'no-selection' | 'no-account' | 'offline' | 'inbox-zero';
 
 interface EmptyStateWithVariant {
   variant: EmptyStateVariant;
@@ -76,38 +73,38 @@ interface VariantDefaults {
 const VARIANT_MAP: Record<EmptyStateVariant, VariantDefaults> = {
   empty: {
     illustration: GenericEmptyIllustration,
-    title: "No data yet",
-    subtitle: "Data will appear here as you start using the app.",
+    title: 'No data yet',
+    subtitle: 'Data will appear here as you start using the app.',
   },
   search: {
     illustration: NoSearchResultsIllustration,
-    title: "No matching results",
-    subtitle: "Try a different search term or clear the filter.",
+    title: 'No matching results',
+    subtitle: 'Try a different search term or clear the filter.',
   },
-  "no-selection": {
+  'no-selection': {
     illustration: ReadingPaneIllustration,
-    title: "Nothing selected",
-    subtitle: "Select an item from the list to view its details.",
+    title: 'Nothing selected',
+    subtitle: 'Select an item from the list to view its details.',
   },
-  "no-account": {
+  'no-account': {
     illustration: NoAccountIllustration,
-    title: "No account configured",
-    subtitle: "Add an email account to get started with sending and receiving.",
+    title: 'No account configured',
+    subtitle: 'Add an email account to get started with sending and receiving.',
   },
   offline: {
     icon: AlertCircle,
     title: "You're offline",
     subtitle: "This feature requires an internet connection. Try again when you're back online.",
   },
-  "inbox-zero": {
+  'inbox-zero': {
     illustration: InboxClearIllustration,
-    title: "All caught up!",
+    title: 'All caught up!',
     subtitle: "You've processed everything. Great work.",
   },
 };
 
 const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
-  const isVariant = "variant" in props;
+  const isVariant = 'variant' in props;
 
   // Resolve variant defaults
   let resolvedTitle: string;
@@ -127,21 +124,21 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
     resolvedIllustration = v.illustration;
     resolvedIcon = v.icon;
     action = props.action;
-    size = props.size ?? "md";
-    className = props.className ?? "";
-    iconClassName = props.iconClassName ?? "";
+    size = props.size ?? 'md';
+    className = props.className ?? '';
+    iconClassName = props.iconClassName ?? '';
     announce = props.announce ?? false;
   } else {
     resolvedTitle = props.title;
     resolvedSubtitle = props.subtitle;
     action = props.action;
-    size = props.size ?? "md";
-    className = props.className ?? "";
-    iconClassName = props.iconClassName ?? "";
+    size = props.size ?? 'md';
+    className = props.className ?? '';
+    iconClassName = props.iconClassName ?? '';
     announce = props.announce ?? false;
-    if ("illustration" in props && props.illustration) {
+    if ('illustration' in props && props.illustration) {
       resolvedIllustration = props.illustration;
-    } else if ("icon" in props && props.icon) {
+    } else if ('icon' in props && props.icon) {
       resolvedIcon = props.icon;
     }
   }
@@ -149,7 +146,7 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
   return (
     <div
       className={`${EMPTY_STATE} ${className}`}
-      {...(announce ? { role: "status" as const, "aria-live": "polite" as const } : {})}
+      {...(announce ? { role: 'status' as const, 'aria-live': 'polite' as const } : {})}
     >
       {resolvedIllustration
         ? createElement(resolvedIllustration, {
@@ -165,9 +162,7 @@ const EmptyState = memo(function EmptyState(props: EmptyStateProps) {
           : null}
       <p className="text-sm font-medium text-text-secondary">{resolvedTitle}</p>
       {resolvedSubtitle && (
-        <p className="text-xs mt-1.5 text-text-tertiary text-center max-w-xs">
-          {resolvedSubtitle}
-        </p>
+        <p className="text-xs mt-1.5 text-text-tertiary text-center max-w-xs">{resolvedSubtitle}</p>
       )}
       {action && <div className="mt-6">{action}</div>}
     </div>

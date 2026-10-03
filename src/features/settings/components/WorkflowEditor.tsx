@@ -1,17 +1,17 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from 'react';
 import {
   getWorkflowRules,
   upsertWorkflowRule,
   deleteWorkflowRule,
   toggleWorkflowRule,
   type DbWorkflowRule,
-} from "@features/settings/db/workflowRules";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { WorkflowRuleCard } from "./WorkflowRuleCard";
-import { WorkflowTriggerPicker } from "./WorkflowTriggerPicker";
-import { WorkflowActionPicker } from "./WorkflowActionPicker";
-import { WorkflowPresetList } from "./WorkflowPresetList";
-import type { WorkflowPreset } from "@/constants/workflowPresets";
+} from '@features/settings/db/workflowRules';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { WorkflowRuleCard } from './WorkflowRuleCard';
+import { WorkflowTriggerPicker } from './WorkflowTriggerPicker';
+import { WorkflowActionPicker } from './WorkflowActionPicker';
+import { WorkflowPresetList } from './WorkflowPresetList';
+import type { WorkflowPreset } from '@/constants/workflowPresets';
 
 interface WorkflowAction {
   type: string;
@@ -24,9 +24,9 @@ export function WorkflowEditor() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const [name, setName] = useState("");
-  const [triggerEvent, setTriggerEvent] = useState("email_received");
-  const [triggerConditions, setTriggerConditions] = useState("");
+  const [name, setName] = useState('');
+  const [triggerEvent, setTriggerEvent] = useState('email_received');
+  const [triggerConditions, setTriggerConditions] = useState('');
   const [actions, setActions] = useState<WorkflowAction[]>([]);
   const [showPresets, setShowPresets] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -59,9 +59,9 @@ export function WorkflowEditor() {
   }, [activeAccountId, loadRules]);
 
   const resetForm = useCallback(() => {
-    setName("");
-    setTriggerEvent("email_received");
-    setTriggerConditions("");
+    setName('');
+    setTriggerEvent('email_received');
+    setTriggerConditions('');
     setActions([]);
     setEditingId(null);
     setShowForm(false);
@@ -71,12 +71,12 @@ export function WorkflowEditor() {
     setSaveError(null);
 
     if (!activeAccountId) {
-      setSaveError("No account configured. Please add an account first.");
+      setSaveError('No account configured. Please add an account first.');
       return;
     }
 
     if (!name.trim()) {
-      setSaveError("Workflow name is required.");
+      setSaveError('Workflow name is required.');
       return;
     }
 
@@ -94,7 +94,16 @@ export function WorkflowEditor() {
     } catch (err) {
       setSaveError(String(err));
     }
-  }, [activeAccountId, name, triggerEvent, triggerConditions, actions, editingId, resetForm, loadRules]);
+  }, [
+    activeAccountId,
+    name,
+    triggerEvent,
+    triggerConditions,
+    actions,
+    editingId,
+    resetForm,
+    loadRules,
+  ]);
 
   const handleEdit = useCallback((rule: DbWorkflowRule) => {
     setEditingId(rule.id);
@@ -108,20 +117,26 @@ export function WorkflowEditor() {
       parsedActions = [];
     }
     setActions(parsedActions);
-    setTriggerConditions(rule.trigger_conditions ?? "");
+    setTriggerConditions(rule.trigger_conditions ?? '');
     setShowForm(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteWorkflowRule(id);
-    if (editingId === id) resetForm();
-    await loadRules();
-  }, [editingId, resetForm, loadRules]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteWorkflowRule(id);
+      if (editingId === id) resetForm();
+      await loadRules();
+    },
+    [editingId, resetForm, loadRules],
+  );
 
-  const handleToggle = useCallback(async (id: string, active: boolean) => {
-    await toggleWorkflowRule(id, active);
-    await loadRules();
-  }, [loadRules]);
+  const handleToggle = useCallback(
+    async (id: string, active: boolean) => {
+      await toggleWorkflowRule(id, active);
+      await loadRules();
+    },
+    [loadRules],
+  );
 
   const handleTriggerChange = useCallback((event: string, conditions: string) => {
     setTriggerEvent(event);
@@ -135,9 +150,7 @@ export function WorkflowEditor() {
           onClick={() => setShowPresets((p) => !p)}
           className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
         >
-          <span className={`transition-transform ${showPresets ? "rotate-90" : ""}`}>
-            &#9654;
-          </span>
+          <span className={`transition-transform ${showPresets ? 'rotate-90' : ''}`}>&#9654;</span>
           Browse Presets
         </button>
         {showPresets && (
@@ -178,10 +191,7 @@ export function WorkflowEditor() {
             onChange={handleTriggerChange}
           />
 
-          <WorkflowActionPicker
-            actions={actions}
-            onChange={setActions}
-          />
+          <WorkflowActionPicker actions={actions} onChange={setActions} />
 
           <div className="flex items-center gap-2">
             <button
@@ -189,7 +199,7 @@ export function WorkflowEditor() {
               disabled={!name.trim()}
               className="px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors disabled:opacity-50"
             >
-              {editingId ? "Update" : "Save"}
+              {editingId ? 'Update' : 'Save'}
             </button>
             <button
               onClick={resetForm}

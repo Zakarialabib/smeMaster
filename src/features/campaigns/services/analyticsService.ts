@@ -1,6 +1,6 @@
-import { getEngagementTimeSeries } from "@features/campaigns/db/campaignRecipients";
-import { executeSearchQuery } from "@shared/services/db/db-invoke";
-import { insertAnalyticsSnapshot } from "@shared/services/db/invoke/core";
+import { getEngagementTimeSeries } from '@features/campaigns/db/campaignRecipients';
+import { executeSearchQuery } from '@shared/services/db/db-invoke';
+import { insertAnalyticsSnapshot } from '@shared/services/db/invoke/core';
 
 export interface DailyStat {
   date: string;
@@ -39,21 +39,17 @@ export interface OverviewStats {
  * Get live campaign analytics from campaign_recipients and utm_links tables.
  * Saves a snapshot after computation for future use.
  */
-export async function getCampaignAnalytics(
-  campaignId: string,
-): Promise<CampaignAnalytics> {
+export async function getCampaignAnalytics(campaignId: string): Promise<CampaignAnalytics> {
   return computeLiveAnalytics(campaignId);
 }
 
 /**
  * Compute analytics live from campaign_recipients and utm_links tables.
  */
-async function computeLiveAnalytics(
-  campaignId: string,
-): Promise<CampaignAnalytics> {
+async function computeLiveAnalytics(campaignId: string): Promise<CampaignAnalytics> {
   const [statsRow, dailyStats, linkRows] = await Promise.all([
     (async () => {
-      const rows = await executeSearchQuery(
+      const rows = (await executeSearchQuery(
         `SELECT
            COUNT(*) as total,
            SUM(CASE WHEN status IN ('sent','opened','clicked') THEN 1 ELSE 0 END) as sent,
@@ -62,20 +58,26 @@ async function computeLiveAnalytics(
            SUM(CASE WHEN status = 'bounced' THEN 1 ELSE 0 END) as bounced
          FROM campaign_recipients WHERE campaign_id = $1`,
         [campaignId],
-      ) as unknown as {
+      )) as unknown as {
         total: number;
         sent: number;
         opened: number;
         clicked: number;
         bounced: number;
       }[];
-      return rows[0] ?? {
-        total: 0, sent: 0, opened: 0, clicked: 0, bounced: 0,
-      };
+      return (
+        rows[0] ?? {
+          total: 0,
+          sent: 0,
+          opened: 0,
+          clicked: 0,
+          bounced: 0,
+        }
+      );
     })(),
     getEngagementTimeSeries(campaignId),
     executeSearchQuery(
-      "SELECT url, click_count FROM utm_links WHERE campaign_id = $1 ORDER BY click_count DESC LIMIT 10",
+      'SELECT url, click_count FROM utm_links WHERE campaign_id = $1 ORDER BY click_count DESC LIMIT 10',
       [campaignId],
     ) as unknown as { url: string; click_count: number }[],
   ]);
@@ -107,10 +109,8 @@ async function computeLiveAnalytics(
 /**
  * Get aggregate campaign stats across all campaigns for an account.
  */
-export async function getOverview(
-  accountId: string,
-): Promise<OverviewStats> {
-  const rows = await executeSearchQuery(
+export async function getOverview(accountId: string): Promise<OverviewStats> {
+  const rows = (await executeSearchQuery(
     `SELECT
        (SELECT COUNT(*) FROM campaigns WHERE company_id = $1) as campaign_count,
        COALESCE(SUM(CASE WHEN cr.status IN ('sent','opened','clicked') THEN 1 ELSE 0 END), 0) as total_sent,
@@ -121,7 +121,7 @@ export async function getOverview(
      LEFT JOIN campaign_recipients cr ON cr.campaign_id = c.id
      WHERE c.company_id = $1`,
     [accountId],
-  ) as unknown as {
+  )) as unknown as {
     campaign_count: number;
     total_sent: number;
     total_opens: number;
@@ -130,7 +130,11 @@ export async function getOverview(
   }[];
 
   const r = rows[0] ?? {
-    campaign_count: 0, total_sent: 0, total_opens: 0, total_clicks: 0, total_bounced: 0,
+    campaign_count: 0,
+    total_sent: 0,
+    total_opens: 0,
+    total_clicks: 0,
+    total_bounced: 0,
   };
 
   return {
@@ -148,9 +152,7 @@ export async function getOverview(
  * Compute and persist an analytics snapshot for a campaign.
  * Useful as a manual "refresh snapshot" action.
  */
-export async function takeAnalyticsSnapshot(
-  campaignId: string,
-): Promise<void> {
+export async function takeAnalyticsSnapshot(campaignId: string): Promise<void> {
   const analytics = await computeLiveAnalytics(campaignId);
   await insertAnalyticsSnapshot(crypto.randomUUID(), campaignId, JSON.stringify(analytics));
 }

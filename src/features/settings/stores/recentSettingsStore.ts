@@ -4,7 +4,7 @@
  * Stores the last N settings tab visits in memory (ephemeral per session).
  * Used by the PremiumSettingsPanel to show quick-access "recently visited" items.
  */
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface RecentSettingsEntry {
   id: string;

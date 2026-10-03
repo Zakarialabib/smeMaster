@@ -7,12 +7,17 @@
  * Testing override: the Feature Flags settings tab can toggle tier
  * and mock usage counts for development/demo purposes.
  */
-import { create } from "zustand";
-import { getSetting, setSetting } from "@features/settings/db/settings";
-import { type Tier, type FeatureAccess, FEATURE_FLAGS, getFeatureAccessWithDevPro } from "@/constants/featureFlags";
-import { countTemplatesCount } from "@features/mail/db/templates";
-import { countQuickReplies } from "@features/mail/db/quickReplies";
-import { countMailRules } from "@features/mail/db/filters";
+import { create } from 'zustand';
+import { getSetting, setSetting } from '@features/settings/db/settings';
+import {
+  type Tier,
+  type FeatureAccess,
+  FEATURE_FLAGS,
+  getFeatureAccessWithDevPro,
+} from '@/constants/featureFlags';
+import { countTemplatesCount } from '@features/mail/db/templates';
+import { countQuickReplies } from '@features/mail/db/quickReplies';
+import { countMailRules } from '@features/mail/db/filters';
 
 /** Runtime usage snapshot for a feature */
 export interface FeatureUsage {
@@ -67,23 +72,27 @@ interface FeatureFlagState {
 }
 
 export const useFeatureFlagStore = create<FeatureFlagState>((set, get) => ({
-  tier: import.meta.env.DEV ? "pro" : "basic",
+  tier: import.meta.env.DEV ? 'pro' : 'basic',
   overrideEnabled: false,
-  overrideTier: "basic",
+  overrideTier: 'basic',
   overrideUsage: {},
   realUsage: {},
 
   init: async () => {
-    const stored = await getSetting("subscription_tier");
-    const tier = import.meta.env.DEV ? "pro" : (stored === "pro" ? "pro" : "basic");
-    const overrideRaw = await getSetting("feature_flag_override_enabled");
-    const overrideEnabled = overrideRaw === "true";
-    const overrideTierRaw = await getSetting("feature_flag_override_tier");
-    const overrideTier = overrideTierRaw === "pro" ? "pro" : "basic";
-    const overrideUsageRaw = await getSetting("feature_flag_override_usage");
+    const stored = await getSetting('subscription_tier');
+    const tier = import.meta.env.DEV ? 'pro' : stored === 'pro' ? 'pro' : 'basic';
+    const overrideRaw = await getSetting('feature_flag_override_enabled');
+    const overrideEnabled = overrideRaw === 'true';
+    const overrideTierRaw = await getSetting('feature_flag_override_tier');
+    const overrideTier = overrideTierRaw === 'pro' ? 'pro' : 'basic';
+    const overrideUsageRaw = await getSetting('feature_flag_override_usage');
     let overrideUsage: Record<string, number> = {};
     if (overrideUsageRaw) {
-      try { overrideUsage = JSON.parse(overrideUsageRaw); } catch { /* ignore */ }
+      try {
+        overrideUsage = JSON.parse(overrideUsageRaw);
+      } catch {
+        /* ignore */
+      }
     }
 
     // Query real usage counts from the database
@@ -97,39 +106,39 @@ export const useFeatureFlagStore = create<FeatureFlagState>((set, get) => ({
       realUsage = {
         templates,
         composing: quickReplies,
-        "mail-rules": mailRules,
+        'mail-rules': mailRules,
       };
     } catch (err) {
-      console.error("[featureFlagStore] Failed to load real usage counts:", err);
+      console.error('[featureFlagStore] Failed to load real usage counts:', err);
     }
 
     set({ tier, overrideEnabled, overrideTier, overrideUsage, realUsage });
   },
 
   setTier: async (tier) => {
-    await setSetting("subscription_tier", tier);
+    await setSetting('subscription_tier', tier);
     set({ tier });
   },
 
   setOverrideEnabled: (enabled) => {
-    setSetting("feature_flag_override_enabled", enabled ? "true" : "false").catch(() => {});
+    setSetting('feature_flag_override_enabled', enabled ? 'true' : 'false').catch(() => {});
     set({ overrideEnabled: enabled });
   },
 
   setOverrideTier: (overrideTier) => {
-    setSetting("feature_flag_override_tier", overrideTier).catch(() => {});
+    setSetting('feature_flag_override_tier', overrideTier).catch(() => {});
     set({ overrideTier });
   },
 
   setOverrideUsage: (featureId, count) => {
     const updated = { ...get().overrideUsage, [featureId]: count };
-    setSetting("feature_flag_override_usage", JSON.stringify(updated)).catch(() => {});
+    setSetting('feature_flag_override_usage', JSON.stringify(updated)).catch(() => {});
     set({ overrideUsage: updated });
   },
 
   resetOverrides: () => {
-    setSetting("feature_flag_override_usage", "{}").catch(() => {});
-    set({ overrideUsage: {}, overrideEnabled: false, overrideTier: "basic" });
+    setSetting('feature_flag_override_usage', '{}').catch(() => {});
+    set({ overrideUsage: {}, overrideEnabled: false, overrideTier: 'basic' });
   },
 
   refreshUsageCounts: async () => {
@@ -143,11 +152,11 @@ export const useFeatureFlagStore = create<FeatureFlagState>((set, get) => ({
         realUsage: {
           templates,
           composing: quickReplies,
-          "mail-rules": mailRules,
+          'mail-rules': mailRules,
         },
       });
     } catch (err) {
-      console.error("[featureFlagStore] Failed to refresh usage counts:", err);
+      console.error('[featureFlagStore] Failed to refresh usage counts:', err);
     }
   },
 
@@ -159,9 +168,7 @@ export const useFeatureFlagStore = create<FeatureFlagState>((set, get) => ({
   getFeatureAccess: (featureId, realUsage) => {
     const state = get();
     const effectiveTier = state.getEffectiveTier();
-    const usage = state.overrideEnabled
-      ? (state.overrideUsage[featureId] ?? realUsage)
-      : realUsage;
+    const usage = state.overrideEnabled ? (state.overrideUsage[featureId] ?? realUsage) : realUsage;
     return getFeatureAccessWithDevPro(featureId, effectiveTier, usage);
   },
 
@@ -169,14 +176,14 @@ export const useFeatureFlagStore = create<FeatureFlagState>((set, get) => ({
     const state = get();
     const feature = FEATURE_FLAGS.find((f) => f.id === featureId);
     if (!feature) {
-      return { current: 0, max: null, access: "enabled" };
+      return { current: 0, max: null, access: 'enabled' };
     }
     const baseCount = state.realUsage[featureId] ?? fallbackUsage;
     const current = state.overrideEnabled
       ? (state.overrideUsage[featureId] ?? baseCount)
       : baseCount;
     const effectiveTier = state.getEffectiveTier();
-    const limit = effectiveTier === "pro" ? feature.proLimit : feature.basicLimit;
+    const limit = effectiveTier === 'pro' ? feature.proLimit : feature.basicLimit;
     const max = limit?.max ?? null;
     const access = getFeatureAccessWithDevPro(featureId, effectiveTier, current);
     return { current, max, access };

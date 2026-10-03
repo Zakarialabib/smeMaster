@@ -1,16 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import KnowledgeBaseSettings from "./KnowledgeBaseSettings";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import KnowledgeBaseSettings from './KnowledgeBaseSettings';
+import type { DownloaderProgressEvent } from '@shared/services/db/invoke/downloader';
 
 const fullStore = {
   enabled: true,
-  modelStatus: "idle" as const,
-  modelPath: "",
-  tokenizerPath: "",
+  modelStatus: 'idle' as const,
+  modelPath: '',
+  tokenizerPath: '',
   modelError: null,
+  downloadProgress: null as DownloaderProgressEvent | null,
   embeddingSource: null,
-  modelsDir: "",
-  indexingStatus: "idle" as const,
+  modelsDir: '',
+  indexingStatus: 'idle' as const,
   lastIndexedAt: null,
   indexingError: null,
   embeddingTest: null,
@@ -26,55 +28,110 @@ const fullStore = {
   testEmbedding: vi.fn(),
 };
 
-vi.mock("@features/assistant/stores/ragStore", () => ({
+vi.mock('@features/assistant/stores/ragStore', () => ({
   useRagStore: vi.fn((selector?: any) => {
     const store = fullStore;
     return selector ? selector(store) : store;
   }),
 }));
 
-vi.mock("@features/settings/db/settings", () => ({
-  getSetting: vi.fn().mockResolvedValue(""),
+vi.mock('@features/settings/db/settings', () => ({
+  getSetting: vi.fn().mockResolvedValue(''),
   setSetting: vi.fn().mockResolvedValue(undefined),
-  getSecureSetting: vi.fn().mockResolvedValue(""),
+  getSecureSetting: vi.fn().mockResolvedValue(''),
   setSecureSetting: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@shared/services/db/invoke/rag", () => ({
-  aiGetVectorDbPath: vi.fn().mockResolvedValue("/data/vectors"),
+vi.mock('@shared/services/db/invoke/rag', () => ({
+  aiGetVectorDbPath: vi.fn().mockResolvedValue('/data/vectors'),
   aiResetVectorDb: vi.fn().mockResolvedValue(undefined),
 }));
 
-describe("KnowledgeBaseSettings — engine mode", () => {
+describe('KnowledgeBaseSettings — engine mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fullStore.embeddingSource = null;
   });
 
-  it("offers the three explicit embedding-engine modes", () => {
+  it('offers the three explicit embedding-engine modes', () => {
     render(<KnowledgeBaseSettings />);
 
-    expect(screen.getByText("Auto")).toBeInTheDocument();
-    expect(screen.getByText("Provider (LM Studio)")).toBeInTheDocument();
-    expect(screen.getByText("On-device BGE")).toBeInTheDocument();
+    expect(screen.getByText('Auto')).toBeInTheDocument();
+    expect(screen.getByText('Provider (LM Studio)')).toBeInTheDocument();
+    expect(screen.getByText('On-device BGE')).toBeInTheDocument();
   });
 
-  it("shows the embedding-config status group in provider mode", () => {
-    fullStore.embeddingSource = "provider";
+  it('shows the embedding-config status group in provider mode', () => {
+    fullStore.embeddingSource = 'provider';
     render(<KnowledgeBaseSettings />);
 
-    expect(screen.getByText("Provider Embeddings")).toBeInTheDocument();
+    expect(screen.getByText('Provider Embeddings')).toBeInTheDocument();
     // BGE-only controls stay hidden.
-    expect(screen.queryByText("Download BGE-Small")).not.toBeInTheDocument();
+    expect(screen.queryByText('Download BGE-Small')).not.toBeInTheDocument();
   });
 
-  it("reveals the local model management in BGE mode", () => {
-    fullStore.embeddingSource = "rust_bge";
+  it('reveals the local model management in BGE mode', () => {
+    fullStore.embeddingSource = 'rust_bge';
     render(<KnowledgeBaseSettings />);
 
-    expect(screen.getByText("Download BGE-Small")).toBeInTheDocument();
-    expect(screen.getByText("Local Models Folder")).toBeInTheDocument();
+    expect(screen.getByText('Download BGE-Small')).toBeInTheDocument();
+    expect(screen.getByText('Local Models Folder')).toBeInTheDocument();
     // Provider-only controls stay hidden.
-    expect(screen.queryByText("Provider Embeddings")).not.toBeInTheDocument();
+    expect(screen.queryByText('Provider Embeddings')).not.toBeInTheDocument();
+  });
+
+  it('shows the inline download progress bar for an active download', () => {
+    fullStore.embeddingSource = 'rust_bge';
+    fullStore.downloadProgress = {
+      jobId: 'job-1',
+      url: 'https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/main/model.safetensors',
+      fileName: 'model.safetensors',
+      destinationPath: '/data/models/snapshots/abc/model.safetensors',
+      category: 'ai_model',
+      status: 'downloading',
+      totalBytes: 100_000_000,
+      downloadedBytes: 25_000_000,
+      transferRateBytesPerSec: 2_000_000,
+      etaSeconds: 37,
+      progressPercentage: 25,
+      activeConnections: 4,
+      priority: 5,
+      error: null,
+      createdAt: '2026-10-01T00:00:00Z',
+      updatedAt: '2026-10-01T00:00:10Z',
+    };
+    render(<KnowledgeBaseSettings />);
+
+    const bar = screen.getByTestId('model-download-progress');
+    expect(bar).toBeInTheDocument();
+    expect(bar).toHaveAttribute('aria-valuenow', '25');
+    expect(screen.getByText('model.safetensors')).toBeInTheDocument();
+    fullStore.downloadProgress = null;
+  });
+
+  it('hides the progress bar once the job is terminal', () => {
+    fullStore.embeddingSource = 'rust_bge';
+    fullStore.downloadProgress = {
+      jobId: 'job-2',
+      url: 'https://example.com/f',
+      fileName: 'model.safetensors',
+      destinationPath: '/data/f',
+      category: 'ai_model',
+      status: 'completed',
+      totalBytes: 100,
+      downloadedBytes: 100,
+      transferRateBytesPerSec: 0,
+      etaSeconds: null,
+      progressPercentage: 100,
+      activeConnections: 0,
+      priority: 5,
+      error: null,
+      createdAt: '2026-10-01T00:00:00Z',
+      updatedAt: '2026-10-01T00:00:01Z',
+    };
+    render(<KnowledgeBaseSettings />);
+
+    expect(screen.queryByTestId('model-download-progress')).not.toBeInTheDocument();
+    fullStore.downloadProgress = null;
   });
 });

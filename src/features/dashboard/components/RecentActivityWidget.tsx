@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Send,
   Mail,
@@ -9,30 +9,30 @@ import {
   Megaphone,
   Calendar,
   Activity,
-} from "lucide-react";
-import { dashboardRecentActivity } from "@shared/services/db/db-invoke";
-import type { EngagementLog } from "@shared/services/db/schema";
-import { WidgetHeader, WidgetError } from "./WidgetHelpers";
+} from 'lucide-react';
+import { dashboardRecentActivity } from '@shared/services/db/db-invoke';
+import type { EngagementLog } from '@shared/services/db/schema';
+import { WidgetHeader, WidgetError } from './WidgetHelpers';
 
 // ─── Event type → icon mapping ──────────────────────────────────────────────
 
 function ActivityIcon({ eventType, className }: { eventType: string; className?: string }) {
   switch (eventType) {
-    case "email_sent":
+    case 'email_sent':
       return <Send className={className} />;
-    case "email_received":
+    case 'email_received':
       return <Mail className={className} />;
-    case "email_opened":
+    case 'email_opened':
       return <Eye className={className} />;
-    case "task_completed":
+    case 'task_completed':
       return <CheckCheck className={className} />;
-    case "task_created":
+    case 'task_created':
       return <Plus className={className} />;
-    case "contact_created":
+    case 'contact_created':
       return <UserPlus className={className} />;
-    case "campaign_sent":
+    case 'campaign_sent':
       return <Megaphone className={className} />;
-    case "calendar_event":
+    case 'calendar_event':
       return <Calendar className={className} />;
     default:
       return <Activity className={className} />;
@@ -43,44 +43,44 @@ function ActivityIcon({ eventType, className }: { eventType: string; className?:
 
 function getEventBgColor(eventType: string): string {
   switch (eventType) {
-    case "email_sent":
-    case "email_received":
-    case "email_opened":
-      return "bg-accent";
-    case "task_completed":
-    case "contact_created":
-      return "bg-success";
-    case "task_created":
-      return "bg-primary";
-    case "campaign_sent":
-    case "call_made":
-    case "meeting_held":
-      return "bg-warning";
-    case "calendar_event":
-      return "bg-info";
+    case 'email_sent':
+    case 'email_received':
+    case 'email_opened':
+      return 'bg-accent';
+    case 'task_completed':
+    case 'contact_created':
+      return 'bg-success';
+    case 'task_created':
+      return 'bg-primary';
+    case 'campaign_sent':
+    case 'call_made':
+    case 'meeting_held':
+      return 'bg-warning';
+    case 'calendar_event':
+      return 'bg-info';
     default:
-      return "bg-text-tertiary";
+      return 'bg-text-tertiary';
   }
 }
 
 // ─── Event type label formatting ────────────────────────────────────────────
 
 const EVENT_LABELS: Record<string, string> = {
-  email_sent: "Email Sent",
-  email_received: "Email Received",
-  email_opened: "Email Opened",
-  call_made: "Call Made",
-  meeting_held: "Meeting Held",
-  note_added: "Note Added",
-  task_completed: "Task Completed",
-  task_created: "Task Created",
-  contact_created: "Contact Created",
-  campaign_sent: "Campaign Sent",
-  calendar_event: "Calendar Event",
+  email_sent: 'Email Sent',
+  email_received: 'Email Received',
+  email_opened: 'Email Opened',
+  call_made: 'Call Made',
+  meeting_held: 'Meeting Held',
+  note_added: 'Note Added',
+  task_completed: 'Task Completed',
+  task_created: 'Task Created',
+  contact_created: 'Contact Created',
+  campaign_sent: 'Campaign Sent',
+  calendar_event: 'Calendar Event',
 };
 
 function formatEventType(event: string): string {
-  return EVENT_LABELS[event] ?? event.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return EVENT_LABELS[event] ?? event.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 // ─── Relative time formatting ───────────────────────────────────────────────
@@ -93,14 +93,14 @@ function formatRelativeTime(timestamp: number): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return 'just now';
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -129,7 +129,9 @@ function EmptyActivity() {
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <Activity className="w-8 h-8 text-text-tertiary mb-2" />
       <p className="text-sm text-text-tertiary font-medium">No recent activity</p>
-      <p className="text-xs text-text-quaternary mt-1">Activity from your contacts will appear here</p>
+      <p className="text-xs text-text-quaternary mt-1">
+        Activity from your contacts will appear here
+      </p>
     </div>
   );
 }
@@ -153,7 +155,9 @@ export function RecentActivityWidget() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) return <LoadingState />;

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { ShieldCheck, ShieldAlert, ShieldX, ShieldQuestion } from "lucide-react";
-import type { AuthResult } from "@features/mail/services/gmail/authParser";
+import { useState } from 'react';
+import { ShieldCheck, ShieldAlert, ShieldX, ShieldQuestion } from 'lucide-react';
+import type { AuthResult } from '@features/mail/services/gmail/authParser';
 
 interface AuthBadgeProps {
   authResults: string | null;
@@ -21,37 +21,37 @@ export function AuthBadge({ authResults }: AuthBadgeProps) {
   const { aggregate, spf, dkim, dmarc } = parsed;
 
   const tooltipLines = [
-    `SPF: ${spf.result}${spf.detail ? ` (${spf.detail})` : ""}`,
-    `DKIM: ${dkim.result}${dkim.detail ? ` (${dkim.detail})` : ""}`,
-    `DMARC: ${dmarc.result}${dmarc.detail ? ` (${dmarc.detail})` : ""}`,
-  ].join("\n");
+    `SPF: ${spf.result}${spf.detail ? ` (${spf.detail})` : ''}`,
+    `DKIM: ${dkim.result}${dkim.detail ? ` (${dkim.detail})` : ''}`,
+    `DMARC: ${dmarc.result}${dmarc.detail ? ` (${dmarc.detail})` : ''}`,
+  ].join('\n');
 
-  const iconProps = { size: 14, className: "shrink-0" };
+  const iconProps = { size: 14, className: 'shrink-0' };
 
   let icon: React.ReactNode;
   let colorClass: string;
   let label: string;
 
   switch (aggregate) {
-    case "pass":
+    case 'pass':
       icon = <ShieldCheck {...iconProps} />;
-      colorClass = "text-success";
-      label = "Authentication passed";
+      colorClass = 'text-success';
+      label = 'Authentication passed';
       break;
-    case "warning":
+    case 'warning':
       icon = <ShieldAlert {...iconProps} />;
-      colorClass = "text-warning";
-      label = "Authentication warning";
+      colorClass = 'text-warning';
+      label = 'Authentication warning';
       break;
-    case "fail":
+    case 'fail':
       icon = <ShieldX {...iconProps} />;
-      colorClass = "text-danger";
-      label = "Authentication failed";
+      colorClass = 'text-danger';
+      label = 'Authentication failed';
       break;
     default:
       icon = <ShieldQuestion {...iconProps} />;
-      colorClass = "text-text-tertiary";
-      label = "Authentication unknown";
+      colorClass = 'text-text-tertiary';
+      label = 'Authentication unknown';
       break;
   }
 

@@ -1,4 +1,4 @@
-﻿import { useState, type ReactNode } from "react";
+﻿import { useState, type ReactNode } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -7,26 +7,23 @@ import {
   DragOverlay,
   type DragStartEvent,
   type DragEndEvent,
-} from "@dnd-kit/core";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import {
-  addThreadLabel,
-  removeThreadLabel,
-} from "@features/mail/services/emailActions";
-import { insertTask } from "@features/tasks/db/tasks";
-import { notify } from "@shared/services/notifications/toastHelper";
+} from '@dnd-kit/core';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { addThreadLabel, removeThreadLabel } from '@features/mail/services/emailActions';
+import { insertTask } from '@features/tasks/db/tasks';
+import { notify } from '@shared/services/notifications/toastHelper';
 
 // Map sidebar IDs to Gmail label IDs (same as EmailList)
 const LABEL_MAP: Record<string, string> = {
-  inbox: "INBOX",
-  starred: "STARRED",
-  sent: "SENT",
-  drafts: "DRAFT",
-  trash: "TRASH",
-  spam: "SPAM",
-  snoozed: "SNOOZED",
-  all: "",
+  inbox: 'INBOX',
+  starred: 'STARRED',
+  sent: 'SENT',
+  drafts: 'DRAFT',
+  trash: 'TRASH',
+  spam: 'SPAM',
+  snoozed: 'SNOOZED',
+  all: '',
 };
 
 export interface DragData {
@@ -49,14 +46,13 @@ export function resolveLabelChange(
   if (targetGmailId === sourceGmailId) return null;
 
   // Dragging to trash: add TRASH, remove source (if specific)
-  if (targetGmailId === "TRASH") {
-    const removeLabelIds =
-      sourceGmailId && sourceGmailId !== "" ? [sourceGmailId] : [];
-    return { addLabelIds: ["TRASH"], removeLabelIds };
+  if (targetGmailId === 'TRASH') {
+    const removeLabelIds = sourceGmailId && sourceGmailId !== '' ? [sourceGmailId] : [];
+    return { addLabelIds: ['TRASH'], removeLabelIds };
   }
 
   // Dragging from "all mail": only add target (don't remove anything)
-  if (sourceLabel === "all" || sourceGmailId === "") {
+  if (sourceLabel === 'all' || sourceGmailId === '') {
     if (!targetGmailId) return null;
     return { addLabelIds: [targetGmailId], removeLabelIds: [] };
   }
@@ -95,27 +91,25 @@ export function DndProvider({ children }: DndProviderProps) {
     if (!over || !dragData || !activeAccountId) return;
 
     // ── Drop on "Tasks" nav item → create a task from the email ──────────
-    if (over.id === "tasks") {
+    if (over.id === 'tasks') {
       const threadId = dragData.threadIds[0];
-      const thread = useThreadStore.getState().threads.find(
-        (t) => t.id === threadId,
-      );
+      const thread = useThreadStore.getState().threads.find((t) => t.id === threadId);
 
       if (thread) {
-        const subject = thread.subject ?? "No subject";
-        const from = thread.fromName ?? thread.fromAddress ?? "";
-        const snippet = thread.snippet ?? "";
+        const subject = thread.subject ?? 'No subject';
+        const from = thread.fromName ?? thread.fromAddress ?? '';
+        const snippet = thread.snippet ?? '';
 
         await insertTask({
           accountId: activeAccountId,
           title: `Follow up: ${subject}`,
           description: `From: ${from}\n\n${snippet}\n\n---\nCreated from email drag-and-drop`,
-          priority: "medium",
+          priority: 'medium',
           threadId: threadId,
           threadAccountId: thread.accountId,
         });
 
-        notify("Task created from email", `"${subject}" added to tasks`);
+        notify('Task created from email', `"${subject}" added to tasks`);
       }
       return;
     }
@@ -136,22 +130,18 @@ export function DndProvider({ children }: DndProviderProps) {
       // Remove from current view
       removeThreads(dragData.threadIds);
     } catch (err) {
-      console.error("Failed to move threads:", err);
+      console.error('Failed to move threads:', err);
     }
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       {children}
       <DragOverlay dropAnimation={null}>
         {dragData && (
           <div className="bg-accent text-white text-sm font-medium px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">
             {dragData.threadIds.length === 1
-              ? "1 conversation"
+              ? '1 conversation'
               : `${dragData.threadIds.length} conversations`}
           </div>
         )}

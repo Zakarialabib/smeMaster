@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 
 export interface BulkSelectionApi {
   selectedIds: Set<string>;
@@ -18,10 +18,7 @@ export interface BulkSelectionApi {
 export function useBulkSelection(): BulkSelectionApi {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const isSelected = useCallback(
-    (id: string) => selectedIds.has(id),
-    [selectedIds],
-  );
+  const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds]);
 
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -32,24 +29,20 @@ export function useBulkSelection(): BulkSelectionApi {
     });
   }, []);
 
-  const toggleRange = useCallback(
-    (startId: string, endId: string, orderedIds: string[]) => {
-      const startIdx = orderedIds.indexOf(startId);
-      const endIdx = orderedIds.indexOf(endId);
-      if (startIdx === -1 || endIdx === -1) return;
-      const [lo, hi] =
-        startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        for (let i = lo; i <= hi; i++) {
-          const id = orderedIds[i];
-          if (id) next.add(id);
-        }
-        return next;
-      });
-    },
-    [],
-  );
+  const toggleRange = useCallback((startId: string, endId: string, orderedIds: string[]) => {
+    const startIdx = orderedIds.indexOf(startId);
+    const endIdx = orderedIds.indexOf(endId);
+    if (startIdx === -1 || endIdx === -1) return;
+    const [lo, hi] = startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (let i = lo; i <= hi; i++) {
+        const id = orderedIds[i];
+        if (id) next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
   const selectAll = useCallback((ids: string[]) => {
     setSelectedIds(new Set(ids));

@@ -5,7 +5,7 @@
  * The Rust layer stores i64 minor units; the `db_*` wrappers return major-unit numbers.
  */
 
-export { ACTIVE_COMPANY_ID } from "@shared/constants/company";
+export { ACTIVE_COMPANY_ID } from '@shared/constants/company';
 
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   MAD: 'DH',
@@ -51,9 +51,10 @@ export function formatMoney(amount: number, opts: FormatMoneyOptions = {}): stri
 export function formatMoneyCompact(amount: number, currency = 'MAD'): string {
   const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
   const safe = Number.isFinite(amount) ? amount : 0;
-  const compact = Math.abs(safe) >= 1000
-    ? `${(safe / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}K`
-    : safe.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  const compact =
+    Math.abs(safe) >= 1000
+      ? `${(safe / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}K`
+      : safe.toLocaleString('en-US', { maximumFractionDigits: 0 });
   return `${compact} ${symbol}`;
 }
 

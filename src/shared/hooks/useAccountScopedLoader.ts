@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from "react";
-import { useAsyncEffect } from "./useAsyncEffect";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import type { DependencyList } from "react";
+import { useCallback, useRef, useState } from 'react';
+import { useAsyncEffect } from './useAsyncEffect';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import type { DependencyList } from 'react';
 
 export interface UseAccountScopedLoaderResult<T> {
   data: T | null;
@@ -65,4 +65,3 @@ export function useAccountScopedLoader<T>(
 
   return { data, loading, error, reload };
 }
-

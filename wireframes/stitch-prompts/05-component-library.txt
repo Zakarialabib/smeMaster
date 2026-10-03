@@ -1,0 +1,9 @@
+Generate a desktop "Component Library" reference screen for the "SMEMaster" app, rendered in its Frosted Glass design language (accent blue #0B57D0, AI purple #9333EA, Inter, white surfaces, 12px rounded cards, subtle borders, backdrop blur). Show a clean, condensed design-system showcase:
+
+1. A top bar titled "Design System" with section anchors.
+2. COLOR swatches row: Primary (#0B57D0), Primary-hover, AI/Purple (#9333EA), Success (green), Warning (amber), Danger (red), plus neutral surface swatches (bg-primary white, bg-secondary #F7F8FA, bg-tertiary).
+3. BUTTONS row: Primary (filled blue), Secondary (outline), Ghost, Danger, and an icon-only round button; each shown in a calm state. Use 8-10px radius, soft shadow.
+4. TABLE example: a "People" data table with columns [Name+avatar | Email | Type chip | Status | Last contact] and 3 rows with gradient avatars, colored status chips (Hot=pink, Customer=green, Lead=blue), and a right-aligned "Last contact" timestamp.
+5. CARDS: two frosted cards — one standard "Contact" card, one AI insight card (purple-tinted) titled "AI found 2 hot leads" with a "Create deals" button.
+6. NAV/CHIP examples: filter chips (All / Leads / Hot) and a tab bar (Mail / People / Tasks).
+Keep spacing generous-but-condensed, consistent 12px radii, and a single blue accent + single purple AI accent. No garbled placeholder text — use realistic labels.

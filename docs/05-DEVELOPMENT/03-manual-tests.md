@@ -10,13 +10,25 @@
 
 Run these after a fresh `npm run tauri dev` before tagging a release:
 
-1. **Panic Injection** (~30min) — [§1](#1-panic-injection-test): inject a panic, confirm the error dialog appears and the app keeps running, then remove the test panic.
-2. **WAL Recovery** (~30min) — [§2](#2-wal-recovery-test): kill the process mid-write, confirm a clean restart with pre-kill data intact.
-3. **Watchdog Restart** (~30min) — [§4](#4-watchdog-restart-test): panic a non-critical subsystem, confirm the watchdog auto-restarts it.
+1. **Panic Injection** (~5min) — [§1](#1-panic-injection-test): automated test `test_panic_hook_writes_crash_log` verifies crash.log + crash_count.txt. Manual test optional for UI dialog verification.
+2. **WAL Recovery** (~30min) — [§2](#2-wal-recovery-test): automated tests `test_wal_recovery_after_crash`, `test_wal_mode_enabled`, `test_wal_checkpoint_compaction` verify WAL integrity. Manual test optional for live app kill/restart.
+3. **Watchdog Restart** (~15min) — [§4](#4-watchdog-restart-test): automated test `test_watchdog_restart_logic` verifies crash counter. Manual test optional for live service failure/restart.
 4. **Runtime Verification** (~5min) — [§5](#5-runtime-verification): `npm run tauri dev` launches with no console or Rust errors.
 5. **WAL Deletion Behavior** — [§3](#3-wal-deletion-behavior): understand the impact if the WAL file is deleted while the app is running.
 
 > Detailed step-by-step procedures and acceptance criteria follow below.
+
+### Host caveats before you start (2026-09-28)
+
+- `npm run tauri dev` needs a working Rust toolchain. On this host the rustup proxies
+  are broken (`rustc.exe is not applicable to the toolchain`) — use the direct-toolchain
+  workaround in [`01-quickstart.md`](01-quickstart.md) → "Toolchain warning", and read
+  **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** before touching `cargo`.
+- Free 15+ GB of disk before any Rust build. The machine sits at 95–99% full during
+  builds, which has already caused an `E0463` and a 59-minute killed build.
+- Automated Rust tests for panic, WAL, and watchdog behavior were added and pass:
+  `cargo test --test panic_and_wal`. The manual tests below remain available for
+  live UI verification (optional).
 
 ---
 
@@ -405,11 +417,11 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 | Watchdog log shows poll cycle start                 | **PASS** |
 | DevTools Console has zero uncaught errors           | **PASS** |
 | UI renders main layout with sidebar + content       | **PASS** |
-| `db_health_stats` returns `{ status: "ok", ... }`         | **PASS** |
+| `db_health_stats` returns `{ status: "ok", ... }`   | **PASS** |
 | Any compilation error or panic during startup       | **FAIL** |
 | DevTools shows red uncaught errors                  | **FAIL** |
 | UI shows blank screen or persistent loading spinner | **FAIL** |
-| `db_health_stats` returns error or times out              | **FAIL** |
+| `db_health_stats` returns error or times out        | **FAIL** |
 
 ---
 

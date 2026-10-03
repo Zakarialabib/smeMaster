@@ -198,7 +198,7 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
       const key = await licenseAdapter.generateTestLicense(devTier, 'developer', devValidDays);
       setKeyInput(key);
       try {
-        const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+        const { copyToClipboard } = await import('@shared/hooks/useClipboard');
         await copyToClipboard(key);
       } catch {
         /* clipboard may be unavailable in some sandboxes */
@@ -216,9 +216,13 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
 
   const copyHardwareId = useCallback(() => {
     if (!hardwareId) return;
-    import("@shared/hooks/useClipboard").then(({ copyToClipboard }) =>
-      copyToClipboard(hardwareId).then(() => notify('Hardware ID copied', 'Use this when transferring a license.'))
-    ).catch(() => notify('Copy failed', 'Clipboard unavailable.'));
+    import('@shared/hooks/useClipboard')
+      .then(({ copyToClipboard }) =>
+        copyToClipboard(hardwareId).then(() =>
+          notify('Hardware ID copied', 'Use this when transferring a license.'),
+        ),
+      )
+      .catch(() => notify('Copy failed', 'Clipboard unavailable.'));
   }, [hardwareId]);
 
   // -------------------------------------------------------------------------
@@ -263,7 +267,7 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
                   </span>
                   {isOnTrial && (
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning/10 text-warning border border-warning/20">
-                      <Clock size={9} className="inline -mt-0.5 mr-1" />
+                      <Clock size={9} className="inline -mt-0.5 me-1" />
                       Trial
                     </span>
                   )}
@@ -356,10 +360,22 @@ export function LicensePage({ embedded = false }: LicensePageProps) {
       {/* Education: Licensing */}
       <HelpCard
         items={[
-          { type: "why", text: "Licensing manages your subscription tier — Basic (free) or Pro (paid). Your tier determines which features (AI, campaigns, workflows, deliverability suite) are available." },
-          { type: "how", text: "Your license key is verified using Ed25519 cryptography and bound to your device's hardware ID. Activate a key to unlock Pro. Trial users get 14 days of full Pro access." },
-          { type: "when", text: "Set up your license on first use. Start a trial to evaluate Pro before purchasing. Upgrade from Basic to Pro when you need advanced features like AI, campaigns, or the deliverability suite." },
-          { type: "tip", text: "Hardware ID is used for license binding. If you upgrade your computer, deactivate the license first on the old device, then activate on the new one using the same key." },
+          {
+            type: 'why',
+            text: 'Licensing manages your subscription tier — Basic (free) or Pro (paid). Your tier determines which features (AI, campaigns, workflows, deliverability suite) are available.',
+          },
+          {
+            type: 'how',
+            text: "Your license key is verified using Ed25519 cryptography and bound to your device's hardware ID. Activate a key to unlock Pro. Trial users get 14 days of full Pro access.",
+          },
+          {
+            type: 'when',
+            text: 'Set up your license on first use. Start a trial to evaluate Pro before purchasing. Upgrade from Basic to Pro when you need advanced features like AI, campaigns, or the deliverability suite.',
+          },
+          {
+            type: 'tip',
+            text: 'Hardware ID is used for license binding. If you upgrade your computer, deactivate the license first on the old device, then activate on the new one using the same key.',
+          },
         ]}
       />
 
@@ -609,4 +625,3 @@ function TierCard({
     </div>
   );
 }
-

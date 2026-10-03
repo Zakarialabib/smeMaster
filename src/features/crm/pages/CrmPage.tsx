@@ -1,7 +1,7 @@
-import { useState, lazy, Suspense, Component, type ReactNode } from "react";
-import { toast } from "@shared/stores/toastStore";
-import { SkeletonPage } from "@shared/components/ui/Skeleton";
-import { CardTabBar, type CardTabItem } from "@shared/components/ui";
+import { useState, lazy, Suspense, Component, type ReactNode } from 'react';
+import { toast } from '@shared/stores/toastStore';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
+import { CardTabBar, type CardTabItem } from '@shared/components/ui';
 import {
   Users,
   ListChecks,
@@ -11,7 +11,8 @@ import {
   RefreshCw,
   AlertCircle,
   FileText,
-} from "lucide-react";
+  Sparkles,
+} from 'lucide-react';
 
 // ── Error Boundary for tab content ────────────────────────────────────────
 class TabErrorBoundary extends Component<
@@ -37,7 +38,7 @@ class TabErrorBoundary extends Component<
               Failed to load {this.props.tabName}
             </p>
             <p className="text-xs text-text-tertiary mt-1">
-              {this.state.error?.message ?? "An unexpected error occurred"}
+              {this.state.error?.message ?? 'An unexpected error occurred'}
             </p>
           </div>
           <button
@@ -56,41 +57,48 @@ class TabErrorBoundary extends Component<
 
 // ── Tab configuration ────────────────────────────────────────────────────
 const TABS: CardTabItem[] = [
-  { id: "contacts", label: "Contacts", icon: Users },
-  { id: "deals", label: "Deals", icon: FileText },
-  { id: "tasks", label: "Tasks", icon: ListChecks },
-  { id: "calendar", label: "Calendar", icon: CalendarDays },
-  { id: "invoices", label: "Invoices", icon: ReceiptText },
+  { id: 'contacts', label: 'Contacts', icon: Users },
+  { id: 'deals', label: 'Deals', icon: FileText },
+  { id: 'relationships', label: 'Relationships', icon: Sparkles },
+  { id: 'tasks', label: 'Tasks', icon: ListChecks },
+  { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+  { id: 'invoices', label: 'Invoices', icon: ReceiptText },
 ];
 
 // ── Lazy-loaded tab content ──────────────────────────────────────────────
 const ContactsContent = lazy(() =>
-  import("@features/contacts/pages/ContactsPage").then((m) => ({
+  import('@features/contacts/pages/ContactsPage').then((m) => ({
     default: m.ContactsPage,
   })),
 );
 
 const TasksContent = lazy(() =>
-  import("@features/tasks/components/TasksPage").then((m) => ({
+  import('@features/tasks/components/TasksPage').then((m) => ({
     default: m.TasksPage,
   })),
 );
 
 const CalendarContent = lazy(() =>
-  import("@features/calendar/components/CalendarPage").then((m) => ({
+  import('@features/calendar/components/CalendarPage').then((m) => ({
     default: m.CalendarPage,
   })),
 );
 
 const InvoicesContent = lazy(() =>
-  import("@features/crm/components/InvoicesTab").then((m) => ({
+  import('@features/crm/components/InvoicesTab').then((m) => ({
     default: m.default,
   })),
 );
 
 const DealsContent = lazy(() =>
-  import("@features/crm/pages/DealsPage").then((m) => ({
+  import('@features/crm/pages/DealsPage').then((m) => ({
     default: m.DealsPage,
+  })),
+);
+
+const RelationshipsContent = lazy(() =>
+  import('@features/crm/pages/PeopleRelationships').then((m) => ({
+    default: m.PeopleRelationships,
   })),
 );
 
@@ -99,6 +107,7 @@ const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentTy
   tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   deals: DealsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  relationships: RelationshipsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
 
@@ -107,12 +116,12 @@ export function CrmPage() {
   const [activeTab, setActiveTab] = useState<string>(() => {
     try {
       const search = new URLSearchParams(window.location.search);
-      const tab = search.get("tab");
+      const tab = search.get('tab');
       if (tab && TABS.some((t) => t.id === tab)) return tab;
     } catch {
       // ignore URL parsing in non-browser environments
     }
-    return "contacts";
+    return 'contacts';
   });
 
   const handleTabChange = (id: string) => {
@@ -129,20 +138,20 @@ export function CrmPage() {
         <div>
           <h1 className="text-[17px] font-semibold text-text-primary">CRM</h1>
           <p className="text-[11px] text-text-tertiary mt-0.5">
-            {TABS.find((t) => t.id === activeTab)?.label ?? ""}
+            {TABS.find((t) => t.id === activeTab)?.label ?? ''}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => toast.info("Refreshing...")}
+            onClick={() => toast.info('Refreshing...')}
             className="flex items-center justify-center w-9 h-9 rounded-full text-text-secondary ios-tap"
             aria-label="Refresh"
           >
             <RefreshCw size={18} />
           </button>
           <button
-            onClick={() => toast.info("New item")}
+            onClick={() => toast.info('New item')}
             className="flex items-center justify-center w-9 h-9 rounded-full bg-accent text-white ios-tap shadow-sm shadow-accent/30"
             aria-label="Add new"
           >
@@ -153,7 +162,13 @@ export function CrmPage() {
 
       {/* Tab bar */}
       <div className="py-2 shrink-0">
-        <CardTabBar tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} ariaLabel="CRM tabs" className="mx-3" />
+        <CardTabBar
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          ariaLabel="CRM tabs"
+          className="mx-3"
+        />
       </div>
 
       {/* Tab content */}
@@ -162,10 +177,8 @@ export function CrmPage() {
         role="tabpanel"
         className="flex-1 overflow-hidden animate-[pageEnter_350ms_cubic-bezier(0.16,1,0.3,1)]"
       >
-        <TabErrorBoundary tabName={TABS.find((t) => t.id === activeTab)?.label ?? ""}>
-          <Suspense fallback={<SkeletonPage />}>
-            {TabContent ? <TabContent /> : null}
-          </Suspense>
+        <TabErrorBoundary tabName={TABS.find((t) => t.id === activeTab)?.label ?? ''}>
+          <Suspense fallback={<SkeletonPage />}>{TabContent ? <TabContent /> : null}</Suspense>
         </TabErrorBoundary>
       </div>
     </div>

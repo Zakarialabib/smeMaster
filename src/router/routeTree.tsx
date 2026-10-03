@@ -1,92 +1,90 @@
-import { lazy, Suspense, type ReactNode } from "react";
-import { createRootRoute, createRoute, redirect } from "@tanstack/react-router";
-import App from "@/App";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
-import { SkeletonPage } from "@shared/components/ui/Skeleton";
+import { lazy, Suspense, type ReactNode } from 'react';
+import { createRootRoute, createRoute, redirect } from '@tanstack/react-router';
+import App from '@/App';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
+import { SkeletonPage } from '@shared/components/ui/Skeleton';
 
 // Lazy-load heavy pages — these include many sub-components and service imports
 const SettingsPage = lazy(() =>
-  import("@features/settings/components/SettingsPage").then((m) => ({
+  import('@features/settings/components/SettingsPage').then((m) => ({
     default: m.SettingsPage,
   })),
 );
 
 const HelpPage = lazy(() =>
-  import("@features/settings/components/help/HelpPage").then((m) => ({
+  import('@features/settings/components/help/HelpPage').then((m) => ({
     default: m.HelpPage,
   })),
 );
 const SchedulePage = lazy(() =>
-  import("@features/tasks/pages/SchedulePage").then((m) => ({
+  import('@features/tasks/pages/SchedulePage').then((m) => ({
     default: m.SchedulePage,
   })),
 );
 const AttachmentLibrary = lazy(() =>
-  import("@features/attachments/AttachmentLibrary").then(
-    (m) => ({ default: m.AttachmentLibrary }),
-  ),
+  import('@features/attachments/AttachmentLibrary').then((m) => ({ default: m.AttachmentLibrary })),
 );
 const AutomationCampaignsPage = lazy(() =>
-  import("@features/automation/pages/AutomationCampaignsPage").then((m) => ({
+  import('@features/automation/pages/AutomationCampaignsPage').then((m) => ({
     default: m.AutomationCampaignsPage,
   })),
 );
 const VaultPage = lazy(() =>
-  import("@features/vault/pages/VaultPage").then((m) => ({
+  import('@features/vault/pages/VaultPage').then((m) => ({
     default: m.VaultPage,
   })),
 );
 
 const InvoicingDashboard = lazy(() =>
-  import("@features/invoicing/components/InvoicingDashboard").then((m) => ({
+  import('@features/invoicing/components/InvoicingDashboard').then((m) => ({
     default: m.default,
   })),
 );
 
 const InvoiceEditor = lazy(() =>
-  import("@features/invoicing/components/InvoiceEditor").then((m) => ({
+  import('@features/invoicing/components/InvoiceEditor').then((m) => ({
     default: m.default,
   })),
 );
 const DevicePairingPage = lazy(() =>
-  import("@features/settings/pages/DevicePairingPage").then((m) => ({
+  import('@features/settings/pages/DevicePairingPage').then((m) => ({
     default: m.DevicePairingPage,
   })),
 );
 const ContactDetailPage = lazy(() =>
-  import("@features/contacts/pages/ContactDetailPage").then((m) => ({
+  import('@features/contacts/pages/ContactDetailPage').then((m) => ({
     default: m.ContactDetailPage,
   })),
 );
 const DashboardPage = lazy(() =>
-  import("@features/dashboard/pages/DashboardPage").then((m) => ({
+  import('@features/dashboard/pages/DashboardPage').then((m) => ({
     default: m.DashboardPage,
   })),
 );
 const AiAssistantPage = lazy(() =>
-  import("@features/assistant/pages/AiAssistantPage").then((m) => ({
+  import('@features/assistant/pages/AiAssistantPage').then((m) => ({
     default: m.AiAssistantPage,
   })),
 );
 const MobileDashboardPage = lazy(() =>
-  import("@features/dashboard/pages/MobileDashboardPage").then((m) => ({
+  import('@features/dashboard/pages/MobileDashboardPage').then((m) => ({
     default: m.MobileDashboardPage,
   })),
 );
 const CrmPage = lazy(() =>
-  import("@features/crm/pages/CrmPage").then((m) => ({
+  import('@features/crm/pages/CrmPage').then((m) => ({
     default: m.CrmPage,
   })),
 );
 
 const POSPage = lazy(() =>
-  import("@features/pos/components/POSPage").then((m) => ({
+  import('@features/pos/components/POSPage').then((m) => ({
     default: m.POSPage,
   })),
 );
 
 const ErpPage = lazy(() =>
-  import("@features/erp/ErpPage").then((m) => ({
+  import('@features/erp/ErpPage').then((m) => ({
     default: m.default,
   })),
 );
@@ -109,13 +107,7 @@ function createPageWrapper(name: string, Component: LazyComponent) {
 }
 
 // ---------- Search param validation ----------
-const VALID_CATEGORIES = [
-  "Primary",
-  "Updates",
-  "Promotions",
-  "Social",
-  "Newsletters",
-] as const;
+const VALID_CATEGORIES = ['Primary', 'Updates', 'Promotions', 'Social', 'Newsletters'] as const;
 
 type MailSearch = {
   q?: string;
@@ -124,15 +116,12 @@ type MailSearch = {
 
 function validateMailSearch(search: Record<string, unknown>): MailSearch {
   const result: MailSearch = {};
-  if (typeof search["q"] === "string" && search["q"]) {
-    result.q = search["q"];
+  if (typeof search['q'] === 'string' && search['q']) {
+    result.q = search['q'];
   }
-  const cat = search["category"];
-  if (
-    typeof cat === "string" &&
-    (VALID_CATEGORIES as readonly string[]).includes(cat)
-  ) {
-    result.category = cat as MailSearch["category"];
+  const cat = search['category'];
+  if (typeof cat === 'string' && (VALID_CATEGORIES as readonly string[]).includes(cat)) {
+    result.category = cat as MailSearch['category'];
   }
   return result;
 }
@@ -145,16 +134,16 @@ export const rootRoute = createRootRoute({
 // ---------- / (index) â†’ redirect to /mail/inbox ----------
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: '/',
   beforeLoad: () => {
-    throw redirect({ to: "/dashboard" });
+    throw redirect({ to: '/dashboard' });
   },
 });
 
 // ---------- Mail routes: render MailLayout for all mail views ----------
 function MailPage() {
   const MailLayout = lazy(() =>
-    import("@features/mail/components/layout/MailLayout").then((m) => ({
+    import('@features/mail/components/layout/MailLayout').then((m) => ({
       default: m.MailLayout,
     })),
   );
@@ -180,26 +169,26 @@ function SettingsTabPage() {
 // ---------- /settings (redirect to /settings/general) ----------
 const settingsIndexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "settings",
+  path: 'settings',
   beforeLoad: () => {
-    throw redirect({ to: "/settings/$tab", params: { tab: "general" } });
+    throw redirect({ to: '/settings/$tab', params: { tab: 'general' } });
   },
 });
 
 // ---------- /settings/$tab ----------
 export const settingsTabRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "settings/$tab",
+  path: 'settings/$tab',
   component: SettingsTabPage,
 });
 
 // ---------- Standalone page wrappers — all use createPageWrapper for consistency ----------
-const HelpPageWrapper = createPageWrapper("Help", HelpPage as LazyComponent);
+const HelpPageWrapper = createPageWrapper('Help', HelpPage as LazyComponent);
 
 // ---------- /mail/$label ----------
 export const mailRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "mail/$label",
+  path: 'mail/$label',
   validateSearch: validateMailSearch,
   component: MailPage,
 });
@@ -207,14 +196,14 @@ export const mailRoute = createRoute({
 // ---------- /mail/$label/thread/$threadId ----------
 export const mailThreadRoute = createRoute({
   getParentRoute: () => mailRoute,
-  path: "thread/$threadId",
+  path: 'thread/$threadId',
   component: () => null, // MailLayout handles rendering via useSelectedThreadId()
 });
 
 // ---------- /label/$labelId ----------
 export const labelRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "label/$labelId",
+  path: 'label/$labelId',
   validateSearch: validateMailSearch,
   component: MailPage,
 });
@@ -222,13 +211,13 @@ export const labelRoute = createRoute({
 // ---------- /label/$labelId/thread/$threadId ----------
 export const labelThreadRoute = createRoute({
   getParentRoute: () => labelRoute,
-  path: "thread/$threadId",
+  path: 'thread/$threadId',
 });
 
 // ---------- /smart-folder/$folderId ----------
 export const smartFolderRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "smart-folder/$folderId",
+  path: 'smart-folder/$folderId',
   validateSearch: validateMailSearch,
   component: MailPage,
 });
@@ -236,192 +225,225 @@ export const smartFolderRoute = createRoute({
 // ---------- /smart-folder/$folderId/thread/$threadId ----------
 export const smartFolderThreadRoute = createRoute({
   getParentRoute: () => smartFolderRoute,
-  path: "thread/$threadId",
+  path: 'thread/$threadId',
 });
 
 // ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
-const ContactDetailPageWrapper = createPageWrapper("ContactDetail", ContactDetailPage as LazyComponent);
+const ContactDetailPageWrapper = createPageWrapper(
+  'ContactDetail',
+  ContactDetailPage as LazyComponent,
+);
 
 export const contactDetailRoute = createRoute({
   getParentRoute: () => peopleRoute,
-  path: "$contactId",
+  path: '$contactId',
   component: ContactDetailPageWrapper,
 });
 
 // ---------- /attachments ----------
-const AttachmentLibraryWrapper = createPageWrapper("Attachments", AttachmentLibrary as LazyComponent);
+const AttachmentLibraryWrapper = createPageWrapper(
+  'Attachments',
+  AttachmentLibrary as LazyComponent,
+);
 
 export const attachmentsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "attachments",
+  path: 'attachments',
   component: AttachmentLibraryWrapper,
 });
 
 // ---------- /tasks (Schedule: Tasks + Calendar) ----------
-const SchedulePageWrapper = createPageWrapper("Schedule", SchedulePage as LazyComponent);
+const SchedulePageWrapper = createPageWrapper('Schedule', SchedulePage as LazyComponent);
 
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "tasks",
+  path: 'tasks',
   component: SchedulePageWrapper,
 });
 
 // ---------- /calendar → redirect to /tasks ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "calendar",
+  path: 'calendar',
   beforeLoad: () => {
-    throw redirect({ to: "/tasks" });
+    throw redirect({ to: '/tasks' });
   },
 });
 
 // ---------- /automation ----------
-const AutomationPageWrapper = createPageWrapper("Automation & Campaigns", AutomationCampaignsPage as LazyComponent);
+const AutomationPageWrapper = createPageWrapper(
+  'Automation & Campaigns',
+  AutomationCampaignsPage as LazyComponent,
+);
 
 export const automationRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "automation",
+  path: 'automation',
   component: AutomationPageWrapper,
 });
 
 // ---------- /business (legacy) → redirect to the real dashboard ----------
 export const businessRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "business",
+  path: 'business',
   beforeLoad: () => {
-    throw redirect({ to: "/dashboard" });
+    throw redirect({ to: '/dashboard' });
   },
 });
 
-const InvoicingDashboardWrapper = createPageWrapper("Invoicing", InvoicingDashboard as LazyComponent);
+const InvoicingDashboardWrapper = createPageWrapper(
+  'Invoicing',
+  InvoicingDashboard as LazyComponent,
+);
 
 export const invoicingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "invoicing",
+  path: 'invoicing',
   component: InvoicingDashboardWrapper,
 });
 
-const InvoiceEditorWrapper = createPageWrapper("InvoiceEditor", InvoiceEditor as LazyComponent);
+const InvoiceEditorWrapper = createPageWrapper('InvoiceEditor', InvoiceEditor as LazyComponent);
 
 export const invoiceEditorRoute = createRoute({
   getParentRoute: () => invoicingRoute,
-  path: "edit/$invoiceId",
+  path: 'edit/$invoiceId',
   component: InvoiceEditorWrapper,
 });
 
 export const invoiceCreateRoute = createRoute({
   getParentRoute: () => invoicingRoute,
-  path: "new",
+  path: 'new',
   component: InvoiceEditorWrapper,
 });
 
-const ErpPageWrapper = createPageWrapper("Erp", ErpPage as LazyComponent);
+const ErpPageWrapper = createPageWrapper('Erp', ErpPage as LazyComponent);
 
 export const erpRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "erp",
+  path: 'erp',
   component: ErpPageWrapper,
 });
 
 // ---------- /vault ----------
-const VaultPageWrapper = createPageWrapper("Vault", VaultPage as LazyComponent);
+const VaultPageWrapper = createPageWrapper('Vault', VaultPage as LazyComponent);
 
 export const vaultRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "vault",
+  path: 'vault',
   component: VaultPageWrapper,
 });
 
 // ---------- /campaigns (legacy) → redirect to the merged automation page ----------
 export const campaignsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "campaigns",
+  path: 'campaigns',
   beforeLoad: () => {
-    throw redirect({ to: "/automation" });
+    throw redirect({ to: '/automation' });
   },
 });
 
 // ---------- /workflows (redirect to /automation) ----------
 export const workflowsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "workflows",
+  path: 'workflows',
   beforeLoad: () => {
-    throw redirect({ to: "/automation" });
+    throw redirect({ to: '/automation' });
   },
 });
 
-const AiAssistantPageWrapper = createPageWrapper("AiAssistant", AiAssistantPage as LazyComponent);
+const AiAssistantPageWrapper = createPageWrapper('AiAssistant', AiAssistantPage as LazyComponent);
 
 // ---------- /ai-assistant ----------
 export const aiAssistantRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "ai-assistant",
+  path: 'ai-assistant',
   component: AiAssistantPageWrapper,
 });
 
 // ---------- /dashboard ----------
-const DashboardPageWrapper = createPageWrapper("Dashboard", DashboardPage as LazyComponent);
+const DashboardPageWrapper = createPageWrapper('Dashboard', DashboardPage as LazyComponent);
 
 // ---------- /settings/device-pairing ----------
-const DevicePairingPageWrapper = createPageWrapper("DevicePairing", DevicePairingPage as LazyComponent);
+const DevicePairingPageWrapper = createPageWrapper(
+  'DevicePairing',
+  DevicePairingPage as LazyComponent,
+);
 
 export const devicePairingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "settings/device-pairing",
+  path: 'settings/device-pairing',
   component: DevicePairingPageWrapper,
 });
 
 // ---------- /people (CRM: Contacts, Campaigns, Tasks, Calendar, Invoices) ----------
-const CRMPageWrapper = createPageWrapper("CRM", CrmPage as LazyComponent);
+const CRMPageWrapper = createPageWrapper('CRM', CrmPage as LazyComponent);
 
 export const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "people",
+  path: 'people',
   component: CRMPageWrapper,
 });
 
 // ---------- /crm (alias redirects to /people) ----------
 export const crmRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "crm",
+  path: 'crm',
   beforeLoad: () => {
-    throw redirect({ to: "/people" });
+    throw redirect({ to: '/people' });
   },
 });
 
 // ---------- /dashboard (desktop) ----------
 export const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "dashboard",
+  path: 'dashboard',
   component: DashboardPageWrapper,
 });
 
 // ---------- /dashboard/mobile ----------
-const MobileDashboardWrapper = createPageWrapper("MobileDashboard", MobileDashboardPage as LazyComponent);
+const MobileDashboardWrapper = createPageWrapper(
+  'MobileDashboard',
+  MobileDashboardPage as LazyComponent,
+);
 
 export const mobileDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "dashboard/mobile",
+  path: 'dashboard/mobile',
   component: MobileDashboardWrapper,
 });
 
+// ---------- /unified (Unified Inbox — SMEMaster) ----------
+const UnifiedInboxPage = lazy(() =>
+  import('@features/unified/UnifiedInbox').then((m) => ({
+    default: m.UnifiedInbox,
+  })),
+);
+
+const UnifiedInboxWrapper = createPageWrapper('UnifiedInbox', UnifiedInboxPage as LazyComponent);
+
+export const unifiedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'unified',
+  component: UnifiedInboxWrapper,
+});
+
 // ---------- /pos ----------
-const POSPageWrapper = createPageWrapper("POS", POSPage as LazyComponent);
+const POSPageWrapper = createPageWrapper('POS', POSPage as LazyComponent);
 
 export const posRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "pos",
+  path: 'pos',
   component: POSPageWrapper,
 });
 
 // ---------- /help (redirect to /help/getting-started) ----------
 const helpIndexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "help",
+  path: 'help',
   beforeLoad: () => {
     throw redirect({
-      to: "/help/$topic",
-      params: { topic: "getting-started" },
+      to: '/help/$topic',
+      params: { topic: 'getting-started' },
     });
   },
 });
@@ -429,22 +451,19 @@ const helpIndexRoute = createRoute({
 // ---------- /help/$topic ----------
 export const helpTopicRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "help/$topic",
+  path: 'help/$topic',
   component: HelpPageWrapper,
 });
 
 // ---------- / (catch-all 404) ----------
 export const notFoundRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "*",
+  path: '*',
   component: () => (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
       <h1 className="text-2xl font-bold text-text-primary">Page Not Found</h1>
       <p className="text-text-secondary">The page you're looking for doesn't exist.</p>
-      <a
-        href="#/dashboard"
-        className="text-accent hover:underline text-sm font-medium"
-      >
+      <a href="#/dashboard" className="text-accent hover:underline text-sm font-medium">
         Back to Dashboard
       </a>
     </div>
@@ -474,6 +493,7 @@ export const routeTree = rootRoute.addChildren([
   aiAssistantRoute,
   dashboardRoute,
   mobileDashboardRoute,
+  unifiedRoute,
   crmRoute,
   posRoute,
   helpIndexRoute,

@@ -30,6 +30,7 @@ pub mod core;
 pub mod mail;
 pub mod contacts;
 pub mod campaigns;
+#[cfg(feature = "local-ai")]
 pub mod ai;
 pub mod invoicing;
 pub mod vault;

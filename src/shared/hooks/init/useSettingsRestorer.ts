@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useConfigStore, useUIStore } from "@/stores/core";
-import { getAllSettings } from "@features/settings/db/settings";
-import { initConfigPersistence } from "@shared/services/settings/configPersistence";
-import { COLOR_THEMES } from "@/constants/themes";
-import { useThemeStore } from "@/shared/stores/themeStore";
-import type { ColorThemeId } from "@/constants/themes";
+import { useEffect } from 'react';
+import { useConfigStore, useUIStore } from '@/stores/core';
+import { getAllSettings } from '@features/settings/db/settings';
+import { initConfigPersistence } from '@shared/services/settings/configPersistence';
+import { COLOR_THEMES } from '@/constants/themes';
+import { useThemeStore } from '@/shared/stores/themeStore';
+import type { ColorThemeId } from '@/constants/themes';
 import type {
   ThemeMode,
   FontScale,
@@ -15,8 +15,8 @@ import type {
   MarkAsReadBehavior,
   InboxViewMode,
   SidebarNavItem,
-} from "@/stores/core";
-import { withRetry } from "./_utils";
+} from '@/stores/core';
+import { withRetry } from './_utils';
 
 /**
  * Phase 3: Restore all persisted user settings from the SQLite settings
@@ -31,7 +31,7 @@ export function useSettingsRestorer(): void {
 
     async function restore() {
       const all = await withRetry<Record<string, string>>(
-        "getAllSettings",
+        'getAllSettings',
         () => getAllSettings(),
         {},
       );
@@ -42,29 +42,29 @@ export function useSettingsRestorer(): void {
 
       // Theme
       const theme = all.theme;
-      if (theme === "light" || theme === "dark" || theme === "system") {
+      if (theme === 'light' || theme === 'dark' || theme === 'system') {
         config.setTheme(theme as ThemeMode);
       }
 
       // Sidebar collapsed
-      if (all.sidebar_collapsed === "true") {
+      if (all.sidebar_collapsed === 'true') {
         ui.setSidebarCollapsed(true);
       }
 
       // Contact sidebar
-      if (all.contact_sidebar_visible === "false") {
+      if (all.contact_sidebar_visible === 'false') {
         ui.setContactSidebarVisible(false);
       }
 
       // Reading pane position
       const panePos = all.reading_pane_position;
-      if (panePos === "right" || panePos === "bottom" || panePos === "hidden") {
+      if (panePos === 'right' || panePos === 'bottom' || panePos === 'hidden') {
         config.setReadingPanePosition(panePos as ReadingPanePosition);
       }
 
       // Read filter
       const readFilter = all.read_filter;
-      if (readFilter === "all" || readFilter === "read" || readFilter === "unread") {
+      if (readFilter === 'all' || readFilter === 'read' || readFilter === 'unread') {
         config.setReadFilter(readFilter as ReadFilter);
       }
 
@@ -77,30 +77,35 @@ export function useSettingsRestorer(): void {
 
       // Email density
       const density = all.email_density;
-      if (density === "compact" || density === "default" || density === "spacious") {
+      if (density === 'compact' || density === 'default' || density === 'spacious') {
         config.setEmailDensity(density as EmailDensity);
       }
 
       // Default reply mode
       const replyMode = all.default_reply_mode;
-      if (replyMode === "reply" || replyMode === "replyAll") {
+      if (replyMode === 'reply' || replyMode === 'replyAll') {
         config.setDefaultReplyMode(replyMode as DefaultReplyMode);
       }
 
       // Mark-as-read behavior
       const markRead = all.mark_as_read_behavior;
-      if (markRead === "instant" || markRead === "2s" || markRead === "manual") {
+      if (markRead === 'instant' || markRead === '2s' || markRead === 'manual') {
         config.setMarkAsReadBehavior(markRead as MarkAsReadBehavior);
       }
 
       // Send and archive
-      if (all.send_and_archive === "true") {
+      if (all.send_and_archive === 'true') {
         config.setSendAndArchive(true);
       }
 
       // Font scale
       const fontScale = all.font_size;
-      if (fontScale === "small" || fontScale === "default" || fontScale === "large" || fontScale === "xlarge") {
+      if (
+        fontScale === 'small' ||
+        fontScale === 'default' ||
+        fontScale === 'large' ||
+        fontScale === 'xlarge'
+      ) {
         config.setFontScale(fontScale as FontScale);
       }
 
@@ -112,23 +117,23 @@ export function useSettingsRestorer(): void {
 
       // Surface (flat | glass)
       const surface = all.surface;
-      if (surface === "flat" || surface === "glass") {
+      if (surface === 'flat' || surface === 'glass') {
         useThemeStore.getState().setSurface(surface);
       }
 
       // Inbox view mode
       const viewMode = all.inbox_view_mode;
-      if (viewMode === "unified" || viewMode === "split") {
+      if (viewMode === 'unified' || viewMode === 'split') {
         config.setInboxViewMode(viewMode as InboxViewMode);
       }
 
       // Reduce motion
-      if (all.reduce_motion === "true") {
+      if (all.reduce_motion === 'true') {
         config.setReduceMotion(true);
       }
 
       // Task sidebar
-      if (all.task_sidebar_visible === "true") {
+      if (all.task_sidebar_visible === 'true') {
         ui.setTaskSidebarVisible(true);
       }
 

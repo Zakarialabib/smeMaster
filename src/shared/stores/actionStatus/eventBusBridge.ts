@@ -1,5 +1,5 @@
-import { eventBus } from "@shared/services/events/eventBus";
-import { useActionStatusStore } from "./actionStatusStore";
+import { eventBus } from '@shared/services/events/eventBus';
+import { useActionStatusStore } from './actionStatusStore';
 
 /**
  * Queue progress event payload (emitted by the Rust backend via EventBus).
@@ -39,40 +39,40 @@ interface SyncPhasePayload {
  * ```
  */
 export function initActionStatusEventBridge(): () => void {
-  const unsub1 = eventBus.register("queue:progress", (payload: unknown) => {
+  const unsub1 = eventBus.register('queue:progress', (payload: unknown) => {
     const p = payload as QueueProgressPayload;
     if (!p?.actionId) return;
 
     const store = useActionStatusStore.getState();
     const current = store.statuses[p.actionId];
 
-    store.setStatus(p.actionId, current?.status ?? "loading", {
+    store.setStatus(p.actionId, current?.status ?? 'loading', {
       progress: p.progress,
     });
   });
 
-  const unsub2 = eventBus.register("sync:phase", (payload: unknown) => {
+  const unsub2 = eventBus.register('sync:phase', (payload: unknown) => {
     const p = payload as SyncPhasePayload;
     if (!p?.actionId) return;
 
     const store = useActionStatusStore.getState();
 
     switch (p.status) {
-      case "started":
-        store.setStatus(p.actionId, "loading", {
-          category: "sync",
+      case 'started':
+        store.setStatus(p.actionId, 'loading', {
+          category: 'sync',
         });
         break;
-      case "completed":
-        store.setStatusWithAutoClear(p.actionId, "success", {
-          category: "sync",
+      case 'completed':
+        store.setStatusWithAutoClear(p.actionId, 'success', {
+          category: 'sync',
           autoClearMs: 2000,
         });
         break;
-      case "error":
-        store.setStatusWithAutoClear(p.actionId, "error", {
-          error: p.error ?? "Sync phase failed",
-          category: "sync",
+      case 'error':
+        store.setStatusWithAutoClear(p.actionId, 'error', {
+          error: p.error ?? 'Sync phase failed',
+          category: 'sync',
           autoClearMs: 5000,
         });
         break;

@@ -1,23 +1,34 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Reply, ReplyAll, Forward, Send, Maximize2, RotateCcw, X, Loader2, Building2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useLayoutStore } from "@shared/stores/layoutStore";
-import { sendEmail, archiveThread } from "@features/mail/services/emailActions";
-import { buildRawEmail } from "@shared/utils/emailBuilder";
-import { upsertContact } from "@features/contacts/db/contacts.ts";
-import { getDefaultSignature } from "@features/mail/db/signatures";
-import { QuickReplyList } from "./QuickReplyList";
-import { useAutoDraft } from "@features/mail/hooks/useAutoDraft";
-import { useUndoSend } from "@features/mail/hooks/useUndoSend";
-import type { DbMessage } from "@shared/services/db/messages";
-import type { Thread } from "@features/mail/stores/threadStore";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import {
+  Reply,
+  ReplyAll,
+  Forward,
+  Send,
+  Maximize2,
+  RotateCcw,
+  X,
+  Loader2,
+  Building2,
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useLayoutStore } from '@shared/stores/layoutStore';
+import { sendEmail, archiveThread } from '@features/mail/services/emailActions';
+import { buildRawEmail } from '@shared/utils/emailBuilder';
+import { upsertContact } from '@features/contacts/db/contacts.ts';
+import { getDefaultSignature } from '@features/mail/db/signatures';
+import { QuickReplyList } from './QuickReplyList';
+import { useAutoDraft } from '@features/mail/hooks/useAutoDraft';
+import { useUndoSend } from '@features/mail/hooks/useUndoSend';
+import type { DbMessage } from '@shared/services/db/messages';
+import type { Thread } from '@features/mail/stores/threadStore';
+import { uiBus } from '@shared/services/events/uiBus';
 
-type ReplyMode = "reply" | "replyAll" | "forward";
+type ReplyMode = 'reply' | 'replyAll' | 'forward';
 
 interface InlineReplyProps {
   thread: Thread;
@@ -30,7 +41,7 @@ interface InlineReplyProps {
 export function InlineReply({ thread, messages, accountId, noReply, onSent }: InlineReplyProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<ReplyMode | null>(null);
-  const [signatureHtml, setSignatureHtml] = useState("");
+  const [signatureHtml, setSignatureHtml] = useState('');
   const accounts = useAccountStore((s) => s.accounts);
   const activeAccount = accounts.find((a) => a.id === accountId);
   const openComposer = useComposerStore((s) => s.openComposer);
@@ -46,10 +57,11 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
         placeholder: t('composer.writeYourReply'),
       }),
     ],
-    content: "",
+    content: '',
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none px-3 py-2 min-h-[80px] max-h-[200px] overflow-y-auto focus:outline-none text-text-primary text-sm",
+        class:
+          'prose prose-sm max-w-none px-3 py-2 min-h-[80px] max-h-[200px] overflow-y-auto focus:outline-none text-text-primary text-sm',
       },
     },
   });
@@ -71,7 +83,7 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     raw: string;
     to: string[];
     cc: string[];
-  }>({ raw: "", to: [], cc: [] });
+  }>({ raw: '', to: [], cc: [] });
 
   // Undo-send timer + visibility lifecycle for the inline reply. The
   // onSend callback fires after the delay and does the actual send + post
@@ -84,7 +96,11 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
 
         // Send & archive: remove from inbox if enabled
         if (useLayoutStore.getState().sendAndArchive) {
-          try { await archiveThread(accountId, thread.id, []); } catch { /* ignore */ }
+          try {
+            await archiveThread(accountId, thread.id, []);
+          } catch {
+            /* ignore */
+          }
         }
 
         // Update contacts frequency
@@ -92,24 +108,27 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
           await upsertContact(addr, null);
         }
       } catch (err) {
-        console.error("Failed to send inline reply:", err);
+        console.error('Failed to send inline reply:', err);
       }
     },
   });
 
-  const activateMode = useCallback((newMode: ReplyMode) => {
-    setMode(newMode);
-    // Clear any in-flight AI draft + the editor's auto-draft content.
-    // The hook handles aborting any pending generation.
-    autoDraft.clear();
-    if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
-    focusTimerRef.current = setTimeout(() => editor?.commands.focus(), 50);
+  const activateMode = useCallback(
+    (newMode: ReplyMode) => {
+      setMode(newMode);
+      // Clear any in-flight AI draft + the editor's auto-draft content.
+      // The hook handles aborting any pending generation.
+      autoDraft.clear();
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+      focusTimerRef.current = setTimeout(() => editor?.commands.focus(), 50);
 
-    // Trigger auto-draft for reply/replyAll (not forward).
-    if (newMode === "reply" || newMode === "replyAll") {
-      autoDraft.load(newMode);
-    }
-  }, [editor, autoDraft]);
+      // Trigger auto-draft for reply/replyAll (not forward).
+      if (newMode === 'reply' || newMode === 'replyAll') {
+        autoDraft.load(newMode);
+      }
+    },
+    [editor, autoDraft],
+  );
 
   // Load default signature
   useEffect(() => {
@@ -120,31 +139,30 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
 
   // Listen for inline reply events from keyboard shortcuts
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { mode: ReplyMode } | undefined;
+    const handler = (detail: { mode: ReplyMode }) => {
       if (detail?.mode) {
         activateMode(detail.mode);
       }
     };
-    window.addEventListener("smemaster-inline-reply", handler);
-    return () => window.removeEventListener("smemaster-inline-reply", handler);
+    uiBus.on('inline-reply', handler);
+    return () => uiBus.off('inline-reply', handler);
   }, [activateMode]);
 
   // Scroll into view when activated
   useEffect(() => {
     if (mode && containerRef.current) {
-      containerRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [mode]);
 
   const getRecipients = useCallback((): { to: string[]; cc: string[] } => {
     if (!lastMessage) return { to: [], cc: [] };
 
-    if (mode === "forward") return { to: [], cc: [] };
+    if (mode === 'forward') return { to: [], cc: [] };
 
     const replyTo = lastMessage.reply_to ?? lastMessage.from_address;
 
-    if (mode === "reply") {
+    if (mode === 'reply') {
       return { to: replyTo ? [replyTo] : [], cc: [] };
     }
 
@@ -152,14 +170,14 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     const allTo = new Set<string>();
     if (replyTo) allTo.add(replyTo);
     if (lastMessage.to_addresses) {
-      lastMessage.to_addresses.split(",").forEach((a) => allTo.add(a.trim()));
+      lastMessage.to_addresses.split(',').forEach((a) => allTo.add(a.trim()));
     }
     // Remove self from recipients
     if (activeAccount?.email) allTo.delete(activeAccount.email);
 
     const ccList: string[] = [];
     if (lastMessage.cc_addresses) {
-      lastMessage.cc_addresses.split(",").forEach((a) => {
+      lastMessage.cc_addresses.split(',').forEach((a) => {
         const trimmed = a.trim();
         if (trimmed && trimmed !== activeAccount?.email) ccList.push(trimmed);
       });
@@ -169,15 +187,15 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
   }, [lastMessage, mode, activeAccount?.email]);
 
   const getSubject = useCallback((): string => {
-    const sub = lastMessage?.subject ?? "";
-    if (mode === "forward") return sub.startsWith("Fwd:") ? sub : `Fwd: ${sub}`;
-    return sub.startsWith("Re:") ? sub : `Re: ${sub}`;
+    const sub = lastMessage?.subject ?? '';
+    if (mode === 'forward') return sub.startsWith('Fwd:') ? sub : `Fwd: ${sub}`;
+    return sub.startsWith('Re:') ? sub : `Re: ${sub}`;
   }, [lastMessage, mode]);
 
   const handleSend = useCallback(async () => {
     if (!activeAccount || !editor || undoSend.visible) return;
     const { to, cc } = getRecipients();
-    if (to.length === 0 && mode !== "forward") return;
+    if (to.length === 0 && mode !== 'forward') return;
 
     let html = editor.getHTML();
     if (signatureHtml) {
@@ -201,10 +219,21 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     if (!ok) return; // Already a pending undo-send.
 
     // Reset inline state immediately; the actual send fires after the delay.
-    editor.commands.setContent("");
+    editor.commands.setContent('');
     setMode(null);
     onSent();
-  }, [activeAccount, editor, undoSend, getRecipients, getSubject, signatureHtml, lastMessage, thread.id, mode, onSent]);
+  }, [
+    activeAccount,
+    editor,
+    undoSend,
+    getRecipients,
+    getSubject,
+    signatureHtml,
+    lastMessage,
+    thread.id,
+    mode,
+    onSent,
+  ]);
 
   const handleExpandToComposer = useCallback(() => {
     if (!editor || !lastMessage) return;
@@ -212,7 +241,7 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     const bodyHtml = editor.getHTML();
 
     openComposer({
-      mode: mode === "forward" ? "forward" : mode === "replyAll" ? "replyAll" : "reply",
+      mode: mode === 'forward' ? 'forward' : mode === 'replyAll' ? 'replyAll' : 'reply',
       to,
       cc,
       subject: getSubject(),
@@ -222,12 +251,12 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     });
 
     // Reset inline state
-    editor.commands.setContent("");
+    editor.commands.setContent('');
     setMode(null);
   }, [editor, lastMessage, getRecipients, getSubject, mode, thread.id, openComposer]);
 
   const handleRegenerateDraft = useCallback(() => {
-    if (!mode || mode === "forward") return;
+    if (!mode || mode === 'forward') return;
     autoDraft.regenerate(mode);
   }, [autoDraft, mode]);
 
@@ -248,19 +277,19 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
   useEffect(() => {
     if (!mode) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         handleSend();
       }
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         e.preventDefault();
-        editor?.commands.setContent("");
+        editor?.commands.setContent('');
         setMode(null);
         autoDraft.clear();
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, [mode, handleSend, editor, autoDraft]);
 
   if (!lastMessage) return null;
@@ -270,25 +299,25 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
     return (
       <div ref={containerRef} className="mx-4 my-3 flex items-center gap-2">
         <button
-          onClick={() => activateMode("reply")}
+          onClick={() => activateMode('reply')}
           disabled={noReply}
           title={noReply ? t('email.thisSenderAcceptsNoReplies') : undefined}
           className="flex items-center gap-1.5 px-4 py-2 text-xs text-text-secondary border border-border-primary rounded-lg hover:bg-bg-hover hover:text-text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary"
         >
           <Reply size={14} />
-          {t("actionBar.reply")}
+          {t('actionBar.reply')}
         </button>
         <button
-          onClick={() => activateMode("replyAll")}
+          onClick={() => activateMode('replyAll')}
           disabled={noReply}
           title={noReply ? t('email.thisSenderAcceptsNoReplies') : undefined}
           className="flex items-center gap-1.5 px-4 py-2 text-xs text-text-secondary border border-border-primary rounded-lg hover:bg-bg-hover hover:text-text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary"
         >
           <ReplyAll size={14} />
-          {t("actionBar.replyAll")}
+          {t('actionBar.replyAll')}
         </button>
         <button
-          onClick={() => activateMode("forward")}
+          onClick={() => activateMode('forward')}
           className="flex items-center gap-1.5 px-4 py-2 text-xs text-text-secondary border border-border-primary rounded-lg hover:bg-bg-hover hover:text-text-primary transition-colors"
         >
           <Forward size={14} />
@@ -300,32 +329,44 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
 
   // Expanded state — editor visible
   const { to } = getRecipients();
-  const modeLabel = mode === "reply" ? t("actionBar.reply") : mode === "replyAll" ? t("actionBar.replyAll") : t('composer.forward');
+  const modeLabel =
+    mode === 'reply'
+      ? t('actionBar.reply')
+      : mode === 'replyAll'
+        ? t('actionBar.replyAll')
+        : t('composer.forward');
   const sending = undoSend.visible;
 
   return (
-    <div ref={containerRef} className="mx-4 my-3 border border-border-primary rounded-lg overflow-hidden bg-bg-primary">
+    <div
+      ref={containerRef}
+      className="mx-4 my-3 border border-border-primary rounded-lg overflow-hidden bg-bg-primary"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-bg-secondary border-b border-border-secondary">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            {(["reply", "replyAll", "forward"] as const).map((m) => (
+            {(['reply', 'replyAll', 'forward'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2 py-1 text-[0.6875rem] rounded transition-colors ${
                   mode === m
-                    ? "bg-accent/10 text-accent font-medium"
-                    : "text-text-tertiary hover:text-text-primary"
+                    ? 'bg-accent/10 text-accent font-medium'
+                    : 'text-text-tertiary hover:text-text-primary'
                 }`}
               >
-                {m === "reply" ? t("actionBar.reply") : m === "replyAll" ? t("actionBar.replyAll") : t('composer.forward')}
+                {m === 'reply'
+                  ? t('actionBar.reply')
+                  : m === 'replyAll'
+                    ? t('actionBar.replyAll')
+                    : t('composer.forward')}
               </button>
             ))}
           </div>
           {to.length > 0 && (
             <span className="text-[0.6875rem] text-text-tertiary truncate max-w-[200px]">
-              {t('composer.to')} {to.join(", ")}
+              {t('composer.to')} {to.join(', ')}
             </span>
           )}
           {activeAccount?.company && (
@@ -375,7 +416,7 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
             <Maximize2 size={12} />
             {t('composer.expand')}
           </button>
-          {autoDraft.hasDraft && mode !== "forward" && (
+          {autoDraft.hasDraft && mode !== 'forward' && (
             <>
               <button
                 onClick={handleRegenerateDraft}
@@ -399,7 +440,7 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
         </div>
         <button
           onClick={handleSend}
-          disabled={sending || (to.length === 0 && mode !== "forward")}
+          disabled={sending || (to.length === 0 && mode !== 'forward')}
           className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send size={12} />

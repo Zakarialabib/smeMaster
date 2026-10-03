@@ -1,14 +1,14 @@
 # SMEMaster — Settings Redesign Specification
 
 > **Status:** DRAFT (2026-07-15). This file CLOSES the ⚠️ MISSING gap tracked in
-> `docs/00-INDEX.md` line 150 and the MVP Launch Plan (`docs/plans/MVP_LAUNCH_PLAN.md`
+> `docs/00-INDEX.md`
 > Phase E / J7: "write the missing `37-settings-redesign-spec.md`").
 > It is an APPROVAL document, not yet an execution plan.
 >
 > **Owner priority (from brief):** smeMaster must become "the perfect management system
 > for SME — email first, CRM second, then marketing and automation." Settings is the
 > control surface for all of it; it must feel like ONE coherent glass super-app, not a
-> dumping ground of 24 tabs.
+> dumping ground of 22 tabs.
 >
 > **RTL is explicitly deferred per owner direction** — logical properties only, no new
 > physical-direction assumptions baked in.
@@ -21,7 +21,7 @@ The real source of truth for settings is **`src/features/settings/components/Set
 — NOT `src/shared/components/layout/shell/navConfig.ts` (whose Settings group is a
 stale 18-item list and DIVERGES from the registry — see §5 drift).
 
-Actual registry today = **24 tabs across 8 groups**, with a searchable sidebar
+Actual registry today = **22 tabs across 8 groups**, with a searchable sidebar
 (`SettingsSidebar.tsx`) that already does keyword filtering + recents + overview grid.
 This is more mature than the docs claim. The real problems are: **grouping logic,
 orphaned tabs, missing Appearance, and the navConfig drift** — not a lack of structure.
@@ -49,7 +49,7 @@ orphaned tabs, missing Appearance, and the navConfig drift** — not a lack of s
 
 ## 1. Target Settings Information Architecture
 
-Regroup the 24 tabs (plus the missing **Workflows** and the embedded **Appearance**)
+Regroup the 22 tabs (plus the missing **Workflows** and the embedded **Appearance**)
 into 9 logical groups aligned to the owner's mental model (email → CRM → marketing →
 automation → the rest). Goal: an SME owner finds "email stuff" together, "money stuff"
 together, "power-user stuff" at the bottom.
@@ -159,7 +159,7 @@ Not everything belongs in the global settings tree:
 ## 5. Doc-vs-Source Drift Found (MUST FIX alongside this spec)
 
 1. **`navConfig.ts` Settings group is stale** (18 items) and diverges from
-   `SettingsTabRegistry` (24 tabs/8 groups). The rail's Settings flyout is built from
+   `SettingsTabRegistry` (22 tabs/8 groups). The rail's Settings flyout is built from
    `navConfig.ts` → users see a DIFFERENT, older settings list than the real registry.
    **Fix:** `handleSubItemSelect` for `settings` should read from `SettingsTabRegistry`
    (single source of truth), not the hardcoded `navConfig` list.
@@ -197,7 +197,7 @@ Not everything belongs in the global settings tree:
 ## 7. Prior Art & Consolidation (VERIFIED 2026-07-15)
 
 A strong pre-existing proposal already covers the settings IA in depth:
-`docs/plans/SETTINGS-IA-PROPOSAL.md` (11-group tree, search/palette layering on the
+`SettingsTabRegistry.ts` (11-group tree, search/palette layering on the
 existing `CommandPalette.fuzzyScore`, Developer-tier disclosure, explicit global-vs-
 per-account via `useSetting` scope, mobile grouped-list renderer reusing `tabGroups`,
 export/import wired to Backup, 8 cited "steal this" patterns). **This spec adopts it;**
@@ -227,3 +227,9 @@ config export/import (Raycast); Overview popular-actions front door (Stripe/Line
 - Desktop-only Slack/webhook dependency behavior is **not** represented in settings today;
   if reintroduced, keep it as an optional integrations tab rather than a default channel.
 
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| "24 tabs across 8 groups" | **22 tabs / 8 groups** | `grep -cE 'id: "' src/features/settings/components/SettingsTabRegistry.ts` → 22 (the doc's own §0 table also lists 22) |

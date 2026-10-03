@@ -1,5 +1,5 @@
-﻿import type { GmailClient } from "./client";
-import { upsertAlias } from "@features/mail/db/sendAsAliases";
+﻿import type { GmailClient } from './client';
+import { upsertAlias } from '@features/mail/db/sendAsAliases';
 
 interface GmailSendAsEntry {
   sendAsEmail: string;
@@ -18,13 +18,8 @@ interface GmailSendAsResponse {
 /**
  * Fetch send-as aliases from Gmail API and store them locally.
  */
-export async function fetchSendAsAliases(
-  client: GmailClient,
-  accountId: string,
-): Promise<void> {
-  const response = await client.request<GmailSendAsResponse>(
-    "/settings/sendAs",
-  );
+export async function fetchSendAsAliases(client: GmailClient, accountId: string): Promise<void> {
+  const response = await client.request<GmailSendAsResponse>('/settings/sendAs');
 
   if (!response.sendAs) return;
 
@@ -36,8 +31,7 @@ export async function fetchSendAsAliases(
       replyToAddress: entry.replyToAddress ?? null,
       isPrimary: entry.isPrimary ?? false,
       treatAsAlias: entry.treatAsAlias ?? true,
-      verificationStatus: entry.verificationStatus ?? "accepted",
+      verificationStatus: entry.verificationStatus ?? 'accepted',
     });
   }
 }
-

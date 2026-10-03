@@ -9,7 +9,13 @@
  * @module nativeBridges
  */
 
-import type { SplashBridge, HapticsBridge, MainActivityBridge, DeviceInfoBridge, EventRelayBridge } from "@/types/native-bridges";
+import type {
+  SplashBridge,
+  HapticsBridge,
+  MainActivityBridge,
+  DeviceInfoBridge,
+  EventRelayBridge,
+} from '@/types/native-bridges';
 
 /** Safe access to the native splash screen dismissal bridge. */
 export function getSplashBridge(): SplashBridge | undefined {
@@ -71,10 +77,10 @@ export function isAndroid(): boolean {
   try {
     return Boolean(
       window.SplashBridge ||
-        window.HapticsBridge ||
-        window.MainActivityBridge ||
-        window.DeviceInfoBridge ||
-        window.EventRelayBridge,
+      window.HapticsBridge ||
+      window.MainActivityBridge ||
+      window.DeviceInfoBridge ||
+      window.EventRelayBridge,
     );
   } catch {
     return false;

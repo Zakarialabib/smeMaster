@@ -1,5 +1,5 @@
-import { List, LayoutGrid, Minus, Circle, Plus } from "lucide-react";
-import type { ViewMode, Density } from "@features/contacts/hooks/useViewPrefs";
+import { List, LayoutGrid, Minus, Circle, Plus } from 'lucide-react';
+import type { ViewMode, Density } from '@features/contacts/hooks/useViewPrefs';
 
 interface ViewToggleProps {
   viewMode: ViewMode;
@@ -9,14 +9,14 @@ interface ViewToggleProps {
 }
 
 const SEG_BASE =
-  "inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent min-h-[28px]";
-const SEG_ACTIVE = "bg-bg-tertiary text-text-primary";
-const SEG_INACTIVE = "text-text-tertiary hover:text-text-primary";
+  'inline-flex items-center gap-1 px-2 py-1 text-[0.625rem] font-medium rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent min-h-[28px]';
+const SEG_ACTIVE = 'bg-bg-tertiary text-text-primary';
+const SEG_INACTIVE = 'text-text-tertiary hover:text-text-primary';
 
 const DENSITY_OPTIONS: { value: Density; label: string; icon: typeof Minus }[] = [
-  { value: "compact", label: "Compact", icon: Minus },
-  { value: "normal", label: "Normal", icon: Circle },
-  { value: "comfortable", label: "Comfortable", icon: Plus },
+  { value: 'compact', label: 'Compact', icon: Minus },
+  { value: 'normal', label: 'Normal', icon: Circle },
+  { value: 'comfortable', label: 'Comfortable', icon: Plus },
 ];
 
 /**
@@ -30,11 +30,7 @@ export function ViewToggle({
   onDensityChange,
 }: ViewToggleProps) {
   return (
-    <div
-      className="flex items-center gap-1.5"
-      role="group"
-      aria-label="View preferences"
-    >
+    <div className="flex items-center gap-1.5" role="group" aria-label="View preferences">
       {/* List / Grid segmented control */}
       <div
         className="flex items-center bg-bg-tertiary rounded-lg p-0.5"
@@ -43,22 +39,22 @@ export function ViewToggle({
       >
         <button
           type="button"
-          onClick={() => onViewModeChange("list")}
-          className={`${SEG_BASE} ${viewMode === "list" ? SEG_ACTIVE : SEG_INACTIVE}`}
+          onClick={() => onViewModeChange('list')}
+          className={`${SEG_BASE} ${viewMode === 'list' ? SEG_ACTIVE : SEG_INACTIVE}`}
           title="List view"
           aria-label="List view"
-          aria-pressed={viewMode === "list"}
+          aria-pressed={viewMode === 'list'}
         >
           <List size={12} />
           <span>List</span>
         </button>
         <button
           type="button"
-          onClick={() => onViewModeChange("grid")}
-          className={`${SEG_BASE} ${viewMode === "grid" ? SEG_ACTIVE : SEG_INACTIVE}`}
+          onClick={() => onViewModeChange('grid')}
+          className={`${SEG_BASE} ${viewMode === 'grid' ? SEG_ACTIVE : SEG_INACTIVE}`}
           title="Grid view"
           aria-label="Grid view"
-          aria-pressed={viewMode === "grid"}
+          aria-pressed={viewMode === 'grid'}
         >
           <LayoutGrid size={12} />
           <span>Grid</span>
@@ -66,7 +62,7 @@ export function ViewToggle({
       </div>
 
       {/* Density segmented control (list view only) */}
-      {viewMode === "list" && (
+      {viewMode === 'list' && (
         <>
           <div className="w-px h-4 bg-border-primary" aria-hidden="true" />
           <div

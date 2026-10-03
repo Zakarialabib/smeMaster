@@ -1,15 +1,14 @@
-<div align="center">
+﻿<div align="center">
 
 # SMEMaster
 
-### A local-first business workspace for email, CRM, campaigns, calendar, tasks, and automation
+### The local-first business workspace for email, CRM, campaigns, calendar, tasks & automation
 
 **Built for people who are tired of renting their business data back from the cloud.**
 
 [![CI](https://github.com/Zakarialabib/smeMaster/actions/workflows/ci.yml/badge.svg)](https://github.com/Zakarialabib/smeMaster/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Zakarialabib/smeMaster?style=flat-square)](https://github.com/Zakarialabib/smeMaster/releases)
-[![Version](https://img.shields.io/github/v/release/Zakarialabib/smeMaster?display_name=tag&style=flat-square)](https://github.com/Zakarialabib/smeMaster/releases/latest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-00--INDEX-blue?style=flat-square)](docs/00-INDEX.md)
 
 </div>
 
@@ -34,62 +33,49 @@
 | ✍️  | **Composer**       | Signatures, attachments, aliases, undo-send, scheduled send                              |
 | 🔐  | **PGP**            | Sequoia OpenPGP integration for encrypted messages                                       |
 | 🗄️  | **Vault**          | Attachment vault and file workflows                                                      |
-| 📡  | **Deliverability** | DNS, blacklist, bounce, and sender-health tooling                                        |
+| 📡  | **Deliverability** | DNS, blacklist, bounce, and sender-health tooling                                            |
 | 🤖  | **AI**             | Provider-based assistants for categorization, writing, summaries, inbox queries          |
+| 🎙️  | **Offline speech** | On-device STT + TTS via sherpa-onnx — no API key, no network, audio never leaves the machine |
 | 🌍  | **i18n**           | English, French, Arabic, Japanese, Italian — including RTL for Arabic                    |
 
-<details>
-<summary>Platforms & availability</summary>
-
-| State                 | Platforms                                                            |
-| --------------------- | -------------------------------------------------------------------- |
-| ✅ **Available now**  | Windows 10/11 (MSI, NSIS) · Android (APK, sideload)                  |
-| 🗺️ **On the roadmap** | Store releases (signed), broader multi-device sync, plugin ecosystem |
-
-</details>
-
 ---
 
-## Download
+## Platforms & availability
 
-| Platform       | Package        | Link                                                                                                                                     |
-| -------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 🪟 **Windows** | MSI Installer  | [SMEMaster-1.0.0-rc.1.msi](https://github.com/Zakarialabib/smeMaster/releases/download/v1.0.0-rc.1/SMEMaster-1.0.0-rc.1.msi)             |
-| 🪟 **Windows** | NSIS Installer | [SMEMaster-1.0.0-rc.1-setup.exe](https://github.com/Zakarialabib/smeMaster/releases/download/v1.0.0-rc.1/SMEMaster-1.0.0-rc.1-setup.exe) |
-| 🤖 **Android** | APK (sideload) | [SMEMaster-1.0.0-rc.1.apk](https://github.com/Zakarialabib/smeMaster/releases/download/v1.0.0-rc.1/SMEMaster-1.0.0-rc.1.apk)             |
-| 🐧 **Linux**   | AppImage       | Coming soon                                                                                                                              |
-| 🍎 **macOS**   | DMG            | Coming soon (requires notarization)                                                                                                      |
+SMEMaster targets desktop (Windows · Linux · macOS) and Android, built with Tauri v2 + React 19 + Rust.
 
-> All releases on [GitHub Releases](https://github.com/Zakarialabib/smeMaster/releases).
+| State                        | Platforms                                                          |
+| ---------------------------- | ------------------------------------------------------------------ |
+| 🚧 **In active development** | Windows, Linux, macOS (desktop) · Android (mobile)                 |
+| 📦 **Buildable from source** | Windows installer (NSIS) · Linux · macOS · Android APK/AAB         |
+| 🗺️ **On the roadmap**        | Signed store releases, broader multi-device sync, plugin ecosystem |
 
----
-
-## Coming soon & future development
-
-The canonical roadmap lives in [`docs/06-ROADMAP/09-master-plan.md`](docs/06-ROADMAP/09-master-plan.md). Highlights:
-
-- 🔌 **Plugin architecture** — open, but not yet finalized
-- 🔄 **Broader multi-device sync** — beyond the current local-first model
-- 📱 **Android app** — APK available now (sideload); store release pending
-- 🔏 **Code signing + auto-updater** — certificates and publisher pubkey
-- 🛡️ **Final production hardening** — stability, release validation, dogfooding + beta
-- 💳 **Monetization & entitlements** — explicitly **deferred to post-v1.0** (not implemented)
+> Builds are produced from source today; signed public installers are part of the v1.0 hardening pass (code signing certificates are the remaining blocker). Watch [GitHub Releases](https://github.com/Zakarialabib/smeMaster/releases).
 
 ---
 
 ## Status
 
-> **Last updated:** 2026-07-13 — [v1.0.0-rc.1 released](https://github.com/Zakarialabib/smeMaster/releases/tag/v1.0.0-rc.1). Everything compiles and all tests pass.
+> **Stage:** v1.0.0-rc — feature-complete and compiling, pre-release hardening in progress.
 
 **Recently shipped**
 
-- 🎨 **Settings UI overhaul** — all 24 settings tabs beautified with premium card layout, stats rows, step-by-step setup wizards (Composing, Templates, Developer, About, General, FeatureFlags, AccountCleaning, Hardware, License, DevicePairing)
+- 🎙️ **Offline speech (STT + TTS)** — on-device via sherpa-onnx; STT RTF **0.033** at **99.8%** match, TTS RTF **0.573**, both verified end-to-end against the shipped binary
+- ⚙️ **AI settings reorganized** — Text Generation / Voice / Local Models, with a model catalog and resumable downloads
+- 🔌 **Sidecar lifecycle control** — Start/Stop/Refresh in Settings → Voice, with honest engine-state reporting
+- 🐛 **Startup panic fixed** — `EventBus` was read before it was managed, so the app could not start at all
+- 🐛 **Sidecar Stop fixed** — the watchdog restarted the process ~2 s after Stop, so the UI said "stopped" while it kept running
+- 🏗️ **Reproducible sidecar build** — `scripts/build-sidecar.sh` wired into every build; CI no longer ships a speech-less sidecar
+- 🧰 **Tauri MCP bridge** — dev-only; lets an agent drive the running app (this is what found the two bugs above)
+- 🎨 **Settings UI overhaul** — all 24 settings tabs beautified with premium card layout, stats rows, step-by-step setup wizards
 - 🌐 **RTL + i18n cleanup** — 164 physical-direction CSS violations fixed across 48 files; 1,685 `[TODO]` translation prefixes cleared in fr/ar/ja/it locales
-- 🚀 **Onboarding rework** — standalone page after splash; auto-skips if email accounts or demo data already exist; root redirect changed to `/dashboard`
-- 🤖 **AI RAG UI** — local semantic search & RAG feature complete; docs reorganized into [`docs/04-FEATURES/ai-rag.md`](docs/04-FEATURES/ai-rag.md)
+- 🚀 **Onboarding rework** — standalone page after splash; auto-skips if email accounts or demo data already exist
+- 🤖 **AI RAG UI** — local semantic search & RAG feature complete
 - 🏷️ **`account_id` → `company_id` rename** — 30+ files across the full stack, zero TS/Rust errors
 - 📱 **Mobile UX Overhaul** — all 5 phases 100% implemented
 - 🏗️ **Data layer evolution** — dead-code eliminated, offline-availability + optimistic email actions
+- 🟢 **Shared component library** — 6 reusable UI primitives + 5 stability hooks/utils
+- 🟢 **Typed UI event bus (`uiBus`)** — replaced stringly-typed `window.dispatchEvent("smemaster-*")` with a fully-typed emitter
 
 **In progress**
 
@@ -97,6 +83,12 @@ The canonical roadmap lives in [`docs/06-ROADMAP/09-master-plan.md`](docs/06-ROA
 - Code signing certificates + auto-updater pubkey
 - 7-day dogfooding + public beta run
 - Plugin architecture & store releases
+
+**Not yet verified** — stated plainly rather than implied by a green check:
+
+- **TTS intelligibility** — machine-checked as non-silent audio of the correct rate/duration; whether it *sounds* right is a human judgement
+- **Non-English STT** — only English (Zipformer Small) is measured; other locales are model availability, not quality
+- **Live-call TTS** — RTF 0.573 + STT 0.033 approaches real time; marginal for a live call
 
 Full picture → [`docs/STATUS.md`](docs/STATUS.md).
 
@@ -118,11 +110,10 @@ smeMaster/
 ├── src/                  # React 19 + TypeScript frontend
 ├── src-tauri/            # Rust + Tauri backend/runtime
 ├── scripts/              # Release & maintenance scripts
-├── package.json
-└── README.md
+└── package.json
 ```
 
-**Tech stack:** `React 19 + TypeScript` (UI) · `Rust + Tauri v2` (native runtime) · `SQLite + WAL` (persistence) · `Zustand` (state) · typed IPC contracts · event-driven cache.
+**Tech stack:** `React 19 + TypeScript 7` (UI) · `Rust + Tauri v2` (native runtime) · `SQLite + WAL` (persistence) · `Zustand` (state) · `sherpa-onnx` (on-device speech) · typed IPC contracts · event-driven cache · built with `bun` and Vite 8 (Rolldown).
 
 ---
 
@@ -130,52 +121,81 @@ smeMaster/
 
 ### Requirements
 
-- [Node.js](https://nodejs.org/) `v20+`
+- [Bun](https://bun.sh/) `1.4.2+` — the package manager and script runner (lockfile is `bun.lock`; there is no `package-lock.json`)
 - [Rust](https://www.rust-lang.org/tools/install) `1.77.2+`
 - [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 > **Windows note:** make sure `C:\msys64\ucrt64\bin` is on your `PATH`.
+>
+> ⚠️ **Building with offline speech needs ~10 GB free.** The sidecar links onnxruntime and lancedb; a full build plus the Tauri app can exceed 20 GB of `target/`.
 
 ### Run locally
 
 ```bash
 git clone https://github.com/Zakarialabib/smeMaster.git
 cd smeMaster
-npm install
-npm run tauri dev
+bun install
+bun run tauri:dev
 ```
 
 ### Useful commands
 
-| Command               | Purpose                        |
-| --------------------- | ------------------------------ |
-| `npm run dev`         | Start the Vite frontend only   |
-| `npm run test`        | Run frontend tests             |
-| `npx tsc --noEmit`    | TypeScript typecheck           |
-| `npm run tauri build` | Build the desktop app          |
-| `npm run android`     | Start Android development flow |
+| Command                       | Purpose                                              |
+| ----------------------------- | ---------------------------------------------------- |
+| `bun run dev`                 | Start the Vite frontend only                         |
+| `bun run test`                | Unit tests (`vitest --project unit`, jsdom)          |
+| `bun run typecheck`           | TypeScript 7 typecheck (`tsc --noEmit`)              |
+| `bun run lint`                | ESLint, zero warnings tolerated                      |
+| `bun run tauri:build`         | Build the desktop app (builds the sidecar first)     |
+| `bun run windows:build`       | Windows NSIS installer                               |
+| `bun run android`             | Android development flow                             |
+| `bun run sidecar:build`       | Build `ml-sidecar` with offline speech               |
+| `bun run tauri:dev:mcp`       | Dev build with the Tauri MCP bridge (port 9223)      |
+
+> **`bun`, not `npm`.** `npm install` will not honour `bun.lock`. If you need a one-off binary, use `bunx` instead of `npx`.
+
+### Offline speech (STT / TTS)
+
+The speech engine is an optional `offline-speech` feature of the `ml-sidecar` crate,
+built and installed by `scripts/build-sidecar.sh`:
+
+```bash
+bun run sidecar:build:release     # → src-tauri/binaries/ml-sidecar-<triple>.exe
+```
+
+`tauri:build`, `windows:build` and `windows:portable` all run this first, so the
+bundled app can't ship without it.
+
+⚠️ Use `--release`. A **debug** build of this crate fails to link with
+`LNK1318: Unexpected PDB error` — a PDB/filesystem limit on a ~234-object link,
+not a code error.
+
+⚠️ Without `offline-speech` the sidecar compiles and runs but answers
+`unknown method` to every speech call, which looks like a broken feature rather
+than a wrong binary. See [`docs/02-BACKEND/20-offline-stt-and-audio-summarization.md`](docs/02-BACKEND/20-offline-stt-and-audio-summarization.md).
 
 ---
 
-## Documentation hub
+## Documentation
 
 Start at [`docs/00-INDEX.md`](docs/00-INDEX.md). Key entry points:
 
 | Area             | Start here                                                                                                                                                                                                                                                    |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Architecture** | [Overview](docs/01-ARCHITECTURE/01-overview.md) · [Backend structure](docs/01-ARCHITECTURE/02-backend-structure.md) · [Data model](docs/01-ARCHITECTURE/03-data-model.md) · [Mobile](docs/01-ARCHITECTURE/05-mobile-architecture.md)                          |
+| **Architecture** | [Overview](docs/01-ARCHITECTURE/01-overview.md) · [Backend structure](docs/01-ARCHITECTURE/02-backend-structure.md) · [Data model](docs/01-ARCHITECTURE/03-data-model.md)                                                                                     |
 | **Backend**      | [IMAP engine](docs/02-BACKEND/01-imap-engine.md) · [SMTP](docs/02-BACKEND/02-smtp-client.md) · [PGP](docs/02-BACKEND/03-pgp-crypto.md) · [OAuth](docs/02-BACKEND/04-oauth-flow.md) · [Key management](docs/02-BACKEND/07-key-management.md)                   |
-| **Frontend**     | [State](docs/03-FRONTEND/02-state-management.md) · [Service layer](docs/03-FRONTEND/03-service-layer.md) · [Reuse patterns](docs/03-FRONTEND/05-reuse-patterns.md) · [RTL audit](docs/03-FRONTEND/10-rtl-audit.md)                                            |
+| **Frontend**     | [State](docs/03-FRONTEND/02-state-management.md) · [Service layer](docs/03-FRONTEND/03-service-layer.md) · [Reuse patterns](docs/03-FRONTEND/05-reuse-patterns.md) · [Shared components](docs/03-FRONTEND/15-shared-components.md)                            |
 | **Features**     | [Email](docs/04-FEATURES/Core/01-email-management.md) · [CRM](docs/04-FEATURES/Core/03-crm-contacts.md) · [Campaigns](docs/04-FEATURES/Core/02-campaigns-mail-merge.md) · [AI RAG](docs/04-FEATURES/ai-rag.md) · [PGP](docs/04-FEATURES/26-pgp-encryption.md) |
 | **Development**  | [Quickstart](docs/05-DEVELOPMENT/01-quickstart.md) · [Testing](docs/05-DEVELOPMENT/02-testing.md) · [Design system](docs/05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md)                                                                                               |
 | **Roadmap**      | [Status](docs/STATUS.md) · [Master plan](docs/06-ROADMAP/09-master-plan.md)                                                                                                                                                                                   |
 | **User guide**   | [Getting started](docs/user-guide/getting-started.md) · [Account setup](docs/user-guide/account-setup.md) · [PGP setup](docs/user-guide/pgp-setup.md) · [Backup & restore](docs/user-guide/backup-restore.md)                                                 |
+| **Changelog**    | [Release Notes](docs/user-guide/release-notes.md)                                                                                                                                                                                                             |
 
 ---
 
 ## Contributing
 
-Contributions are welcome:
+This is an indie, solo-founded project and contributions are genuinely welcome:
 
 1. Report bugs through [Issues](https://github.com/Zakarialabib/smeMaster/issues)
 2. Propose ideas in [Discussions](https://github.com/Zakarialabib/smeMaster/discussions)

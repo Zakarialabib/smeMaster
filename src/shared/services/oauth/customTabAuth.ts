@@ -1,6 +1,6 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import type { OAuthProviderConfig } from "./providers";
-import type { TokenResponse, ProviderUserInfo } from "./oauthFlow";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import type { OAuthProviderConfig } from './providers';
+import type { TokenResponse, ProviderUserInfo } from './oauthFlow';
 
 /**
  * Deep-link redirect URI for the custom-tab OAuth flow.
@@ -10,7 +10,7 @@ import type { TokenResponse, ProviderUserInfo } from "./oauthFlow";
  * `tauri-plugin-deep-link` plugin will emit a `deep-link://new-url` event that the
  * Rust `start_oauth_browser` command is listening for.
  */
-const DEEP_LINK_REDIRECT_URI = "smemaster-auth://callback";
+const DEEP_LINK_REDIRECT_URI = 'smemaster-auth://callback';
 
 interface BrowserOAuthResult {
   code: string;
@@ -28,19 +28,16 @@ function generateCodeVerifier(): string {
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
+  const digest = await crypto.subtle.digest('SHA-256', data);
   return base64UrlEncode(new Uint8Array(digest));
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
-  let binary = "";
+  let binary = '';
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function generateState(): string {
@@ -86,20 +83,20 @@ function buildAuthUrl(
   const params: Record<string, string> = {
     client_id: clientId,
     redirect_uri: DEEP_LINK_REDIRECT_URI,
-    response_type: "code",
-    scope: provider.scopes.join(" "),
+    response_type: 'code',
+    scope: provider.scopes.join(' '),
     state,
   };
 
   if (codeChallenge) {
     params.code_challenge = codeChallenge;
-    params.code_challenge_method = "S256";
+    params.code_challenge_method = 'S256';
   }
 
   // Provider-specific auth params
-  if (provider.id === "microsoft") {
-    params.prompt = "consent";
-    params.response_mode = "query";
+  if (provider.id === 'microsoft') {
+    params.prompt = 'consent';
+    params.response_mode = 'query';
   }
 
   return `${provider.authUrl}?${new URLSearchParams(params).toString()}`;
@@ -116,14 +113,14 @@ async function exchangeCode(
   codeVerifier: string,
   clientSecret?: string,
 ): Promise<TokenResponse> {
-  return invokeCommand<TokenResponse>("oauth_exchange_token", {
+  return invokeCommand<TokenResponse>('oauth_exchange_token', {
     tokenUrl: provider.tokenUrl,
     code,
     clientId,
     redirectUri: DEEP_LINK_REDIRECT_URI,
     codeVerifier: provider.usePkce ? codeVerifier : null,
     clientSecret: clientSecret || null,
-    scope: provider.id === "microsoft" ? provider.scopes.join(" ") : null,
+    scope: provider.id === 'microsoft' ? provider.scopes.join(' ') : null,
   });
 }
 
@@ -135,16 +132,16 @@ async function fetchUserInfo(
   tokens: TokenResponse,
 ): Promise<ProviderUserInfo> {
   // Microsoft: extract user info from ID token (Graph API not usable with Outlook scopes)
-  if (provider.id === "microsoft") {
+  if (provider.id === 'microsoft') {
     if (tokens.id_token) {
       const claims = parseIdToken(tokens.id_token);
       return {
-        email: (claims.email as string) || (claims.preferred_username as string) || "",
-        name: (claims.name as string) || "",
+        email: (claims.email as string) || (claims.preferred_username as string) || '',
+        name: (claims.name as string) || '',
         picture: undefined,
       };
     }
-    return { email: "", name: "", picture: undefined };
+    return { email: '', name: '', picture: undefined };
   }
 
   if (!provider.userInfoUrl) {
@@ -162,25 +159,25 @@ async function fetchUserInfo(
   const data = await response.json();
 
   // Normalize response across providers
-  if (provider.id === "yahoo") {
+  if (provider.id === 'yahoo') {
     return {
-      email: data.email || "",
-      name: data.name || data.nickname || "",
+      email: data.email || '',
+      name: data.name || data.nickname || '',
       picture: data.picture || undefined,
     };
   }
 
   return {
-    email: data.email || "",
-    name: data.name || "",
+    email: data.email || '',
+    name: data.name || '',
     picture: data.picture || undefined,
   };
 }
 
 function parseIdToken(idToken: string): Record<string, unknown> {
-  const payload = idToken.split(".")[1];
-  if (!payload) throw new Error("Invalid ID token format");
-  const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+  const payload = idToken.split('.')[1];
+  if (!payload) throw new Error('Invalid ID token format');
+  const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
   return JSON.parse(decoded);
 }
 
@@ -207,9 +204,7 @@ export async function startCustomTabOAuth(
 
   // 1. Generate PKCE parameters
   const codeVerifier = generateCodeVerifier();
-  const codeChallenge = provider.usePkce
-    ? await generateCodeChallenge(codeVerifier)
-    : undefined;
+  const codeChallenge = provider.usePkce ? await generateCodeChallenge(codeVerifier) : undefined;
 
   // 2. Generate CSRF state
   const oauthState = generateState();
@@ -218,24 +213,18 @@ export async function startCustomTabOAuth(
   const authUrl = buildAuthUrl(provider, clientId, oauthState, codeChallenge);
 
   // 4. Open browser and wait for deep-link callback (Rust handles both)
-  const result = await invokeCommand<BrowserOAuthResult>("start_oauth_browser", {
+  const result = await invokeCommand<BrowserOAuthResult>('start_oauth_browser', {
     authUrl,
     state: oauthState,
   });
 
   // 5. Validate state (CSRF protection — Rust also validates, but double-check)
   if (result.state !== oauthState) {
-    throw new Error("OAuth state mismatch — possible CSRF attack. Please try again.");
+    throw new Error('OAuth state mismatch — possible CSRF attack. Please try again.');
   }
 
   // 6. Exchange authorization code for tokens
-  const tokens = await exchangeCode(
-    provider,
-    result.code,
-    clientId,
-    codeVerifier,
-    clientSecret,
-  );
+  const tokens = await exchangeCode(provider, result.code, clientId, codeVerifier, clientSecret);
 
   // 7. Fetch user profile
   const userInfo = await fetchUserInfo(provider, tokens);

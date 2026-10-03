@@ -3,6 +3,7 @@
 use sqlx::SqlitePool;
 use crate::db::error::AppDbError;
 use crate::db::tasks::schema::Task;
+use chrono::{Datelike, TimeZone};
 
 /// List tasks, optionally filtered by company and completion status.
 ///
@@ -496,6 +497,145 @@ pub async fn list_with_contacts_paginated(
     let mut q = sqlx::query_as::<_, TaskWithContact>(sqlx::AssertSqlSafe(query));
     if !show_all {
         q = q.bind(company_id.unwrap());
+    }
+    let rows = q
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+
+    Ok(rows.into_iter().map(|r| {
+        let task = Task {
+            id: r.id, company_id: r.company_id, title: r.title, description: r.description,
+            priority: r.priority, is_completed: r.is_completed, completed_at: r.completed_at,
+            due_date: r.due_date, parent_id: r.parent_id, contact_id: r.contact_id,
+            thread_id: r.thread_id, thread_account_id: r.thread_account_id, sort_order: r.sort_order,
+            recurrence_rule: r.recurrence_rule, next_recurrence_at: r.next_recurrence_at,
+            tags_json: r.tags_json, workflow_config_json: r.workflow_config_json,
+            reminder_config_json: r.reminder_config_json, created_at: r.created_at, updated_at: r.updated_at,
+        };
+        (task, r.contact_name, r.contact_avatar, r.contact_email)
+    }).collect())
+}
+
+/// Filter tasks for a company with optional priority / date / search predicates
+/// and a sort order, returning the same `(Task, contact_name, contact_avatar,
+/// contact_email)` tuples as [`list_with_contacts_paginated`].
+///
+/// This is the backend counterpart to the Tasks UI's SmartFilterBar. All
+/// predicates are optional and AND-combined:
+/// - `priority`:      exact match on the `priority` column (e.g. "high").
+/// - `date_filter`:   one of `today` / `thisWeek` / `overdue`, computed against
+///   `due_date` in epoch seconds relative to the current UTC day.
+/// - `search`:        case-insensitive `LIKE` on `title` and `description`.
+/// - `sort_field`:    `priority` | `dueDate` | `created` | `title`.
+/// - `sort_direction`: `asc` | `desc` (defaults to `asc`).
+///
+/// `LIMIT`/`OFFSET` are always applied. Returns an empty `Vec` when nothing
+/// matches (never an error).
+pub async fn filter(
+    pool: &SqlitePool,
+    company_id: Option<&str>,
+    include_completed: bool,
+    priority: Option<&str>,
+    date_filter: Option<&str>,
+    search: Option<&str>,
+    sort_field: &str,
+    sort_direction: &str,
+    limit: i64,
+    offset: i64,
+) -> Result<Vec<(Task, Option<String>, Option<String>, Option<String>)>, AppDbError> {
+    let show_all = company_id.map(|c| c.is_empty()).unwrap_or(true);
+
+    let mut sql = String::from(
+        "SELECT t.*, c.display_name as contact_name, c.avatar_url as contact_avatar, c.email as contact_email \
+         FROM tasks t LEFT JOIN contacts c ON t.contact_id = c.id",
+    );
+
+    let mut where_clauses: Vec<String> = Vec::new();
+    if !include_completed {
+        where_clauses.push("t.is_completed = 0".to_string());
+    }
+    if !show_all {
+        where_clauses.push("t.company_id = ?".to_string());
+    }
+    if priority.is_some() {
+        where_clauses.push("t.priority = ?".to_string());
+    }
+    if let Some(df) = date_filter {
+        match df {
+            "today" => {
+                // due_date within the current UTC calendar day.
+                let start = {
+                    let now = chrono::Utc::now();
+                    chrono::Utc
+                        .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+                        .single()
+                        .map(|d| d.timestamp())
+                        .unwrap_or(0)
+                };
+                where_clauses.push(format!("t.due_date IS NOT NULL AND t.due_date >= {start} AND t.due_date < {start} + 86400"));
+            }
+            "thisWeek" => {
+                let start = {
+                    let now = chrono::Utc::now();
+                    chrono::Utc
+                        .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+                        .single()
+                        .map(|d| d.timestamp())
+                        .unwrap_or(0)
+                };
+                where_clauses.push(format!("t.due_date IS NOT NULL AND t.due_date >= {start} AND t.due_date < {start} + 604800"));
+            }
+            "overdue" => {
+                let now = chrono::Utc::now().timestamp();
+                where_clauses.push(format!("t.due_date IS NOT NULL AND t.due_date < {now}"));
+            }
+            _ => {}
+        }
+    }
+    if search.is_some() {
+        where_clauses.push("(t.title LIKE ? OR t.description LIKE ?)".to_string());
+    }
+
+    if !where_clauses.is_empty() {
+        sql.push_str(" WHERE ");
+        sql.push_str(&where_clauses.join(" AND "));
+    }
+
+    // ── ORDER BY ──────────────────────────────────────────────────────────
+    let order = match sort_field {
+        "priority" => "ORDER BY CASE t.priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 WHEN 'none' THEN 4 ELSE 5 END",
+        "dueDate" => "ORDER BY t.due_date IS NULL, t.due_date",
+        "created" => "ORDER BY t.created_at",
+        "title" => "ORDER BY t.title COLLATE NOCASE",
+        _ => "ORDER BY t.sort_order",
+    };
+    let dir = if sort_direction == "desc" { "DESC" } else { "ASC" };
+    sql.push_str(&format!(" {order} {dir} LIMIT ? OFFSET ?"));
+
+    #[derive(sqlx::FromRow)]
+    struct TaskWithContact {
+        id: String, company_id: String, title: String, description: Option<String>,
+        priority: String, is_completed: i64, completed_at: Option<i64>, due_date: Option<i64>,
+        parent_id: Option<String>, contact_id: Option<String>, thread_id: Option<String>,
+        thread_account_id: Option<String>, sort_order: i64, recurrence_rule: Option<String>,
+        next_recurrence_at: Option<i64>, tags_json: String, workflow_config_json: Option<String>,
+        reminder_config_json: Option<String>, created_at: i64, updated_at: i64,
+        contact_name: Option<String>, contact_avatar: Option<String>, contact_email: Option<String>,
+    }
+
+    let mut q = sqlx::query_as::<_, TaskWithContact>(sqlx::AssertSqlSafe(sql));
+    if !show_all {
+        q = q.bind(company_id.unwrap());
+    }
+    if let Some(p) = priority {
+        q = q.bind(p);
+    }
+    if let Some(s) = search {
+        let like = format!("%{s}%");
+        q = q.bind(like.clone()).bind(like);
     }
     let rows = q
         .bind(limit)

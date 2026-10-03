@@ -2,8 +2,8 @@ import {
   listSnoozePresets,
   createSnoozePreset,
   deleteSnoozePreset as dbDeleteSnoozePreset,
-} from "../../../shared/services/db/db-invoke";
-import type { SnoozePreset } from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
+import type { SnoozePreset } from '../../../shared/services/db/db-invoke';
 
 export type { SnoozePreset };
 

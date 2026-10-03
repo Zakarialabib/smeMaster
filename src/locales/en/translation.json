@@ -17,12 +17,121 @@
     "addYourFirstLabel": "Add your first label",
     "mail": "Mail",
     "crm": "CRM",
+    "dashboard": "Dashboard",
+    "automation": "Automation",
+    "vault": "Vault",
+    "aiAssistant": "AI Assistant",
+    "invoicing": "Invoicing",
+    "erp": "ERP",
+    "deals": "Deals",
+    "pos": "POS",
+    "productivity": "Productivity",
+    "about": "About",
     "settings": "Settings",
     "label": "Label",
     "noItems": "No items",
-    "keyboardNavHint": "nav.keyboardNavHint"
+    "keyboardNavHint": "Use Tab and arrow keys to navigate the sidebar. Press Enter to activate an item.",
+    "inbox": "Inbox",
+    "starred": "Starred",
+    "snoozed": "Snoozed",
+    "sent": "Sent",
+    "drafts": "Drafts",
+    "trash": "Trash",
+    "spam": "Spam",
+    "allMail": "All Mail",
+    "attachments": "Attachments",
+    "nMore": "{{count}} more",
+    "nPending": "{{count}} pending"
   },
   "onboarding": {
+    "setupWizard": "Setup wizard",
+    "steps": {
+      "welcome": "Welcome",
+      "tools": "Features",
+      "account": "Account",
+      "complete": "Ready",
+      "welcomeDesc": "Theme & Profile",
+      "toolsDesc": "Choose Capabilities",
+      "accountDesc": "Connect Email",
+      "completeDesc": "Launch"
+    },
+    "welcomeTitle": "Welcome to SMEMaster",
+    "welcomeDesc": "All-in-one mail, CRM, and campaign management for your business",
+    "businessNameLabel": "Business Name",
+    "businessNamePlaceholder": "My Business",
+    "themeLabel": "Theme Preference",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "lightDesc": "Bright and airy",
+      "darkDesc": "Easy on the eyes",
+      "systemDesc": "Follows your OS"
+    },
+    "profileLabel": "Choose your profile",
+    "presets": {
+      "soloFreelancer": "Solo Freelancer",
+      "smallTeam": "Small Team",
+      "salesFocused": "Sales Focused",
+      "custom": "Custom",
+      "soloFreelancerDesc": "Lightweight mail + CRM for independent professionals",
+      "smallTeamDesc": "Full communication suite with campaigns and calendar",
+      "salesFocusedDesc": "CRM-heavy with campaigns, AI outreach, and sync",
+      "customDesc": "Choose exactly what you need"
+    },
+    "skipToDemos": "Skip to Demos",
+    "quickStart": "Quick Start",
+    "continue": "Continue",
+    "back": "Back",
+    "featuresTitle": "Choose Your Features",
+    "featuresDesc": "Enable the tools you need — you can always change later",
+    "featuresSelected": "{{count}} of {{total}} selected",
+    "proLabel": "PRO",
+    "proBanner": "PRO features marked with a crown — Mail and Campaigns include advanced capabilities",
+    "tools": {
+      "mail": "Mail",
+      "crm": "CRM",
+      "campaigns": "Campaigns",
+      "calendar": "Calendar",
+      "ai": "AI Features",
+      "mailDesc": "Multi-account inbox with smart threading",
+      "crmDesc": "Contact management with engagement scoring",
+      "campaignsDesc": "Email campaigns with templates and tracking",
+      "calendarDesc": "Calendar sync and event management",
+      "aiDesc": "Smart replies, auto-labeling, task extraction"
+    },
+    "connectTitle": "Connect Your Email",
+    "connectDesc": "Connect email for smart recommendations and mail features",
+    "providerLabel": "Choose your provider",
+    "providers": {
+      "gmail": "Gmail / Google Workspace",
+      "outlook": "Microsoft Outlook / Office365",
+      "imap": "Other (IMAP / SMTP)",
+      "gmailDesc": "OAuth 2.0 with auto-sync",
+      "outlookDesc": "OAuth or app password",
+      "imapDesc": "Manual configuration"
+    },
+    "mailReminder": "You selected Mail as a feature. Connecting an email account unlocks the full inbox experience with smart threading and recommendations.",
+    "skipForNow": "Skip for now",
+    "connectedTitle": "Email Connected!",
+    "connectedSuffix": "configured successfully",
+    "connectedNote": "Smart recommendations and mail features are now enabled based on your connected account.",
+    "allSet": "You're All Set!",
+    "readyDesc": "Your workspace is ready for",
+    "summaryLabel": "Summary",
+    "proBenefitsTitle": "Pro Benefits",
+    "proBenefitsHint": "Connect your email to unlock:",
+    "benefits": {
+      "inbox": "Smart inbox with priority sorting and automated folders",
+      "ai": "AI writing assistant for composing and replying",
+      "campaign": "Campaign analytics with open/click tracking",
+      "compliance": "GDPR/CCPA compliance tools and data protection",
+      "support": "Priority support with dedicated onboarding"
+    },
+    "startUsing": "Start Using SMEMaster",
+    "emailConnected": "Email connected",
+    "emailNotConnected": "Email not connected",
+    "connectedDesc": "{{count}} account configured successfully",
     "step1_title": "Welcome to SMEMaster",
     "step1_desc": "Your all-in-one mail & CRM. Manage emails, contacts, and deals in one place.",
     "step2_title": "Connect Your Accounts",
@@ -61,7 +170,8 @@
   "thread": {
     "unknownSender": "Unknown",
     "noSubject": "(No subject)",
-    "muted": "Muted"
+    "muted": "Muted",
+    "nMessagesInThread": "{{count}} messages in thread"
   },
   "email": {
     "nAttachments": "{{n}} attachment",
@@ -115,6 +225,15 @@
     "markUnreadSelected": "Mark unread",
     "addLabelSelected": "Add label",
     "moveToSelected": "Move to folder",
+    "showReadingPane": "Show reading pane",
+    "hideReadingPane": "Hide reading pane",
+    "readingPane": "Reading pane",
+    "readingPaneExpanded": "Expanded",
+    "readingPaneRight": "Right",
+    "readingPaneBottom": "Bottom",
+    "readingPaneHidden": "Hidden",
+    "selectAnEmailToRead": "Select an email to read",
+    "selectAnEmailHint": "Choose a conversation from your inbox or use the arrow keys to navigate",
     "noLabels": "No labels",
     "tryChangingFilter": "Try changing the filter",
     "primaryIsClear": "Primary is clear",
@@ -147,7 +266,10 @@
     "unread": "Unread",
     "read": "Read",
     "focused": "Focused",
-    "allMail": "All Mail"
+    "allMail": "All Mail",
+    "loading": "email.loading",
+    "inboxCategory": "Category",
+    "noReadFilterEmails": "No emails match this filter"
   },
   "actionBar": {
     "reply": "Reply",
@@ -250,7 +372,8 @@
       "accountCleaning": "Account Cleaning",
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
-      "ai": "AI"
+      "ai": "AI",
+      "cache": "Cache"
     },
     "appearance": "Appearance",
     "surface": "Surface",
@@ -403,120 +526,7 @@
     "autoArchive": "Auto-archive {{cat}}",
     "skipInbox": "Skip inbox for {{cat}} emails",
     "categories": "Categories",
-    "features": {
-      "general": {
-        "name": "General",
-        "desc": "Theme, layout, language, privacy, and appearance settings"
-      },
-      "people": {
-        "name": "People",
-        "desc": "Contact management, groups, tags, segments, CSV import"
-      },
-      "composing": {
-        "name": "Composing",
-        "desc": "Rich text editor, signatures, quick replies, pre-send checklist"
-      },
-      "templates": {
-        "name": "Templates",
-        "desc": "Email templates with variables, categories, and conditional blocks"
-      },
-      "notifications": {
-        "name": "Notifications",
-        "desc": "Desktop and push notifications for incoming mail"
-      },
-      "snooze": {
-        "name": "Snooze",
-        "desc": "Snooze presets for delaying email visibility until later"
-      },
-      "shortcuts": {
-        "name": "Shortcuts",
-        "desc": "Customizable keyboard shortcuts with two-key sequences"
-      },
-      "ai": {
-        "name": "AI",
-        "desc": "Claude/OpenAI/Gemini integration, smart replies, auto-categorization, thread summaries"
-      },
-      "mailRules": {
-        "name": "Mail Rules",
-        "desc": "Labels, filters, smart folders, quick steps for auto-organizing mail"
-      },
-      "workflows": {
-        "name": "Workflows",
-        "desc": "Trigger/action automation engine: auto-reply, follow-ups, task creation, forwarding"
-      },
-      "campaigns": {
-        "name": "Campaigns",
-        "desc": "Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
-      },
-      "pgp": {
-        "name": "PGP Encryption",
-        "desc": "End-to-end encryption with Sequoia OpenPGP key management"
-      },
-      "compliance": {
-        "name": "Compliance",
-        "desc": "GDPR, CAN-SPAM, LGPD profiles with rule engine and AI enhancer"
-      },
-      "backup": {
-        "name": "Backup",
-        "desc": "Full data backup, restore, export, and archive management"
-      },
-      "pairing": {
-        "name": "Pairing",
-        "desc": "QR-based secure pairing between Desktop and Mobile devices"
-      },
-      "queue": {
-        "name": "Queue",
-        "desc": "Offline queue, pending operations, send scheduling, and retry management"
-      },
-      "deliverabilityDashboard": {
-        "name": "Deliverability",
-        "desc": "Domain health scores, provider compatibility, and remediation wizard"
-      },
-      "presend": {
-        "name": "Pre-send",
-        "desc": "Pre-flight checklist, attachment validation, and send verification"
-      },
-      "content": {
-        "name": "Quality",
-        "desc": "Content quality analysis, readability scoring, and tone suggestions"
-      },
-      "dns": {
-        "name": "DNS",
-        "desc": "SPF, DKIM, DMARC, MX, and DNS record verification"
-      },
-      "blacklist": {
-        "name": "Blacklist",
-        "desc": "Blacklist monitoring, IP reputation, and DNSBL queries"
-      },
-      "bounce": {
-        "name": "Bounces",
-        "desc": "Bounce classification, suppression list, and undelivered email tracking"
-      },
-      "warming": {
-        "name": "Warming",
-        "desc": "Sender reputation warming, volume ramp-up, and IP warm-up schedules"
-      },
-      "offlineAvailability": {
-        "name": "Offline Availability",
-        "desc": "Mark accounts, folders, and contacts as available offline — compose, search, and act without network"
-      },
-      "rag": {
-        "name": "Local RAG",
-        "desc": "On-device retrieval-augmented generation for private, context-aware AI answers over your mail and documents"
-      },
-      "businessProfile": {
-        "name": "Business Profile",
-        "desc": "Company legal, tax, and compliance identity (ICE, CNSS, RC) used across documents and invoicing"
-      },
-      "dashboard": {
-        "name": "Dashboard",
-        "desc": "Business health, KPIs, and analytics across mail, tasks, and campaigns"
-      },
-      "invoicing": {
-        "name": "Invoicing",
-        "desc": "Create, send, and track professional invoices and estimates with PDF export"
-      }
-    },
+    "features": "Features",
     "aiLanguage": "AI Response Language",
     "aiLanguageAuto": "Auto (use app language)",
     "aiLanguageEn": "English",
@@ -594,7 +604,8 @@
       "readingTime": "Reading time",
       "suggestions": "Suggestions",
       "wordCount": "Word count",
-      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring."
+      "desc": "Write better emails with AI-powered analysis, spam detection, and readability scoring.",
+      "contentQualityTitle": "Content Quality"
     },
     "contactsDescription": "Contacts are automatically added when you send or receive emails. Edit display names or remove contacts below.",
     "subscriptionsDescription": "View all detected newsletter and promotional senders. Unsubscribe using RFC 8058 one-click POST, mailto, or browser fallback.",
@@ -613,6 +624,7 @@
     "providerClaude": "Claude (Anthropic)",
     "providerOpenai": "OpenAI",
     "providerGemini": "Gemini (Google)",
+    "providerMistral": "Mistral AI",
     "providerOllama": "Local AI (Ollama / LMStudio)",
     "providerCopilot": "GitHub Copilot",
     "providerLmstudio": "Local AI (LM Studio)",
@@ -628,6 +640,7 @@
     "subtabProviderModels": "Provider & Models",
     "subtabFeatures": "AI Features",
     "subtabKnowledgeBase": "Knowledge Base",
+    "subtabAiRouter": "AI Router",
     "statusProviderConnected": "Provider Connected",
     "statusEmbeddingSet": "Embedding Set",
     "statusIndexed": "Indexed",
@@ -664,6 +677,8 @@
     "bgeModelDescription": "Download and load the BGE-small-en-v1.5 embedding model locally.",
     "modelStatus": "Model Status",
     "downloadBge": "Download BGE-Small",
+    "downloadSpeed": "Speed",
+    "downloadRemaining": "Remaining",
     "kbLoading": "Loading…",
     "loadModel": "Load Model",
     "localModelsFolder": "Local Models Folder",
@@ -711,9 +726,11 @@
     "openaiApiKey": "OpenAI API Key",
     "githubPat": "GitHub Personal Access Token",
     "googleAiApiKey": "Google AI API Key",
+    "mistralApiKey": "Mistral API Key",
     "claudeKeyPlaceholder": "sk-ant-...",
     "copilotKeyPlaceholder": "ghp_...",
     "geminiKeyPlaceholder": "AI...",
+    "mistralKeyPlaceholder": "mistral-...",
     "enableAiFeaturesDescription": "Master toggle for all AI functionality",
     "autoCategorizeDescription": "Use AI to refine rule-based categorization",
     "autoSummarizeDescription": "Show AI summaries on multi-message threads",
@@ -905,18 +922,15 @@
     "pairing": {
       "why": "Pairing links your phone so mail and data stay in sync.",
       "how": "Scan the QR code in Pairing with the mobile app to connect.",
-      "when": "Pair when you install SMEMaster on a new mobile device."
+      "when": "Pair when you install SMEMaster on a new mobile device.",
+      "pairingTitle": "Pairing"
     },
     "pairingDevicePlaceholder": "Device name",
     "generate": "Generate",
     "scanWithMobile": "Scan with mobile app",
     "pairedDevices": "Paired devices",
     "microsoftApi": "Microsoft API",
-    "backup": {
-      "why": "Backups protect you from data loss and device failure.",
-      "how": "Create an encrypted backup and store it somewhere safe.",
-      "when": "Back up before major changes or on a regular schedule."
-    },
+    "backup": "Backup",
     "backupScheduler": "Backup scheduler",
     "calendar": {
       "why": "Calendar sync keeps meetings and email in one place.",
@@ -933,9 +947,14 @@
     "devicePairing": "Device pairing",
     "noPairedDevices": "No paired devices",
     "pairNewDevice": "Pair new device",
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon",
     "mobile": "Mobile",
     "enableBackgroundSync": "Background sync",
-    "cache": "Cache",
+    "cache": {
+      "": "Cache",
+      "benchmarkDone": "Benchmark complete",
+      "cleared": "Cache cleared"
+    },
     "cacheTab": {
       "overview": "Cache Overview",
       "enabled": "Data cache enabled",
@@ -1007,7 +1026,8 @@
     "help": {
       "sending": {
         "how": "The email is held in the local Tauri cache for the selected duration before being dispatched to the SMTP server.",
-        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks."
+        "when": "Best for high-stakes business communication, client proposals, or when composing on mobile with autocorrect risks.",
+        "why": "Why this matters"
       },
       "behavior": {
         "why": "Behavior settings control how the app responds to your actions — default reply mode saves clicks, mark-as-read behavior keeps your inbox tidy automatically.",
@@ -1021,7 +1041,8 @@
       },
       "templates": {
         "why": "Templates save time by reusing common email structures with variable placeholders for personalized content.",
-        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups."
+        "when": "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups.",
+        "how": "How it works"
       },
       "quickReplies": {
         "why": "Quick replies let you respond to common inquiries with pre-written answers, saving keystrokes and ensuring consistency.",
@@ -1107,7 +1128,9 @@
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
-      "cache": "Data cache status, hit rate, and benchmarks"
+      "cache": "Data cache status, hit rate, and benchmarks",
+      "voice": "Speech providers and on-device engines",
+      "localModels": "Download and manage on-device models"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1129,7 +1152,8 @@
       "queue": "Inspect pending operations and sync status.",
       "accountCleaning": "Automate cleanup of old or unwanted mail.",
       "license": "View your license and activation status.",
-      "featureFlags": "Preview experimental and tier-gated features."
+      "featureFlags": "Preview experimental and tier-gated features.",
+      "cache": "Manage caches, sync state, and local storage used by the app."
     },
     "education": {
       "general": {
@@ -1241,7 +1265,17 @@
       "why": "Why",
       "how": "How",
       "when": "When"
-    }
+    },
+    "undoSendQuickPick": "Quick pick",
+    "calendarDesc": "Calendar preferences and sync",
+    "expiresIn": "Expires in {{count}}",
+    "pairingUnavailableDev": "Pairing is unavailable in development mode",
+    "pairingTitle": "settings.pairingTitle",
+    "providerByteplus": "BytePlus (ByteDance)",
+    "byteplusApiKey": "settings.byteplusApiKey",
+    "byteplusKeyPlaceholder": "settings.byteplusKeyPlaceholder",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -1315,7 +1349,10 @@
     "templates": "Templates",
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
-    "select": "Select"
+    "select": "Select",
+    "insertTemplate": "Insert template",
+    "switchToTheme": "Switch to theme",
+    "templateDesc": "Create reusable email templates with variable placeholders for consistent messaging."
   },
   "empty": {
     "noImportantConversations": "No important conversations",
@@ -1333,8 +1370,8 @@
     "markAsVip": "Mark as VIP",
     "addToContacts": "Add to Contacts",
     "added": "Added!",
-    "extractFromEmail": "contact.extractFromEmail",
-    "extractNone": "contact.extractNone",
+    "extractFromEmail": "Extract From Email",
+    "extractNone": "Extract None",
     "editName": "Edit name",
     "notes": "Notes",
     "addANote": "Add a note...",
@@ -1366,10 +1403,18 @@
       "openedLabel": "Opened {date}",
       "clickedLabel": "Clicked {date}"
     },
-    "linkedCompany": "contact.linkedCompany",
-    "loading": "contact.loading",
-    "campaigns": "contact.campaigns",
-    "opened": "contact.opened"
+    "linkedCompany": "Linked Company",
+    "loading": "Loading",
+    "campaigns": "Campaigns",
+    "opened": "Opened",
+    "composeTo": "Compose to",
+    "extractApplied": "Extraction applied",
+    "firstEmail": "First email",
+    "lastEmail": "Last email",
+    "nEmails": "{{count}} emails",
+    "othersAtDomain": "Others at {{domain}}",
+    "previewFile": "Preview file",
+    "viewPerson": "View contact"
   },
   "calendar": {
     "day": "Day",
@@ -1404,11 +1449,11 @@
     "showScheduledEmails": "Show Scheduled Emails",
     "showScheduledEmailsDesc": "Display emails scheduled to be sent in the future.",
     "noEvents": "No events in this period",
-    "connectAccountBtn": "calendar.connectAccountBtn",
-    "title": "calendar.title",
-    "retry": "calendar.retry",
-    "noEventsHint": "calendar.noEventsHint",
-    "createEvent": "calendar.createEvent"
+    "connectAccountBtn": "Connect Account Btn",
+    "title": "Title",
+    "retry": "Retry",
+    "noEventsHint": "No Events Hint",
+    "createEvent": "Create Event"
   },
   "tasks": {
     "tasks": "Tasks",
@@ -1460,8 +1505,8 @@
       "defaultTitle": "Nothing here",
       "defaultSubtitle": "Add a task to get started.",
       "defaultAction": "Add task",
-      "clearFilters": "tasks.empty.clearFilters",
-      "addTask": "tasks.empty.addTask"
+      "clearFilters": "Clear Filters",
+      "addTask": "Add Task"
     },
     "search": "Search...",
     "taskCreated": "Task created",
@@ -1478,10 +1523,11 @@
     "failedToUpdateTask": "Failed to update task",
     "failedToReschedule": "Failed to reschedule task",
     "complete": "Complete",
-    "tasksArchived": "tasks.tasksArchived",
-    "disableReminders": "tasks.disableReminders",
-    "enableReminders": "tasks.enableReminders",
-    "archiveCompleted": "tasks.archiveCompleted"
+    "tasksArchived": "Tasks Archived",
+    "disableReminders": "Disable Reminders",
+    "enableReminders": "Enable Reminders",
+    "archiveCompleted": "Archive Completed",
+    "selectedCount": "{{count}} selected"
   },
   "campaign": {
     "editor": {
@@ -1503,6 +1549,7 @@
       "noContent": "No content yet",
       "insertImage": "Insert image",
       "fromVault": "From Vault",
+      "fromVaultComingSoon": "Attach from Vault is coming soon",
       "imageAlt": "Alt text",
       "linkUrl": "Link URL",
       "align": "Alignment",
@@ -1625,7 +1672,15 @@
     "variablesDescription": "Insert variables into your email content",
     "standardVariables": "Standard variables",
     "additionalVariables": "Additional variables",
-    "variablesResolvedAtSend": "Variables are resolved when the campaign is sent"
+    "variablesResolvedAtSend": "Variables are resolved when the campaign is sent",
+    "groupLabel": "Group",
+    "nContacts": "{{count}} contacts",
+    "nRecipients": "{{count}} recipients",
+    "nSelected": "{{count}} selected",
+    "nSent": "{{count}} sent",
+    "recurringLabel": "Recurring",
+    "scheduledLabel": "Scheduled",
+    "segmentLabel": "Segment"
   },
   "filter": {
     "testFilter": "Test filter",
@@ -1681,7 +1736,21 @@
     "confirmImport": "Import Key",
     "confirmGenerate": "Generate",
     "cancel": "Cancel",
-    "createdLabel": "Created"
+    "createdLabel": "Created",
+    "algorithms": "Algorithms"
+  },
+  "columns": {
+    "title": "Columns",
+    "reset": "Reset to defaults",
+    "ids": {
+      "checkbox": "Selection",
+      "star": "Star",
+      "attachments": "Attachments",
+      "priority": "Priority",
+      "subtasks": "Subtasks",
+      "actions": "Actions",
+      "avatar": "Avatar"
+    }
   },
   "common": {
     "save": "Save",
@@ -1740,6 +1809,8 @@
     "checking": "Checking...",
     "refresh": "Refresh",
     "reset": "Reset",
+    "processing": "Processing...",
+    "unknownError": "An unknown error occurred",
     "notAvailable": "Not available",
     "recentSearches": "Recent searches",
     "nResults": "{{n}} results",
@@ -1787,7 +1858,9 @@
     "taskDetails": "Task details",
     "connections": "Connections",
     "enabled": "Enabled",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "on": "On",
+    "off": "Off"
   },
   "quickReply": {
     "title": "Quick Replies",
@@ -1802,7 +1875,9 @@
     "presetName": "Preset name",
     "recurringLower": "recurring",
     "editPreset": "Edit preset",
-    "newPreset": "New preset"
+    "newPreset": "New preset",
+    "naturalLanguage": "Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)",
+    "nlPlaceholder": "tomorrow 9am"
   },
   "compliance": {
     "violations": "Violations",
@@ -1849,7 +1924,59 @@
     "range": "Range",
     "density": "Density",
     "autoRefresh": "Auto-refresh",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "updatedSeconds": "Updated {{count}}s ago",
+    "updatedMinutes": "Updated {{count}}m ago",
+    "updatedHours": "Updated {{count}}h ago",
+    "sections": {
+      "consoleTitle": "Sections",
+      "consoleDescription": "Jump straight into a section — each card shows live stats and a quick overview.",
+      "emails": {
+        "title": "Emails",
+        "description": "Read, reply, and organize your inbox — labels, smart folders, and unread triage all live here."
+      },
+      "people": {
+        "title": "People",
+        "description": "Your contacts and CRM: segments, groups, follow-ups, and the full relationship history for everyone you work with."
+      },
+      "tasks": {
+        "title": "Tasks & Schedule",
+        "description": "Plan your day with due dates, priorities, and the calendar schedule for everything on your plate."
+      },
+      "invoicing": {
+        "title": "Invoicing",
+        "description": "Create and track invoices, delivery bills, and payments — and see what is still unpaid at a glance."
+      },
+      "campaigns": {
+        "title": "Campaigns",
+        "description": "Email campaigns with open and click tracking, managed together with your automation rules."
+      },
+      "automation": {
+        "title": "Automation",
+        "description": "Workflow rules that run automatically — triggered by emails, contacts, or schedules."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Your events and schedule for today and the week ahead, in the schedule view."
+      }
+    },
+    "cards": {
+      "openSection": "Open section",
+      "aboutSection": "About {{section}}",
+      "stat": {
+        "unread": "Unread",
+        "threads": "Threads",
+        "total": "Total",
+        "newWeek": "New this week",
+        "dueToday": "Due today",
+        "overdue": "Overdue",
+        "unpaid": "Unpaid",
+        "sent": "Sent",
+        "rules": "Rules",
+        "active": "Active",
+        "eventsToday": "Today"
+      }
+    }
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
@@ -1864,7 +1991,12 @@
       "cancel": "Cancel",
       "done": "Done",
       "email": "Email",
-      "name": "Name"
+      "name": "Name",
+      "andMore": "and {{count}} more",
+      "contactsFound": "{{count}} contacts found",
+      "failed": "Import failed",
+      "import": "Import",
+      "successfullyImported": "Successfully imported {{count}} contacts"
     },
     "contactMerge": {
       "title": "Merge Duplicate Contacts",
@@ -1967,12 +2099,12 @@
     },
     "export": {
       "title": "Export Emails",
-    "formatMbox": "Mbox",
-    "formatEml": "EML",
-    "formatZip": "ZIP",
-    "mboxDesc": "Export all messages to a single .mbox file",
-    "emlDesc": "Export each message as an individual .eml file",
-    "zipDesc": "Export messages bundled into a compressed .zip archive",
+      "formatMbox": "Mbox",
+      "formatEml": "EML",
+      "formatZip": "ZIP",
+      "mboxDesc": "Export all messages to a single .mbox file",
+      "emlDesc": "Export each message as an individual .eml file",
+      "zipDesc": "Export messages bundled into a compressed .zip archive",
       "chooseFormat": "Choose export format",
       "filterMessages": "Filter messages (optional)",
       "fromDate": "From date",
@@ -2000,7 +2132,9 @@
       "connectDescription": "Connect to iCloud, Fastmail, Nextcloud, or any CalDAV server",
       "appPasswordRequired": "This provider requires an app-specific password. Generate one in your provider's security settings.",
       "testingConnection": "Testing connection...",
-      "connectionFailed": "Connection failed"
+      "connectionFailed": "Connection failed",
+      "detected": "CalDAV account detected",
+      "foundCalendars": "Found calendars"
     },
     "workflow": {
       "title": "Workflow",
@@ -2034,7 +2168,8 @@
     "checkNow": "Check Now",
     "download": "Update Now",
     "installRestart": "Install & Restart",
-    "skip": "Skip"
+    "skip": "Skip",
+    "description": "Download and install the latest version"
   },
   "mail": {
     "subject": "Subject"
@@ -2046,9 +2181,9 @@
     "unlockWithBiometric": "Unlock with biometric"
   },
   "businessHealth": {
-    "notScheduled": "businessHealth.notScheduled",
-    "nextBackup": "businessHealth.nextBackup",
-    "title": "businessHealth.title"
+    "notScheduled": "No backup scheduled",
+    "nextBackup": "Next backup",
+    "title": "Business Health"
   },
   "Loading": {
     "": {
@@ -2138,7 +2273,22 @@
     "senderUnknown": "Unknown",
     "filenameUnknown": "Unnamed",
     "gridView": "Grid view",
-    "listView": "List view"
+    "listView": "List view",
+    "images": "Images",
+    "pdfs": "PDFs",
+    "documents": "Documents",
+    "spreadsheets": "Spreadsheets",
+    "archives": "Archives",
+    "other": "Other",
+    "anyTime": "Any time",
+    "today": "Today",
+    "pastWeek": "Past week",
+    "pastMonth": "Past month",
+    "pastYear": "Past year",
+    "anySize": "Any size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
   },
   "contacts": {
     "title": "Contacts",
@@ -2155,14 +2305,15 @@
       "segments": "Segments",
       "imports": "Imports"
     },
-    "hideSearch": "contacts.hideSearch",
-    "showSearch": "contacts.showSearch",
-    "clearSearch": "contacts.clearSearch"
+    "hideSearch": "Hide Search",
+    "showSearch": "Show Search",
+    "clearSearch": "Clear Search"
   },
   "invoicing": {
     "title": "Invoicing",
     "newDocument": "New Document",
     "yourCompany": "Your Company",
+    "failedToLoad": "Failed to load {{tab}}.",
     "lowStock": "low stock",
     "retry": "Retry",
     "tabs": {
@@ -2211,7 +2362,8 @@
     "templatesAiEnhanced": "AI Enhanced",
     "applying": "Applying...",
     "useTemplate": "Use Template",
-    "templates": "automation.templates"
+    "templates": "Templates",
+    "notifyCreated": "Rule created"
   },
   "validation": {
     "required": "This field is required.",
@@ -2223,6 +2375,7 @@
   },
   "erp": {
     "title": "ERP Console",
+    "subtitle": "Live figures for {{company}}, pulled from the Inventory and Accounting backends.",
     "yourCompany": "your company",
     "companyManagement": "Company Management",
     "companyManagementSub": "Manage your companies and Morocco DGI identifiers",
@@ -2230,5 +2383,15 @@
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
     "editCompany": "Edit Company"
+  },
+  "categories": {
+    "primary": "Primary",
+    "updates": "Updates",
+    "promotions": "Promotions",
+    "social": "Social",
+    "newsletters": "Newsletters"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
   }
 }

@@ -1,8 +1,8 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export interface TokenHealthInfo {
   accountId: string;
-  status: "healthy" | "refreshing" | "expired" | "error";
+  status: 'healthy' | 'refreshing' | 'expired' | 'error';
   expiresAt: number | null;
   email: string;
   provider: string;
@@ -13,7 +13,7 @@ export interface TokenHealthInfo {
  * No caching — always fetches fresh status from Rust.
  */
 export async function getTokenHealth(accountId: string): Promise<TokenHealthInfo> {
-  return invokeCommand<TokenHealthInfo>("oauth_get_token_health", { accountId });
+  return invokeCommand<TokenHealthInfo>('oauth_get_token_health', { accountId });
 }
 
 /**
@@ -21,5 +21,5 @@ export async function getTokenHealth(accountId: string): Promise<TokenHealthInfo
  */
 export async function getAllTokenHealth(accountIds: string[]): Promise<TokenHealthInfo[]> {
   if (accountIds.length === 0) return [];
-  return invokeCommand<TokenHealthInfo[]>("oauth_get_all_token_health", { accountIds });
+  return invokeCommand<TokenHealthInfo[]>('oauth_get_all_token_health', { accountIds });
 }

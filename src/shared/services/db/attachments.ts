@@ -4,8 +4,11 @@ import {
   getAttachmentsForAccount as dbInvokeGetAttachmentsForAccount,
   getAttachmentSenders as dbInvokeGetAttachmentSenders,
   type Attachment,
-} from "@shared/services/db/db-invoke";
-import type { AttachmentWithContext, AttachmentSender as DbAttachmentSender } from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
+import type {
+  AttachmentWithContext,
+  AttachmentSender as DbAttachmentSender,
+} from '@shared/services/db/db-invoke';
 
 export type DbAttachment = Attachment;
 
@@ -69,8 +72,6 @@ export async function getAttachmentsForAccount(
  * Get attachment senders grouped by from_address.
  * Delegates to the Rust-backed db_get_attachment_senders command.
  */
-export async function getAttachmentSenders(
-  accountId: string,
-): Promise<DbAttachmentSender[]> {
+export async function getAttachmentSenders(accountId: string): Promise<DbAttachmentSender[]> {
   return dbInvokeGetAttachmentSenders(accountId);
 }

@@ -15,7 +15,11 @@ describe('FocusReader', () => {
 
   it('renders action buttons', () => {
     const actions = [{ label: 'Archive', icon: <span>A</span>, onAction: vi.fn() }];
-    render(<FocusReader onBack={vi.fn()} actions={actions}>Content</FocusReader>);
+    render(
+      <FocusReader onBack={vi.fn()} actions={actions}>
+        Content
+      </FocusReader>,
+    );
     expect(screen.getByText('Archive')).toBeDefined();
   });
 

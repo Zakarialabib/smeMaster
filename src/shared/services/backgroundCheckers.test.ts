@@ -1,6 +1,6 @@
-import { createBackgroundChecker } from "./backgroundCheckers";
+import { createBackgroundChecker } from './backgroundCheckers';
 
-describe("createBackgroundChecker", () => {
+describe('createBackgroundChecker', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -9,9 +9,9 @@ describe("createBackgroundChecker", () => {
     vi.useRealTimers();
   });
 
-  it("should run the check function immediately on start", () => {
+  it('should run the check function immediately on start', () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn);
+    const checker = createBackgroundChecker('Test', checkFn);
 
     checker.start();
 
@@ -20,9 +20,9 @@ describe("createBackgroundChecker", () => {
     checker.stop();
   });
 
-  it("should run the check function on each interval tick", async () => {
+  it('should run the check function on each interval tick', async () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn, 1000);
+    const checker = createBackgroundChecker('Test', checkFn, 1000);
 
     checker.start();
     expect(checkFn).toHaveBeenCalledTimes(1);
@@ -36,9 +36,9 @@ describe("createBackgroundChecker", () => {
     checker.stop();
   });
 
-  it("should not start a second interval if already running", () => {
+  it('should not start a second interval if already running', () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn);
+    const checker = createBackgroundChecker('Test', checkFn);
 
     checker.start();
     checker.start();
@@ -48,9 +48,9 @@ describe("createBackgroundChecker", () => {
     checker.stop();
   });
 
-  it("should stop the interval when stop is called", async () => {
+  it('should stop the interval when stop is called', async () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn, 1000);
+    const checker = createBackgroundChecker('Test', checkFn, 1000);
 
     checker.start();
     expect(checkFn).toHaveBeenCalledTimes(1);
@@ -61,16 +61,16 @@ describe("createBackgroundChecker", () => {
     expect(checkFn).toHaveBeenCalledTimes(1);
   });
 
-  it("should catch and log errors without stopping the interval", async () => {
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const error = new Error("check failed");
+  it('should catch and log errors without stopping the interval', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error('check failed');
     const checkFn = vi.fn().mockRejectedValue(error);
-    const checker = createBackgroundChecker("TestChecker", checkFn, 1000);
+    const checker = createBackgroundChecker('TestChecker', checkFn, 1000);
 
     checker.start();
 
     await vi.advanceTimersByTimeAsync(0);
-    expect(consoleSpy).toHaveBeenCalledWith("[TestChecker] check failed:", error);
+    expect(consoleSpy).toHaveBeenCalledWith('[TestChecker] check failed:', error);
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(checkFn).toHaveBeenCalledTimes(2);
@@ -79,9 +79,9 @@ describe("createBackgroundChecker", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should use 60s default interval", async () => {
+  it('should use 60s default interval', async () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn);
+    const checker = createBackgroundChecker('Test', checkFn);
 
     checker.start();
     expect(checkFn).toHaveBeenCalledTimes(1);
@@ -95,9 +95,9 @@ describe("createBackgroundChecker", () => {
     checker.stop();
   });
 
-  it("should allow restart after stop", async () => {
+  it('should allow restart after stop', async () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn, 1000);
+    const checker = createBackgroundChecker('Test', checkFn, 1000);
 
     checker.start();
     expect(checkFn).toHaveBeenCalledTimes(1);
@@ -113,9 +113,9 @@ describe("createBackgroundChecker", () => {
     checker.stop();
   });
 
-  it("should be safe to call stop when not running", () => {
+  it('should be safe to call stop when not running', () => {
     const checkFn = vi.fn().mockResolvedValue(undefined);
-    const checker = createBackgroundChecker("Test", checkFn);
+    const checker = createBackgroundChecker('Test', checkFn);
 
     expect(() => checker.stop()).not.toThrow();
   });

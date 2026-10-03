@@ -1,22 +1,22 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from 'react';
 import {
   getContextualHelp,
   getContextualHelpKeys,
   type ContextualHelpEntry,
-} from "@/constants/contextualHelp";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
+} from '@/constants/contextualHelp';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
-const DISMISSED_KEYS_KEY = "smemaster.contextualHelp.dismissed";
-const SEEN_KEYS_KEY = "smemaster.contextualHelp.seen";
+const DISMISSED_KEYS_KEY = 'smemaster.contextualHelp.dismissed';
+const SEEN_KEYS_KEY = 'smemaster.contextualHelp.seen';
 
 /**
  * Load previously dismissed keys from durable storage.
  */
 function getDismissedKeys(): Set<string> {
-  if (typeof window === "undefined") return new Set();
+  if (typeof window === 'undefined') return new Set();
   try {
     const raw =
-      "__TAURI_INTERNALS__" in window || "__TAURI__" in window
+      '__TAURI_INTERNALS__' in window || '__TAURI__' in window
         ? null // async path handled in useState init
         : window.localStorage.getItem(DISMISSED_KEYS_KEY);
     if (!raw) return new Set();
@@ -30,9 +30,9 @@ function getDismissedKeys(): Set<string> {
  * Persist dismissed keys to durable storage.
  */
 function saveDismissedKeys(keys: Set<string>) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   const payload = JSON.stringify([...keys]);
-  if ("__TAURI_INTERNALS__" in window || "__TAURI__" in window) {
+  if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
     void tauriStoreStorage.setItem(DISMISSED_KEYS_KEY, payload);
   } else {
     try {
@@ -44,9 +44,9 @@ function saveDismissedKeys(keys: Set<string>) {
 }
 
 function saveSeenKeys(keys: Set<string>) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   const payload = JSON.stringify([...keys]);
-  if ("__TAURI_INTERNALS__" in window || "__TAURI__" in window) {
+  if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
     void tauriStoreStorage.setItem(SEEN_KEYS_KEY, payload);
   } else {
     try {
@@ -58,8 +58,8 @@ function saveSeenKeys(keys: Set<string>) {
 }
 
 function removeAll() {
-  if (typeof window === "undefined") return;
-  if ("__TAURI_INTERNALS__" in window || "__TAURI__" in window) {
+  if (typeof window === 'undefined') return;
+  if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
     void tauriStoreStorage.removeItem(DISMISSED_KEYS_KEY);
     void tauriStoreStorage.removeItem(SEEN_KEYS_KEY);
   } else {
@@ -110,8 +110,7 @@ export function useContextualHelp(): ContextualHelpState {
   // Async hydrate the seen keys (and re-hydrate dismissed keys in Tauri).
   useEffect(() => {
     const isTauri =
-      typeof window !== "undefined" &&
-      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+      typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
     if (!isTauri) {
       // In browser, populate seen from localStorage on mount so the
       // initial render after a refresh is consistent.
@@ -132,8 +131,7 @@ export function useContextualHelp(): ContextualHelpState {
         ]);
         if (cancelled) return;
         if (seenRaw) setSeenKeys(new Set(JSON.parse(seenRaw) as string[]));
-        if (dismissedRaw)
-          setDismissedKeys(new Set(JSON.parse(dismissedRaw) as string[]));
+        if (dismissedRaw) setDismissedKeys(new Set(JSON.parse(dismissedRaw) as string[]));
       } catch {
         /* ignore */
       }
@@ -144,11 +142,9 @@ export function useContextualHelp(): ContextualHelpState {
   }, []);
 
   const allKeys = getContextualHelpKeys();
-  const unseenKeys = allKeys.filter(
-    (k) => !dismissedKeys.has(k) && !seenKeys.has(k),
-  );
+  const unseenKeys = allKeys.filter((k) => !dismissedKeys.has(k) && !seenKeys.has(k));
 
-  const activeEntry = activeKey ? getContextualHelp(activeKey) ?? null : null;
+  const activeEntry = activeKey ? (getContextualHelp(activeKey) ?? null) : null;
 
   const openHelp = useCallback((key: string) => {
     setActiveKey(key);

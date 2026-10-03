@@ -4,10 +4,10 @@
 //
 // All export functions return the number of records written.
 
-import { invoke } from "@shared/services/commands";
-import { save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { invoke } from '@shared/services/commands';
+import { save as saveDialog } from '@tauri-apps/plugin-dialog';
 
-export type ExportFormat = "csv" | "vcard" | "ics";
+export type ExportFormat = 'csv' | 'vcard' | 'ics';
 
 export interface ExportResult {
   format: ExportFormat;
@@ -17,17 +17,17 @@ export interface ExportResult {
 }
 
 const DIALOG_FILTERS: Record<string, Array<{ name: string; extensions: string[] }>> = {
-  contacts_csv: [{ name: "CSV", extensions: ["csv"] }],
-  contacts_vcard: [{ name: "vCard", extensions: ["vcf"] }],
-  tasks_csv: [{ name: "CSV", extensions: ["csv"] }],
-  calendar_ics: [{ name: "iCalendar", extensions: ["ics"] }],
+  contacts_csv: [{ name: 'CSV', extensions: ['csv'] }],
+  contacts_vcard: [{ name: 'vCard', extensions: ['vcf'] }],
+  tasks_csv: [{ name: 'CSV', extensions: ['csv'] }],
+  calendar_ics: [{ name: 'iCalendar', extensions: ['ics'] }],
 };
 
 const DEFAULT_FILENAMES = {
-  contacts_csv: "smemaster-contacts.csv",
-  contacts_vcard: "smemaster-contacts.vcf",
-  tasks_csv: "smemaster-tasks.csv",
-  calendar_ics: "smemaster-calendar.ics",
+  contacts_csv: 'smemaster-contacts.csv',
+  contacts_vcard: 'smemaster-contacts.vcf',
+  tasks_csv: 'smemaster-tasks.csv',
+  calendar_ics: 'smemaster-calendar.ics',
 };
 
 /**
@@ -35,14 +35,14 @@ const DEFAULT_FILENAMES = {
  */
 export async function exportContactsToCsv(): Promise<ExportResult | null> {
   const destinationPath = await saveDialog({
-    title: "Export Contacts as CSV",
+    title: 'Export Contacts as CSV',
     defaultPath: DEFAULT_FILENAMES.contacts_csv,
     filters: DIALOG_FILTERS.contacts_csv,
   });
   if (!destinationPath) return null;
-  const recordCount = await invoke("export_contacts_csv", { destinationPath });
+  const recordCount = await invoke('export_contacts_csv', { destinationPath });
   return {
-    format: "csv",
+    format: 'csv',
     destinationPath,
     recordCount: Number(recordCount),
     filename: DEFAULT_FILENAMES.contacts_csv,
@@ -54,14 +54,14 @@ export async function exportContactsToCsv(): Promise<ExportResult | null> {
  */
 export async function exportContactsToVcard(): Promise<ExportResult | null> {
   const destinationPath = await saveDialog({
-    title: "Export Contacts as vCard",
+    title: 'Export Contacts as vCard',
     defaultPath: DEFAULT_FILENAMES.contacts_vcard,
     filters: DIALOG_FILTERS.contacts_vcard,
   });
   if (!destinationPath) return null;
-  const recordCount = await invoke("export_contacts_vcard", { destinationPath });
+  const recordCount = await invoke('export_contacts_vcard', { destinationPath });
   return {
-    format: "vcard",
+    format: 'vcard',
     destinationPath,
     recordCount: Number(recordCount),
     filename: DEFAULT_FILENAMES.contacts_vcard,
@@ -73,14 +73,14 @@ export async function exportContactsToVcard(): Promise<ExportResult | null> {
  */
 export async function exportTasksToCsv(): Promise<ExportResult | null> {
   const destinationPath = await saveDialog({
-    title: "Export Tasks as CSV",
+    title: 'Export Tasks as CSV',
     defaultPath: DEFAULT_FILENAMES.tasks_csv,
     filters: DIALOG_FILTERS.tasks_csv,
   });
   if (!destinationPath) return null;
-  const recordCount = await invoke("export_tasks_csv", { destinationPath });
+  const recordCount = await invoke('export_tasks_csv', { destinationPath });
   return {
-    format: "csv",
+    format: 'csv',
     destinationPath,
     recordCount: Number(recordCount),
     filename: DEFAULT_FILENAMES.tasks_csv,
@@ -92,14 +92,14 @@ export async function exportTasksToCsv(): Promise<ExportResult | null> {
  */
 export async function exportCalendarToIcs(): Promise<ExportResult | null> {
   const destinationPath = await saveDialog({
-    title: "Export Calendar as ICS",
+    title: 'Export Calendar as ICS',
     defaultPath: DEFAULT_FILENAMES.calendar_ics,
     filters: DIALOG_FILTERS.calendar_ics,
   });
   if (!destinationPath) return null;
-  const recordCount = await invoke("export_calendar_ics", { destinationPath });
+  const recordCount = await invoke('export_calendar_ics', { destinationPath });
   return {
-    format: "ics",
+    format: 'ics',
     destinationPath,
     recordCount: Number(recordCount),
     filename: DEFAULT_FILENAMES.calendar_ics,

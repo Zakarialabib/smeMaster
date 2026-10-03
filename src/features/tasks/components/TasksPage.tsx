@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   Trash2,
@@ -13,10 +13,10 @@ import {
   Bell,
   BellOff,
   Archive,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useTaskStore } from "@features/tasks/stores/taskStore";
-import { useTaskViewPrefs } from "@features/tasks/hooks/useTaskViewPrefs";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useTaskStore } from '@features/tasks/stores/taskStore';
+import { useTaskViewPrefs } from '@features/tasks/hooks/useTaskViewPrefs';
 import {
   getTasksForAccountWithContactsPaginated,
   countTasksForAccount,
@@ -30,32 +30,34 @@ import {
   type DbTask,
   type TaskWithContact,
   type TaskPriority,
-} from "@features/tasks/db/tasks";
-import { handleRecurringTaskCompletion } from "@features/tasks/services/taskManager";
-import { safeDbOperation } from "@features/tasks/services/errorHandler";
-import { useMobile } from "@shared/hooks/useMobile";
-import { usePagination } from "@shared/hooks/usePagination";
-import { PaginationControls } from "@shared/components/ui/PaginationControls";
-import { useGestureActions } from "@shared/hooks/useGestureActions";
-import { TaskItem } from "./TaskItem";
-import { TaskDetailPanel } from "./TaskDetailPanel";
-import { TaskCreateModal } from "./TaskCreateModal";
-import { SmartFilterBar } from "./SmartFilterBar";
-import { ViewToggle } from "./ViewToggle";
-import { TaskKanbanView } from "./TaskKanbanView";
-import { TaskAgendaView } from "./TaskAgendaView";
-import { TaskCalendarView } from "./TaskCalendarView";
-import { TaskMobileDetailSheet } from "./TaskMobileDetailSheet";
-import { AiTaskSuggestionBanner } from "./AiTaskSuggestionBanner";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { EmptyStateTask } from "./EmptyStateTask";
-import { SwipeableRow } from "@shared/components/ui/SwipeableRow";
-import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
-import { useNavigate } from "@tanstack/react-router";
-import { SkeletonPage, GlassPanel } from "@shared/components/ui";
-import { PageScaffold } from "@shared/components/layout";
+} from '@features/tasks/db/tasks';
+import { filterTasks } from '@shared/services/db/invoke/tasks';
+import { handleRecurringTaskCompletion } from '@features/tasks/services/taskManager';
+import { safeDbOperation } from '@features/tasks/services/errorHandler';
+import { useMobile } from '@shared/hooks/useMobile';
+import { usePagination } from '@shared/hooks/usePagination';
+import { PaginationControls } from '@shared/components/ui/PaginationControls';
+import { useGestureActions } from '@shared/hooks/useGestureActions';
+import { TaskItem } from './TaskItem';
+import { TaskDetailPanel } from './TaskDetailPanel';
+import { TaskCreateModal } from './TaskCreateModal';
+import { SmartFilterBar } from './SmartFilterBar';
+import { ViewToggle } from './ViewToggle';
+import { TaskKanbanView } from './TaskKanbanView';
+import { TaskAgendaView } from './TaskAgendaView';
+import { TaskCalendarView } from './TaskCalendarView';
+import { TaskMobileDetailSheet } from './TaskMobileDetailSheet';
+import { AiTaskSuggestionBanner } from './AiTaskSuggestionBanner';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { EmptyStateTask } from './EmptyStateTask';
+import { SwipeableRow } from '@shared/components/ui/SwipeableRow';
+import { PullToRefresh } from '@shared/components/ui/PullToRefresh';
+import type { SwipeActions } from '@shared/hooks/useSwipeGesture';
+import { useNavigate } from '@tanstack/react-router';
+import { SkeletonPage, GlassPanel } from '@shared/components/ui';
+import { ColumnPicker } from '@shared/components/ui';
+import { PageScaffold } from '@shared/components/layout';
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   urgent: 0,
@@ -66,19 +68,19 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
 };
 
 const PRIORITY_BADGE: Record<TaskPriority, { label: string; bg: string; text: string }> = {
-  urgent: { label: "Urgent", bg: "bg-red-500/15", text: "text-red-500" },
-  high: { label: "High", bg: "bg-orange-500/15", text: "text-orange-500" },
-  medium: { label: "Medium", bg: "bg-amber-500/15", text: "text-amber-500" },
-  low: { label: "Low", bg: "bg-blue-500/15", text: "text-blue-400" },
-none: { label: "", bg: "", text: "" },
+  urgent: { label: 'Urgent', bg: 'bg-red-500/15', text: 'text-red-500' },
+  high: { label: 'High', bg: 'bg-orange-500/15', text: 'text-orange-500' },
+  medium: { label: 'Medium', bg: 'bg-amber-500/15', text: 'text-amber-500' },
+  low: { label: 'Low', bg: 'bg-blue-500/15', text: 'text-blue-400' },
+  none: { label: '', bg: '', text: '' },
 };
 
 const PRIORITY_DOT: Record<TaskPriority, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-400",
-  none: "bg-text-tertiary/30",
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-amber-500',
+  low: 'bg-blue-400',
+  none: 'bg-text-tertiary/30',
 };
 
 function getDayDiff(timestamp: number): number {
@@ -92,18 +94,18 @@ function getDayDiff(timestamp: number): number {
 function formatDueDate(timestamp: number): string {
   const diff = getDayDiff(timestamp);
   if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
   if (diff <= 7) return `${diff}d`;
   const date = new Date(timestamp * 1000);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function getDueDateStyle(timestamp: number): string {
   const diff = getDayDiff(timestamp);
-  if (diff < 0) return "text-red-500 bg-red-500/10";
-  if (diff <= 1) return "text-amber-500 bg-amber-500/10";
-  return "text-text-tertiary bg-bg-tertiary";
+  if (diff < 0) return 'text-red-500 bg-red-500/10';
+  if (diff <= 1) return 'text-amber-500 bg-amber-500/10';
+  return 'text-text-tertiary bg-bg-tertiary';
 }
 
 export function TasksPage() {
@@ -145,8 +147,10 @@ export function TasksPage() {
   const [subtaskMap, setSubtaskMap] = useState<Record<string, DbTask[]>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
-  const aiEnabled = useFeatureFlagStore((s) => s.getFeatureAccess("ai_assistant", 0) !== "locked");
-  const [contactMap, setContactMap] = useState<Map<string, { name: string | null; avatar: string | null; email: string | null }>>(new Map());
+  const aiEnabled = useFeatureFlagStore((s) => s.getFeatureAccess('ai_assistant', 0) !== 'locked');
+  const [contactMap, setContactMap] = useState<
+    Map<string, { name: string | null; avatar: string | null; email: string | null }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -192,27 +196,76 @@ export function TasksPage() {
   });
 
   // Paginated task loading
-  const includeCompleted = filterStatus !== "incomplete";
-  const paginationOptions = useMemo(() => ({
-    fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
-      const loaded: TaskWithContact[] = await getTasksForAccountWithContactsPaginated(
-        accountId, includeCompleted, limit, offset,
-      );
-      const total = await countTasksForAccount(accountId, includeCompleted);
-      // Build contact map from the rich result before casting
-      const map = new Map<string, { name: string | null; avatar: string | null; email: string | null }>();
-      for (const t of loaded) {
-        if (t.contact_name) {
-          map.set(t.id, { name: t.contact_name, avatar: t.contact_avatar, email: t.contact_email });
+  const includeCompleted = filterStatus !== 'incomplete';
+  // Any active filter (priority / date / search) routes through the backend
+  // filter command so results are computed server-side across the full dataset,
+  // not just the currently-loaded page.
+  const hasActiveFilter =
+    filterPriority !== 'all' || dateFilter !== 'all' || searchQuery.trim().length > 0;
+  const paginationOptions = useMemo(
+    () => ({
+      fetchFn: async ({ limit, offset }: { limit: number; offset: number }) => {
+        let loaded: TaskWithContact[];
+        if (hasActiveFilter) {
+          loaded = await filterTasks(accountId, {
+            includeCompleted,
+            priority: filterPriority !== 'all' ? filterPriority : null,
+            dateFilter: dateFilter !== 'all' ? dateFilter : null,
+            search: searchQuery.trim() || null,
+            sortField: sortField,
+            sortDirection: sortDirection,
+            limit,
+            offset,
+          });
+        } else {
+          loaded = await getTasksForAccountWithContactsPaginated(
+            accountId,
+            includeCompleted,
+            limit,
+            offset,
+          );
         }
-      }
-      setContactMap(map);
-      return { items: loaded as unknown as DbTask[], total };
-    },
-    pageSize: 50,
-    deps: [accountId, includeCompleted],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [accountId, includeCompleted]);
+        const total = await countTasksForAccount(accountId, includeCompleted);
+        // Build contact map from the rich result before casting
+        const map = new Map<
+          string,
+          { name: string | null; avatar: string | null; email: string | null }
+        >();
+        for (const t of loaded) {
+          if (t.contact_name) {
+            map.set(t.id, {
+              name: t.contact_name,
+              avatar: t.contact_avatar,
+              email: t.contact_email,
+            });
+          }
+        }
+        setContactMap(map);
+        return { items: loaded as unknown as DbTask[], total };
+      },
+      pageSize: 50,
+      deps: [
+        accountId,
+        includeCompleted,
+        hasActiveFilter,
+        filterPriority,
+        dateFilter,
+        searchQuery,
+        sortField,
+        sortDirection,
+      ],
+    }),
+    [
+      accountId,
+      includeCompleted,
+      hasActiveFilter,
+      filterPriority,
+      dateFilter,
+      searchQuery,
+      sortField,
+      sortDirection,
+    ],
+  );
 
   const {
     items: paginatedTasks,
@@ -239,26 +292,26 @@ export function TasksPage() {
   useEffect(() => {
     if (paginationError) {
       // Show user-friendly message instead of raw IPC errors
-      const friendly = paginationError.includes("Cannot read properties of undefined")
-        || paginationError.includes("invoke")
-        ? "Could not connect to the database. Some features may be unavailable in browser preview mode."
-        : paginationError;
+      const friendly =
+        paginationError.includes('Cannot read properties of undefined') ||
+        paginationError.includes('invoke')
+          ? 'Could not connect to the database. Some features may be unavailable in browser preview mode.'
+          : paginationError;
       setError(friendly);
     }
   }, [paginationError]);
 
   // Count completed tasks for archive button visibility
-  const completedCount = useMemo(
-    () => tasks.filter((t) => t.is_completed).length,
-    [tasks],
-  );
+  const completedCount = useMemo(() => tasks.filter((t) => t.is_completed).length, [tasks]);
 
   // Refresh incomplete count whenever paginated tasks change
   useEffect(() => {
     if (accountId) {
-      getIncompleteTaskCount(accountId).then((count) => {
-        useTaskStore.getState().setIncompleteCount(count);
-      }).catch(() => {});
+      getIncompleteTaskCount(accountId)
+        .then((count) => {
+          useTaskStore.getState().setIncompleteCount(count);
+        })
+        .catch(() => {});
     }
   }, [accountId, paginatedTasks]);
 
@@ -274,33 +327,35 @@ export function TasksPage() {
       if (!cancelled) setSubtaskMap(map);
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tasks]);
 
   // Filter + search + sort
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
 
-    if (filterStatus === "completed") {
+    if (filterStatus === 'completed') {
       result = result.filter((t) => t.is_completed);
-    } else if (filterStatus === "incomplete") {
+    } else if (filterStatus === 'incomplete') {
       result = result.filter((t) => !t.is_completed);
     }
 
-    if (filterPriority !== "all") {
+    if (filterPriority !== 'all') {
       result = result.filter((t) => t.priority === filterPriority);
     }
 
     // Date quick filter (from SmartFilterBar)
-    if (dateFilter === "today") {
+    if (dateFilter === 'today') {
       result = result.filter((t) => t.due_date && getDayDiff(t.due_date) === 0);
-    } else if (dateFilter === "thisWeek") {
+    } else if (dateFilter === 'thisWeek') {
       result = result.filter((t) => {
         if (!t.due_date) return false;
         const diff = getDayDiff(t.due_date);
         return diff >= 0 && diff <= 7;
       });
-    } else if (dateFilter === "overdue") {
+    } else if (dateFilter === 'overdue') {
       result = result.filter((t) => t.due_date && getDayDiff(t.due_date) < 0);
     }
 
@@ -315,29 +370,29 @@ export function TasksPage() {
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
-        case "priority": {
+        case 'priority': {
           const aP = PRIORITY_ORDER[a.priority as TaskPriority] ?? 99;
           const bP = PRIORITY_ORDER[b.priority as TaskPriority] ?? 99;
           comparison = aP - bP;
           break;
         }
-        case "dueDate": {
+        case 'dueDate': {
           if (!a.due_date && !b.due_date) comparison = 0;
           else if (!a.due_date) comparison = 1;
           else if (!b.due_date) comparison = -1;
           else comparison = a.due_date - b.due_date;
           break;
         }
-        case "title": {
+        case 'title': {
           comparison = a.title.localeCompare(b.title);
           break;
         }
-        case "created": {
+        case 'created': {
           comparison = (a.created_at || 0) - (b.created_at || 0);
           break;
         }
       }
-      return sortDirection === "asc" ? comparison : -comparison;
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
 
     return result;
@@ -345,38 +400,44 @@ export function TasksPage() {
 
   // Grouping
   const groupedTasks = useMemo(() => {
-    if (groupBy === "none") return [{ label: "", tasks: filteredTasks }];
+    if (groupBy === 'none') return [{ label: '', tasks: filteredTasks }];
 
     const groups = new Map<string, DbTask[]>();
 
     for (const task of filteredTasks) {
       let key: string;
       switch (groupBy) {
-        case "priority":
+        case 'priority':
           key = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
           break;
-        case "dueDate":
-          if (!task.due_date) key = "No due date";
+        case 'dueDate':
+          if (!task.due_date) key = 'No due date';
           else {
             const d = new Date(task.due_date * 1000);
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const dueStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             const diff = Math.floor((dueStart.getTime() - todayStart.getTime()) / 86400000);
-            if (diff < 0) key = "Overdue";
-            else if (diff === 0) key = "Today";
-            else if (diff === 1) key = "Tomorrow";
-            else if (diff <= 7) key = "This week";
-            else key = "Later";
+            if (diff < 0) key = 'Overdue';
+            else if (diff === 0) key = 'Today';
+            else if (diff === 1) key = 'Tomorrow';
+            else if (diff <= 7) key = 'This week';
+            else key = 'Later';
           }
           break;
-        case "tag": {
-          const tags: string[] = (() => { try { return JSON.parse(task.tags_json); } catch { return []; } })();
-          key = tags[0] ?? "Untagged";
+        case 'tag': {
+          const tags: string[] = (() => {
+            try {
+              return JSON.parse(task.tags_json);
+            } catch {
+              return [];
+            }
+          })();
+          key = tags[0] ?? 'Untagged';
           break;
         }
         default:
-          key = "";
+          key = '';
       }
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(task);
@@ -384,7 +445,7 @@ export function TasksPage() {
 
     // Sort groups by priority order if grouping by priority
     const entries = [...groups.entries()];
-    if (groupBy === "priority") {
+    if (groupBy === 'priority') {
       entries.sort((a, b) => {
         const aP = PRIORITY_ORDER[a[0].toLowerCase() as TaskPriority] ?? 99;
         const bP = PRIORITY_ORDER[b[0].toLowerCase() as TaskPriority] ?? 99;
@@ -395,68 +456,78 @@ export function TasksPage() {
     return entries.map(([label, tasks]) => ({ label, tasks }));
   }, [filteredTasks, groupBy]);
 
-  const handleAddTask = useCallback(async (title: string) => {
-    if (!accountId) return;
-    const result = await safeDbOperation(
-      () => insertTask({ accountId, title }),
-      { operationLabel: "create task" },
-    );
-    if (result.success) {
-      notify(t('tasks.taskCreated'), `"${title}" ${t('tasks.hasBeenAdded')}`);
+  const handleAddTask = useCallback(
+    async (title: string) => {
+      if (!accountId) return;
+      const result = await safeDbOperation(() => insertTask({ accountId, title }), {
+        operationLabel: 'create task',
+      });
+      if (result.success) {
+        notify(t('tasks.taskCreated'), `"${title}" ${t('tasks.hasBeenAdded')}`);
+        await resetTasks();
+      } else {
+        notify(t('tasks.failedToCreate'), result.error);
+      }
+    },
+    [accountId, resetTasks, t],
+  );
+
+  const handleModalCreate = useCallback(
+    async (_taskId: string) => {
       await resetTasks();
-    } else {
-      notify(t('tasks.failedToCreate'), result.error);
-    }
-  }, [accountId, resetTasks]);
+      setShowCreateModal(false);
+    },
+    [resetTasks],
+  );
 
-  const handleModalCreate = useCallback(async (_taskId: string) => {
-    await resetTasks();
-    setShowCreateModal(false);
-  }, [resetTasks]);
-
-  const handleToggleComplete = useCallback(async (id: string, completed: boolean) => {
-    // Optimistic UI — update store immediately
-    useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 1 : 0 });
-    const result = await safeDbOperation(
-      async () => {
-        if (completed) {
-          const task = tasks.find((t) => t.id === id);
-          if (task?.recurrence_rule) {
-            await handleRecurringTaskCompletion(id);
+  const handleToggleComplete = useCallback(
+    async (id: string, completed: boolean) => {
+      // Optimistic UI — update store immediately
+      useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 1 : 0 });
+      const result = await safeDbOperation(
+        async () => {
+          if (completed) {
+            const task = tasks.find((t) => t.id === id);
+            if (task?.recurrence_rule) {
+              await handleRecurringTaskCompletion(id);
+            } else {
+              await completeTask(id);
+            }
           } else {
-            await completeTask(id);
+            await uncompleteTask(id);
           }
-        } else {
-          await uncompleteTask(id);
-        }
-      },
-      { operationLabel: completed ? "complete task" : "uncomplete task" },
-    );
-    if (result.success) {
-      if (completed) notify(t('tasks.taskCompleted'), t('tasks.wayToGo'));
-      await resetTasks();
-    } else {
-      // Rollback optimistic update
-      useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 0 : 1 });
-      notify(t('tasks.failedToUpdateTask'), result.error);
-    }
-  }, [tasks, resetTasks]);
+        },
+        { operationLabel: completed ? 'complete task' : 'uncomplete task' },
+      );
+      if (result.success) {
+        if (completed) notify(t('tasks.taskCompleted'), t('tasks.wayToGo'));
+        await resetTasks();
+      } else {
+        // Rollback optimistic update
+        useTaskStore.getState().updateTaskInStore(id, { is_completed: completed ? 0 : 1 });
+        notify(t('tasks.failedToUpdateTask'), result.error);
+      }
+    },
+    [tasks, resetTasks, t],
+  );
 
-  const handleDelete = useCallback(async (id: string) => {
-    // Optimistic UI — remove from store immediately
-    useTaskStore.getState().removeTask(id);
-    const result = await safeDbOperation(
-      () => dbDeleteTask(id),
-      { operationLabel: "delete task" },
-    );
-    if (result.success) {
-      await resetTasks();
-    } else {
-      // Rollback via full reload
-      notify(t('tasks.failedToUpdateTask'), result.error);
-      await resetTasks();
-    }
-  }, [resetTasks]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      // Optimistic UI — remove from store immediately
+      useTaskStore.getState().removeTask(id);
+      const result = await safeDbOperation(() => dbDeleteTask(id), {
+        operationLabel: 'delete task',
+      });
+      if (result.success) {
+        await resetTasks();
+      } else {
+        // Rollback via full reload
+        notify(t('tasks.failedToUpdateTask'), result.error);
+        await resetTasks();
+      }
+    },
+    [resetTasks, t],
+  );
 
   const handleArchiveCompleted = useCallback(async () => {
     const completedTasks = tasks.filter((t) => t.is_completed);
@@ -485,34 +556,42 @@ export function TasksPage() {
     }
 
     await resetTasks();
-  }, [tasks, resetTasks]);
+  }, [tasks, resetTasks, t]);
 
-  const handleTogglePriority = useCallback(async (id: string) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    const newPriority: TaskPriority = task.priority === "high" ? "none" : "high";
-    // Optimistic UI
-    useTaskStore.getState().updateTaskInStore(id, { priority: newPriority });
-    const result = await safeDbOperation(
-      () => dbUpdateTask(id, { priority: newPriority }),
-      { operationLabel: "update task priority" },
-    );
-    if (result.success) {
-      await resetTasks();
-    } else {
-      // Rollback
-      useTaskStore.getState().updateTaskInStore(id, { priority: task.priority });
-      notify(t('tasks.failedToUpdateTask'), result.error);
-    }
-  }, [tasks, resetTasks]);
+  const handleTogglePriority = useCallback(
+    async (id: string) => {
+      const task = tasks.find((t) => t.id === id);
+      if (!task) return;
+      const newPriority: TaskPriority = task.priority === 'high' ? 'none' : 'high';
+      // Optimistic UI
+      useTaskStore.getState().updateTaskInStore(id, { priority: newPriority });
+      const result = await safeDbOperation(() => dbUpdateTask(id, { priority: newPriority }), {
+        operationLabel: 'update task priority',
+      });
+      if (result.success) {
+        await resetTasks();
+      } else {
+        // Rollback
+        useTaskStore.getState().updateTaskInStore(id, { priority: task.priority });
+        notify(t('tasks.failedToUpdateTask'), result.error);
+      }
+    },
+    [tasks, resetTasks, t],
+  );
 
-  const handleOpenDetail = useCallback((id: string) => {
-    setSelectedTaskId(id);
-  }, [setSelectedTaskId]);
+  const handleOpenDetail = useCallback(
+    (id: string) => {
+      setSelectedTaskId(id);
+    },
+    [setSelectedTaskId],
+  );
 
-  const handleContactClick = useCallback((contactId: string) => {
-    navigate({ to: "/people/$contactId", params: { contactId } });
-  }, [navigate]);
+  const handleContactClick = useCallback(
+    (contactId: string) => {
+      navigate({ to: '/people/$contactId', params: { contactId } });
+    },
+    [navigate],
+  );
 
   const handleTaskUpdated = useCallback(() => {
     setSelectedTaskId(null);
@@ -523,46 +602,48 @@ export function TasksPage() {
     setSelectedTaskId(null);
   }, [setSelectedTaskId]);
 
-  const getSwipeActions = useCallback((task: DbTask): SwipeActions => ({
-    left: {
-      primary: {
-        label: task.is_completed ? t('tasks.undo') : t('tasks.markComplete'),
-        icon: "check-circle-2",
-        color: "bg-emerald-500",
-        onAction: () => {
-          swipeTaskRef.current = task;
-          executeAction("left");
+  const getSwipeActions = useCallback(
+    (task: DbTask): SwipeActions => ({
+      left: {
+        primary: {
+          label: task.is_completed ? t('tasks.undo') : t('tasks.markComplete'),
+          icon: 'check-circle-2',
+          color: 'bg-emerald-500',
+          onAction: () => {
+            swipeTaskRef.current = task;
+            executeAction('left');
+          },
+        },
+        secondary: {
+          label: t('tasks.delete'),
+          icon: 'trash-2',
+          color: 'bg-red-500',
+          onAction: () => {
+            swipeTaskRef.current = task;
+            executeAction('long-left');
+          },
+          destructive: true,
         },
       },
-      secondary: {
-        label: t('tasks.delete'),
-        icon: "trash-2",
-        color: "bg-red-500",
-        onAction: () => {
-          swipeTaskRef.current = task;
-          executeAction("long-left");
+      right: {
+        primary: {
+          label: task.priority === 'high' ? t('tasks.unflag') : t('tasks.flag'),
+          icon: 'star',
+          color: 'bg-amber-500',
+          onAction: () => handleTogglePriority(task.id),
         },
-        destructive: true,
       },
-    },
-    right: {
-      primary: {
-        label: task.priority === "high" ? t('tasks.unflag') : t('tasks.flag'),
-        icon: "star",
-        color: "bg-amber-500",
-        onAction: () => handleTogglePriority(task.id),
-      },
-    },
-  }), [executeAction, handleTogglePriority, t]);
+    }),
+    [executeAction, handleTogglePriority, t],
+  );
 
   const handleBulkComplete = useCallback(async () => {
     let completedCount = 0;
     let failCount = 0;
     for (const id of selectedIds) {
-      const result = await safeDbOperation(
-        () => completeTask(id),
-        { operationLabel: "complete task" },
-      );
+      const result = await safeDbOperation(() => completeTask(id), {
+        operationLabel: 'complete task',
+      });
       if (result.success) completedCount++;
       else failCount++;
     }
@@ -574,16 +655,15 @@ export function TasksPage() {
       notify(t('tasks.someFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
-  }, [selectedIds, resetTasks]);
+  }, [selectedIds, resetTasks, t]);
 
   const handleBulkDelete = useCallback(async () => {
     let deletedCount = 0;
     let failCount = 0;
     for (const id of selectedIds) {
-      const result = await safeDbOperation(
-        () => dbDeleteTask(id),
-        { operationLabel: "delete task" },
-      );
+      const result = await safeDbOperation(() => dbDeleteTask(id), {
+        operationLabel: 'delete task',
+      });
       if (result.success) deletedCount++;
       else failCount++;
     }
@@ -595,16 +675,19 @@ export function TasksPage() {
       notify(t('tasks.someDeletionsFailed'), `${failCount} ${t('tasks.couldNotComplete')}`);
     }
     await resetTasks();
-  }, [selectedIds, resetTasks]);
+  }, [selectedIds, resetTasks, t]);
 
   const handleMobileCardTap = useCallback((taskId: string) => {
     setMobileExpandedId((prev) => (prev === taskId ? null : taskId));
   }, []);
 
-  const handleMobileAddTask = useCallback(async (title: string) => {
-    await handleAddTask(title);
-    setShowMobileQuickAdd(false);
-  }, [handleAddTask]);
+  const handleMobileAddTask = useCallback(
+    async (title: string) => {
+      await handleAddTask(title);
+      setShowMobileQuickAdd(false);
+    },
+    [handleAddTask],
+  );
 
   const handleMobileOpenDetail = useCallback((id: string) => {
     setMobileDetailTaskId(id);
@@ -616,171 +699,216 @@ export function TasksPage() {
     setMobileDetailTaskId(null);
   }, []);
 
-  const handleTaskMove = useCallback(async (taskId: string, newDate: Date) => {
-    const dueDate = Math.floor(newDate.getTime() / 1000);
-    const result = await safeDbOperation(
-      () => dbUpdateTask(taskId, { dueDate }),
-      { operationLabel: "reschedule task" },
-    );
-    if (result.success) {
+  const handleTaskMove = useCallback(
+    async (taskId: string, newDate: Date) => {
+      const dueDate = Math.floor(newDate.getTime() / 1000);
+      const result = await safeDbOperation(() => dbUpdateTask(taskId, { dueDate }), {
+        operationLabel: 'reschedule task',
+      });
+      if (result.success) {
+        await resetTasks();
+      } else {
+        notify(t('tasks.failedToReschedule'), result.error);
+      }
+    },
+    [resetTasks, t],
+  );
+
+  const handleKanbanTaskMove = useCallback(
+    async (taskId: string, newColumn: string) => {
+      if (newColumn === 'completed') {
+        await handleToggleComplete(taskId, true);
+      } else {
+        await handleToggleComplete(taskId, false);
+      }
+    },
+    [handleToggleComplete],
+  );
+
+  const handleKanbanTaskReorder = useCallback(
+    async (_taskId: string, _columnId: string, _newIndex: number) => {
       await resetTasks();
-    } else {
-      notify(t('tasks.failedToReschedule'), result.error);
-    }
-  }, [resetTasks]);
-
-  const handleKanbanTaskMove = useCallback(async (taskId: string, newColumn: string) => {
-    if (newColumn === "completed") {
-      await handleToggleComplete(taskId, true);
-    } else {
-      await handleToggleComplete(taskId, false);
-    }
-  }, [handleToggleComplete]);
-
-  const handleKanbanTaskReorder = useCallback(async (_taskId: string, _columnId: string, _newIndex: number) => {
-    await resetTasks();
-  }, [resetTasks]);
+    },
+    [resetTasks],
+  );
 
   const handleKanbanAddTask = useCallback((_columnId?: string) => {
     setShowCreateModal(true);
   }, []);
 
-  const renderMobileCard = useCallback((task: DbTask) => {
-    const subtasks = subtaskMap[task.id];
-    const subtaskCount = subtasks?.length ?? 0;
-    const completedSubtasks = subtasks?.filter((s) => s.is_completed).length ?? 0;
-    const isExpanded = mobileExpandedId === task.id;
-    const priorityBadge = PRIORITY_BADGE[task.priority as TaskPriority];
-    const tags: string[] = (() => { try { return JSON.parse(task.tags_json); } catch { return []; } })();
+  const renderMobileCard = useCallback(
+    (task: DbTask) => {
+      const subtasks = subtaskMap[task.id];
+      const subtaskCount = subtasks?.length ?? 0;
+      const completedSubtasks = subtasks?.filter((s) => s.is_completed).length ?? 0;
+      const isExpanded = mobileExpandedId === task.id;
+      const priorityBadge = PRIORITY_BADGE[task.priority as TaskPriority];
+      const tags: string[] = (() => {
+        try {
+          return JSON.parse(task.tags_json);
+        } catch {
+          return [];
+        }
+      })();
 
-    return (
-      <div key={task.id} className="mb-2.5 last:mb-0">
-        <SwipeableRow
-          actions={getSwipeActions(task)}
-          threshold={70}
-          maxSwipe={150}
-        >
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label={`Task: ${task.title}`}
-            onClick={() => handleMobileCardTap(task.id)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleMobileCardTap(task.id); }}
-            className={`relative rounded-2xl px-4 py-3.5 cursor-pointer active:scale-[0.97] transition-all duration-150 select-none shadow-sm ${
-              task.is_completed
-                ? "bg-white/5 dark:bg-white/5 border border-white/10 opacity-60"
-                : "bg-white/10 dark:bg-white/8 backdrop-blur-[12px] border border-white/15 dark:border-white/8"
-            } ${isExpanded ? "ring-1 ring-accent/40" : ""}`}
-          >
-            {/* Top row: priority dot + title + checkbox */}
-            <div className="flex items-start gap-3">
-              {/* Checkbox / completion toggle */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleToggleComplete(task.id, !task.is_completed); }}
-                className="mt-0.5 shrink-0"
-                aria-label={task.is_completed ? t('tasks.markIncomplete') : t('tasks.markComplete')}
-              >
-                {task.is_completed ? (
-                  <CheckCircle2 size={20} className="text-success" />
-                ) : (
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    PRIORITY_DOT[task.priority as TaskPriority]
-                  }`} />
-                )}
-              </button>
-
-              {/* Title and metadata */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {task.priority !== "none" && (
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${PRIORITY_DOT[task.priority as TaskPriority]}`} />
+      return (
+        <div key={task.id} className="mb-2.5 last:mb-0">
+          <SwipeableRow actions={getSwipeActions(task)} threshold={70} maxSwipe={150}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label={`Task: ${task.title}`}
+              onClick={() => handleMobileCardTap(task.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleMobileCardTap(task.id);
+              }}
+              className={`relative rounded-2xl px-4 py-3.5 cursor-pointer active:scale-[0.97] transition-all duration-150 select-none shadow-sm ${
+                task.is_completed
+                  ? 'bg-white/5 dark:bg-white/5 border border-white/10 opacity-60'
+                  : 'bg-white/10 dark:bg-white/8 backdrop-blur-[12px] border border-white/15 dark:border-white/8'
+              } ${isExpanded ? 'ring-1 ring-accent/40' : ''}`}
+            >
+              {/* Top row: priority dot + title + checkbox */}
+              <div className="flex items-start gap-3">
+                {/* Checkbox / completion toggle */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleComplete(task.id, !task.is_completed);
+                  }}
+                  className="mt-0.5 shrink-0"
+                  aria-label={
+                    task.is_completed ? t('tasks.markIncomplete') : t('tasks.markComplete')
+                  }
+                >
+                  {task.is_completed ? (
+                    <CheckCircle2 size={20} className="text-success" />
+                  ) : (
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        PRIORITY_DOT[task.priority as TaskPriority]
+                      }`}
+                    />
                   )}
-                  <span className={`text-[15px] font-medium truncate leading-snug ${
-                    task.is_completed ? "line-through text-text-tertiary" : "text-text-primary"
-                  }`}>
-                    {task.title}
-                  </span>
-                </div>
+                </button>
 
-                {/* Badge row */}
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {task.due_date && (
-                    <span className={`inline-flex items-center gap-1 text-[0.6rem] font-medium px-2 py-0.5 rounded-full ${getDueDateStyle(task.due_date)}`}>
-                      <Calendar size={9} />
-                      {formatDueDate(task.due_date)}
+                {/* Title and metadata */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    {task.priority !== 'none' && (
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${PRIORITY_DOT[task.priority as TaskPriority]}`}
+                      />
+                    )}
+                    <span
+                      className={`text-[15px] font-medium truncate leading-snug ${
+                        task.is_completed ? 'line-through text-text-tertiary' : 'text-text-primary'
+                      }`}
+                    >
+                      {task.title}
                     </span>
-                  )}
-                  {priorityBadge.label && (
-                    <span className={`inline-flex items-center text-[0.6rem] font-medium px-2 py-0.5 rounded-full ${priorityBadge.bg} ${priorityBadge.text}`}>
-                      {priorityBadge.label}
-                    </span>
-                  )}
-                  {subtaskCount > 0 && (
-                    <span className="text-[0.6rem] text-text-tertiary bg-white/10 px-2 py-0.5 rounded-full">
-                      {completedSubtasks}/{subtaskCount}
-                    </span>
-                  )}
-                  {task.recurrence_rule && (
-                    <span className="text-[0.6rem] text-text-tertiary" aria-label={t('tasks.recurring')}>↻</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Expanded detail */}
-            {isExpanded && (
-              <div className="mt-3 pt-3 border-t border-white/10 space-y-3 animate-[fadeIn_150ms_ease-out]">
-                {task.description && (
-                  <p className="text-xs text-text-secondary leading-relaxed">{task.description}</p>
-                )}
-
-                {subtaskCount > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-[0.6rem] font-semibold uppercase tracking-wider text-text-tertiary">
-                      {t('tasks.subtasks')} ({completedSubtasks}/{subtaskCount})
-                    </p>
-                    {subtasks!.map((sub) => (
-                      <div key={sub.id} className="flex items-center gap-2 py-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleToggleComplete(sub.id, !sub.is_completed); }}
-                          className="shrink-0"
-                        >
-                          {sub.is_completed ? (
-                            <CheckCircle2 size={14} className="text-success" />
-                          ) : (
-                            <div className="w-[14px] h-[14px] rounded-full border-2 border-text-tertiary/40" />
-                          )}
-                        </button>
-                        <span className={`text-xs truncate ${sub.is_completed ? "line-through text-text-tertiary" : "text-text-primary"}`}>
-                          {sub.title}
-                        </span>
-                      </div>
-                    ))}
                   </div>
-                )}
 
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {tags.map((tag) => (
-                      <span key={tag} className="text-[0.55rem] px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                        {tag}
+                  {/* Badge row */}
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    {task.due_date && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-[0.6rem] font-medium px-2 py-0.5 rounded-full ${getDueDateStyle(task.due_date)}`}
+                      >
+                        <Calendar size={9} />
+                        {formatDueDate(task.due_date)}
                       </span>
-                    ))}
+                    )}
+                    {priorityBadge.label && (
+                      <span
+                        className={`inline-flex items-center text-[0.6rem] font-medium px-2 py-0.5 rounded-full ${priorityBadge.bg} ${priorityBadge.text}`}
+                      >
+                        {priorityBadge.label}
+                      </span>
+                    )}
+                    {subtaskCount > 0 && (
+                      <span className="text-[0.6rem] text-text-tertiary bg-white/10 px-2 py-0.5 rounded-full">
+                        {completedSubtasks}/{subtaskCount}
+                      </span>
+                    )}
+                    {task.recurrence_rule && (
+                      <span
+                        className="text-[0.6rem] text-text-tertiary"
+                        aria-label={t('tasks.recurring')}
+                      >
+                        ↻
+                      </span>
+                    )}
                   </div>
-                )}
-
-                {task.thread_id && (
-                  <p className="text-[0.55rem] text-accent/60 flex items-center gap-1">
-                    <span>🔗</span> {t('tasks.linkedToEmailThread')}
-                  </p>
-                )}
+                </div>
               </div>
-            )}
-          </div>
-        </SwipeableRow>
-      </div>
-    );
-  }, [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap, t]);
+
+              {/* Expanded detail */}
+              {isExpanded && (
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-3 animate-[fadeIn_150ms_ease-out]">
+                  {task.description && (
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      {task.description}
+                    </p>
+                  )}
+
+                  {subtaskCount > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[0.6rem] font-semibold uppercase tracking-wider text-text-tertiary">
+                        {t('tasks.subtasks')} ({completedSubtasks}/{subtaskCount})
+                      </p>
+                      {subtasks!.map((sub) => (
+                        <div key={sub.id} className="flex items-center gap-2 py-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleComplete(sub.id, !sub.is_completed);
+                            }}
+                            className="shrink-0"
+                          >
+                            {sub.is_completed ? (
+                              <CheckCircle2 size={14} className="text-success" />
+                            ) : (
+                              <div className="w-[14px] h-[14px] rounded-full border-2 border-text-tertiary/40" />
+                            )}
+                          </button>
+                          <span
+                            className={`text-xs truncate ${sub.is_completed ? 'line-through text-text-tertiary' : 'text-text-primary'}`}
+                          >
+                            {sub.title}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[0.55rem] px-2 py-0.5 rounded-full bg-accent/10 text-accent"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {task.thread_id && (
+                    <p className="text-[0.55rem] text-accent/60 flex items-center gap-1">
+                      <span>🔗</span> {t('tasks.linkedToEmailThread')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </SwipeableRow>
+        </div>
+      );
+    },
+    [subtaskMap, mobileExpandedId, getSwipeActions, handleToggleComplete, handleMobileCardTap, t],
+  );
 
   return (
     <PageScaffold
@@ -800,13 +928,16 @@ export function TasksPage() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Search */}
           <div className="relative">
-            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search
+              size={12}
+              className="absolute inset-inline-start-2 top-1/2 -translate-y-1/2 text-text-tertiary"
+            />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('tasks.search')}
-              className="w-24 sm:w-48 pl-7 pr-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
+              className="w-24 sm:w-48 ps-7 pe-2.5 py-1.5 bg-bg-tertiary border border-border-primary rounded-lg text-xs text-text-primary outline-none focus:border-accent"
             />
           </div>
 
@@ -815,8 +946,8 @@ export function TasksPage() {
             onClick={() => setRemindersEnabled(!remindersEnabled)}
             className={`p-1.5 rounded-lg border transition-colors ${
               remindersEnabled
-                ? "border-border-primary text-text-tertiary hover:text-text-primary"
-                : "border-danger/30 text-danger/70 hover:text-danger bg-danger/5"
+                ? 'border-border-primary text-text-tertiary hover:text-text-primary'
+                : 'border-danger/30 text-danger/70 hover:text-danger bg-danger/5'
             }`}
             aria-label={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
             title={remindersEnabled ? t('tasks.disableReminders') : t('tasks.enableReminders')}
@@ -840,20 +971,23 @@ export function TasksPage() {
 
           {/* Desktop: Columns + ViewToggle */}
           {!isMobile && (
-            <ViewToggle
-              viewMode={viewMode}
-              density={density}
-              onViewModeChange={setViewMode}
-              onDensityChange={setDensity}
-              taskCount={filteredTasks.length}
-            />
+            <>
+              <ColumnPicker configKey="tasks" compact />
+              <ViewToggle
+                viewMode={viewMode}
+                density={density}
+                onViewModeChange={setViewMode}
+                onDensityChange={setDensity}
+                taskCount={filteredTasks.length}
+              />
+            </>
           )}
 
           {/* Mobile filter toggle */}
           {isMobile && (
             <button
               onClick={() => setShowFilters((v) => !v)}
-              className={`p-1.5 rounded-lg border ${showFilters ? "bg-accent/10 border-accent text-accent" : "border-border-primary text-text-tertiary"}`}
+              className={`p-1.5 rounded-lg border ${showFilters ? 'bg-accent/10 border-accent text-accent' : 'border-border-primary text-text-tertiary'}`}
               aria-label={t('tasks.toggleFilters')}
             >
               <SlidersHorizontal size={14} />
@@ -862,7 +996,6 @@ export function TasksPage() {
         </div>
       }
     >
-
       {/* SmartFilterBar (desktop + mobile) — kept as first child under the toolbar */}
       <SmartFilterBar
         filterStatus={filterStatus}
@@ -871,10 +1004,11 @@ export function TasksPage() {
         onFilterPriorityChange={setFilterPriority}
         groupBy={groupBy}
         onGroupByChange={setGroupBy}
-        sortBy={sortField === "title" ? "alphabetical" : (sortField as any)}
+        sortBy={sortField === 'title' ? 'alphabetical' : (sortField as any)}
         onSortChange={(s) => {
-          const newField = s === "alphabetical" ? "title" : (s as any);
-          const newDir = newField === sortField ? (sortDirection === "asc" ? "desc" : "asc") : "asc";
+          const newField = s === 'alphabetical' ? 'title' : (s as any);
+          const newDir =
+            newField === sortField ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
           setSort(newField, newDir);
         }}
         dateFilter={dateFilter}
@@ -883,17 +1017,15 @@ export function TasksPage() {
 
       {/* AI Suggestion Banner — only show when AI feature is enabled */}
       {aiEnabled && (
-        <AiTaskSuggestionBanner
-          suggestionCount={0}
-          onReview={() => {}}
-          onDismiss={() => {}}
-        />
+        <AiTaskSuggestionBanner suggestionCount={0} onReview={() => {}} onDismiss={() => {}} />
       )}
 
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 bg-accent/5 border-b border-accent/20 shrink-0">
-          <span className="text-xs text-text-secondary">{t('tasks.selectedCount', { count: selectedIds.size })}</span>
+          <span className="text-xs text-text-secondary">
+            {t('tasks.selectedCount', { count: selectedIds.size })}
+          </span>
           <button
             onClick={handleBulkComplete}
             className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover"
@@ -910,7 +1042,7 @@ export function TasksPage() {
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-text-tertiary hover:text-text-primary ml-auto"
+            className="text-xs text-text-tertiary hover:text-text-primary ms-auto"
           >
             {t('tasks.clearSelection')}
           </button>
@@ -930,12 +1062,12 @@ export function TasksPage() {
               className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary outline-none"
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   const value = (e.target as HTMLInputElement).value.trim();
                   if (value) handleMobileAddTask(value);
-                  (e.target as HTMLInputElement).value = "";
+                  (e.target as HTMLInputElement).value = '';
                 }
-                if (e.key === "Escape") {
+                if (e.key === 'Escape') {
                   setShowMobileQuickAdd(false);
                 }
               }}
@@ -946,7 +1078,10 @@ export function TasksPage() {
               }}
             />
             <button
-              onClick={() => { setShowCreateModal(true); setShowMobileQuickAdd(false); }}
+              onClick={() => {
+                setShowCreateModal(true);
+                setShowMobileQuickAdd(false);
+              }}
               className="flex items-center gap-1 px-2 py-1 text-[0.6875rem] font-medium text-accent hover:text-accent-hover bg-accent/10 rounded-md transition-colors shrink-0"
               aria-label={t('tasks.openFullForm')}
             >
@@ -959,7 +1094,7 @@ export function TasksPage() {
       {/* Task list — view mode switching */}
       {isMobile ? (
         <>
-          {viewMode === "agenda" ? (
+          {viewMode === 'agenda' ? (
             <TaskAgendaView
               tasks={filteredTasks}
               onToggleComplete={handleToggleComplete}
@@ -981,7 +1116,10 @@ export function TasksPage() {
                 {loading && tasks.length === 0 ? (
                   <div className="space-y-3 px-3 pt-3">
                     {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="rounded-2xl bg-white/8 dark:bg-white/5 p-4 animate-pulse border border-white/10">
+                      <div
+                        key={i}
+                        className="rounded-2xl bg-white/8 dark:bg-white/5 p-4 animate-pulse border border-white/10"
+                      >
                         <div className="flex items-start gap-3">
                           <div className="w-5 h-5 rounded-full bg-white/15 shrink-0" />
                           <div className="flex-1 space-y-2.5">
@@ -997,7 +1135,9 @@ export function TasksPage() {
                     <div className="flex items-start gap-3">
                       <AlertCircle size={18} className="text-danger shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary">{t('tasks.unableToLoad')}</p>
+                        <p className="text-sm font-medium text-text-primary">
+                          {t('tasks.unableToLoad')}
+                        </p>
                         <p className="text-xs text-text-tertiary mt-1 leading-relaxed">{error}</p>
                       </div>
                       <button
@@ -1011,14 +1151,14 @@ export function TasksPage() {
                   </div>
                 ) : filteredTasks.length === 0 ? (
                   <EmptyStateTask
-                    variant={searchQuery ? "search-empty" : "no-tasks"}
+                    variant={searchQuery ? 'search-empty' : 'no-tasks'}
                     viewMode="list"
                     onAction={() => setShowMobileQuickAdd(true)}
                   />
                 ) : (
                   <div className="space-y-1">
                     {groupedTasks.map((group) => (
-                      <div key={group.label || "__ungrouped"}>
+                      <div key={group.label || '__ungrouped'}>
                         {group.label && (
                           <h3 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 px-1 pt-1">
                             {group.label}
@@ -1058,11 +1198,13 @@ export function TasksPage() {
             </div>
           ) : filteredTasks.length === 0 ? (
             <EmptyStateTask
-              variant={searchQuery ? "search-empty" : viewMode === "kanban" ? "view-empty" : "no-tasks"}
+              variant={
+                searchQuery ? 'search-empty' : viewMode === 'kanban' ? 'view-empty' : 'no-tasks'
+              }
               viewMode={viewMode}
               onAction={() => setShowCreateModal(true)}
             />
-          ) : viewMode === "kanban" ? (
+          ) : viewMode === 'kanban' ? (
             <TaskKanbanView
               tasks={filteredTasks}
               columnsBy="status"
@@ -1074,7 +1216,7 @@ export function TasksPage() {
               subtaskMap={subtaskMap}
               contactMap={contactMap}
             />
-          ) : viewMode === "calendar" ? (
+          ) : viewMode === 'calendar' ? (
             <TaskCalendarView
               tasks={filteredTasks}
               onTaskClick={handleOpenDetail}
@@ -1082,7 +1224,7 @@ export function TasksPage() {
               onToggleComplete={handleToggleComplete}
               onDelete={handleDelete}
             />
-          ) : viewMode === "agenda" ? (
+          ) : viewMode === 'agenda' ? (
             <TaskAgendaView
               tasks={filteredTasks}
               onToggleComplete={handleToggleComplete}
@@ -1092,34 +1234,34 @@ export function TasksPage() {
           ) : (
             /* Default: List view */
             <GlassPanel variant="card" className="m-3">
-            <div className="py-2 px-3">
-              {groupedTasks.map((group) => (
-                <div key={group.label || "__ungrouped"}>
-                  {group.label && (
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 px-3">
-                      {group.label}
-                    </h3>
-                  )}
-                  <div className="space-y-0.5">
-                    {group.tasks.map((task) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-                        subtasks={subtaskMap[task.id]}
-                        onToggleComplete={handleToggleComplete}
-                        onSelect={setSelectedTaskId}
-                        onDelete={handleDelete}
-                        onOpenDetail={handleOpenDetail}
-                        onContactClick={handleContactClick}
-                        contactName={contactMap.get(task.id)?.name ?? undefined}
-                        contactId={task.contact_id}
-                        isSelected={selectedTaskId === task.id}
-                      />
-                    ))}
+              <div className="py-2 px-3">
+                {groupedTasks.map((group) => (
+                  <div key={group.label || '__ungrouped'}>
+                    {group.label && (
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 px-3">
+                        {group.label}
+                      </h3>
+                    )}
+                    <div className="space-y-0.5">
+                      {group.tasks.map((task) => (
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          subtasks={subtaskMap[task.id]}
+                          onToggleComplete={handleToggleComplete}
+                          onSelect={setSelectedTaskId}
+                          onDelete={handleDelete}
+                          onOpenDetail={handleOpenDetail}
+                          onContactClick={handleContactClick}
+                          contactName={contactMap.get(task.id)?.name ?? undefined}
+                          contactId={task.contact_id}
+                          isSelected={selectedTaskId === task.id}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             </GlassPanel>
           )}
         </div>
@@ -1171,10 +1313,8 @@ export function TasksPage() {
       {isMobile && (
         <button
           onClick={() => setShowMobileQuickAdd((v) => !v)}
-          className={`fixed bottom-6 right-4 z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-accent/30 transition-all duration-200 active:scale-85 ${
-            showMobileQuickAdd
-              ? "bg-accent rotate-45"
-              : "bg-accent"
+          className={`fixed bottom-6 inset-inline-end-4 z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-accent/30 transition-all duration-200 active:scale-85 ${
+            showMobileQuickAdd ? 'bg-accent rotate-45' : 'bg-accent'
           }`}
           aria-label={showMobileQuickAdd ? t('tasks.closeQuickAdd') : t('tasks.addTask')}
         >

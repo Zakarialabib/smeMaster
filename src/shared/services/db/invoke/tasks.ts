@@ -89,6 +89,32 @@ export async function getTasksWithContactsPaginated(
   });
 }
 
+export async function filterTasks(
+  companyId: string | null,
+  options: {
+    includeCompleted?: boolean;
+    priority?: string | null;
+    dateFilter?: string | null;
+    search?: string | null;
+    sortField?: string;
+    sortDirection?: string;
+    limit: number;
+    offset: number;
+  },
+): Promise<TaskWithContact[]> {
+  return invokeCommand<TaskWithContact[]>('db_filter_tasks', {
+    companyId,
+    includeCompleted: options.includeCompleted ?? false,
+    priority: options.priority ?? null,
+    dateFilter: options.dateFilter ?? null,
+    search: options.search ?? null,
+    sortField: options.sortField ?? 'sort_order',
+    sortDirection: options.sortDirection ?? 'asc',
+    limit: options.limit,
+    offset: options.offset,
+  });
+}
+
 export async function countTasks(
   companyId: string | null,
   includeCompleted: boolean,

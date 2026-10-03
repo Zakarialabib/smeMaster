@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from 'react';
 
 interface UseLongPressOptions {
   /** Time in ms before long-press fires. Default 500ms. */
@@ -20,10 +20,7 @@ interface LongPressHandlers {
  * Use for grid-card selection on touch devices: holding a card for ~500ms
  * enters selection mode.
  */
-export function useLongPress(
-  handlers: LongPressHandlers,
-  options: UseLongPressOptions = {},
-) {
+export function useLongPress(handlers: LongPressHandlers, options: UseLongPressOptions = {}) {
   const { threshold = 500, preventDefault = true } = options;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggeredRef = useRef(false);
@@ -31,9 +28,9 @@ export function useLongPress(
   const start = useCallback(
     (event: React.TouchEvent | React.MouseEvent) => {
       triggeredRef.current = false;
-      if (preventDefault && "preventDefault" in event) {
+      if (preventDefault && 'preventDefault' in event) {
         // Only prevent default for touch to avoid blocking mouse clicks entirely
-        if ("touches" in event) event.preventDefault();
+        if ('touches' in event) event.preventDefault();
       }
       handlers.onPressStart?.(event);
       timeoutRef.current = setTimeout(() => {

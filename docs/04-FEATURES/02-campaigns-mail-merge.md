@@ -116,7 +116,7 @@ Keep these responsibilities separate:
 | Main page         | `src/features/campaigns/components/CampaignPage.tsx`                         |
 | Campaign editor   | `src/features/campaigns/components/CampaignComposer.tsx`                     |
 | Block editor       | `src/features/campaigns/components/editor/` (CampaignBuilder, blocks, config, Preview, ai, VaultFilePicker) |
-| Block model        | `src/features/campaigns/components/editor/types.ts`, `emailRenderer.ts`, `blockDefaults.ts` |
+| Block model        | `src/features/campaigns/components/editor/types.ts`, `src/features/campaigns/services/emailRenderer.ts`, `blockDefaults.ts` |
 | Analytics UI      | `src/features/campaigns/components/CampaignAnalytics.tsx`                    |
 | Service layer     | `src/features/campaigns/services/campaignService.ts`                         |
 | State             | `src/features/campaigns/stores/campaignStore.ts`, `campaignComposerStore.ts` |
@@ -132,3 +132,9 @@ Update this page when:
 - analytics ownership or schema changes materially
 - campaign flows move out of the dedicated campaigns feature module
 - audience/merge behavior changes in ways users should understand
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| Block model `emailRenderer.ts` under `components/editor/` | Actual path `src/features/campaigns/services/emailRenderer.ts` | `find src/features/campaigns -iname '*render*'` → only `services/emailRenderer.ts` + `editor/EmailEditor.tsx` |

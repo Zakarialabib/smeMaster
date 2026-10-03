@@ -1,6 +1,6 @@
-﻿import { useState, useRef, useCallback, useEffect } from "react";
-import { Button } from "@shared/components/ui/Button";
-import { searchContacts, type DbContact } from "@features/contacts/db/contacts.ts";
+﻿import { useState, useRef, useCallback, useEffect } from 'react';
+import { Button } from '@shared/components/ui/Button';
+import { searchContacts, type DbContact } from '@features/contacts/db/contacts.ts';
 
 export interface ContactLookupInfo {
   displayName: string | null;
@@ -21,11 +21,11 @@ export function AddressInput({
   label,
   addresses,
   onChange,
-  placeholder = "Add recipients...",
+  placeholder = 'Add recipients...',
   contactInfo,
   isNewMode = false,
 }: AddressInputProps) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<DbContact[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -40,24 +40,21 @@ export function AddressInput({
     };
   }, []);
 
-  const handleInputChange = useCallback(
-    (value: string) => {
-      setInputValue(value);
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-      if (value.length >= 2) {
-        searchTimerRef.current = setTimeout(async () => {
-          const results = await searchContacts(value, 5);
-          setSuggestions(results);
-          setShowSuggestions(results.length > 0);
-          setSelectedIdx(-1);
-        }, 200);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    },
-    [],
-  );
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (value.length >= 2) {
+      searchTimerRef.current = setTimeout(async () => {
+        const results = await searchContacts(value, 5);
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
+        setSelectedIdx(-1);
+      }, 200);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, []);
 
   const addAddress = useCallback(
     (address: string) => {
@@ -65,7 +62,7 @@ export function AddressInput({
       if (trimmed && !addresses.includes(trimmed)) {
         onChange([...addresses, trimmed]);
       }
-      setInputValue("");
+      setInputValue('');
       setSuggestions([]);
       setShowSuggestions(false);
       inputRef.current?.focus();
@@ -81,31 +78,29 @@ export function AddressInput({
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === "Tab" || e.key === ",") {
+    if (e.key === 'Enter' || e.key === 'Tab' || e.key === ',') {
       e.preventDefault();
       if (showSuggestions && selectedIdx >= 0) {
         addAddress(suggestions[selectedIdx]!.email);
       } else if (inputValue.trim()) {
         addAddress(inputValue);
       }
-    } else if (e.key === "Backspace" && !inputValue && addresses.length > 0) {
+    } else if (e.key === 'Backspace' && !inputValue && addresses.length > 0) {
       removeAddress(addresses.length - 1);
-    } else if (e.key === "ArrowDown" && showSuggestions) {
+    } else if (e.key === 'ArrowDown' && showSuggestions) {
       e.preventDefault();
       setSelectedIdx((prev) => Math.min(prev + 1, suggestions.length - 1));
-    } else if (e.key === "ArrowUp" && showSuggestions) {
+    } else if (e.key === 'ArrowUp' && showSuggestions) {
       e.preventDefault();
       setSelectedIdx((prev) => Math.max(prev - 1, 0));
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setShowSuggestions(false);
     }
   };
 
   return (
     <div className="flex items-start gap-2">
-      <span className="text-xs text-text-tertiary pt-1.5 w-8 shrink-0">
-        {label}
-      </span>
+      <span className="text-xs text-text-tertiary pt-1.5 w-8 shrink-0">{label}</span>
       <div className="flex-1 flex flex-wrap items-center gap-1 min-h-[32px] relative">
         {addresses.map((addr) => {
           const info = contactInfo?.[addr];
@@ -121,7 +116,14 @@ export function AddressInput({
                 {info?.displayName && (
                   <span className="inline-flex items-center gap-1 text-text-tertiary font-medium">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                      <circle cx="5" cy="5" r="1.5" stroke="currentColor" strokeWidth="1" fill="none" />
+                      <circle
+                        cx="5"
+                        cy="5"
+                        r="1.5"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        fill="none"
+                      />
                     </svg>
                     <span className="truncate max-w-[100px]" title={info.displayName}>
                       {info.displayName}
@@ -129,10 +131,24 @@ export function AddressInput({
                   </span>
                 )}
                 {isNewMode && info?.displayName && (
-                  <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-text-tertiary/60 border-l border-border-secondary pl-1.5 ml-0.5">
+                  <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-text-tertiary/60 border-l border-border-secondary pl-1.5 ms-0.5">
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true">
-                      <rect x="1" y="2" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
-                      <path d="M2 2V1.5C2 1.22 2.22 1 2.5 1h3C5.78 1 6 1.22 6 1.5V2" stroke="currentColor" strokeWidth="0.8" fill="none" />
+                      <rect
+                        x="1"
+                        y="2"
+                        width="6"
+                        height="5"
+                        rx="1"
+                        stroke="currentColor"
+                        strokeWidth="0.8"
+                        fill="none"
+                      />
+                      <path
+                        d="M2 2V1.5C2 1.22 2.22 1 2.5 1h3C5.78 1 6 1.22 6 1.5V2"
+                        stroke="currentColor"
+                        strokeWidth="0.8"
+                        fill="none"
+                      />
                     </svg>
                   </span>
                 )}
@@ -161,7 +177,7 @@ export function AddressInput({
             blurTimerRef.current = setTimeout(() => setShowSuggestions(false), 150);
             if (inputValue.trim()) addAddress(inputValue);
           }}
-          placeholder={addresses.length === 0 ? placeholder : ""}
+          placeholder={addresses.length === 0 ? placeholder : ''}
           aria-label={label}
           className="flex-1 min-w-[120px] bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
         />
@@ -174,17 +190,13 @@ export function AddressInput({
                 key={contact.id}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => addAddress(contact.email)}
-                className={`w-full text-left px-3 py-1.5 text-sm hover:bg-bg-hover ${
-                  i === selectedIdx ? "bg-bg-hover" : ""
+                className={`w-full text-start px-3 py-1.5 text-sm hover:bg-bg-hover ${
+                  i === selectedIdx ? 'bg-bg-hover' : ''
                 }`}
               >
-                <div className="text-text-primary">
-                  {contact.display_name ?? contact.email}
-                </div>
+                <div className="text-text-primary">{contact.display_name ?? contact.email}</div>
                 {contact.display_name && (
-                  <div className="text-xs text-text-tertiary">
-                    {contact.email}
-                  </div>
+                  <div className="text-xs text-text-tertiary">{contact.email}</div>
                 )}
               </button>
             ))}
@@ -194,4 +206,3 @@ export function AddressInput({
     </div>
   );
 }
-

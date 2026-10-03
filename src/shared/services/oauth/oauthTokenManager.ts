@@ -1,7 +1,7 @@
-﻿import type { DbAccount } from "@features/accounts/db/accounts";
-import { updateAccountTokens } from "@features/accounts/db/accounts";
-import { getOAuthProvider } from "./providers";
-import { refreshProviderToken } from "./oauthFlow";
+﻿import type { DbAccount } from '@features/accounts/db/accounts';
+import { updateAccountTokens } from '@features/accounts/db/accounts';
+import { getOAuthProvider } from './providers';
+import { refreshProviderToken } from './oauthFlow';
 
 /** Buffer before expiry to trigger a refresh (5 minutes) */
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
@@ -15,9 +15,9 @@ const REFRESH_BUFFER_MS = 5 * 60 * 1000;
  * For Gmail API accounts, token refresh is handled by GmailClient.
  */
 export async function ensureFreshToken(account: DbAccount): Promise<string> {
-  if (account.auth_method !== "oauth2" || !account.oauth_provider) {
+  if (account.auth_method !== 'oauth2' || !account.oauth_provider) {
     // Not an OAuth IMAP account â€” return whatever password/token is stored
-    return account.access_token ?? account.imap_password ?? "";
+    return account.access_token ?? account.imap_password ?? '';
   }
 
   if (!account.access_token) {

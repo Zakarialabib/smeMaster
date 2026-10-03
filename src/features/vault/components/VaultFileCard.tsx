@@ -142,7 +142,7 @@ export function VaultFileCard({
         >
           {/* Selection checkbox */}
           {selectionMode && onToggleSelect && (
-            <div className="self-start -mt-1 -ml-1" onClick={(e) => e.stopPropagation()}>
+            <div className="self-start -mt-1 -ms-1" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => onToggleSelect(entry.path)}
                 className="p-0.5 text-text-tertiary hover:text-accent transition-colors"

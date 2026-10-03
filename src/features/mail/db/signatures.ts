@@ -7,8 +7,8 @@ import {
   clearDefaultSignature as dbClearDefaultSignature,
   getDefaultSignature,
   getSignatureAccount,
-} from "@/shared/services/db/db-invoke";
-import type { Signature } from "@shared/services/db/schema";
+} from '@/shared/services/db/db-invoke';
+import type { Signature } from '@shared/services/db/schema';
 
 export type DbSignature = Signature;
 

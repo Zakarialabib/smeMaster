@@ -1,8 +1,8 @@
-import { type ReactNode, useState } from "react";
-import { ChevronRight, ChevronDown, HelpCircle } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { cn } from "@shared/utils/cn";
-import { StatTile, type StatTileProps } from "./StatTile";
+import { type ReactNode, useState } from 'react';
+import { ChevronRight, ChevronDown, HelpCircle } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
+import { StatTile, type StatTileProps } from './StatTile';
 
 /** A single help-card item: a label header + body text. */
 export interface HelpCardItem {
@@ -58,12 +58,7 @@ export function SettingsTabShell({
   const hasHelp = !!help && help.length > 0;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-6 max-w-4xl mx-auto pb-8",
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col gap-6 max-w-4xl mx-auto pb-8', className)}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -73,9 +68,7 @@ export function SettingsTabShell({
           </h2>
           <p className="text-xs text-text-tertiary mt-0.5">{description}</p>
         </div>
-        {headerActions && (
-          <div className="flex items-center gap-2">{headerActions}</div>
-        )}
+        {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
       </div>
 
       {/* Stats grid */}
@@ -89,11 +82,7 @@ export function SettingsTabShell({
 
       {/* Help card (collapsible) */}
       {hasHelp && (
-        <HelpCard
-          items={help!}
-          open={helpOpen}
-          onToggle={() => setHelpOpen((o) => !o)}
-        />
+        <HelpCard items={help!} open={helpOpen} onToggle={() => setHelpOpen((o) => !o)} />
       )}
 
       {/* Body */}
@@ -118,16 +107,14 @@ function HelpCard({ items, open, onToggle }: HelpCardInternalProps) {
       <button
         type="button"
         onClick={onToggle}
-        className="w-full text-left bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 hover:bg-accent/10 transition-colors cursor-pointer"
+        className="w-full text-start bg-accent/5 border border-accent/12 rounded-[10px] px-4 py-2.5 hover:bg-accent/10 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
           <ChevronRight size={14} className="text-accent shrink-0" />
           <HelpCircle size={13} className="text-accent shrink-0" />
-          <span className="text-xs font-medium text-text-secondary">
-            Learn more
-          </span>
-          <span className="ml-auto text-[10px] text-text-tertiary uppercase tracking-wider">
-            {items.length} {items.length === 1 ? "item" : "items"}
+          <span className="text-xs font-medium text-text-secondary">Learn more</span>
+          <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
+            {items.length} {items.length === 1 ? 'item' : 'items'}
           </span>
         </div>
       </button>
@@ -162,9 +149,7 @@ function HelpCard({ items, open, onToggle }: HelpCardInternalProps) {
               <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-accent">
                 {item.label}
               </span>
-              <p className="text-[13px] text-text-secondary leading-relaxed mt-0.5">
-                {item.body}
-              </p>
+              <p className="text-[13px] text-text-secondary leading-relaxed mt-0.5">{item.body}</p>
             </div>
           </div>
         ))}

@@ -1,18 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
-import { Trash2, Pencil, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { TextField } from "@shared/components/ui/TextField";
-import { Toggle } from "@shared/components/ui/Toggle";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { getLabelsForAccount, type DbLabel } from "@shared/services/db/labels";
+import { useState, useEffect, useCallback } from 'react';
+import { Trash2, Pencil, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { TextField } from '@shared/components/ui/TextField';
+import { Toggle } from '@shared/components/ui/Toggle';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { getLabelsForAccount, type DbLabel } from '@shared/services/db/labels';
 import {
   getSmartLabelRulesForAccount,
   insertSmartLabelRule,
   updateSmartLabelRule,
   deleteSmartLabelRule,
   type DbSmartLabelRule,
-} from "@features/mail/db/smartLabelRules";
-import type { FilterCriteria } from "@features/mail/db/filters";
-import { backfillSmartLabels } from "@features/mail/services/smartLabels/backfillService";
+} from '@features/mail/db/smartLabelRules';
+import type { FilterCriteria } from '@features/mail/db/filters';
+import { backfillSmartLabels } from '@features/mail/services/smartLabels/backfillService';
 
 export function SmartLabelEditor() {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -25,12 +25,12 @@ export function SmartLabelEditor() {
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
 
   // Form state
-  const [labelId, setLabelId] = useState("");
-  const [aiDescription, setAiDescription] = useState("");
-  const [criteriaFrom, setCriteriaFrom] = useState("");
-  const [criteriaTo, setCriteriaTo] = useState("");
-  const [criteriaSubject, setCriteriaSubject] = useState("");
-  const [criteriaBody, setCriteriaBody] = useState("");
+  const [labelId, setLabelId] = useState('');
+  const [aiDescription, setAiDescription] = useState('');
+  const [criteriaFrom, setCriteriaFrom] = useState('');
+  const [criteriaTo, setCriteriaTo] = useState('');
+  const [criteriaSubject, setCriteriaSubject] = useState('');
+  const [criteriaBody, setCriteriaBody] = useState('');
   const [criteriaHasAttachment, setCriteriaHasAttachment] = useState(false);
 
   const loadRules = useCallback(async () => {
@@ -43,18 +43,18 @@ export function SmartLabelEditor() {
     if (!activeAccountId) return;
     loadRules();
     getLabelsForAccount(activeAccountId).then((l) =>
-      setLabels(l.filter((lb) => lb.type === "user")),
+      setLabels(l.filter((lb) => lb.type === 'user')),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loadRules is stable
   }, [activeAccountId]);
 
   const resetForm = useCallback(() => {
-    setLabelId("");
-    setAiDescription("");
-    setCriteriaFrom("");
-    setCriteriaTo("");
-    setCriteriaSubject("");
-    setCriteriaBody("");
+    setLabelId('');
+    setAiDescription('');
+    setCriteriaFrom('');
+    setCriteriaTo('');
+    setCriteriaSubject('');
+    setCriteriaBody('');
     setCriteriaHasAttachment(false);
     setShowCriteria(false);
     setEditingId(null);
@@ -101,28 +101,38 @@ export function SmartLabelEditor() {
 
     let criteria: FilterCriteria = {};
     if (rule.criteria_json) {
-      try { criteria = JSON.parse(rule.criteria_json); } catch { /* empty */ }
+      try {
+        criteria = JSON.parse(rule.criteria_json);
+      } catch {
+        /* empty */
+      }
     }
 
-    setCriteriaFrom(criteria.from ?? "");
-    setCriteriaTo(criteria.to ?? "");
-    setCriteriaSubject(criteria.subject ?? "");
-    setCriteriaBody(criteria.body ?? "");
+    setCriteriaFrom(criteria.from ?? '');
+    setCriteriaTo(criteria.to ?? '');
+    setCriteriaSubject(criteria.subject ?? '');
+    setCriteriaBody(criteria.body ?? '');
     setCriteriaHasAttachment(criteria.hasAttachment ?? false);
     setShowCriteria(Object.keys(criteria).length > 0);
     setShowForm(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteSmartLabelRule(id);
-    if (editingId === id) resetForm();
-    await loadRules();
-  }, [editingId, resetForm, loadRules]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteSmartLabelRule(id);
+      if (editingId === id) resetForm();
+      await loadRules();
+    },
+    [editingId, resetForm, loadRules],
+  );
 
-  const handleToggleEnabled = useCallback(async (rule: DbSmartLabelRule) => {
-    await updateSmartLabelRule(rule.id, { isEnabled: rule.is_enabled !== 1 });
-    await loadRules();
-  }, [loadRules]);
+  const handleToggleEnabled = useCallback(
+    async (rule: DbSmartLabelRule) => {
+      await updateSmartLabelRule(rule.id, { isEnabled: rule.is_enabled !== 1 });
+      await loadRules();
+    },
+    [loadRules],
+  );
 
   const handleBackfill = useCallback(async () => {
     if (!activeAccountId || backfilling) return;
@@ -130,10 +140,10 @@ export function SmartLabelEditor() {
     setBackfillResult(null);
     try {
       const count = await backfillSmartLabels(activeAccountId);
-      setBackfillResult(`Applied ${count} label${count !== 1 ? "s" : ""} to existing emails.`);
+      setBackfillResult(`Applied ${count} label${count !== 1 ? 's' : ''} to existing emails.`);
     } catch (err) {
-      setBackfillResult("Backfill failed. Check your AI provider settings.");
-      console.error("Smart label backfill failed:", err);
+      setBackfillResult('Backfill failed. Check your AI provider settings.');
+      console.error('Smart label backfill failed:', err);
     } finally {
       setBackfilling(false);
     }
@@ -153,13 +163,11 @@ export function SmartLabelEditor() {
           className="text-xs text-accent hover:text-accent-hover disabled:opacity-50 flex items-center gap-1.5"
         >
           {backfilling && <Loader2 size={12} className="animate-spin" />}
-          {backfilling ? "Applying to existing emails..." : "Apply to existing emails"}
+          {backfilling ? 'Applying to existing emails...' : 'Apply to existing emails'}
         </button>
       )}
 
-      {backfillResult && (
-        <div className="text-xs text-text-tertiary">{backfillResult}</div>
-      )}
+      {backfillResult && <div className="text-xs text-text-tertiary">{backfillResult}</div>}
 
       {rules.map((rule) => (
         <div
@@ -175,16 +183,18 @@ export function SmartLabelEditor() {
                 </span>
               )}
             </div>
-            <div className="text-xs text-text-tertiary truncate">
-              {rule.ai_description}
-            </div>
+            <div className="text-xs text-text-tertiary truncate">{rule.ai_description}</div>
           </div>
           <div className="flex items-center gap-1">
             <Toggle
               size="sm"
               checked={rule.is_enabled === 1}
               onChange={() => handleToggleEnabled(rule)}
-              aria-label={rule.is_enabled === 1 ? `Disable smart label "${getLabelName(rule.label_id)}"` : `Enable smart label "${getLabelName(rule.label_id)}"`}
+              aria-label={
+                rule.is_enabled === 1
+                  ? `Disable smart label "${getLabelName(rule.label_id)}"`
+                  : `Enable smart label "${getLabelName(rule.label_id)}"`
+              }
             />
             <button
               onClick={() => handleEdit(rule)}
@@ -214,7 +224,9 @@ export function SmartLabelEditor() {
               >
                 <option value="">Select a label...</option>
                 {labels.map((l) => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -289,7 +301,7 @@ export function SmartLabelEditor() {
               disabled={!labelId || !aiDescription.trim()}
               className="px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors disabled:opacity-50"
             >
-              {editingId ? "Update" : "Save"}
+              {editingId ? 'Update' : 'Save'}
             </button>
             <button
               onClick={resetForm}
@@ -310,4 +322,3 @@ export function SmartLabelEditor() {
     </div>
   );
 }
-

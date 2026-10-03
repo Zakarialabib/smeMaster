@@ -11,8 +11,8 @@
 import {
   createCampaignWithRecipients,
   sendCampaign as dbSendCampaign,
-} from "@shared/services/db/db-invoke";
-import { getContactGroupIds } from "@features/contacts/db/contactGroups";
+} from '@shared/services/db/db-invoke';
+import { getContactGroupIds } from '@features/contacts/db/contactGroups';
 
 export interface CampaignCreateInput {
   companyId: string;
@@ -39,9 +39,7 @@ export interface CampaignCreateInput {
  * - Delegates the actual DB work (campaign insert + recipient bulk insert +
  *   A/B test config) to the Rust `db_create_campaign_with_recipients` command.
  */
-export async function createCampaign(
-  input: CampaignCreateInput,
-): Promise<string> {
+export async function createCampaign(input: CampaignCreateInput): Promise<string> {
   // Resolve contact IDs from group or segment
   let contactIds: string[] = [];
   if (input.recipientContactIds) {
@@ -50,15 +48,11 @@ export async function createCampaign(
     const members = await getContactGroupIds(input.groupId);
     contactIds = members.map((m) => m.contact_id);
   } else if (input.segmentId) {
-    const { getContactSegments } = await import(
-      "@features/contacts/db/contactSegments"
-    );
+    const { getContactSegments } = await import('@features/contacts/db/contactSegments');
     const segments = await getContactSegments(input.companyId);
     const seg = segments.find((s) => s.id === input.segmentId);
     if (seg) {
-      const { evaluateSegmentQuery } = await import(
-        "@features/contacts/services/segments"
-      );
+      const { evaluateSegmentQuery } = await import('@features/contacts/services/segments');
       contactIds = await evaluateSegmentQuery(input.companyId, seg.query);
     }
   }

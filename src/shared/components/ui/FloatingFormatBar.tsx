@@ -27,7 +27,7 @@ export function FloatingFormatBar({ actions, targetRef, className = '' }: Floati
 
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    
+
     if (rect.width === 0 && rect.height === 0) {
       setPosition(null);
       return;
@@ -80,7 +80,10 @@ export function FloatingFormatBar({ actions, targetRef, className = '' }: Floati
       {actions.map((action) => (
         <button
           key={action.id}
-          onClick={(e) => { e.preventDefault(); action.onAction(); }}
+          onClick={(e) => {
+            e.preventDefault();
+            action.onAction();
+          }}
           className={`flex items-center justify-center w-9 h-9 rounded-md text-sm transition-colors ${
             action.isActive
               ? 'bg-accent/20 text-accent'

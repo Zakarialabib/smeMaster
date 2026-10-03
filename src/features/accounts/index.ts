@@ -1,6 +1,6 @@
-export type { Account } from "./stores/accountStore";
-export type { Account as DbAccount } from "../../shared/services/db/db-invoke";
-export { useAccountStore } from "./stores/accountStore";
+export type { Account } from './stores/accountStore';
+export type { Account as DbAccount } from '../../shared/services/db/db-invoke';
+export { useAccountStore } from './stores/accountStore';
 
 export {
   getAllAccounts,
@@ -13,4 +13,4 @@ export {
   insertImapAccount,
   getAccount,
   getAccountByEmail,
-} from "./db/accounts";
+} from './db/accounts';

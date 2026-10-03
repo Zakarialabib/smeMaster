@@ -63,6 +63,22 @@ impl AppLifecycle {
         let tool_registry = Arc::new(ToolRegistry::new());
         crate::orchestrator::gating::set_global_tool_registry(tool_registry.clone());
 
+        // ── Runtime feature flags ─────────────────────────────────────────
+        // Enable the feature flags that are compiled in so that gating.rs
+        // can check them at runtime. Each subsystem's `feature_flag` (e.g.
+        // "ai", "pairing", "campaigns") must match an enabled flag or the
+        // subsystem will report SubsystemInactive.
+        //
+        // `local-ai` is a compile-time Cargo feature that gates the ML sidecar.
+        // All other flags are always-on at compile time (pure runtime flags).
+        #[cfg(feature = "local-ai")]
+        subsystem_registry.enable_feature("ai");
+        subsystem_registry.enable_feature("deliverability-dashboard");
+        subsystem_registry.enable_feature("device");
+        subsystem_registry.enable_feature("backup");
+        subsystem_registry.enable_feature("workflows");
+        log::info!("[init] Phase 3 — Runtime feature flags set");
+
         // ── Register subsystems ───────────────────────────────────────────
 
         // 1. Lazy: deliverability_sentinel (idle shutdown capable, 60s grace)
@@ -90,19 +106,41 @@ impl AppLifecycle {
             )
         );
 
-        // 3. OnDemand: ai_inference (future AI assistant)
-        subsystem_registry.register_ondemand(
-            orchestrator::SubsystemEntry::new_ondemand(
-                "ai_inference",
-                Some("ai"),
-                Box::new(|| -> Arc<dyn orchestrator::Service> {
-                    Arc::new(crate::orchestrator::services::StubService::new(
-                        "ai_inference",
-                        "AI inference not yet implemented",
-                    ))
-                }),
-            )
-        );
+        // 3. OnDemand: ml-sidecar (external ML/RAG process).
+        //    Gated behind `local-ai` so the core build never needs protoc.
+        //    Default memory limit: 1024 MB (1 GB) for model weights.
+        #[cfg(feature = "local-ai")]
+        {
+            use crate::orchestrator::services::MlSidecarService;
+            let ml_service = Arc::new(MlSidecarService::new(app.handle().clone(), Some(1024)));
+            // Manage as Tauri state so AI commands can access the sidecar IPC
+            app.manage(ml_service.clone());
+            subsystem_registry.register_ondemand(
+                orchestrator::SubsystemEntry::new_ondemand(
+                    "ml-sidecar",
+                    Some("ai"),
+                    Box::new(move || -> Arc<dyn orchestrator::Service> {
+                        ml_service.clone()
+                    }),
+                )
+            );
+            log::info!("[init] Phase 3 — ml-sidecar registered (local-ai enabled)");
+        }
+        #[cfg(not(feature = "local-ai"))]
+        {
+            subsystem_registry.register_ondemand(
+                orchestrator::SubsystemEntry::new_ondemand(
+                    "ai_inference",
+                    Some("ai"),
+                    Box::new(|| -> Arc<dyn orchestrator::Service> {
+                        Arc::new(crate::orchestrator::services::StubService::new(
+                            "ai_inference",
+                            "local-ai feature disabled — AI inference not available",
+                        ))
+                    }),
+                )
+            );
+        }
 
         // 4. OnDemand: workflows_executor (workflow rule engine)
         //    Polls for pending operations and due follow-up reminders every 60s.
@@ -183,6 +221,10 @@ impl AppLifecycle {
             if let Err(e) = crate::db::health_check(&pool).await {
                 log::warn!("[orchestrator] Post-migration health check failed: {e}");
             }
+
+            // ── Downloader: re-queue jobs interrupted by a previous
+            //    shutdown. Safe now — 033_downloader migration has run.
+            crate::downloader::spawn_boot_recovery(handle.clone(), pool.clone());
 
             emit_init_progress(&bus, "Database", "Migrations complete", 10);
 
@@ -420,6 +462,45 @@ async fn seed_demo_data(pool: &sqlx::SqlitePool) -> Result<(), String> {
     if !has_settings {
         log::warn!("[seed] Settings table missing — skipping demo data (migrations may be partial)");
         return Ok(());
+    }
+
+    // ── Dynamic guard: do not auto-seed when real data already exists ──
+    // If the user has connected at least one real email account, demo data
+    // would only pollute their real dataset — skip it so real data is shown
+    // on its own. (Explicit seeding via db_seed_demo_preset still works.)
+    let real_accounts: i64 = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM accounts WHERE is_active = 1",
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("Cannot check accounts: {e}"))?;
+
+    if real_accounts > 0 {
+        log::info!("[seed] Real email accounts present — skipping auto demo seed");
+        // Still mark as seeded so we never auto-seed later once real data exists.
+        let _ = sqlx::query(
+            "INSERT OR IGNORE INTO settings (key, value) VALUES ('demo_full_seeded', '1')",
+        )
+        .execute(pool)
+        .await;
+        return Ok(());
+    }
+
+    // ── Allow/deny guard: respect an explicit opt-out setting ──
+    // A user (or admin) can set demo_data_enabled = 'false' to disable demo
+    // data entirely. When absent it defaults to enabled (first-run experience).
+    let demo_allowed: Option<(String,)> = sqlx::query_as(
+        "SELECT value FROM settings WHERE key = 'demo_data_enabled'",
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Cannot check demo_data_enabled: {e}"))?;
+
+    if let Some((val,)) = demo_allowed {
+        if val == "false" {
+            log::info!("[seed] demo_data_enabled = false — skipping demo seed");
+            return Ok(());
+        }
     }
 
     // Check if already seeded (idempotency guard)

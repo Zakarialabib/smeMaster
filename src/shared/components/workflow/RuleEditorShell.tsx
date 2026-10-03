@@ -1,6 +1,6 @@
-import { type ReactNode, useCallback } from "react";
-import { Save, X } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
+import { type ReactNode, useCallback } from 'react';
+import { Save, X } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
 
 export interface RuleEditorShellProps {
   isEditing: boolean;
@@ -51,7 +51,7 @@ export function RuleEditorShell({
 }: RuleEditorShellProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onCancel();
       }
     },
@@ -122,7 +122,7 @@ export function RuleEditorShell({
 
       {/* isEditing is exposed to consumers via prop but is not used in the shell itself. */}
       {/* Keeping it in the interface preserves the existing public API. */}
-      <span data-is-editing={isEditing ? "true" : "false"} hidden />
+      <span data-is-editing={isEditing ? 'true' : 'false'} hidden />
     </div>
   );
 }

@@ -1,10 +1,10 @@
-import { useMemo, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Search, ChevronLeft, ChevronRight, History, Grid3X3 } from "lucide-react";
-import type { SettingsTabId } from "./SettingsTabRegistry";
-import { tabGroups, getTabLabel } from "./SettingsTabRegistry";
-import { useRecentSettingsStore } from "@features/settings/stores/recentSettingsStore";
-import { cn } from "@shared/utils/cn";
+import { useMemo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Search, ChevronLeft, ChevronRight, History, Grid3X3 } from 'lucide-react';
+import type { SettingsTabId } from './SettingsTabRegistry';
+import { tabGroups, getTabLabel } from './SettingsTabRegistry';
+import { useRecentSettingsStore } from '@features/settings/stores/recentSettingsStore';
+import { cn } from '@shared/utils/cn';
 
 /**
  * SettingsSidebar — Persistent navigation sidebar for settings.
@@ -34,7 +34,7 @@ export function SettingsSidebar({
 }) {
   const { t } = useTranslation();
   const recentSettings = useRecentSettingsStore((s) => s.recent);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const labelFor = useCallback((id: string) => getTabLabel(id, t), [t]);
 
@@ -61,10 +61,10 @@ export function SettingsSidebar({
           <button
             onClick={onGoHome}
             className={cn(
-              "w-9 h-9 rounded-lg flex items-center justify-center transition-all",
+              'w-9 h-9 rounded-lg flex items-center justify-center transition-all',
               !activeTab
-                ? "bg-accent/15 text-accent"
-                : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
+                ? 'bg-accent/15 text-accent'
+                : 'text-text-tertiary hover:text-text-primary hover:bg-bg-hover',
             )}
             title="Settings Overview"
             aria-label="Settings Overview"
@@ -72,26 +72,28 @@ export function SettingsSidebar({
             <Grid3X3 size={16} />
           </button>
         )}
-        {tabGroups.flatMap((g) => g.tabs).map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onSelectTab(tab.id)}
-              className={cn(
-                "w-9 h-9 rounded-lg flex items-center justify-center transition-all",
-                isActive
-                  ? "bg-accent/15 text-accent"
-                  : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
-              )}
-              title={labelFor(tab.id)}
-              aria-label={labelFor(tab.id)}
-            >
-              <Icon size={16} />
-            </button>
-          );
-        })}
+        {tabGroups
+          .flatMap((g) => g.tabs)
+          .map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onSelectTab(tab.id)}
+                className={cn(
+                  'w-9 h-9 rounded-lg flex items-center justify-center transition-all',
+                  isActive
+                    ? 'bg-accent/15 text-accent'
+                    : 'text-text-tertiary hover:text-text-primary hover:bg-bg-hover',
+                )}
+                title={labelFor(tab.id)}
+                aria-label={labelFor(tab.id)}
+              >
+                <Icon size={16} />
+              </button>
+            );
+          })}
         {onToggleCollapse && (
           <>
             <div className="flex-1" />
@@ -152,13 +154,16 @@ export function SettingsSidebar({
               <button
                 onClick={onGoHome}
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs",
+                  'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs',
                   !activeTab
-                    ? "bg-accent/15 text-accent font-semibold"
-                    : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+                    ? 'bg-accent/15 text-accent font-semibold'
+                    : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary',
                 )}
               >
-                <Grid3X3 size={14} className={cn("shrink-0", !activeTab ? "text-accent" : "text-text-tertiary")} />
+                <Grid3X3
+                  size={14}
+                  className={cn('shrink-0', !activeTab ? 'text-accent' : 'text-text-tertiary')}
+                />
                 <span className="truncate">Overview</span>
               </button>
             </div>
@@ -183,13 +188,13 @@ export function SettingsSidebar({
                     key={recent.id}
                     onClick={() => {
                       onSelectTab(recent.id as SettingsTabId);
-                      setSearchQuery("");
+                      setSearchQuery('');
                     }}
                     className={cn(
-                      "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs",
+                      'w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs',
                       activeTab === recent.id
-                        ? "bg-accent/15 text-accent font-medium"
-                        : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+                        ? 'bg-accent/15 text-accent font-medium'
+                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary',
                     )}
                   >
                     {TabIcon && <TabIcon size={13} className="shrink-0" />}
@@ -218,20 +223,20 @@ export function SettingsSidebar({
                     key={tab.id}
                     onClick={() => {
                       onSelectTab(tab.id);
-                      setSearchQuery("");
+                      setSearchQuery('');
                     }}
                     className={cn(
-                      "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all",
-                      "text-xs",
+                      'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all',
+                      'text-xs',
                       isActive
-                        ? "bg-accent/15 text-accent font-semibold"
-                        : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+                        ? 'bg-accent/15 text-accent font-semibold'
+                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary',
                     )}
                   >
-                    <TabIcon size={14} className={cn(
-                      "shrink-0",
-                      isActive ? "text-accent" : "text-text-tertiary",
-                    )} />
+                    <TabIcon
+                      size={14}
+                      className={cn('shrink-0', isActive ? 'text-accent' : 'text-text-tertiary')}
+                    />
                     <span className="truncate">{labelFor(tab.id)}</span>
                   </button>
                 );
@@ -243,9 +248,7 @@ export function SettingsSidebar({
         {/* Empty state */}
         {filteredGroups.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-xs text-text-tertiary">
-              No matches
-            </p>
+            <p className="text-xs text-text-tertiary">No matches</p>
           </div>
         )}
       </div>

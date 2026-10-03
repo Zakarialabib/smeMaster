@@ -37,10 +37,57 @@ impl DocParser {
 
     fn parse_docx(path: &Path) -> Result<String> {
         let file = std::fs::read(path)?;
-        let _docx = read_docx(&file)?;
-        // Simple extraction, docx-rs gives structured data
-        // For now, we'll just join paragraphs
-        Ok("DOCX content extraction placeholder".to_string())
+        let docx = read_docx(&file).map_err(|e| anyhow::anyhow!("docx parse error: {e}"))?;
+        let mut text = String::new();
+        for child in docx.document.children {
+            Self::extract_docx_text(&child, &mut text);
+            text.push('\n');
+        }
+        Ok(text)
+    }
+
+    /// Recursively pull text out of a DOCX block element.
+    ///
+    /// Previously `parse_docx` returned the literal string
+    /// `"DOCX content extraction placeholder"`, so every .docx attachment was
+    /// indexed as that sentence. This mirrors the implementation in
+    /// `crates/ml-sidecar/src/main.rs` so both parsers agree.
+    fn extract_docx_text(child: &docx_rs::DocumentChild, text: &mut String) {
+        use docx_rs::DocumentChild::*;
+        match child {
+            Paragraph(paragraph) => {
+                for pchild in &paragraph.children {
+                    if let docx_rs::ParagraphChild::Run(run) = pchild {
+                        for rchild in &run.children {
+                            if let docx_rs::RunChild::Text(t) = rchild {
+                                text.push_str(&t.text);
+                            }
+                        }
+                    }
+                }
+            }
+            Table(table) => {
+                for tchild in &table.rows {
+                    // `TableChild` / `TableRowChild` each have a single variant
+                    // in docx-rs 0.4, so these are plain bindings, not filters.
+                    let docx_rs::TableChild::TableRow(row) = tchild;
+                    for cell in &row.cells {
+                        let docx_rs::TableRowChild::TableCell(tc) = cell;
+                        for c in &tc.children {
+                            if let docx_rs::TableCellContent::Paragraph(p) = c {
+                                Self::extract_docx_text(
+                                    &docx_rs::DocumentChild::Paragraph(p.clone()),
+                                    text,
+                                );
+                            }
+                        }
+                        text.push_str(" | ");
+                    }
+                    text.push('\n');
+                }
+            }
+            _ => {}
+        }
     }
 
     fn parse_xlsx(path: &Path) -> Result<String> {

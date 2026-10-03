@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { useContactStore } from "@features/contacts/stores/contactStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { useState } from 'react';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { useContactStore } from '@features/contacts/stores/contactStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 
 interface AddTagModalProps {
   isOpen: boolean;
@@ -11,42 +11,33 @@ interface AddTagModalProps {
 }
 
 export function AddTagModal({ isOpen, onClose, contactId: _contactId }: AddTagModalProps) {
-  const primaryAccountId = useAccountStore((s) =>
-    s.accounts.find((a) => a.isActive)?.id ?? "",
-  );
+  const primaryAccountId = useAccountStore((s) => s.accounts.find((a) => a.isActive)?.id ?? '');
   const createTag = useContactStore((s) => s.createTag);
-  
-  const [tagName, setTagName] = useState("");
-  const [color, setColor] = useState("#6366f1");
+
+  const [tagName, setTagName] = useState('');
+  const [color, setColor] = useState('#6366f1');
   const [creating, setCreating] = useState(false);
 
   const handleCreate = async () => {
     if (!tagName.trim()) return;
-    
+
     setCreating(true);
     try {
       await createTag(primaryAccountId, tagName.trim(), color);
-      setTagName("");
+      setTagName('');
       onClose();
     } catch (err) {
-      console.error("Failed to create tag:", err);
+      console.error('Failed to create tag:', err);
     } finally {
       setCreating(false);
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Add Tag"
-      size="sm"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Tag" size="sm">
       <div className="p-4 space-y-4">
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">
-            Tag Name
-          </label>
+          <label className="block text-xs font-medium text-text-primary mb-1.5">Tag Name</label>
           <input
             type="text"
             value={tagName}
@@ -58,9 +49,7 @@ export function AddTagModal({ isOpen, onClose, contactId: _contactId }: AddTagMo
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1.5">
-            Color
-          </label>
+          <label className="block text-xs font-medium text-text-primary mb-1.5">Color</label>
           <input
             type="color"
             value={color}
@@ -79,7 +68,7 @@ export function AddTagModal({ isOpen, onClose, contactId: _contactId }: AddTagMo
             onClick={handleCreate}
             disabled={creating || !tagName.trim()}
           >
-            {creating ? "Creating..." : "Create"}
+            {creating ? 'Creating...' : 'Create'}
           </Button>
         </div>
       </div>

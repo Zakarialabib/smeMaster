@@ -7,11 +7,11 @@
  *
  * @spec §3.8
  */
-import { useState, useEffect, useCallback } from "react";
-import { Sparkles, X } from "lucide-react";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
+import { useState, useEffect, useCallback } from 'react';
+import { Sparkles, X } from 'lucide-react';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
-const DISMISS_KEY = "smemaster.ai.taskSuggestions.dismissedAt";
+const DISMISS_KEY = 'smemaster.ai.taskSuggestions.dismissedAt';
 const DISMISS_HOURS = 24;
 
 interface AiTaskSuggestionBannerProps {
@@ -47,8 +47,7 @@ export function AiTaskSuggestionBanner({
   // Read dismissal timestamp from durable storage.
   useEffect(() => {
     const isTauri =
-      typeof window !== "undefined" &&
-      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+      typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
     if (!isTauri) {
       try {
         const stored = window.localStorage.getItem(DISMISS_KEY);
@@ -81,8 +80,8 @@ export function AiTaskSuggestionBanner({
     const ts = Date.now();
     setDismissedAt(ts);
     if (
-      typeof window !== "undefined" &&
-      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+      typeof window !== 'undefined' &&
+      ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
     ) {
       void tauriStoreStorage.setItem(DISMISS_KEY, String(ts));
     } else {
@@ -105,8 +104,8 @@ export function AiTaskSuggestionBanner({
   }
 
   // Get preview text from first source email
-  const previewText = sourceEmails?.[0]?.suggestedTasks?.[0] ?? "";
-  const senderPreview = sourceEmails?.[0]?.sender ?? "";
+  const previewText = sourceEmails?.[0]?.suggestedTasks?.[0] ?? '';
+  const senderPreview = sourceEmails?.[0]?.sender ?? '';
 
   return (
     <div
@@ -116,7 +115,7 @@ export function AiTaskSuggestionBanner({
     >
       <Sparkles size={14} className="text-accent shrink-0" />
       <span className="text-xs text-text-secondary flex-1">
-        AI detected {suggestionCount} task{suggestionCount !== 1 ? "s" : ""} in recent emails
+        AI detected {suggestionCount} task{suggestionCount !== 1 ? 's' : ''} in recent emails
         {previewText && (
           <span className="block text-[0.6875rem] text-text-tertiary mt-0.5 truncate">
             "{previewText}" from {senderPreview}

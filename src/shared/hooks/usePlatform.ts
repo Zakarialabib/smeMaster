@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
-import { getDeviceInfoBridge } from "@/shared/services/nativeBridges";
+import { useState, useEffect, useMemo } from 'react';
+import { getDeviceInfoBridge } from '@/shared/services/nativeBridges';
+import { isTauriEnvironment } from '@/shared/services/ipc';
 
 /**
  * Platform identity from Rust IPC. Matches the Rust `PlatformInfo` struct.
@@ -20,7 +21,7 @@ export interface PlatformInfo {
  * - "tablet": 768–1024px
  * - "desktop": > 1024px
  */
-export type ScreenCategory = "phone" | "phone-folded" | "tablet" | "desktop";
+export type ScreenCategory = 'phone' | 'phone-folded' | 'tablet' | 'desktop';
 
 /**
  * Aspect / posture classification:
@@ -29,7 +30,7 @@ export type ScreenCategory = "phone" | "phone-folded" | "tablet" | "desktop";
  * - "foldable": dual-screen or device-posture: folded
  * - "seamless": dual-screen but currently spanning (not folded)
  */
-export type ScreenAspect = "portrait" | "landscape" | "foldable" | "seamless";
+export type ScreenAspect = 'portrait' | 'landscape' | 'foldable' | 'seamless';
 
 export interface ScreenInfo {
   /** Whether the device is considered mobile (phone or phone-folded) */
@@ -74,22 +75,27 @@ export function __resetPlatformCache(): void {
 // ── Screen helpers ────────────────────────────────────────────────────
 
 function getScreenCategory(width: number): ScreenCategory {
-  if (width < 480) return "phone";
-  if (width < 768) return "phone-folded";
-  if (width < 1024) return "tablet";
-  return "desktop";
+  if (width < 480) return 'phone';
+  if (width < 768) return 'phone-folded';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
 }
 
 function getScreenAspect(width: number, height: number, isFoldable: boolean): ScreenAspect {
-  if (isFoldable && window.matchMedia("(device-posture: folded)").matches) return "foldable";
-  if (isFoldable && (navigator as any).screen?.isDualScreen && window.screen.orientation?.type?.startsWith("landscape")) return "seamless";
-  return height / width > 1.5 ? "portrait" : "landscape";
+  if (isFoldable && window.matchMedia('(device-posture: folded)').matches) return 'foldable';
+  if (
+    isFoldable &&
+    (navigator as any).screen?.isDualScreen &&
+    window.screen.orientation?.type?.startsWith('landscape')
+  )
+    return 'seamless';
+  return height / width > 1.5 ? 'portrait' : 'landscape';
 }
 
 function detectFoldable(): { isFoldable: boolean; hingeOffset: number } {
   const nav = navigator as any;
   const isDualScreen = Boolean(nav?.screen?.isDualScreen);
-  const isFolded = window.matchMedia("(device-posture: folded)").matches;
+  const isFolded = window.matchMedia('(device-posture: folded)').matches;
   const isFoldable = isDualScreen || isFolded;
   let hingeOffset = 0;
   if (isFoldable) hingeOffset = isFolded ? 48 : 16;
@@ -108,7 +114,10 @@ function computeScreenInfo(): ScreenInfo {
     isDesktop: width >= 1024,
     category: getScreenCategory(width),
     aspect: getScreenAspect(width, height, isFoldable),
-    width, height, isFoldable, hingeOffset,
+    width,
+    height,
+    isFoldable,
+    hingeOffset,
     visualHeight,
     keyboardOpen,
   };
@@ -118,17 +127,26 @@ function computeScreenInfo(): ScreenInfo {
 const DEFAULT_PLATFORM: PlatformInfo = {
   mobile: false,
   desktop: true,
-  os: "web",
-  arch: "web",
+  os: 'web',
+  arch: 'web',
   is_tablet: false,
   is_phone: false,
 };
 
+/**
+ * Platform identity used when running outside a Tauri shell (browser dev
+ * server / web build). There is no native desktop or mobile backend, so
+ * capability flags are reported as false. Layout decisions should use
+ * `screen.isDesktop` / `screen.isMobile` (viewport based) instead — those
+ * remain accurate. Reporting `desktop: false` here lets capability-gated
+ * features (backup scheduler, hardware, native dialogs) skip their backend
+ * calls instead of throwing TauriUnavailableError in a dev server.
+ */
 const WEB_FALLBACK: PlatformInfo = {
   mobile: false,
-  desktop: true,
-  os: "web",
-  arch: "web",
+  desktop: false,
+  os: 'web',
+  arch: 'web',
   is_tablet: false,
   is_phone: false,
 };
@@ -154,21 +172,28 @@ const WEB_FALLBACK: PlatformInfo = {
 export function usePlatform(): FullPlatformInfo {
   const [platform, setPlatform] = useState<PlatformInfo>(() => {
     if (cachedPlatform) return cachedPlatform;
-    return DEFAULT_PLATFORM;
+    // Outside a Tauri shell there is no native backend — report no platform
+    // capability so capability-gated features skip their IPC calls.
+    return isTauriEnvironment() ? DEFAULT_PLATFORM : WEB_FALLBACK;
   });
   const [screenInfo, setScreenInfo] = useState<ScreenInfo>(computeScreenInfo);
-  const [nativeInfo, setNativeInfo] = useState<{ is_tablet: boolean; screenSizeClass?: string } | null>(null);
+  const [nativeInfo, setNativeInfo] = useState<{
+    is_tablet: boolean;
+    screenSizeClass?: string;
+  } | null>(null);
 
   // Fetch platform identity from Rust IPC (once)
   useEffect(() => {
     if (cachedPlatform) return;
-    import("@shared/services/db/invoke/command").then(({ invokeCommand }) => {
-      invokeCommand<PlatformInfo>("get_platform").then((result) => {
-        cachedPlatform = result;
-        setPlatform(result);
-      }).catch(() => {
-        setPlatform(WEB_FALLBACK);
-      });
+    import('@shared/services/db/invoke/command').then(({ invokeCommand }) => {
+      invokeCommand<PlatformInfo>('get_platform')
+        .then((result) => {
+          cachedPlatform = result;
+          setPlatform(result);
+        })
+        .catch(() => {
+          setPlatform(WEB_FALLBACK);
+        });
     });
   }, []);
 
@@ -192,35 +217,38 @@ export function usePlatform(): FullPlatformInfo {
     const handleChange = () => {
       const info = computeScreenInfo();
       setScreenInfo(info);
-      document.documentElement.classList.toggle("mobile", info.isMobile);
+      document.documentElement.classList.toggle('mobile', info.isMobile);
       // Toggle class for keyboard-open state so CSS can adjust
-      document.documentElement.classList.toggle("keyboard-open", info.keyboardOpen);
+      document.documentElement.classList.toggle('keyboard-open', info.keyboardOpen);
     };
     // Sync initial mobile class on <html>
     handleChange();
-    window.addEventListener("resize", handleChange);
-    window.addEventListener("orientationchange", handleChange);
-    const foldMatch = window.matchMedia("(device-posture: folded)");
-    foldMatch.addEventListener("change", handleChange);
+    window.addEventListener('resize', handleChange);
+    window.addEventListener('orientationchange', handleChange);
+    const foldMatch = window.matchMedia('(device-posture: folded)');
+    foldMatch.addEventListener('change', handleChange);
     const screen = (navigator as any).screen;
-    if (screen?.addEventListener) screen.addEventListener("screenchange", handleChange);
+    if (screen?.addEventListener) screen.addEventListener('screenchange', handleChange);
     // Track visualViewport for mobile keyboard detection
-    window.visualViewport?.addEventListener("resize", handleChange);
+    window.visualViewport?.addEventListener('resize', handleChange);
     return () => {
-      window.removeEventListener("resize", handleChange);
-      window.removeEventListener("orientationchange", handleChange);
-      foldMatch.removeEventListener("change", handleChange);
-      if (screen?.removeEventListener) screen.removeEventListener("screenchange", handleChange);
-      window.visualViewport?.removeEventListener("resize", handleChange);
+      window.removeEventListener('resize', handleChange);
+      window.removeEventListener('orientationchange', handleChange);
+      foldMatch.removeEventListener('change', handleChange);
+      if (screen?.removeEventListener) screen.removeEventListener('screenchange', handleChange);
+      window.visualViewport?.removeEventListener('resize', handleChange);
     };
   }, []);
 
-  return useMemo(() => ({
-    ...platform,
-    is_tablet: nativeInfo?.is_tablet ?? platform.is_tablet,
-    screenSizeClass: nativeInfo?.screenSizeClass,
-    screen: screenInfo,
-  }), [platform, screenInfo, nativeInfo]);
+  return useMemo(
+    () => ({
+      ...platform,
+      is_tablet: nativeInfo?.is_tablet ?? platform.is_tablet,
+      screenSizeClass: nativeInfo?.screenSizeClass,
+      screen: screenInfo,
+    }),
+    [platform, screenInfo, nativeInfo],
+  );
 }
 
 /**

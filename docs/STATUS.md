@@ -1,6 +1,32 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-07-14
+> **Last updated:** 2026-10-02
+>
+> ✅ **Offline Speech — STT + TTS verified end-to-end (2026-10-02):** sherpa-onnx (Apache-2.0) behind an optional `offline-speech` feature in `ml-sidecar`. **Measured, not asserted:** STT (Zipformer Small en, int8) RTF **0.033** at **0.998** similarity vs published transcript; TTS (Piper fr_FR-siwis-medium) RTF **0.573**. A JSON-RPC E2E harness (`examples/e2e_speech.py`) drives the **real shipped binary** and passes 8/8 checks. The `espeak-ng-data` **9-file subset** was proven sufficient (full dir is 355 files/18 MB). Docs: `02-BACKEND/20-offline-stt-and-audio-summarization.md`.
+>
+> ✅ **Model download → engine wiring (2026-10-02):** Downloads land in the hf-hub cache layout but the engines read a **flat** directory — `ai_prepare_model_dir` bridges them (hard-link, copy fallback). Verified: a model downloaded through the UI loads with `status:"loaded"`.
+>
+> ✅ **Settings IA — AI split into three tabs (2026-10-02):** `AI & Automation` → **Text Generation** / **Voice** / **Local Models**. New `localModelCatalog.ts` (llm/stt/tts/embedding, real HF repos, byte sizes, licences, measured-or-"not measured") and `LocalModelsSettings.tsx` (resumable download + prepare). i18n keys added to all 5 locales.
+>
+> ✅ **Sidecar lifecycle control + Stop fix (2026-10-02):** Voice tab shows engine state (`not built in` / `not registered` / `stopped` / `running, not answering` / `running`) with Start/Stop/Refresh. **Fixed:** `stop()` was silently undone ~2 s later — the watchdog read `running=false` as a crash and restarted it, so the UI said "stopped" while the process lived. Added a `desired_running` intent flag; the watchdog now only restarts unexpected deaths.
+>
+> ✅ **Tauri MCP bridge (dev tooling) (2026-10-02):** `tauri-mcp` can now drive the running app (execute JS, DOM snapshot, IPC monitor), behind `mcp-bridge` + `debug_assertions`. Required vendoring `tauri-plugin-mcp-bridge` (upstream pins `webview2-com 0.38`, wry 0.57 needs `0.39`). **This is what found the two bugs above** — both were invisible to typecheck, lint and 3,432 passing tests.
+>
+> ✅ **Sidecar build script (2026-10-02):** `scripts/build-sidecar.sh` builds with `offline-speech` and installs to the triple-suffixed name Tauri's `externalBin` resolves. Wired into `tauri:build` / `windows:build` / `windows:portable`. **CI gap fixed:** all 5 workflow build lines used `--no-default-features`, which DROPPED `offline-speech` — CI would have shipped a sidecar with zero speech methods.
+>
+> ⚠️ **Pre-existing startup panic fixed (2026-10-02):** `state() called before manage() for EventBus` — the change tracker read the bus ~200 lines above where it was managed, so **the app could not start at all** (`tauri dev` exited 101). Latent since `1f007dd` (2026-07-18); `cargo check` cannot catch an ordering fault.
+>
+> ✅ **Pre-Release Stability Tests — Automated (2026-10-01):** Added 8 Rust integration tests in `src-tauri/tests/panic_and_wal.rs` covering panic injection (crash.log + crash_count.txt verification), WAL recovery (crash mid-transaction → data integrity verified), WAL checkpoint compaction, and watchdog restart logic (crash counter increment/restore). All tests pass `cargo test --test panic_and_wal`.
+>
+> ✅ **RTL Physical-Direction Violations — Fixed (2026-10-01):** Resolved all **141 violations** across **106 files**: `text-left`→`text-start` (55), `text-right`→`text-end` (7), `ml-*`→`ms-*` (64), `mr-*`→`me-*` (17), `margin-left/right`→`margin-inline-start` (2 in globals.css). Zero violations remain in `src/`.
+>
+|> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
+|>
+|> ✅ **Vite 8 Upgrade — Complete (2026-10-01):** Upgraded from v7.3.6 → v8.0.5. Fixed `@rolldown/binding-win32-x64-msvc` extraction failure by deleting `package-lock.json`, running `npm cache verify`, and reinstalling (the npm optional-dependency lockfile bug). Fixed `manualChunks` object→function format for Rolldown compatibility in `vite.config.ts`. Build: clean 5.16s. TSC: zero errors.
+|>
+|> ✅ **AI Capabilities Architecture (2026-10-01):** Complete capability interface system — 14 narrow composable interfaces (Text, Streaming, Embeddings with space pinning, Structured Output, Tool Calling, Reasoning, Vision, Context Caching, Batch Processing, STT, TTS, Realtime Voice, Model Discovery, Connection Test) with type guards. Task router with fallback chains, cost-aware scoring, and exponential backoff retry. 30+ model registry entries across 10 providers. 74 new TS tests added.
+|>
+|> ✅ **BytePlus Embedding Support (2026-10-01):** Added `EmbeddingCapable` to BytePlus provider — uses OpenAI-compatible `/embeddings` endpoint with Seed embedding models. Space pinning: `byteplus-<model>-<dims>`. Model registry updated with embedding dimensions for Doubao Pro/Lite 32K.
 >
 > ✅ **Keyboard Navigation + Screen Reader (WCAG AA) — Done (2026-07-14):** Created reusable `<SkipLink>` component (replaced inline skip-links in App.tsx + MobileShell.tsx), `<FocusOrderManager>` landmark wrapper, added `aria-describedby` on PremiumSidebar, `role="status"`+`aria-live="polite"` on NotificationToast/EmptyState, `role="search"` on SearchBar. i18n keys (`skipToContent`, `nav.keyboardNavHint`) added to all 5 locales.
 >
@@ -49,18 +75,18 @@
 
 > Many historical docs quote **inconsistent** metric values (commands cited as 773 / 652 / 704 / 802; migrations as 60 / 56 / 22 / 32; stores as 38 / 21 / 46). The table below is **grepped directly from source** and is the single canonical reference. All other docs should be read against it.
 
-| Metric | Verified value | How verified | Common stale values to ignore |
-| --- | --- | --- | --- |
-| Rust `#[tauri::command]`s | **802** (739 `#[tauri::command]` + 63 `#[command]`) | `grep -rE '#\[tauri::command\]|#\[command\]' src-tauri/src \| wc -l` | 773, 777, 764, 704, 652 |
-| Zustand stores | **46** (`create<` + `createWithEqualityFn`) | `grep -rE 'create<|createWithEqualityFn' src` | 38, 21 |
-| SQL migrations | **32** `.sql` files | `find src-tauri -name '*.sql' \| wc -l` | 60, 56, 22 |
-| db `pub fn` | **520** | `grep -rE 'pub fn |pub async fn ' src-tauri/src/db` | 586, 367, 78-query-files |
-| Frontend typed command wrappers | **504** (`db-invoke.ts` + `commands.ts`) | `grep -rE 'export (async )?function' src/shared/services` | 470+ |
-| Locales | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each | `src/locales/*/translation.json` | — |
-| Feature modules (`src/features`) | **23** | `ls src/features` | — |
-| Rust `#[test]`s | **915** attributes (incl. a few `#[cfg(test)]` modules) | `grep -rE '#\[test\]|#\[tokio::test\]' src-tauri/src` | 735, 900 |
-| TS test cases (`*.test.ts(x)`) | ~3,300 `it`/`test` calls across 297 files | `grep -rE '\b(it|test)\(' src --include='*.test.ts*'` | 2,470 |
-| Feature flags | **31** | `src/constants/featureFlags.ts` | 28 |
+| Metric                           | Verified value                                                                                                                                                                               | How verified                                                 | Common stale values to ignore        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| Rust `#[tauri::command]`s        | **841** (768 `#[tauri::command]` + 73 `#[command]`)                                                                                                                                          | `grep -rE '#\\[tauri::command\\]                             | #\\[command\\]' src-tauri/src \\     | wc -l`                                                     | 802, 773, 777, 764, 704, 652 |
+| Zustand stores                   | **48** (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`)                                                                                               | `grep -rEo 'create<' src --include='*.ts' --include='*.tsx'` | 43, 46, 38, 21                       |
+| SQL migrations                   | **34** `.sql` files (numbered 001–032; 020 & 021 each split into two files)                                                                                                                  | `find src-tauri/src/db/migrations -name '*.sql' \\           | wc -l`                               | 32, 60, 56, 22                                             |
+| db `pub fn`                      | **542**                                                                                                                                                                                      | `grep -rE 'pub fn                                            | pub async fn ' src-tauri/src/db`     | 520, 586, 367                                              |
+| Frontend typed command wrappers  | **479** `db_*` wrappers in `db-invoke.ts` (re-export of 15 domain modules under `src/shared/services/db/invoke/`) + 1 generic typed `invoke<T extends keyof TauriCommands>` in `commands.ts` | `grep -rhoE 'export (const                                   | async function                       | function) [a-zA-Z0-9_]+' src/shared/services/db/invoke/ \\ | wc -l` (=479)                | 504, 470+ |
+| Locales                          | **5** (en, fr, ar[RTL], ja, it), ~44 top-level keys each                                                                                                                                     | `src/locales/*/translation.json`                             | —                                    |
+| Feature modules (`src/features`) | **23**                                                                                                                                                                                       | `ls src/features`                                            | —                                    |
+| Rust `#[test]`s                  | **977** attributes (incl. a few `#[cfg(test)]` modules)                                                                                                                                      | `grep -rE '#\[test\]                                         | #\[tokio::test\]' src-tauri/src`     | 915, 735, 900                                              |
+| TS test cases (`*.test.ts(x)`)   | ~3,533 `it`/`test` calls across 300+ files                                                                                                                                                   | `grep -rE '\b(it                                             | test)\(' src --include='_.test.ts_'` | 3,344, 2,470                                               |
+| Feature flags                    | **31**                                                                                                                                                                                       | `src/constants/featureFlags.ts`                              | 28                                   |
 
 > ⚠️ **Caveat on test counts:** the Rust test binary now **compiles** (the prior `invoicing/tests.rs` "fails to compile" report was false — cascade from `caldav.rs`). The "735/735 passing" count is still **unverified** because the test EXE crashes at OS load on this machine (`0xc0000139`, UCRT/VC++ runtime older than rustc 1.96 targets) — an environment issue, not a code defect. Run `cargo test` on a properly-provisioned machine/CI to confirm the real pass count.
 
@@ -68,19 +94,21 @@
 
 ## ✅ DONE / 🔲 NOT DONE / 🧩 MISSING — Reconciliation (2026-07-15)
 
-> **Verified against source this pass:** 802 IPC commands (739 `#[tauri::command]` + 63 `#[command]` shorthand) · 32 migrations (numbered 001–030; 020 & 021 each split into two files) · 46 Zustand stores (verified) across `src/shared/stores`, `src/features/*/stores`, and a legacy `src/stores/` · ~200+ TS test files · 915 Rust `#[test]` attributes (735 reported passing; `invoicing/tests.rs` excluded). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below but were **not re-run** in this pass — re-run before tagging.
+|> **Verified against source this pass:** 831 IPC commands (768 `#[tauri::command]` + 63 `#[command]` shorthand) · 34 migrations (numbered 001–032; 020 & 021 each split into two files) · 48 Zustand stores (`create<`, incl. `src/shared/stores` + `src/features/*/stores` + legacy `src/stores/`) · ~200+ TS test files · 977 Rust `#[test]` attributes (incl. 8 new panic/WAL/watchdog tests in `tests/panic_and_wal.rs`). Quality-gate commands (`tsc`, `eslint`, `vitest`, `cargo check/test`, `vite build`) are reported green in the entries below — `tsc` re-verified zero errors (2026-10-01).
 
 ### ✅ Done — built, wired, tested
+
 - **Architecture:** three-layer React 19 → TS service → Tauri/Rust → SQLite; offline-first; all DB access via Rust.
 - **Mail:** IMAP/SMTP + Microsoft Graph send/draft, PGP, OAuth (Gmail/Outlook/custom tabs), optimistic actions + offline queue, threading/categorization/smart labels.
 - **CRM/contacts, campaigns** (block editor + scheduling migration + analytics snapshots), **calendar, tasks, automation/workflows**.
 - **Invoicing (Morocco DGI):** 35 commands, line-item calc engine, lopdf PDF + PEPPOL/UBL XML, live SMTP/PGP send, wallet↔ledger sync.
 - **POS hardware** (ESC/POS, scanner, cash drawer) and **ERP shell** (company switcher, stock, journal, financials, RBAC).
 - **Deliverability** (blacklist/bounce/reputation/DNS) and **compliance engine**.
-- **AI RAG** (candle/LanceDB), prompt + context engineering, contact intelligence.
+- **AI RAG** (candle/LanceDB), prompt + context engineering, contact intelligence, **AI provider capabilities architecture** (14 interfaces, 10 providers, task router with fallback chains + cost-aware routing + rate-limit retry, 30+ model registry entries, space-pinned embeddings).
 - **Vault, device pairing, mobile shell + 5-phase UX overhaul, accessibility** (skip links, focus-order manager, a11y roles/live regions), **i18n** (en/fr/ar/ja/it) with RTL scaffolding, **WAL-deletion doc**.
 
 ### 🔲 Not Done — manual / human validation (gates 1, 3, 4, 5, 9)
+
 - **Gate 1:** panic-injection, WAL kill-recovery, watchdog-restart, frontend error-boundary throw (procedures in `03-manual-tests.md`, none executed).
 - **Gate 2 benchmarks:** cold-start, memory (idle / 10k threads), 8h IMAP IDLE stability.
 - **Gate 3:** code-signing certs (macOS notarization, Windows EV), `tauri signer generate` pubkey, installer smoke-tests, CI build parity.
@@ -88,23 +116,25 @@
 - **Gate 5:** full screen-reader + keyboard audit; axe-core CI (deferred).
 - **Gate 9:** 7-day dogfooding; 5–10 SME beta testers; RC tagging + multi-platform build/install.
 
-
 ### 🚀 Phase B backend core shipped (2026-07-15) — email UX parity foundation
-Rust-side groundwork for Gmail/Outlook-grade email UX (per `docs/plans/MVP_LAUNCH_PLAN.md` Phase B):
+
+Rust-side groundwork for Gmail/Outlook-grade email UX (Phase B):
+
 - Migration `031_thread_importance_score.sql` adds a nullable `importance_score` to `threads` for Focused-inbox ranking.
 - `threads.categorize_thread` + `derive_category` auto-classify a thread into **Promotions / Social / Updates / Primary** from the sender domain on ingest (idempotent; writes `thread_categories` + `bundled_threads`; non-fatal so it never breaks ingest). Wired into `upsert_thread` via the new optional `UpsertThreadRequest.from_address`.
 - New IPC commands (registered in `commands/mod.rs` master `generate_handler!`): `db_set_thread_importance(account_id, thread_id, is_important, importance_score?)` and `db_categorize_thread(account_id, thread_id, from_address)`.
 - Frontend wiring (hover action rail, bulk toolbar, Focused toggle, undo-send pref, NL snooze, command palette) — **DONE (2026-07-15)**: ThreadCard hover rail (important/snooze/task/event), EmailList bulk toolbar (select-all + bulk read/unread/archive/label/move), Focused/Primary toggle (persisted via configStore→SQLite), NL-snooze parser + SnoozeDialog input, command palette expanded (~50 actions, fuzzy, a11y), undo-send duration quick-pick. Verified tsc/vitest/eslint green. Committed `7872a25`.
 
 ### 🧩 Missing / Deferred / Debt — the worklist
+
 1. **RTL & i18n completion (north-star):** AGENTS.md still flags ~400 physical-direction violations (`text-left`→`text-start`, `ml-*`→`ms-*`, `left/right`→`inset-inline-*`) and residual `[TODO]`/`"KEY"` placeholders in ja/it. Largest single cleanup.
 2. **Store consolidation:** legacy `src/stores/` (production `threadsStore`, `labelsStore`, `composerStore`, `accountsStore`, …) duplicates `src/shared/stores` + `src/features/*/stores`. Merge into canonical locations.
 3. **Invoicing Rust tests:** `src-tauri/src/db/tables/invoicing/tests.rs` **now compiles** (0 errors) — the earlier "does not compile" report was a cascade from a `caldav.rs` `SerializedError` import error, fixed 2026-07-15. The Rust suite's remaining gap is an environment runtime crash (`0xc0000139`) on this dev box, not a code defect.
 4. **Campaign scheduled-send worker:** migration 029 + API wired, but the deferred-send background worker is unimplemented.
 5. **Entitlement / monetization engine:** `EntitlementEngine`, paywall gating, `owned_modules` are **not implemented** (deferred post-v1.0). Plans: `docs/06-ROADMAP/10-`→`13-monetization-*.md`.
 6. **CRDT multi-device sync hardening:** sync engine + offline queue exist; conflict-resolution UX/convergence still needs work per north-star goal.
-7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (802 / 32).
-8. **Stray/duplicate docs to archive:** `docs/analysis.md` + `docs/analysis/`, `docs/draft.md`, `docs/monetization-style.md`; `docs/plans/`, `docs/specs/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged.
+7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (831 / 34).
+8. **Stray/duplicate docs:** `docs/analysis.md` and `docs/monetization-style.md` are archived working docs (content consumed into STATUS/roadmap); `docs/plans/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged. (Already removed: `docs/draft.md`, `docs/analysis/`, `docs/specs/`, `docs/UI_TEST_IMPROVE_PROMPT.md`, `docs/plans/UI_REFACTOR_2026-07-12.md` — 2026-07-19.)
 
 ---
 
@@ -171,9 +201,9 @@ Built the wallet so **all ERP money movement (sales, invoicing, expensing) flows
 
 ### Command Counts Updated
 
-| Metric             | Before | After                                            |
-| ------------------ | ------ | ------------------------------------------------ |
-| Invoicing commands | 24     | **33** (+8 new, +3 enhanced, +1 POS cash drawer) |
+| Metric             | Before | After                                                                  |
+| ------------------ | ------ | ---------------------------------------------------------------------- |
+| Invoicing commands | 24     | **33** (+8 new, +3 enhanced, +1 POS cash drawer)                       |
 | Total IPC commands | 764    | **802** (actual — 739 `#[tauri::command]` + 63 `#[command]` shorthand) |
 
 ---
@@ -386,24 +416,24 @@ Both `PreCacheService` and `QueueService` now implement `Drop` to automatically 
 
 ### UI Polish, PGP user_id, Company Context & i18n Completion (2026-07-07, Wave 2)
 
-| Area                                       | Changes                                                                                                                                                                           |
+| Area | Changes |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Account `company` field**                | Added `company: string                                                                                                                                                            | null`to`Account`interface; all account creation flows (AddAccount, AddCalDavAccount, AddImapAccount) populate`company: null` |
-| **Unified search error resilience**        | Each category (messages/files/tasks/contacts) in `unifiedSearch.ts` wrapped in isolated try/catch; single-category failure no longer crashes entire search                        |
-| **Sync conflicts conditional**             | Conflict button in App.tsx only renders when `deviceCount > 0` (fetched via `list_paired_devices`)                                                                                |
-| **AI detection gating**                    | SuggestionBanner in EmailList hidden when `getFeatureAccess("ai", 0) === "locked"`                                                                                                |
-| **Composer contact auto-populate**         | AddressInput shows company/name chip; ComposerAddressSection integrates `getContactByEmail` on blur                                                                               |
-| **Composer company sender UI**             | ComposerHeader shows org badge (Building2 + company), ComposerFooter shows "via [Company]", FromSelector shows `email — company`                                                  |
-| **Campaign contact company**               | Contacts query extended to `display_name` + `company`; AudienceStep shows company chip (Building2 badge)                                                                          |
-| **InlineReply company badge**              | Building2 icon + company name in expanded reply header                                                                                                                            |
-| **PremiumSidebar company label**           | Company shown under AccountSwitcher via resolved activeAccount                                                                                                                    |
-| **PGP `user_id` tracking**                 | Rust migration `021_pgp_user_id.sql` adds `user_id TEXT` column; PgpKey struct updated; savePgpKey/importPgpKey accept userId param; PgpKeyManager displays/searchable by user_id |
-| **CSV import template download**           | CsvImportWizard shows expected format preview + downloadable `.csv` template button                                                                                               |
-| **TemplateGallery conditional pagination** | PaginationControls only render when `filtered.length > 0 && totalTemplates > 0`                                                                                                   |
-| **Dashboard null-safety**                  | EmailHeatmapWidget: null fallbacks for `split('T')[0]` and `MONTH_LABELS` access; EntityNetworkGraph: correct `tauriInvoke` import, safer `formatLabel` split                     |
-| **Deprecated cleanup**                     | Deleted stale `src/features/campaigns/services/templateVariables.ts`; test updated to import from `@shared/utils/templateVariables`                                               |
-| **i18n — English PGP userId key**          | Added `"pgp.userId": "User ID"` to English locale                                                                                                                                 |
-| **i18n — Italian completion**              | All 192 `[TODO]` and 89 `"KEY"` placeholders in `it/translation.json` translated to proper Italian; JSON validated                                                                |
+| **Account `company` field** | Added `company: string                                                                                                                                                            | null`to`Account`interface; all account creation flows (AddAccount, AddCalDavAccount, AddImapAccount) populate`company: null` |
+| **Unified search error resilience** | Each category (messages/files/tasks/contacts) in `unifiedSearch.ts` wrapped in isolated try/catch; single-category failure no longer crashes entire search |
+| **Sync conflicts conditional** | Conflict button in App.tsx only renders when `deviceCount > 0` (fetched via `list_paired_devices`) |
+| **AI detection gating** | SuggestionBanner in EmailList hidden when `getFeatureAccess("ai", 0) === "locked"` |
+| **Composer contact auto-populate** | AddressInput shows company/name chip; ComposerAddressSection integrates `getContactByEmail` on blur |
+| **Composer company sender UI** | ComposerHeader shows org badge (Building2 + company), ComposerFooter shows "via [Company]", FromSelector shows `email — company` |
+| **Campaign contact company** | Contacts query extended to `display_name` + `company`; AudienceStep shows company chip (Building2 badge) |
+| **InlineReply company badge** | Building2 icon + company name in expanded reply header |
+| **PremiumSidebar company label** | Company shown under AccountSwitcher via resolved activeAccount |
+| **PGP `user_id` tracking** | Rust migration `021_pgp_user_id.sql` adds `user_id TEXT` column; PgpKey struct updated; savePgpKey/importPgpKey accept userId param; PgpKeyManager displays/searchable by user_id |
+| **CSV import template download** | CsvImportWizard shows expected format preview + downloadable `.csv` template button |
+| **TemplateGallery conditional pagination** | PaginationControls only render when `filtered.length > 0 && totalTemplates > 0` |
+| **Dashboard null-safety** | EmailHeatmapWidget: null fallbacks for `split('T')[0]` and `MONTH_LABELS` access; EntityNetworkGraph: correct `tauriInvoke` import, safer `formatLabel` split |
+| **Deprecated cleanup** | Deleted stale `src/features/campaigns/services/templateVariables.ts`; test updated to import from `@shared/utils/templateVariables` |
+| **i18n — English PGP userId key** | Added `"pgp.userId": "User ID"` to English locale |
+| **i18n — Italian completion** | All 192 `[TODO]` and 89 `"KEY"` placeholders in `it/translation.json` translated to proper Italian; JSON validated |
 
 ### 5 Runtime Bugs Fixed
 
@@ -610,7 +640,7 @@ Every function in `db/tables/` (586 `pub fn` across 123 files in 11 domains) is 
 | Updater                      | ~5       | Update check, download, install, rollback                                                                                                                                                                                                |
 | Orchestrator                 | ~6       | Seed demo, onboarding orchestration, bootstrap                                                                                                                                                                                           |
 | Assets                       | ~3       | Asset management                                                                                                                                                                                                                         |
-| **Total**                                                    | **802**  | All registered via `tauri::generate_handler!` (actual count: 739 `#[tauri::command]` + 63 `#[command]` shorthand; earlier docs cited 773/777 which are stale)                                                                                                               |
+| **Total**                    | **802**  | All registered via `tauri::generate_handler!` (actual count: 739 `#[tauri::command]` + 63 `#[command]` shorthand; earlier docs cited 773/777 which are stale)                                                                            |
 
 ---
 
@@ -767,7 +797,7 @@ Broke a 716-line monolith into clean components:
 | Docs consolidation + component repurposing                     | 2h     | ✅ Done (see above)                                                        |
 | Verify `npm run tauri dev` runtime fix                         | 5min   | 🔲 Manual check needed                                                     |
 | Manual tests (panic injection, WAL recovery, watchdog restart) | 1.5h   | 🔲 Not started                                                             |
-| WAL deletion doc                                      | 15min  | ✅ Done (`docs/05-DEVELOPMENT/04-wal-deletion.md`)  |
+| WAL deletion doc                                               | 15min  | ✅ Done (`docs/05-DEVELOPMENT/04-wal-deletion.md`)                         |
 | Certificates + public key for distribution                     | varies | 🔲 Not started                                                             |
 | Dogfooding + beta testing                                      | 1-2w   | 🔲 Not started                                                             |
 

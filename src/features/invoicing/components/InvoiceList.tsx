@@ -1,15 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  Search, Plus, FileText, Eye, Trash2, AlertTriangle, CheckCircle2,
-  Clock, Wallet,
+  Search,
+  Plus,
+  FileText,
+  Eye,
+  Trash2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../stores/invoicingStore';
+
+/* Invoicing list uses `store.clients` from the same unified contacts registry
+ * (`contact_type='client'`). Client names for invoices are resolved from that
+ * single contacts-backed client list. */
 import { ACTIVE_COMPANY_ID, formatMoney, formatDate, daysUntil } from '../utils/format';
-import {
-  DOCUMENT_TYPE_META, type InvoiceStatus,
-} from '../utils/status';
+import { DOCUMENT_TYPE_META, type InvoiceStatus } from '../utils/status';
 import InvoiceStatusPill from './InvoiceStatusPill';
 
 const TYPE_FILTERS: { value: string | null; label: string }[] = [
@@ -48,15 +57,19 @@ export default function InvoiceList() {
     fetchClients(ACTIVE_COMPANY_ID);
   }, [fetchInvoices, fetchClients]);
 
-  const clientName = (id: string) =>
-    clients.find((c) => c.id === id)?.display_name ?? 'Unassigned client';
+  const clientName = useCallback(
+    (id: string) => clients.find((c) => c.id === id)?.display_name ?? 'Unassigned client',
+    [clients],
+  );
 
   const stats = useMemo(() => {
     const total = invoices.reduce((a, i) => a + i.total_amount, 0);
     const outstanding = invoices
       .filter((i) => i.status === 'sent' || i.status === 'partial')
       .reduce((a, i) => a + i.total_amount, 0);
-    const paid = invoices.filter((i) => i.status === 'paid').reduce((a, i) => a + i.total_amount, 0);
+    const paid = invoices
+      .filter((i) => i.status === 'paid')
+      .reduce((a, i) => a + i.total_amount, 0);
     const now = Math.floor(Date.now() / 1000);
     const overdue = invoices
       .filter((i) => i.status === 'sent' && i.due_date && i.due_date < now)
@@ -72,7 +85,7 @@ export default function InvoiceList() {
         i.invoice_number.toLowerCase().includes(q) ||
         clientName(i.client_id).toLowerCase().includes(q),
     );
-  }, [invoices, search, clients]);
+  }, [invoices, search, clientName]);
 
   const openEditor = (id: string) =>
     navigate({ to: '/invoicing/edit/$invoiceId', params: { invoiceId: id } });
@@ -81,22 +94,45 @@ export default function InvoiceList() {
     <div className="space-y-6">
       {/* Stat widgets */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard label="Total Invoiced" value={stats.total} icon={<Wallet className="text-accent" />} tone="accent" />
-        <StatCard label="Outstanding" value={stats.outstanding} icon={<Clock className="text-warning" />} tone="warning" />
-        <StatCard label="Paid" value={stats.paid} icon={<CheckCircle2 className="text-success" />} tone="success" />
-        <StatCard label="Overdue" value={stats.overdue} icon={<AlertTriangle className="text-danger" />} tone="danger" />
+        <StatCard
+          label="Total Invoiced"
+          value={stats.total}
+          icon={<Wallet className="text-accent" />}
+          tone="accent"
+        />
+        <StatCard
+          label="Outstanding"
+          value={stats.outstanding}
+          icon={<Clock className="text-warning" />}
+          tone="warning"
+        />
+        <StatCard
+          label="Paid"
+          value={stats.paid}
+          icon={<CheckCircle2 className="text-success" />}
+          tone="success"
+        />
+        <StatCard
+          label="Overdue"
+          value={stats.overdue}
+          icon={<AlertTriangle className="text-danger" />}
+          tone="danger"
+        />
       </div>
 
       {/* Controls */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <Search
+              size={16}
+              className="absolute inset-inline-start-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+            />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by number or client..."
-              className="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
+              className="w-full glass-input rounded-xl ps-9 pe-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary outline-none"
             />
           </div>
           <Button icon={<Plus size={16} />} onClick={() => navigate({ to: '/invoicing/new' })}>
@@ -105,15 +141,27 @@ export default function InvoiceList() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mr-1">Type</span>
+          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide me-1">
+            Type
+          </span>
           {TYPE_FILTERS.map((f) => (
-            <Chip key={f.label} active={filters.type === f.value} onClick={() => setFilters({ type: f.value })}>
+            <Chip
+              key={f.label}
+              active={filters.type === f.value}
+              onClick={() => setFilters({ type: f.value })}
+            >
               {f.label}
             </Chip>
           ))}
-          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide ml-3 mr-1">Status</span>
+          <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wide ms-3 me-1">
+            Status
+          </span>
           {STATUS_FILTERS.map((f) => (
-            <Chip key={f.label} active={filters.status === f.value} onClick={() => setFilters({ status: f.value })}>
+            <Chip
+              key={f.label}
+              active={filters.status === f.value}
+              onClick={() => setFilters({ status: f.value })}
+            >
               {f.label}
             </Chip>
           ))}
@@ -127,24 +175,28 @@ export default function InvoiceList() {
         ) : listLoading ? (
           <ListSkeleton />
         ) : filtered.length === 0 ? (
-          <EmptyState hasInvoices={invoices.length > 0} onNew={() => navigate({ to: '/invoicing/new' })} />
+          <EmptyState
+            hasInvoices={invoices.length > 0}
+            onNew={() => navigate({ to: '/invoicing/new' })}
+          />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Document</th>
                   <th className="px-5 py-3 font-semibold">Client</th>
                   <th className="px-5 py-3 font-semibold hidden md:table-cell">Issued</th>
                   <th className="px-5 py-3 font-semibold hidden lg:table-cell">Due</th>
-                  <th className="px-5 py-3 font-semibold text-right">Amount</th>
+                  <th className="px-5 py-3 font-semibold text-end">Amount</th>
                   <th className="px-5 py-3 font-semibold text-center">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-primary/60">
                 {filtered.map((inv) => {
-                  const overdue = inv.status === 'sent' && inv.due_date && daysUntil(inv.due_date)! < 0;
+                  const overdue =
+                    inv.status === 'sent' && inv.due_date && daysUntil(inv.due_date)! < 0;
                   return (
                     <tr
                       key={inv.id}
@@ -174,7 +226,13 @@ export default function InvoiceList() {
                       </td>
                       <td className="px-5 py-3.5 hidden lg:table-cell">
                         {inv.due_date ? (
-                          <span className={overdue ? 'text-danger text-xs font-medium' : 'text-text-tertiary text-xs'}>
+                          <span
+                            className={
+                              overdue
+                                ? 'text-danger text-xs font-medium'
+                                : 'text-text-tertiary text-xs'
+                            }
+                          >
                             {formatDate(inv.due_date, 'short')}
                             {overdue && <span className="block text-[10px]">overdue</span>}
                           </span>
@@ -182,23 +240,32 @@ export default function InvoiceList() {
                           <span className="text-text-tertiary text-xs">—</span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-text-primary">
+                      <td className="px-5 py-3.5 text-end font-semibold text-text-primary">
                         {formatMoney(inv.total_amount, { currency: inv.currency })}
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         <InvoiceStatusPill status={inv.status} size="sm" />
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="px-5 py-3.5 text-end">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           {inv.pdf_path && (
-                            <IconBtn title="Preview" onClick={(e) => { e.stopPropagation(); openEditor(inv.id); }}>
+                            <IconBtn
+                              title="Preview"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditor(inv.id);
+                              }}
+                            >
                               <Eye size={15} />
                             </IconBtn>
                           )}
                           <IconBtn
                             title="Delete"
                             danger
-                            onClick={(e) => { e.stopPropagation(); setPendingDelete(inv.id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingDelete(inv.id);
+                            }}
                           >
                             <Trash2 size={15} />
                           </IconBtn>
@@ -227,7 +294,17 @@ export default function InvoiceList() {
   );
 }
 
-function StatCard({ label, value, icon, tone }: { label: string; value: number; icon: React.ReactNode; tone: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  tone: string;
+}) {
   const tones: Record<string, string> = {
     accent: 'bg-accent/10 text-accent',
     warning: 'bg-warning/10 text-warning',
@@ -236,16 +313,32 @@ function StatCard({ label, value, icon, tone }: { label: string; value: number; 
   };
   return (
     <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}>{icon}</div>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}
+      >
+        {icon}
+      </div>
       <div className="min-w-0">
-        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">{label}</p>
-        <p className="text-lg sm:text-xl font-bold text-text-primary mt-0.5">{formatMoney(value)}</p>
+        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">
+          {label}
+        </p>
+        <p className="text-lg sm:text-xl font-bold text-text-primary mt-0.5">
+          {formatMoney(value)}
+        </p>
       </div>
     </div>
   );
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -261,14 +354,26 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-function IconBtn({ children, onClick, title, danger }: { children: React.ReactNode; onClick: (e: React.MouseEvent) => void; title: string; danger?: boolean }) {
+function IconBtn({
+  children,
+  onClick,
+  title,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  danger?: boolean;
+}) {
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-        danger ? 'text-text-tertiary hover:text-danger hover:bg-danger/10' : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
+        danger
+          ? 'text-text-tertiary hover:text-danger hover:bg-danger/10'
+          : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
       }`}
     >
       {children}
@@ -317,9 +422,20 @@ function EmptyState({ hasInvoices, onNew }: { hasInvoices: boolean; onNew: () =>
   );
 }
 
-function ConfirmDelete({ number, onCancel, onConfirm }: { number: string; onCancel: () => void; onConfirm: () => void }) {
+function ConfirmDelete({
+  number,
+  onCancel,
+  onConfirm,
+}: {
+  number: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onCancel}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onCancel}
+    >
       <div
         className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -332,8 +448,12 @@ function ConfirmDelete({ number, onCancel, onConfirm }: { number: string; onCanc
           This permanently removes the document and its line items. This cannot be undone.
         </p>
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>Delete</Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
+            Delete
+          </Button>
         </div>
       </div>
     </div>

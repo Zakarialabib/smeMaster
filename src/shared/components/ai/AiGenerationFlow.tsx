@@ -1,7 +1,7 @@
-import { type ReactNode } from "react";
-import { Loader2 } from "lucide-react";
-import { Modal } from "@shared/components/ui/Modal";
-import { UpgradeBanner } from "@shared/components/ui/UpgradeBadge";
+import { type ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
+import { Modal } from '@shared/components/ui/Modal';
+import { UpgradeBanner } from '@shared/components/ui/UpgradeBadge';
 
 /**
  * Step state of an AI generation flow. Mirrors the `step` field returned by
@@ -10,7 +10,7 @@ import { UpgradeBanner } from "@shared/components/ui/UpgradeBadge";
  * Re-declared locally to avoid a shared → features import cycle. The
  * consumer's hook return must match this shape.
  */
-export type AiStep = "prompt" | "generating" | "preview" | "error";
+export type AiStep = 'prompt' | 'generating' | 'preview' | 'error';
 
 /**
  * State portion of `useAiGenerationModal`. Re-declared locally to avoid a
@@ -107,8 +107,8 @@ export function AiGenerationFlow<T>({
   errorSlot,
   generatingLabel,
   generatingSubLabel,
-  retryLabel = "Try again",
-  cancelLabel = "Cancel",
+  retryLabel = 'Try again',
+  cancelLabel = 'Cancel',
 }: AiGenerationFlowProps<T>) {
   const handleClose = () => {
     state.reset();
@@ -125,20 +125,18 @@ export function AiGenerationFlow<T>({
     >
       <div className="flex flex-col gap-4 p-1">
         {/* Locked state */}
-        {isLocked && (
-          lockedBanner ?? (
-            <UpgradeBanner
-              featureName={lockFeatureName ?? title}
-              description={lockDescription}
-            />
-          )
-        )}
+        {isLocked &&
+          (lockedBanner ?? (
+            <UpgradeBanner featureName={lockFeatureName ?? title} description={lockDescription} />
+          ))}
 
         {/* PROMPT STEP */}
-        {state.step === "prompt" && !isLocked && promptSlot(state.generate, state.prompt.trim().length > 0)}
+        {state.step === 'prompt' &&
+          !isLocked &&
+          promptSlot(state.generate, state.prompt.trim().length > 0)}
 
         {/* GENERATING STEP */}
-        {state.step === "generating" && !isLocked && (
+        {state.step === 'generating' && !isLocked && (
           <div className="flex flex-col items-center justify-center py-10 gap-3">
             <Loader2 size={24} className="text-accent animate-spin" />
             <p className="text-sm text-text-secondary">{generatingLabel}</p>
@@ -149,17 +147,20 @@ export function AiGenerationFlow<T>({
         )}
 
         {/* PREVIEW STEP */}
-        {state.step === "preview" && state.result && !isLocked &&
+        {state.step === 'preview' &&
+          state.result &&
+          !isLocked &&
           previewSlot(state.result, state.regenerate, state.reset)}
 
         {/* ERROR STEP */}
-        {state.step === "error" && !isLocked &&
+        {state.step === 'error' &&
+          !isLocked &&
           (errorSlot ? (
-            errorSlot(state.error ?? "Generation failed", state.generate)
+            errorSlot(state.error ?? 'Generation failed', state.generate)
           ) : (
             <div className="flex flex-col items-center gap-3 py-6">
               <div className="px-4 py-3 rounded-lg bg-danger/10 border border-danger/20 text-sm text-danger text-center max-w-md">
-                {state.error ?? "Generation failed"}
+                {state.error ?? 'Generation failed'}
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -183,4 +184,3 @@ export function AiGenerationFlow<T>({
     </Modal>
   );
 }
-

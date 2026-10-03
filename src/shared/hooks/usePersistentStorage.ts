@@ -19,22 +19,30 @@
  *     "list",
  *   );
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const STORE_FILE = "smemaster.prefs.json";
-const STORE_KEY_PREFIX = "smemaster.";
+const STORE_FILE = 'smemaster.prefs.json';
+const STORE_KEY_PREFIX = 'smemaster.';
 
 /**
  * Detect Tauri runtime. Avoids importing from a service module so this hook
  * has no cross-cutting dependencies and works in test envs (jsdom).
  */
 function detectTauri(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   // Tauri v2 always sets this on the window before the app boots.
-  return "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  return '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
 }
 
-const isBrowser = typeof window !== "undefined" && !detectTauri();
+/**
+ * True when running in a plain browser (jsdom / web build) rather than a Tauri
+ * shell. Evaluated lazily (per call) rather than as a module-level constant so
+ * that the environment can be toggled at runtime — e.g. tests that delete
+ * `window.__TAURI_INTERNALS__` to exercise the localStorage fallback path.
+ */
+function isBrowser(): boolean {
+  return typeof window !== 'undefined' && !detectTauri();
+}
 
 // ── Lazy store singleton (Tauri) ──────────────────────────────────────────
 // We keep one tauri-plugin-store instance for the whole app to avoid
@@ -49,14 +57,12 @@ async function getTauriStore(): Promise<{
 } | null> {
   if (!detectTauri()) return null;
   if (!tauriStorePromise) {
-    tauriStorePromise = import("@tauri-apps/plugin-store")
-      .then(({ load }) =>
-        load(STORE_FILE, { autoSave: true, defaults: {} }),
-      )
+    tauriStorePromise = import('@tauri-apps/plugin-store')
+      .then(({ load }) => load(STORE_FILE, { autoSave: true, defaults: {} }))
       .catch((err) => {
         // Reset the cached promise so a later call can retry.
         tauriStorePromise = null;
-        console.warn("[usePersistentStorage] tauri-plugin-store load failed", err);
+        console.warn('[usePersistentStorage] tauri-plugin-store load failed', err);
         return null;
       });
   }
@@ -112,9 +118,7 @@ export function usePersistentStorage<T>(
   key: string,
   initialValue: T,
 ): UsePersistentStorageResult<T> {
-  const namespacedKey = key.startsWith(STORE_KEY_PREFIX)
-    ? key
-    : `${STORE_KEY_PREFIX}${key}`;
+  const namespacedKey = key.startsWith(STORE_KEY_PREFIX) ? key : `${STORE_KEY_PREFIX}${key}`;
 
   const [value, setValueState] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
@@ -128,7 +132,7 @@ export function usePersistentStorage<T>(
 
     async function load() {
       // Browser fallback: synchronous-ish via localStorage.
-      if (isBrowser) {
+      if (isBrowser()) {
         const cached = lsGet<T>(namespacedKey);
         if (!cancelled && cached !== null) setValueState(cached);
         if (!cancelled) setLoading(false);
@@ -143,10 +147,7 @@ export function usePersistentStorage<T>(
         try {
           stored = await store.get<T>(namespacedKey);
         } catch (err) {
-          console.warn(
-            `[usePersistentStorage] read failed for ${namespacedKey}`,
-            err,
-          );
+          console.warn(`[usePersistentStorage] read failed for ${namespacedKey}`, err);
         }
       }
       // Fallback: try localStorage (dual-write mirror)
@@ -173,27 +174,21 @@ export function usePersistentStorage<T>(
   // ── Write (dual: plugin store + localStorage mirror) ──────────────────
   const writeValue = useCallback(
     async (next: T | ((prev: T) => T)): Promise<void> => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: T) => T)(value)
-          : next;
+      const resolved = typeof next === 'function' ? (next as (prev: T) => T)(value) : next;
       setValueState(resolved);
 
       // Always write to localStorage as the universal fallback layer.
       lsSet(namespacedKey, resolved);
 
       // Also write to the durable plugin store if available.
-      if (!isBrowser) {
+      if (!isBrowser()) {
         const store = await getTauriStore();
         if (store) {
           try {
             await store.set(namespacedKey, resolved);
             await store.save();
           } catch (err) {
-            console.warn(
-              `[usePersistentStorage] write failed for ${namespacedKey}`,
-              err,
-            );
+            console.warn(`[usePersistentStorage] write failed for ${namespacedKey}`, err);
           }
         }
       }
@@ -209,7 +204,7 @@ export function usePersistentStorage<T>(
   );
 
   const remove = useCallback(async (): Promise<void> => {
-    if (isBrowser) {
+    if (isBrowser()) {
       lsDelete(namespacedKey);
     } else {
       const store = await getTauriStore();
@@ -218,10 +213,7 @@ export function usePersistentStorage<T>(
           await store.delete(namespacedKey);
           await store.save();
         } catch (err) {
-          console.warn(
-            `[usePersistentStorage] delete failed for ${namespacedKey}`,
-            err,
-          );
+          console.warn(`[usePersistentStorage] delete failed for ${namespacedKey}`, err);
         }
       }
     }

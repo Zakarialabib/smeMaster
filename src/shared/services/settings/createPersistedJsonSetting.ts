@@ -34,7 +34,7 @@
  * });
  * ```
  */
-import { getSetting, setSetting } from "@features/settings/db/settings";
+import { getSetting, setSetting } from '@features/settings/db/settings';
 
 export interface PersistedJsonSettingOptions<T> {
   /** The settings table key this value is stored under. */

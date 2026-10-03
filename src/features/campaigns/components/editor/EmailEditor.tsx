@@ -1,10 +1,10 @@
-import { type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import { Redo2, Undo2 } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { GlassPanel } from "@shared/components/ui";
-import { useCampaignComposerStore } from "../../stores/campaignComposerStore";
-import { BlockList } from "./BlockList";
+import { type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Redo2, Undo2 } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { GlassPanel } from '@shared/components/ui';
+import { useCampaignComposerStore } from '../../stores/campaignComposerStore';
+import { BlockList } from './BlockList';
 
 interface EmailEditorProps {
   /** Right-hand config panel — passed in by the integrator (built by another agent). */
@@ -25,17 +25,15 @@ export function EmailEditor({ configPanel, onPickFromVault }: EmailEditorProps) 
         className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl"
       >
         <header className="flex items-center justify-between border-b border-border-primary px-4 py-3">
-          <h2 className="text-sm font-semibold text-text-primary">
-            {t("campaign.editor.title")}
-          </h2>
+          <h2 className="text-sm font-semibold text-text-primary">{t('campaign.editor.title')}</h2>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="xs"
               iconOnly
               icon={<Undo2 className="h-4 w-4" />}
-              aria-label={t("campaign.editor.undo")}
-              title={t("campaign.editor.undo")}
+              aria-label={t('campaign.editor.undo')}
+              title={t('campaign.editor.undo')}
               disabled={store.historyIndex <= 0}
               onClick={() => store.undo()}
             />
@@ -44,20 +42,15 @@ export function EmailEditor({ configPanel, onPickFromVault }: EmailEditorProps) 
               size="xs"
               iconOnly
               icon={<Redo2 className="h-4 w-4" />}
-              aria-label={t("campaign.editor.redo")}
-              title={t("campaign.editor.redo")}
-              disabled={
-                store.historyIndex >= store.history.length - 1
-              }
+              aria-label={t('campaign.editor.redo')}
+              title={t('campaign.editor.redo')}
+              disabled={store.historyIndex >= store.history.length - 1}
               onClick={() => store.redo()}
             />
           </div>
         </header>
 
-        <div
-          className="min-h-0 flex-1 overflow-y-auto p-3"
-          onClick={() => store.selectBlock(null)}
-        >
+        <div className="min-h-0 flex-1 overflow-y-auto p-3" onClick={() => store.selectBlock(null)}>
           <BlockList onPickFromVault={onPickFromVault} />
         </div>
       </GlassPanel>
@@ -71,9 +64,7 @@ export function EmailEditor({ configPanel, onPickFromVault }: EmailEditorProps) 
               variant="panel"
               className="flex h-full min-h-[200px] items-center justify-center rounded-xl p-4 text-center"
             >
-              <p className="text-xs text-text-tertiary">
-                {t("campaign.editor.configure")}
-              </p>
+              <p className="text-xs text-text-tertiary">{t('campaign.editor.configure')}</p>
             </GlassPanel>
           )}
         </div>

@@ -1,19 +1,19 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { RuleSummaryCard, type RuleSummaryCardRule } from "./RuleSummaryCard";
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { RuleSummaryCard, type RuleSummaryCardRule } from './RuleSummaryCard';
 
 function makeRule(overrides: Partial<RuleSummaryCardRule> = {}): RuleSummaryCardRule {
   return {
-    id: "rule-1",
-    name: "Auto follow-up",
-    trigger_event: "email_received",
+    id: 'rule-1',
+    name: 'Auto follow-up',
+    trigger_event: 'email_received',
     actions: '[{"type":"apply_label"}]',
     is_active: 1,
     ...overrides,
   };
 }
 
-describe("RuleSummaryCard", () => {
+describe('RuleSummaryCard', () => {
   it("renders with active state — toggle shows checked, no 'Disabled' badge", () => {
     render(
       <RuleSummaryCard
@@ -27,9 +27,9 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    const toggle = screen.getByRole("switch");
-    expect(toggle).toHaveAttribute("aria-checked", "true");
-    expect(screen.queryByText("Disabled")).not.toBeInTheDocument();
+    const toggle = screen.getByRole('switch');
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+    expect(screen.queryByText('Disabled')).not.toBeInTheDocument();
   });
 
   it("renders with inactive state — toggle shows unchecked, 'Disabled' badge appears", () => {
@@ -45,9 +45,9 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    const toggle = screen.getByRole("switch");
-    expect(toggle).toHaveAttribute("aria-checked", "false");
-    expect(screen.getByText("Disabled")).toBeInTheDocument();
+    const toggle = screen.getByRole('switch');
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByText('Disabled')).toBeInTheDocument();
   });
 
   it("renders with createdAt provided — 'Created …' line appears", () => {
@@ -99,7 +99,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByRole("switch")).toHaveAttribute("aria-label", "Disable workflow");
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-label', 'Disable workflow');
 
     rerender(
       <RuleSummaryCard
@@ -113,7 +113,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByRole("switch")).toHaveAttribute("aria-label", "Enable workflow");
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-label', 'Enable workflow');
   });
 
   it("uses 'Disable rule' / 'Enable rule' ARIA labels when entityName='rule'", () => {
@@ -129,7 +129,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByRole("switch")).toHaveAttribute("aria-label", "Disable rule");
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-label', 'Disable rule');
 
     rerender(
       <RuleSummaryCard
@@ -143,14 +143,14 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByRole("switch")).toHaveAttribute("aria-label", "Enable rule");
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-label', 'Enable rule');
   });
 
-  it("click on toggle → calls onToggle(rule.id, !isActive) exactly once", () => {
+  it('click on toggle → calls onToggle(rule.id, !isActive) exactly once', () => {
     const onToggle = vi.fn();
     render(
       <RuleSummaryCard
-        rule={makeRule({ id: "abc", is_active: 1 })}
+        rule={makeRule({ id: 'abc', is_active: 1 })}
         isActive
         itemCount={0}
         countNoun="action"
@@ -160,14 +160,14 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("switch"));
+    fireEvent.click(screen.getByRole('switch'));
     expect(onToggle).toHaveBeenCalledTimes(1);
-    expect(onToggle).toHaveBeenCalledWith("abc", false);
+    expect(onToggle).toHaveBeenCalledWith('abc', false);
   });
 
-  it("click on edit button → calls onEdit(rule) with the full rule", () => {
+  it('click on edit button → calls onEdit(rule) with the full rule', () => {
     const onEdit = vi.fn();
-    const rule = makeRule({ id: "x", name: "Edit me" });
+    const rule = makeRule({ id: 'x', name: 'Edit me' });
     render(
       <RuleSummaryCard
         rule={rule}
@@ -180,16 +180,16 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /edit rule/i }));
+    fireEvent.click(screen.getByRole('button', { name: /edit rule/i }));
     expect(onEdit).toHaveBeenCalledTimes(1);
     expect(onEdit).toHaveBeenCalledWith(rule);
   });
 
-  it("click on delete button → calls onDelete(rule.id)", () => {
+  it('click on delete button → calls onDelete(rule.id)', () => {
     const onDelete = vi.fn();
     render(
       <RuleSummaryCard
-        rule={makeRule({ id: "del-me" })}
+        rule={makeRule({ id: 'del-me' })}
         isActive
         itemCount={0}
         countNoun="action"
@@ -199,12 +199,12 @@ describe("RuleSummaryCard", () => {
         onDelete={onDelete}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /delete rule/i }));
+    fireEvent.click(screen.getByRole('button', { name: /delete rule/i }));
     expect(onDelete).toHaveBeenCalledTimes(1);
-    expect(onDelete).toHaveBeenCalledWith("del-me");
+    expect(onDelete).toHaveBeenCalledWith('del-me');
   });
 
-  it("itemCount=0 — does not show the count text", () => {
+  it('itemCount=0 — does not show the count text', () => {
     render(
       <RuleSummaryCard
         rule={makeRule()}
@@ -234,7 +234,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("3 actions")).toBeInTheDocument();
+    expect(screen.getByText('3 actions')).toBeInTheDocument();
   });
 
   it("itemCount=3 with countNoun='step' — shows '3 steps' (plural)", () => {
@@ -250,7 +250,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("3 steps")).toBeInTheDocument();
+    expect(screen.getByText('3 steps')).toBeInTheDocument();
   });
 
   it("itemCount=1 with countNoun='action' — shows '1 action' (singular)", () => {
@@ -266,7 +266,7 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("1 action")).toBeInTheDocument();
+    expect(screen.getByText('1 action')).toBeInTheDocument();
   });
 
   it("itemCount=1 with countNoun='step' — shows '1 step' (singular)", () => {
@@ -282,6 +282,6 @@ describe("RuleSummaryCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("1 step")).toBeInTheDocument();
+    expect(screen.getByText('1 step')).toBeInTheDocument();
   });
 });

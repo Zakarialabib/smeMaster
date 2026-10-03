@@ -454,4 +454,40 @@ mod tests {
         assert!(result.unwrap_err().to_string().contains("Simulated start failure"));
         service.stop().await.unwrap(); // stop succeeds
     }
+
+    /*
+     * `with_health` existed on the mock builder and was never called, so the
+     * compiler flagged it dead. This is the test it exists for: a mock's value
+     * is that it can be put into a specific state, and a builder that cannot
+     * set health cannot express a degraded service at all.
+     */
+    #[tokio::test]
+    async fn test_mock_service_with_health_reports_that_health() {
+        let svc = MockService::new("degraded_one")
+            .with_health(HealthStatus::Degraded("disk full".into()));
+        assert_eq!(svc.name(), "degraded_one");
+        match svc.health_check().await {
+            HealthStatus::Degraded(reason) => assert_eq!(reason, "disk full"),
+            other => panic!("expected Degraded, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_mock_service_builder_sets_critical_and_priority() {
+        // The other two builder methods, covered in the same place so they are
+        // not dead next time.
+        let svc = MockService::new("ordered").with_critical(true).with_priority(7);
+        assert!(svc.is_critical());
+        assert_eq!(svc.priority(), 7);
+    }
+
+    #[tokio::test]
+    async fn test_mock_service_counts_lifecycle_calls() {
+        let svc = MockService::new("counted");
+        svc.init().await.unwrap();
+        svc.start().await.unwrap();
+        svc.stop().await.unwrap();
+        assert_eq!(svc.init_count(), 1);
+        assert_eq!(svc.start_count(), 1);
+    }
 }

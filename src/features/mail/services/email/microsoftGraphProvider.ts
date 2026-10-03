@@ -1,19 +1,19 @@
-import type { EmailProvider, EmailFolder, SyncResult } from "./types";
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import type { EmailProvider, EmailFolder, SyncResult } from './types';
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
 import {
   MicrosoftGraphClient,
   type GraphMailFolder,
   type GraphMailFolderResponse,
-} from "../microsoft/client";
+} from '../microsoft/client';
 
 /** Map Outlook well-known folder names to IMAP special-use flags */
 const SPECIAL_USE_MAP: Record<string, string | null> = {
   inbox: null,
-  sentitems: "\\Sent",
-  deleteditems: "\\Trash",
-  drafts: "\\Drafts",
-  junkemail: "\\Junk",
-  archive: "\\Archive",
+  sentitems: '\\Sent',
+  deleteditems: '\\Trash',
+  drafts: '\\Drafts',
+  junkemail: '\\Junk',
+  archive: '\\Archive',
 };
 
 interface GraphEmailAddress {
@@ -26,7 +26,7 @@ interface GraphRecipient {
 }
 
 interface GraphBody {
-  contentType: "html" | "text";
+  contentType: 'html' | 'text';
   content: string;
 }
 
@@ -66,7 +66,7 @@ interface GraphMessage {
  */
 export class MicrosoftGraphEmailProvider implements EmailProvider {
   readonly accountId: string;
-  readonly type = "microsoft_graph" as const;
+  readonly type = 'microsoft_graph' as const;
   private client: MicrosoftGraphClient;
   private folderCache: GraphMailFolder[] | null = null;
 
@@ -78,19 +78,17 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   // ── Folder/Label operations ─────────────────────────────────────────────
 
   async listFolders(): Promise<EmailFolder[]> {
-    const resp = await this.client.request<GraphMailFolderResponse>(
-      "/me/mailFolders",
-    );
+    const resp = await this.client.request<GraphMailFolderResponse>('/me/mailFolders');
     this.folderCache = resp.value;
     return resp.value.map((folder) => ({
       id: folder.id,
       name: folder.displayName,
       path: folder.id,
-      type: folder.wellKnownName ? "system" : "user",
+      type: folder.wellKnownName ? 'system' : 'user',
       specialUse: folder.wellKnownName
         ? (SPECIAL_USE_MAP[folder.wellKnownName.toLowerCase()] ?? null)
         : null,
-      delimiter: "/",
+      delimiter: '/',
       messageCount: folder.totalItemCount ?? 0,
       unreadCount: folder.unreadItemCount ?? 0,
     }));
@@ -98,20 +96,18 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
 
   async createFolder(name: string, parentPath?: string): Promise<EmailFolder> {
     const body = { displayName: name };
-    const endpoint = parentPath
-      ? `/me/mailFolders/${parentPath}/childFolders`
-      : "/me/mailFolders";
+    const endpoint = parentPath ? `/me/mailFolders/${parentPath}/childFolders` : '/me/mailFolders';
     const folder = await this.client.request<GraphMailFolder>(endpoint, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(body),
     });
     return {
       id: folder.id,
       name: folder.displayName,
       path: folder.id,
-      type: "user",
+      type: 'user',
       specialUse: null,
-      delimiter: "/",
+      delimiter: '/',
       messageCount: 0,
       unreadCount: 0,
     };
@@ -119,13 +115,13 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
 
   async deleteFolder(folderId: string): Promise<void> {
     await this.client.request(`/me/mailFolders/${folderId}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
   }
 
   async renameFolder(folderId: string, newName: string): Promise<void> {
     await this.client.request(`/me/mailFolders/${folderId}`, {
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify({ displayName: newName }),
     });
   }
@@ -150,9 +146,7 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   // ── Message operations ──────────────────────────────────────────────────
 
   async fetchMessage(messageId: string): Promise<ParsedMessage> {
-    const msg = await this.client.request<GraphMessage>(
-      `/me/messages/${messageId}`,
-    );
+    const msg = await this.client.request<GraphMessage>(`/me/messages/${messageId}`);
     return this.graphMessageToParsed(msg);
   }
 
@@ -175,14 +169,12 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `Microsoft Graph API error: ${response.status} - Failed to fetch attachment`,
-      );
+      throw new Error(`Microsoft Graph API error: ${response.status} - Failed to fetch attachment`);
     }
 
     const buffer = await response.arrayBuffer();
     const bytes = new Uint8Array(buffer);
-    let binary = "";
+    let binary = '';
     for (const byte of bytes) {
       binary += String.fromCharCode(byte);
     }
@@ -212,88 +204,67 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   // ── Actions (operate on thread/message level) ───────────────────────────
 
   async archive(_threadId: string, messageIds: string[]): Promise<void> {
-    const destinationId = await this.getWellKnownFolderId("archive");
+    const destinationId = await this.getWellKnownFolderId('archive');
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}/move`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ destinationId }),
       });
     }
   }
 
   async trash(_threadId: string, messageIds: string[]): Promise<void> {
-    const destinationId = await this.getWellKnownFolderId("deleteditems");
+    const destinationId = await this.getWellKnownFolderId('deleteditems');
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}/move`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ destinationId }),
       });
     }
   }
 
-  async permanentDelete(
-    _threadId: string,
-    messageIds: string[],
-  ): Promise<void> {
+  async permanentDelete(_threadId: string, messageIds: string[]): Promise<void> {
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
     }
   }
 
-  async markRead(
-    _threadId: string,
-    messageIds: string[],
-    read: boolean,
-  ): Promise<void> {
+  async markRead(_threadId: string, messageIds: string[], read: boolean): Promise<void> {
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify({ isRead: read }),
       });
     }
   }
 
-  async star(
-    _threadId: string,
-    messageIds: string[],
-    starred: boolean,
-  ): Promise<void> {
+  async star(_threadId: string, messageIds: string[], starred: boolean): Promise<void> {
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify({
-          flag: { flagStatus: starred ? "flagged" : "notFlagged" },
+          flag: { flagStatus: starred ? 'flagged' : 'notFlagged' },
         }),
       });
     }
   }
 
-  async spam(
-    _threadId: string,
-    messageIds: string[],
-    isSpam: boolean,
-  ): Promise<void> {
-    const destinationId = await this.getWellKnownFolderId(
-      isSpam ? "junkemail" : "inbox",
-    );
+  async spam(_threadId: string, messageIds: string[], isSpam: boolean): Promise<void> {
+    const destinationId = await this.getWellKnownFolderId(isSpam ? 'junkemail' : 'inbox');
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}/move`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ destinationId }),
       });
     }
   }
 
-  async moveToFolder(
-    _threadId: string,
-    messageIds: string[],
-    folderPath: string,
-  ): Promise<void> {
+  async moveToFolder(_threadId: string, messageIds: string[], folderPath: string): Promise<void> {
     for (const msgId of messageIds) {
       await this.client.request(`/me/messages/${msgId}/move`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ destinationId: folderPath }),
       });
     }
@@ -310,17 +281,11 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
 
   // ── Send/Draft operations ───────────────────────────────────────────────
 
-  async sendMessage(
-    rawBase64Url: string,
-    _threadId?: string,
-  ): Promise<{ id: string }> {
+  async sendMessage(rawBase64Url: string, _threadId?: string): Promise<{ id: string }> {
     return this.client.sendRawMime(rawBase64Url);
   }
 
-  async createDraft(
-    rawBase64Url: string,
-    _threadId?: string,
-  ): Promise<{ draftId: string }> {
+  async createDraft(rawBase64Url: string, _threadId?: string): Promise<{ draftId: string }> {
     const result = await this.client.createDraftFromMime(rawBase64Url);
     return { draftId: result.id };
   }
@@ -343,7 +308,7 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
       const profile = await this.client.getMe();
-      const email = profile.userPrincipalName || profile.mail || "";
+      const email = profile.userPrincipalName || profile.mail || '';
       return {
         success: true,
         message: `Connected as ${email}`,
@@ -351,8 +316,7 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
     } catch (err) {
       return {
         success: false,
-        message:
-          err instanceof Error ? err.message : "Unknown connection error",
+        message: err instanceof Error ? err.message : 'Unknown connection error',
       };
     }
   }
@@ -360,7 +324,7 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   async getProfile(): Promise<{ email: string; name?: string }> {
     const profile = await this.client.getMe();
     return {
-      email: profile.userPrincipalName || profile.mail || "",
+      email: profile.userPrincipalName || profile.mail || '',
       name: profile.displayName || undefined,
     };
   }
@@ -383,8 +347,7 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
   private graphMessageToParsed(msg: GraphMessage): ParsedMessage {
     const headers = msg.internetMessageHeaders ?? [];
     const getHeader = (name: string): string | null =>
-      headers.find((h) => h.name.toLowerCase() === name.toLowerCase())
-        ?.value ?? null;
+      headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? null;
 
     const from = msg.from?.emailAddress;
     const sender = msg.sender?.emailAddress;
@@ -395,34 +358,19 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
       threadId: msg.conversationId ?? msg.id,
       fromAddress: effectiveFrom?.address ?? null,
       fromName: effectiveFrom?.name ?? null,
-      toAddresses:
-        msg.toRecipients
-          ?.map((r) => r.emailAddress.address)
-          .join(", ") ?? null,
-      ccAddresses:
-        msg.ccRecipients
-          ?.map((r) => r.emailAddress.address)
-          .join(", ") ?? null,
-      bccAddresses:
-        msg.bccRecipients
-          ?.map((r) => r.emailAddress.address)
-          .join(", ") ?? null,
+      toAddresses: msg.toRecipients?.map((r) => r.emailAddress.address).join(', ') ?? null,
+      ccAddresses: msg.ccRecipients?.map((r) => r.emailAddress.address).join(', ') ?? null,
+      bccAddresses: msg.bccRecipients?.map((r) => r.emailAddress.address).join(', ') ?? null,
       replyTo: msg.replyTo?.[0]?.emailAddress.address ?? null,
       subject: msg.subject ?? null,
-      snippet: msg.bodyPreview ?? "",
-      date: msg.receivedDateTime
-        ? new Date(msg.receivedDateTime).getTime()
-        : Date.now(),
+      snippet: msg.bodyPreview ?? '',
+      date: msg.receivedDateTime ? new Date(msg.receivedDateTime).getTime() : Date.now(),
       isRead: msg.isRead ?? true,
-      isStarred: msg.flag?.flagStatus === "flagged",
-      bodyHtml:
-        msg.body?.contentType === "html" ? (msg.body.content ?? null) : null,
-      bodyText:
-        msg.body?.contentType === "text" ? (msg.body.content ?? null) : null,
+      isStarred: msg.flag?.flagStatus === 'flagged',
+      bodyHtml: msg.body?.contentType === 'html' ? (msg.body.content ?? null) : null,
+      bodyText: msg.body?.contentType === 'text' ? (msg.body.content ?? null) : null,
       rawSize: 0,
-      internalDate: msg.receivedDateTime
-        ? new Date(msg.receivedDateTime).getTime()
-        : Date.now(),
+      internalDate: msg.receivedDateTime ? new Date(msg.receivedDateTime).getTime() : Date.now(),
       labelIds: [],
       hasAttachments: msg.hasAttachments ?? false,
       attachments: (msg.attachments ?? []).map((a) => ({
@@ -433,9 +381,9 @@ export class MicrosoftGraphEmailProvider implements EmailProvider {
         contentId: null,
         isInline: false,
       })),
-      listUnsubscribe: getHeader("List-Unsubscribe"),
-      listUnsubscribePost: getHeader("List-Unsubscribe-Post"),
-      authResults: getHeader("Authentication-Results"),
+      listUnsubscribe: getHeader('List-Unsubscribe'),
+      listUnsubscribePost: getHeader('List-Unsubscribe-Post'),
+      authResults: getHeader('Authentication-Results'),
     };
   }
 }

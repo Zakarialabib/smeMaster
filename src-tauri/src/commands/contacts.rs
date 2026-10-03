@@ -354,6 +354,99 @@ pub async fn db_list_contacts(
         .map_err(Into::into)
 }
 
+/// Request payload for `db_filter_contacts`.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FilterContactsRequest {
+    pub tag_id: Option<String>,
+    pub group_id: Option<String>,
+    pub segment_id: Option<String>,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+/// Return contacts filtered by tag / group / segment membership.
+///
+/// Reuses the same `contacts` row shape as `db_list_contacts` so the frontend
+/// `Contact` type stays consistent. Filters are AND-combined:
+/// - `tag_id`:    INNER JOIN `entity_pivots` (entity_type = 'contact', tag_id = ?)
+/// - `group_id`:  INNER JOIN `contact_group_pivot` (group_id = ?)
+/// - `segment_id`: resolves the segment's stored SQL query (dynamic segments) and
+///   intersects the resulting contact ids with the other filters. Static segments
+///   are stored as SQL too, so the same path handles both.
+///
+/// `LIMIT`/`OFFSET` are always applied. Returns an empty `Vec` when nothing
+/// matches (not an error).
+#[tauri::command]
+pub async fn db_filter_contacts(
+    pool: State<'_, SqlitePool>,
+    req: FilterContactsRequest,
+) -> CmdResult<Vec<Contact>> {
+    // ── 1. Resolve segment membership ids (if requested) ───────────────
+    // Segments are stored SQL queries; execute and collect the resulting ids.
+    let segment_ids: Option<Vec<String>> = if let Some(segment_id) = &req.segment_id {
+        let members = crate::db::tables::crm::contact_segments::execute(&pool, segment_id)
+            .await
+            .map_err(|e| crate::error::SerializedError::from(e))?;
+        Some(members.into_iter().map(|c| c.id).collect())
+    } else {
+        None
+    };
+
+    // ── 2. Build the base SELECT + conditional JOINs ───────────────────
+    let mut sql = String::from(
+        "SELECT c.* FROM contacts c",
+    );
+
+    if req.tag_id.is_some() {
+        sql.push_str(
+            " INNER JOIN entity_pivots ep ON ep.entity_id = c.id AND ep.entity_type = 'contact' AND ep.tag_id = ?",
+        );
+    }
+    if req.group_id.is_some() {
+        sql.push_str(
+            " INNER JOIN contact_group_pivot cgp ON cgp.contact_id = c.id AND cgp.group_id = ?",
+        );
+    }
+    if segment_ids.is_some() {
+        // Intersect with the segment's resolved contact ids.
+        sql.push_str(" INNER JOIN (SELECT value AS id FROM json_each(?)) seg ON seg.id = c.id");
+    }
+
+    sql.push_str(" WHERE 1=1");
+    if let Some(ids) = &segment_ids {
+        if ids.is_empty() {
+            // Segment matched nothing → no contacts can match.
+            return Ok(Vec::new());
+        }
+    }
+
+    sql.push_str(" ORDER BY c.email ASC LIMIT ? OFFSET ?");
+
+    // ── 3. Bind parameters in JOIN-declaration order ───────────────────
+    let mut query = sqlx::query_as::<_, Contact>(sqlx::AssertSqlSafe(sql));
+
+    if let Some(tag_id) = &req.tag_id {
+        query = query.bind(tag_id);
+    }
+    if let Some(group_id) = &req.group_id {
+        query = query.bind(group_id);
+    }
+    if let Some(ids) = &segment_ids {
+        // Pass the id list as a JSON array for json_each().
+        let json = serde_json::to_string(ids)
+            .map_err(|e| crate::error::SerializedError::from(crate::db::error::AppDbError::Internal(format!("failed to serialize segment ids: {e}"))))?;
+        query = query.bind(json);
+    }
+
+    query = query.bind(req.limit).bind(req.offset);
+
+    query
+        .fetch_all(&*pool)
+        .await
+        .map_err(|e| crate::error::SerializedError::from(crate::db::error::AppDbError::Database(e)))
+}
+
 #[derive(Debug, Serialize)]
 pub struct CountRow {
     pub count: i64,

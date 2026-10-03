@@ -1,6 +1,6 @@
-import { cn } from "@shared/utils/cn";
+import { cn } from '@shared/utils/cn';
 
-export type CenteredLoaderSize = "sm" | "md" | "lg";
+export type CenteredLoaderSize = 'sm' | 'md' | 'lg';
 
 export interface CenteredLoaderProps {
   /** Optional caption rendered below the spinner. */
@@ -19,9 +19,9 @@ export interface CenteredLoaderProps {
 }
 
 const SIZE_CLASSES: Record<CenteredLoaderSize, string> = {
-  sm: "w-4 h-4 border-2",
-  md: "w-8 h-8 border-2",
-  lg: "w-10 h-10 border-[3px]",
+  sm: 'w-4 h-4 border-2',
+  md: 'w-8 h-8 border-2',
+  lg: 'w-10 h-10 border-[3px]',
 };
 
 /**
@@ -47,7 +47,7 @@ const SIZE_CLASSES: Record<CenteredLoaderSize, string> = {
  */
 export function CenteredLoader({
   label,
-  size = "md",
+  size = 'md',
   inline = false,
   className,
 }: CenteredLoaderProps) {
@@ -55,8 +55,8 @@ export function CenteredLoader({
     <div
       className={cn(
         inline
-          ? "inline-flex items-center gap-2"
-          : "flex flex-col items-center justify-center gap-2 py-6",
+          ? 'inline-flex items-center gap-2'
+          : 'flex flex-col items-center justify-center gap-2 py-6',
         className,
       )}
       role="status"
@@ -65,16 +65,13 @@ export function CenteredLoader({
       <div
         className={cn(
           SIZE_CLASSES[size],
-          "border-accent/30 border-t-accent rounded-full animate-spin shrink-0",
+          'border-accent/30 border-t-accent rounded-full animate-spin shrink-0',
         )}
         aria-hidden="true"
       />
       {label && (
-        <p className={cn("text-xs text-text-tertiary", inline && "leading-none")}>
-          {label}
-        </p>
+        <p className={cn('text-xs text-text-tertiary', inline && 'leading-none')}>{label}</p>
       )}
     </div>
   );
 }
-

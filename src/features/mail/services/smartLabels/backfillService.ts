@@ -1,18 +1,19 @@
-import { getUncategorizedInboxThreadIds, setThreadCategory } from "@features/mail/db/threadCategories";
-import { getThreadLabelIds } from "@shared/services/db/threads";
-import { getMessagesForThread } from "@shared/services/db/messages";
-import { categorizeByRules } from "@features/mail/services/categorization/ruleEngine";
-import { getAllThreadsForAccount } from "@shared/services/db/threads";
-import { matchSmartLabels } from "./smartLabelService";
-import { addThreadLabel } from "@features/mail/services/emailActions";
-import { parseDbMessage } from "@features/mail/services/gmail/messageParser";
+import {
+  getUncategorizedInboxThreadIds,
+  setThreadCategory,
+} from '@features/mail/db/threadCategories';
+import { getThreadLabelIds } from '@shared/services/db/threads';
+import { getMessagesForThread } from '@shared/services/db/messages';
+import { categorizeByRules } from '@features/mail/services/categorization/ruleEngine';
+import { getAllThreadsForAccount } from '@shared/services/db/threads';
+import { matchSmartLabels } from './smartLabelService';
+import { addThreadLabel } from '@features/mail/services/emailActions';
+import { parseDbMessage } from '@features/mail/services/gmail/messageParser';
 
 /**
  * Backfill custom smart labels to all existing threads.
  */
-export async function backfillSmartLabels(
-  accountId: string,
-): Promise<number> {
+export async function backfillSmartLabels(accountId: string): Promise<number> {
   const threads = await getAllThreadsForAccount(accountId);
   let totalApplied = 0;
 
@@ -52,25 +53,25 @@ export async function backfillUncategorizedThreads(
   do {
     batch = await getUncategorizedInboxThreadIds(accountId, batchSize);
 
-    await Promise.all(batch.map(async (thread) => {
-      const [labelIds, messages] = await Promise.all([
-        getThreadLabelIds(accountId, thread.id),
-        getMessagesForThread(accountId, thread.id),
-      ]);
-      const lastMessage = messages[messages.length - 1];
+    await Promise.all(
+      batch.map(async (thread) => {
+        const [labelIds, messages] = await Promise.all([
+          getThreadLabelIds(accountId, thread.id),
+          getMessagesForThread(accountId, thread.id),
+        ]);
+        const lastMessage = messages[messages.length - 1];
 
-      const category = categorizeByRules({
-        labelIds,
-        fromAddress: lastMessage?.from_address ?? thread.fromAddress ?? null,
-        listUnsubscribe: lastMessage?.list_unsubscribe ?? null,
-      });
+        const category = categorizeByRules({
+          labelIds,
+          fromAddress: lastMessage?.from_address ?? thread.fromAddress ?? null,
+          listUnsubscribe: lastMessage?.list_unsubscribe ?? null,
+        });
 
-      await setThreadCategory(accountId, thread.id, category, false);
-      totalCategorized++;
-    }));
+        await setThreadCategory(accountId, thread.id, category, false);
+        totalCategorized++;
+      }),
+    );
   } while (batch.length === batchSize);
 
   return totalCategorized;
 }
-
-

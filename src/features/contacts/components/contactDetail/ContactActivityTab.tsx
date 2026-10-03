@@ -1,9 +1,9 @@
-﻿import { useState, useEffect } from "react";
-import { Activity } from "lucide-react";
-import { getContactActivity, type ActivityEvent } from "@features/contacts/services/activity";
-import { ContactTimeline } from "@features/contacts/components/ContactTimeline";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { ErrorState } from "@shared/components/ui/ErrorState";
+﻿import { useState, useEffect } from 'react';
+import { Activity } from 'lucide-react';
+import { getContactActivity, type ActivityEvent } from '@features/contacts/services/activity';
+import { ContactTimeline } from '@features/contacts/components/ContactTimeline';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { ErrorState } from '@shared/components/ui/ErrorState';
 
 export interface ContactActivityTabProps {
   email: string;
@@ -27,7 +27,7 @@ export function ContactActivityTab({ email, accountId }: ContactActivityTabProps
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load activity");
+          setError(err instanceof Error ? err.message : 'Failed to load activity');
         }
       })
       .finally(() => {
@@ -63,7 +63,9 @@ export function ContactActivityTab({ email, accountId }: ContactActivityTabProps
           setError(null);
           getContactActivity(accountId, email, 20)
             .then(setEvents)
-            .catch((err) => setError(err instanceof Error ? err.message : "Failed to load activity"))
+            .catch((err) =>
+              setError(err instanceof Error ? err.message : 'Failed to load activity'),
+            )
             .finally(() => setLoading(false));
         }}
         retryLabel="Retry"

@@ -1,4 +1,4 @@
-import { callAi } from "./aiService";
+import { callAi } from './aiService';
 
 export interface GeneratedSignature {
   id: string;

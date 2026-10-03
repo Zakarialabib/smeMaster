@@ -1,14 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { RuleCard } from "./RuleCard";
-import type { WorkflowRule } from "@shared/services/db/schema";
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { RuleCard } from './RuleCard';
+import type { WorkflowRule } from '@shared/services/db/schema';
 
 function makeRule(overrides: Partial<WorkflowRule> = {}): WorkflowRule {
   return {
-    id: "rule-1",
-    account_id: "acc-1",
-    name: "Auto follow-up",
-    trigger_event: "email_received",
+    id: 'rule-1',
+    account_id: 'acc-1',
+    name: 'Auto follow-up',
+    trigger_event: 'email_received',
     trigger_conditions: null,
     actions: '[{"type":"apply_label"},{"type":"send_template"}]',
     is_active: 1,
@@ -17,11 +17,11 @@ function makeRule(overrides: Partial<WorkflowRule> = {}): WorkflowRule {
   };
 }
 
-describe("RuleCard", () => {
-  it("renders the rule name", () => {
+describe('RuleCard', () => {
+  it('renders the rule name', () => {
     render(
       <RuleCard
-        rule={makeRule({ name: "Daily digest" })}
+        rule={makeRule({ name: 'Daily digest' })}
         triggerLabel="Email Received"
         countUnit="step"
         onToggle={vi.fn()}
@@ -29,10 +29,10 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("Daily digest")).toBeInTheDocument();
+    expect(screen.getByText('Daily digest')).toBeInTheDocument();
   });
 
-  it("renders the trigger label", () => {
+  it('renders the trigger label', () => {
     render(
       <RuleCard
         rule={makeRule()}
@@ -43,10 +43,10 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("Email Received")).toBeInTheDocument();
+    expect(screen.getByText('Email Received')).toBeInTheDocument();
   });
 
-  it("pluralizes step count correctly (1 step, 2 steps)", () => {
+  it('pluralizes step count correctly (1 step, 2 steps)', () => {
     const { rerender } = render(
       <RuleCard
         rule={makeRule({ actions: '[{"type":"apply_label"}]' })}
@@ -57,7 +57,7 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("1 step")).toBeInTheDocument();
+    expect(screen.getByText('1 step')).toBeInTheDocument();
 
     rerender(
       <RuleCard
@@ -69,10 +69,10 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("2 steps")).toBeInTheDocument();
+    expect(screen.getByText('2 steps')).toBeInTheDocument();
   });
 
-  it("pluralizes action count correctly (1 action, 2 actions)", () => {
+  it('pluralizes action count correctly (1 action, 2 actions)', () => {
     const { rerender } = render(
       <RuleCard
         rule={makeRule({ actions: '[{"type":"archive"}]' })}
@@ -83,7 +83,7 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("1 action")).toBeInTheDocument();
+    expect(screen.getByText('1 action')).toBeInTheDocument();
 
     rerender(
       <RuleCard
@@ -95,13 +95,13 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("2 actions")).toBeInTheDocument();
+    expect(screen.getByText('2 actions')).toBeInTheDocument();
   });
 
-  it("omits the count chip when there are no actions", () => {
+  it('omits the count chip when there are no actions', () => {
     render(
       <RuleCard
-        rule={makeRule({ actions: "[]" })}
+        rule={makeRule({ actions: '[]' })}
         triggerLabel="Email Received"
         countUnit="step"
         onToggle={vi.fn()}
@@ -113,10 +113,10 @@ describe("RuleCard", () => {
     expect(screen.queryByText(/step/)).not.toBeInTheDocument();
   });
 
-  it("falls back to 0 steps when actions JSON is malformed", () => {
+  it('falls back to 0 steps when actions JSON is malformed', () => {
     render(
       <RuleCard
-        rule={makeRule({ actions: "not json" })}
+        rule={makeRule({ actions: 'not json' })}
         triggerLabel="Email Received"
         countUnit="step"
         onToggle={vi.fn()}
@@ -138,7 +138,7 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.queryByText("Disabled")).not.toBeInTheDocument();
+    expect(screen.queryByText('Disabled')).not.toBeInTheDocument();
   });
 
   it("shows the 'Disabled' badge when the rule is inactive", () => {
@@ -152,10 +152,10 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByText("Disabled")).toBeInTheDocument();
+    expect(screen.getByText('Disabled')).toBeInTheDocument();
   });
 
-  it("does not show the created date by default", () => {
+  it('does not show the created date by default', () => {
     render(
       <RuleCard
         rule={makeRule()}
@@ -169,7 +169,7 @@ describe("RuleCard", () => {
     expect(screen.queryByText(/Created/)).not.toBeInTheDocument();
   });
 
-  it("shows the created date when showCreatedDate is true", () => {
+  it('shows the created date when showCreatedDate is true', () => {
     render(
       <RuleCard
         rule={makeRule({ created_at: Date.UTC(2024, 2, 5) / 1000 })}
@@ -184,11 +184,11 @@ describe("RuleCard", () => {
     expect(screen.getByText(/Created/)).toBeInTheDocument();
   });
 
-  it("calls onToggle with (id, !active) when the toggle is clicked", () => {
+  it('calls onToggle with (id, !active) when the toggle is clicked', () => {
     const onToggle = vi.fn();
     render(
       <RuleCard
-        rule={makeRule({ id: "abc", is_active: 1 })}
+        rule={makeRule({ id: 'abc', is_active: 1 })}
         triggerLabel="Email Received"
         countUnit="step"
         onToggle={onToggle}
@@ -196,14 +196,14 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("switch"));
+    fireEvent.click(screen.getByRole('switch'));
     expect(onToggle).toHaveBeenCalledTimes(1);
-    expect(onToggle).toHaveBeenCalledWith("abc", false);
+    expect(onToggle).toHaveBeenCalledWith('abc', false);
   });
 
-  it("calls onEdit with the rule when the edit button is clicked", () => {
+  it('calls onEdit with the rule when the edit button is clicked', () => {
     const onEdit = vi.fn();
-    const rule = makeRule({ id: "x" });
+    const rule = makeRule({ id: 'x' });
     render(
       <RuleCard
         rule={rule}
@@ -214,15 +214,15 @@ describe("RuleCard", () => {
         onDelete={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /edit step/i }));
+    fireEvent.click(screen.getByRole('button', { name: /edit step/i }));
     expect(onEdit).toHaveBeenCalledWith(rule);
   });
 
-  it("calls onDelete with the id when the delete button is clicked", () => {
+  it('calls onDelete with the id when the delete button is clicked', () => {
     const onDelete = vi.fn();
     render(
       <RuleCard
-        rule={makeRule({ id: "del-me" })}
+        rule={makeRule({ id: 'del-me' })}
         triggerLabel="Email Received"
         countUnit="step"
         onToggle={vi.fn()}
@@ -230,7 +230,7 @@ describe("RuleCard", () => {
         onDelete={onDelete}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /delete step/i }));
-    expect(onDelete).toHaveBeenCalledWith("del-me");
+    fireEvent.click(screen.getByRole('button', { name: /delete step/i }));
+    expect(onDelete).toHaveBeenCalledWith('del-me');
   });
 });

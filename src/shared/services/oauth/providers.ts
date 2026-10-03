@@ -11,30 +11,28 @@ export interface OAuthProviderConfig {
 
 const providers: Record<string, OAuthProviderConfig> = {
   microsoft: {
-    id: "microsoft",
-    name: "Microsoft",
-    authUrl:
-      "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
-    tokenUrl:
-      "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
+    id: 'microsoft',
+    name: 'Microsoft',
+    authUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize',
+    tokenUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
     scopes: [
-      "https://outlook.office.com/IMAP.AccessAsUser.All",
-      "https://outlook.office.com/SMTP.Send",
-      "offline_access",
-      "openid",
-      "profile",
-      "email",
+      'https://outlook.office.com/IMAP.AccessAsUser.All',
+      'https://outlook.office.com/SMTP.Send',
+      'offline_access',
+      'openid',
+      'profile',
+      'email',
     ],
     userInfoUrl: undefined,
     usePkce: true,
   },
   yahoo: {
-    id: "yahoo",
-    name: "Yahoo",
-    authUrl: "https://api.login.yahoo.com/oauth2/request_auth",
-    tokenUrl: "https://api.login.yahoo.com/oauth2/get_token",
-    scopes: ["mail-r", "mail-w", "openid", "sdps-r"],
-    userInfoUrl: "https://api.login.yahoo.com/openid/v1/userinfo",
+    id: 'yahoo',
+    name: 'Yahoo',
+    authUrl: 'https://api.login.yahoo.com/oauth2/request_auth',
+    tokenUrl: 'https://api.login.yahoo.com/oauth2/get_token',
+    scopes: ['mail-r', 'mail-w', 'openid', 'sdps-r'],
+    userInfoUrl: 'https://api.login.yahoo.com/openid/v1/userinfo',
     usePkce: true,
   },
 };

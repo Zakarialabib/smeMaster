@@ -4,7 +4,7 @@ import {
   deleteSendAsAlias as dbDeleteAlias,
   setDefaultAlias as dbSetDefaultAlias,
   type SendAsAlias as DbSendAsAlias,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type { DbSendAsAlias };
 
@@ -36,9 +36,7 @@ export function mapDbAlias(db: DbSendAsAlias): SendAsAlias {
   };
 }
 
-export async function getAliasesForAccount(
-  accountId: string,
-): Promise<DbSendAsAlias[]> {
+export async function getAliasesForAccount(accountId: string): Promise<DbSendAsAlias[]> {
   return dbListAliases(accountId);
 }
 
@@ -62,14 +60,12 @@ export async function upsertAlias(alias: {
     isPrimary: alias.isPrimary ?? null,
     isDefault: alias.isDefault ?? null,
     treatAsAlias: alias.treatAsAlias ?? null,
-    verificationStatus: alias.verificationStatus ?? "accepted",
+    verificationStatus: alias.verificationStatus ?? 'accepted',
   });
   return created.id;
 }
 
-export async function getDefaultAlias(
-  accountId: string,
-): Promise<DbSendAsAlias | null> {
+export async function getDefaultAlias(accountId: string): Promise<DbSendAsAlias | null> {
   const aliases = await dbListAliases(accountId);
   // Try to get the explicitly set default
   const defaultAlias = aliases.find((a) => a.is_default === 1);
@@ -78,10 +74,7 @@ export async function getDefaultAlias(
   return aliases.find((a) => a.is_primary === 1) ?? null;
 }
 
-export async function setDefaultAlias(
-  accountId: string,
-  aliasId: string,
-): Promise<void> {
+export async function setDefaultAlias(accountId: string, aliasId: string): Promise<void> {
   return dbSetDefaultAlias(accountId, aliasId);
 }
 

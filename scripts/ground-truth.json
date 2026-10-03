@@ -1,0 +1,14 @@
+{
+  "commands": 841,
+  "migrations": 32,
+  "stores": 44,
+  "verifiedOn": "2026-09-30",
+  "owner": "qa-guardian",
+  "checkedDoc": "docs/00-INDEX.md",
+  "countingRules": {
+    "commands": "Literal occurrence count of the tokens '#[tauri::command]' and '#[command]' across src-tauri/src/**/*.rs (recursive). Parameterised forms such as '#[tauri::command(rename_all = \"snake_case\")]' are deliberately NOT counted (7 such variants exist as of 2026-09-30), so the count matches the docs header breakdown 777 + 64 = 841.",
+    "migrations": "Count of *.sql files in src-tauri/src/db/migrations/ (001_core.sql ... 032_deals_pipeline.sql, sequential, no gaps).",
+    "stores": "Non-test .ts/.tsx files (excluding *.test.*, *.spec.* and any path segment __tests__) under the three canonical store roots - src/shared/stores/**, src/stores/**, src/features/<feature>/stores/** - whose source contains the token 'create'. Every Zustand store in this repo is built with create<State>()(...) (plain 'create(' never appears in these roots), and the roots also contain 'create*' slice-factory modules that ship with the store layer. Result 44 = 39 files calling zustand create< + 5 create* factory modules (createAsyncStore, createCrudSlice, createDeleteConfirmation, createEditorSlice, createEventBusSubscription). Informational sub-count: 42 non-test files repo-wide contain literal 'create<' (45 occurrences); the docs header's '(47 create<)' figure comes from a looser 'create\\s*<' grep over ALL of src including test/prose matches and is not gated here."
+  },
+  "rebaseline": "Re-grep the source, then update commands/migrations/stores + verifiedOn in this file and the matching numbers in docs/00-INDEX.md. Run: node scripts/check-ground-truth.mjs"
+}

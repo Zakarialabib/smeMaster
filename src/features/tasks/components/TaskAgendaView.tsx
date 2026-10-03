@@ -7,7 +7,7 @@
  *
  * @spec §3.6
  */
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -16,16 +16,16 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
-import type { DbTask } from "@features/tasks/db/tasks";
-import { SwipeableRow } from "@shared/components/ui/SwipeableRow";
-import type { SwipeActions } from "@shared/hooks/useSwipeGesture";
-import { triggerHaptic } from "@shared/hooks/useHaptics";
+} from 'lucide-react';
+import type { DbTask } from '@features/tasks/db/tasks';
+import { SwipeableRow } from '@shared/components/ui/SwipeableRow';
+import type { SwipeActions } from '@shared/hooks/useSwipeGesture';
+import { triggerHaptic } from '@shared/hooks/useHaptics';
 
 /**
  * Time-based group labels
  */
-type AgendaGroupKey = "overdue" | "today" | "tomorrow" | "thisWeek" | "later" | "noDate";
+type AgendaGroupKey = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate';
 
 interface AgendaGroup {
   key: AgendaGroupKey;
@@ -81,22 +81,29 @@ function groupTasksByDate(tasks: DbTask[]): AgendaGroup[] {
     }
   }
 
-  const groupOrder: AgendaGroupKey[] = ["overdue", "today", "tomorrow", "thisWeek", "later", "noDate"];
+  const groupOrder: AgendaGroupKey[] = [
+    'overdue',
+    'today',
+    'tomorrow',
+    'thisWeek',
+    'later',
+    'noDate',
+  ];
   const groupLabels: Record<AgendaGroupKey, string> = {
-    overdue: "Overdue",
-    today: "Today",
-    tomorrow: "Tomorrow",
-    thisWeek: "This Week",
-    later: "Later",
-    noDate: "No Date",
+    overdue: 'Overdue',
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+    thisWeek: 'This Week',
+    later: 'Later',
+    noDate: 'No Date',
   };
   const groupIcons: Record<AgendaGroupKey, string> = {
-    overdue: "alert-triangle",
-    today: "calendar",
-    tomorrow: "calendar",
-    thisWeek: "calendar",
-    later: "calendar",
-    noDate: "inbox",
+    overdue: 'alert-triangle',
+    today: 'calendar',
+    tomorrow: 'calendar',
+    thisWeek: 'calendar',
+    later: 'calendar',
+    noDate: 'inbox',
   };
 
   return groupOrder
@@ -155,7 +162,7 @@ export function TaskAgendaView({
   startCollapsed = false,
 }: TaskAgendaViewProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
-    if (startCollapsed) return new Set<string>(["thisWeek", "later", "noDate"]);
+    if (startCollapsed) return new Set<string>(['thisWeek', 'later', 'noDate']);
     return new Set<string>();
   });
   const [rescheduleTaskId, setRescheduleTaskId] = useState<string | null>(null);
@@ -175,32 +182,32 @@ export function TaskAgendaView({
     (task: DbTask): SwipeActions => ({
       left: {
         primary: {
-          label: task.is_completed ? "Undo" : "Complete",
-          icon: task.is_completed ? "mail" : "check-circle-2",
-          color: "bg-success",
+          label: task.is_completed ? 'Undo' : 'Complete',
+          icon: task.is_completed ? 'mail' : 'check-circle-2',
+          color: 'bg-success',
           onAction: () => {
-            triggerHaptic("light");
+            triggerHaptic('light');
             onToggleComplete(task.id, !task.is_completed);
           },
         },
         secondary: {
-          label: "Delete",
-          icon: "trash-2",
-          color: "bg-danger",
+          label: 'Delete',
+          icon: 'trash-2',
+          color: 'bg-danger',
           destructive: true,
           onAction: () => {
-            triggerHaptic("medium");
+            triggerHaptic('medium');
             onDelete?.(task.id);
           },
         },
       },
       right: {
         primary: {
-          label: "Reschedule",
-          icon: "clock",
-          color: "bg-blue-500",
+          label: 'Reschedule',
+          icon: 'clock',
+          color: 'bg-blue-500',
           onAction: () => {
-            triggerHaptic("light");
+            triggerHaptic('light');
             setRescheduleTaskId(task.id);
           },
         },
@@ -214,7 +221,7 @@ export function TaskAgendaView({
   const handleToggleComplete = useCallback(
     (task: DbTask) => (e: React.MouseEvent) => {
       e.stopPropagation();
-      triggerHaptic("light");
+      triggerHaptic('light');
       onToggleComplete(task.id, !task.is_completed);
     },
     [onToggleComplete],
@@ -231,7 +238,7 @@ export function TaskAgendaView({
   const handleDelete = useCallback(
     (task: DbTask) => (e: React.MouseEvent) => {
       e.stopPropagation();
-      triggerHaptic("medium");
+      triggerHaptic('medium');
       onDelete?.(task.id);
     },
     [onDelete],
@@ -242,9 +249,9 @@ export function TaskAgendaView({
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return [
-      { label: "Today", date: new Date(today) },
-      { label: "Tomorrow", date: new Date(today.getTime() + 86400000) },
-      { label: "Next Week", date: new Date(today.getTime() + 7 * 86400000) },
+      { label: 'Today', date: new Date(today) },
+      { label: 'Tomorrow', date: new Date(today.getTime() + 86400000) },
+      { label: 'Next Week', date: new Date(today.getTime() + 7 * 86400000) },
     ];
   }, []);
 
@@ -272,7 +279,7 @@ export function TaskAgendaView({
     <div className="flex flex-col h-full overflow-y-auto">
       {groups.map((group) => {
         const isCollapsed = collapsedGroups.has(group.key);
-        const isOverdueGroup = group.key === "overdue";
+        const isOverdueGroup = group.key === 'overdue';
 
         return (
           <div key={group.key} className="border-b border-border-secondary last:border-b-0">
@@ -281,28 +288,24 @@ export function TaskAgendaView({
               onClick={() => toggleGroup(group.key)}
               className={`
                 flex items-center gap-2 w-full px-4 py-2.5
-                ${isOverdueGroup ? "bg-red-500/5" : "bg-bg-secondary/30"}
+                ${isOverdueGroup ? 'bg-red-500/5' : 'bg-bg-secondary/30'}
                 hover:bg-bg-hover transition-colors
               `}
               aria-expanded={!isCollapsed}
               aria-label={`${group.label} — ${group.tasks.length} tasks`}
             >
-              {isOverdueGroup && (
-                <AlertTriangle size={14} className="text-danger shrink-0" />
-              )}
+              {isOverdueGroup && <AlertTriangle size={14} className="text-danger shrink-0" />}
               {!isOverdueGroup && <Calendar size={14} className="text-accent shrink-0" />}
               <span
-                className={`text-xs font-semibold uppercase tracking-wider flex-1 text-left ${
-                  isOverdueGroup ? "text-danger" : "text-text-tertiary"
+                className={`text-xs font-semibold uppercase tracking-wider flex-1 text-start ${
+                  isOverdueGroup ? 'text-danger' : 'text-text-tertiary'
                 }`}
               >
                 {group.label}
               </span>
               <span
                 className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${
-                  isOverdueGroup
-                    ? "bg-danger/10 text-danger"
-                    : "bg-bg-tertiary text-text-tertiary"
+                  isOverdueGroup ? 'bg-danger/10 text-danger' : 'bg-bg-tertiary text-text-tertiary'
                 }`}
               >
                 {group.tasks.length}
@@ -327,15 +330,15 @@ export function TaskAgendaView({
                       onClick={handleOpenDetail(task.id)}
                       className={`
                         flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-bg-hover transition-colors
-                        ${task.is_completed ? "opacity-60" : ""}
-                        ${isOverdueGroup && !task.is_completed ? "border-l-2 border-danger" : ""}
+                        ${task.is_completed ? 'opacity-60' : ''}
+                        ${isOverdueGroup && !task.is_completed ? 'border-l-2 border-danger' : ''}
                       `}
                     >
                       {/* Completion checkbox */}
                       <button
                         onClick={handleToggleComplete(task)}
                         className="shrink-0"
-                        aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+                        aria-label={task.is_completed ? 'Mark incomplete' : 'Mark complete'}
                       >
                         {task.is_completed ? (
                           <CheckCircle2 size={18} className="text-success" />
@@ -353,8 +356,8 @@ export function TaskAgendaView({
                           <p
                             className={`text-sm truncate ${
                               task.is_completed
-                                ? "line-through text-text-tertiary"
-                                : "text-text-primary"
+                                ? 'line-through text-text-tertiary'
+                                : 'text-text-primary'
                             }`}
                           >
                             {task.title}
@@ -363,16 +366,16 @@ export function TaskAgendaView({
 
                         {/* Meta row */}
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {task.priority && task.priority !== "none" && (
+                          {task.priority && task.priority !== 'none' && (
                             <span
                               className={`text-[0.625rem] font-medium ${
-                                task.priority === "urgent"
-                                  ? "text-red-500"
-                                  : task.priority === "high"
-                                    ? "text-orange-500"
-                                    : task.priority === "medium"
-                                      ? "text-amber-500"
-                                      : "text-blue-400"
+                                task.priority === 'urgent'
+                                  ? 'text-red-500'
+                                  : task.priority === 'high'
+                                    ? 'text-orange-500'
+                                    : task.priority === 'medium'
+                                      ? 'text-amber-500'
+                                      : 'text-blue-400'
                               }`}
                             >
                               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
@@ -380,16 +383,16 @@ export function TaskAgendaView({
                           )}
                           {task.due_date && (
                             <span className="text-[0.625rem] text-text-tertiary">
-                              {group.key === "overdue"
+                              {group.key === 'overdue'
                                 ? `${Math.abs(daysBetween(new Date(task.due_date * 1000), new Date()))}d ago`
-                                : group.key === "today"
-                                  ? new Date(task.due_date * 1000).toLocaleTimeString("en-US", {
-                                      hour: "numeric",
-                                      minute: "2-digit",
+                                : group.key === 'today'
+                                  ? new Date(task.due_date * 1000).toLocaleTimeString('en-US', {
+                                      hour: 'numeric',
+                                      minute: '2-digit',
                                     })
-                                  : new Date(task.due_date * 1000).toLocaleDateString("en-US", {
-                                      month: "short",
-                                      day: "numeric",
+                                  : new Date(task.due_date * 1000).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
                                     })}
                             </span>
                           )}
@@ -433,14 +436,14 @@ export function TaskAgendaView({
                 <button
                   key={option.label}
                   onClick={() => handleQuickReschedule(option.date)}
-                  className="w-full px-3 py-2.5 text-sm text-left text-text-primary hover:bg-bg-hover rounded-md transition-colors"
+                  className="w-full px-3 py-2.5 text-sm text-start text-text-primary hover:bg-bg-hover rounded-md transition-colors"
                 >
                   {option.label}
                 </button>
               ))}
               <button
                 onClick={() => setRescheduleTaskId(null)}
-                className="w-full px-3 py-2.5 text-sm text-left text-text-tertiary hover:bg-bg-hover rounded-md transition-colors"
+                className="w-full px-3 py-2.5 text-sm text-start text-text-tertiary hover:bg-bg-hover rounded-md transition-colors"
               >
                 Pick a date...
               </button>
@@ -451,4 +454,3 @@ export function TaskAgendaView({
     </div>
   );
 }
-

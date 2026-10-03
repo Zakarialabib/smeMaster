@@ -18,8 +18,8 @@ import {
   deleteFilterLogsOlderThan as dbDeleteFilterLogsOlderThan,
   countFilterRules,
   getEnabledFilterRules,
-} from "@/shared/services/db/db-invoke";
-import type { FilterRule } from "@shared/services/db/schema";
+} from '@/shared/services/db/db-invoke';
+import type { FilterRule } from '@shared/services/db/schema';
 
 export type FilterOperator = 'contains' | 'matches' | 'starts_with' | 'ends_with' | 'not_contains';
 export type FilterField = 'from' | 'to' | 'subject' | 'body' | 'hasAttachment';
@@ -54,7 +54,7 @@ export interface FilterCriteria {
   body?: string;
   hasAttachment?: boolean;
   conditions?: FilterConditionInput[];
-  matchType?: "all" | "any";
+  matchType?: 'all' | 'any';
 }
 
 export interface FilterActions {
@@ -145,11 +145,13 @@ export const getFilterRuleById = dbGetFilterRuleById;
 export async function getFilterGroups(ruleId: string): Promise<FilterGroup[]> {
   const rows = await dbGetFilterGroupOperator(ruleId);
   if (rows.length === 0) return [];
-  return [{
-    id: ruleId,
-    ruleId,
-    operator: (rows[0]!.group_operator as 'AND' | 'OR') ?? 'AND',
-  }];
+  return [
+    {
+      id: ruleId,
+      ruleId,
+      operator: (rows[0]!.group_operator as 'AND' | 'OR') ?? 'AND',
+    },
+  ];
 }
 
 export const upsertFilterGroup = dbUpsertFilterGroup;
@@ -164,27 +166,55 @@ export async function getFilterConditionsForRule(ruleId: string): Promise<Filter
   const rule = await dbGetFilterRuleById(ruleId);
   if (!rule) return [];
   try {
-    const criteria: FilterCriteria & { conditions?: FilterConditionInput[] } = JSON.parse(rule.criteria_json);
+    const criteria: FilterCriteria & { conditions?: FilterConditionInput[] } = JSON.parse(
+      rule.criteria_json,
+    );
     const conditions: FilterCondition[] = [];
     const fieldMap: [keyof FilterCriteria, FilterField][] = [
-      ['from', 'from'], ['to', 'to'], ['subject', 'subject'], ['body', 'body'],
+      ['from', 'from'],
+      ['to', 'to'],
+      ['subject', 'subject'],
+      ['body', 'body'],
     ];
     for (const [key, field] of fieldMap) {
       const val = (criteria as Record<string, unknown>)[key];
       if (typeof val === 'string' && val.trim()) {
-        conditions.push({ id: `cond-${field}`, filterId: ruleId, field, operator: 'contains', value: val, weight: 1 });
+        conditions.push({
+          id: `cond-${field}`,
+          filterId: ruleId,
+          field,
+          operator: 'contains',
+          value: val,
+          weight: 1,
+        });
       }
     }
     if (criteria.hasAttachment !== undefined) {
-      conditions.push({ id: 'cond-hasAttachment', filterId: ruleId, field: 'hasAttachment', operator: 'contains', value: criteria.hasAttachment ? 'true' : 'false', weight: 1 });
+      conditions.push({
+        id: 'cond-hasAttachment',
+        filterId: ruleId,
+        field: 'hasAttachment',
+        operator: 'contains',
+        value: criteria.hasAttachment ? 'true' : 'false',
+        weight: 1,
+      });
     }
     if (criteria.conditions) {
       for (const c of criteria.conditions) {
-        conditions.push({ id: `cond-${c.field}-${conditions.length}`, filterId: ruleId, field: c.field, operator: c.operator, value: c.value, weight: c.weight ?? 1 });
+        conditions.push({
+          id: `cond-${c.field}-${conditions.length}`,
+          filterId: ruleId,
+          field: c.field,
+          operator: c.operator,
+          value: c.value,
+          weight: c.weight ?? 1,
+        });
       }
     }
     return conditions;
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 export { upsertFilterCondition };
@@ -192,16 +222,30 @@ export const deleteFilterCondition = dbDeleteFilterCondition;
 export const getFilterLogs = dbGetFilterLogs;
 
 export async function logFilterMatch(
-  ruleId: string, messageId: string, matched: boolean, score: number, actions: FilterActions,
+  ruleId: string,
+  messageId: string,
+  matched: boolean,
+  score: number,
+  actions: FilterActions,
 ): Promise<void> {
   const id = uuidv4();
-  await dbLogFilterMatch({ id, ruleId, messageId, matched: matched ? 1 : 0, score, appliedActions: JSON.stringify(actions) });
+  await dbLogFilterMatch({
+    id,
+    ruleId,
+    messageId,
+    matched: matched ? 1 : 0,
+    score,
+    appliedActions: JSON.stringify(actions),
+  });
 }
 
 export const getFilterStats = dbGetFilterStats;
 
 export interface FilterLogStats {
-  total: number; matches: number; noMatches: number; avgScore: number;
+  total: number;
+  matches: number;
+  noMatches: number;
+  avgScore: number;
 }
 
 export async function getRecentFilterLogs(accountId: string, limit = 10): Promise<FilterLog[]> {
@@ -218,6 +262,9 @@ export async function getFilterLogStats(accountId: string): Promise<FilterLogSta
   };
 }
 
-export async function deleteFilterLogsOlderThan(_accountId: string, olderThan: number): Promise<void> {
+export async function deleteFilterLogsOlderThan(
+  _accountId: string,
+  olderThan: number,
+): Promise<void> {
   await dbDeleteFilterLogsOlderThan(olderThan);
 }

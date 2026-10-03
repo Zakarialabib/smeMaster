@@ -1,5 +1,5 @@
-import ComposerWindow from "@/ComposerWindow";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
+import ComposerWindow from '@/ComposerWindow';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
 
 /**
  * Root component for the compose Tauri window.

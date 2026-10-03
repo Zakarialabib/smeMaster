@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import { Minus, Plus } from "lucide-react";
-import type { SpacerBlock as SpacerBlockT } from "../types";
+import { useTranslation } from 'react-i18next';
+import { Minus, Plus } from 'lucide-react';
+import type { SpacerBlock as SpacerBlockT } from '../types';
 
 interface SpacerBlockProps {
   block: SpacerBlockT;
@@ -17,13 +17,13 @@ export function SpacerBlock({ block, onChange }: SpacerBlockProps) {
         style={{ height: `${block.height}px`, minHeight: 16 }}
       >
         <span className="text-[10px] font-medium uppercase tracking-wide">
-          {t("campaign.editor.spacer")} · {block.height}px
+          {t('campaign.editor.spacer')} · {block.height}px
         </span>
       </div>
       <div className="mt-1 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover/block:opacity-100">
         <button
           type="button"
-          aria-label={t("campaign.editor.height")}
+          aria-label={t('campaign.editor.height')}
           onClick={() => onChange({ height: Math.max(4, block.height - 4) })}
           className="rounded-md border border-border-primary p-1 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
         >
@@ -40,7 +40,7 @@ export function SpacerBlock({ block, onChange }: SpacerBlockProps) {
         />
         <button
           type="button"
-          aria-label={t("campaign.editor.height")}
+          aria-label={t('campaign.editor.height')}
           onClick={() => onChange({ height: Math.min(200, block.height + 4) })}
           className="rounded-md border border-border-primary p-1 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
         >

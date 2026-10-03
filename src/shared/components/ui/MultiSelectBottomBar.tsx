@@ -13,7 +13,12 @@ interface MultiSelectBottomBarProps {
   visible?: boolean;
 }
 
-export function MultiSelectBottomBar({ selectedCount, actions, onClearSelection, visible = true }: MultiSelectBottomBarProps) {
+export function MultiSelectBottomBar({
+  selectedCount,
+  actions,
+  onClearSelection,
+  visible = true,
+}: MultiSelectBottomBarProps) {
   if (!visible || selectedCount === 0) return null;
 
   return (

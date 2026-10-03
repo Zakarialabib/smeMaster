@@ -1,13 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { Lock, Loader2, AlertCircle } from "lucide-react";
-import {
-  decryptMessage,
-  getPrivateKeyArmored,
-} from "@shared/services/pgp/pgpService";
-import {
-  getCachedPassphrase,
-  cachePassphrase,
-} from "@shared/services/pgp/passphraseCache";
+import { useState, useEffect, useCallback } from 'react';
+import { Lock, Loader2, AlertCircle } from 'lucide-react';
+import { decryptMessage, getPrivateKeyArmored } from '@shared/services/pgp/pgpService';
+import { getCachedPassphrase, cachePassphrase } from '@shared/services/pgp/passphraseCache';
 
 interface EncryptedMessageBannerProps {
   messageId: string;
@@ -16,23 +10,23 @@ interface EncryptedMessageBannerProps {
   onDecrypted: (plaintext: string) => void;
 }
 
-type BannerState = "detecting" | "ready" | "loading" | "error";
+type BannerState = 'detecting' | 'ready' | 'loading' | 'error';
 
 export function EncryptedMessageBanner({
   accountId,
   ciphertext,
   onDecrypted,
 }: EncryptedMessageBannerProps) {
-  const [bannerState, setBannerState] = useState<BannerState>("detecting");
-  const [passphrase, setPassphrase] = useState("");
+  const [bannerState, setBannerState] = useState<BannerState>('detecting');
+  const [passphrase, setPassphrase] = useState('');
   const [rememberPassphrase, setRememberPassphrase] = useState(false);
   const [hasCachedPassphrase, setHasCachedPassphrase] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ciphertext.includes("-----BEGIN PGP MESSAGE-----")) {
-      setErrorMessage("Not a valid PGP encrypted message");
-      setBannerState("error");
+    if (!ciphertext.includes('-----BEGIN PGP MESSAGE-----')) {
+      setErrorMessage('Not a valid PGP encrypted message');
+      setBannerState('error');
       return;
     }
     getCachedPassphrase(accountId).then((cached) => {
@@ -40,17 +34,17 @@ export function EncryptedMessageBanner({
         setHasCachedPassphrase(true);
       }
     });
-    setBannerState("ready");
+    setBannerState('ready');
   }, [ciphertext, accountId]);
 
   const performDecrypt = useCallback(
     async (pass: string) => {
-      setBannerState("loading");
+      setBannerState('loading');
       setErrorMessage(null);
       try {
         const privateKeyArmored = await getPrivateKeyArmored(accountId);
         if (!privateKeyArmored) {
-          throw new Error("No private key found for this account. Add a PGP key in Settings.");
+          throw new Error('No private key found for this account. Add a PGP key in Settings.');
         }
         const plaintext = await decryptMessage(ciphertext, privateKeyArmored, pass);
         if (rememberPassphrase) {
@@ -59,9 +53,9 @@ export function EncryptedMessageBanner({
         onDecrypted(plaintext);
       } catch (err) {
         setErrorMessage(
-          err instanceof Error ? err.message : "Decryption failed. Check your passphrase and key.",
+          err instanceof Error ? err.message : 'Decryption failed. Check your passphrase and key.',
         );
-        setBannerState("error");
+        setBannerState('error');
       }
     },
     [accountId, ciphertext, rememberPassphrase, onDecrypted],
@@ -78,19 +72,19 @@ export function EncryptedMessageBanner({
 
   const handleRetry = useCallback(() => {
     setErrorMessage(null);
-    setBannerState("ready");
+    setBannerState('ready');
   }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && passphrase.trim()) {
+      if (e.key === 'Enter' && passphrase.trim()) {
         handleDecrypt();
       }
     },
     [passphrase, handleDecrypt],
   );
 
-  if (bannerState === "detecting") {
+  if (bannerState === 'detecting') {
     return (
       <div className="mx-4 my-2 px-3 py-2.5 rounded-lg border bg-bg-secondary/50 border-border-primary flex items-center gap-3">
         <Loader2 size={18} className="shrink-0 animate-spin text-text-tertiary" />
@@ -102,19 +96,19 @@ export function EncryptedMessageBanner({
   return (
     <div className="mx-4 my-2 px-3 py-2.5 rounded-lg border bg-bg-secondary border-border-primary">
       <div className="flex items-start gap-3">
-        {bannerState === "error" ? (
+        {bannerState === 'error' ? (
           <AlertCircle size={18} className="shrink-0 mt-0.5 text-danger" />
         ) : (
           <Lock size={18} className="shrink-0 mt-0.5 text-accent" />
         )}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-text-primary">
-            {bannerState === "error"
-              ? "Failed to decrypt message"
-              : "This message is encrypted with PGP"}
+            {bannerState === 'error'
+              ? 'Failed to decrypt message'
+              : 'This message is encrypted with PGP'}
           </p>
 
-          {bannerState === "ready" && !hasCachedPassphrase && (
+          {bannerState === 'ready' && !hasCachedPassphrase && (
             <div className="mt-2 space-y-2">
               <input
                 type="password"
@@ -138,7 +132,7 @@ export function EncryptedMessageBanner({
                 <button
                   onClick={handleDecrypt}
                   disabled={!passphrase.trim()}
-                  className="ml-auto text-xs px-2.5 py-1 rounded-md border border-accent/30 text-accent hover:bg-accent/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="ms-auto text-xs px-2.5 py-1 rounded-md border border-accent/30 text-accent hover:bg-accent/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Decrypt
                 </button>
@@ -146,7 +140,7 @@ export function EncryptedMessageBanner({
             </div>
           )}
 
-          {bannerState === "ready" && hasCachedPassphrase && (
+          {bannerState === 'ready' && hasCachedPassphrase && (
             <div className="mt-2">
               <button
                 onClick={handleDecrypt}
@@ -157,14 +151,14 @@ export function EncryptedMessageBanner({
             </div>
           )}
 
-          {bannerState === "loading" && (
+          {bannerState === 'loading' && (
             <div className="flex items-center gap-2 mt-1.5">
               <Loader2 size={14} className="animate-spin text-accent" />
               <span className="text-xs text-text-tertiary">Decrypting...</span>
             </div>
           )}
 
-          {bannerState === "error" && (
+          {bannerState === 'error' && (
             <div className="mt-1.5 space-y-1">
               <p className="text-xs text-danger/80">{errorMessage}</p>
               <button

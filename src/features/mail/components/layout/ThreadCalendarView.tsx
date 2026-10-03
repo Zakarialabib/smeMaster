@@ -1,22 +1,22 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Mail } from "lucide-react";
-import type { Thread } from "@features/mail/stores/threadStore";
-import type { ThreadViewProps } from "./ThreadViewTypes";
+import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import type { Thread } from '@features/mail/stores/threadStore';
+import type { ThreadViewProps } from './ThreadViewTypes';
 
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function startOfDay(date: Date): Date {
@@ -35,11 +35,7 @@ function isSameDay(a: Date, b: Date): boolean {
   return startOfDay(a).getTime() === startOfDay(b).getTime();
 }
 
-export function ThreadCalendarView({
-  threads,
-  selectedThreadId,
-  onThreadClick,
-}: ThreadViewProps) {
+export function ThreadCalendarView({ threads, selectedThreadId, onThreadClick }: ThreadViewProps) {
   const today = useMemo(() => new Date(), []);
   const [currentMonth, setCurrentMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -57,17 +53,9 @@ export function ThreadCalendarView({
   }, [threads]);
 
   const cells = useMemo(() => {
-    const monthStart = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1,
-    );
+    const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
     const startDay = monthStart.getDay();
-    const prevMonthEnd = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      0,
-    );
+    const prevMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
     const result: Array<{ date: Date; isCurrentMonth: boolean }> = [];
 
     for (let index = startDay - 1; index >= 0; index -= 1) {
@@ -81,11 +69,7 @@ export function ThreadCalendarView({
       });
     }
 
-    const monthEnd = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0,
-    );
+    const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
     for (let day = 1; day <= monthEnd.getDate(); day += 1) {
       result.push({
         date: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
@@ -96,11 +80,7 @@ export function ThreadCalendarView({
     while (result.length < 42) {
       const previous = result[result.length - 1]!.date;
       result.push({
-        date: new Date(
-          previous.getFullYear(),
-          previous.getMonth(),
-          previous.getDate() + 1,
-        ),
+        date: new Date(previous.getFullYear(), previous.getMonth(), previous.getDate() + 1),
         isCurrentMonth: false,
       });
     }
@@ -117,9 +97,7 @@ export function ThreadCalendarView({
           <button
             type="button"
             onClick={() =>
-              setCurrentMonth(
-                (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
-              )
+              setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
             }
             className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
             aria-label="Previous month"
@@ -132,9 +110,7 @@ export function ThreadCalendarView({
           <button
             type="button"
             onClick={() =>
-              setCurrentMonth(
-                (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
-              )
+              setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
             }
             className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-bg-hover hover:text-text-primary"
             aria-label="Next month"
@@ -145,9 +121,7 @@ export function ThreadCalendarView({
 
         <button
           type="button"
-          onClick={() =>
-            setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1))
-          }
+          onClick={() => setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1))}
           className="rounded-md border border-border-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary"
         >
           Today
@@ -174,25 +148,23 @@ export function ThreadCalendarView({
             <div
               key={dateKey(cell.date)}
               className={`min-h-[7.5rem] border-b border-r border-border-secondary p-2 ${
-                cell.isCurrentMonth ? "bg-bg-primary" : "bg-bg-secondary/30"
+                cell.isCurrentMonth ? 'bg-bg-primary' : 'bg-bg-secondary/30'
               }`}
             >
               <div className="mb-2 flex items-center justify-between">
                 <span
                   className={`flex h-6 min-w-6 items-center justify-center rounded-full text-xs font-medium ${
                     isToday
-                      ? "bg-accent text-white"
+                      ? 'bg-accent text-white'
                       : cell.isCurrentMonth
-                        ? "text-text-secondary"
-                        : "text-text-tertiary"
+                        ? 'text-text-secondary'
+                        : 'text-text-tertiary'
                   }`}
                 >
                   {cell.date.getDate()}
                 </span>
                 {dayThreads.length > 0 && (
-                  <span className="text-[0.625rem] text-text-tertiary">
-                    {dayThreads.length}
-                  </span>
+                  <span className="text-[0.625rem] text-text-tertiary">{dayThreads.length}</span>
                 )}
               </div>
 
@@ -202,18 +174,16 @@ export function ThreadCalendarView({
                     key={thread.id}
                     type="button"
                     onClick={() => onThreadClick(thread)}
-                    className={`flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left text-[0.6875rem] transition-colors hover:bg-bg-hover ${
+                    className={`flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-start text-[0.6875rem] transition-colors hover:bg-bg-hover ${
                       thread.id === selectedThreadId
-                        ? "bg-accent/10 text-accent"
+                        ? 'bg-accent/10 text-accent'
                         : thread.isRead
-                          ? "text-text-secondary"
-                          : "font-semibold text-text-primary"
+                          ? 'text-text-secondary'
+                          : 'font-semibold text-text-primary'
                     }`}
                   >
                     <Mail size={11} className="shrink-0" />
-                    <span className="truncate">
-                      {thread.subject ?? "(No subject)"}
-                    </span>
+                    <span className="truncate">{thread.subject ?? '(No subject)'}</span>
                   </button>
                 ))}
                 {dayThreads.length > 3 && (
@@ -229,5 +199,3 @@ export function ThreadCalendarView({
     </div>
   );
 }
-
-

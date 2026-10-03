@@ -1,20 +1,24 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { getSetting, setSetting } from "@features/settings/db/settings";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { SettingGroup, SettingRow, ButtonGroup } from "@features/settings/components/SettingsHelpers";
-import { TextField } from "@shared/components/ui/TextField";
-import { Button } from "@shared/components/ui/Button";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { Trash2, Archive, Send, Loader2, CheckCircle2, XCircle, Plus } from "lucide-react";
+import { useState, useEffect, useCallback } from 'react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { getSetting, setSetting } from '@features/settings/db/settings';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import {
+  SettingGroup,
+  SettingRow,
+  ButtonGroup,
+} from '@features/settings/components/SettingsHelpers';
+import { TextField } from '@shared/components/ui/TextField';
+import { Button } from '@shared/components/ui/Button';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { Trash2, Archive, Send, Loader2, CheckCircle2, XCircle, Plus } from 'lucide-react';
 
-type CleanupAction = "delete" | "archive" | "move_to" | "mark_read" | "unsubscribe";
+type CleanupAction = 'delete' | 'archive' | 'move_to' | 'mark_read' | 'unsubscribe';
 
 interface CleanupRule {
   id: string;
   name: string;
-  rule_type: "sender" | "subject" | "age" | "unsubscribe";
+  rule_type: 'sender' | 'subject' | 'age' | 'unsubscribe';
   condition_json: string;
   action: CleanupAction;
   target_folder?: string;
@@ -45,17 +49,17 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
   const [rules, setRules] = useState<CleanupRule[]>([]);
   const [history, setHistory] = useState<CleanupHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [retentionDays, setRetentionDays] = useState("365");
+  const [retentionDays, setRetentionDays] = useState('365');
   const [showAddRule, setShowAddRule] = useState(false);
   const [newRule, setNewRule] = useState({
-    name: "",
-    rule_type: "sender" as CleanupRule["rule_type"],
-    condition: "",
-    action: "delete" as CleanupAction,
-    target_folder: "",
+    name: '',
+    rule_type: 'sender' as CleanupRule['rule_type'],
+    condition: '',
+    action: 'delete' as CleanupAction,
+    target_folder: '',
     retention_days: 30,
     is_scheduled: false,
-    schedule_cron: "0 2 * * *", // Daily at 2 AM
+    schedule_cron: '0 2 * * *', // Daily at 2 AM
   });
 
   const loadData = useCallback(async () => {
@@ -63,21 +67,24 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
     setLoading(true);
     try {
       const [rulesData, historyData] = await Promise.all([
-        invokeCommand<CleanupRule[]>("db_list_cleanup_rules", { account_id: targetAccountId }),
-        invokeCommand<CleanupHistory[]>("db_list_cleanup_history", { account_id: targetAccountId, limit: 50 }),
+        invokeCommand<CleanupRule[]>('db_list_cleanup_rules', { account_id: targetAccountId }),
+        invokeCommand<CleanupHistory[]>('db_list_cleanup_history', {
+          account_id: targetAccountId,
+          limit: 50,
+        }),
       ]);
       setRules(rulesData);
       setHistory(historyData);
     } catch (err) {
-      console.error("Failed to load cleanup data:", err);
+      console.error('Failed to load cleanup data:', err);
     } finally {
       setLoading(false);
     }
   }, [targetAccountId]);
 
   const loadRetention = useCallback(async () => {
-    const days = await getSetting("default_cleanup_days");
-    setRetentionDays(days || "365");
+    const days = await getSetting('default_cleanup_days');
+    setRetentionDays(days || '365');
   }, []);
 
   useEffect(() => {
@@ -97,58 +104,64 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
           ...(newRule.retention_days && { retention_days: newRule.retention_days }),
         }),
       };
-      await invokeCommand("db_upsert_cleanup_rule", {
+      await invokeCommand('db_upsert_cleanup_rule', {
         id: rule.id,
         account_id: targetAccountId,
         name: rule.name,
         rule_type: rule.rule_type,
         condition_json: rule.condition_json,
         action: rule.action,
-        target_folder: rule.action === "move_to" ? rule.target_folder : null,
-        retention_days: rule.rule_type === "age" ? rule.retention_days : null,
+        target_folder: rule.action === 'move_to' ? rule.target_folder : null,
+        retention_days: rule.rule_type === 'age' ? rule.retention_days : null,
         is_scheduled: rule.is_scheduled ? 1 : 0,
         schedule_cron: rule.is_scheduled ? rule.schedule_cron : null,
       });
       setShowAddRule(false);
       setNewRule({
-        name: "",
-        rule_type: "sender",
-        condition: "",
-        action: "delete",
-        target_folder: "",
+        name: '',
+        rule_type: 'sender',
+        condition: '',
+        action: 'delete',
+        target_folder: '',
         retention_days: 30,
         is_scheduled: false,
-        schedule_cron: "0 2 * * *",
+        schedule_cron: '0 2 * * *',
       });
       loadData();
-      notify("Cleanup", "Rule added successfully.");
+      notify('Cleanup', 'Rule added successfully.');
     } catch (err) {
-      console.error("Failed to add rule:", err);
-      notify("Cleanup", "Failed to add rule.");
+      console.error('Failed to add rule:', err);
+      notify('Cleanup', 'Failed to add rule.');
     }
   };
 
   const handleRunRule = async (ruleId: string) => {
     try {
-      const result = await invokeCommand<{ thread_count: number; message_count: number }>("db_execute_cleanup_rule", {
-        account_id: targetAccountId,
-        rule_id: ruleId,
-      });
-      notify("Cleanup", `Processed ${result.thread_count} threads, ${result.message_count} messages.`);
+      const result = await invokeCommand<{ thread_count: number; message_count: number }>(
+        'db_execute_cleanup_rule',
+        {
+          account_id: targetAccountId,
+          rule_id: ruleId,
+        },
+      );
+      notify(
+        'Cleanup',
+        `Processed ${result.thread_count} threads, ${result.message_count} messages.`,
+      );
       loadData();
     } catch (err) {
-      console.error("Failed to run rule:", err);
-      notify("Cleanup", "Failed to execute rule.");
+      console.error('Failed to run rule:', err);
+      notify('Cleanup', 'Failed to execute rule.');
     }
   };
 
   const handleDeleteRule = async (ruleId: string) => {
     try {
-      await invokeCommand("db_delete_cleanup_rule", { id: ruleId });
+      await invokeCommand('db_delete_cleanup_rule', { id: ruleId });
       loadData();
-      notify("Cleanup", "Rule deleted.");
+      notify('Cleanup', 'Rule deleted.');
     } catch (err) {
-      console.error("Failed to delete rule:", err);
+      console.error('Failed to delete rule:', err);
     }
   };
 
@@ -161,11 +174,11 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
   };
 
   const actionLabels = {
-    delete: "Delete",
-    archive: "Archive",
-    move_to: "Move to",
-    mark_read: "Mark Read",
-    unsubscribe: "Unsubscribe",
+    delete: 'Delete',
+    archive: 'Archive',
+    move_to: 'Move to',
+    mark_read: 'Mark Read',
+    unsubscribe: 'Unsubscribe',
   };
 
   if (!targetAccountId) {
@@ -191,15 +204,15 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
               value={retentionDays}
               onChange={async (val) => {
                 setRetentionDays(val);
-                await setSetting("default_cleanup_days", val);
-                notify("Cleanup", "Retention period updated.");
+                await setSetting('default_cleanup_days', val);
+                notify('Cleanup', 'Retention period updated.');
               }}
               options={[
-                { value: "30", label: "30 days" },
-                { value: "90", label: "90 days" },
-                { value: "180", label: "180 days" },
-                { value: "365", label: "1 year" },
-                { value: "0", label: "Forever" },
+                { value: '30', label: '30 days' },
+                { value: '90', label: '90 days' },
+                { value: '180', label: '180 days' },
+                { value: '365', label: '1 year' },
+                { value: '0', label: 'Forever' },
               ]}
             />
           </SettingRow>
@@ -212,10 +225,22 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
       {/* ── Education: Account Cleaning ───────────────────────────── */}
       <HelpCard
         items={[
-          { type: "why", text: "Account cleaning helps you maintain a tidy inbox by automatically deleting, archiving, or categorizing old or unwanted emails based on rules you define." },
-          { type: "how", text: "Set retention policies to define how long emails are kept. Create cleanup rules that match by sender, subject, age, or unsubscribe status — then choose an action like delete or archive." },
-          { type: "when", text: "Use for clearing old newsletters, auto-deleting spammy senders, archiving aged threads, or bulk-unsubscribing from unwanted mailing lists." },
-          { type: "tip", text: "Start with a 'mark read' or 'archive' rule before using 'delete' to avoid accidentally removing emails you might need. Scheduled rules run automatically at your chosen interval." },
+          {
+            type: 'why',
+            text: 'Account cleaning helps you maintain a tidy inbox by automatically deleting, archiving, or categorizing old or unwanted emails based on rules you define.',
+          },
+          {
+            type: 'how',
+            text: 'Set retention policies to define how long emails are kept. Create cleanup rules that match by sender, subject, age, or unsubscribe status — then choose an action like delete or archive.',
+          },
+          {
+            type: 'when',
+            text: 'Use for clearing old newsletters, auto-deleting spammy senders, archiving aged threads, or bulk-unsubscribing from unwanted mailing lists.',
+          },
+          {
+            type: 'tip',
+            text: "Start with a 'mark read' or 'archive' rule before using 'delete' to avoid accidentally removing emails you might need. Scheduled rules run automatically at your chosen interval.",
+          },
         ]}
       />
 
@@ -250,16 +275,12 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
                         <div className="text-sm font-medium text-text-primary">{rule.name}</div>
                         <div className="text-xs text-text-tertiary">
                           {actionLabels[rule.action]} • {rule.rule_type}
-                          {rule.is_scheduled && " • Scheduled"}
+                          {rule.is_scheduled && ' • Scheduled'}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleRunRule(rule.id)}
-                      >
+                      <Button variant="ghost" size="xs" onClick={() => handleRunRule(rule.id)}>
                         Run Now
                       </Button>
                       <Button
@@ -292,10 +313,17 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
                 placeholder="e.g., Clean old newsletters"
               />
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Rule Type</label>
+                <label className="block text-xs font-medium text-text-secondary mb-1">
+                  Rule Type
+                </label>
                 <select
                   value={newRule.rule_type}
-                  onChange={(e) => setNewRule((p) => ({ ...p, rule_type: e.target.value as CleanupRule["rule_type"] }))}
+                  onChange={(e) =>
+                    setNewRule((p) => ({
+                      ...p,
+                      rule_type: e.target.value as CleanupRule['rule_type'],
+                    }))
+                  }
                   className="w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm"
                 >
                   <option value="sender">Sender</option>
@@ -305,23 +333,27 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
                 </select>
               </div>
               <TextField
-                label={newRule.rule_type === "age" ? "Days old" : "Condition"}
-                value={newRule.rule_type === "age" ? String(newRule.retention_days) : newRule.condition}
+                label={newRule.rule_type === 'age' ? 'Days old' : 'Condition'}
+                value={
+                  newRule.rule_type === 'age' ? String(newRule.retention_days) : newRule.condition
+                }
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (newRule.rule_type === "age") {
+                  if (newRule.rule_type === 'age') {
                     setNewRule((p) => ({ ...p, retention_days: parseInt(val) || 30 }));
                   } else {
                     setNewRule((p) => ({ ...p, condition: val }));
                   }
                 }}
-                placeholder={newRule.rule_type === "age" ? "30" : "newsletter@domain.com"}
+                placeholder={newRule.rule_type === 'age' ? '30' : 'newsletter@domain.com'}
               />
               <div>
                 <label className="block text-xs font-medium text-text-secondary mb-1">Action</label>
                 <select
                   value={newRule.action}
-                  onChange={(e) => setNewRule((p) => ({ ...p, action: e.target.value as CleanupAction }))}
+                  onChange={(e) =>
+                    setNewRule((p) => ({ ...p, action: e.target.value as CleanupAction }))
+                  }
                   className="w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm"
                 >
                   <option value="delete">Delete</option>
@@ -331,7 +363,7 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
                   <option value="unsubscribe">Unsubscribe</option>
                 </select>
               </div>
-              {newRule.action === "move_to" && (
+              {newRule.action === 'move_to' && (
                 <TextField
                   label="Target Folder"
                   value={newRule.target_folder}
@@ -388,7 +420,7 @@ export default function AccountCleaningTab({ accountId }: AccountCleaningProps) 
                 <span className="text-text-primary">
                   {h.action}: {h.message_count} emails
                 </span>
-                <span className={h.status === "completed" ? "text-success" : "text-danger"}>
+                <span className={h.status === 'completed' ? 'text-success' : 'text-danger'}>
                   {h.status}
                 </span>
               </div>

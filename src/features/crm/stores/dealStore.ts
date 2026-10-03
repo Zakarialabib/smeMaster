@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { createAsyncActions, initialAsyncState } from "@shared/stores/createAsyncStore";
+import { create } from 'zustand';
+import { createAsyncActions, initialAsyncState } from '@shared/stores/createAsyncStore';
 
 import {
   listPipelines,
@@ -9,8 +9,8 @@ import {
   listDeals,
   moveDealStage,
   ensureDefaultPipeline,
-} from "@shared/services/db/invoke/deals";
-import type { Pipeline, DealStage, Deal, CreateDealInput } from "@shared/services/db/schema";
+} from '@shared/services/db/invoke/deals';
+import type { Pipeline, DealStage, Deal, CreateDealInput } from '@shared/services/db/schema';
 
 export interface DealState {
   pipelines: Pipeline[];
@@ -77,7 +77,7 @@ export const useDealStore = create<DealState>((set, get) => {
 
     moveDeal: async (id, stageId) => {
       const moved = await withLoading(async () => moveDealStage({ id, stageId }));
-      if (moved) set((s) => ({ deals: s.deals.map((d) => d.id === id ? moved : d) }));
+      if (moved) set((s) => ({ deals: s.deals.map((d) => (d.id === id ? moved : d)) }));
       return moved;
     },
   };

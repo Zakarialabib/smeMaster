@@ -1,25 +1,41 @@
-import { vi, beforeEach } from "vitest";
+import { vi, beforeEach } from 'vitest';
 
 // ── Shared Tauri IPC mock functions ──────────────────────────────────────────
 // Import these in tests to configure Tauri IPC behavior.
 export const mockInvoke = vi.fn();
-export const mockListen = vi.fn(() => vi.fn());   // returns cleanup fn
+
+// Mark the jsdom window as a Tauri shell for the duration of the unit suite.
+// The IPC layer (src/shared/services/ipc/invoke.ts and commands.ts) short-circuits
+// with a `TauriUnavailableError` when `isTauriEnvironment()` is false, which would
+// otherwise defeat the `@tauri-apps/api/core` `invoke` mock below and break every
+// DB-service test that exercises the real invoke path. Setting the global lets the
+// mocked invoke actually run, restoring pre-guard test behavior.
+//
+// Tests that intentionally exercise the *non-Tauri* path (e.g. usePlatform web
+// fallback, invoke.ts environment-guard specs) delete this global in their own
+// `beforeEach` — see src/shared/hooks/usePlatform.test.tsx and
+// src/shared/services/ipc/invoke.test.ts.
+if (typeof window !== 'undefined') {
+  (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {
+    invoke: (...args: unknown[]) =>
+      (mockInvoke as unknown as (...a: unknown[]) => unknown)(...args),
+  };
+}
+export const mockListen = vi.fn(() => vi.fn()); // returns cleanup fn
 export const mockEmit = vi.fn();
 
-vi.mock("@tauri-apps/api/core", async () => {
-  const actual = await vi.importActual<typeof import("@tauri-apps/api/core")>(
-    "@tauri-apps/api/core",
-  );
+vi.mock('@tauri-apps/api/core', async () => {
+  const actual =
+    await vi.importActual<typeof import('@tauri-apps/api/core')>('@tauri-apps/api/core');
   return {
     ...actual,
     invoke: (...args: any[]) => (mockInvoke as any)(...args),
   };
 });
 
-vi.mock("@tauri-apps/api/event", async () => {
-  const actual = await vi.importActual<typeof import("@tauri-apps/api/event")>(
-    "@tauri-apps/api/event",
-  );
+vi.mock('@tauri-apps/api/event', async () => {
+  const actual =
+    await vi.importActual<typeof import('@tauri-apps/api/event')>('@tauri-apps/api/event');
   return {
     ...actual,
     listen: (...args: any[]) => (mockListen as any)(...args),
@@ -46,7 +62,7 @@ export function createMockTauriFs() {
     store,
     mock: {
       exists: vi.fn(async (path: string) => store.has(path)),
-      readTextFile: vi.fn(async (path: string) => store.get(path) ?? ""),
+      readTextFile: vi.fn(async (path: string) => store.get(path) ?? ''),
       writeTextFile: vi.fn(async (path: string, content: string) => {
         store.set(path, content);
       }),
@@ -64,7 +80,7 @@ export function createMockTauriFs() {
  */
 export function createMockTauriPath() {
   return {
-    join: vi.fn(async (...parts: string[]) => parts.join("/")),
-    appDataDir: vi.fn(async () => "/mock/app/data/"),
+    join: vi.fn(async (...parts: string[]) => parts.join('/')),
+    appDataDir: vi.fn(async () => '/mock/app/data/'),
   };
 }

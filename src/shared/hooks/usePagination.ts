@@ -22,7 +22,7 @@
  * ```
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -96,39 +96,35 @@ export function usePagination<T>({
   const hasMore = offsetRef.current + pageSize < total;
 
   // ── Internal fetch function ─────────────────────────────────────────────
-  const doFetch = useCallback(
-    async (newOffset: number, append: boolean) => {
-      if (loadingRef.current) return;
-      loadingRef.current = true;
-      setLoading(true);
-      setError(null);
+  const doFetch = useCallback(async (newOffset: number, append: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
+    setError(null);
 
-      try {
-        const result = await fetchFnRef.current({
-          limit: pageSizeRef.current,
-          offset: newOffset,
-        });
+    try {
+      const result = await fetchFnRef.current({
+        limit: pageSizeRef.current,
+        offset: newOffset,
+      });
 
-        if (append) {
-          setItems((prev) => [...prev, ...result.items]);
-        } else {
-          setItems(result.items);
-        }
-
-        setTotal(result.total);
-        offsetRef.current = newOffset;
-        hasMoreRef.current = newOffset + pageSizeRef.current < result.total;
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "An error occurred while fetching data";
-        setError(message);
-      } finally {
-        loadingRef.current = false;
-        setLoading(false);
+      if (append) {
+        setItems((prev) => [...prev, ...result.items]);
+      } else {
+        setItems(result.items);
       }
-    },
-    [],
-  );
+
+      setTotal(result.total);
+      offsetRef.current = newOffset;
+      hasMoreRef.current = newOffset + pageSizeRef.current < result.total;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An error occurred while fetching data';
+      setError(message);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
+  }, []);
 
   // ── Public API ──────────────────────────────────────────────────────────
 

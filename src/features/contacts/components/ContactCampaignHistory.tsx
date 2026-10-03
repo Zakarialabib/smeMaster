@@ -1,7 +1,7 @@
-import { useTranslation } from "react-i18next";
-import { Send, Eye, MousePointerClick, AlertCircle } from "lucide-react";
-import { formatRelativeDate } from "@shared/utils/date";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { useTranslation } from 'react-i18next';
+import { Send, Eye, MousePointerClick, AlertCircle } from 'lucide-react';
+import { formatRelativeDate } from '@shared/utils/date';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 // ── Types ──
 
@@ -25,7 +25,7 @@ export interface ContactCampaignHistoryProps {
 
 // ── Status helpers ──
 
-type StatusKey = "pending" | "sent" | "opened" | "clicked" | "bounced";
+type StatusKey = 'pending' | 'sent' | 'opened' | 'clicked' | 'bounced';
 
 interface StatusConfig {
   icon: typeof Send;
@@ -36,28 +36,28 @@ interface StatusConfig {
 const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
   pending: {
     icon: Send,
-    badgeClass: "text-warning bg-warning/15",
-    circleClass: "text-warning bg-warning/15",
+    badgeClass: 'text-warning bg-warning/15',
+    circleClass: 'text-warning bg-warning/15',
   },
   sent: {
     icon: Send,
-    badgeClass: "text-text-secondary bg-bg-tertiary",
-    circleClass: "text-text-secondary bg-bg-tertiary",
+    badgeClass: 'text-text-secondary bg-bg-tertiary',
+    circleClass: 'text-text-secondary bg-bg-tertiary',
   },
   opened: {
     icon: Eye,
-    badgeClass: "text-success bg-success/15",
-    circleClass: "text-success bg-success/15",
+    badgeClass: 'text-success bg-success/15',
+    circleClass: 'text-success bg-success/15',
   },
   clicked: {
     icon: MousePointerClick,
-    badgeClass: "text-accent bg-accent/15",
-    circleClass: "text-accent bg-accent/15",
+    badgeClass: 'text-accent bg-accent/15',
+    circleClass: 'text-accent bg-accent/15',
   },
   bounced: {
     icon: AlertCircle,
-    badgeClass: "text-danger bg-danger/15",
-    circleClass: "text-danger bg-danger/15",
+    badgeClass: 'text-danger bg-danger/15',
+    circleClass: 'text-danger bg-danger/15',
   },
 };
 
@@ -67,13 +67,13 @@ function getStatusConfig(status: string): StatusConfig {
 
 function getStatusTranslationKey(status: string): string {
   const map: Record<string, string> = {
-    pending: "contact.campaign.pending",
-    sent: "contact.campaign.sent",
-    opened: "contact.campaign.opened",
-    clicked: "contact.campaign.clicked",
-    bounced: "contact.campaign.bounced",
+    pending: 'contact.campaign.pending',
+    sent: 'contact.campaign.sent',
+    opened: 'contact.campaign.opened',
+    clicked: 'contact.campaign.clicked',
+    bounced: 'contact.campaign.bounced',
   };
-  return map[status] ?? "contact.campaign.pending";
+  return map[status] ?? 'contact.campaign.pending';
 }
 
 // ── Loading skeleton ──
@@ -113,7 +113,9 @@ export function ContactCampaignHistory({
 
   // ── Empty state ──
   if (campaigns.length === 0) {
-    return <EmptyState icon={Send} title={t("contact.campaign.noHistory", "No campaign history")} />;
+    return (
+      <EmptyState icon={Send} title={t('contact.campaign.noHistory', 'No campaign history')} />
+    );
   }
 
   // ── Campaign list ──
@@ -147,7 +149,7 @@ export function ContactCampaignHistory({
                 </span>
                 {campaign.is_winner ? (
                   <span className="text-[0.6rem] font-medium text-success bg-success/15 px-1.5 py-0.5 rounded shrink-0">
-                    {t("contact.campaign.winner", "Winner")}
+                    {t('contact.campaign.winner', 'Winner')}
                   </span>
                 ) : null}
               </div>
@@ -157,8 +159,11 @@ export function ContactCampaignHistory({
                 {dateLabel && (
                   <span className="text-[0.65rem] text-text-tertiary">
                     {hasSentDate
-                      ? t("contact.campaign.sentPrefix", "Sent {date}").replace("{date}", dateLabel)
-                      : t("contact.campaign.createdPrefix", "Created {date}").replace("{date}", dateLabel)}
+                      ? t('contact.campaign.sentPrefix', 'Sent {date}').replace('{date}', dateLabel)
+                      : t('contact.campaign.createdPrefix', 'Created {date}').replace(
+                          '{date}',
+                          dateLabel,
+                        )}
                   </span>
                 )}
 
@@ -176,8 +181,8 @@ export function ContactCampaignHistory({
                   {campaign.opened_at && (
                     <span className="flex items-center gap-1 text-[0.6rem] text-success">
                       <Eye size={9} />
-                      {t("contact.campaign.openedLabel", "Opened {date}").replace(
-                        "{date}",
+                      {t('contact.campaign.openedLabel', 'Opened {date}').replace(
+                        '{date}',
                         formatRelativeDate(campaign.opened_at),
                       )}
                     </span>
@@ -185,8 +190,8 @@ export function ContactCampaignHistory({
                   {campaign.clicked_at && (
                     <span className="flex items-center gap-1 text-[0.6rem] text-accent">
                       <MousePointerClick size={9} />
-                      {t("contact.campaign.clickedLabel", "Clicked {date}").replace(
-                        "{date}",
+                      {t('contact.campaign.clickedLabel', 'Clicked {date}').replace(
+                        '{date}',
                         formatRelativeDate(campaign.clicked_at),
                       )}
                     </span>

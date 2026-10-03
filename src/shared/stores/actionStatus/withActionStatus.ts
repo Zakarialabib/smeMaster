@@ -1,4 +1,4 @@
-import { useActionStatusStore } from "./actionStatusStore";
+import { useActionStatusStore } from './actionStatusStore';
 
 export interface WithActionStatusOptions<TReturn> {
   /** Called when the wrapped function succeeds */
@@ -50,12 +50,10 @@ export function withActionStatus<TArgs extends unknown[], TReturn>(
   actionId: string,
   options?: WithActionStatusOptions<TReturn>,
 ): WithActionStatusReturn<TArgs, TReturn> {
-  const execute = async (
-    ...args: TArgs
-  ): Promise<TReturn | undefined> => {
+  const execute = async (...args: TArgs): Promise<TReturn | undefined> => {
     const store = useActionStatusStore.getState();
 
-    store.setStatus(actionId, "loading", {
+    store.setStatus(actionId, 'loading', {
       ...(options?.category ? { category: options.category } : {}),
     });
 
@@ -63,12 +61,12 @@ export function withActionStatus<TArgs extends unknown[], TReturn>(
       const result = await fn(...args);
 
       if (options?.autoClearMs !== undefined) {
-        store.setStatusWithAutoClear(actionId, "success", {
+        store.setStatusWithAutoClear(actionId, 'success', {
           autoClearMs: options.autoClearMs,
           category: options.category,
         });
       } else {
-        store.setStatus(actionId, "success", {
+        store.setStatus(actionId, 'success', {
           category: options?.category,
         });
       }
@@ -80,13 +78,13 @@ export function withActionStatus<TArgs extends unknown[], TReturn>(
       const errorMessage = error.message;
 
       if (options?.autoClearMs !== undefined) {
-        store.setStatusWithAutoClear(actionId, "error", {
+        store.setStatusWithAutoClear(actionId, 'error', {
           error: errorMessage,
           autoClearMs: options.autoClearMs,
           category: options.category,
         });
       } else {
-        store.setStatus(actionId, "error", {
+        store.setStatus(actionId, 'error', {
           error: errorMessage,
           category: options?.category,
         });

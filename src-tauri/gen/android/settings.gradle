@@ -3,8 +3,6 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/gradle-plugin'; allowInsecureProtocol = true }
-        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/public'; allowInsecureProtocol = true }
     }
 }
 dependencyResolutionManagement {
@@ -12,8 +10,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/google'; allowInsecureProtocol = true }
-        maven { url = 'https://mirrors.cloud.tencent.com/repository/maven/public'; allowInsecureProtocol = true }
     }
 }
 include ':app'

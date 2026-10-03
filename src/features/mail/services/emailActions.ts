@@ -1,67 +1,68 @@
-import { useSyncStore } from "@shared/stores/syncStore";
-import { useThreadStore as useThreadsStore } from "@features/mail/stores/threadStore";
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
-import { enqueuePendingOperation } from "@features/settings/db/pendingOperations";
-import { classifyError } from "@shared/utils/networkErrors";
+import { useSyncStore } from '@shared/stores/syncStore';
+import { useThreadStore as useThreadsStore } from '@features/mail/stores/threadStore';
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
+import { enqueuePendingOperation } from '@features/settings/db/pendingOperations';
+import { classifyError } from '@shared/utils/networkErrors';
 import {
   updateThreadFlags,
   addThreadLabel as dbAddThreadLabel,
   removeThreadLabel as dbRemoveThreadLabel,
   deleteThread,
-} from "@shared/services/db/db-invoke";
-import { navigateToThread, getSelectedThreadId } from "@/router/navigate";
+} from '@shared/services/db/db-invoke';
+import { navigateToThread, getSelectedThreadId } from '@/router/navigate';
+import { uiBus } from '@shared/services/events/uiBus';
 
 // ---------------------------------------------------------------------------
 // Action types
 // ---------------------------------------------------------------------------
 
 export type EmailAction =
-  | { type: "archive"; threadId: string; messageIds: string[] }
-  | { type: "trash"; threadId: string; messageIds: string[] }
-  | { type: "permanentDelete"; threadId: string; messageIds: string[] }
+  | { type: 'archive'; threadId: string; messageIds: string[] }
+  | { type: 'trash'; threadId: string; messageIds: string[] }
+  | { type: 'permanentDelete'; threadId: string; messageIds: string[] }
   | {
-      type: "markRead";
+      type: 'markRead';
       threadId: string;
       messageIds: string[];
       read: boolean;
     }
   | {
-      type: "star";
+      type: 'star';
       threadId: string;
       messageIds: string[];
       starred: boolean;
     }
   | {
-      type: "spam";
+      type: 'spam';
       threadId: string;
       messageIds: string[];
       isSpam: boolean;
     }
   | {
-      type: "moveToFolder";
+      type: 'moveToFolder';
       threadId: string;
       messageIds: string[];
       folderPath: string;
     }
-  | { type: "addLabel"; threadId: string; labelId: string }
-  | { type: "removeLabel"; threadId: string; labelId: string }
+  | { type: 'addLabel'; threadId: string; labelId: string }
+  | { type: 'removeLabel'; threadId: string; labelId: string }
   | {
-      type: "sendMessage";
+      type: 'sendMessage';
       rawBase64Url: string;
       threadId?: string;
     }
   | {
-      type: "createDraft";
+      type: 'createDraft';
       rawBase64Url: string;
       threadId?: string;
     }
   | {
-      type: "updateDraft";
+      type: 'updateDraft';
       draftId: string;
       rawBase64Url: string;
       threadId?: string;
     }
-  | { type: "deleteDraft"; draftId: string };
+  | { type: 'deleteDraft'; draftId: string };
 
 // ---------------------------------------------------------------------------
 // Result type
@@ -97,10 +98,10 @@ function getNextThreadId(currentId: string): string | null {
 function applyOptimisticUpdate(action: EmailAction): void {
   const store = useThreadsStore.getState();
   switch (action.type) {
-    case "archive":
-    case "trash":
-    case "spam":
-    case "moveToFolder": {
+    case 'archive':
+    case 'trash':
+    case 'spam':
+    case 'moveToFolder': {
       const nextId = getNextThreadId(action.threadId);
       // Stash the thread instead of plain removal so we can restore it if the
       // operation fails or is reverted before the next sync.
@@ -111,7 +112,7 @@ function applyOptimisticUpdate(action: EmailAction): void {
       }
       break;
     }
-    case "permanentDelete": {
+    case 'permanentDelete': {
       // Permanent deletes are destructive; we still remove the thread but do
       // not stash. The next sync will be the authoritative source of truth.
       const nextId = getNextThreadId(action.threadId);
@@ -121,18 +122,18 @@ function applyOptimisticUpdate(action: EmailAction): void {
       }
       break;
     }
-    case "markRead":
+    case 'markRead':
       store.updateThread(action.threadId, { isRead: action.read });
       break;
-    case "star":
+    case 'star':
       store.updateThread(action.threadId, { isStarred: action.starred });
       break;
-    case "addLabel":
-    case "removeLabel":
-    case "sendMessage":
-    case "createDraft":
-    case "updateDraft":
-    case "deleteDraft":
+    case 'addLabel':
+    case 'removeLabel':
+    case 'sendMessage':
+    case 'createDraft':
+    case 'updateDraft':
+    case 'deleteDraft':
       // No universal optimistic update for these
       break;
   }
@@ -141,16 +142,16 @@ function applyOptimisticUpdate(action: EmailAction): void {
 function revertOptimisticUpdate(action: EmailAction): void {
   const store = useThreadsStore.getState();
   switch (action.type) {
-    case "markRead":
+    case 'markRead':
       store.updateThread(action.threadId, { isRead: !action.read });
       break;
-    case "star":
+    case 'star':
       store.updateThread(action.threadId, { isStarred: !action.starred });
       break;
-    case "archive":
-    case "trash":
-    case "spam":
-    case "moveToFolder":
+    case 'archive':
+    case 'trash':
+    case 'spam':
+    case 'moveToFolder':
       // Restore the thread from the stash. The next sync will re-apply any
       // server-side changes, so this is safe.
       store.unstashThread(action.threadId);
@@ -164,55 +165,43 @@ function revertOptimisticUpdate(action: EmailAction): void {
 // Local DB updates (so offline reads reflect changes)
 // ---------------------------------------------------------------------------
 
-async function applyLocalDbUpdate(
-  accountId: string,
-  action: EmailAction,
-): Promise<void> {
+async function applyLocalDbUpdate(accountId: string, action: EmailAction): Promise<void> {
   switch (action.type) {
-    case "markRead":
+    case 'markRead':
       await updateThreadFlags(accountId, action.threadId, action.read);
-      // Notify other tabs/listeners (browser only). In non-DOM contexts
-      // (Node test env, SSR) there is no `window`; skip silently.
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("smemaster-sync-done"));
-      }
+      uiBus.emit('data:changed');
       break;
-    case "star":
-      await updateThreadFlags(
-        accountId,
-        action.threadId,
-        undefined,
-        action.starred,
-      );
+    case 'star':
+      await updateThreadFlags(accountId, action.threadId, undefined, action.starred);
       if (action.starred) {
-        await dbAddThreadLabel(accountId, action.threadId, "STARRED");
+        await dbAddThreadLabel(accountId, action.threadId, 'STARRED');
       } else {
-        await dbRemoveThreadLabel(accountId, action.threadId, "STARRED");
+        await dbRemoveThreadLabel(accountId, action.threadId, 'STARRED');
       }
       break;
-    case "archive":
-      await dbRemoveThreadLabel(accountId, action.threadId, "INBOX");
+    case 'archive':
+      await dbRemoveThreadLabel(accountId, action.threadId, 'INBOX');
       break;
-    case "trash":
-      await dbRemoveThreadLabel(accountId, action.threadId, "INBOX");
-      await dbAddThreadLabel(accountId, action.threadId, "TRASH");
+    case 'trash':
+      await dbRemoveThreadLabel(accountId, action.threadId, 'INBOX');
+      await dbAddThreadLabel(accountId, action.threadId, 'TRASH');
       break;
-    case "permanentDelete":
+    case 'permanentDelete':
       await deleteThread(accountId, action.threadId);
       break;
-    case "spam":
+    case 'spam':
       if (action.isSpam) {
-        await dbRemoveThreadLabel(accountId, action.threadId, "INBOX");
-        await dbAddThreadLabel(accountId, action.threadId, "SPAM");
+        await dbRemoveThreadLabel(accountId, action.threadId, 'INBOX');
+        await dbAddThreadLabel(accountId, action.threadId, 'SPAM');
       } else {
-        await dbRemoveThreadLabel(accountId, action.threadId, "SPAM");
-        await dbAddThreadLabel(accountId, action.threadId, "INBOX");
+        await dbRemoveThreadLabel(accountId, action.threadId, 'SPAM');
+        await dbAddThreadLabel(accountId, action.threadId, 'INBOX');
       }
       break;
-    case "addLabel":
+    case 'addLabel':
       await dbAddThreadLabel(accountId, action.threadId, action.labelId);
       break;
-    case "removeLabel":
+    case 'removeLabel':
       await dbRemoveThreadLabel(accountId, action.threadId, action.labelId);
       break;
     default:
@@ -225,8 +214,8 @@ async function applyLocalDbUpdate(
 // ---------------------------------------------------------------------------
 
 function getResourceId(action: EmailAction): string {
-  if ("threadId" in action && action.threadId) return action.threadId;
-  if ("draftId" in action) return action.draftId;
+  if ('threadId' in action && action.threadId) return action.threadId;
+  if ('draftId' in action) return action.draftId;
   return crypto.randomUUID();
 }
 
@@ -236,57 +225,34 @@ function actionToParams(action: EmailAction): Record<string, unknown> {
   return rest;
 }
 
-async function executeViaProvider(
-  accountId: string,
-  action: EmailAction,
-): Promise<unknown> {
+async function executeViaProvider(accountId: string, action: EmailAction): Promise<unknown> {
   const provider = await getEmailProvider(accountId);
   switch (action.type) {
-    case "archive":
+    case 'archive':
       return provider.archive(action.threadId, action.messageIds);
-    case "trash":
+    case 'trash':
       return provider.trash(action.threadId, action.messageIds);
-    case "permanentDelete":
+    case 'permanentDelete':
       return provider.permanentDelete(action.threadId, action.messageIds);
-    case "markRead":
-      return provider.markRead(
-        action.threadId,
-        action.messageIds,
-        action.read,
-      );
-    case "star":
-      return provider.star(
-        action.threadId,
-        action.messageIds,
-        action.starred,
-      );
-    case "spam":
-      return provider.spam(
-        action.threadId,
-        action.messageIds,
-        action.isSpam,
-      );
-    case "moveToFolder":
-      return provider.moveToFolder(
-        action.threadId,
-        action.messageIds,
-        action.folderPath,
-      );
-    case "addLabel":
+    case 'markRead':
+      return provider.markRead(action.threadId, action.messageIds, action.read);
+    case 'star':
+      return provider.star(action.threadId, action.messageIds, action.starred);
+    case 'spam':
+      return provider.spam(action.threadId, action.messageIds, action.isSpam);
+    case 'moveToFolder':
+      return provider.moveToFolder(action.threadId, action.messageIds, action.folderPath);
+    case 'addLabel':
       return provider.addLabel(action.threadId, action.labelId);
-    case "removeLabel":
+    case 'removeLabel':
       return provider.removeLabel(action.threadId, action.labelId);
-    case "sendMessage":
+    case 'sendMessage':
       return provider.sendMessage(action.rawBase64Url, action.threadId);
-    case "createDraft":
+    case 'createDraft':
       return provider.createDraft(action.rawBase64Url, action.threadId);
-    case "updateDraft":
-      return provider.updateDraft(
-        action.draftId,
-        action.rawBase64Url,
-        action.threadId,
-      );
-    case "deleteDraft":
+    case 'updateDraft':
+      return provider.updateDraft(action.draftId, action.rawBase64Url, action.threadId);
+    case 'deleteDraft':
       return provider.deleteDraft(action.draftId);
   }
 }
@@ -302,15 +268,15 @@ export async function executeEmailAction(
   try {
     await applyLocalDbUpdate(accountId, action);
   } catch (err) {
-    console.warn("Local DB update failed:", err);
+    console.warn('Local DB update failed:', err);
     // A failed local DB update means the optimistic state is not reflected in
     // the database. Revert the UI so it stays consistent with the DB.
     revertOptimisticUpdate(action);
-    return { success: false, error: "Local update failed" };
+    return { success: false, error: 'Local update failed' };
   }
 
   // Helper: threadId is only present on actions that affect a thread.
-  const threadId = "threadId" in action ? action.threadId : undefined;
+  const threadId = 'threadId' in action ? action.threadId : undefined;
 
   // 3. If offline, queue and mark the thread as pending
   if (!useSyncStore.getState().isOnline) {
@@ -354,7 +320,7 @@ export async function executeEmailAction(
       return { success: true, queued: true };
     }
 
-    if (classified.type === "config") {
+    if (classified.type === 'config') {
       // Configuration error (e.g. OAuth not set up) — queue so it can be
       // processed once the user configures the account, and revert UI state.
       revertOptimisticUpdate(action);
@@ -398,7 +364,7 @@ export function archiveThread(
   messageIds: string[],
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "archive",
+    type: 'archive',
     threadId,
     messageIds,
   });
@@ -410,7 +376,7 @@ export function trashThread(
   messageIds: string[],
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "trash",
+    type: 'trash',
     threadId,
     messageIds,
   });
@@ -422,7 +388,7 @@ export function permanentDeleteThread(
   messageIds: string[],
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "permanentDelete",
+    type: 'permanentDelete',
     threadId,
     messageIds,
   });
@@ -435,7 +401,7 @@ export function markThreadRead(
   read: boolean,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "markRead",
+    type: 'markRead',
     threadId,
     messageIds,
     read,
@@ -449,7 +415,7 @@ export function starThread(
   starred: boolean,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "star",
+    type: 'star',
     threadId,
     messageIds,
     starred,
@@ -463,7 +429,7 @@ export function spamThread(
   isSpam: boolean,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "spam",
+    type: 'spam',
     threadId,
     messageIds,
     isSpam,
@@ -477,7 +443,7 @@ export function moveThread(
   folderPath: string,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "moveToFolder",
+    type: 'moveToFolder',
     threadId,
     messageIds,
     folderPath,
@@ -490,7 +456,7 @@ export function addThreadLabel(
   labelId: string,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "addLabel",
+    type: 'addLabel',
     threadId,
     labelId,
   });
@@ -502,7 +468,7 @@ export function removeThreadLabel(
   labelId: string,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "removeLabel",
+    type: 'removeLabel',
     threadId,
     labelId,
   });
@@ -514,15 +480,14 @@ export async function sendEmail(
   threadId?: string,
 ): Promise<ActionResult> {
   const result = await executeEmailAction(accountId, {
-    type: "sendMessage",
+    type: 'sendMessage',
     rawBase64Url,
     threadId,
   });
 
-  // Notify the UI to refresh (so sent message appears in Sent folder).
-  // Guard for non-DOM contexts (Node test env, SSR) where `window` is absent.
-  if (result.success && typeof window !== "undefined") {
-    window.dispatchEvent(new Event("smemaster-sync-done"));
+  // Notify the UI to refresh (so sent message appears in Sent folder)
+  if (result.success) {
+    uiBus.emit('data:changed');
   }
 
   return result;
@@ -534,7 +499,7 @@ export function createDraft(
   threadId?: string,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "createDraft",
+    type: 'createDraft',
     rawBase64Url,
     threadId,
   });
@@ -547,17 +512,13 @@ export function updateDraft(
   threadId?: string,
 ): Promise<ActionResult> {
   return executeEmailAction(accountId, {
-    type: "updateDraft",
+    type: 'updateDraft',
     draftId,
     rawBase64Url,
     threadId,
   });
 }
 
-export function deleteDraft(
-  accountId: string,
-  draftId: string,
-): Promise<ActionResult> {
-  return executeEmailAction(accountId, { type: "deleteDraft", draftId });
+export function deleteDraft(accountId: string, draftId: string): Promise<ActionResult> {
+  return executeEmailAction(accountId, { type: 'deleteDraft', draftId });
 }
-

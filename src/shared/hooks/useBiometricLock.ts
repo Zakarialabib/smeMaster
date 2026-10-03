@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { checkStatus, authenticate } from "@tauri-apps/plugin-biometric";
-import { listen } from "@tauri-apps/api/event";
-import { getSetting } from "@features/settings/db/settings";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { checkStatus, authenticate } from '@tauri-apps/plugin-biometric';
+import { listen } from '@tauri-apps/api/event';
+import { getSetting } from '@features/settings/db/settings';
 
 export interface BiometricState {
   isAvailable: boolean;
@@ -23,8 +23,8 @@ export function useBiometricLock() {
   useEffect(() => {
     async function init() {
       try {
-        const setting = await getSetting("biometric_lock_enabled");
-        enabledRef.current = setting === "true";
+        const setting = await getSetting('biometric_lock_enabled');
+        enabledRef.current = setting === 'true';
         if (!enabledRef.current) {
           setState({ isAvailable: false, isLoading: false, isLocked: false, error: null });
           return;
@@ -35,8 +35,8 @@ export function useBiometricLock() {
           const status = await checkStatus();
           available = status.isAvailable;
         } catch {
-          const { invokeCommand } = await import("@shared/services/db/invoke/command");
-          const result = await invokeCommand<{ is_available: boolean }>("check_biometric");
+          const { invokeCommand } = await import('@shared/services/db/invoke/command');
+          const result = await invokeCommand<{ is_available: boolean }>('check_biometric');
           available = result.is_available;
         }
 
@@ -58,7 +58,7 @@ export function useBiometricLock() {
 
     let cancelled = false;
     (async () => {
-      const unlisten = await listen("tauri://blur", () => {
+      const unlisten = await listen('tauri://blur', () => {
         if (!cancelled) {
           setState((prev) => ({ ...prev, isLocked: true }));
         }
@@ -74,12 +74,12 @@ export function useBiometricLock() {
 
   const unlock = useCallback(async () => {
     try {
-      await authenticate("Unlock SMEMaster");
+      await authenticate('Unlock SMEMaster');
       setState((prev) => ({ ...prev, isLocked: false, error: null }));
       return true;
     } catch (err) {
       const msg = String(err);
-      if (msg.includes("userCancel") || msg.includes("User canceled")) {
+      if (msg.includes('userCancel') || msg.includes('User canceled')) {
         return false;
       }
       setState((prev) => ({ ...prev, error: msg }));
@@ -97,4 +97,3 @@ export function useBiometricLock() {
     unlock,
   };
 }
-

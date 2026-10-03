@@ -22,7 +22,7 @@ Three layers, fully offline-capable:
 ┌─────────────────────────────────────────────────────────────┐
 │  Frontend (React 19 + Zustand)                                │
 │  ragStore · RagSearchBar · RagResultBubble                     │
-│  AiAssistantPage · LocalRagSettings · Composer RAG button     │
+│  AiAssistantPage · KnowledgeBaseSettings · Composer RAG button     │
 └───────────────┬───────────────────────────────┬─────────────┘
                 │ invoke('ai_*')                 │ (context)
                 ▼                                │
@@ -50,7 +50,7 @@ Three layers, fully offline-capable:
 | Frontend | RAG services (embed, context, wrappers)                           | `src/shared/services/ai/` + `src/shared/services/db/invoke/rag.ts` |
 | Frontend | RAG state                                                         | `src/features/assistant/stores/ragStore.ts`                        |
 | Frontend | RAG UI                                                            | `src/features/assistant/` (components + page)                      |
-| Frontend | Settings UI                                                       | `src/features/settings/components/LocalRagSettings.tsx`            |
+| Frontend | Settings UI                                                       | `src/features/settings/components/KnowledgeBaseSettings.tsx`            |
 | Frontend | Composer integration                                              | `src/features/composer/` (RAG lookup button)                       |
 
 ### Key design decisions
@@ -85,7 +85,7 @@ Three layers, fully offline-capable:
 
 ### Indexing
 
-1. User clicks "Index Emails" (`LocalRagSettings`).
+1. User clicks "Index Emails" (`KnowledgeBaseSettings`).
 2. `invoke('ai_index_emails')` → `indexer::index_emails()` emits `ai:indexing_started`, parses + chunks inbox mail, embeds via candle, writes to LanceDB, emits `ai:indexing_completed`.
 3. UI shows indexed count / ready state.
 
@@ -97,7 +97,7 @@ Three layers, fully offline-capable:
 | **Ask Inbox**                                          | RAG-augmented answers         | `askInbox()` / `aiService` receive the augmented prompt from `rag::query_rag`.                                   |
 | **AI service** (`src/shared/services/ai/aiService.ts`) | Unified LLM entry             | Receives retrieved context, routes to provider (`providers/`).                                                   |
 | **Smart replies**                                      | Context-aware suggestions     | Retrieval context feeds reply generation.                                                                        |
-| **Settings**                                           | `LocalRagSettings` in `AiTab` | Embedding Source selector, model download/load, dedicated Models Folder (open/remove), indexing trigger, status. |
+| **Settings**                                           | `KnowledgeBaseSettings` in `AiTab` | Embedding Source selector, model download/load, dedicated Models Folder (open/remove), indexing trigger, status. |
 
 ## UI & Feature Spec
 
@@ -108,7 +108,7 @@ Three layers, fully offline-capable:
 **Component tree:**
 
 ```
-Settings → AiTab → LocalRagSettings
+Settings → AiTab → KnowledgeBaseSettings
   ├─ Local RAG              (enable toggle)
   ├─ Embedding Model        (source selector: Auto / Local BGE-small / AI Provider; download / load)
   ├─ Local Models Folder    (path + Open folder / Remove model)
@@ -173,12 +173,20 @@ Context assembly (data sourcing, truncation, quality) is documented in [Context 
 | ---------------- | --------------------------------------------------------------------------------------------------------- |
 | Rust AI module   | `src-tauri/src/ai/` (`models.rs`, `local_engine.rs`, `vector_db.rs`, `parser.rs`, `indexer.rs`, `rag.rs`) |
 | Tauri commands   | `src-tauri/src/commands/ai.rs`                                                                            |
-| Events           | `src-tauri/src/events.rs` (AppEvent::Ai)                                                                  |
+| Events           | `src-tauri/src/events/mod.rs` (RAG events emitted ad-hoc via `app_handle.emit("ai:indexing_started", ..)` in `src-tauri/src/ai/indexer.rs`)                                                                  |
 | Embedding (TS)   | `src/shared/services/ai/embeddingService.ts`                                                              |
 | RAG context (TS) | `src/shared/services/ai/ragContext.ts`                                                                    |
 | Invoke wrappers  | `src/shared/services/db/invoke/rag.ts`                                                                    |
 | AI service       | `src/shared/services/ai/aiService.ts`                                                                     |
 | Store            | `src/features/assistant/stores/ragStore.ts`                                                               |
 | Components       | `src/features/assistant/components/` (`RagSearchBar.tsx`, `RagResultBubble.tsx`, `AiAssistantPage.tsx`)   |
-| Settings UI      | `src/features/settings/components/LocalRagSettings.tsx`                                                   |
-| Route + nav      | `src/routeTree.gen.ts` (`/ai-assistant`) · `src/config/navConfig.ts`                                      |
+| Settings UI      | `src/features/settings/components/KnowledgeBaseSettings.tsx`                                                   |
+| Route + nav      | `src/routeTree.gen.ts` (`/ai-assistant`) · `src/shared/components/layout/shell/navConfig.ts`                                      |
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| RAG Settings UI `src/features/settings/components/LocalRagSettings.tsx` | Actual `src/features/settings/components/KnowledgeBaseSettings.tsx` (imported by `AiTab.tsx`) | `find src/features/settings -iname '*rag*' -o -iname '*knowledge*'` |
+| Events `src-tauri/src/events.rs` (`AppEvent::Ai`) | No `events.rs`; events module is `src-tauri/src/events/mod.rs`; RAG events emitted ad-hoc via `app_handle.emit("ai:indexing_started", ())` in `src-tauri/src/ai/indexer.rs` | `ls src-tauri/src/events.rs` → absent; `grep -n 'Ai' src-tauri/src/events/mod.rs` → no match |
+| Route/nav `src/config/navConfig.ts` | Actual `src/shared/components/layout/shell/navConfig.ts` | `ls src/config/navConfig.ts` → absent |

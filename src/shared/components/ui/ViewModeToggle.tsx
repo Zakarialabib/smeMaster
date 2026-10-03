@@ -2,10 +2,10 @@
  * View Mode Toggle - Switch between List, Kanban, Calendar, and Agenda views.
  * Supports view persistence in layout store and visual feedback for active mode.
  */
-import { LayoutList, LayoutGrid, Calendar, Clock } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { LayoutList, LayoutGrid, Calendar, Clock } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
-export type ViewMode = "list" | "kanban" | "calendar" | "agenda";
+export type ViewMode = 'list' | 'kanban' | 'calendar' | 'agenda';
 
 export interface ViewModeToggleProps {
   /** Currently active view mode */
@@ -27,43 +27,43 @@ const VIEW_MODES: Array<{
   description: string;
 }> = [
   {
-    value: "list",
-    label: "List",
+    value: 'list',
+    label: 'List',
     icon: <LayoutList size={16} />,
-    description: "Quick scan view",
+    description: 'Quick scan view',
   },
   {
-    value: "kanban",
-    label: "Kanban",
+    value: 'kanban',
+    label: 'Kanban',
     icon: <LayoutGrid size={16} />,
-    description: "Status workflow",
+    description: 'Status workflow',
   },
   {
-    value: "calendar",
-    label: "Calendar",
+    value: 'calendar',
+    label: 'Calendar',
     icon: <Calendar size={16} />,
-    description: "Time-based view",
+    description: 'Time-based view',
   },
   {
-    value: "agenda",
-    label: "Agenda",
+    value: 'agenda',
+    label: 'Agenda',
     icon: <Clock size={16} />,
-    description: "Focused list",
+    description: 'Focused list',
   },
 ];
 
 export function ViewModeToggle({
   activeMode,
   onChange,
-  className = "",
+  className = '',
   showLabels = false,
   compact = true,
 }: ViewModeToggleProps) {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-lg p-1 bg-bg-tertiary/50 border border-border-primary",
-        compact ? "gap-0" : "gap-1",
+        'inline-flex items-center gap-0.5 rounded-lg p-1 bg-bg-tertiary/50 border border-border-primary',
+        compact ? 'gap-0' : 'gap-1',
         className,
       )}
       role="group"
@@ -77,21 +77,16 @@ export function ViewModeToggle({
           aria-label={`${mode.label} view`}
           aria-pressed={activeMode === mode.value}
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all duration-150",
-            "text-text-tertiary hover:text-text-primary",
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all duration-150',
+            'text-text-tertiary hover:text-text-primary',
             activeMode === mode.value
-              ? "bg-accent text-white shadow-sm hover:bg-accent-hover"
-              : "hover:bg-bg-secondary",
+              ? 'bg-accent text-white shadow-sm hover:bg-accent-hover'
+              : 'hover:bg-bg-secondary',
           )}
         >
           {mode.icon}
           {showLabels && (
-            <span
-              className={cn(
-                "font-medium transition-colors",
-                compact ? "text-xs" : "text-sm",
-              )}
-            >
+            <span className={cn('font-medium transition-colors', compact ? 'text-xs' : 'text-sm')}>
               {mode.label}
             </span>
           )}
@@ -100,4 +95,3 @@ export function ViewModeToggle({
     </div>
   );
 }
-

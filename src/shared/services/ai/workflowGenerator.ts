@@ -1,5 +1,5 @@
-import { callAi } from "./aiService";
-import type { WorkflowPreset } from "@/constants/workflowPresets";
+import { callAi } from './aiService';
+import type { WorkflowPreset } from '@/constants/workflowPresets';
 
 const WORKFLOW_GENERATION_PROMPT = `You are a workflow automation generator. Output ONLY valid JSON with no markdown, no code fences, no extra text.
 
@@ -46,9 +46,7 @@ function parseWorkflowPreset(raw: string): WorkflowPreset {
   };
 }
 
-export async function generateWorkflowPreset(
-  description: string
-): Promise<WorkflowPreset> {
+export async function generateWorkflowPreset(description: string): Promise<WorkflowPreset> {
   const userContent = `Create a workflow preset for: ${description}`;
   const raw = await callAi(WORKFLOW_GENERATION_PROMPT, userContent);
   try {
@@ -60,7 +58,7 @@ export async function generateWorkflowPreset(
 
 export async function generateWorkflowPresets(
   count: number,
-  category?: 'automation' | 'ai_enhanced'
+  category?: 'automation' | 'ai_enhanced',
 ): Promise<WorkflowPreset[]> {
   const userContent = `Generate ${count} workflow presets${category ? ` in category: ${category}` : ''}. Output a JSON array.`;
   const raw = await callAi(WORKFLOW_GENERATION_PROMPT, userContent);

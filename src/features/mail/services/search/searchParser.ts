@@ -14,19 +14,20 @@ export interface ParsedSearchQuery {
   isRead?: boolean;
   isStarred?: boolean;
   before?: number; // unix timestamp (seconds)
-  after?: number;  // unix timestamp (seconds)
+  after?: number; // unix timestamp (seconds)
   label?: string;
 }
 
-const OPERATOR_REGEX = /(?:^|\s)(from|to|subject|has|is|before|after|label):\s*(?:"([^"]+)"|(\S+))/gi;
+const OPERATOR_REGEX =
+  /(?:^|\s)(from|to|subject|has|is|before|after|label):\s*(?:"([^"]+)"|(\S+))/gi;
 
 /**
  * Parse a date string like YYYY/MM/DD or YYYY-MM-DD into a unix timestamp (seconds).
  * Returns undefined if the string is not a valid date.
  */
 function parseDateToTimestamp(dateStr: string): number | undefined {
-  const normalized = dateStr.replace(/-/g, "/");
-  const parts = normalized.split("/");
+  const normalized = dateStr.replace(/-/g, '/');
+  const parts = normalized.split('/');
   if (parts.length !== 3) return undefined;
   const year = parseInt(parts[0]!, 10);
   const month = parseInt(parts[1]!, 10);
@@ -38,7 +39,7 @@ function parseDateToTimestamp(dateStr: string): number | undefined {
 }
 
 export function parseSearchQuery(input: string): ParsedSearchQuery {
-  const result: ParsedSearchQuery = { freeText: "" };
+  const result: ParsedSearchQuery = { freeText: '' };
 
   // Extract operators and collect remaining free text
   let remaining = input;
@@ -51,49 +52,49 @@ export function parseSearchQuery(input: string): ParsedSearchQuery {
 
   while ((match = OPERATOR_REGEX.exec(input)) !== null) {
     const operator = match[1]!.toLowerCase();
-    const value = match[2] ?? match[3] ?? "";
+    const value = match[2] ?? match[3] ?? '';
 
     matches.push({ start: match.index, end: match.index + match[0].length });
 
     switch (operator) {
-      case "from":
+      case 'from':
         result.from = value;
         break;
-      case "to":
+      case 'to':
         result.to = value;
         break;
-      case "subject":
+      case 'subject':
         result.subject = value;
         break;
-      case "has":
-        if (value.toLowerCase() === "attachment") {
+      case 'has':
+        if (value.toLowerCase() === 'attachment') {
           result.hasAttachment = true;
         }
         break;
-      case "is":
+      case 'is':
         switch (value.toLowerCase()) {
-          case "unread":
+          case 'unread':
             result.isUnread = true;
             break;
-          case "read":
+          case 'read':
             result.isRead = true;
             break;
-          case "starred":
+          case 'starred':
             result.isStarred = true;
             break;
         }
         break;
-      case "before": {
+      case 'before': {
         const ts = parseDateToTimestamp(value);
         if (ts !== undefined) result.before = ts;
         break;
       }
-      case "after": {
+      case 'after': {
         const ts = parseDateToTimestamp(value);
         if (ts !== undefined) result.after = ts;
         break;
       }
-      case "label":
+      case 'label':
         result.label = value;
         break;
     }
@@ -107,7 +108,7 @@ export function parseSearchQuery(input: string): ParsedSearchQuery {
     remaining = remaining.slice(0, m.start) + remaining.slice(m.end);
   }
 
-  result.freeText = remaining.replace(/\s+/g, " ").trim();
+  result.freeText = remaining.replace(/\s+/g, ' ').trim();
   return result;
 }
 

@@ -16,7 +16,10 @@ One monster store became 3 domain-specific stores:
 | `useLayoutStore` | `layoutStore.ts` | sidebar, readingPane, inboxView, emailDensity, locale, textDirection, composing prefs | 16 files  |
 | `useSyncStore`   | `syncStore.ts`   | isOnline, pendingOpsCount, isSyncingFolder, unreadCounts + handleEvent                | 12 files  |
 
-**`uiStore.ts`** still exists unchanged — all 24 fields + 29 actions. I added sub-store re-exports at the bottom so migration can happen incrementally. No breaking changes.
+**`uiStore.ts`** still exists unchanged — all 24 fields + 29 actions. (Note: the canonical
+store lives at `src/stores/core/uiStore.ts`, **not** `@shared/stores/uiStore` — there is no
+`src/shared/stores/uiStore.ts`. The sub-stores `themeStore`/`layoutStore`/`syncStore` live in
+`src/shared/stores/` and are imported directly; `uiStore.ts` does **not** re-export them.)
 
 ## Design Principles
 
@@ -41,13 +44,13 @@ Without `_syncConfig()`, clicking "Dark" in GeneralTab updates `themeStore` but 
 
 ```typescript
 // BEFORE (still works)
-import { useUIStore } from '@shared/stores/uiStore';
+import { useUIStore } from '@stores/core/uiStore';
 const theme = useUIStore((s) => s.theme);
 const isOnline = useUIStore((s) => s.isOnline);
 const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
 
 // AFTER (preferred for new code)
-import { useThemeStore, useLayoutStore, useSyncStore } from '@shared/stores/uiStore';
+import { useThemeStore, useLayoutStore, useSyncStore } from '@shared/stores';
 const theme = useThemeStore((s) => s.theme);
 const isOnline = useSyncStore((s) => s.isOnline);
 const sidebarCollapsed = useLayoutStore((s) => s.sidebarCollapsed);
@@ -58,3 +61,15 @@ Why bother migrating?
 - **Components re-render only when their slice changes**. No more wasted renders from unrelated state.
 - **Clearer imports** — you can tell at a glance what domain a component touches.
 - **Easier testing** — mock only the relevant store instead of the entire monolith.
+
+## Source reconciliation (2026-07-19)
+
+Verified against `src/stores/core/uiStore.ts` and `src/shared/stores/`.
+
+- **`@shared/stores/uiStore` path — WRONG.** There is no `src/shared/stores/uiStore.ts`.
+  The canonical monolithic store is `src/stores/core/uiStore.ts` (confirmed via
+  `13-deprecations.md`). Reworded the split note and corrected the migration example:
+  `useUIStore` is imported from `@stores/core/uiStore`, and the sub-stores
+  (`themeStore`/`layoutStore`/`syncStore`) live in `src/shared/stores/` and are imported
+  directly from `@shared/stores` — `uiStore.ts` does **not** re-export them (no re-export
+  block exists in the file).

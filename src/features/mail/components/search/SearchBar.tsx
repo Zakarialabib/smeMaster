@@ -1,10 +1,10 @@
-import { useState, useRef, useCallback } from "react";
-import { searchMessages } from "@shared/services/db/search";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
-import { InputDialog } from "@shared/components/ui/InputDialog";
-import { Search, X, FolderPlus } from "lucide-react";
+import { useState, useRef, useCallback } from 'react';
+import { searchMessages } from '@shared/services/db/search';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useSmartFolderStore } from '@features/mail/stores/smartFolderStore';
+import { InputDialog } from '@shared/components/ui/InputDialog';
+import { Search, X, FolderPlus } from 'lucide-react';
 
 export function SearchBar() {
   const searchQuery = useThreadStore((s) => s.searchQuery);
@@ -50,7 +50,7 @@ export function SearchBar() {
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       useThreadStore.getState().clearSearch();
       inputRef.current?.blur();
     }
@@ -94,12 +94,16 @@ export function SearchBar() {
         isOpen={showSaveModal}
         onClose={() => setShowSaveModal(false)}
         onSubmit={(values) => {
-          useSmartFolderStore.getState().createFolder(values.name!.trim(), useThreadStore.getState().searchQuery.trim(), activeAccountId ?? undefined);
+          useSmartFolderStore
+            .getState()
+            .createFolder(
+              values.name!.trim(),
+              useThreadStore.getState().searchQuery.trim(),
+              activeAccountId ?? undefined,
+            );
         }}
         title="Save as Smart Folder"
-        fields={[
-          { key: "name", label: "Name", defaultValue: searchQuery.trim() },
-        ]}
+        fields={[{ key: 'name', label: 'Name', defaultValue: searchQuery.trim() }]}
         submitLabel="Save"
       />
     </div>

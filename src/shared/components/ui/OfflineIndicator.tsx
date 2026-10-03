@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { WifiOff } from "lucide-react";
+import { useState, useEffect, useCallback } from 'react';
+import { WifiOff } from 'lucide-react';
 
 /**
  * OfflineIndicator – a small bar at the top of the screen that appears
@@ -25,8 +25,8 @@ export function OfflineIndicator() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     // Sync with current state on mount (e.g. if connection restored while component was unmounted)
     const isOffline = !window.navigator.onLine;
@@ -34,8 +34,8 @@ export function OfflineIndicator() {
     setVisible(isOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [handleOnline, handleOffline]);
 
@@ -44,9 +44,7 @@ export function OfflineIndicator() {
   return (
     <div
       className={`fixed top-0 left-0 right-0 z-[60] flex items-center justify-center gap-2 px-4 py-1.5 text-xs font-medium text-white bg-danger/90 backdrop-blur-sm transition-all duration-300 ${
-        offline
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-full opacity-0"
+        offline ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
       role="alert"
       aria-live="assertive"

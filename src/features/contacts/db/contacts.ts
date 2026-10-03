@@ -21,9 +21,9 @@
   updateDynamicSegmentRefresh as dbUpdateDynamicSegmentRefresh,
   deleteDynamicSegment as dbDeleteDynamicSegment,
   countContacts as dbCountContacts,
-} from "@shared/services/db/db-invoke";
-import { normalizeEmail } from "@shared/utils/emailUtils";
-import { ACTIVE_COMPANY_ID } from "@shared/constants/company";
+} from '@shared/services/db/db-invoke';
+import { normalizeEmail } from '@shared/utils/emailUtils';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
 
 export interface DbContact {
   id: string;
@@ -69,10 +69,7 @@ export interface SameDomainContact {
 /**
  * Search contacts by email or name prefix for autocomplete.
  */
-export async function searchContacts(
-  query: string,
-  limit = 10,
-): Promise<DbContact[]> {
+export async function searchContacts(query: string, limit = 10): Promise<DbContact[]> {
   const results = await dbSearchContacts(query, limit);
   return results as unknown as DbContact[];
 }
@@ -80,10 +77,7 @@ export async function searchContacts(
 /**
  * Get all contacts, ordered by frequency descending.
  */
-export async function getAllContacts(
-  limit = 500,
-  offset = 0,
-): Promise<DbContact[]> {
+export async function getAllContacts(limit = 500, offset = 0): Promise<DbContact[]> {
   return dbListContacts(limit, offset, null, null) as unknown as Promise<DbContact[]>;
 }
 
@@ -99,10 +93,7 @@ export async function countAllContacts(searchQuery?: string | null): Promise<num
 /**
  * Update a contact's display name.
  */
-export async function updateContact(
-  id: string,
-  displayName: string | null,
-): Promise<void> {
+export async function updateContact(id: string, displayName: string | null): Promise<void> {
   await dbUpdateContact(id, {
     set: {
       display_name: displayName,
@@ -158,9 +149,7 @@ export async function getContactById(id: string): Promise<DbContact | null> {
   }
 }
 
-export async function getContactByEmail(
-  email: string,
-): Promise<DbContact | null> {
+export async function getContactByEmail(email: string): Promise<DbContact | null> {
   const result = await dbGetContactByEmail(normalizeEmail(email));
   return result as DbContact | null;
 }
@@ -192,9 +181,7 @@ export interface ContactWithStats {
 /**
  * Get a single contact with computed task and email counts.
  */
-export async function getContactWithStats(
-  contactId: string,
-): Promise<ContactWithStats | null> {
+export async function getContactWithStats(contactId: string): Promise<ContactWithStats | null> {
   return dbGetContactWithStats(contactId);
 }
 
@@ -215,10 +202,7 @@ export async function getRecentThreadsWithContact(
   return dbGetRecentThreadsWithContact(normalizeEmail(email), limit);
 }
 
-export async function updateContactAvatar(
-  email: string,
-  avatarUrl: string,
-): Promise<void> {
+export async function updateContactAvatar(email: string, avatarUrl: string): Promise<void> {
   const contact = await dbGetContactByEmail(normalizeEmail(email));
   if (!contact) return;
   await dbUpdateContact(contact.id, {
@@ -233,10 +217,7 @@ export async function updateContactAvatar(
 /**
  * Update a contact's notes by email.
  */
-export async function updateContactNotes(
-  email: string,
-  notes: string | null,
-): Promise<void> {
+export async function updateContactNotes(email: string, notes: string | null): Promise<void> {
   const contact = await dbGetContactByEmail(normalizeEmail(email));
   if (!contact) return;
   await dbUpdateContact(contact.id, {
@@ -259,24 +240,24 @@ export async function getAttachmentsFromContact(
 }
 
 const PUBLIC_DOMAINS = new Set([
-  "gmail.com",
-  "googlemail.com",
-  "outlook.com",
-  "hotmail.com",
-  "live.com",
-  "yahoo.com",
-  "yahoo.co.uk",
-  "aol.com",
-  "icloud.com",
-  "me.com",
-  "mac.com",
-  "protonmail.com",
-  "proton.me",
-  "mail.com",
-  "zoho.com",
-  "yandex.com",
-  "gmx.com",
-  "gmx.net",
+  'gmail.com',
+  'googlemail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'yahoo.com',
+  'yahoo.co.uk',
+  'aol.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'protonmail.com',
+  'proton.me',
+  'mail.com',
+  'zoho.com',
+  'yandex.com',
+  'gmx.com',
+  'gmx.net',
 ]);
 
 /**
@@ -288,7 +269,7 @@ export async function getContactsFromSameDomain(
   limit = 5,
 ): Promise<SameDomainContact[]> {
   const normalized = normalizeEmail(email);
-  const atIdx = normalized.indexOf("@");
+  const atIdx = normalized.indexOf('@');
   if (atIdx === -1) return [];
 
   const domain = normalized.slice(atIdx + 1);
@@ -300,9 +281,7 @@ export async function getContactsFromSameDomain(
 /**
  * Get the most recent auth_results JSON string for messages from this sender.
  */
-export async function getLatestAuthResult(
-  email: string,
-): Promise<string | null> {
+export async function getLatestAuthResult(email: string): Promise<string | null> {
   return dbGetLatestAuthResult(normalizeEmail(email));
 }
 
@@ -363,23 +342,20 @@ export async function insertEngagementLog(
   entityId?: string,
   metadataJson?: string,
 ): Promise<void> {
-  const actualEntityType = entityType ?? "contact";
+  const actualEntityType = entityType ?? 'contact';
   const actualEntityId = entityId ?? contactId;
-  const actualContactId = actualEntityType === "contact" ? contactId : null;
+  const actualContactId = actualEntityType === 'contact' ? contactId : null;
   await logEngagement({
     contactId: actualContactId,
     entityType: actualEntityType,
     entityId: actualEntityId,
     eventType,
     scoreDelta,
-    metadataJson: metadataJson ?? "{}",
+    metadataJson: metadataJson ?? '{}',
   });
 }
 
-export async function getEngagementLog(
-  contactId: string,
-  limit = 50,
-): Promise<EngagementLogRow[]> {
+export async function getEngagementLog(contactId: string, limit = 50): Promise<EngagementLogRow[]> {
   return getEngagementHistory(contactId, limit);
 }
 
@@ -391,9 +367,7 @@ export interface DynamicSegmentRow {
   refreshed_at: number | null;
 }
 
-export async function getDynamicSegments(
-  accountId: string,
-): Promise<DynamicSegmentRow[]> {
+export async function getDynamicSegments(accountId: string): Promise<DynamicSegmentRow[]> {
   return dbListDynamicSegments(accountId);
 }
 
@@ -405,15 +379,10 @@ export async function createDynamicSegment(
   return dbCreateDynamicSegment(accountId, name, query);
 }
 
-export async function updateDynamicSegmentRefresh(
-  segmentId: string,
-): Promise<void> {
+export async function updateDynamicSegmentRefresh(segmentId: string): Promise<void> {
   await dbUpdateDynamicSegmentRefresh(segmentId);
 }
 
-export async function deleteDynamicSegment(
-  id: string,
-  accountId: string,
-): Promise<void> {
+export async function deleteDynamicSegment(id: string, accountId: string): Promise<void> {
   await dbDeleteDynamicSegment(id, accountId);
 }

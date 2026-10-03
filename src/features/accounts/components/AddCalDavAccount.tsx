@@ -1,19 +1,15 @@
-import { useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Loader2, Calendar } from 'lucide-react';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { TextField } from '@shared/components/ui/TextField';
+import { insertCalDavAccount } from '@features/accounts/db/accounts';
+import { useAccountStore, type Account } from '@features/accounts/stores/accountStore';
 import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  Calendar,
-} from "lucide-react";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { TextField } from "@shared/components/ui/TextField";
-import { insertCalDavAccount } from "@features/accounts/db/accounts";
-import { useAccountStore, type Account } from "@features/accounts/stores/accountStore";
-import { discoverCalDavSettings, testCalDavConnection } from "@features/calendar/services/autoDiscovery";
+  discoverCalDavSettings,
+  testCalDavConnection,
+} from '@features/calendar/services/autoDiscovery';
 
 interface AddCalDavAccountProps {
   onClose: () => void;
@@ -21,19 +17,19 @@ interface AddCalDavAccountProps {
   onBack: () => void;
 }
 
-type Step = "basic" | "server" | "test" | "done";
+type Step = 'basic' | 'server' | 'test' | 'done';
 
 export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccountProps) {
   const { t } = useTranslation();
   const addAccount = useAccountStore((s) => s.addAccount);
-  const [step, setStep] = useState<Step>("basic");
+  const [step, setStep] = useState<Step>('basic');
 
   // Form state
-  const [email, setEmail] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [caldavUrl, setCaldavUrl] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [caldavUrl, setCaldavUrl] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [providerName, setProviderName] = useState<string | null>(null);
   const [needsAppPassword, setNeedsAppPassword] = useState(false);
 
@@ -55,7 +51,7 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
     }
     setProviderName(result.providerName);
     setNeedsAppPassword(result.needsAppPassword);
-    setStep("server");
+    setStep('server');
   }, [email]);
 
   const handleTest = useCallback(async () => {
@@ -90,10 +86,10 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
       };
       addAccount(acc);
 
-      setStep("done");
+      setStep('done');
     } catch (err) {
-      console.error("Failed to create CalDAV account:", err);
-      setTestResult({ success: false, message: "Failed to save account" });
+      console.error('Failed to create CalDAV account:', err);
+      setTestResult({ success: false, message: 'Failed to save account' });
     } finally {
       setCreating(false);
     }
@@ -102,14 +98,16 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
   return (
     <Modal isOpen={true} onClose={onClose} title={t('modals.addCalDavAccount.title')} size="md">
       <div className="p-4">
-        {step === "basic" && (
+        {step === 'basic' && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                 <Calendar size={20} className="text-accent" />
               </div>
               <div>
-                <h3 className="text-sm font-medium text-text-primary">{t('modals.addCalDavAccount.caldavCalendarAccount')}</h3>
+                <h3 className="text-sm font-medium text-text-primary">
+                  {t('modals.addCalDavAccount.caldavCalendarAccount')}
+                </h3>
                 <p className="text-xs text-text-tertiary">
                   {t('modals.addCalDavAccount.connectDescription')}
                 </p>
@@ -134,13 +132,8 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
             />
 
             <div className="flex justify-between pt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<ArrowLeft size={16} />}
-                onClick={onBack}
-              >
-                {t("common.back")}
+              <Button variant="ghost" size="sm" icon={<ArrowLeft size={16} />} onClick={onBack}>
+                {t('common.back')}
               </Button>
               <Button
                 variant="primary"
@@ -149,13 +142,13 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
                 onClick={handleDiscoverAndNext}
                 disabled={!email.trim()}
               >
-                {t("common.next")}
+                {t('common.next')}
               </Button>
             </div>
           </div>
         )}
 
-        {step === "server" && (
+        {step === 'server' && (
           <div className="space-y-4">
             {providerName && (
               <div className="text-xs text-accent font-medium">
@@ -170,7 +163,7 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
             )}
 
             <TextField
-              label={t("account.caldavUrl")}
+              label={t('account.caldavUrl')}
               type="url"
               value={caldavUrl}
               onChange={(e) => setCaldavUrl(e.target.value)}
@@ -178,7 +171,7 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
             />
 
             <TextField
-              label={t("account.caldavUsername")}
+              label={t('account.caldavUsername')}
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -186,11 +179,11 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
             />
 
             <TextField
-              label={t("account.caldavPassword")}
+              label={t('account.caldavPassword')}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={needsAppPassword ? "App-specific password" : "Password"}
+              placeholder={needsAppPassword ? 'App-specific password' : 'Password'}
             />
 
             <div className="flex justify-between pt-2">
@@ -198,30 +191,35 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
                 variant="ghost"
                 size="sm"
                 icon={<ArrowLeft size={16} />}
-                onClick={() => setStep("basic")}
+                onClick={() => setStep('basic')}
               >
-                {t("common.back")}
+                {t('common.back')}
               </Button>
               <Button
                 variant="primary"
                 size="md"
                 icon={<ArrowRight size={16} />}
-                onClick={() => { setStep("test"); handleTest(); }}
+                onClick={() => {
+                  setStep('test');
+                  handleTest();
+                }}
                 disabled={!caldavUrl || !password}
               >
-                {t("account.testConnection")}
+                {t('account.testConnection')}
               </Button>
             </div>
           </div>
         )}
 
-        {step === "test" && (
+        {step === 'test' && (
           <div className="space-y-4">
             <div className="text-center py-6">
               {testing && (
                 <>
                   <Loader2 size={32} className="animate-spin text-accent mx-auto mb-3" />
-                  <p className="text-sm text-text-secondary">{t('modals.addCalDavAccount.testingConnection')}</p>
+                  <p className="text-sm text-text-secondary">
+                    {t('modals.addCalDavAccount.testingConnection')}
+                  </p>
                 </>
               )}
 
@@ -240,7 +238,9 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
               {!testing && testResult && !testResult.success && (
                 <>
                   <XCircle size={32} className="text-danger mx-auto mb-3" />
-                  <p className="text-sm font-medium text-text-primary">{t('modals.addCalDavAccount.connectionFailed')}</p>
+                  <p className="text-sm font-medium text-text-primary">
+                    {t('modals.addCalDavAccount.connectionFailed')}
+                  </p>
                   <p className="text-xs text-text-tertiary mt-1">{testResult.message}</p>
                 </>
               )}
@@ -251,9 +251,12 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
                 variant="ghost"
                 size="sm"
                 icon={<ArrowLeft size={16} />}
-                onClick={() => { setStep("server"); setTestResult(null); }}
+                onClick={() => {
+                  setStep('server');
+                  setTestResult(null);
+                }}
               >
-                {t("common.back")}
+                {t('common.back')}
               </Button>
 
               {testResult?.success ? (
@@ -264,33 +267,25 @@ export function AddCalDavAccount({ onClose, onSuccess, onBack }: AddCalDavAccoun
                   disabled={creating}
                   loading={creating}
                 >
-                  {creating ? "Creating..." : t("account.save")}
+                  {creating ? 'Creating...' : t('account.save')}
                 </Button>
               ) : !testing ? (
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleTest}
-                >
-                  {t("account.testConnection")}
+                <Button variant="primary" size="md" onClick={handleTest}>
+                  {t('account.testConnection')}
                 </Button>
               ) : null}
             </div>
           </div>
         )}
 
-        {step === "done" && (
+        {step === 'done' && (
           <div className="text-center py-6">
             <CheckCircle2 size={32} className="text-success mx-auto mb-3" />
             <p className="text-sm font-medium text-text-primary">CalDAV account added!</p>
             <p className="text-xs text-text-tertiary mt-1">
               Your calendars will sync automatically.
             </p>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={onSuccess}
-            >
+            <Button variant="primary" size="md" onClick={onSuccess}>
               Done
             </Button>
           </div>

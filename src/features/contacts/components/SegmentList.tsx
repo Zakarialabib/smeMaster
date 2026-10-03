@@ -1,5 +1,5 @@
-import { Search, RefreshCw, Users } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Search, RefreshCw, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface SegmentListProps {
   accountId: string;
@@ -19,9 +19,7 @@ interface SegmentListProps {
 export function SegmentList({ segments, onSelect, onRefresh }: SegmentListProps) {
   const { t } = useTranslation();
   if (segments.length === 0) {
-    return (
-      <p className="text-xs text-text-tertiary py-2">{t('contact.noSavedSegments')}</p>
-    );
+    return <p className="text-xs text-text-tertiary py-2">{t('contact.noSavedSegments')}</p>;
   }
 
   return (
@@ -35,13 +33,11 @@ export function SegmentList({ segments, onSelect, onRefresh }: SegmentListProps)
           <div className="flex items-center gap-2 min-w-0">
             <Search size={12} className="text-text-tertiary shrink-0" />
             <div className="min-w-0">
-              <div className="text-xs text-text-primary truncate">
-                {segment.name}
-              </div>
+              <div className="text-xs text-text-primary truncate">{segment.name}</div>
               <div className="text-[0.625rem] text-text-tertiary truncate flex items-center gap-1">
                 {segment.query}
                 {segment.isDynamic && segment.memberCount != null && (
-                  <span className="inline-flex items-center gap-0.5 ml-1 px-1 py-0.5 bg-bg-tertiary rounded-full">
+                  <span className="inline-flex items-center gap-0.5 ms-1 px-1 py-0.5 bg-bg-tertiary rounded-full">
                     <Users size={8} />
                     {segment.memberCount}
                   </span>

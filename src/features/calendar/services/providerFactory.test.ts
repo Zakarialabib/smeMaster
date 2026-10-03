@@ -1,19 +1,16 @@
-﻿import {
-  createMockGmailAccount,
-  createMockImapAccount,
-} from "@/test/mocks/entities.mock";
-import type { DbAccount } from "@features/accounts/db/accounts";
+﻿import { createMockGmailAccount, createMockImapAccount } from '@/test/mocks/entities.mock';
+import type { DbAccount } from '@features/accounts/db/accounts';
 
-vi.mock("@features/accounts/db/accounts", () => ({
+vi.mock('@features/accounts/db/accounts', () => ({
   getAccount: vi.fn(),
 }));
 
 // Mock the provider constructors so they don't do real work,
 // but preserve the class identity and `type` property.
-vi.mock("./googleCalendarProvider", () => {
+vi.mock('./googleCalendarProvider', () => {
   class GoogleCalendarProvider {
     readonly accountId: string;
-    readonly type = "google_api" as const;
+    readonly type = 'google_api' as const;
     constructor(accountId: string) {
       this.accountId = accountId;
     }
@@ -21,10 +18,10 @@ vi.mock("./googleCalendarProvider", () => {
   return { GoogleCalendarProvider };
 });
 
-vi.mock("./caldavProvider", () => {
+vi.mock('./caldavProvider', () => {
   class CalDAVProvider {
     readonly accountId: string;
-    readonly type = "caldav" as const;
+    readonly type = 'caldav' as const;
     constructor(accountId: string) {
       this.accountId = accountId;
     }
@@ -32,61 +29,61 @@ vi.mock("./caldavProvider", () => {
   return { CalDAVProvider };
 });
 
-import { getAccount } from "@features/accounts/db/accounts";
+import { getAccount } from '@features/accounts/db/accounts';
 import {
   getCalendarProvider,
   hasCalendarSupport,
   removeCalendarProvider,
   clearAllCalendarProviders,
-} from "./providerFactory";
+} from './providerFactory';
 
 const mockGetAccount = vi.mocked(getAccount);
 
-describe("providerFactory", () => {
+describe('providerFactory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearAllCalendarProviders();
   });
 
-  describe("getCalendarProvider", () => {
-    it("returns GoogleCalendarProvider for gmail_api accounts", async () => {
+  describe('getCalendarProvider', () => {
+    it('returns GoogleCalendarProvider for gmail_api accounts', async () => {
       const account = createMockGmailAccount();
       mockGetAccount.mockResolvedValue(account);
 
       const provider = await getCalendarProvider(account.id);
 
-      expect(provider.type).toBe("google_api");
+      expect(provider.type).toBe('google_api');
       expect(provider.accountId).toBe(account.id);
     });
 
-    it("returns CalDAVProvider for standalone caldav accounts", async () => {
+    it('returns CalDAVProvider for standalone caldav accounts', async () => {
       const account = createMockImapAccount({
-        id: "acc-caldav",
-        provider: "caldav" as DbAccount["provider"],
-        caldav_url: "https://caldav.example.com",
+        id: 'acc-caldav',
+        provider: 'caldav' as DbAccount['provider'],
+        caldav_url: 'https://caldav.example.com',
       });
       mockGetAccount.mockResolvedValue(account);
 
-      const provider = await getCalendarProvider("acc-caldav");
+      const provider = await getCalendarProvider('acc-caldav');
 
-      expect(provider.type).toBe("caldav");
-      expect(provider.accountId).toBe("acc-caldav");
+      expect(provider.type).toBe('caldav');
+      expect(provider.accountId).toBe('acc-caldav');
     });
 
-    it("returns CalDAVProvider for IMAP accounts with caldav_url configured", async () => {
+    it('returns CalDAVProvider for IMAP accounts with caldav_url configured', async () => {
       const account = createMockImapAccount({
-        calendar_provider: "caldav",
-        caldav_url: "https://caldav.example.com/dav",
+        calendar_provider: 'caldav',
+        caldav_url: 'https://caldav.example.com/dav',
       });
       mockGetAccount.mockResolvedValue(account);
 
       const provider = await getCalendarProvider(account.id);
 
-      expect(provider.type).toBe("caldav");
+      expect(provider.type).toBe('caldav');
       expect(provider.accountId).toBe(account.id);
     });
 
-    it("throws error for IMAP accounts without calendar configured", async () => {
+    it('throws error for IMAP accounts without calendar configured', async () => {
       const account = createMockImapAccount();
       mockGetAccount.mockResolvedValue(account);
 
@@ -95,15 +92,15 @@ describe("providerFactory", () => {
       );
     });
 
-    it("throws error when account is not found", async () => {
+    it('throws error when account is not found', async () => {
       mockGetAccount.mockResolvedValue(null);
 
-      await expect(getCalendarProvider("nonexistent")).rejects.toThrow(
-        "Account nonexistent not found",
+      await expect(getCalendarProvider('nonexistent')).rejects.toThrow(
+        'Account nonexistent not found',
       );
     });
 
-    it("caches providers and returns same instance on second call", async () => {
+    it('caches providers and returns same instance on second call', async () => {
       const account = createMockGmailAccount();
       mockGetAccount.mockResolvedValue(account);
 
@@ -116,8 +113,8 @@ describe("providerFactory", () => {
     });
   });
 
-  describe("removeCalendarProvider", () => {
-    it("clears cached provider for a specific account", async () => {
+  describe('removeCalendarProvider', () => {
+    it('clears cached provider for a specific account', async () => {
       const account = createMockGmailAccount();
       mockGetAccount.mockResolvedValue(account);
 
@@ -130,13 +127,13 @@ describe("providerFactory", () => {
     });
   });
 
-  describe("clearAllCalendarProviders", () => {
-    it("clears all cached providers", async () => {
+  describe('clearAllCalendarProviders', () => {
+    it('clears all cached providers', async () => {
       const gmailAccount = createMockGmailAccount();
       const caldavAccount = createMockImapAccount({
-        id: "acc-caldav",
-        provider: "caldav" as DbAccount["provider"],
-        caldav_url: "https://caldav.example.com",
+        id: 'acc-caldav',
+        provider: 'caldav' as DbAccount['provider'],
+        caldav_url: 'https://caldav.example.com',
       });
 
       mockGetAccount.mockImplementation(async (id: string) => {
@@ -158,44 +155,44 @@ describe("providerFactory", () => {
     });
   });
 
-  describe("hasCalendarSupport", () => {
-    it("returns true for gmail_api accounts", async () => {
+  describe('hasCalendarSupport', () => {
+    it('returns true for gmail_api accounts', async () => {
       const account = createMockGmailAccount();
       mockGetAccount.mockResolvedValue(account);
 
       expect(await hasCalendarSupport(account.id)).toBe(true);
     });
 
-    it("returns true for standalone caldav accounts", async () => {
+    it('returns true for standalone caldav accounts', async () => {
       const account = createMockImapAccount({
-        provider: "caldav" as DbAccount["provider"],
+        provider: 'caldav' as DbAccount['provider'],
       });
       mockGetAccount.mockResolvedValue(account);
 
       expect(await hasCalendarSupport(account.id)).toBe(true);
     });
 
-    it("returns true for IMAP accounts with caldav_url configured", async () => {
+    it('returns true for IMAP accounts with caldav_url configured', async () => {
       const account = createMockImapAccount({
-        calendar_provider: "caldav",
-        caldav_url: "https://caldav.example.com/dav",
+        calendar_provider: 'caldav',
+        caldav_url: 'https://caldav.example.com/dav',
       });
       mockGetAccount.mockResolvedValue(account);
 
       expect(await hasCalendarSupport(account.id)).toBe(true);
     });
 
-    it("returns false for plain IMAP accounts without calendar", async () => {
+    it('returns false for plain IMAP accounts without calendar', async () => {
       const account = createMockImapAccount();
       mockGetAccount.mockResolvedValue(account);
 
       expect(await hasCalendarSupport(account.id)).toBe(false);
     });
 
-    it("returns false when account is not found", async () => {
+    it('returns false when account is not found', async () => {
       mockGetAccount.mockResolvedValue(null);
 
-      expect(await hasCalendarSupport("nonexistent")).toBe(false);
+      expect(await hasCalendarSupport('nonexistent')).toBe(false);
     });
   });
 });

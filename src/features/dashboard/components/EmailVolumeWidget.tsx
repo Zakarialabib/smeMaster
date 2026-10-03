@@ -1,20 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
-  BarChart, Bar, LineChart, Line,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-} from "recharts";
-import { Mail, BarChart3, LineChart as LineChartIcon } from "lucide-react";
-import { dashboardEmailVolume } from "@shared/services/db/db-invoke";
-import type { DashboardTimeSeries } from "@shared/services/db/db-invoke";
-import { WidgetHeader } from "./WidgetHelpers";
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
+import { Mail, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import { dashboardEmailVolume } from '@shared/services/db/db-invoke';
+import type { DashboardTimeSeries } from '@shared/services/db/db-invoke';
+import { WidgetHeader, WidgetError } from './WidgetHelpers';
 
-type ChartMode = "bar" | "line";
+type ChartMode = 'bar' | 'line';
 
 export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   const [data, setData] = useState<DashboardTimeSeries[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [chartMode, setChartMode] = useState<ChartMode>("bar");
+  const [chartMode, setChartMode] = useState<ChartMode>('bar');
 
   useEffect(() => {
     let cancelled = false;
@@ -28,13 +35,12 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const visible = useMemo(
-    () => data.slice(-Math.min(rangeDays, data.length)),
-    [data, rangeDays],
-  );
+  const visible = useMemo(() => data.slice(-Math.min(rangeDays, data.length)), [data, rangeDays]);
 
   if (loading) {
     return (
@@ -46,7 +52,7 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
   }
 
   if (error) {
-    return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{error}</div>;
+    return <WidgetError message={error} />;
   }
 
   return (
@@ -55,11 +61,11 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
         <WidgetHeader icon={<Mail size={16} />} title={`Email Volume (${rangeDays}d)`} />
         <div className="flex items-center gap-0.5 bg-bg-tertiary rounded-lg p-0.5">
           <button
-            onClick={() => setChartMode("bar")}
+            onClick={() => setChartMode('bar')}
             className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "bar"
-                ? "bg-bg-secondary shadow-sm text-text-primary"
-                : "text-text-tertiary hover:text-text-primary"
+              chartMode === 'bar'
+                ? 'bg-bg-secondary shadow-sm text-text-primary'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
             title="Bar chart"
             aria-label="Switch to bar chart"
@@ -67,11 +73,11 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
             <BarChart3 size={14} />
           </button>
           <button
-            onClick={() => setChartMode("line")}
+            onClick={() => setChartMode('line')}
             className={`p-1.5 rounded-md transition-colors ${
-              chartMode === "line"
-                ? "bg-bg-secondary shadow-sm text-text-primary"
-                : "text-text-tertiary hover:text-text-primary"
+              chartMode === 'line'
+                ? 'bg-bg-secondary shadow-sm text-text-primary'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
             title="Line chart"
             aria-label="Switch to line chart"
@@ -84,17 +90,19 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <Mail className="w-8 h-8 text-text-tertiary mb-2" />
           <p className="text-sm text-text-tertiary font-medium">No email activity</p>
-          <p className="text-xs text-text-quaternary mt-1">No emails sent or received in the last 30 days</p>
+          <p className="text-xs text-text-quaternary mt-1">
+            No emails sent or received in the last 30 days
+          </p>
         </div>
       ) : (
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
-            {chartMode === "bar" ? (
+            {chartMode === 'bar' ? (
               <BarChart data={visible} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-primary)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
+                  tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
                   tickFormatter={(val: string) => {
                     const d = new Date(val);
                     return `${d.getMonth() + 1}/${d.getDate()}`;
@@ -102,20 +110,24 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
+                  tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: "1px solid var(--color-border-primary)",
-                    borderRadius: "8px",
-                    fontSize: "12px",
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border-primary)',
+                    borderRadius: '8px',
+                    fontSize: '12px',
                   }}
-                  labelFormatter={(label: string) => {
-                    const d = new Date(label);
-                    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+                  labelFormatter={(label) => {
+                    const d = new Date(String(label));
+                    return d.toLocaleDateString(undefined, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    });
                   }}
-                  formatter={(value: number) => [value, "Emails"]}
+                  formatter={(value) => [String(value ?? 0), 'Emails']}
                 />
                 <Bar dataKey="score" fill="var(--color-accent)" radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -124,7 +136,7 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-primary)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
+                  tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
                   tickFormatter={(val: string) => {
                     const d = new Date(val);
                     return `${d.getMonth() + 1}/${d.getDate()}`;
@@ -132,27 +144,31 @@ export function EmailVolumeWidget({ rangeDays = 30 }: { rangeDays?: number }) {
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
+                  tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--color-bg-secondary)",
-                    border: "1px solid var(--color-border-primary)",
-                    borderRadius: "8px",
-                    fontSize: "12px",
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border-primary)',
+                    borderRadius: '8px',
+                    fontSize: '12px',
                   }}
-                  labelFormatter={(label: string) => {
-                    const d = new Date(label);
-                    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+                  labelFormatter={(label) => {
+                    const d = new Date(String(label));
+                    return d.toLocaleDateString(undefined, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    });
                   }}
-                  formatter={(value: number) => [value, "Emails"]}
+                  formatter={(value) => [String(value ?? 0), 'Emails']}
                 />
                 <Line
                   type="monotone"
                   dataKey="score"
                   stroke="var(--color-accent)"
                   strokeWidth={2}
-                  dot={{ r: 2, fill: "var(--color-accent)" }}
+                  dot={{ r: 2, fill: 'var(--color-accent)' }}
                   activeDot={{ r: 4 }}
                 />
               </LineChart>

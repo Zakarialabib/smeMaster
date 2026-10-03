@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   freshTestDb,
   runMigrations,
@@ -6,18 +6,18 @@ import {
   seedAccount,
   createDbInvokeHandlers,
   MockTauriDb,
-} from "./setup";
+} from './setup';
 let db: MockTauriDb;
 const mockInvoke = vi.fn();
 
-vi.mock("@tauri-apps/api/core", () => ({
+vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }));
 
 const mockProvider = {
   accountId: getTestAccountId(),
-  type: "imap" as const,
-  sendMessage: vi.fn().mockResolvedValue({ id: "sent-msg-1" }),
+  type: 'imap' as const,
+  sendMessage: vi.fn().mockResolvedValue({ id: 'sent-msg-1' }),
   archive: vi.fn(),
   trash: vi.fn(),
   permanentDelete: vi.fn(),
@@ -42,10 +42,10 @@ const mockProvider = {
   testConnection: vi.fn(),
   getProfile: vi.fn(),
 };
-vi.mock("@shared/stores/uiStore", () => ({
+vi.mock('@shared/stores/uiStore', () => ({
   useUIStore: { getState: vi.fn(() => ({ isOnline: true })) },
 }));
-vi.mock("@features/mail/stores/threadStore", () => ({
+vi.mock('@features/mail/stores/threadStore', () => ({
   useThreadStore: {
     getState: vi.fn(() => ({
       updateThread: vi.fn(),
@@ -59,28 +59,26 @@ vi.mock("@features/mail/stores/threadStore", () => ({
     })),
   },
 }));
-vi.mock("@features/mail/services/email/providerFactory", () => ({
+vi.mock('@features/mail/services/email/providerFactory', () => ({
   getEmailProvider: vi.fn(() => Promise.resolve(mockProvider)),
 }));
-vi.mock("@/router/navigate", () => ({
+vi.mock('@/router/navigate', () => ({
   navigateToThread: vi.fn(),
   getSelectedThreadId: vi.fn(() => null),
 }));
 const mockClassifyError = vi.fn(() => ({
   isRetryable: false,
-  message: "Error",
+  message: 'Error',
 }));
-vi.mock("@shared/utils/networkErrors", () => ({
+vi.mock('@shared/utils/networkErrors', () => ({
   classifyError: (...args: unknown[]) => mockClassifyError(...args),
 }));
-vi.mock("@shared/utils/crypto", () => ({
+vi.mock('@shared/utils/crypto', () => ({
   encryptValue: vi.fn((val: string) => Promise.resolve(`enc:${val}`)),
-  decryptValue: vi.fn((val: string) =>
-    Promise.resolve(val.replace("enc:", "")),
-  ),
-  isEncrypted: vi.fn((val: string) => val.startsWith("enc:")),
+  decryptValue: vi.fn((val: string) => Promise.resolve(val.replace('enc:', ''))),
+  isEncrypted: vi.fn((val: string) => val.startsWith('enc:')),
 }));
-describe("Integration: Send Email", () => {
+describe('Integration: Send Email', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     db = freshTestDb();
@@ -88,57 +86,44 @@ describe("Integration: Send Email", () => {
     await seedAccount();
 
     const handlers = createDbInvokeHandlers(db);
-    mockInvoke.mockImplementation((cmd: string, args?: Record<string, unknown>) => handlers.handler(cmd, args));
+    mockInvoke.mockImplementation((cmd: string, args?: Record<string, unknown>) =>
+      handlers.handler(cmd, args),
+    );
   });
   afterEach(() => {
     db?.close();
   });
-  describe("Test #5: Send email via SMTP provider", () => {
-    it("calls sendMessage on provider and does not leave pending_operations on success", async () => {
-      const { sendEmail } =
-        await import("@features/mail/services/emailActions");
-      const rawBase64 = btoa(
-        "To: recipient@example.com\r\nSubject: Test\r\n\r\nHello",
-      );
-      const result = await sendEmail(getTestAccountId(), rawBase64, "thread-1");
+  describe('Test #5: Send email via SMTP provider', () => {
+    it('calls sendMessage on provider and does not leave pending_operations on success', async () => {
+      const { sendEmail } = await import('@features/mail/services/emailActions');
+      const rawBase64 = btoa('To: recipient@example.com\r\nSubject: Test\r\n\r\nHello');
+      const result = await sendEmail(getTestAccountId(), rawBase64, 'thread-1');
       expect(result.success).toBe(true);
-      expect(mockProvider.sendMessage).toHaveBeenCalledWith(
-        rawBase64,
-        "thread-1",
-      );
-      const pendingOps = await db!.select<
-        { id: string; operation_type: string; status: string }[]
-      >(
-        "SELECT id, operation_type, status FROM pending_operations WHERE account_id = $1",
+      expect(mockProvider.sendMessage).toHaveBeenCalledWith(rawBase64, 'thread-1');
+      const pendingOps = await db!.select<{ id: string; operation_type: string; status: string }[]>(
+        'SELECT id, operation_type, status FROM pending_operations WHERE account_id = $1',
         [getTestAccountId()],
       );
       expect(pendingOps).toHaveLength(0);
     });
-    it("queues pending_operation when provider errors with retryable error", async () => {
-      mockProvider.sendMessage.mockRejectedValueOnce(
-        new Error("Failed to fetch"),
-      );
+    it('queues pending_operation when provider errors with retryable error', async () => {
+      mockProvider.sendMessage.mockRejectedValueOnce(new Error('Failed to fetch'));
       mockClassifyError.mockReturnValueOnce({
         isRetryable: true,
-        message: "Network error",
+        message: 'Network error',
       });
-      const { sendEmail } =
-        await import("@features/mail/services/emailActions");
-      const rawBase64 = btoa(
-        "To: recipient@example.com\r\nSubject: Test\r\n\r\nHello",
-      );
+      const { sendEmail } = await import('@features/mail/services/emailActions');
+      const rawBase64 = btoa('To: recipient@example.com\r\nSubject: Test\r\n\r\nHello');
       const result = await sendEmail(getTestAccountId(), rawBase64);
       expect(result.success).toBe(true);
       expect(result.queued).toBe(true);
-      const pendingOps = await db!.select<
-        { id: string; operation_type: string; status: string }[]
-      >(
-        "SELECT id, operation_type, status FROM pending_operations WHERE account_id = $1",
+      const pendingOps = await db!.select<{ id: string; operation_type: string; status: string }[]>(
+        'SELECT id, operation_type, status FROM pending_operations WHERE account_id = $1',
         [getTestAccountId()],
       );
       expect(pendingOps.length).toBeGreaterThanOrEqual(1);
-      expect(pendingOps[0]!.operation_type).toBe("sendMessage");
-      expect(pendingOps[0]!.status).toBe("pending");
+      expect(pendingOps[0]!.operation_type).toBe('sendMessage');
+      expect(pendingOps[0]!.status).toBe('pending');
     });
   });
 });

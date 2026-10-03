@@ -1,15 +1,34 @@
-import { useState, useEffect } from "react";
-import { Tags, Users, Activity, Mail, Building2, ShieldCheck, StickyNote, ChevronRight, Clock } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-import { formatRelativeDate } from "@shared/utils/date";
-import { ContactStatsSummary } from "@features/contacts/components/ContactStatsSummary";
-import { EngagementSparkline } from "@features/contacts/components/EngagementSparkline";
-import { EngagementScoreBar } from "@features/contacts/components/EngagementScoreBar";
-import { getRecentThreadsWithContact, getContactsFromSameDomain, getLatestAuthResult } from "@features/contacts/db/contacts";
-import type { DbContact, ContactEngagementRow, ContactStats, SameDomainContact } from "@features/contacts/db/contacts";
-import type { ContactTag, ContactGroupInfo } from "./types";
-import { useClickOutside } from "@shared/hooks/useClickOutside";
-import { useRef } from "react";
+import { useState, useEffect } from 'react';
+import {
+  Tags,
+  Users,
+  Activity,
+  Mail,
+  Building2,
+  ShieldCheck,
+  StickyNote,
+  ChevronRight,
+  Clock,
+} from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { formatRelativeDate } from '@shared/utils/date';
+import { ContactStatsSummary } from '@features/contacts/components/ContactStatsSummary';
+import { EngagementSparkline } from '@features/contacts/components/EngagementSparkline';
+import { EngagementScoreBar } from '@features/contacts/components/EngagementScoreBar';
+import {
+  getRecentThreadsWithContact,
+  getContactsFromSameDomain,
+  getLatestAuthResult,
+} from '@features/contacts/db/contacts';
+import type {
+  DbContact,
+  ContactEngagementRow,
+  ContactStats,
+  SameDomainContact,
+} from '@features/contacts/db/contacts';
+import type { ContactTag, ContactGroupInfo } from './types';
+import { useClickOutside } from '@shared/hooks/useClickOutside';
+import { useRef } from 'react';
 
 export interface ContactInfoTabProps {
   contact: DbContact;
@@ -48,7 +67,9 @@ export function ContactInfoTab({
     getLatestAuthResult(contact.email).then((result) => {
       if (!cancelled) setAuthResult(result);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contact.email]);
 
   return (
@@ -79,9 +100,7 @@ export function ContactInfoTab({
             Last Contacted
           </p>
           <p className="text-sm font-semibold text-text-primary">
-            {contact?.last_contacted_at
-              ? formatRelativeDate(contact.last_contacted_at)
-              : "Never"}
+            {contact?.last_contacted_at ? formatRelativeDate(contact.last_contacted_at) : 'Never'}
           </p>
         </div>
       </div>
@@ -107,7 +126,10 @@ export function ContactInfoTab({
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 flex items-center gap-1.5">
           <Tags size={12} />
-          Tags {contactTags.length > 0 && <span className="text-text-tertiary font-normal">({contactTags.length})</span>}
+          Tags{' '}
+          {contactTags.length > 0 && (
+            <span className="text-text-tertiary font-normal">({contactTags.length})</span>
+          )}
         </h4>
         {contactTags.length === 0 ? (
           <p className="text-xs text-text-tertiary italic">No tags assigned</p>
@@ -129,7 +151,10 @@ export function ContactInfoTab({
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2 flex items-center gap-1.5">
           <Users size={12} />
-          Groups {contactGroups.length > 0 && <span className="text-text-tertiary font-normal">({contactGroups.length})</span>}
+          Groups{' '}
+          {contactGroups.length > 0 && (
+            <span className="text-text-tertiary font-normal">({contactGroups.length})</span>
+          )}
         </h4>
         {contactGroups.length === 0 ? (
           <p className="text-xs text-text-tertiary italic">Not assigned to any group</p>
@@ -163,7 +188,9 @@ export function ContactInfoTab({
                 <span className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center text-[0.5rem] font-bold text-accent">
                   {sdc.display_name?.[0] ?? sdc.email[0]}
                 </span>
-                <span className="text-text-primary">{sdc.display_name ?? sdc.email.split("@")[0]}</span>
+                <span className="text-text-primary">
+                  {sdc.display_name ?? sdc.email.split('@')[0]}
+                </span>
               </div>
             ))}
           </div>
@@ -183,19 +210,19 @@ export function ContactInfoTab({
                 key={thread.thread_id}
                 onClick={() =>
                   navigate({
-                    to: "/mail/$label/thread/$threadId",
-                    params: { label: "inbox", threadId: thread.thread_id },
+                    to: '/mail/$label/thread/$threadId',
+                    params: { label: 'inbox', threadId: thread.thread_id },
                   })
                 }
-                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-bg-hover transition-colors text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 hover:bg-bg-hover transition-colors text-start"
               >
                 <Mail size={12} className="text-text-tertiary shrink-0" />
                 <span className="flex-1 text-xs text-text-primary truncate">
-                  {thread.subject ?? "(No subject)"}
+                  {thread.subject ?? '(No subject)'}
                 </span>
                 <span className="flex items-center gap-1 text-[0.55rem] text-text-tertiary shrink-0">
                   <Clock size={8} />
-                  {thread.last_message_at ? formatRelativeDate(thread.last_message_at) : ""}
+                  {thread.last_message_at ? formatRelativeDate(thread.last_message_at) : ''}
                 </span>
                 <ChevronRight size={10} className="text-text-tertiary shrink-0" />
               </button>
@@ -213,7 +240,7 @@ export function ContactInfoTab({
           </h4>
           <div
             className={`text-xs text-text-secondary bg-bg-tertiary/30 rounded-lg border border-border-primary/30 p-3 ${
-              showNotes ? "" : "line-clamp-3"
+              showNotes ? '' : 'line-clamp-3'
             }`}
           >
             {contact.notes}

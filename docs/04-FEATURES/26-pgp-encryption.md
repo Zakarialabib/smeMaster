@@ -59,7 +59,7 @@ Each stored PGP key now tracks the `user_id` extracted from the key's self-signe
 
 | Layer                   | Change                                                                                                                                       |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **DB migration**        | `021_pgp_user_id.sql` adds `user_id TEXT NOT NULL DEFAULT ''` to `pgp_keys` table                                                            |
+| **DB migration**        | `006_security.sql` (`pgp_keys` table DDL) defines `user_id TEXT NOT NULL DEFAULT ''` on `pgp_keys` (no standalone `021_pgp_user_id.sql` migration exists)                                                            |
 | **Rust schema**         | `PgpKey` struct includes `user_id: String` field                                                                                             |
 | **Rust command**        | `db_upsert_pgp_key` accepts optional `userId` parameter                                                                                      |
 | **Frontend PgpKeyInfo** | `user_id` field added; `getPgpKeyInfo()` returns it after parsing the armored key                                                            |
@@ -73,3 +73,9 @@ Update this page when:
 - key-management UX changes
 - the backend cryptography ownership changes
 - passphrase or key lifecycle behavior changes materially
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| "`021_pgp_user_id.sql` adds `user_id` to `pgp_keys`" | No such migration; `pgp_keys` (with `user_id TEXT NOT NULL DEFAULT ''`) is defined in `006_security.sql` | `grep -rln 'pgp_keys' src-tauri/src/db/migrations/` → only `006_security.sql` |

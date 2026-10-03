@@ -23,13 +23,13 @@
  *     <CampaignsPage />
  *   </FeatureGate>
  */
-import { ReactNode, useMemo } from "react";
-import { Sparkles, Lock, ChevronRight } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { useLicenseStore, type LicenseTier } from "@shared/stores/licenseStore";
+import { ReactNode, useMemo } from 'react';
+import { Sparkles, Lock, ChevronRight } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { useLicenseStore, type LicenseTier } from '@shared/stores/licenseStore';
 
-export type GateReason = "ok" | "flag-disabled" | "tier-too-low" | "no-license";
+export type GateReason = 'ok' | 'flag-disabled' | 'tier-too-low' | 'no-license';
 
 export interface FeatureGateProps {
   /** Optional feature flag key (kebab-case id from featureFlags.ts) */
@@ -62,7 +62,7 @@ const TIER_RANK: Record<LicenseTier, number> = {
  */
 export function FeatureGate({
   flag,
-  minTier = "basic",
+  minTier = 'basic',
   showUpgrade = false,
   fallback,
   children,
@@ -76,12 +76,12 @@ export function FeatureGate({
   const { allowed, reason } = useMemo(() => {
     // If still loading, optimistically show children (avoids layout shift)
     if (isLoading) {
-      return { allowed: true, reason: "ok" as GateReason };
+      return { allowed: true, reason: 'ok' as GateReason };
     }
 
     // No license at all (shouldn't happen in production but be safe)
     if (!license) {
-      return { allowed: false, reason: "no-license" as GateReason };
+      return { allowed: false, reason: 'no-license' as GateReason };
     }
 
     // 1. Tier check first (cheaper, more decisive)
@@ -90,24 +90,24 @@ export function FeatureGate({
 
     // During trial, treat as the tier it represents
     const effectiveRank =
-      license.trialStartedAt !== null && license.tier === "pro" && license.trialTier
+      license.trialStartedAt !== null && license.tier === 'pro' && license.trialTier
         ? Math.max(currentRank, TIER_RANK[license.trialTier])
         : currentRank;
 
     if (effectiveRank < requiredRank) {
-      return { allowed: false, reason: "tier-too-low" as GateReason };
+      return { allowed: false, reason: 'tier-too-low' as GateReason };
     }
 
     // 2. Feature flag check (only if flag provided)
     if (flag) {
       // getFeatureAccess(featureId, realUsage) — pass 0 as no usage cap check
       const access = getFeatureAccess(flag, 0);
-      if (access === "locked") {
-        return { allowed: false, reason: "flag-disabled" as GateReason };
+      if (access === 'locked') {
+        return { allowed: false, reason: 'flag-disabled' as GateReason };
       }
     }
 
-    return { allowed: true, reason: "ok" as GateReason };
+    return { allowed: true, reason: 'ok' as GateReason };
   }, [license, isLoading, minTier, flag, getFeatureAccess]);
 
   if (allowed) {
@@ -141,7 +141,7 @@ export function FeatureGate({
  */
 export function UpgradePrompt({
   reason,
-  minTier = "pro",
+  minTier = 'pro',
   message,
 }: {
   reason: GateReason;
@@ -149,28 +149,24 @@ export function UpgradePrompt({
   message?: string;
 }) {
   const defaultMessage =
-    reason === "tier-too-low"
-      ? `This feature requires ${minTier === "enterprise" ? "Enterprise" : "Pro"} tier.`
-      : reason === "flag-disabled"
-        ? "This feature is not enabled in your current configuration."
-        : "A license is required to use this feature.";
+    reason === 'tier-too-low'
+      ? `This feature requires ${minTier === 'enterprise' ? 'Enterprise' : 'Pro'} tier.`
+      : reason === 'flag-disabled'
+        ? 'This feature is not enabled in your current configuration.'
+        : 'A license is required to use this feature.';
 
   return (
     <div className="flex flex-col items-center justify-center text-center gap-3 p-6 rounded-xl border border-border-primary bg-bg-secondary/40">
       <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center ring-1 ring-accent/20">
-        {reason === "tier-too-low" || reason === "no-license" ? (
+        {reason === 'tier-too-low' || reason === 'no-license' ? (
           <Lock size={20} className="text-accent" />
         ) : (
           <Sparkles size={20} className="text-accent" />
         )}
       </div>
       <div>
-        <h3 className="text-sm font-semibold text-text-primary">
-          {message ?? "Upgrade required"}
-        </h3>
-        <p className="text-xs text-text-secondary mt-1 max-w-sm">
-          {defaultMessage}
-        </p>
+        <h3 className="text-sm font-semibold text-text-primary">{message ?? 'Upgrade required'}</h3>
+        <p className="text-xs text-text-secondary mt-1 max-w-sm">{defaultMessage}</p>
       </div>
       <Button
         variant="primary"
@@ -179,7 +175,7 @@ export function UpgradePrompt({
         iconPosition="right"
         onClick={() => {
           // Navigate to license page
-          import("@/router/navigate").then(({ navigateToLicense }) => {
+          import('@/router/navigate').then(({ navigateToLicense }) => {
             navigateToLicense();
           });
         }}
@@ -196,7 +192,7 @@ export function UpgradePrompt({
  */
 export function useFeatureGate(
   flag?: string,
-  minTier: LicenseTier = "basic",
+  minTier: LicenseTier = 'basic',
 ): { allowed: boolean; reason: GateReason } {
   const license = useLicenseStore((s) => s.license);
   const isLoading = useLicenseStore((s) => s.loading);
@@ -204,24 +200,23 @@ export function useFeatureGate(
 
   return useMemo(() => {
     if (isLoading || !license) {
-      return { allowed: true, reason: "ok" as GateReason };
+      return { allowed: true, reason: 'ok' as GateReason };
     }
     const currentRank = TIER_RANK[license.tier];
     const requiredRank = TIER_RANK[minTier];
     const effectiveRank =
-      license.trialStartedAt !== null && license.tier === "pro" && license.trialTier
+      license.trialStartedAt !== null && license.tier === 'pro' && license.trialTier
         ? Math.max(currentRank, TIER_RANK[license.trialTier])
         : currentRank;
     if (effectiveRank < requiredRank) {
-      return { allowed: false, reason: "tier-too-low" as GateReason };
+      return { allowed: false, reason: 'tier-too-low' as GateReason };
     }
     if (flag) {
       const access = getFeatureAccess(flag, 0);
-      if (access === "locked") {
-        return { allowed: false, reason: "flag-disabled" as GateReason };
+      if (access === 'locked') {
+        return { allowed: false, reason: 'flag-disabled' as GateReason };
       }
     }
-    return { allowed: true, reason: "ok" as GateReason };
+    return { allowed: true, reason: 'ok' as GateReason };
   }, [license, isLoading, minTier, flag, getFeatureAccess]);
 }
-

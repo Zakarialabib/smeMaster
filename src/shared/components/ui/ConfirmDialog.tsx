@@ -1,7 +1,7 @@
-import { type ReactNode, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
-import { Modal } from "./Modal";
-import { Button } from "@shared/components/ui/Button";
+import { type ReactNode, useEffect, useRef } from 'react';
+import { Loader2 } from 'lucide-react';
+import { Modal } from './Modal';
+import { Button } from '@shared/components/ui/Button';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface ConfirmDialogProps {
   message: string | ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "primary" | "danger";
+  variant?: 'primary' | 'danger';
   loading?: boolean;
 }
 
@@ -21,9 +21,9 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
-  variant = "primary",
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  variant = 'primary',
   loading = false,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
@@ -36,35 +36,27 @@ export function ConfirmDialog({
   }, [isOpen]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       onConfirm();
     }
   };
 
-  const dialogId = `confirm-dialog-${title.replace(/\s+/g, "-").toLowerCase()}`;
+  const dialogId = `confirm-dialog-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} width="w-96">
       <div className="p-5" onKeyDown={handleKeyDown} role="document">
-        <p
-          id={dialogId}
-          className="text-sm text-text-secondary leading-relaxed mb-6"
-        >
+        <p id={dialogId} className="text-sm text-text-secondary leading-relaxed mb-6">
           {message}
         </p>
         <div className="flex justify-end gap-3">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            disabled={loading}
-            aria-label={cancelLabel}
-          >
+          <Button variant="secondary" onClick={onClose} disabled={loading} aria-label={cancelLabel}>
             {cancelLabel}
           </Button>
           <Button
             ref={confirmRef}
-            variant={variant === "danger" ? "danger" : "primary"}
+            variant={variant === 'danger' ? 'danger' : 'primary'}
             onClick={onConfirm}
             disabled={loading}
             icon={loading ? <Loader2 size={14} className="animate-spin" /> : undefined}

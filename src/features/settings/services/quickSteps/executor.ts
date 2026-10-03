@@ -1,13 +1,22 @@
-import type { QuickStep, QuickStepAction, QuickStepExecutionResult } from "./types";
-import { ACTION_TYPE_METADATA } from "./types";
-import { archiveThread, trashThread, markThreadRead, starThread, spamThread, addThreadLabel, removeThreadLabel } from "@features/mail/services/emailActions";
+import type { QuickStep, QuickStepAction, QuickStepExecutionResult } from './types';
+import { ACTION_TYPE_METADATA } from './types';
+import {
+  archiveThread,
+  trashThread,
+  markThreadRead,
+  starThread,
+  spamThread,
+  addThreadLabel,
+  removeThreadLabel,
+} from '@features/mail/services/emailActions';
 import {
   pinThread as pinThreadDb,
   unpinThread as unpinThreadDb,
-} from "@shared/services/db/threads";
-import { setThreadCategory } from "@features/mail/db/threadCategories";
-import { snoozeThread } from "@features/mail/services/snooze/snoozeManager";
-import { useThreadStore as useThreadsStore } from "@features/mail/stores/threadStore";
+} from '@shared/services/db/threads';
+import { setThreadCategory } from '@features/mail/db/threadCategories';
+import { snoozeThread } from '@features/mail/services/snooze/snoozeManager';
+import { useThreadStore as useThreadsStore } from '@features/mail/stores/threadStore';
+import { uiBus } from '@shared/services/events/uiBus';
 
 /**
  * Execute a single action for a set of threads.
@@ -19,121 +28,117 @@ async function executeSingleAction(
   accountId: string,
 ): Promise<void> {
   switch (action.type) {
-    case "archive":
+    case 'archive':
       await Promise.all(threadIds.map((id) => archiveThread(accountId, id, [])));
       break;
 
-    case "trash":
+    case 'trash':
       await Promise.all(threadIds.map((id) => trashThread(accountId, id, [])));
       break;
 
-    case "markRead":
+    case 'markRead':
       await Promise.all(threadIds.map((id) => markThreadRead(accountId, id, [], true)));
       break;
 
-    case "markUnread":
+    case 'markUnread':
       await Promise.all(threadIds.map((id) => markThreadRead(accountId, id, [], false)));
       break;
 
-    case "star":
+    case 'star':
       await Promise.all(threadIds.map((id) => starThread(accountId, id, [], true)));
       break;
 
-    case "unstar":
+    case 'unstar':
       await Promise.all(threadIds.map((id) => starThread(accountId, id, [], false)));
       break;
 
-    case "pin":
-      await Promise.all(threadIds.map(async (id) => {
-        await pinThreadDb(accountId, id);
-        useThreadsStore.getState().updateThread(id, { isPinned: true });
-      }));
+    case 'pin':
+      await Promise.all(
+        threadIds.map(async (id) => {
+          await pinThreadDb(accountId, id);
+          useThreadsStore.getState().updateThread(id, { isPinned: true });
+        }),
+      );
       break;
 
-    case "unpin":
-      await Promise.all(threadIds.map(async (id) => {
-        await unpinThreadDb(accountId, id);
-        useThreadsStore.getState().updateThread(id, { isPinned: false });
-      }));
+    case 'unpin':
+      await Promise.all(
+        threadIds.map(async (id) => {
+          await unpinThreadDb(accountId, id);
+          useThreadsStore.getState().updateThread(id, { isPinned: false });
+        }),
+      );
       break;
 
-    case "applyLabel":
+    case 'applyLabel':
       if (action.params?.labelId) {
         const labelId = action.params.labelId;
         const threadMap = new Map(useThreadsStore.getState().threads.map((t) => [t.id, t]));
-        await Promise.all(threadIds.map(async (id) => {
-          await addThreadLabel(accountId, id, labelId);
-          const thread = threadMap.get(id);
-          if (thread && !thread.labelIds.includes(labelId)) {
-            useThreadsStore.getState().updateThread(id, {
-              labelIds: [...thread.labelIds, labelId],
-            });
-          }
-        }));
+        await Promise.all(
+          threadIds.map(async (id) => {
+            await addThreadLabel(accountId, id, labelId);
+            const thread = threadMap.get(id);
+            if (thread && !thread.labelIds.includes(labelId)) {
+              useThreadsStore.getState().updateThread(id, {
+                labelIds: [...thread.labelIds, labelId],
+              });
+            }
+          }),
+        );
       }
       break;
 
-    case "removeLabel":
+    case 'removeLabel':
       if (action.params?.labelId) {
         const labelId = action.params.labelId;
         const threadMap = new Map(useThreadsStore.getState().threads.map((t) => [t.id, t]));
-        await Promise.all(threadIds.map(async (id) => {
-          await removeThreadLabel(accountId, id, labelId);
-          const thread = threadMap.get(id);
-          if (thread) {
-            useThreadsStore.getState().updateThread(id, {
-              labelIds: thread.labelIds.filter((l) => l !== labelId),
-            });
-          }
-        }));
+        await Promise.all(
+          threadIds.map(async (id) => {
+            await removeThreadLabel(accountId, id, labelId);
+            const thread = threadMap.get(id);
+            if (thread) {
+              useThreadsStore.getState().updateThread(id, {
+                labelIds: thread.labelIds.filter((l) => l !== labelId),
+              });
+            }
+          }),
+        );
       }
       break;
 
-    case "moveToCategory":
+    case 'moveToCategory':
       if (action.params?.category) {
-        await Promise.all(threadIds.map((id) =>
-          setThreadCategory(accountId, id, action.params!.category!, true),
-        ));
-        window.dispatchEvent(new Event("smemaster-sync-done"));
+        await Promise.all(
+          threadIds.map((id) => setThreadCategory(accountId, id, action.params!.category!, true)),
+        );
+        uiBus.emit('data:changed');
       }
       break;
 
-    case "reply":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "reply" },
-        }),
-      );
+    case 'reply':
+      uiBus.emit('inline-reply', { mode: 'reply' });
       break;
 
-    case "replyAll":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "replyAll" },
-        }),
-      );
+    case 'replyAll':
+      uiBus.emit('inline-reply', { mode: 'replyAll' });
       break;
 
-    case "forward":
-      window.dispatchEvent(
-        new CustomEvent("smemaster-inline-reply", {
-          detail: { threadId: threadIds[0], accountId, mode: "forward" },
-        }),
-      );
+    case 'forward':
+      uiBus.emit('inline-reply', { mode: 'forward' });
       break;
 
-    case "snooze":
+    case 'snooze':
       if (action.params?.snoozeDuration) {
         const until = Date.now() + action.params.snoozeDuration;
         await Promise.all(threadIds.map((id) => snoozeThread(accountId, id, until)));
       }
       break;
 
-    case "spam":
+    case 'spam':
       await Promise.all(threadIds.map((id) => spamThread(accountId, id, [], true)));
       break;
 
-    case "notSpam":
+    case 'notSpam':
       await Promise.all(threadIds.map((id) => spamThread(accountId, id, [], false)));
       break;
   }
@@ -158,9 +163,7 @@ export async function executeQuickStep(
 
   // Track which action types remove threads from view
   const removesFromView = new Set(
-    ACTION_TYPE_METADATA
-      .filter((m) => m.removesFromView)
-      .map((m) => m.type),
+    ACTION_TYPE_METADATA.filter((m) => m.removesFromView).map((m) => m.type),
   );
 
   let shouldRemoveThreads = false;
@@ -206,6 +209,3 @@ export async function executeQuickStep(
     totalActions,
   };
 }
-
-
-

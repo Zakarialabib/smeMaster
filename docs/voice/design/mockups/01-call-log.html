@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Console — Call log</title>
+<style>
+  /* ---- Tokens copied verbatim from src/styles/globals.css (@theme) ---- */
+  :root{
+    --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px; --radius-2xl:24px;
+    --bg-primary:#ffffff; --bg-secondary:#f7f8fa; --bg-tertiary:#f0f1f3; --bg-hover:#eef0f3;
+    --bg-selected:rgba(11,87,208,.12);
+    --text-primary:#1c1b1f; --text-secondary:#49454f; --text-tertiary:#7a7680;
+    --border-primary:#e4e6ea; --border-secondary:#eceef1;
+    --accent:#0b57d0; --accent-hover:#0842a0; --accent-light:#d3e3fd; --accent-subtle:rgba(11,87,208,.08);
+    --ai:#9333ea; --ai-subtle:rgba(147,51,234,.08);
+    --danger:#e11d48; --warning:#d97706; --warning-light:#fef3c7;
+    --success:#059669; --success-light:#d1fae5; --info:#0284c7; --info-light:#e0f2fe;
+    --glass-blur:14px;
+    --elevation-sm:0 1px 2px rgba(16,24,40,.04);
+    --elevation-md:0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --elevation-lg:0 4px 16px rgba(16,24,40,.08);
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px; line-height:1.45; color:var(--text-primary);
+    background:
+      radial-gradient(1200px 600px at 88% -10%, rgba(11,87,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 4% 110%, rgba(147,51,234,.07), transparent 60%),
+      var(--bg-secondary);
+    min-height:100vh; padding:var(--space-4);
+  }
+  .frost{background:rgba(255,255,255,.72);backdrop-filter:blur(var(--glass-blur));
+    -webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border-primary);
+    box-shadow:var(--elevation-sm)}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+
+  /* app rail */
+  .rail{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-2) var(--space-3);
+    border-radius:var(--radius-lg);overflow-x:auto}
+  .rail .brand{font-weight:600;padding-inline-end:var(--space-3);white-space:nowrap}
+  .rail a{color:var(--text-secondary);text-decoration:none;padding:6px 10px;border-radius:var(--radius);
+    white-space:nowrap}
+  .rail a.on{color:var(--accent);background:var(--bg-selected);font-weight:600}
+
+  /* console nav */
+  .cnav{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);
+    border-radius:var(--radius-lg)}
+  .cnav button{font:inherit;border:0;background:transparent;color:var(--text-secondary);
+    padding:7px 12px;border-radius:var(--radius);cursor:pointer}
+  .cnav button.on{color:var(--accent);background:var(--accent-subtle);font-weight:600}
+  .cnav .spacer{flex:1}
+  .tenant{font-size:12px;color:var(--text-tertiary);padding-inline-end:var(--space-2)}
+
+  /* panel */
+  .panel{border-radius:var(--radius-lg);background:var(--bg-primary);
+    border:1px solid var(--border-primary);box-shadow:var(--elevation-sm);overflow:hidden}
+  .phead{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-primary)}
+  .phead h1{font-size:16px;margin:0;font-weight:600}
+  .phead .grow{flex:1}
+  .pbody{padding:var(--space-4)}
+
+  /* controls */
+  .btn{font:inherit;font-weight:500;border-radius:var(--radius);padding:7px 12px;cursor:pointer;
+    border:1px solid var(--border-primary);background:var(--bg-primary);color:var(--text-secondary)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sel{font:inherit;border:1px solid var(--border-primary);background:var(--bg-tertiary);
+    color:var(--text-primary);border-radius:var(--radius);padding:6px 10px}
+
+  /* AI banner — the app's AiSuggestionBanner shape */
+  .ai{display:flex;gap:var(--space-3);align-items:flex-start;margin:var(--space-3) var(--space-4);
+    padding:var(--space-3);border-radius:var(--radius-lg);
+    background:var(--ai-subtle);border:1px solid rgba(147,51,234,.28)}
+  .ai .mk{width:22px;height:22px;flex:none;border-radius:999px;background:var(--ai);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:700}
+  .ai .bd{flex:1;min-width:0}
+  .ai .bd b{display:block;color:var(--ai);font-weight:600;margin-bottom:2px}
+  .ai .bd p{margin:0;color:var(--text-secondary)}
+  .ai .act{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-2)}
+  .ai .act a{font-size:12px;font-weight:600;color:var(--ai);text-decoration:none}
+  .ai .act a.mut{color:var(--text-tertiary);font-weight:400}
+
+  /* table */
+  .scroll{overflow-x:auto}
+  table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:640px}
+  table.data th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);
+    font-weight:600;text-align:start;padding:var(--space-2) var(--space-4);
+    border-bottom:1px solid var(--border-primary);background:var(--bg-secondary)}
+  table.data td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-secondary);
+    color:var(--text-secondary);vertical-align:middle}
+  table.data tbody tr:hover{background:var(--bg-hover)}
+  table.data td.who{color:var(--text-primary);font-weight:500;font-variant-numeric:tabular-nums}
+  .num{font-variant-numeric:tabular-nums}
+  .end{text-align:end}
+
+  /* chips */
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill.ok{background:var(--success-light);color:#065f46;border-color:rgba(5,150,105,.25)}
+  .pill.tr{background:var(--accent-light);color:var(--accent-hover);border-color:rgba(11,87,208,.25)}
+  .pill.vm{background:var(--info-light);color:#075985;border-color:rgba(2,132,199,.25)}
+  .pill.p1{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.live{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.flag{background:var(--warning-light);color:#92400e;border-color:rgba(217,119,6,.3)}
+  .dot{width:6px;height:6px;border-radius:999px;background:var(--danger);display:inline-block}
+  .dot.ok{background:var(--success)}
+
+  .sub{font-size:12px;color:var(--text-tertiary)}
+  .row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .pager{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);
+    color:var(--text-tertiary);font-size:12px;flex-wrap:wrap;gap:var(--space-2)}
+
+  /* mobile call cards (hidden on desktop) */
+  .cards{display:none;padding:var(--space-3);gap:var(--space-2);flex-direction:column}
+  .ccard{border:1px solid var(--border-primary);border-radius:var(--radius-lg);
+    background:var(--bg-primary);padding:var(--space-3);display:flex;flex-direction:column;gap:6px}
+  .ccard .top{display:flex;justify-content:space-between;gap:var(--space-2);align-items:center}
+
+  @media (max-width:720px){
+    body{padding:var(--space-2)}
+    .deskonly{display:none !important}
+    .cards{display:flex}
+    .rail a:nth-child(n+6){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── App rail (existing grouped nav). "Calls" is one group in it. ── -->
+  <nav class="rail frost" aria-label="App">
+    <span class="brand">SMEMaster</span>
+    <a href="#">Mail</a><a href="#">Today</a><a href="#">CRM</a>
+    <a href="#" class="on" aria-current="page">Calls</a>
+    <a href="#">Tasks</a><a href="#">Calendar</a><a href="#">AI</a><a href="#">Business</a>
+  </nav>
+
+  <!-- ── Console: horizontal top nav of sections (not a second rail) ── -->
+  <nav class="cnav frost" aria-label="Voice console">
+    <button class="on" aria-current="page">Calls</button>
+    <button>Live</button>
+    <button>Ops</button>
+    <button>Config</button>
+    <button>Cost</button>
+    <span class="spacer"></span>
+    <span class="tenant">⟨client⟩ ▾</span>
+  </nav>
+
+  <section class="panel">
+    <div class="phead">
+      <h1>Calls</h1>
+      <span class="pill live"><span class="dot"></span>1 live</span>
+      <span class="grow"></span>
+      <label class="sub">Range <select class="sel" aria-label="Range">
+        <option>7 days</option><option selected>30 days</option><option>All</option></select></label>
+      <label class="sub">Outcome <select class="sel" aria-label="Outcome">
+        <option>All</option><option>Contained</option><option>Transferred</option>
+        <option>Voicemail</option><option>Abandoned</option></select></label>
+      <label class="row sub"><input type="checkbox"> Flagged only</label>
+    </div>
+
+    <!-- AI callout — purple = the assistant inferred this. Facts stay neutral. -->
+    <div class="ai">
+      <span class="mk" aria-hidden="true">⟡</span>
+      <div class="bd">
+        <b>3 calls flagged: containment down 40% on pricing questions</b>
+        <p>Compared with the previous 30 days. The three calls all end after the agent quotes a
+           price — a knowledge gap, not a latency problem.</p>
+        <div class="act"><a href="#">Review the 3 calls →</a><a href="#" class="mut">Dismiss</a></div>
+      </div>
+    </div>
+
+    <!-- desktop table -->
+    <div class="scroll deskonly">
+      <table class="data">
+        <caption class="sub" style="text-align:start;padding:0 var(--space-4) var(--space-2)">
+          Masked numbers on purpose — the full number belongs to the call detail.</caption>
+        <thead>
+          <tr>
+            <th scope="col" style="width:26px"></th>
+            <th scope="col">Caller</th><th scope="col">Duration</th><th scope="col">Channel</th>
+            <th scope="col">Outcome</th><th scope="col">Flag</th><th scope="col" class="end">When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="dot" title="live"></span></td>
+            <td class="who">+33 6 •• •• 41 22</td><td class="num">2:14</td><td>Voice</td>
+            <td><span class="pill ok">Contained</span></td><td>—</td>
+            <td class="end num">14:32</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 7 •• •• 09 88</td><td class="num">0:41</td><td>Voice</td>
+            <td><span class="pill tr">→ Transferred</span></td><td>—</td>
+            <td class="end num">13:58</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 6 •• •• 77 01</td><td class="num">1:03</td><td>WhatsApp</td>
+            <td><span class="pill ok">Contained</span></td><td>—</td>
+            <td class="end num">13:40</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 6 •• •• 12 45</td><td class="num">3:22</td><td>Voice</td>
+            <td><span class="pill vm">Voicemail → WhatsApp</span></td><td>—</td>
+            <td class="end num">12:11</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 6 •• •• 33 90</td><td class="num">1:47</td><td>Voice</td>
+            <td><span class="pill ok">Contained</span></td>
+            <td><span class="pill flag">⚑ pricing</span></td>
+            <td class="end num">11:26</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 6 •• •• 55 08</td><td class="num">0:12</td><td>Voice</td>
+            <td><span class="pill ok">Abandoned</span></td><td>—</td>
+            <td class="end num">10:47</td>
+          </tr>
+          <tr>
+            <td></td><td class="who">+33 6 •• •• 71 33</td><td class="num">2:56</td><td>WhatsApp</td>
+            <td><span class="pill ok">Contained</span></td><td>—</td>
+            <td class="end num">09:15</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- mobile cards -->
+    <div class="cards">
+      <article class="ccard">
+        <div class="top"><strong>+33 6 •• •• 41 22</strong><span class="pill live"><span class="dot"></span>live</span></div>
+        <div class="row"><span class="sub">2:14 · Voice</span><span class="pill ok">Contained</span></div>
+      </article>
+      <article class="ccard">
+        <div class="top"><strong>+33 7 •• •• 09 88</strong><span class="sub num">13:58</span></div>
+        <div class="row"><span class="sub">0:41 · Voice</span><span class="pill tr">→ Transferred</span></div>
+      </article>
+      <article class="ccard">
+        <div class="top"><strong>+33 6 •• •• 33 90</strong><span class="sub num">11:26</span></div>
+        <div class="row"><span class="sub">1:47 · Voice</span><span class="pill flag">⚑ pricing</span></div>
+      </article>
+      <article class="ccard">
+        <div class="top"><strong>+33 6 •• •• 12 45</strong><span class="sub num">12:11</span></div>
+        <div class="row"><span class="sub">3:22 · Voice</span><span class="pill vm">Voicemail → WhatsApp</span></div>
+      </article>
+    </div>
+
+    <div class="pager"><span>Page 1 of 12 · 128 calls</span>
+      <span class="row"><button class="btn">Previous</button><button class="btn">Next</button></span></div>
+  </section>
+
+  <p class="sub" style="text-align:center">
+    Static mockup · tokens from <code>src/styles/globals.css</code> · no JS ·
+    masks E.164 by default, full number on call detail.
+  </p>
+</div>
+</body>
+</html>

@@ -1,12 +1,12 @@
-import { create } from "zustand";
-import type { EmailBlock, BlockType } from "../components/editor/types";
-import { createBlock } from "../components/editor/blockDefaults";
-import { renderEmailHtml } from "../services/emailRenderer";
+import { create } from 'zustand';
+import type { EmailBlock, BlockType } from '../components/editor/types';
+import { createBlock } from '../components/editor/blockDefaults';
+import { renderEmailHtml } from '../services/emailRenderer';
 
-export type Step = "audience" | "template" | "schedule" | "review";
-export type AudienceMode = "contacts" | "group" | "segment";
-export type ScheduleMode = "immediate" | "scheduled" | "recurring";
-export type RecurringFrequency = "daily" | "weekly" | "monthly";
+export type Step = 'audience' | 'template' | 'schedule' | 'review';
+export type AudienceMode = 'contacts' | 'group' | 'segment';
+export type ScheduleMode = 'immediate' | 'scheduled' | 'recurring';
+export type RecurringFrequency = 'daily' | 'weekly' | 'monthly';
 
 export interface ABVariantContent {
   subject: string;
@@ -89,20 +89,20 @@ type CampaignComposerStore = CampaignComposerState & CampaignComposerActions;
 
 const initialState: CampaignComposerState = {
   isOpen: false,
-  step: "audience",
-  name: "",
-  subject: "",
-  audienceMode: "contacts",
+  step: 'audience',
+  name: '',
+  subject: '',
+  audienceMode: 'contacts',
   selectedContactIds: [],
-  selectedGroupId: "",
-  selectedSegmentId: "",
-  scheduleMode: "immediate",
-  scheduledDate: "",
-  scheduledTime: "",
-  recurringFrequency: "weekly",
+  selectedGroupId: '',
+  selectedSegmentId: '',
+  scheduleMode: 'immediate',
+  scheduledDate: '',
+  scheduledTime: '',
+  recurringFrequency: 'weekly',
   trackingEnabled: false,
   gdprConsent: false,
-  templateId: "",
+  templateId: '',
   abEnabled: false,
 
   blocks: [],
@@ -110,8 +110,8 @@ const initialState: CampaignComposerState = {
   configOpenBlockId: null,
   history: [[]],
   historyIndex: 0,
-  variantA: { subject: "", body: "" },
-  variantB: { subject: "", body: "" },
+  variantA: { subject: '', body: '' },
+  variantB: { subject: '', body: '' },
   splitRatio: 50,
   testDuration: 24,
 };
@@ -149,7 +149,8 @@ export const useCampaignComposerStore = create<CampaignComposerStore>((set, get)
 
   toggleAllContacts: (filteredIds) => {
     const { selectedContactIds } = get();
-    const allSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedContactIds.includes(id));
+    const allSelected =
+      filteredIds.length > 0 && filteredIds.every((id) => selectedContactIds.includes(id));
     if (allSelected) {
       set({ selectedContactIds: selectedContactIds.filter((s) => !filteredIds.includes(s)) });
     } else {
@@ -209,7 +210,11 @@ export const useCampaignComposerStore = create<CampaignComposerStore>((set, get)
     get()._pushHistory();
   },
   removeBlock: (id) => {
-    set((st) => ({ blocks: st.blocks.filter((b) => b.id !== id), selectedBlockId: null, configOpenBlockId: null }));
+    set((st) => ({
+      blocks: st.blocks.filter((b) => b.id !== id),
+      selectedBlockId: null,
+      configOpenBlockId: null,
+    }));
     get()._pushHistory();
   },
   duplicateBlock: (id) => {
@@ -237,24 +242,51 @@ export const useCampaignComposerStore = create<CampaignComposerStore>((set, get)
     get()._pushHistory();
   },
   updateBlock: (id, changes) => {
-    set((st) => ({ blocks: st.blocks.map((b) => (b.id === id ? ({ ...b, ...changes } as EmailBlock) : b)) }));
+    set((st) => ({
+      blocks: st.blocks.map((b) => (b.id === id ? ({ ...b, ...changes } as EmailBlock) : b)),
+    }));
     get()._pushHistory();
   },
   selectBlock: (id) => set({ selectedBlockId: id }),
-  toggleConfig: (id) => set((st) => ({ configOpenBlockId: st.configOpenBlockId === id ? null : id })),
-  loadBlocks: (blocks) => set({ blocks, history: [blocks], historyIndex: 0, selectedBlockId: null, configOpenBlockId: null }),
-  clearBlocks: () => set({ blocks: [], selectedBlockId: null, configOpenBlockId: null, history: [[]], historyIndex: 0 }),
+  toggleConfig: (id) =>
+    set((st) => ({ configOpenBlockId: st.configOpenBlockId === id ? null : id })),
+  loadBlocks: (blocks) =>
+    set({
+      blocks,
+      history: [blocks],
+      historyIndex: 0,
+      selectedBlockId: null,
+      configOpenBlockId: null,
+    }),
+  clearBlocks: () =>
+    set({
+      blocks: [],
+      selectedBlockId: null,
+      configOpenBlockId: null,
+      history: [[]],
+      historyIndex: 0,
+    }),
   undo: () => {
     const { historyIndex, history } = get();
     if (historyIndex <= 0) return;
     const prev = historyIndex - 1;
-    set({ historyIndex: prev, blocks: history[prev], selectedBlockId: null, configOpenBlockId: null });
+    set({
+      historyIndex: prev,
+      blocks: history[prev],
+      selectedBlockId: null,
+      configOpenBlockId: null,
+    });
   },
   redo: () => {
     const { historyIndex, history } = get();
     if (historyIndex >= history.length - 1) return;
     const next = historyIndex + 1;
-    set({ historyIndex: next, blocks: history[next], selectedBlockId: null, configOpenBlockId: null });
+    set({
+      historyIndex: next,
+      blocks: history[next],
+      selectedBlockId: null,
+      configOpenBlockId: null,
+    });
   },
   getBodyHtml: () => renderEmailHtml(get().blocks),
   _pushHistory: () => {

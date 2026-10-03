@@ -6,6 +6,7 @@
 ## Format
 
 ### YYYY-MM-DD: [Brief Title]
+
 - **File**: `src/features/...` or `src/shared/...` (line N)
 - **Severity**: WARNING / INFO
 - **Issue**: What is wrong, deprecated, or off-pattern
@@ -16,4 +17,68 @@
 
 ## Entries
 
-_(none yet — entries are appended automatically by the debt-tracking workflow)_
+### 2026-07-16: `workflowStore` deprecated — superseded by automation
+
+- **File**: `src/features/workflows/stores/workflowStore.ts` (line 87, `useWorkflowStore`)
+- **Severity**: WARNING
+- **Issue**: The file is marked `@deprecated` ("This feature has been merged into @features/automation. Import from @features/automation instead."). It is still imported by `src/features/workflows/pages/WorkflowsPage.tsx` and `src/features/workflows/components/WorkflowEditor.tsx`, duplicating the automation feature's store (`automationStore`).
+- **Plan**: Migrate `WorkflowsPage` / `WorkflowEditor` to `@features/automation` and delete `src/features/workflows/stores/workflowStore.ts` (and its `.test.ts`) once consumers are cut over.
+- **Resolution (2026-07-19)**: DONE. The entire `src/features/workflows/` tree (deprecated `workflowStore`, plus the now-orphaned `WorkflowsPage`/`WorkflowList`/`WorkflowCard`/`WorkflowStepCard`/`WorkflowEditor` UI and the duplicate `db/workflows.ts` layer) was removed. `WorkflowsPage` was never mounted — `src/router/routeTree.tsx` defines `workflowsRoute` as a redirect to `/automation`, and `automationStore`/`settings` use the canonical `src/features/settings/db/workflowRules.ts`. Consumers migrated to `useAutomationStore` (commit `a8ef782`); the dead UI + duplicate db layer were then deleted. Zustand store count dropped 43 → 42.
+- **Found during**: audit of duplicate/dead Zustand stores.
+
+### 2026-07-16: `useNotificationsStore` is a re-export alias, not a separate store
+
+- **File**: `src/stores/index.ts` (line 36)
+- **Severity**: INFO
+- **Issue**: `useNotificationsStore` is re-exported as an alias of `useNotificationStore` from `@shared/stores/notificationStore` (singular). There is no `src/stores/shared/notificationsStore.ts` file — callers importing `useNotificationsStore` resolve to the canonical `@shared/stores/notificationStore`. Avoid adding a second `notificationsStore` file; prefer the canonical name.
+- **Plan**: Standardize on `useNotificationStore` (canonical) and drop the `useNotificationsStore` alias when convenient.
+- **Resolution (2026-07-19)**: DONE. The `useNotificationsStore` alias was removed from `src/stores/index.ts`; `toastHelper.ts` now imports the canonical `useNotificationStore` directly. No other importers existed.
+- **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/stores/shared/notificationsStore.ts` path, which does not exist).
+
+### 2026-07-16: `useUIStore` lives in `src/stores/core`, not `src/shared/stores`
+
+- **File**: `src/stores/core/uiStore.ts` (line 32, `useUIStore`)
+- **Severity**: INFO
+- **Issue**: The canonical UI store is `useUIStore` in `src/stores/core/uiStore.ts`, actively used by `useKeyboardShortcuts`, `useSettingsRestorer`, and others. There is no `src/shared/stores/uiStore.ts`. The `src/shared/stores/layoutStore.ts` header notes a migration path (`useLayoutStore` instead of `useUIStore(s => s.sidebarCollapsed)`), but `useUIStore` itself is not tests-only.
+- **Plan**: Keep `useUIStore` in `src/stores/core`; route new layout state through `useLayoutStore` per the layoutStore migration note.
+- **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/shared/stores/uiStore.ts` path, which does not exist).
+
+### 2026-07-16: `useCampaignsStore` canonical path is `src/features/campaigns`
+
+- **File**: `src/features/campaigns/stores/campaignStore.ts` (re-exported via `src/stores/campaigns/index.ts` → `src/stores/index.ts` line 29)
+- **Severity**: INFO
+- **Issue**: The campaign store is the canonical `useCampaignsStore` under `src/features/campaigns/stores/`. There is no `src/stores/campaigns/campaignStore.ts` file (only `campaignStore.test.ts` and `index.ts` exist under `src/stores/campaigns/`). It is not a duplicate of another campaigns store.
+- **Plan**: No action — documented to correct the mistaken `src/stores/campaigns/campaignStore.ts` path from the audit.
+- **Found during**: audit of duplicate/dead Zustand stores (verifying the `src/stores/campaigns/campaignStore.ts` path, which does not exist).
+
+### 2026-09-28: Desktop RAG embedding space is config-dependent, and the French case is broken
+
+- **File**: `src/shared/services/ai/embeddingService.ts`, `src/features/assistant/stores/ragStore.ts` (line 36 `RAG_EMBEDDING_SOURCE_KEY`; line 38 `BGE_REPO_ID`)
+- **Severity**: WARNING
+- **Issue**: The assistant has **two** selectable embedding sources behind `smemaster.rag.embeddingSource` (`rust_bge | provider | auto`). Under `rust_bge` the model is `BAAI/bge-small-en-v1.5` — **English-only**, so a French query retrieves nothing useful. Under `provider` the index carries whatever dimension the configured endpoint (LM Studio / Ollama / OpenAI-compatible) returns, so **the stored vector dimension is not a constant**. The repo id is hard-coded in two frontend sites, and no code reads the dimension from the index metadata — a source switch can therefore mismatch dimensions and score garbage rather than fail loudly.
+- **Plan**: (1) lift `BGE_REPO_ID` into config; (2) read the index dimension from index metadata and reject a query whose embedding length differs, instead of scoring it; (3) use a multilingual embedder if French retrieval is ever needed locally. Do **not** "unify" this space with the server-side one — see `docs/voice/dev/RAG-FORK.md` and `ADR-001` D2/D3.
+- **Found during**: grill of `docs/voice/**` — `RAG-FORK.md` asserted "desktop = 384-dim", which holds only in `rust_bge` mode. Filed as debt by decision 2026-09-28 (pre-existing; not voice-agent scope). Rust half: `docs/02-BACKEND/12-diagnostics.md`.
+
+### 2026-10-01: agent-browser `errors --clear` is broken
+
+- **File**: tooling — `agent-browser` CLI (external; no repo file), used via the Agent Browser skill
+- **Severity**: INFO
+- **Issue**: `agent-browser errors --clear` fails with a `ChildProcess.kill` error instead of clearing the accumulated page/console error list, so error counts from earlier navigation leak into later assertions during a session.
+- **Plan**: Use a fresh `--session <name>` per verification run (the reliable workaround); upgrade/patch the CLI when it is next vendored, or drop the subcommand from the skill docs if upstream never fixes it.
+- **Found during**: browser console-noise verification (0-error gate) — the clear subcommand had to be replaced by fresh sessions to get trustworthy counts.
+
+### 2026-10-01: No dev-server down/restart helper for strict port 1420
+
+- **File**: `package.json` (scripts), `vite.config.ts` (`port: 1420, strictPort: true`)
+- **Severity**: INFO
+- **Issue**: There is no `vite:down` / `dev:restart` script. A vite left running from a previous session keeps port 1420; because `strictPort` is set, the next `bun run dev` exits immediately instead of picking another port. Recovery is manual: `netstat -ano | findstr :1420` → `taskkill /PID <pid>` → detached restart (`cmd /c bun run dev > %TEMP%\opencode\vite-dev.log`).
+- **Plan**: Add `dev:down` (kill whatever listens on 1420) and `dev:restart` scripts so agents and humans share one recovery path instead of rediscovering it each session.
+- **Found during**: repeated dev-server restarts while verifying console output in the browser-console-fix session.
+
+### 2026-10-01: 17 self-referential English stubs in `en/translation.json`
+
+- **File**: `src/locales/en/translation.json`
+- **Severity**: WARNING
+- **Issue**: 17 keys whose English value is literally the key itself (auto-translation sync artifacts that were never given real copy): `email.loading`, `settings.composing.of`, `settings.pairingTitle`, `settings.byteplusApiKey`, `settings.byteplusKeyPlaceholder`, `settings.featuresTitle`, `settings.contentQualityTitle`, `commands.refresh`, plus 9 bare-text stub keys (`Loading...`, `Saving...`, `Deleting...`, `Search contacts...`, `Select a template...`, `Add a description...`, `Notification text...`, `Task title preset...`, `No actions configured. Add an action to run when this trigger fires.`). They render raw key/text fragments to the user and block meaningful ja/it translation (the `[TODO]` sync backlog).
+- **Plan**: Replace each value with proper English copy (dedupe bare-text keys against their canonical `namespace.key` home), then run `bun run translate:sync` so fr/ar/ja/it regenerate from the fixed en source. Verify with a JSON walk counting `value === key` occurrences — target 0.
+- **Found during**: en i18n fixes (2026-10-01) — counted exactly 17 via a JSON walk of `src/locales/en/translation.json`.

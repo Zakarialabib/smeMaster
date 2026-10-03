@@ -1,14 +1,14 @@
 export type ComplianceRuleType =
-  | "signature_required"
-  | "unsubscribe_required"
-  | "disclaimer_required"
-  | "tone_check"
-  | "data_minimization"
-  | "retention_notice"
-  | "custom_regex"
-  | "attachment_mentioned";
+  | 'signature_required'
+  | 'unsubscribe_required'
+  | 'disclaimer_required'
+  | 'tone_check'
+  | 'data_minimization'
+  | 'retention_notice'
+  | 'custom_regex'
+  | 'attachment_mentioned';
 
-export type RuleSeverity = "error" | "warning" | "info";
+export type RuleSeverity = 'error' | 'warning' | 'info';
 
 export interface ComplianceRule {
   id: string;

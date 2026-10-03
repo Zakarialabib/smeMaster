@@ -1,22 +1,18 @@
-import { useState, useRef, useEffect } from "react";
-import { Search, Loader2 } from "lucide-react";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useDomainHealthStore } from "@features/deliverability/stores/domainHealthStore";
-import { useHealthScore } from "@features/deliverability/hooks/useHealthScore";
-import { FailureType } from "@features/deliverability/services/domainHealthService";
-import { HealthScoreCard } from "./HealthScoreCard";
-import { ProviderMatrix } from "./ProviderMatrix";
-import { RemediationWizard } from "./RemediationWizard";
+import { useState, useRef, useEffect } from 'react';
+import { Search, Loader2 } from 'lucide-react';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useDomainHealthStore } from '@features/deliverability/stores/domainHealthStore';
+import { useHealthScore } from '@features/deliverability/hooks/useHealthScore';
+import { FailureType } from '@features/deliverability/services/domainHealthService';
+import { HealthScoreCard } from './HealthScoreCard';
+import { ProviderMatrix } from './ProviderMatrix';
+import { RemediationWizard } from './RemediationWizard';
 
 export function DeliverabilityPanel() {
-  const [domain, setDomain] = useState("");
+  const [domain, setDomain] = useState('');
   const prevDomain = useRef<string | null>(null);
-  const {
-    currentDomain,
-    remediation,
-    getRemediationForDomain,
-    setCurrentDomain,
-  } = useDomainHealthStore();
+  const { currentDomain, remediation, getRemediationForDomain, setCurrentDomain } =
+    useDomainHealthStore();
 
   const { data: health, isLoading, error } = useHealthScore(currentDomain);
 
@@ -24,7 +20,7 @@ export function DeliverabilityPanel() {
     const d = domain.trim().toLowerCase();
     if (!d) return;
     setCurrentDomain(d);
-    notify("Deliverability", `Checking ${d}...`);
+    notify('Deliverability', `Checking ${d}...`);
   }
 
   function handleQuickCheck(domainToCheck: string) {
@@ -34,8 +30,7 @@ export function DeliverabilityPanel() {
 
   // Derive failures from health data and fetch remediation
   useEffect(() => {
-    if (!health || !currentDomain || currentDomain === prevDomain.current)
-      return;
+    if (!health || !currentDomain || currentDomain === prevDomain.current) return;
     prevDomain.current = currentDomain;
     const failures: FailureType[] = [];
     if (!health.spf_status.present || !health.spf_status.valid) {
@@ -70,7 +65,7 @@ export function DeliverabilityPanel() {
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleCheck();
+              if (e.key === 'Enter') handleCheck();
             }}
           />
         </div>
@@ -85,7 +80,7 @@ export function DeliverabilityPanel() {
               Checking...
             </>
           ) : (
-            "Check"
+            'Check'
           )}
         </button>
       </div>
@@ -93,7 +88,7 @@ export function DeliverabilityPanel() {
       {isLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-text-tertiary" />
-          <span className="ml-2 text-sm text-text-tertiary">
+          <span className="ms-2 text-sm text-text-tertiary">
             Running deliverability diagnostics...
           </span>
         </div>
@@ -101,17 +96,11 @@ export function DeliverabilityPanel() {
 
       {health && !isLoading && (
         <>
-          <HealthScoreCard
-            domain={health.domain}
-            score={health.score}
-            onCheck={handleQuickCheck}
-          />
+          <HealthScoreCard domain={health.domain} score={health.score} onCheck={handleQuickCheck} />
 
           <ProviderMatrix health={health} />
 
-          {remediation.length > 0 && (
-            <RemediationWizard remediation={remediation} />
-          )}
+          {remediation.length > 0 && <RemediationWizard remediation={remediation} />}
         </>
       )}
 
@@ -120,21 +109,15 @@ export function DeliverabilityPanel() {
           <p className="text-sm font-medium">
             Error: {error instanceof Error ? error.message : String(error)}
           </p>
-          <p className="text-xs mt-1">
-            Please try again or check your connection
-          </p>
+          <p className="text-xs mt-1">Please try again or check your connection</p>
         </div>
       )}
 
       {!health && !isLoading && !error && (
         <div className="flex flex-col items-center justify-center py-12 text-text-tertiary">
           <Search size={32} strokeWidth={1} className="mb-3 opacity-40" />
-          <p className="text-sm font-medium">
-            Enter a domain to check deliverability health
-          </p>
-          <p className="text-xs mt-1">
-            We'll analyze SPF, DKIM, DMARC, and more
-          </p>
+          <p className="text-sm font-medium">Enter a domain to check deliverability health</p>
+          <p className="text-xs mt-1">We'll analyze SPF, DKIM, DMARC, and more</p>
         </div>
       )}
     </div>

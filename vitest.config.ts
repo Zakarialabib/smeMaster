@@ -1,13 +1,17 @@
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Vite's `configLoader: 'native'` (planned default) does not support __dirname.
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 const alias = {
-  "@": path.resolve(__dirname, "./src"),
-  "@core": path.resolve(__dirname, "./src/core"),
-  "@features": path.resolve(__dirname, "./src/features"),
-  "@shared": path.resolve(__dirname, "./src/shared"),
-  "@test": path.resolve(__dirname, "./src/test"),
+  '@': path.resolve(rootDir, './src'),
+  '@core': path.resolve(rootDir, './src/core'),
+  '@features': path.resolve(rootDir, './src/features'),
+  '@shared': path.resolve(rootDir, './src/shared'),
+  '@test': path.resolve(rootDir, './src/test'),
 };
 
 export default defineConfig({
@@ -29,32 +33,29 @@ export default defineConfig({
       {
         resolve: { alias },
         test: {
-          name: "unit",
-          environment: "jsdom",
-          environmentOptions: { jsdom: { url: "http://localhost" } },
-          include: ["src/**/*.{test,spec}.{ts,tsx}"],
+          name: 'unit',
+          environment: 'jsdom',
+          environmentOptions: { jsdom: { url: 'http://localhost' } },
+          include: ['src/**/*.{test,spec}.{ts,tsx}'],
           exclude: [
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/target/**",
-            "**/e2e/**",
-            "**/__tests__/integration/**",
+            '**/node_modules/**',
+            '**/dist/**',
+            '**/target/**',
+            '**/e2e/**',
+            '**/__tests__/integration/**',
           ],
-          setupFiles: [
-            "./src/test/mocks/tauri.mock.ts",
-            "./src/test/setup.ts",
-          ],
+          setupFiles: ['./src/test/mocks/tauri.mock.ts', './src/test/setup.ts'],
           globals: true,
         },
       },
       {
         resolve: { alias },
         test: {
-          name: "integration",
-          environment: "node",
-          include: ["src/**/__tests__/integration/**/*.test.ts"],
-          exclude: ["**/node_modules/**", "**/dist/**", "**/target/**"],
-          setupFiles: ["./src/test/setup.node.ts"],
+          name: 'integration',
+          environment: 'node',
+          include: ['src/**/__tests__/integration/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/target/**'],
+          setupFiles: ['./src/test/setup.node.ts'],
           globals: true,
         },
       },

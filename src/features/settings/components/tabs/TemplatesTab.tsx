@@ -1,24 +1,22 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Sparkles, FileText, BookOpen, Download, Plus, Layers, Zap, Library,
-} from "lucide-react";
-import { cn } from "@shared/utils/cn";
-import { TemplateManager } from "@features/settings/components/TemplateManager";
-import { AiTemplateGenerateModal } from "@features/settings/components/AiTemplateGenerateModal";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { Button } from "@shared/components/ui/Button";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+﻿import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Sparkles, FileText, BookOpen, Download, Plus, Layers, Zap, Library } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
+import { TemplateManager } from '@features/settings/components/TemplateManager';
+import { AiTemplateGenerateModal } from '@features/settings/components/AiTemplateGenerateModal';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { Button } from '@shared/components/ui/Button';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   insertTemplate,
   countTemplatesCount,
   seedAllPresets,
   seedCampaignTemplates,
-} from "@features/mail/db/templates";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { navigateToSettings } from "@/router/navigate";
-import type { GeneratedTemplate } from "@shared/services/ai/templateGenerator";
+} from '@features/mail/db/templates';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { navigateToSettings } from '@/router/navigate';
+import type { GeneratedTemplate } from '@shared/services/ai/templateGenerator';
 
 /* ─── Stats Card ─── */
 
@@ -27,32 +25,32 @@ function StatCard({
   label,
   value,
   sublabel,
-  tone = "neutral",
+  tone = 'neutral',
 }: {
   icon: typeof FileText;
   label: string;
   value: string;
   sublabel?: string;
-  tone?: "accent" | "success" | "warning" | "neutral";
+  tone?: 'accent' | 'success' | 'warning' | 'neutral';
 }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
-        tone === "accent" && "bg-accent/5 border-accent/20",
-        tone === "success" && "bg-success/5 border-success/20",
-        tone === "warning" && "bg-warning/5 border-warning/20",
-        tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+        'flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm',
+        tone === 'accent' && 'bg-accent/5 border-accent/20',
+        tone === 'success' && 'bg-success/5 border-success/20',
+        tone === 'warning' && 'bg-warning/5 border-warning/20',
+        tone === 'neutral' && 'bg-bg-tertiary/40 border-border/40',
       )}
     >
       <div className="p-2 rounded-lg bg-white/50">
         <Icon
           className={cn(
-            "w-4 h-4",
-            tone === "accent" && "text-accent",
-            tone === "success" && "text-success",
-            tone === "warning" && "text-warning",
-            tone === "neutral" && "text-text-tertiary",
+            'w-4 h-4',
+            tone === 'accent' && 'text-accent',
+            tone === 'success' && 'text-success',
+            tone === 'warning' && 'text-warning',
+            tone === 'neutral' && 'text-text-tertiary',
           )}
         />
       </div>
@@ -75,26 +73,32 @@ interface DemoPreset {
 }
 
 const DEMO_PRESETS: DemoPreset[] = [
-  { name: "Follow-Up", subject: "Checking in", category: "follow_up", icon: "↪" },
-  { name: "Thank You", subject: "Thank you", category: "customer_success", icon: "✓" },
-  { name: "Meeting Request", subject: "Meeting request", category: "internal", icon: "📅" },
-  { name: "Product Launch", subject: "Introducing our latest product", category: "marketing", icon: "🚀" },
+  { name: 'Follow-Up', subject: 'Checking in', category: 'follow_up', icon: '↪' },
+  { name: 'Thank You', subject: 'Thank you', category: 'customer_success', icon: '✓' },
+  { name: 'Meeting Request', subject: 'Meeting request', category: 'internal', icon: '📅' },
+  {
+    name: 'Product Launch',
+    subject: 'Introducing our latest product',
+    category: 'marketing',
+    icon: '🚀',
+  },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  follow_up: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  customer_success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  internal: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  marketing: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-  sales: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  transactional: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-  personal: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+  follow_up: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  customer_success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  internal: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  marketing: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  sales: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  transactional: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  personal: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
 };
 
 /* ─── Demo template card ─── */
 
 function DemoTemplateCard({ preset }: { preset: DemoPreset }) {
-  const catColor = CATEGORY_COLORS[preset.category] ?? "bg-bg-tertiary text-text-tertiary border-border-primary";
+  const catColor =
+    CATEGORY_COLORS[preset.category] ?? 'bg-bg-tertiary text-text-tertiary border-border-primary';
   return (
     <div className="flex items-start gap-3 p-4 rounded-xl border border-border-primary bg-bg-primary/50 hover:bg-bg-hover/30 hover:border-accent/20 hover:shadow-sm transition-all">
       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-lg shrink-0">
@@ -103,8 +107,10 @@ function DemoTemplateCard({ preset }: { preset: DemoPreset }) {
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-text-primary">{preset.name}</div>
         <div className="text-xs text-text-tertiary truncate mt-0.5">{preset.subject}</div>
-        <span className={`inline-block mt-2 text-[0.5rem] px-2 py-0.5 rounded-full border font-medium ${catColor}`}>
-          {preset.category.replace(/_/g, " ")}
+        <span
+          className={`inline-block mt-2 text-[0.5rem] px-2 py-0.5 rounded-full border font-medium ${catColor}`}
+        >
+          {preset.category.replace(/_/g, ' ')}
         </span>
       </div>
     </div>
@@ -138,26 +144,29 @@ export default function TemplatesTab() {
     loadCount();
   }, [loadCount, refreshKey]);
 
-  const handleAiTemplateSave = useCallback(async (tmpl: GeneratedTemplate) => {
-    if (!activeAccountId) {
-      notify("Templates", "Please select an account first.");
-      return;
-    }
-    await insertTemplate({
-      accountId: activeAccountId,
-      name: tmpl.name,
-      subject: tmpl.name,
-      bodyHtml: tmpl.html,
-      shortcut: null,
-      origin: "ai_generated",
-    });
-    setRefreshKey((k) => k + 1);
-    notify("Templates", "AI template saved.");
-  }, [activeAccountId]);
+  const handleAiTemplateSave = useCallback(
+    async (tmpl: GeneratedTemplate) => {
+      if (!activeAccountId) {
+        notify('Templates', 'Please select an account first.');
+        return;
+      }
+      await insertTemplate({
+        accountId: activeAccountId,
+        name: tmpl.name,
+        subject: tmpl.name,
+        bodyHtml: tmpl.html,
+        shortcut: null,
+        origin: 'ai_generated',
+      });
+      setRefreshKey((k) => k + 1);
+      notify('Templates', 'AI template saved.');
+    },
+    [activeAccountId],
+  );
 
   const handleSeedDemos = useCallback(async () => {
     if (!activeAccountId) {
-      notify("Templates", "Please select an account first.");
+      notify('Templates', 'Please select an account first.');
       return;
     }
     setSeeding(true);
@@ -165,10 +174,10 @@ export default function TemplatesTab() {
       await seedAllPresets();
       await seedCampaignTemplates();
       setRefreshKey((k) => k + 1);
-      notify("Templates", "Demo templates loaded successfully.");
+      notify('Templates', 'Demo templates loaded successfully.');
     } catch (err) {
-      console.error("Failed to seed templates:", err);
-      notify("Templates", "Failed to load demo templates.");
+      console.error('Failed to seed templates:', err);
+      notify('Templates', 'Failed to load demo templates.');
     } finally {
       setSeeding(false);
     }
@@ -184,8 +193,8 @@ export default function TemplatesTab() {
         <StatCard
           icon={Library}
           label="Template Library"
-          value={loadingCount ? "..." : `${templateCount ?? 0}`}
-          sublabel={templateCount === 1 ? "1 template" : `${templateCount ?? 0} templates`}
+          value={loadingCount ? '...' : `${templateCount ?? 0}`}
+          sublabel={templateCount === 1 ? '1 template' : `${templateCount ?? 0} templates`}
           tone="accent"
         />
         <StatCard
@@ -198,9 +207,9 @@ export default function TemplatesTab() {
         <StatCard
           icon={Zap}
           label="AI Ready"
-          value={hasAccount ? "Active" : "No Account"}
-          sublabel={hasAccount ? "Generate with AI" : "Add account first"}
-          tone={hasAccount ? "warning" : "neutral"}
+          value={hasAccount ? 'Active' : 'No Account'}
+          sublabel={hasAccount ? 'Generate with AI' : 'Add account first'}
+          tone={hasAccount ? 'warning' : 'neutral'}
         />
         <StatCard
           icon={BookOpen}
@@ -223,7 +232,7 @@ export default function TemplatesTab() {
               icon={seeding ? undefined : <Download size={14} />}
               className="bg-bg-tertiary text-text-primary border border-border-primary"
             >
-              {seeding ? "Loading..." : "Load Demo Templates"}
+              {seeding ? 'Loading...' : 'Load Demo Templates'}
             </Button>
           )}
           <button
@@ -239,13 +248,16 @@ export default function TemplatesTab() {
 
       {/* ── No account state ── */}
       {!hasAccount && (
-        <SettingGroup title="No Account Selected" description="You need to add an email account before creating or managing templates.">
+        <SettingGroup
+          title="No Account Selected"
+          description="You need to add an email account before creating or managing templates."
+        >
           <div className="flex items-center gap-2 pt-2">
             <Button
               variant="primary"
               size="sm"
               icon={<Plus size={14} />}
-              onClick={() => navigateToSettings("accounts")}
+              onClick={() => navigateToSettings('accounts')}
             >
               Add Account
             </Button>
@@ -272,7 +284,7 @@ export default function TemplatesTab() {
               disabled={seeding}
               icon={seeding ? undefined : <BookOpen size={14} />}
             >
-              {seeding ? "Loading..." : `Seed ${DEMO_PRESETS.length}+ Demo Templates`}
+              {seeding ? 'Loading...' : `Seed ${DEMO_PRESETS.length}+ Demo Templates`}
             </Button>
             <span className="text-[0.625rem] text-text-tertiary">
               Includes email, campaign, warmup, and workflow presets
@@ -283,14 +295,26 @@ export default function TemplatesTab() {
 
       {/* ── Template Manager (full CRUD) ── */}
       {hasAccount && (
-        <SettingGroup title={t("search.templates")}>
+        <SettingGroup title={t('search.templates')}>
           <TemplateManager key={refreshKey} />
           <HelpCard
             items={[
-              { type: "why", text: "Templates save time by reusing common email structures with variable placeholders for personalized content." },
-              { type: "how", text: "Create templates with {{variable}} placeholders. When applied, you're prompted to fill in the variables before sending." },
-              { type: "when", text: "Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups." },
-              { type: "tip", text: "Use the AI generation button to quickly create well-written templates from a simple description of what you need." },
+              {
+                type: 'why',
+                text: 'Templates save time by reusing common email structures with variable placeholders for personalized content.',
+              },
+              {
+                type: 'how',
+                text: "Create templates with {{variable}} placeholders. When applied, you're prompted to fill in the variables before sending.",
+              },
+              {
+                type: 'when',
+                text: 'Ideal for repetitive emails like invoices, onboarding messages, status updates, and follow-ups.',
+              },
+              {
+                type: 'tip',
+                text: 'Use the AI generation button to quickly create well-written templates from a simple description of what you need.',
+              },
             ]}
           />
         </SettingGroup>

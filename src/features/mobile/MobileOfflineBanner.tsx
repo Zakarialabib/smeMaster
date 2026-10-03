@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { WifiOff } from "lucide-react";
-import { useSyncStore } from "@shared/stores/syncStore";
+import { useEffect, useState } from 'react';
+import { WifiOff } from 'lucide-react';
+import { useSyncStore } from '@shared/stores/syncStore';
 
 interface MobileOfflineBannerProps {
   className?: string;
@@ -15,7 +15,7 @@ interface MobileOfflineBannerProps {
  * - Sync queue count
  * - Safe area inset support for notched phones
  */
-export function MobileOfflineBanner({ className = "" }: MobileOfflineBannerProps) {
+export function MobileOfflineBanner({ className = '' }: MobileOfflineBannerProps) {
   const isOnline = useSyncStore((s) => s.isOnline);
   const pendingOpsCount = useSyncStore((s) => s.pendingOpsCount);
   const [visible, setVisible] = useState(false);
@@ -44,11 +44,11 @@ export function MobileOfflineBanner({ className = "" }: MobileOfflineBannerProps
         fixed left-0 right-0 z-50 flex items-center justify-center gap-2
         bg-warning/90 text-white text-xs px-4 py-2 backdrop-blur-sm shadow-sm
         transition-transform duration-300 ease-out
-        ${animating ? "translate-y-0" : "-translate-y-full"}
+        ${animating ? 'translate-y-0' : '-translate-y-full'}
         ${className}
       `}
       style={{
-        paddingTop: "max(env(safe-area-inset-top, 0px), 8px)",
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 8px)',
       }}
       role="alert"
       aria-live="assertive"
@@ -57,8 +57,8 @@ export function MobileOfflineBanner({ className = "" }: MobileOfflineBannerProps
       <span className="font-medium">
         You're offline
         {pendingOpsCount > 0 && (
-          <span className="ml-1 opacity-80">
-            — {pendingOpsCount} {pendingOpsCount === 1 ? "change" : "changes"} pending
+          <span className="ms-1 opacity-80">
+            — {pendingOpsCount} {pendingOpsCount === 1 ? 'change' : 'changes'} pending
           </span>
         )}
       </span>

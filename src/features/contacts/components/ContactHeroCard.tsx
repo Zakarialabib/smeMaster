@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
-import { Pencil, Check, X, Mail, Plus, Users, Edit3 } from "lucide-react";
-import type { DbContact, ContactStats, ContactEngagementRow } from "@features/contacts/db/contacts";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { Button } from "@shared/components/ui/Button";
-import { formatRelativeDate } from "@shared/utils/date";
-import { getHealthStyle } from "@shared/utils/scoreVariant";
+import { useState, useCallback } from 'react';
+import { Pencil, Check, X, Mail, Plus, Users, Edit3 } from 'lucide-react';
+import type { DbContact, ContactStats, ContactEngagementRow } from '@features/contacts/db/contacts';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { Button } from '@shared/components/ui/Button';
+import { formatRelativeDate } from '@shared/utils/date';
+import { getHealthStyle } from '@shared/utils/scoreVariant';
 
 export interface ContactHeroCardProps {
   contact: DbContact;
@@ -13,7 +13,7 @@ export interface ContactHeroCardProps {
   tags: Array<{ id: string; name: string; color: string | null }>;
   groups: Array<{ id: string; name: string }>;
   savingNotes?: boolean;
-  notesSaveStatus?: "idle" | "saving" | "saved" | "error";
+  notesSaveStatus?: 'idle' | 'saving' | 'saved' | 'error';
   onSaveName: (name: string | null) => Promise<void>;
   onCompose: () => void;
   onAddTag: () => void;
@@ -29,7 +29,7 @@ export function ContactHeroCard({
   engagement,
   tags,
   groups,
-  notesSaveStatus = "idle",
+  notesSaveStatus = 'idle',
   onSaveName,
   onCompose,
   onAddTag,
@@ -39,23 +39,23 @@ export function ContactHeroCard({
   onEdit,
 }: ContactHeroCardProps) {
   const [editingName, setEditingName] = useState(false);
-  const [editValue, setEditValue] = useState("");
+  const [editValue, setEditValue] = useState('');
 
   const startEdit = useCallback(() => {
-    setEditValue(contact.display_name ?? "");
+    setEditValue(contact.display_name ?? '');
     setEditingName(true);
   }, [contact.display_name]);
 
   const cancelEdit = useCallback(() => {
     setEditingName(false);
-    setEditValue("");
+    setEditValue('');
   }, []);
 
   const saveEdit = useCallback(async () => {
     const trimmed = editValue.trim();
     await onSaveName(trimmed || null);
     setEditingName(false);
-    setEditValue("");
+    setEditValue('');
   }, [editValue, onSaveName]);
 
   const healthStatus = engagement?.health_status ?? null;
@@ -85,8 +85,8 @@ export function ContactHeroCard({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") saveEdit();
-                    if (e.key === "Escape") cancelEdit();
+                    if (e.key === 'Enter') saveEdit();
+                    if (e.key === 'Escape') cancelEdit();
                   }}
                   className="text-base font-semibold text-text-primary bg-bg-tertiary border border-accent rounded px-2 py-0.5 outline-none"
                   autoFocus
@@ -177,8 +177,8 @@ export function ContactHeroCard({
                 key={t.id}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-medium"
                 style={{
-                  backgroundColor: `${t.color ?? "var(--color-accent)"}20`,
-                  color: t.color ?? "var(--color-accent)",
+                  backgroundColor: `${t.color ?? 'var(--color-accent)'}20`,
+                  color: t.color ?? 'var(--color-accent)',
                 }}
               >
                 {t.name}
@@ -228,23 +228,18 @@ export function ContactHeroCard({
           </div>
 
           {/* Notes save indicator */}
-          {notesSaveStatus !== "idle" && (
+          {notesSaveStatus !== 'idle' && (
             <p className="text-[0.625rem] text-text-tertiary mt-1.5">
-              {notesSaveStatus === "saving" && "Saving notes…"}
-              {notesSaveStatus === "saved" && "✓ Notes saved"}
-              {notesSaveStatus === "error" && "Failed to save notes"}
+              {notesSaveStatus === 'saving' && 'Saving notes…'}
+              {notesSaveStatus === 'saved' && '✓ Notes saved'}
+              {notesSaveStatus === 'error' && 'Failed to save notes'}
             </p>
           )}
         </div>
 
         {/* Action buttons */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Mail size={14} />}
-            onClick={onCompose}
-          >
+          <Button variant="primary" size="sm" icon={<Mail size={14} />} onClick={onCompose}>
             Email
           </Button>
           {onEdit && (

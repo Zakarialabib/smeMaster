@@ -1,7 +1,7 @@
-import { useRef, useCallback, useState, useEffect } from "react";
-import { triggerHaptic } from "@shared/hooks/useHaptics";
+import { useRef, useCallback, useState, useEffect } from 'react';
+import { triggerHaptic } from '@shared/hooks/useHaptics';
 
-export type SwipeDirection = "left" | "right" | "";
+export type SwipeDirection = 'left' | 'right' | '';
 
 export interface SwipeAction {
   label: string;
@@ -75,10 +75,10 @@ export function useSwipeActions(config: SwipeConfig) {
   const currentOffset = useRef(0);
   const isDraggingRef = useRef(false);
   const isTouchDeviceRef = useRef(false);
-  const snapDirectionRef = useRef<SwipeDirection>("");
+  const snapDirectionRef = useRef<SwipeDirection>('');
   const [state, setState] = useState<SwipeState>({
     offset: 0,
-    direction: "",
+    direction: '',
     isDragging: false,
     revealedActions: [],
   });
@@ -87,8 +87,7 @@ export function useSwipeActions(config: SwipeConfig) {
     (clientX: number, clientY: number) => {
       // If already snapped, start from snapped position
       if (snapDirectionRef.current) {
-        const snappedOffset =
-          snapDirectionRef.current === "left" ? -maxSwipe : maxSwipe;
+        const snappedOffset = snapDirectionRef.current === 'left' ? -maxSwipe : maxSwipe;
         startX.current = clientX - snappedOffset;
       } else {
         startX.current = clientX;
@@ -96,7 +95,7 @@ export function useSwipeActions(config: SwipeConfig) {
       startY.current = clientY;
       startTime.current = Date.now();
       currentOffset.current = snapDirectionRef.current
-        ? snapDirectionRef.current === "left"
+        ? snapDirectionRef.current === 'left'
           ? -maxSwipe
           : maxSwipe
         : 0;
@@ -116,7 +115,7 @@ export function useSwipeActions(config: SwipeConfig) {
       const withRubberBand = applyRubberBand(dx, maxSwipe);
       currentOffset.current = withRubberBand;
       const direction: SwipeDirection =
-        withRubberBand < -5 ? "left" : withRubberBand > 5 ? "right" : "";
+        withRubberBand < -5 ? 'left' : withRubberBand > 5 ? 'right' : '';
       const revealed = getRevealedActions(withRubberBand, threshold, actions);
       setState({
         offset: withRubberBand,
@@ -142,8 +141,8 @@ export function useSwipeActions(config: SwipeConfig) {
       // Snap to show actions
       const snapOffset = offset < 0 ? -maxSwipe : maxSwipe;
       currentOffset.current = snapOffset;
-      snapDirectionRef.current = offset < 0 ? "left" : "right";
-      const direction: SwipeDirection = offset < 0 ? "left" : "right";
+      snapDirectionRef.current = offset < 0 ? 'left' : 'right';
+      const direction: SwipeDirection = offset < 0 ? 'left' : 'right';
       const revealed = getRevealedActions(snapOffset, threshold, actions);
       setState({
         offset: snapOffset,
@@ -152,14 +151,14 @@ export function useSwipeActions(config: SwipeConfig) {
         revealedActions: revealed,
       });
       // Haptic feedback on action reveal
-      triggerHaptic("medium");
+      triggerHaptic('medium');
     } else {
       // Snap back
       currentOffset.current = 0;
-      snapDirectionRef.current = "";
+      snapDirectionRef.current = '';
       setState({
         offset: 0,
-        direction: "",
+        direction: '',
         isDragging: false,
         revealedActions: [],
       });
@@ -169,10 +168,10 @@ export function useSwipeActions(config: SwipeConfig) {
   const reset = useCallback(() => {
     currentOffset.current = 0;
     isDraggingRef.current = false;
-    snapDirectionRef.current = "";
+    snapDirectionRef.current = '';
     setState({
       offset: 0,
-      direction: "",
+      direction: '',
       isDragging: false,
       revealedActions: [],
     });
@@ -237,17 +236,15 @@ export function useSwipeActions(config: SwipeConfig) {
         handleEnd();
       }
     };
-    window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
   }, [handleEnd]);
 
   const style: React.CSSProperties = {
     transform: `translateX(${state.offset}px)`,
-    transition: state.isDragging
-      ? "none"
-      : "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-    touchAction: "pan-y",
-    userSelect: "none",
+    transition: state.isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    touchAction: 'pan-y',
+    userSelect: 'none',
   };
 
   return {

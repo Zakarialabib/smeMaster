@@ -1,53 +1,53 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { ChevronDown, ArrowUpDown, Sparkles, X } from "lucide-react";
-import type { TaskPriority } from "@features/tasks/db/tasks";
-import type { TaskGroupBy, TaskFilterStatus } from "@features/tasks/stores/taskStore";
-import { FOCUS_RING } from "@shared/styles/ui-tokens";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronDown, ArrowUpDown, Sparkles, X } from 'lucide-react';
+import type { TaskPriority } from '@features/tasks/db/tasks';
+import type { TaskGroupBy, TaskFilterStatus } from '@features/tasks/stores/taskStore';
+import { FOCUS_RING } from '@shared/styles/ui-tokens';
 
 /**
  * Priority dot colors matching TasksPage.tsx
  */
 const PRIORITY_DOT: Record<TaskPriority, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-400",
-  none: "bg-text-tertiary/30",
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-amber-500',
+  low: 'bg-blue-400',
+  none: 'bg-text-tertiary/30',
 };
 
 /**
  * Priority labels for display
  */
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "None",
+  urgent: 'Urgent',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  none: 'None',
 };
 
 /**
  * Date filter options for quick filter chips
  */
-type DateFilterValue = "all" | "today" | "thisWeek" | "overdue";
+type DateFilterValue = 'all' | 'today' | 'thisWeek' | 'overdue';
 
 const DATE_FILTER_OPTIONS: { value: DateFilterValue; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "today", label: "Today" },
-  { value: "thisWeek", label: "This Week" },
-  { value: "overdue", label: "Overdue" },
+  { value: 'all', label: 'All' },
+  { value: 'today', label: 'Today' },
+  { value: 'thisWeek', label: 'This Week' },
+  { value: 'overdue', label: 'Overdue' },
 ];
 
 /**
  * Sort options
  */
-type SortOption = "dueDate" | "priority" | "created" | "alphabetical";
+type SortOption = 'dueDate' | 'priority' | 'created' | 'alphabetical';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "dueDate", label: "Due Date" },
-  { value: "priority", label: "Priority" },
-  { value: "created", label: "Created" },
-  { value: "alphabetical", label: "Alphabetical" },
+  { value: 'dueDate', label: 'Due Date' },
+  { value: 'priority', label: 'Priority' },
+  { value: 'created', label: 'Created' },
+  { value: 'alphabetical', label: 'Alphabetical' },
 ];
 
 /**
@@ -59,9 +59,9 @@ export interface SmartFilterBarProps {
   /** Handler for status filter changes */
   onFilterStatusChange: (status: TaskFilterStatus) => void;
   /** Current priority filter */
-  filterPriority: TaskPriority | "all";
+  filterPriority: TaskPriority | 'all';
   /** Handler for priority filter changes */
-  onFilterPriorityChange: (priority: TaskPriority | "all") => void;
+  onFilterPriorityChange: (priority: TaskPriority | 'all') => void;
   /** Current group by setting */
   groupBy: TaskGroupBy;
   /** Handler for group by changes */
@@ -102,7 +102,7 @@ export function SmartFilterBar({
   onGroupByChange,
   sortBy,
   onSortChange,
-  dateFilter = "all",
+  dateFilter = 'all',
   onDateFilterChange,
   showAISuggestion = false,
   aiSuggestionText,
@@ -130,26 +130,26 @@ export function SmartFilterBar({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setPriorityOpen(false);
         setGroupByOpen(false);
         setSortOpen(false);
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handlePrioritySelect = useCallback(
-    (priority: TaskPriority | "all") => {
+    (priority: TaskPriority | 'all') => {
       onFilterPriorityChange(priority);
       setPriorityOpen(false);
     },
@@ -181,17 +181,17 @@ export function SmartFilterBar({
 
   // Status segmented control options
   const STATUS_OPTIONS: { value: TaskFilterStatus; label: string }[] = [
-    { value: "incomplete", label: "Active" },
-    { value: "all", label: "All" },
-    { value: "completed", label: "Done" },
+    { value: 'incomplete', label: 'Active' },
+    { value: 'all', label: 'All' },
+    { value: 'completed', label: 'Done' },
   ];
 
   // Group by options
   const GROUP_BY_OPTIONS: { value: TaskGroupBy; label: string }[] = [
-    { value: "none", label: "No grouping" },
-    { value: "priority", label: "Group by priority" },
-    { value: "dueDate", label: "Group by due date" },
-    { value: "tag", label: "Group by tag" },
+    { value: 'none', label: 'No grouping' },
+    { value: 'priority', label: 'Group by priority' },
+    { value: 'dueDate', label: 'Group by due date' },
+    { value: 'tag', label: 'Group by tag' },
   ];
 
   return (
@@ -230,8 +230,8 @@ export function SmartFilterBar({
                 px-3 py-1 text-xs font-medium rounded-md transition-all
                 ${
                   filterStatus === option.value
-                    ? "bg-accent text-white shadow-sm"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
                 }
               `}
             >
@@ -247,9 +247,9 @@ export function SmartFilterBar({
             className={`
               flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border
               ${
-                filterPriority !== "all"
-                  ? "bg-accent/10 border-accent/30 text-accent"
-                  : "bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary"
+                filterPriority !== 'all'
+                  ? 'bg-accent/10 border-accent/30 text-accent'
+                  : 'bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary'
               }
               transition-colors ${FOCUS_RING}
             `}
@@ -257,10 +257,16 @@ export function SmartFilterBar({
             aria-expanded={priorityOpen}
             aria-label="Select priority filter"
           >
-            {filterPriority !== "all" && (
-              <span className={`w-2 h-2 rounded-full ${PRIORITY_DOT[filterPriority as TaskPriority]}`} />
+            {filterPriority !== 'all' && (
+              <span
+                className={`w-2 h-2 rounded-full ${PRIORITY_DOT[filterPriority as TaskPriority]}`}
+              />
             )}
-            <span>{filterPriority === "all" ? "Priority" : PRIORITY_LABELS[filterPriority as TaskPriority]}</span>
+            <span>
+              {filterPriority === 'all'
+                ? 'Priority'
+                : PRIORITY_LABELS[filterPriority as TaskPriority]}
+            </span>
             <ChevronDown size={12} className="text-text-tertiary" />
           </button>
 
@@ -271,10 +277,10 @@ export function SmartFilterBar({
             >
               <button
                 role="option"
-                aria-selected={filterPriority === "all"}
-                onClick={() => handlePrioritySelect("all")}
-                className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover flex items-center gap-2 ${
-                  filterPriority === "all" ? "text-accent" : "text-text-primary"
+                aria-selected={filterPriority === 'all'}
+                onClick={() => handlePrioritySelect('all')}
+                className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover flex items-center gap-2 ${
+                  filterPriority === 'all' ? 'text-accent' : 'text-text-primary'
                 }`}
               >
                 All priorities
@@ -285,8 +291,8 @@ export function SmartFilterBar({
                   role="option"
                   aria-selected={filterPriority === priority}
                   onClick={() => handlePrioritySelect(priority)}
-                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover flex items-center gap-2 ${
-                    filterPriority === priority ? "text-accent" : "text-text-primary"
+                  className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover flex items-center gap-2 ${
+                    filterPriority === priority ? 'text-accent' : 'text-text-primary'
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${PRIORITY_DOT[priority]}`} />
@@ -304,9 +310,9 @@ export function SmartFilterBar({
             className={`
               flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border
               ${
-                groupBy !== "none"
-                  ? "bg-accent/10 border-accent/30 text-accent"
-                  : "bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary"
+                groupBy !== 'none'
+                  ? 'bg-accent/10 border-accent/30 text-accent'
+                  : 'bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary'
               }
               transition-colors ${FOCUS_RING}
             `}
@@ -314,7 +320,11 @@ export function SmartFilterBar({
             aria-expanded={groupByOpen}
             aria-label="Select group by option"
           >
-            <span>{groupBy === "none" ? "Group" : GROUP_BY_OPTIONS.find((o) => o.value === groupBy)?.label.replace("Group by ", "")}</span>
+            <span>
+              {groupBy === 'none'
+                ? 'Group'
+                : GROUP_BY_OPTIONS.find((o) => o.value === groupBy)?.label.replace('Group by ', '')}
+            </span>
             <ChevronDown size={12} className="text-text-tertiary" />
           </button>
 
@@ -329,8 +339,8 @@ export function SmartFilterBar({
                   role="option"
                   aria-selected={groupBy === option.value}
                   onClick={() => handleGroupBySelect(option.value)}
-                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover ${
-                    groupBy === option.value ? "text-accent" : "text-text-primary"
+                  className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover ${
+                    groupBy === option.value ? 'text-accent' : 'text-text-primary'
                   }`}
                 >
                   {option.label}
@@ -349,8 +359,8 @@ export function SmartFilterBar({
                 flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border
                 ${
                   sortBy
-                    ? "bg-accent/10 border-accent/30 text-accent"
-                    : "bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary"
+                    ? 'bg-accent/10 border-accent/30 text-accent'
+                    : 'bg-bg-tertiary border-border-primary text-text-secondary hover:text-text-primary'
                 }
                 transition-colors ${FOCUS_RING}
               `}
@@ -359,14 +369,14 @@ export function SmartFilterBar({
               aria-label="Select sort option"
             >
               <ArrowUpDown size={12} className="text-text-tertiary" />
-              <span>{sortBy ? SORT_OPTIONS.find((o) => o.value === sortBy)?.label : "Sort"}</span>
+              <span>{sortBy ? SORT_OPTIONS.find((o) => o.value === sortBy)?.label : 'Sort'}</span>
               <ChevronDown size={12} className="text-text-tertiary" />
             </button>
 
             {sortOpen && (
               <div
                 role="listbox"
-                className="absolute left-0 top-full mt-1 bg-bg-primary border border-border-primary rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
+                className="absolute inset-inline-start-0 top-full mt-1 bg-bg-primary border border-border-primary rounded-lg shadow-lg py-1 z-50 min-w-[140px]"
               >
                 {SORT_OPTIONS.map((option) => (
                   <button
@@ -374,8 +384,8 @@ export function SmartFilterBar({
                     role="option"
                     aria-selected={sortBy === option.value}
                     onClick={() => handleSortSelect(option.value)}
-                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-bg-hover ${
-                      sortBy === option.value ? "text-accent" : "text-text-primary"
+                    className={`w-full px-3 py-1.5 text-start text-xs hover:bg-bg-hover ${
+                      sortBy === option.value ? 'text-accent' : 'text-text-primary'
                     }`}
                   >
                     {option.label}
@@ -398,8 +408,8 @@ export function SmartFilterBar({
                 shrink-0 px-4 py-1.5 text-xs font-medium rounded-full transition-all
                 ${
                   dateFilter === option.value
-                    ? "bg-accent text-white shadow-sm"
-                    : "bg-bg-tertiary text-text-secondary border border-border-primary hover:text-text-primary"
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'bg-bg-tertiary text-text-secondary border border-border-primary hover:text-text-primary'
                 }
               `}
               aria-pressed={dateFilter === option.value}
@@ -408,9 +418,9 @@ export function SmartFilterBar({
             </button>
           ))}
 
-          {dateFilter !== "all" && (
+          {dateFilter !== 'all' && (
             <button
-              onClick={() => handleDateFilterSelect("all")}
+              onClick={() => handleDateFilterSelect('all')}
               className="shrink-0 px-2 py-1.5 text-xs text-text-tertiary hover:text-text-primary"
               aria-label="Clear date filter"
             >

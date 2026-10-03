@@ -6,22 +6,18 @@ import {
   updateSmartFolderSortOrder as dbUpdateSmartFolderSortOrder,
   type SmartFolder,
   type UpdateFields,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type DbSmartFolder = SmartFolder;
 
 /**
  * Return global (account_id IS NULL) + account-specific folders, ordered by sort_order.
  */
-export async function getSmartFolders(
-  accountId?: string,
-): Promise<DbSmartFolder[]> {
+export async function getSmartFolders(accountId?: string): Promise<DbSmartFolder[]> {
   return dbListSmartFolders(accountId);
 }
 
-export async function getSmartFolderById(
-  id: string,
-): Promise<DbSmartFolder | null> {
+export async function getSmartFolderById(id: string): Promise<DbSmartFolder | null> {
   const folders = await dbListSmartFolders();
   return folders.find((f) => f.id === id) ?? null;
 }
@@ -37,7 +33,7 @@ export async function insertSmartFolder(folder: {
     accountId: folder.accountId ?? null,
     name: folder.name,
     query: folder.query,
-    icon: folder.icon ?? "Search",
+    icon: folder.icon ?? 'Search',
     color: folder.color ?? null,
   });
   return created.id;

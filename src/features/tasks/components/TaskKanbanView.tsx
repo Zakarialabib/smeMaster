@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -7,16 +7,16 @@ import {
   DragOverlay,
   type DragStartEvent,
   type DragEndEvent,
-} from "@dnd-kit/core";
-import { Plus } from "lucide-react";
-import type { DbTask } from "@features/tasks/db/tasks";
-import { TaskKanbanColumn } from "./TaskKanbanColumn";
+} from '@dnd-kit/core';
+import { Plus } from 'lucide-react';
+import type { DbTask } from '@features/tasks/db/tasks';
+import { TaskKanbanColumn } from './TaskKanbanColumn';
 
 /**
  * Column grouping options for Kanban view.
  * @spec §3.4
  */
-export type KanbanColumnsBy = "status" | "priority" | "dueDate";
+export type KanbanColumnsBy = 'status' | 'priority' | 'dueDate';
 
 /**
  * Kanban column data structure.
@@ -71,25 +71,25 @@ const PRIORITY_ORDER: Record<string, number> = {
  * Get column label based on grouping type.
  */
 function getColumnLabel(columnId: string, columnsBy: KanbanColumnsBy): string {
-  if (columnsBy === "priority") {
+  if (columnsBy === 'priority') {
     const priorityLabels: Record<string, string> = {
-      urgent: "Urgent",
-      high: "High",
-      medium: "Medium",
-      low: "Low",
-      none: "No Priority",
+      urgent: 'Urgent',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+      none: 'No Priority',
     };
     return priorityLabels[columnId] ?? columnId;
   }
 
-  if (columnsBy === "dueDate") {
+  if (columnsBy === 'dueDate') {
     const dueDateLabels: Record<string, string> = {
-      overdue: "Overdue",
-      today: "Today",
-      tomorrow: "Tomorrow",
-      thisWeek: "This Week",
-      later: "Later",
-      noDate: "No Due Date",
+      overdue: 'Overdue',
+      today: 'Today',
+      tomorrow: 'Tomorrow',
+      thisWeek: 'This Week',
+      later: 'Later',
+      noDate: 'No Due Date',
     };
     return dueDateLabels[columnId] ?? columnId;
   }
@@ -101,20 +101,17 @@ function getColumnLabel(columnId: string, columnsBy: KanbanColumnsBy): string {
 /**
  * Group tasks into Kanban columns based on grouping type.
  */
-function groupTasksIntoColumns(
-  tasks: DbTask[],
-  columnsBy: KanbanColumnsBy,
-): KanbanColumn[] {
+function groupTasksIntoColumns(tasks: DbTask[], columnsBy: KanbanColumnsBy): KanbanColumn[] {
   const groups = new Map<string, DbTask[]>();
 
   for (const task of tasks) {
     let columnId: string;
 
-    if (columnsBy === "priority") {
+    if (columnsBy === 'priority') {
       columnId = task.priority;
-    } else if (columnsBy === "dueDate") {
+    } else if (columnsBy === 'dueDate') {
       if (!task.due_date) {
-        columnId = "noDate";
+        columnId = 'noDate';
       } else {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -122,15 +119,15 @@ function groupTasksIntoColumns(
         const dueStart = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
         const diffDays = Math.floor((dueStart.getTime() - todayStart.getTime()) / 86400000);
 
-        if (diffDays < 0) columnId = "overdue";
-        else if (diffDays === 0) columnId = "today";
-        else if (diffDays === 1) columnId = "tomorrow";
-        else if (diffDays <= 7) columnId = "thisWeek";
-        else columnId = "later";
+        if (diffDays < 0) columnId = 'overdue';
+        else if (diffDays === 0) columnId = 'today';
+        else if (diffDays === 1) columnId = 'tomorrow';
+        else if (diffDays <= 7) columnId = 'thisWeek';
+        else columnId = 'later';
       }
     } else {
       // Status grouping (default)
-      columnId = task.is_completed ? "completed" : "active";
+      columnId = task.is_completed ? 'completed' : 'active';
     }
 
     if (!groups.has(columnId)) {
@@ -147,13 +144,13 @@ function groupTasksIntoColumns(
     count: tasks.length,
   }));
 
-  if (columnsBy === "priority") {
+  if (columnsBy === 'priority') {
     columns = columns.sort((a, b) => {
       const aOrder = PRIORITY_ORDER[a.id] ?? 99;
       const bOrder = PRIORITY_ORDER[b.id] ?? 99;
       return aOrder - bOrder;
     });
-  } else if (columnsBy === "dueDate") {
+  } else if (columnsBy === 'dueDate') {
     const dueDateOrder: Record<string, number> = {
       overdue: 0,
       today: 1,
@@ -224,12 +221,12 @@ export function TaskKanbanView({
       const targetColumnId = over.id as string;
 
       // Determine if we're dropping on a column or a specific task
-      if (targetColumnId.startsWith("kanban-column-")) {
-        const columnId = targetColumnId.replace("kanban-column-", "");
+      if (targetColumnId.startsWith('kanban-column-')) {
+        const columnId = targetColumnId.replace('kanban-column-', '');
         onTaskMove(taskId, columnId);
-      } else if (targetColumnId.startsWith("kanban-task-")) {
+      } else if (targetColumnId.startsWith('kanban-task-')) {
         // Dropping on a task - find its column and calculate new index
-        const targetTaskId = targetColumnId.replace("kanban-task-", "");
+        const targetTaskId = targetColumnId.replace('kanban-task-', '');
         const targetTask = tasks.find((t) => t.id === targetTaskId);
         if (targetTask) {
           const columnId = targetTask.priority; // Use current column
@@ -251,11 +248,7 @@ export function TaskKanbanView({
     <div className="flex flex-col h-full">
       {/* Kanban Board */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex gap-3 p-3 h-full min-w-fit">
             {columns.map((column) => (
               <TaskKanbanColumn
@@ -276,9 +269,7 @@ export function TaskKanbanView({
           <DragOverlay dropAnimation={null}>
             {activeTask ? (
               <div className="bg-bg-secondary border border-border-primary rounded-lg p-3 shadow-lg opacity-90 w-[var(--task-kanban-column-width,_280px)]">
-                <span className="text-sm font-medium text-text-primary">
-                  {activeTask.title}
-                </span>
+                <span className="text-sm font-medium text-text-primary">{activeTask.title}</span>
               </div>
             ) : null}
           </DragOverlay>
@@ -292,9 +283,7 @@ export function TaskKanbanView({
             <Plus size={24} className="text-text-tertiary/40" />
           </div>
           <p className="text-sm text-text-secondary mb-1">No tasks</p>
-          <p className="text-xs text-text-tertiary">
-            Add a task above or switch to List view
-          </p>
+          <p className="text-xs text-text-tertiary">Add a task above or switch to List view</p>
         </div>
       )}
     </div>

@@ -9,7 +9,7 @@ import {
   updateContactFileCategory as dbUpdateContactFileCategory,
   toggleContactFileStarred as dbToggleContactFileStarred,
   deleteContactFile as dbDeleteContactFile,
-} from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
 
 export interface ContactFile {
   id: string;
@@ -69,7 +69,10 @@ export async function searchContactFiles(query: string): Promise<ContactFile[]> 
   return dbSearchContactFiles(query);
 }
 
-export async function getContactFilesByCategory(companyId: string, category: string): Promise<ContactFile[]> {
+export async function getContactFilesByCategory(
+  companyId: string,
+  category: string,
+): Promise<ContactFile[]> {
   return dbGetContactFilesByCategory(companyId, category);
 }
 
@@ -89,8 +92,8 @@ export async function deleteContactFile(id: string): Promise<void> {
   const localPath = await dbDeleteContactFile(id);
   if (localPath) {
     try {
-      const { invokeCommand } = await import("@shared/services/db/invoke/command");
-      await invokeCommand("delete_from_vault", { vaultPath: localPath });
+      const { invokeCommand } = await import('@shared/services/db/invoke/command');
+      await invokeCommand('delete_from_vault', { vaultPath: localPath });
     } catch {
       // file may already be deleted
     }

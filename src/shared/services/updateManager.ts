@@ -1,5 +1,5 @@
-import { createBackgroundChecker } from "./backgroundCheckers";
-import type { BackgroundChecker } from "./backgroundCheckers";
+import { createBackgroundChecker } from './backgroundCheckers';
+import type { BackgroundChecker } from './backgroundCheckers';
 
 interface UpdateInfo {
   version: string;
@@ -18,8 +18,8 @@ let updaterAvailable = false;
 async function checkUpdaterAvailability(): Promise<boolean> {
   try {
     // Attempt to dynamically import - will fail if plugin not built in
-    const module = await import("@tauri-apps/plugin-updater");
-    return typeof module.check === "function";
+    const module = await import('@tauri-apps/plugin-updater');
+    return typeof module.check === 'function';
   } catch {
     return false;
   }
@@ -31,7 +31,7 @@ async function performCheck(): Promise<void> {
     return;
   }
 
-  const { check } = await import("@tauri-apps/plugin-updater");
+  const { check } = await import('@tauri-apps/plugin-updater');
   const update = await check();
   if (update) {
     availableUpdate = {
@@ -48,11 +48,11 @@ export async function startUpdateChecker(): Promise<void> {
   // Check if updater plugin is available before starting
   updaterAvailable = await checkUpdaterAvailability();
   if (!updaterAvailable) {
-    console.debug("[updateManager] Updater plugin not available (disabled in build)");
+    console.debug('[updateManager] Updater plugin not available (disabled in build)');
     return;
   }
   if (checker) return;
-  checker = createBackgroundChecker("update-checker", performCheck, FOUR_HOURS);
+  checker = createBackgroundChecker('update-checker', performCheck, FOUR_HOURS);
   checker.start();
 }
 
@@ -75,14 +75,14 @@ export async function checkForUpdateNow(): Promise<UpdateInfo | null> {
 
 export async function installUpdate(): Promise<void> {
   if (!updaterAvailable) {
-    throw new Error("Updater plugin not available");
+    throw new Error('Updater plugin not available');
   }
-  if (!availableUpdate) throw new Error("No update available");
+  if (!availableUpdate) throw new Error('No update available');
   const update = availableUpdate.raw as {
     downloadAndInstall: () => Promise<void>;
   };
   await update.downloadAndInstall();
-  console.info("Update downloaded. Please restart the application manually.");
+  console.info('Update downloaded. Please restart the application manually.');
 }
 
 export function getAvailableUpdate(): UpdateInfo | null {

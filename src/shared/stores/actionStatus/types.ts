@@ -2,7 +2,7 @@
  * ActionStatus types — used across the ActionStatus system for tracking
  * async operation lifecycle (idle → loading → success | error).
  */
-export type ActionStatusValue = "idle" | "loading" | "success" | "error";
+export type ActionStatusValue = 'idle' | 'loading' | 'success' | 'error';
 
 export interface ActionStatus {
   /** Unique identifier for this action (e.g. "send-email-abc123") */

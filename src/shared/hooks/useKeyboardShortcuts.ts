@@ -1,40 +1,60 @@
-import { useEffect, useRef } from "react";
-import { useUIStore, useConfigStore } from "@/stores/core";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { useThreadStore as useThreadsStore } from "@features/mail/stores/threadStore";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useShortcutStore } from "@features/settings/stores/shortcutStore";
-import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
-import { navigateToLabel, navigateToThread, navigateBack, getActiveLabel, getSelectedThreadId } from "@/router/navigate";
-import { archiveThread, trashThread, permanentDeleteThread, starThread, spamThread } from "@features/mail/services/emailActions";
-import { deleteThread as deleteThreadFromDb, pinThread as pinThreadDb, unpinThread as unpinThreadDb, muteThread as muteThreadDb, unmuteThread as unmuteThreadDb } from "@shared/services/db/threads";
-import { deleteDraftsForThread } from "@features/mail/services/gmail/draftDeletion";
-import { getGmailClient } from "@features/mail/services/gmail/tokenManager";
-import { getMessagesForThread } from "@shared/services/db/messages";
-import { parseUnsubscribeUrl } from "@features/mail/components/MessageItem";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { triggerSync } from "@features/mail/services/gmail/syncManager";
+import { useEffect, useRef } from 'react';
+import { useUIStore, useConfigStore } from '@/stores/core';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { useThreadStore as useThreadsStore } from '@features/mail/stores/threadStore';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useShortcutStore } from '@features/settings/stores/shortcutStore';
+import { useContextMenuStore } from '@features/mail/stores/contextMenuStore';
+import {
+  navigateToLabel,
+  navigateToThread,
+  navigateBack,
+  getActiveLabel,
+  getSelectedThreadId,
+} from '@/router/navigate';
+import {
+  archiveThread,
+  trashThread,
+  permanentDeleteThread,
+  starThread,
+  spamThread,
+} from '@features/mail/services/emailActions';
+import {
+  deleteThread as deleteThreadFromDb,
+  pinThread as pinThreadDb,
+  unpinThread as unpinThreadDb,
+  muteThread as muteThreadDb,
+  unmuteThread as unmuteThreadDb,
+} from '@shared/services/db/threads';
+import { deleteDraftsForThread } from '@features/mail/services/gmail/draftDeletion';
+import { getGmailClient } from '@features/mail/services/gmail/tokenManager';
+import { getMessagesForThread } from '@shared/services/db/messages';
+import { parseUnsubscribeUrl } from '@features/mail/components/MessageItem';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { triggerSync } from '@features/mail/services/gmail/syncManager';
+import { uiBus } from '@shared/services/events/uiBus';
 
 /**
  * Parse a key binding string and check if it matches a keyboard event.
  * Supports formats like: "j", "#", "Ctrl+K", "Ctrl+Shift+E", "Ctrl+Enter"
  */
 function matchesKey(binding: string, e: KeyboardEvent): boolean {
-  const parts = binding.split("+");
+  const parts = binding.split('+');
   const key = parts[parts.length - 1]!;
-  const needsCtrl = parts.some((p) => p === "Ctrl" || p === "Cmd");
-  const needsShift = parts.some((p) => p === "Shift");
-  const needsAlt = parts.some((p) => p === "Alt");
+  const needsCtrl = parts.some((p) => p === 'Ctrl' || p === 'Cmd');
+  const needsShift = parts.some((p) => p === 'Shift');
+  const needsAlt = parts.some((p) => p === 'Alt');
 
-  const ctrlMatch = needsCtrl ? (e.ctrlKey || e.metaKey) : !(e.ctrlKey || e.metaKey);
+  const ctrlMatch = needsCtrl ? e.ctrlKey || e.metaKey : !(e.ctrlKey || e.metaKey);
   const shiftMatch = needsShift ? e.shiftKey : !e.shiftKey;
   const altMatch = needsAlt ? e.altKey : !e.altKey;
 
   // For single character keys, compare case-insensitively
-  const keyMatch = key.length === 1
-    ? e.key === key || e.key === key.toLowerCase() || e.key === key.toUpperCase()
-    : e.key === key;
+  const keyMatch =
+    key.length === 1
+      ? e.key === key || e.key === key.toLowerCase() || e.key === key.toUpperCase()
+      : e.key === key;
 
   return ctrlMatch && shiftMatch && altMatch && keyMatch;
 }
@@ -53,11 +73,11 @@ function buildReverseMap(keyMap: Record<string, string>): {
   const ctrlCombos = new Map<string, string>();
 
   for (const [id, keys] of Object.entries(keyMap)) {
-    if (keys.includes(" then ")) {
+    if (keys.includes(' then ')) {
       // Two-key sequence like "g then i"
-      const secondKey = keys.split(" then ")[1]!.trim();
+      const secondKey = keys.split(' then ')[1]!.trim();
       twoKeySequences.set(secondKey, id);
-    } else if (keys.includes("+") && (keys.includes("Ctrl") || keys.includes("Cmd"))) {
+    } else if (keys.includes('+') && (keys.includes('Ctrl') || keys.includes('Cmd'))) {
       ctrlCombos.set(id, keys);
     } else {
       singleKey.set(keys, id);
@@ -89,7 +109,7 @@ export function useKeyboardShortcuts() {
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       // Close context menu on Escape before any other handling
-      if (e.key === "Escape" && useContextMenuStore.getState().menuType) {
+      if (e.key === 'Escape' && useContextMenuStore.getState().menuType) {
         e.preventDefault();
         useContextMenuStore.getState().closeMenu();
         return;
@@ -98,17 +118,16 @@ export function useKeyboardShortcuts() {
       // Allow native text-editing shortcuts when an input/textarea is focused
       if (e.ctrlKey || e.metaKey) {
         const tag = (e.target as HTMLElement)?.tagName;
-        const isEditable = tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable;
-        if (isEditable && ["KeyA", "KeyC", "KeyX", "KeyV", "KeyZ"].includes(e.code)) {
+        const isEditable =
+          tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
+        if (isEditable && ['KeyA', 'KeyC', 'KeyX', 'KeyV', 'KeyZ'].includes(e.code)) {
           return;
         }
       }
 
       const target = e.target as HTMLElement;
       const isInputFocused =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
       const keyMap = useShortcutStore.getState().keyMap;
       const { singleKey, twoKeySequences, ctrlCombos } = getCachedReverseMap(keyMap);
@@ -123,15 +142,15 @@ export function useKeyboardShortcuts() {
           }
         }
         // Ctrl+K for command palette (also check binding)
-        if (e.key === "k" && !e.shiftKey) {
-          const paletteBinding = keyMap["app.commandPalette"];
-          if (paletteBinding === "Ctrl+K" || paletteBinding === "/" || !paletteBinding) {
+        if (e.key === 'k' && !e.shiftKey) {
+          const paletteBinding = keyMap['app.commandPalette'];
+          if (paletteBinding === 'Ctrl+K' || paletteBinding === '/' || !paletteBinding) {
             e.preventDefault();
-            window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
+            uiBus.emit('toggle:command-palette');
             return;
           }
         }
-        if (e.key === "Enter") {
+        if (e.key === 'Enter') {
           // Send email shortcut handled by composer
           return;
         }
@@ -139,9 +158,9 @@ export function useKeyboardShortcuts() {
       }
 
       // F5 sync works even when input is focused
-      if (e.key === "F5") {
+      if (e.key === 'F5') {
         e.preventDefault();
-        const syncActionId = singleKey.get("F5");
+        const syncActionId = singleKey.get('F5');
         if (syncActionId) {
           await executeAction(syncActionId);
         }
@@ -154,7 +173,7 @@ export function useKeyboardShortcuts() {
       const key = e.key;
 
       // Handle two-key sequences (pending "g" key)
-      if (pendingKeyRef.current === "g") {
+      if (pendingKeyRef.current === 'g') {
         pendingKeyRef.current = null;
         if (pendingTimerRef.current) {
           clearTimeout(pendingTimerRef.current);
@@ -169,8 +188,8 @@ export function useKeyboardShortcuts() {
       }
 
       // Check if "g" starts a two-key sequence
-      if (key === "g" && twoKeySequences.size > 0) {
-        pendingKeyRef.current = "g";
+      if (key === 'g' && twoKeySequences.size > 0) {
+        pendingKeyRef.current = 'g';
         pendingTimerRef.current = setTimeout(() => {
           pendingKeyRef.current = null;
         }, 1000);
@@ -179,14 +198,14 @@ export function useKeyboardShortcuts() {
 
       // Arrow keys navigate the thread list when no thread is open full-screen
       // (In split-pane mode or list-only view, arrows move between threads)
-      if (key === "ArrowDown" || key === "ArrowUp") {
+      if (key === 'ArrowDown' || key === 'ArrowUp') {
         const selectedId = getSelectedThreadId();
-        const paneOff = useConfigStore.getState().readingPanePosition === "hidden";
+        const paneOff = useConfigStore.getState().readingPanePosition === 'hidden';
         // Only handle here if no thread is open in full-screen mode
         // (when pane is off and a thread is selected, ThreadView handles arrows for message nav)
         if (!(paneOff && selectedId)) {
           e.preventDefault();
-          await executeAction(key === "ArrowDown" ? "nav.next" : "nav.prev");
+          await executeAction(key === 'ArrowDown' ? 'nav.next' : 'nav.prev');
           return;
         }
       }
@@ -194,8 +213,8 @@ export function useKeyboardShortcuts() {
       // Single key shortcuts
       let actionId = singleKey.get(key);
       // Delete and Backspace always trigger delete action
-      if (!actionId && (key === "Delete" || key === "Backspace")) {
-        actionId = "action.delete";
+      if (!actionId && (key === 'Delete' || key === 'Backspace')) {
+        actionId = 'action.delete';
       }
       if (actionId) {
         e.preventDefault();
@@ -203,8 +222,8 @@ export function useKeyboardShortcuts() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 }
 
@@ -215,70 +234,70 @@ async function executeAction(actionId: string): Promise<void> {
   const activeAccountId = useAccountStore.getState().activeAccountId;
 
   switch (actionId) {
-    case "nav.next": {
+    case 'nav.next': {
       const nextIdx = Math.min(currentIdx + 1, threads.length - 1);
       if (threads[nextIdx]) {
         navigateToThread(threads[nextIdx].id);
       }
       break;
     }
-    case "nav.prev": {
+    case 'nav.prev': {
       const prevIdx = Math.max(currentIdx - 1, 0);
       if (threads[prevIdx]) {
         navigateToThread(threads[prevIdx].id);
       }
       break;
     }
-    case "nav.open": {
+    case 'nav.open': {
       if (!selectedId && threads[0]) {
         navigateToThread(threads[0].id);
       }
       break;
     }
-    case "nav.goInbox":
-      navigateToLabel("inbox");
+    case 'nav.goInbox':
+      navigateToLabel('inbox');
       break;
-    case "nav.goStarred":
-      navigateToLabel("starred");
+    case 'nav.goStarred':
+      navigateToLabel('starred');
       break;
-    case "nav.goSent":
-      navigateToLabel("sent");
+    case 'nav.goSent':
+      navigateToLabel('sent');
       break;
-    case "nav.goDrafts":
-      navigateToLabel("drafts");
+    case 'nav.goDrafts':
+      navigateToLabel('drafts');
       break;
-    case "nav.goPrimary":
-        if (useConfigStore.getState().inboxViewMode === "split") {
-        navigateToLabel("inbox", { category: "Primary" });
+    case 'nav.goPrimary':
+      if (useConfigStore.getState().inboxViewMode === 'split') {
+        navigateToLabel('inbox', { category: 'Primary' });
       }
       break;
-    case "nav.goUpdates":
-        if (useConfigStore.getState().inboxViewMode === "split") {
-        navigateToLabel("inbox", { category: "Updates" });
+    case 'nav.goUpdates':
+      if (useConfigStore.getState().inboxViewMode === 'split') {
+        navigateToLabel('inbox', { category: 'Updates' });
       }
       break;
-    case "nav.goPromotions":
-        if (useConfigStore.getState().inboxViewMode === "split") {
-        navigateToLabel("inbox", { category: "Promotions" });
+    case 'nav.goPromotions':
+      if (useConfigStore.getState().inboxViewMode === 'split') {
+        navigateToLabel('inbox', { category: 'Promotions' });
       }
       break;
-    case "nav.goSocial":
-        if (useConfigStore.getState().inboxViewMode === "split") {
-        navigateToLabel("inbox", { category: "Social" });
+    case 'nav.goSocial':
+      if (useConfigStore.getState().inboxViewMode === 'split') {
+        navigateToLabel('inbox', { category: 'Social' });
       }
       break;
-    case "nav.goNewsletters":
-        if (useConfigStore.getState().inboxViewMode === "split") {
-        navigateToLabel("inbox", { category: "Newsletters" });
+    case 'nav.goNewsletters':
+      if (useConfigStore.getState().inboxViewMode === 'split') {
+        navigateToLabel('inbox', { category: 'Newsletters' });
       }
       break;
-    case "nav.goTasks":
-      navigateToLabel("tasks");
+    case 'nav.goTasks':
+      navigateToLabel('tasks');
       break;
-    case "nav.goAttachments":
-      navigateToLabel("attachments");
+    case 'nav.goAttachments':
+      navigateToLabel('attachments');
       break;
-    case "nav.escape": {
+    case 'nav.escape': {
       if (useComposerStore.getState().isOpen) {
         useComposerStore.getState().closeComposer();
       } else if (useThreadsStore.getState().selectedThreadIds.size > 0) {
@@ -288,27 +307,27 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.compose":
+    case 'action.compose':
       useComposerStore.getState().openComposer();
       break;
-    case "action.reply": {
+    case 'action.reply': {
       if (selectedId) {
         const replyMode = useConfigStore.getState().defaultReplyMode;
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: replyMode } }));
+        uiBus.emit('inline-reply', { mode: replyMode });
       }
       break;
     }
-    case "action.replyAll":
+    case 'action.replyAll':
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: "replyAll" } }));
+        uiBus.emit('inline-reply', { mode: 'replyAll' });
       }
       break;
-    case "action.forward":
+    case 'action.forward':
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-inline-reply", { detail: { mode: "forward" } }));
+        uiBus.emit('inline-reply', { mode: 'forward' });
       }
       break;
-    case "action.archive": {
+    case 'action.archive': {
       const multiIds = useThreadsStore.getState().selectedThreadIds;
       if (multiIds.size > 0 && activeAccountId) {
         const ids = [...multiIds];
@@ -320,10 +339,10 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.delete": {
+    case 'action.delete': {
       const deleteLabelCtx = getActiveLabel();
-      const isTrashView = deleteLabelCtx === "trash";
-      const isDraftsView = deleteLabelCtx === "drafts";
+      const isTrashView = deleteLabelCtx === 'trash';
+      const isDraftsView = deleteLabelCtx === 'drafts';
       const multiDeleteIds = useThreadsStore.getState().selectedThreadIds;
       if (multiDeleteIds.size > 0 && activeAccountId) {
         const ids = [...multiDeleteIds];
@@ -337,7 +356,7 @@ async function executeAction(actionId: string): Promise<void> {
               await deleteDraftsForThread(client, activeAccountId, id);
               useThreadsStore.getState().removeThread(id);
             } catch (err) {
-              console.error("Draft delete failed:", err);
+              console.error('Draft delete failed:', err);
             }
           } else {
             await trashThread(activeAccountId, id, []);
@@ -353,7 +372,7 @@ async function executeAction(actionId: string): Promise<void> {
             await deleteDraftsForThread(client, activeAccountId, selectedId);
             useThreadsStore.getState().removeThread(selectedId);
           } catch (err) {
-            console.error("Draft delete failed:", err);
+            console.error('Draft delete failed:', err);
           }
         } else {
           await trashThread(activeAccountId, selectedId, []);
@@ -361,7 +380,7 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.star": {
+    case 'action.star': {
       if (selectedId && activeAccountId) {
         const thread = threads.find((t) => t.id === selectedId);
         if (thread) {
@@ -370,8 +389,8 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.spam": {
-      const isSpamView = getActiveLabel() === "spam";
+    case 'action.spam': {
+      const isSpamView = getActiveLabel() === 'spam';
       const multiSpamIds = useThreadsStore.getState().selectedThreadIds;
       if (multiSpamIds.size > 0 && activeAccountId) {
         const ids = [...multiSpamIds];
@@ -383,7 +402,7 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.pin": {
+    case 'action.pin': {
       if (selectedId && activeAccountId) {
         const thread = threads.find((t) => t.id === selectedId);
         if (thread) {
@@ -396,22 +415,22 @@ async function executeAction(actionId: string): Promise<void> {
               await unpinThreadDb(activeAccountId, selectedId);
             }
           } catch (err) {
-            console.error("Pin failed:", err);
+            console.error('Pin failed:', err);
             useThreadsStore.getState().updateThread(selectedId, { isPinned: !newPinned });
           }
         }
       }
       break;
     }
-    case "action.selectAll": {
+    case 'action.selectAll': {
       useThreadsStore.getState().selectAll();
       break;
     }
-    case "action.selectFromHere": {
+    case 'action.selectFromHere': {
       useThreadsStore.getState().selectAllFromHere();
       break;
     }
-    case "action.unsubscribe": {
+    case 'action.unsubscribe': {
       if (selectedId && activeAccountId) {
         try {
           const msgs = await getMessagesForThread(activeAccountId, selectedId);
@@ -424,12 +443,12 @@ async function executeAction(actionId: string): Promise<void> {
             }
           }
         } catch (err) {
-          console.error("Unsubscribe failed:", err);
+          console.error('Unsubscribe failed:', err);
         }
       }
       break;
     }
-    case "action.mute": {
+    case 'action.mute': {
       const multiMuteIds = useThreadsStore.getState().selectedThreadIds;
       if (multiMuteIds.size > 0 && activeAccountId) {
         const ids = [...multiMuteIds];
@@ -457,33 +476,34 @@ async function executeAction(actionId: string): Promise<void> {
       }
       break;
     }
-    case "action.createTaskFromEmail": {
+    case 'action.createTaskFromEmail': {
       if (selectedId) {
-        window.dispatchEvent(new CustomEvent("smemaster-extract-task", { detail: { threadId: selectedId } }));
+        uiBus.emit('extract-task', { threadId: selectedId });
       }
       break;
     }
-    case "action.moveToFolder": {
+    case 'action.moveToFolder': {
       const multiMoveIds = useThreadsStore.getState().selectedThreadIds;
-      const moveThreadIds = multiMoveIds.size > 0 ? [...multiMoveIds] : selectedId ? [selectedId] : [];
+      const moveThreadIds =
+        multiMoveIds.size > 0 ? [...multiMoveIds] : selectedId ? [selectedId] : [];
       if (moveThreadIds.length > 0) {
-        window.dispatchEvent(new CustomEvent("smemaster-move-to-folder", { detail: { threadIds: moveThreadIds } }));
+        uiBus.emit('move-to-folder', { threadIds: moveThreadIds });
       }
       break;
     }
-    case "app.commandPalette":
-      window.dispatchEvent(new Event("smemaster-toggle-command-palette"));
+    case 'app.commandPalette':
+      uiBus.emit('toggle:command-palette');
       break;
-    case "app.toggleSidebar":
+    case 'app.toggleSidebar':
       useUIStore.getState().toggleSidebar();
       break;
-    case "app.askInbox":
-      window.dispatchEvent(new Event("smemaster-toggle-ask-inbox"));
+    case 'app.askInbox':
+      uiBus.emit('toggle:ask-inbox');
       break;
-    case "app.help":
-      window.dispatchEvent(new Event("smemaster-toggle-shortcuts-help"));
+    case 'app.help':
+      uiBus.emit('toggle:shortcuts-help');
       break;
-    case "app.syncFolder": {
+    case 'app.syncFolder': {
       if (activeAccountId) {
         const currentLabel = getActiveLabel();
         useSyncStore.getState().setSyncingFolder(currentLabel);
@@ -493,6 +513,3 @@ async function executeAction(actionId: string): Promise<void> {
     }
   }
 }
-
-
-

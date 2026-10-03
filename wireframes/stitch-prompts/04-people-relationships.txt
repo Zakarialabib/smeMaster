@@ -1,0 +1,9 @@
+Generate a desktop "Unified People & Relationships" CRM screen for the "SMEMaster" app. Use the SAME unified design philosophy and Frosted Glass visual language as the app's Unified Inbox (accent blue #0B57D0, AI purple #9333EA, Inter, 12px rounded white cards, subtle borders). TOP NAVIGATION (not left sidebar): a horizontal bar with the app logo, then section tabs "People" (active) · "Deals" · "Activity" · "Segments", and on the right a wide rounded global search + a blue "+ New contact" button.
+
+LAYOUT (People active):
+- A slim contextual sub-bar under the top nav with filter chips: "All 128" · "Leads 14" · "Customers 64" · "Hot" · "My contacts".
+- An AI purple callout card at top: "AI found 2 hot leads" — "These contacts show buying intent — start a conversation now." Lists 2 contacts (Sarah Douiri — opened 3 proposals; Youssef Karam — replied to quote) with a "Create deals →" purple button.
+- A data TABLE of people: columns = [Avatar+Name | Email/Company | Tags | Status | Last contact | Actions]. Rows use gradient avatars (SD, YK, LM, AK). Status tags colored: Hot (pink), Customer (green), Lead (blue), Cold (gray). Show 4-5 sample rows with realistic names (Sarah Douiri / Best Foods, Youssef Karam / Karam Logistics, Liam Miller / Miller & Co, Amine Kabbaj / Atlas Group, Nadia Benali / Benali SARL). Right-side row actions as small icon buttons (email, tag, more).
+- Keep spacing calm and consistent. Use the same gradient avatars + purple AI callouts + blue primary buttons as the inbox.
+
+DEALS section (for reference, show briefly): a compact pipeline of 3 columns (Lead / Won / Lost) with 1-2 deal cards each (name + amount).

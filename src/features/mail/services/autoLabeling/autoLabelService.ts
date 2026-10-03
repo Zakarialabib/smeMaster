@@ -10,8 +10,8 @@
  * without requiring any DB table or AI service.
  */
 
-import { addThreadLabel } from "@features/mail/services/emailActions";
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import { addThreadLabel } from '@features/mail/services/emailActions';
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
 
 export interface AutoLabelRule {
   id: string;
@@ -32,7 +32,7 @@ export interface AutoLabelRule {
   order: number;
 }
 
-const STORAGE_KEY = "smemaster-autolabel-rules";
+const STORAGE_KEY = 'smemaster-autolabel-rules';
 
 export function loadRules(): AutoLabelRule[] {
   try {
@@ -69,10 +69,10 @@ export function deleteRule(id: string): void {
 export function evaluateRule(message: ParsedMessage, rule: AutoLabelRule): boolean {
   if (!rule.isEnabled) return false;
 
-  const fromAddress = (message.fromAddress ?? "").toLowerCase();
-  const fromName = (message.fromName ?? "").toLowerCase();
-  const subject = (message.subject ?? "").toLowerCase();
-  const body = `${message.bodyText ?? ""} ${message.bodyHtml ?? ""}`.toLowerCase();
+  const fromAddress = (message.fromAddress ?? '').toLowerCase();
+  const fromName = (message.fromName ?? '').toLowerCase();
+  const subject = (message.subject ?? '').toLowerCase();
+  const body = `${message.bodyText ?? ''} ${message.bodyHtml ?? ''}`.toLowerCase();
 
   const results: boolean[] = [];
 
@@ -90,7 +90,7 @@ export function evaluateRule(message: ParsedMessage, rule: AutoLabelRule): boole
   // Subject regex match
   if (rule.subjectPattern) {
     try {
-      results.push(new RegExp(rule.subjectPattern, "i").test(subject));
+      results.push(new RegExp(rule.subjectPattern, 'i').test(subject));
     } catch {
       results.push(false);
     }
@@ -111,10 +111,10 @@ export function evaluateRule(message: ParsedMessage, rule: AutoLabelRule): boole
  * Evaluate a batch of messages against all enabled auto-label rules.
  * Returns a map of threadId → labelIds to apply.
  */
-export function evaluateBatch(
-  messages: ParsedMessage[],
-): Map<string, Set<string>> {
-  const rules = loadRules().filter((r) => r.isEnabled).sort((a, b) => a.order - b.order);
+export function evaluateBatch(messages: ParsedMessage[]): Map<string, Set<string>> {
+  const rules = loadRules()
+    .filter((r) => r.isEnabled)
+    .sort((a, b) => a.order - b.order);
   if (rules.length === 0) return new Map();
 
   const result = new Map<string, Set<string>>();
@@ -146,10 +146,7 @@ export function evaluateBatch(
  * Apply auto-labeling rules to a batch of messages.
  * This is the main entry point called during sync.
  */
-export async function applyAutoLabels(
-  accountId: string,
-  messages: ParsedMessage[],
-): Promise<void> {
+export async function applyAutoLabels(accountId: string, messages: ParsedMessage[]): Promise<void> {
   const matches = evaluateBatch(messages);
   if (matches.size === 0) return;
 

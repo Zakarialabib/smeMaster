@@ -1,5 +1,5 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { useLiveQuery } from "@shared/hooks/useLiveQuery";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { useLiveQuery } from '@shared/hooks/useLiveQuery';
 
 export interface Message {
   id: string;
@@ -32,73 +32,55 @@ export interface Contact {
 export interface Campaign {
   id: string;
   name: string;
-  status: "draft" | "scheduled" | "sending" | "completed" | "paused";
+  status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
   sent_count: number;
   total_recipients: number;
   created_at: string;
 }
 
 export function useLiveMessages(folderId: string) {
-  return useLiveQuery<Message[]>(
-    () => invokeCommand<Message[]>("db_list_messages", { folderId }),
-    { watch: ["messages", "threads", "labels"] }
-  );
+  return useLiveQuery<Message[]>(() => invokeCommand<Message[]>('db_list_messages', { folderId }), {
+    watch: ['messages', 'threads', 'labels'],
+  });
 }
 
 export function useLiveThreads() {
-  return useLiveQuery<Thread[]>(
-    () => invokeCommand<Thread[]>("db_list_threads"),
-    { watch: ["threads", "messages"] }
-  );
+  return useLiveQuery<Thread[]>(() => invokeCommand<Thread[]>('db_list_threads'), {
+    watch: ['threads', 'messages'],
+  });
 }
 
 export function useLiveUnreadCount() {
-  return useLiveQuery<number>(
-    () => invokeCommand<number>("db_count_unread"),
-    { watch: ["messages", "threads"] }
-  );
+  return useLiveQuery<number>(() => invokeCommand<number>('db_count_unread'), {
+    watch: ['messages', 'threads'],
+  });
 }
 
 export function useLiveContacts() {
-  return useLiveQuery<Contact[]>(
-    () => invokeCommand<Contact[]>("db_list_contacts"),
-    { watch: ["contacts", "contact_tags", "contact_groups", "contact_labels"] }
-  );
+  return useLiveQuery<Contact[]>(() => invokeCommand<Contact[]>('db_list_contacts'), {
+    watch: ['contacts', 'contact_tags', 'contact_groups', 'contact_labels'],
+  });
 }
 
 export function useLiveContact(id: string | null) {
   return useLiveQuery<Contact | null>(
-    () => (id ? invokeCommand<Contact | null>("db_get_contact", { id }) : Promise.resolve(null)),
-    { watch: ["contacts", "contact_tags"], enabled: !!id }
+    () => (id ? invokeCommand<Contact | null>('db_get_contact', { id }) : Promise.resolve(null)),
+    { watch: ['contacts', 'contact_tags'], enabled: !!id },
   );
 }
 
 export function useLiveCampaigns() {
-  return useLiveQuery<Campaign[]>(
-    () => invokeCommand<Campaign[]>("db_list_campaigns"),
-    {
-      watch: [
-        "campaigns",
-        "campaign_recipients",
-        "campaign_sends",
-        "campaign_analytics",
-      ],
-    }
-  );
+  return useLiveQuery<Campaign[]>(() => invokeCommand<Campaign[]>('db_list_campaigns'), {
+    watch: ['campaigns', 'campaign_recipients', 'campaign_sends', 'campaign_analytics'],
+  });
 }
 
 export function useLiveCampaign(id: string | null) {
   return useLiveQuery<Campaign | null>(
-    () =>
-      id ? invokeCommand<Campaign | null>("db_get_campaign", { id }) : Promise.resolve(null),
+    () => (id ? invokeCommand<Campaign | null>('db_get_campaign', { id }) : Promise.resolve(null)),
     {
-      watch: [
-        "campaigns",
-        "campaign_recipients",
-        "campaign_sends",
-        "campaign_analytics",
-      ],
+      watch: ['campaigns', 'campaign_recipients', 'campaign_sends', 'campaign_analytics'],
       enabled: !!id,
-    }
+    },
   );
 }

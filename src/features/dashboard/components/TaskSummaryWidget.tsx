@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { CheckSquare } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { CheckSquare } from 'lucide-react';
 import {
   dashboardTasksIncomplete,
   dashboardTasksOverdue,
   dashboardTasksDueToday,
-} from "@shared/services/db/db-invoke";
-import { WidgetHeader, WidgetSkeleton, WidgetError } from "./WidgetHelpers";
-import { StatBox } from "./StatBox";
+} from '@shared/services/db/db-invoke';
+import { WidgetHeader, WidgetSkeleton, WidgetError } from './WidgetHelpers';
+import { StatBox } from './StatBox';
 
 export function TaskSummaryWidget() {
   const [incomplete, setIncomplete] = useState<number | null>(null);
@@ -35,7 +35,9 @@ export function TaskSummaryWidget() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) return <WidgetSkeleton />;

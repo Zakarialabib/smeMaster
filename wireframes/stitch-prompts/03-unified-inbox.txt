@@ -1,0 +1,12 @@
+Generate a desktop "Unified Inbox - SMEMaster" screen — a single consolidated workspace that unifies Mail, People (CRM), Tasks, and Calendar into ONE page using the app's unified design philosophy. Use the SAME Frosted Glass visual language as the app's existing email inbox (accent blue #0B57D0, AI purple #9333EA, Inter, 12px rounded cards, white surfaces, subtle borders).
+
+LAYOUT:
+- A TOP navigation bar (not a left sidebar): app logo on the left, then horizontal section tabs: "Mail" (active) · "People" · "Tasks" · "Calendar" · "Automation", each with a small icon. On the right: a wide rounded global search field and a primary "Compose" / "+ New" button.
+- Below the top nav, the main area is split into a primary content column and a right insight column.
+- PRIMARY COLUMN (Mail active): show the email list with the SAME structure as the inbox — an AI callout card at top ("AI Task Detection", 3 detected items, "Review & convert to tasks" purple button), then 3 email rows each with a gradient avatar (JD/MB/AA), sender, subject, preview, category tag, timestamp.
+- RIGHT INSIGHT COLUMN (the "unified" differentiator): a slim panel titled "Today" showing:
+  - An AI callout "AI prioritized your day" with 2-3 items ("Reply to John Davis", "Confirm Best Foods demo", "VAT receipt due").
+  - A compact "People" mini-list: 2 contacts with gradient avatars (SD, YK) and role lines.
+  - A compact "Tasks" mini-list: 2 items with checkboxes ("Send Q3 proposal", "Book demo").
+  - A compact "Calendar" mini-list: 2 events with times ("10:00 Best Foods demo", "14:30 Q3 review").
+- Keep it calm, condensed, premium. The right column makes it feel like one unified inbox across mail/people/tasks/calendar. Use consistent spacing and the same component grammar everywhere (gradient avatars, purple AI callouts, blue primary buttons).

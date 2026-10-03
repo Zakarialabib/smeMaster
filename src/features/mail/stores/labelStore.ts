@@ -1,15 +1,12 @@
-﻿import { create } from "zustand";
+﻿import { create } from 'zustand';
 import {
   getLabelsForAccount,
   deleteLabel as dbDeleteLabel,
   updateLabelSortOrder,
-} from "@shared/services/db/labels";
-import { upsertLabel } from "@shared/services/db/labels";
-import { getGmailClient } from "@features/mail/services/gmail/tokenManager";
-import {
-  createAsyncActions,
-  initialAsyncState,
-} from "@shared/stores/createAsyncStore";
+} from '@shared/services/db/labels';
+import { upsertLabel } from '@shared/services/db/labels';
+import { getGmailClient } from '@features/mail/services/gmail/tokenManager';
+import { createAsyncActions, initialAsyncState } from '@shared/stores/createAsyncStore';
 export interface Label {
   id: string;
   accountId: string;
@@ -20,18 +17,18 @@ export interface Label {
   sortOrder: number;
 }
 const SYSTEM_LABEL_IDS = new Set([
-  "INBOX",
-  "SENT",
-  "DRAFT",
-  "TRASH",
-  "SPAM",
-  "STARRED",
-  "UNREAD",
-  "IMPORTANT",
-  "SNOOZED",
-  "CHAT",
+  'INBOX',
+  'SENT',
+  'DRAFT',
+  'TRASH',
+  'SPAM',
+  'STARRED',
+  'UNREAD',
+  'IMPORTANT',
+  'SNOOZED',
+  'CHAT',
 ]);
-const CATEGORY_PREFIX = "CATEGORY_";
+const CATEGORY_PREFIX = 'CATEGORY_';
 export function isSystemLabel(id: string): boolean {
   return SYSTEM_LABEL_IDS.has(id) || id.startsWith(CATEGORY_PREFIX);
 }

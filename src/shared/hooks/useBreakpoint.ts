@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-export type Breakpoint = "mobile" | "tablet" | "desktop";
+export type Breakpoint = 'mobile' | 'tablet' | 'desktop';
 
 const QUERIES = {
-  mobile: "(max-width: 767px)",
-  tablet: "(min-width: 768px) and (max-width: 1023px)",
-  desktop: "(min-width: 1024px)",
+  mobile: '(max-width: 767px)',
+  tablet: '(min-width: 768px) and (max-width: 1023px)',
+  desktop: '(min-width: 1024px)',
 } as const;
 
 /**
@@ -23,10 +23,10 @@ const QUERIES = {
  */
 export function useBreakpoint(): Breakpoint {
   const [bp, setBp] = useState<Breakpoint>(() => {
-    if (typeof window === "undefined") return "desktop";
-    if (window.matchMedia(QUERIES.mobile).matches) return "mobile";
-    if (window.matchMedia(QUERIES.tablet).matches) return "tablet";
-    return "desktop";
+    if (typeof window === 'undefined') return 'desktop';
+    if (window.matchMedia(QUERIES.mobile).matches) return 'mobile';
+    if (window.matchMedia(QUERIES.tablet).matches) return 'tablet';
+    return 'desktop';
   });
 
   useEffect(() => {
@@ -35,13 +35,11 @@ export function useBreakpoint(): Breakpoint {
       const handler = (e: MediaQueryListEvent) => {
         if (e.matches) setBp(key as Breakpoint);
       };
-      mql.addEventListener("change", handler);
+      mql.addEventListener('change', handler);
       return { mql, handler };
     });
     return () => {
-      mqls.forEach(({ mql, handler }) =>
-        mql.removeEventListener("change", handler),
-      );
+      mqls.forEach(({ mql, handler }) => mql.removeEventListener('change', handler));
     };
   }, []);
 
@@ -53,5 +51,5 @@ export function useBreakpoint(): Breakpoint {
  */
 export function usePrefersGridView(): boolean {
   const bp = useBreakpoint();
-  return bp === "tablet" || bp === "mobile";
+  return bp === 'tablet' || bp === 'mobile';
 }

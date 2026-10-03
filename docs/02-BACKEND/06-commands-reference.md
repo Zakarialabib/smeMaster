@@ -45,7 +45,9 @@ The exact command count changes over time, so this doc should describe ownership
 ### Backend module layout
 
 - `src-tauri/src/commands/<domain>.rs` — `#[tauri::command]` handlers (the IPC boundary), all registered in the single `generate_handler!` in `commands/mod.rs`. Main DB-domain modules: `core`, `crm`, `comms`, `campaigns`, `calendar`, `tasks`, `workflows`, `deliverability`, `security`, `ai`, `compliance`, `mail`, `vault`, `invoicing` (33 commands), `pos` (36 commands) (plus `db` for admin helpers).
-- `src-tauri/src/db/tables/<domain>/<table>.rs` — per-table CRUD/query ops; every `pub fn`/`pub struct` carries `///` docs.
+- `src-tauri/src/commands/invoicing.rs` exposes **35** `#[tauri::command]`/`#[command]` functions (verified by `grep -cE '#\[tauri::command\]|#\[command\]' src-tauri/src/commands/invoicing.rs` → 35), not 33 as an earlier draft claimed.
+- `src-tauri/src/commands/pos.rs` exposes **12** command functions (verified → 12), not 36.
+- The `db-invoke` shim re-exports **479** domain-wrapper functions from `src/shared/services/db/invoke/` (verified by `grep -rhoE 'export (async )?function' src/shared/services/db/invoke/ | wc -l` → 479), plus a handful from `src/shared/services/commands.ts`; the "~379 wrappers" figure is stale.
 - `src-tauri/src/db/common.rs` — shared CRUD helpers (`fetch_or_not_found`, `delete_or_not_found`, `count_rows`, `build_sort_clause`, `apply_field_updates`, `like_pattern`).
 - `src-tauri/src/db/error.rs` — `AppDbError` (incl. `NotFound`); converted to `SerializedError` at the boundary.
 
@@ -55,7 +57,7 @@ Frontend code uses a layered, typed command access model:
 
 - **Generic app commands** — `src/shared/services/commands.ts` for non-DB app commands.
 - **Database commands** — `src/shared/services/db/invoke/` is the source of truth. It holds one module per domain (`core.ts`, `crm.ts`, `comms.ts`, `campaigns.ts`, `calendar.ts`, `tasks.ts`, `workflows.ts`, `deliverability.ts`, `security.ts`, `ai.ts`, `compliance.ts`, `mail.ts`, `vault.ts`, `rag.ts`), each exporting typed `async` wrappers built on the shared `invokeCommand<T>()` helper in `invoke/command.ts`.
-- **Backwards-compatible shim** — `src/shared/services/db/db-invoke.ts` is now a thin `export *` re-export of the `invoke/` modules. All ~379 `db_*` / `ai_*` wrappers (plus interfaces and `schema` re-exports) remain importable from `@shared/services/db/db-invoke`, so existing importers are unchanged.
+- **Backwards-compatible shim** — `src/shared/services/db/db-invoke.ts` is now a thin `export *` re-export of the `invoke/` modules. All ~479 `db_*` / `ai_*` wrappers (plus interfaces and `schema` re-exports) remain importable from `@shared/services/db/db-invoke`, so existing importers are unchanged.
 - **Direct `invoke()`** — a few specialized service modules still call `invoke()` from `@shared/services/ipc` directly (e.g. `liveQueries.ts`, `emailActions.ts`, `campaignRecipients.ts`). These duplicate commands that already have typed wrappers and are being consolidated back into the `invoke/` layer (see `../05-DEVELOPMENT/05-reuse-patterns.md`).
 
 The important rule is consistency inside a subsystem:
@@ -95,9 +97,9 @@ Use this checklist:
 4. keep request/response naming consistent across the boundary
 5. update relevant feature docs if behavior changes user-facing workflows
 
-## Invoicing Domain (33 Commands)
+## Invoicing Domain (35 Commands)
 
-The invoicing module (`src-tauri/src/commands/invoicing.rs`) exposes 33 Tauri IPC commands across 7 entity groups:
+The invoicing module (`src-tauri/src/commands/invoicing.rs`) exposes 35 Tauri IPC commands across 7 entity groups:
 
 | Group                | Commands                                                                                                                                                                                                                                                                                  | Description                                                                                                                                                       |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -111,7 +113,7 @@ The invoicing module (`src-tauri/src/commands/invoicing.rs`) exposes 33 Tauri IP
 
 > See [Automation feature doc](../04-FEATURES/Core/05-automation.md).
 
-## POS Domain (36 Commands)
+## POS Domain (12 Commands)
 
 The POS module (`src-tauri/src/commands/pos.rs`) covers point-of-sale operations: sale CRUD, ESC/POS thermal printing, system printer fallback, cash drawer control (`pos_open_cash_drawer`), and barcode scanning.
 
@@ -122,3 +124,11 @@ The POS module (`src-tauri/src/commands/pos.rs`) covers point-of-sale operations
 - `../01-ARCHITECTURE/03-data-model.md`
 - `../05-DEVELOPMENT/05-reuse-patterns.md`
 - `10-error-system.md`
+
+## Source reconciliation (2026-07-19)
+
+Metric corrections verified against source:
+- **Invoicing = 35 commands**, not 33: `grep -cE '#\[tauri::command\]|#\[command\]' src-tauri/src/commands/invoicing.rs` → 35.
+- **POS = 12 commands**, not 36: `grep -cE '#\[tauri::command\]|#\[command\]' src-tauri/src/commands/pos.rs` → 12.
+- **Typed DB wrappers = 479**, not ~379: `grep -rhoE 'export (async )?function' src/shared/services/db/invoke/ | wc -l` → 479 (the `~379` figure excluded the `onboarding`, `deals`, `pos`, `rag` modules added later).
+All command registrations remain in the single `generate_handler!` in `src-tauri/src/commands/mod.rs` (confirmed: exactly one `invoke_handler(...)` call site).

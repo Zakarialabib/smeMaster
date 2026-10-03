@@ -1,9 +1,9 @@
-import { useTranslation } from "react-i18next";
-import { Clock, Building2 } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { SignatureSelector } from "./SignatureSelector";
-import type { Account } from "@features/accounts/stores/accountStore";
-import { usePlatform } from "@shared/hooks/usePlatform";
+import { useTranslation } from 'react-i18next';
+import { Clock, Building2 } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { SignatureSelector } from './SignatureSelector';
+import type { Account } from '@features/accounts/stores/accountStore';
+import { usePlatform } from '@shared/hooks/usePlatform';
 
 interface ComposerFooterProps {
   fromEmail: string | null;
@@ -32,7 +32,9 @@ export function ComposerFooter({
   const orgName = activeAccount?.company ?? activeAccount?.displayName;
 
   return (
-    <div className={`flex items-center justify-between px-5 py-3 border-t border-border-primary bg-bg-secondary rounded-b-lg ${isMobile ? "safe-area-bottom" : ""}`}>
+    <div
+      className={`flex items-center justify-between px-5 py-3 border-t border-border-primary bg-bg-secondary rounded-b-lg ${isMobile ? 'safe-area-bottom' : ''}`}
+    >
       <div className="flex items-center gap-3 min-w-0">
         <div className="text-xs text-text-tertiary truncate max-w-[200px]">
           {fromEmail ?? activeAccount?.email ?? t('composer.noAccount')}
@@ -45,7 +47,7 @@ export function ComposerFooter({
         )}
         {savedLabel && (
           <span
-            className={`text-xs text-text-tertiary italic transition-opacity duration-200 shrink-0 ${isSaving ? "animate-pulse" : ""}`}
+            className={`text-xs text-text-tertiary italic transition-opacity duration-200 shrink-0 ${isSaving ? 'animate-pulse' : ''}`}
           >
             {savedLabel}
           </span>
@@ -55,11 +57,7 @@ export function ComposerFooter({
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onDiscard}
-        >
+        <Button variant="secondary" size="sm" onClick={onDiscard}>
           {t('common.discard')}
         </Button>
         <Button

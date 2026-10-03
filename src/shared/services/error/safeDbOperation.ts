@@ -15,8 +15,7 @@
  * Structured result from a safe DB operation.
  */
 export type DbResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; technical?: string };
+  { success: true; data: T } | { success: false; error: string; technical?: string };
 
 /**
  * Options for safeDbOperation.
@@ -79,17 +78,17 @@ export function extractTechnicalError(err: unknown): string {
   if (err instanceof Error) {
     return err.message;
   }
-  if (typeof err === "string") {
+  if (typeof err === 'string') {
     return err;
   }
-  if (err && typeof err === "object") {
+  if (err && typeof err === 'object') {
     try {
       return JSON.stringify(err);
     } catch {
       return String(err);
     }
   }
-  return String(err ?? "Unknown error");
+  return String(err ?? 'Unknown error');
 }
 
 /**
@@ -102,80 +101,73 @@ export function extractTechnicalError(err: unknown): string {
  * - Permission errors
  * - Generic fallback with truncated technical detail
  */
-export function getUserFriendlyErrorMessage(
-  err: unknown,
-  operationLabel: string,
-): string {
+export function getUserFriendlyErrorMessage(err: unknown, operationLabel: string): string {
   const technical = extractTechnicalError(err);
   const lower = technical.toLowerCase();
 
   // Tauri / IPC / backend errors
   if (
-    lower.includes("invoke") ||
-    lower.includes("backend") ||
-    lower.includes("ipc") ||
-    lower.includes("nnerror") ||
-    lower.includes("rust") ||
-    lower.includes("command")
+    lower.includes('invoke') ||
+    lower.includes('backend') ||
+    lower.includes('ipc') ||
+    lower.includes('nnerror') ||
+    lower.includes('rust') ||
+    lower.includes('command')
   ) {
     return `Could not ${operationLabel} because the database is unavailable. Please check your connection and try again.`;
   }
 
   // Constraint / validation errors
-  if (
-    lower.includes("unique") ||
-    lower.includes("duplicate") ||
-    lower.includes("already exists")
-  ) {
+  if (lower.includes('unique') || lower.includes('duplicate') || lower.includes('already exists')) {
     return `Cannot ${operationLabel}: a record with this information already exists.`;
   }
 
   if (
-    lower.includes("required") ||
-    lower.includes("cannot be null") ||
-    lower.includes("not null")
+    lower.includes('required') ||
+    lower.includes('cannot be null') ||
+    lower.includes('not null')
   ) {
     return `Cannot ${operationLabel}: some required fields are missing.`;
   }
 
   if (
-    lower.includes("foreign key") ||
-    lower.includes("not found") ||
-    lower.includes("no such record")
+    lower.includes('foreign key') ||
+    lower.includes('not found') ||
+    lower.includes('no such record')
   ) {
     return `Cannot ${operationLabel}: the referenced item no longer exists. It may have been deleted.`;
   }
 
   if (
-    lower.includes("too long") ||
-    lower.includes("max length") ||
-    lower.includes("character varying")
+    lower.includes('too long') ||
+    lower.includes('max length') ||
+    lower.includes('character varying')
   ) {
     return `Cannot ${operationLabel}: one of the fields exceeds the maximum allowed length.`;
   }
 
   // Network / connection
   if (
-    lower.includes("network") ||
-    lower.includes("fetch") ||
-    lower.includes("timeout") ||
-    lower.includes("econn") ||
-    lower.includes("enotfound")
+    lower.includes('network') ||
+    lower.includes('fetch') ||
+    lower.includes('timeout') ||
+    lower.includes('econn') ||
+    lower.includes('enotfound')
   ) {
     return `Could not ${operationLabel} due to a network error. Please check your connection.`;
   }
 
   // Permission
   if (
-    lower.includes("permission") ||
-    lower.includes("forbidden") ||
-    lower.includes("unauthorized") ||
-    lower.includes("not allowed")
+    lower.includes('permission') ||
+    lower.includes('forbidden') ||
+    lower.includes('unauthorized') ||
+    lower.includes('not allowed')
   ) {
     return `Cannot ${operationLabel}: you don't have permission to perform this action.`;
   }
 
   // Fallback: include the first portion of the technical message
-  const truncated = technical.length > 120 ? technical.slice(0, 120) + "…" : technical;
+  const truncated = technical.length > 120 ? technical.slice(0, 120) + '…' : technical;
   return `Failed to ${operationLabel}. ${truncated}`;
 }

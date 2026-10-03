@@ -1,3 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ml-sidecar",
+]
+
 [package]
 name = "smemaster"
 version = "1.0.0" # x-release-please-version
@@ -24,14 +30,14 @@ serde = { version = "1.0", features = ["derive"] }
 async-trait = "0.1"
 log = "0.4"
 tauri = { version = "2.11", features = ["tray-icon"] }
-tauri-plugin-log = "2.8.0"
-tauri-plugin-notification = "2.3.3"
-tauri-plugin-opener = "2.5.4"
-tauri-plugin-dialog = "2.7.1"
-tauri-plugin-fs = "2.5.1"
-tauri-plugin-single-instance = "2.4.2"
-tauri-plugin-deep-link = "2.4.9"
-tauri-plugin-updater = { version = "2.10.1", optional = true }
+tauri-plugin-log = "2.10.0"
+tauri-plugin-notification = "2.5.1"
+tauri-plugin-opener = "2.7.0"
+tauri-plugin-dialog = "2.8.1"
+tauri-plugin-fs = "2.6.0"
+tauri-plugin-single-instance = "2.5.2"
+tauri-plugin-deep-link = "2.6.1"
+tauri-plugin-updater = { version = "2.13.1", optional = true }
 sqlx = { version = "0.9.0", features = ["runtime-tokio", "sqlite", "uuid", "chrono"] }
 tokio = { version = "1", features = ["net", "io-util", "sync", "macros", "rt", "time", "fs"] }
 futures = "0.3"
@@ -59,12 +65,13 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["ring",
 # webpki-roots is used instead of rustls-native-certs for Android TLS support
 native-tls = { version = "0.2", optional = true }
 tokio-native-tls = { version = "0.3", optional = true }
-tauri-plugin-persisted-scope = "2.3.7"
-tauri-plugin-biometric = "2.3.2"
-tauri-plugin-window-state = "2.4.1"
-tauri-plugin-clipboard-manager = "2.3.2"
-tauri-plugin-store = "2.4.2"
-tauri-plugin-global-shortcut = "2.2.1"
+tauri-plugin-persisted-scope = "2.4.0"
+tauri-plugin-shell = "2.4.0"
+tauri-plugin-biometric = "2.4.1"
+tauri-plugin-window-state = "2.5.0"
+tauri-plugin-clipboard-manager = "2.4.1"
+tauri-plugin-store = "2.5.0"
+tauri-plugin-global-shortcut = "2.4.0"
 auto-launch = "0.6.0"
 sha2 = "0.10"
 argon2 = { version = "0.5", features = ["password-hash", "rand"] }
@@ -77,30 +84,76 @@ ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 dashmap = "6.1"
 automerge = "0.6"
 mdns-sd = "0.11"
-rig-core = { version = "0.3.0", default-features = false }
-lancedb = { version = "0.6", default-features = false }
-arrow = "51"
-candle-core = "0.8.1"
-candle-nn = "0.8.1"
-candle-transformers = "0.8.1"
-hf-hub = "0.4"
 lopdf = "0.34"
-docx-rs = "0.4"
-calamine = "0.26"
-tokenizers = "0.21"
+
+# ── local-ai (optional ML/RAG deps) ──────────────────────────────────────
+# Gated behind the "local-ai" feature so `cargo build` works without protoc.
+lancedb = { version = "0.6", default-features = false, optional = true }
+arrow = { version = "51", optional = true }
+candle-core = { version = "0.8.1", optional = true }
+candle-nn = { version = "0.8.1", optional = true }
+candle-transformers = { version = "0.8.1", optional = true }
+hf-hub = { version = "0.4", optional = true }
+tokenizers = { version = "0.21", optional = true }
+calamine = { version = "0.26", optional = true }
+docx-rs = { version = "0.4", optional = true }
+
 ring = "0.17.14"
-rust_decimal = { version = "1", features = ["macros"] }
 
 [dev-dependencies]
 tempfile = "3"
 env_logger = "0.11"
+# `tauri::test::mock_app()` — which `AppHandle::mock()` in the orchestrator
+# sidecar tests requires — lives behind Tauri's `test` feature.
+#
+# It is a DEV-DEPENDENCY on purpose. Enabling it as a normal feature would pull
+# test-only code into the shipped binary for every user to carry, which is not
+# something to do for four unit tests.
+tauri = { version = "2.11", features = ["tray-icon", "test"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Shell"] }
 
+# ── Tauri MCP bridge (dev tooling, opt-in) ─────────────────────────────────
+# Lets the `tauri-mcp` MCP server drive the running app: webview DOM/JS
+# execution, screenshots, IPC monitoring. That is what makes the frontend
+# verifiable end-to-end instead of only type-checked.
+#
+# Gated behind the `mcp-bridge` feature AND `debug_assertions` (see lib.rs), so
+# a release build can never ship it even if the feature is left on. Off by
+# default because it opens a WebSocket listener.
+#
+# VENDORED, not from crates.io. Upstream 0.13.0 (latest) pins `webview2-com 0.38`
+# while `wry 0.57` (via tauri 2.12) needs `0.39`. Those are semver-incompatible,
+# so two `webview2-com` crates land in the graph and the plugin's screenshot
+# module fails with:
+#   the trait bound `&IStream: Param<IStream, InterfaceType>` is not satisfied
+# The vendored copy only bumps webview2-com/windows/windows-core to 0.62 to match
+# wry — the APIs it uses (`CapturePreviewCompletedHandler`, `CreateStreamOnHGlobal`)
+# are unchanged between 0.38 and 0.39. See vendor/README.md.
+tauri-plugin-mcp-bridge = { version = "0.13", path = "vendor/tauri-plugin-mcp-bridge", optional = true }
+
 [features]
-default = ["rustls-tls"]
+default = ["rustls-tls", "local-ai"]
 native-tls = ["dep:native-tls", "dep:tokio-native-tls"]
 rustls-tls = []
 updater = ["dep:tauri-plugin-updater"]
 devtools = ["tauri/devtools"]
+# Dev-only: expose the MCP bridge so an agent can drive the app's webview.
+mcp-bridge = ["dep:tauri-plugin-mcp-bridge"]
+
+# ── local-ai ───────────────────────────────────────────────────────────────
+# Enables the on-device RAG / local LLM inference sidecar (candle + BGE-small
+# embedding engine, LanceDB vector store, HF Hub model downloads, document
+# parsers). ON by default so existing behaviour is preserved.
+#
+# Turning this feature OFF builds only the core app — no protoc required.
+# AI Tauri commands remain registered, but the model-loading path becomes
+# a no-op stub via `#[cfg(not(feature = "local-ai"))]` stubs in commands/ai.rs.
+#
+# NOTE: `lopdf` stays unconditional — it is also used by invoicing/pdf.rs.
+local-ai = [
+  "dep:lancedb", "dep:arrow",
+  "dep:candle-core", "dep:candle-nn", "dep:candle-transformers",
+  "dep:hf-hub", "dep:tokenizers", "dep:calamine", "dep:docx-rs",
+]

@@ -1,8 +1,8 @@
-import { useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { Image as ImageIcon, Upload } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import type { ImageBlock as ImageBlockT } from "../types";
+import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Image as ImageIcon, Upload } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import type { ImageBlock as ImageBlockT } from '../types';
 
 interface ImageBlockProps {
   block: ImageBlockT;
@@ -10,12 +10,10 @@ interface ImageBlockProps {
   onPickFromVault?: () => void;
 }
 
-function alignmentStyle(alignment: ImageBlockT["alignment"]): React.CSSProperties {
-  if (alignment === "center")
-    return { margin: "0 auto", display: "block" };
-  if (alignment === "right")
-    return { marginLeft: "auto", marginRight: 0, display: "block" };
-  return { margin: 0, display: "block" };
+function alignmentStyle(alignment: ImageBlockT['alignment']): React.CSSProperties {
+  if (alignment === 'center') return { margin: '0 auto', display: 'block' };
+  if (alignment === 'right') return { marginLeft: 'auto', marginRight: 0, display: 'block' };
+  return { margin: 0, display: 'block' };
 }
 
 export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps) {
@@ -27,7 +25,7 @@ export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") onChange({ src: reader.result });
+      if (typeof reader.result === 'string') onChange({ src: reader.result });
     };
     reader.readAsDataURL(file);
   };
@@ -47,11 +45,11 @@ export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps
         >
           <ImageIcon className="h-8 w-8 text-text-tertiary" />
           <span className="text-sm font-medium text-text-secondary">
-            {t("campaign.editor.insertImage")}
+            {t('campaign.editor.insertImage')}
           </span>
           <span className="flex items-center gap-1 text-xs text-text-tertiary">
             <Upload className="h-3.5 w-3.5" />
-            {t("campaign.editor.fromVault")}
+            {t('campaign.editor.fromVault')}
           </span>
         </button>
         <input
@@ -68,7 +66,7 @@ export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps
             icon={<ImageIcon className="h-3.5 w-3.5" />}
             onClick={onPickFromVault}
           >
-            {t("campaign.editor.fromVault")}
+            {t('campaign.editor.fromVault')}
           </Button>
         </div>
       </div>
@@ -85,13 +83,13 @@ export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps
           src={block.src}
           alt={block.alt}
           width={block.width}
-          style={{ borderRadius: `${block.borderRadius}px`, maxWidth: "100%", height: "auto" }}
+          style={{ borderRadius: `${block.borderRadius}px`, maxWidth: '100%', height: 'auto' }}
           className="block w-full"
         />
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2 opacity-0 transition-opacity group-hover/block:opacity-100">
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.imageAlt")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.imageAlt')}</span>
           <input
             type="text"
             value={block.alt}
@@ -100,7 +98,7 @@ export function ImageBlock({ block, onChange, onPickFromVault }: ImageBlockProps
           />
         </label>
         <label className="flex items-center gap-1 text-xs text-text-secondary">
-          <span className="text-text-tertiary">{t("campaign.editor.linkUrl")}</span>
+          <span className="text-text-tertiary">{t('campaign.editor.linkUrl')}</span>
           <input
             type="text"
             value={block.linkUrl}

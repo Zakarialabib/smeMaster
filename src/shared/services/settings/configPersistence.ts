@@ -14,8 +14,8 @@
  *
  * Call once from the app init phase (e.g. inside `useSettingsRestorer`).
  */
-import { useConfigStore } from "@/stores/core";
-import { setSetting } from "@features/settings/db/settings";
+import { useConfigStore } from '@/stores/core';
+import { setSetting } from '@features/settings/db/settings';
 
 /** Keys we sync to SQLite.  Maps store field → setting DB key. */
 interface SyncEntry {
@@ -25,25 +25,29 @@ interface SyncEntry {
 }
 
 const SYNC_LIST: SyncEntry[] = [
-  { field: "theme", dbKey: "theme", serialize: String },
-  { field: "colorTheme", dbKey: "color_theme", serialize: String },
-  { field: "fontScale", dbKey: "font_size", serialize: String },
-  { field: "density", dbKey: "ui_density", serialize: String },
-  { field: "surface", dbKey: "surface", serialize: String },
-  { field: "reduceMotion", dbKey: "reduce_motion", serialize: (v) => (v ? "true" : "false") },
-  { field: "readingPanePosition", dbKey: "reading_pane_position", serialize: String },
-  { field: "readFilter", dbKey: "read_filter", serialize: String },
-  { field: "emailListWidth", dbKey: "email_list_width", serialize: String },
-  { field: "emailDensity", dbKey: "email_density", serialize: String },
-  { field: "defaultReplyMode", dbKey: "default_reply_mode", serialize: String },
-  { field: "markAsReadBehavior", dbKey: "mark_as_read_behavior", serialize: String },
-  { field: "sendAndArchive", dbKey: "send_and_archive", serialize: (v) => (v ? "true" : "false") },
-  { field: "inboxViewMode", dbKey: "inbox_view_mode", serialize: String },
-  { field: "focusedInbox", dbKey: "focused_inbox", serialize: (v) => (v ? "true" : "false") },
-  { field: "sidebarNavConfig", dbKey: "sidebar_nav_config", serialize: JSON.stringify },
-  { field: "locale", dbKey: "locale", serialize: String },
-  { field: "aiLanguage", dbKey: "ai_language", serialize: String },
-  { field: "advancedMode", dbKey: "advanced_settings_mode", serialize: (v) => (v ? "true" : "false") },
+  { field: 'theme', dbKey: 'theme', serialize: String },
+  { field: 'colorTheme', dbKey: 'color_theme', serialize: String },
+  { field: 'fontScale', dbKey: 'font_size', serialize: String },
+  { field: 'density', dbKey: 'ui_density', serialize: String },
+  { field: 'surface', dbKey: 'surface', serialize: String },
+  { field: 'reduceMotion', dbKey: 'reduce_motion', serialize: (v) => (v ? 'true' : 'false') },
+  { field: 'readingPanePosition', dbKey: 'reading_pane_position', serialize: String },
+  { field: 'readFilter', dbKey: 'read_filter', serialize: String },
+  { field: 'emailListWidth', dbKey: 'email_list_width', serialize: String },
+  { field: 'emailDensity', dbKey: 'email_density', serialize: String },
+  { field: 'defaultReplyMode', dbKey: 'default_reply_mode', serialize: String },
+  { field: 'markAsReadBehavior', dbKey: 'mark_as_read_behavior', serialize: String },
+  { field: 'sendAndArchive', dbKey: 'send_and_archive', serialize: (v) => (v ? 'true' : 'false') },
+  { field: 'inboxViewMode', dbKey: 'inbox_view_mode', serialize: String },
+  { field: 'focusedInbox', dbKey: 'focused_inbox', serialize: (v) => (v ? 'true' : 'false') },
+  { field: 'sidebarNavConfig', dbKey: 'sidebar_nav_config', serialize: JSON.stringify },
+  { field: 'locale', dbKey: 'locale', serialize: String },
+  { field: 'aiLanguage', dbKey: 'ai_language', serialize: String },
+  {
+    field: 'advancedMode',
+    dbKey: 'advanced_settings_mode',
+    serialize: (v) => (v ? 'true' : 'false'),
+  },
 ];
 
 /**
@@ -91,9 +95,7 @@ export function initConfigPersistence(): void {
       if (Object.is(cur, p)) continue;
       if (cur === undefined) continue;
 
-      scheduleWrite(() =>
-        setSetting(entry.dbKey, entry.serialize(cur)),
-      );
+      scheduleWrite(() => setSetting(entry.dbKey, entry.serialize(cur)));
     }
     // Update snapshot after processing all changes
     prev = { ...state };

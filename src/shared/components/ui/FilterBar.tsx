@@ -2,10 +2,10 @@
  * Filter Bar - Styled controls for filtering tasks/emails by status, priority, grouping, etc.
  * Replaces raw HTML <select> dropdowns with polished, accessible components.
  */
-import { useCallback } from "react";
-import { cn } from "@shared/utils/cn";
-import { StyledSelect } from "./StyledSelect";
-import { Filter } from "lucide-react";
+import { useCallback } from 'react';
+import { cn } from '@shared/utils/cn';
+import { StyledSelect } from './StyledSelect';
+import { Filter } from 'lucide-react';
 
 export interface FilterBarOption {
   value: string;
@@ -60,7 +60,7 @@ export function FilterBar({
   config,
   onFilterChange,
   compact = false,
-  className = "",
+  className = '',
   showLabel = true,
   responsive = true,
 }: FilterBarProps) {
@@ -72,10 +72,10 @@ export function FilterBar({
   );
 
   const containerClass = cn(
-    "w-full flex justify-start items-cnter gap-2 flex-wrap",
-    responsive ? "md:flex-nowrap" : "",
-    "px-3 py-2 border-b border-border-primary glass-category-bar",
-    compact ? "gap-1.5" : "gap-2.5",
+    'w-full flex justify-start items-cnter gap-2 flex-wrap',
+    responsive ? 'md:flex-nowrap' : '',
+    'px-3 py-2 border-b border-border-primary glass-category-bar',
+    compact ? 'gap-1.5' : 'gap-2.5',
     className,
   );
 
@@ -94,7 +94,7 @@ export function FilterBar({
         <StyledSelect
           id="priority-filter"
           value={config.priority.value}
-          onChange={(e) => handleChange("priority", e)}
+          onChange={(e) => handleChange('priority', e)}
           aria-label="Filter by priority"
           compact
           size="sm"
@@ -113,7 +113,7 @@ export function FilterBar({
         <StyledSelect
           id="groupby-filter"
           value={config.groupBy.value}
-          onChange={(e) => handleChange("groupBy", e)}
+          onChange={(e) => handleChange('groupBy', e)}
           aria-label="Group by"
           compact
           size="sm"
@@ -132,7 +132,7 @@ export function FilterBar({
         <StyledSelect
           id="date-filter"
           value={config.dateFilter.value}
-          onChange={(e) => handleChange("dateFilter", e)}
+          onChange={(e) => handleChange('dateFilter', e)}
           aria-label="Date range"
           compact
           size="sm"
@@ -148,4 +148,3 @@ export function FilterBar({
     </div>
   );
 }
-

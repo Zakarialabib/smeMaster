@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { useActionStatusStore } from "./actionStatusStore";
-import type { ActionStatusValue } from "./types";
+import { useCallback } from 'react';
+import { useActionStatusStore } from './actionStatusStore';
+import type { ActionStatusValue } from './types';
 
 export interface UseActionStatusReturn {
   /** Current lifecycle status of the action */
@@ -46,44 +46,35 @@ export function useActionStatus(actionId: string): UseActionStatusReturn {
   const setStatus = useActionStatusStore((s) => s.setStatus);
   const clearStatus = useActionStatusStore((s) => s.clearStatus);
 
-  const status: ActionStatusValue = entry?.status ?? "idle";
+  const status: ActionStatusValue = entry?.status ?? 'idle';
 
-  const setLoading = useCallback(
-    () => setStatus(actionId, "loading"),
-    [actionId, setStatus],
-  );
+  const setLoading = useCallback(() => setStatus(actionId, 'loading'), [actionId, setStatus]);
 
-  const setSuccess = useCallback(
-    () => setStatus(actionId, "success"),
-    [actionId, setStatus],
-  );
+  const setSuccess = useCallback(() => setStatus(actionId, 'success'), [actionId, setStatus]);
 
   const setError = useCallback(
-    (error: string) => setStatus(actionId, "error", { error }),
+    (error: string) => setStatus(actionId, 'error', { error }),
     [actionId, setStatus],
   );
 
   const setProgress = useCallback(
     (progress: number) => {
       const current = useActionStatusStore.getState().statuses[actionId];
-      setStatus(actionId, current?.status ?? "loading", { progress });
+      setStatus(actionId, current?.status ?? 'loading', { progress });
     },
     [actionId, setStatus],
   );
 
-  const reset = useCallback(
-    () => clearStatus(actionId),
-    [actionId, clearStatus],
-  );
+  const reset = useCallback(() => clearStatus(actionId), [actionId, clearStatus]);
 
   return {
     status,
     error: entry?.error,
     progress: entry?.progress,
-    isLoading: status === "loading",
-    isSuccess: status === "success",
-    isError: status === "error",
-    isIdle: !entry || status === "idle",
+    isLoading: status === 'loading',
+    isSuccess: status === 'success',
+    isError: status === 'error',
+    isIdle: !entry || status === 'idle',
     setLoading,
     setSuccess,
     setError,

@@ -3,7 +3,7 @@
 > **Status:** 💤 Deferred (post-v1.0)
 > **Source analysis:** [`docs/analysis.md`](../analysis.md#82-backend-what-smemaster-could-benefit-from) §8.2, [`docs/monetization-style.md`](../monetization-style.md) §1
 > **Last updated:** 2026-07-09
-> **Constraint:** Zero breaking changes to existing 704 IPC commands, 586 db functions, or 38 Zustand stores. All additions are additive.
+> **Constraint:** Zero breaking changes to existing 831 IPC commands (768 `#[tauri::command]` + 63 `#[command]` shorthand, per `docs/STATUS.md`), 542 db functions (`grep -rE 'pub fn |pub async fn ' src-tauri/src/db`), or 43 Zustand stores (`grep -rEo 'create<' src` → 43). All additions are additive.
 >
 > **Code-verified 2026-07-11:** No `EntitlementEngine`, `check_entitlement`, `paywall-trigger`, `owned_modules`, or `entitlement_overrides` exist in `src-tauri` or `src`. This plan is **unstarted** (deferred to post-v1.0).
 
@@ -141,7 +141,7 @@ Both events reuse the existing `EventBus` infrastructure (15 events already mapp
 | `SubsystemRegistry.require_active()` | Enhanced — `feature_flag` becomes enforced | Only enforced when engine is present; without engine, reverts to advisory (safe deploy rollback) |
 | `ToolRegistry.get_tool_state`/`set_enabled` | None — tools remain as view into engine | Old commands still work; state is read from engine resolution |
 | `getFeatureAccess()` on frontend | Unchanged — still works synchronously | New frontend `entitlementStore` layer is additive |
-| 704 IPC commands | Zero modified | Only 6 new commands added |
+| 831 IPC commands | Zero modified | Only 6 new commands added |
 
 ---
 
@@ -153,3 +153,7 @@ Both events reuse the existing `EventBus` infrastructure (15 events already mapp
 - **Source analysis:** [`../analysis.md`](../analysis.md#82-backend-what-smemaster-could-benefit-from) §8.2, [`../monetization-style.md`](../monetization-style.md) §1
 - **Existing licensing:** [`../02-BACKEND/07-key-management.md`](../02-BACKEND/07-key-management.md)
 - **Existing subsystem lifecycle:** [`../01-ARCHITECTURE/02-backend-structure.md`](../01-ARCHITECTURE/02-backend-structure.md)
+
+## Source reconciliation (2026-07-19)
+
+Metric figures corrected to match `docs/STATUS.md` (grepped from source): the constraint header and impact table cited **704 IPC commands / 586 db functions / 38 Zustand stores**; the verified values are **831 commands** (768 + 63), **542 db `pub fn`** (`grep -rE 'pub fn |pub async fn ' src-tauri/src/db`), and **43 Zustand stores** (`grep -rEo 'create<' src`). The plan's deferred/unstarted status is unaffected.

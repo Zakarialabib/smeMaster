@@ -3,6 +3,7 @@
 // or from other modules. If any false positive appears, add #[allow(dead_code)]
 // locally, not here.
 
+#[cfg(feature = "local-ai")]
 mod ai;
 mod background;
 mod calendar;
@@ -14,9 +15,11 @@ mod update_tracker;
 use commands::IdleRegistry;
 use imap::session::SessionPoolManager;
 mod contacts;
+mod agent;
 mod deliverability;
 mod device;
 mod dns;
+pub mod downloader;
 mod events;
 mod export;
 mod imap;
@@ -171,6 +174,7 @@ pub fn run() {
     // ── More core plugins + custom module plugins ─────────────────────
     builder = builder
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(background::init())
         .plugin(notifications::init())
         .plugin(composer::init());
@@ -179,6 +183,20 @@ pub fn run() {
     #[cfg(target_os = "android")]
     {
         builder = builder.plugin(native_events::init());
+    }
+
+    // ── MCP bridge (dev tooling) ──────────────────────────────────────
+    // Lets the `tauri-mcp` MCP server drive this app: webview JS execution,
+    // DOM inspection, screenshots, IPC monitoring. Without it the frontend can
+    // only be type-checked, never exercised.
+    //
+    // Double-gated on purpose: the cargo feature (opt-in, opens a WebSocket
+    // listener) AND `debug_assertions`, so a release build cannot expose it
+    // even if someone leaves the feature enabled.
+    #[cfg(all(feature = "mcp-bridge", debug_assertions))]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+        log::info!("[mcp-bridge] Dev bridge enabled (tauri-mcp can drive this app)");
     }
     
     // NOTE: invoke_handler is registered ONCE via commands::register below.
@@ -192,6 +210,7 @@ pub fn run() {
     builder = pgp::register(builder);
     builder = vault::register(builder);
     builder = export::register(builder);
+    builder = agent::register(builder);
     builder = deliverability::register(builder);
     builder = pairing::register(builder);
     builder = device::register(builder);
@@ -207,9 +226,38 @@ pub fn run() {
         // ── Record app start time as early as possible for accurate uptime
         crate::commands::db::set_app_start_time();
 
-        // ── Reactive data layer: register SQLite change tracker ─────
-        let app_handle = app.handle().clone();
-        db::change_tracker::register(app_handle);
+        // ═════════════════════════════════════════════════════════════
+        // EventBus – single source of truth for Rust→React events
+        // ═════════════════════════════════════════════════════════════
+        // Managed FIRST, before anything can call `app.state::<EventBus>()`.
+        // It used to be managed ~200 lines below, after the change tracker had
+        // already requested it — so `state()` panicked with
+        // "state() called before manage() for EventBus" and the app never
+        // reached the window. Ordering here is load-bearing: everything below
+        // (change tracker, sync monitor, subsystem lifecycle, AppState) reads
+        // this state.
+        let (event_bus, bus_rx) = events::EventBus::new(10_000);
+        app.manage(event_bus);
+
+        // ── Database pool – created synchronously (fast, <50ms). ─────
+        // Migration runs in background (non‑blocking) to avoid ANR.
+        // Moved early because change_tracker::spawn_tracker needs the pool.
+        let app_data_dir = app.path().app_data_dir()
+            .map_err(|e| format!("Cannot get app data dir: {e}"))?;
+        let pool = tauri::async_runtime::block_on(
+            db::create_pool(app_data_dir)
+        ).map_err(|e| format!("Failed to create DB pool: {e}"))?;
+
+        // ── Register + spawn SQLite change tracker ──
+        // The tracker polls `PRAGMA data_version` and emits per-table
+        // `db:change` events so the frontend's `useLiveQuery` stays reactive
+        // without any native SQLite hooks.
+        db::change_tracker::register(app.handle().clone());
+        db::change_tracker::spawn_tracker(
+            app.handle(),
+            pool.clone(),
+            app.state::<events::EventBus>().inner().clone(),
+        );
 
         // ── Logger – initialised inside setup so we can control level ─
         {
@@ -327,16 +375,6 @@ pub fn run() {
             let _ = window.show();
         }
 
-        // ═════════════════════════════════════════════════════════════
-        // Database pool – created synchronously (fast, <50ms).
-        // Migration runs in background (non‑blocking) to avoid ANR.
-        // ═════════════════════════════════════════════════════════════
-        let app_data_dir = app.path().app_data_dir()
-            .map_err(|e| format!("Cannot get app data dir: {e}"))?;
-        let pool = tauri::async_runtime::block_on(
-            db::create_pool(app_data_dir)
-        ).map_err(|e| format!("Failed to create DB pool: {e}"))?;
-
         // ── Note: The FFI change-tracker update_hook is installed on every
         //    new connection inside `db::create_pool` via
         //    `SqlitePoolOptions::after_connect(...)`. No additional wiring
@@ -345,6 +383,16 @@ pub fn run() {
 
         // ── Post-migration health check runs inside spawn_orchestrator ──
         app.manage(pool.clone());
+
+        // ── Resumable chunked downloader (AI models + generic assets).
+        //    Registered early so `ai_download_model` and the 7
+        //    `downloader_*` commands resolve state immediately; boot
+        //    recovery of interrupted jobs runs later, inside
+        //    spawn_orchestrator AFTER migrations create the tables.
+        app.manage(crate::downloader::DownloaderState::new(
+            app.handle(),
+            pool.clone(),
+        ));
 
         // ── DataCacheService: in-memory cache layer ──
         // Registered here (early, before spawn_orchestrator) so IPC commands
@@ -387,11 +435,8 @@ pub fn run() {
 
         // NOTE: rust:init:complete + migration is handled in AppLifecycle::spawn_orchestrator
 
-        // ═════════════════════════════════════════════════════════════
-        // EventBus – single source of truth for Rust→React events
-        // ═════════════════════════════════════════════════════════════
-        let (event_bus, bus_rx) = events::EventBus::new(10_000);
-        app.manage(event_bus);
+        // (EventBus is created and managed at the TOP of this closure — see the
+        // note there. It must precede the change tracker, which reads it.)
 
         // SyncMonitorService observes the EventBus
         let sync_monitor = std::sync::Arc::new(orchestrator::SyncMonitorService::new());
@@ -424,10 +469,16 @@ pub fn run() {
         );
         app.manage(sentinel.clone());
 
-        // ── AI State (on-demand) ──────────────────────────────────────
-        // The engine is created immediately, but the LanceDB vector store is
-        // opened lazily on the first RAG/index request (see AiState::ensure_vector_db).
+        // ── AI State (fully lazy / sidecar) ──────────────────────────
+        // Guarded behind `local-ai` feature — the module and its types
+        // do not exist when the feature is off.
+        #[cfg(feature = "local-ai")]
         app.manage(crate::commands::ai::AiState::new(app.handle().clone()));
+
+        // Agent (voice + WhatsApp) console. Holds the bearer token for
+        // agent-core calls so the token is never a #[tauri::command] argument —
+        // a token that crosses the IPC boundary is one the frontend can log.
+        app.manage(agent::client::AgentAuth::default());
 
         // Bridge: EventBus → WebView `core-event`
         orchestrator::init::AppLifecycle::spawn_event_bridge(app.handle(), bus_rx);

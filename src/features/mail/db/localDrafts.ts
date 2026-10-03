@@ -5,7 +5,7 @@ import {
   deleteLocalDraft as dbDeleteLocalDraft,
   markDraftSynced as dbMarkDraftSynced,
   type LocalDraft as DbLocalDraft,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 export type { DbLocalDraft };
 
@@ -47,19 +47,14 @@ export async function getLocalDraft(id: string): Promise<LocalDraft | null> {
   return dbGetLocalDraft(id);
 }
 
-export async function getUnsyncedDrafts(
-  accountId: string,
-): Promise<LocalDraft[]> {
+export async function getUnsyncedDrafts(accountId: string): Promise<LocalDraft[]> {
   return executeSearchQuery(
     "SELECT * FROM local_drafts WHERE account_id = $1 AND sync_status = 'pending' ORDER BY updated_at ASC",
     [accountId],
   ) as unknown as Promise<LocalDraft[]>;
 }
 
-export async function markDraftSynced(
-  id: string,
-  remoteDraftId: string,
-): Promise<void> {
+export async function markDraftSynced(id: string, remoteDraftId: string): Promise<void> {
   return dbMarkDraftSynced(id, remoteDraftId);
 }
 

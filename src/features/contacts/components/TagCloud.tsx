@@ -1,6 +1,6 @@
-import { Plus } from "lucide-react";
-import { TagPill } from "./TagPill";
-import type { ContactTag } from "@features/contacts/stores/contactStore";
+import { Plus } from 'lucide-react';
+import { TagPill } from './TagPill';
+import type { ContactTag } from '@features/contacts/stores/contactStore';
 
 interface TagCloudProps {
   tagIds: string[];
@@ -10,7 +10,13 @@ interface TagCloudProps {
   editable?: boolean;
 }
 
-export function TagCloud({ tagIds, allTags, onAddTag, onRemoveTag, editable = false }: TagCloudProps) {
+export function TagCloud({
+  tagIds,
+  allTags,
+  onAddTag,
+  onRemoveTag,
+  editable = false,
+}: TagCloudProps) {
   const tagMap = new Map(allTags.map((t) => [t.id, t]));
   const contactTags = tagIds.map((id) => tagMap.get(id)).filter(Boolean) as ContactTag[];
 

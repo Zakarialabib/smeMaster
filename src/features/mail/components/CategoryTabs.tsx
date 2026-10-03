@@ -1,8 +1,9 @@
-﻿import { useEffect, useLayoutEffect, useCallback, useRef, useState } from "react";
-import { Inbox, Bell, Tag, Users, Newspaper, Pencil, type LucideIcon } from "lucide-react";
-import { ALL_CATEGORIES, updateThreadCategory } from "@features/mail/db/threadCategories";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+﻿import { useEffect, useLayoutEffect, useCallback, useRef, useState } from 'react';
+import { Inbox, Bell, Tag, Users, Newspaper, Pencil, type LucideIcon } from 'lucide-react';
+import { ALL_CATEGORIES, updateThreadCategory } from '@features/mail/db/threadCategories';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { uiBus } from '@shared/services/events/uiBus';
 
 export interface CategoryTabsProps {
   activeCategory: string;
@@ -19,10 +20,17 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Newsletters: Newspaper,
 };
 
-export function CategoryTabs({ activeCategory, onCategoryChange, unreadCounts, userOverrideCounts }: CategoryTabsProps) {
+export function CategoryTabs({
+  activeCategory,
+  onCategoryChange,
+  unreadCounts,
+  userOverrideCounts,
+}: CategoryTabsProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number } | null>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number } | null>(
+    null,
+  );
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -39,10 +47,10 @@ export function CategoryTabs({ activeCategory, onCategoryChange, unreadCounts, u
     checkOverflow();
     const ro = new ResizeObserver(checkOverflow);
     ro.observe(el);
-    el.addEventListener("scroll", checkOverflow, { passive: true });
+    el.addEventListener('scroll', checkOverflow, { passive: true });
     return () => {
       ro.disconnect();
-      el.removeEventListener("scroll", checkOverflow);
+      el.removeEventListener('scroll', checkOverflow);
     };
   }, [checkOverflow]);
 
@@ -64,33 +72,37 @@ export function CategoryTabs({ activeCategory, onCategoryChange, unreadCounts, u
       {canScrollRight && (
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-bg-secondary to-transparent z-10 pointer-events-none" />
       )}
-      <div
-        ref={scrollRef}
-        className="flex px-2 overflow-x-auto hide-scrollbar relative"
-      >
+      <div ref={scrollRef} className="flex px-2 overflow-x-auto hide-scrollbar relative">
         {ALL_CATEGORIES.map((cat) => {
           const Icon = CATEGORY_ICONS[cat];
           const count = unreadCounts?.[cat] ?? 0;
           return (
             <button
               key={cat}
-              ref={(el) => { if (el) tabRefs.current.set(cat, el); else tabRefs.current.delete(cat); }}
+              ref={(el) => {
+                if (el) tabRefs.current.set(cat, el);
+                else tabRefs.current.delete(cat);
+              }}
               onClick={async (e) => {
                 onCategoryChange(cat);
-                e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                e.currentTarget.scrollIntoView({
+                  behavior: 'smooth',
+                  inline: 'center',
+                  block: 'nearest',
+                });
                 const selectedIds = useThreadStore.getState().selectedThreadIds;
                 const accountId = useAccountStore.getState().activeAccountId;
                 if (selectedIds.size > 0 && accountId) {
                   for (const id of selectedIds) {
                     await updateThreadCategory(accountId, id, cat, true);
                   }
-                  window.dispatchEvent(new Event("smemaster-sync-done"));
+                  uiBus.emit('data:changed');
                 }
               }}
               className={`px-2.5 py-1.5 text-xs font-medium transition-all duration-150 relative whitespace-nowrap flex items-center gap-1.5 ${
                 activeCategory === cat
-                  ? "text-accent"
-                  : "text-text-tertiary hover:text-text-primary hover:glass-accent-tint"
+                  ? 'text-accent'
+                  : 'text-text-tertiary hover:text-text-primary hover:glass-accent-tint'
               }`}
             >
               {Icon && <Icon size={13} />}
@@ -117,5 +129,3 @@ export function CategoryTabs({ activeCategory, onCategoryChange, unreadCounts, u
     </div>
   );
 }
-
-

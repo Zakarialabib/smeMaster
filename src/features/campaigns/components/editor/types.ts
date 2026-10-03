@@ -5,17 +5,10 @@
 // updating emailRenderer.ts and the config panel.
 
 export type BlockType =
-  | "heading"
-  | "paragraph"
-  | "image"
-  | "button"
-  | "divider"
-  | "spacer"
-  | "card"
-  | "columns";
+  'heading' | 'paragraph' | 'image' | 'button' | 'divider' | 'spacer' | 'card' | 'columns';
 
-export type FontFamily = "sans-serif" | "serif" | "monospace";
-export type TextAlign = "left" | "center" | "right";
+export type FontFamily = 'sans-serif' | 'serif' | 'monospace';
+export type TextAlign = 'left' | 'center' | 'right';
 
 export interface Padding {
   top: number;
@@ -40,20 +33,20 @@ export interface BlockBase {
 }
 
 export interface HeadingBlock extends BlockBase {
-  type: "heading";
+  type: 'heading';
   content: string;
   level: 1 | 2 | 3;
   typography: TypographyProps;
 }
 
 export interface ParagraphBlock extends BlockBase {
-  type: "paragraph";
+  type: 'paragraph';
   content: string;
   typography: TypographyProps;
 }
 
 export interface ImageBlock extends BlockBase {
-  type: "image";
+  type: 'image';
   /**
    * Either a vault path (resolved at render/send time via vaultService) or a
    * transient data URL (during authoring). Store the vault path when picked.
@@ -68,7 +61,7 @@ export interface ImageBlock extends BlockBase {
 }
 
 export interface ButtonBlock extends BlockBase {
-  type: "button";
+  type: 'button';
   text: string;
   url: string;
   backgroundColor: string;
@@ -77,11 +70,11 @@ export interface ButtonBlock extends BlockBase {
   padding: Padding;
   alignment: TextAlign;
   fullWidth: boolean;
-  typography: Pick<TypographyProps, "fontSize" | "fontWeight" | "fontFamily">;
+  typography: Pick<TypographyProps, 'fontSize' | 'fontWeight' | 'fontFamily'>;
 }
 
 export interface DividerBlock extends BlockBase {
-  type: "divider";
+  type: 'divider';
   color: string;
   thickness: number; // px
   width: number; // percentage 0-100
@@ -89,13 +82,13 @@ export interface DividerBlock extends BlockBase {
 }
 
 export interface SpacerBlock extends BlockBase {
-  type: "spacer";
+  type: 'spacer';
   height: number; // px
 }
 
 /** A self-contained promo/testimonial card: image + title + text + button. */
 export interface CardBlock extends BlockBase {
-  type: "card";
+  type: 'card';
   image: string; // vault path or data URL
   imageAlt: string;
   title: string;
@@ -110,7 +103,7 @@ export interface CardBlock extends BlockBase {
 
 /** Two side-by-side columns; each holds raw inline HTML (kept simple/flat). */
 export interface ColumnsBlock extends BlockBase {
-  type: "columns";
+  type: 'columns';
   leftHtml: string;
   rightHtml: string;
   backgroundColor: string; // hex

@@ -3,8 +3,8 @@
   removeTagFromContact,
   getTagIdsForContact,
   getContactTagById,
-} from "@features/contacts/db/contactTags";
-import type { DbContactTag } from "@features/contacts/db/contactTags";
+} from '@features/contacts/db/contactTags';
+import type { DbContactTag } from '@features/contacts/db/contactTags';
 
 export async function tagContact(contactId: string, tagId: string): Promise<void> {
   await addTagToContact(contactId, tagId);
@@ -35,4 +35,3 @@ export async function updateContactTags(contactId: string, tagIds: string[]): Pr
     await addTagToContact(contactId, id);
   }
 }
-

@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
-import { Filter, Loader2, Users, Download, Mail } from "lucide-react";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { Button } from "@shared/components/ui/Button";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
-import { getAllContacts, type DbContact } from "@features/contacts/db/contacts";
-import type { ContactSegment } from "@features/contacts/stores/contactStore";
+import { useEffect, useState, useCallback } from 'react';
+import { Filter, Loader2, Users, Download, Mail } from 'lucide-react';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { Button } from '@shared/components/ui/Button';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
+import { getAllContacts, type DbContact } from '@features/contacts/db/contacts';
+import type { ContactSegment } from '@features/contacts/stores/contactStore';
 
 interface SegmentPreviewDrawerProps {
   isOpen: boolean;
@@ -30,40 +30,31 @@ async function evaluateSegment(query: string): Promise<SegmentPreviewResult> {
 
   let filtered: DbContact[] = all;
 
-  if (q.startsWith("tag:")) {
+  if (q.startsWith('tag:')) {
     const tag = q.slice(4).trim();
-    filtered = all.filter((c) =>
-      (c.display_name ?? "").toLowerCase().includes(tag),
-    );
-  } else if (q.startsWith("group:")) {
+    filtered = all.filter((c) => (c.display_name ?? '').toLowerCase().includes(tag));
+  } else if (q.startsWith('group:')) {
     const grp = q.slice(6).trim();
-    filtered = all.filter((c) =>
-      (c.display_name ?? "").toLowerCase().includes(grp),
-    );
-  } else if (q.startsWith("active:")) {
+    filtered = all.filter((c) => (c.display_name ?? '').toLowerCase().includes(grp));
+  } else if (q.startsWith('active:')) {
     const m = q.match(/^active:(\d+)([dhm])/);
     if (m) {
-      const n = parseInt(m[1] ?? "30", 10);
+      const n = parseInt(m[1] ?? '30', 10);
       const unit = m[2];
-      const seconds =
-        unit === "d" ? n * 86400 : unit === "h" ? n * 3600 : n * 60;
+      const seconds = unit === 'd' ? n * 86400 : unit === 'h' ? n * 3600 : n * 60;
       const cutoff = Date.now() / 1000 - seconds;
       filtered = all.filter((c) => (c.last_contacted_at ?? 0) >= cutoff);
     }
-  } else if (q.startsWith("name:")) {
+  } else if (q.startsWith('name:')) {
     const name = q.slice(5).trim();
-    filtered = all.filter((c) =>
-      (c.display_name ?? "").toLowerCase().includes(name),
-    );
-  } else if (q.startsWith("email:")) {
+    filtered = all.filter((c) => (c.display_name ?? '').toLowerCase().includes(name));
+  } else if (q.startsWith('email:')) {
     const email = q.slice(6).trim();
     filtered = all.filter((c) => c.email.toLowerCase().includes(email));
   } else if (q) {
     // Generic substring search
     filtered = all.filter(
-      (c) =>
-        c.email.toLowerCase().includes(q) ||
-        (c.display_name ?? "").toLowerCase().includes(q),
+      (c) => c.email.toLowerCase().includes(q) || (c.display_name ?? '').toLowerCase().includes(q),
     );
   }
 
@@ -104,9 +95,7 @@ export function SegmentPreviewDrawer({
       {/* Query subtitle (was in the custom header) */}
       <div className="flex items-center gap-2 -mt-2">
         <Filter size={12} className="text-accent shrink-0" />
-        <p className="text-[0.625rem] text-text-tertiary truncate">
-          Query: {segment.query}
-        </p>
+        <p className="text-[0.625rem] text-text-tertiary truncate">Query: {segment.query}</p>
       </div>
 
       {/* Stats */}
@@ -121,9 +110,7 @@ export function SegmentPreviewDrawer({
             <div className="flex items-center gap-1.5">
               <Users size={12} className="text-text-tertiary" />
               <span className="text-xs text-text-tertiary">Matches:</span>
-              <span className="text-sm font-semibold text-text-primary">
-                {result.total}
-              </span>
+              <span className="text-sm font-semibold text-text-primary">{result.total}</span>
             </div>
             {result.total > result.contacts.length && (
               <span className="text-[0.625rem] text-text-tertiary">
@@ -139,10 +126,7 @@ export function SegmentPreviewDrawer({
         {loading ? (
           <div className="space-y-2 p-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 p-2 animate-pulse"
-              >
+              <div key={i} className="flex items-center gap-2 p-2 animate-pulse">
                 <div className="w-8 h-8 rounded-full bg-bg-tertiary" />
                 <div className="flex-1 space-y-1">
                   <div className="h-3 bg-bg-tertiary rounded w-32" />
@@ -154,10 +138,7 @@ export function SegmentPreviewDrawer({
         ) : result && result.contacts.length > 0 ? (
           <ul className="space-y-1" role="list">
             {result.contacts.map((c) => (
-              <li
-                key={c.id}
-                className="flex items-center gap-2 p-2 rounded-md hover:bg-bg-hover"
-              >
+              <li key={c.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-bg-hover">
                 <ContactAvatar
                   name={c.display_name}
                   email={c.email}
@@ -168,9 +149,7 @@ export function SegmentPreviewDrawer({
                   <p className="text-xs font-medium text-text-primary truncate">
                     {c.display_name ?? c.email}
                   </p>
-                  <p className="text-[0.625rem] text-text-tertiary truncate">
-                    {c.email}
-                  </p>
+                  <p className="text-[0.625rem] text-text-tertiary truncate">{c.email}</p>
                 </div>
               </li>
             ))}
@@ -191,18 +170,15 @@ export function SegmentPreviewDrawer({
           disabled={!result || result.total === 0}
           onClick={() => {
             if (!result) return;
-            const header = "email,display_name,frequency\n";
+            const header = 'email,display_name,frequency\n';
             const rows = result.contacts
-              .map(
-                (c) =>
-                  `${c.email},${(c.display_name ?? "").replace(/,/g, ";")},${c.frequency}`,
-              )
-              .join("\n");
-            const blob = new Blob([header + rows], { type: "text/csv" });
+              .map((c) => `${c.email},${(c.display_name ?? '').replace(/,/g, ';')},${c.frequency}`)
+              .join('\n');
+            const blob = new Blob([header + rows], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
+            const a = document.createElement('a');
             a.href = url;
-            a.download = `segment-${segment.name.replace(/\s+/g, "_")}.csv`;
+            a.download = `segment-${segment.name.replace(/\s+/g, '_')}.csv`;
             a.click();
             URL.revokeObjectURL(url);
           }}

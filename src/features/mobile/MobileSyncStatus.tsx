@@ -1,11 +1,11 @@
-import { Cloud, CloudOff, Loader2, Check } from "lucide-react";
-import { useSyncStore } from "@shared/stores/syncStore";
+import { Cloud, CloudOff, Loader2, Check } from 'lucide-react';
+import { useSyncStore } from '@shared/stores/syncStore';
 
 interface MobileSyncStatusProps {
   className?: string;
 }
 
-export function MobileSyncStatus({ className = "" }: MobileSyncStatusProps) {
+export function MobileSyncStatus({ className = '' }: MobileSyncStatusProps) {
   const isOnline = useSyncStore((s) => s.isOnline);
   const isSyncingFolder = useSyncStore((s) => s.isSyncingFolder);
   const pendingOpsCount = useSyncStore((s) => s.pendingOpsCount);

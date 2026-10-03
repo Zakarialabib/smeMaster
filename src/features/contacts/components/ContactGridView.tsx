@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import type { DbContact } from "@features/contacts/db/contacts";
-import type { Density } from "@features/contacts/hooks/useViewPrefs";
-import { ContactGridCard } from "@features/contacts/components/ContactGridCard";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { Users } from "lucide-react";
+import { useMemo } from 'react';
+import type { DbContact } from '@features/contacts/db/contacts';
+import type { Density } from '@features/contacts/hooks/useViewPrefs';
+import { ContactGridCard } from '@features/contacts/components/ContactGridCard';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { Users } from 'lucide-react';
 
 interface ContactGridViewProps {
   contacts: DbContact[];
@@ -22,9 +22,9 @@ interface ContactGridViewProps {
 }
 
 const GRID_MIN_WIDTH: Record<Density, string> = {
-  compact: "160px",
-  normal: "200px",
-  comfortable: "240px",
+  compact: '160px',
+  normal: '200px',
+  comfortable: '240px',
 };
 
 /**
@@ -69,12 +69,7 @@ export function ContactGridView({
   }
 
   return (
-    <div
-      className="grid gap-3 p-3"
-      style={gridStyle}
-      role="grid"
-      aria-label="Contacts grid"
-    >
+    <div className="grid gap-3 p-3" style={gridStyle} role="grid" aria-label="Contacts grid">
       {contacts.map((contact) => (
         <ContactGridCard
           key={contact.id}

@@ -1,10 +1,10 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface SyncOperation {
   id: string;
   label: string;
   progress: number;
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
   error?: string;
 }
 
@@ -27,12 +27,9 @@ export const useSyncProgressStore = create<SyncProgressState>((set) => ({
       }
       return { operations: [...s.operations, op] };
     }),
-  removeOperation: (id) =>
-    set((s) => ({ operations: s.operations.filter((o) => o.id !== id) })),
+  removeOperation: (id) => set((s) => ({ operations: s.operations.filter((o) => o.id !== id) })),
   clearCompleted: () =>
     set((s) => ({
-      operations: s.operations.filter(
-        (o) => o.status === "in_progress" || o.status === "pending",
-      ),
+      operations: s.operations.filter((o) => o.status === 'in_progress' || o.status === 'pending'),
     })),
 }));

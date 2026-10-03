@@ -1,6 +1,7 @@
-import { useEffect } from "react";
-import { listen } from "@tauri-apps/api/event";
-import { useSyncStore } from "@shared/stores/syncStore";
+import { useEffect } from 'react';
+import { safeListen } from '@shared/services/ipc';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { uiBus } from '@shared/services/events/uiBus';
 
 interface SyncStatus {
   last_sync: number | null;
@@ -12,20 +13,22 @@ export function useSyncEvents() {
   useEffect(() => {
     const unlisteners: Array<() => void> = [];
 
-    listen<SyncStatus>("sync:started", () => {
-      useSyncStore.getState().setSyncingFolder("__all__");
+    safeListen<SyncStatus>('sync:started', () => {
+      useSyncStore.getState().setSyncingFolder('__all__');
     }).then((fn) => unlisteners.push(fn));
 
-    listen<SyncStatus>("sync:complete", () => {
+    safeListen<SyncStatus>('sync:complete', () => {
       useSyncStore.getState().setSyncingFolder(null);
-      window.dispatchEvent(new CustomEvent("smemaster-sync-done"));
+      uiBus.emit('data:changed');
     }).then((fn) => unlisteners.push(fn));
 
-    listen<SyncStatus>("sync:error", (event) => {
+    safeListen<SyncStatus>('sync:error', (event) => {
       useSyncStore.getState().setSyncingFolder(null);
-      console.error("Sync error:", event.payload.last_error);
+      console.error('Sync error:', event.payload.last_error);
     }).then((fn) => unlisteners.push(fn));
 
-    return () => { unlisteners.forEach((fn) => fn()); };
+    return () => {
+      unlisteners.forEach((fn) => fn());
+    };
   }, []);
 }

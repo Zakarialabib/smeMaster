@@ -1,8 +1,5 @@
-import {
-  listPgpKeys,
-  type PgpKey,
-} from "@shared/services/db/db-invoke";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { listPgpKeys, type PgpKey } from '@shared/services/db/db-invoke';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export type DbPgpKey = PgpKey;
 
@@ -23,7 +20,7 @@ export async function savePgpKey(
   userId?: string,
 ): Promise<string> {
   const id = crypto.randomUUID();
-  await invokeCommand("db_upsert_pgp_key", {
+  await invokeCommand('db_upsert_pgp_key', {
     id,
     accountId,
     keyId,
@@ -40,7 +37,7 @@ export async function savePgpKey(
  * Delete a PGP key via the Rust command.
  */
 export async function deletePgpKey(id: string): Promise<void> {
-  await invokeCommand("db_delete_pgp_key", { id });
+  await invokeCommand('db_delete_pgp_key', { id });
 }
 
 /**

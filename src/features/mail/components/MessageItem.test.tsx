@@ -1,48 +1,48 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
-import { createRef } from "react";
-import { MessageItem } from "./MessageItem";
-import type { DbMessage } from "@shared/services/db/messages";
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
+import { createRef } from 'react';
+import { MessageItem } from './MessageItem';
+import type { DbMessage } from '@shared/services/db/messages';
 
-vi.mock("./EmailRenderer", () => ({
+vi.mock('./EmailRenderer', () => ({
   EmailRenderer: () => <div data-testid="email-renderer" />,
 }));
 
-vi.mock("./InlineAttachmentPreview", () => ({
+vi.mock('./InlineAttachmentPreview', () => ({
   InlineAttachmentPreview: () => null,
 }));
 
-vi.mock("./AttachmentList", () => ({
+vi.mock('./AttachmentList', () => ({
   AttachmentList: () => null,
   getAttachmentsForMessage: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock("./AuthBadge", () => ({
+vi.mock('./AuthBadge', () => ({
   AuthBadge: () => null,
 }));
 
-vi.mock("./AuthWarningBanner", () => ({
+vi.mock('./AuthWarningBanner', () => ({
   AuthWarningBanner: () => null,
 }));
 
 function makeMessage(overrides: Partial<DbMessage> = {}): DbMessage {
   return {
-    id: "m1",
-    account_id: "a1",
-    thread_id: "t1",
-    from_address: "bob@example.com",
-    from_name: "Bob",
-    to_addresses: "alice@example.com",
+    id: 'm1',
+    account_id: 'a1',
+    thread_id: 't1',
+    from_address: 'bob@example.com',
+    from_name: 'Bob',
+    to_addresses: 'alice@example.com',
     cc_addresses: null,
     bcc_addresses: null,
     reply_to: null,
-    subject: "Test subject",
-    snippet: "Test snippet",
+    subject: 'Test subject',
+    snippet: 'Test snippet',
     date: Date.now(),
     is_read: 0,
     is_starred: 0,
-    body_html: "<p>Hello</p>",
-    body_text: "Hello",
+    body_html: '<p>Hello</p>',
+    body_text: 'Hello',
     body_cached: 1,
     raw_size: 100,
     internal_date: null,
@@ -56,57 +56,57 @@ function makeMessage(overrides: Partial<DbMessage> = {}): DbMessage {
   };
 }
 
-describe("MessageItem", () => {
+describe('MessageItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders sender name", () => {
+  it('renders sender name', () => {
     render(<MessageItem message={makeMessage()} isLast={true} blockImages={false} />);
-    expect(screen.getByText("Bob")).toBeInTheDocument();
+    expect(screen.getByText('Bob')).toBeInTheDocument();
   });
 
-  it("applies danger background when isSpam is true", () => {
+  it('applies danger background when isSpam is true', () => {
     const { container } = render(
       <MessageItem message={makeMessage()} isLast={true} blockImages={false} isSpam={true} />,
     );
     const wrapper = container.firstElementChild!;
-    expect(wrapper.className).toContain("bg-danger/8");
+    expect(wrapper.className).toContain('bg-danger/8');
   });
 
-  it("does not apply danger background when isSpam is false", () => {
+  it('does not apply danger background when isSpam is false', () => {
     const { container } = render(
       <MessageItem message={makeMessage()} isLast={true} blockImages={false} isSpam={false} />,
     );
     const wrapper = container.firstElementChild!;
-    expect(wrapper.className).not.toContain("bg-danger");
+    expect(wrapper.className).not.toContain('bg-danger');
   });
 
-  it("does not apply danger background when isSpam is undefined", () => {
+  it('does not apply danger background when isSpam is undefined', () => {
     const { container } = render(
       <MessageItem message={makeMessage()} isLast={true} blockImages={false} />,
     );
     const wrapper = container.firstElementChild!;
-    expect(wrapper.className).not.toContain("bg-danger");
+    expect(wrapper.className).not.toContain('bg-danger');
   });
 
-  it("applies focus ring when focused prop is true", () => {
+  it('applies focus ring when focused prop is true', () => {
     const { container } = render(
       <MessageItem message={makeMessage()} isLast={false} blockImages={false} focused={true} />,
     );
     const wrapper = container.firstElementChild!;
-    expect(wrapper.className).toContain("ring-accent/50");
+    expect(wrapper.className).toContain('ring-accent/50');
   });
 
-  it("does not apply focus ring when focused is false", () => {
+  it('does not apply focus ring when focused is false', () => {
     const { container } = render(
       <MessageItem message={makeMessage()} isLast={false} blockImages={false} focused={false} />,
     );
     const wrapper = container.firstElementChild!;
-    expect(wrapper.className).not.toContain("ring-accent/50");
+    expect(wrapper.className).not.toContain('ring-accent/50');
   });
 
-  it("auto-expands when focused becomes true", () => {
+  it('auto-expands when focused becomes true', () => {
     // Render collapsed (isLast=false, not focused)
     const { container, rerender } = render(
       <MessageItem message={makeMessage()} isLast={false} blockImages={false} focused={false} />,
@@ -122,11 +122,9 @@ describe("MessageItem", () => {
     expect(container.querySelector("[data-testid='email-renderer']")).toBeInTheDocument();
   });
 
-  it("forwards ref to outer div", () => {
+  it('forwards ref to outer div', () => {
     const ref = createRef<HTMLDivElement>();
-    render(
-      <MessageItem ref={ref} message={makeMessage()} isLast={true} blockImages={false} />,
-    );
+    render(<MessageItem ref={ref} message={makeMessage()} isLast={true} blockImages={false} />);
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });

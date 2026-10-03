@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,24 +12,20 @@ import {
   Send,
   ShieldCheck,
   KeyRound,
-} from "lucide-react";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { insertImapAccount, insertOAuthImapAccount } from "@features/accounts/db/accounts";
-import { useAccountStore, type Account } from "@features/accounts/stores/accountStore";
+} from 'lucide-react';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { insertImapAccount, insertOAuthImapAccount } from '@features/accounts/db/accounts';
+import { useAccountStore, type Account } from '@features/accounts/stores/accountStore';
 import {
   discoverSettings,
   getDefaultImapPort,
   getDefaultSmtpPort,
   type SecurityType,
-} from "@features/mail/services/imap/autoDiscovery";
-import { getOAuthProvider } from "@shared/services/oauth/providers";
-import { startProviderOAuthFlow } from "@shared/services/oauth/oauthFlow";
-import {
-  ErrorCodes,
-  type ErrorCode,
-  normalizeError,
-} from "@shared/errors/errorCodes";
+} from '@features/mail/services/imap/autoDiscovery';
+import { getOAuthProvider } from '@shared/services/oauth/providers';
+import { startProviderOAuthFlow } from '@shared/services/oauth/oauthFlow';
+import { ErrorCodes, type ErrorCode, normalizeError } from '@shared/errors/errorCodes';
 
 interface AddImapAccountProps {
   onClose: () => void;
@@ -38,15 +34,15 @@ interface AddImapAccountProps {
   prefill?: {
     imapHost: string;
     imapPort: number;
-    imapSecurity: "ssl" | "starttls" | "none";
+    imapSecurity: 'ssl' | 'starttls' | 'none';
     smtpHost: string;
     smtpPort: number;
-    smtpSecurity: "ssl" | "starttls" | "none";
+    smtpSecurity: 'ssl' | 'starttls' | 'none';
   };
 }
 
-type Step = "basic" | "imap" | "smtp" | "test";
-type AuthMode = "password" | "oauth2";
+type Step = 'basic' | 'imap' | 'smtp' | 'test';
+type AuthMode = 'password' | 'oauth2';
 
 interface FormState {
   email: string;
@@ -75,31 +71,31 @@ interface FormState {
 }
 
 const initialFormState: FormState = {
-  email: "",
-  displayName: "",
-  imapUsername: "",
-  imapHost: "",
+  email: '',
+  displayName: '',
+  imapUsername: '',
+  imapHost: '',
   imapPort: 993,
-  imapSecurity: "ssl",
-  smtpHost: "",
+  imapSecurity: 'ssl',
+  smtpHost: '',
   smtpPort: 465,
-  smtpSecurity: "ssl",
-  password: "",
-  smtpUsername: "",
-  smtpPassword: "",
+  smtpSecurity: 'ssl',
+  password: '',
+  smtpUsername: '',
+  smtpPassword: '',
   samePassword: true,
   acceptInvalidCerts: false,
-  authMode: "password",
+  authMode: 'password',
   oauthProvider: null,
-  oauthClientId: "",
-  oauthClientSecret: "",
+  oauthClientId: '',
+  oauthClientSecret: '',
   oauthAccessToken: null,
   oauthRefreshToken: null,
   oauthExpiresAt: null,
   oauthEmail: null,
 };
 
-const steps: Step[] = ["basic", "imap", "smtp", "test"];
+const steps: Step[] = ['basic', 'imap', 'smtp', 'test'];
 
 const stepIcons: Record<Step, React.ReactNode> = {
   basic: <Mail className="w-4 h-4" />,
@@ -109,20 +105,20 @@ const stepIcons: Record<Step, React.ReactNode> = {
 };
 
 interface TestStatus {
-  state: "idle" | "testing" | "success" | "error";
+  state: 'idle' | 'testing' | 'success' | 'error';
   message?: string;
   errorCode?: ErrorCode;
 }
 
 const inputClass =
-  "w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors";
-const labelClass = "block text-xs font-medium text-text-secondary mb-1";
+  'w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors';
+const labelClass = 'block text-xs font-medium text-text-secondary mb-1';
 const selectClass =
-  "w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors appearance-none";
+  'w-full px-3 py-2 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors appearance-none';
 
 /** Map UI security value ("ssl") to Rust config value ("tls") */
 function mapSecurity(security: string): string {
-  if (security === "ssl") return "tls";
+  if (security === 'ssl') return 'tls';
   return security;
 }
 
@@ -132,7 +128,7 @@ function mapSecurity(security: string): string {
  */
 function formatConnectionError(
   err: unknown,
-  serverType: "IMAP" | "SMTP",
+  serverType: 'IMAP' | 'SMTP',
   host: string,
   port: number,
 ): { message: string; code: ErrorCode } {
@@ -182,15 +178,12 @@ function formatConnectionError(
 }
 
 /** Wraps an async operation with a timeout. Shows a clear error for timeouts vs other failures. */
-async function testConnectionWithTimeout<T>(
-  fn: () => Promise<T>,
-  timeoutMs = 15000,
-): Promise<T> {
+async function testConnectionWithTimeout<T>(fn: () => Promise<T>, timeoutMs = 15000): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(
       () =>
         reject(
-          Object.assign(new Error("Connection timed out"), {
+          Object.assign(new Error('Connection timed out'), {
             code: ErrorCodes.CONNECTION_TIMEOUT,
           }),
         ),
@@ -200,20 +193,15 @@ async function testConnectionWithTimeout<T>(
   return Promise.race([fn(), timeout]);
 }
 
-export function AddImapAccount({
-  onClose,
-  onSuccess,
-  onBack,
-  prefill,
-}: AddImapAccountProps) {
+export function AddImapAccount({ onClose, onSuccess, onBack, prefill }: AddImapAccountProps) {
   const { t } = useTranslation();
   const stepLabels: Record<Step, string> = {
-    basic: t("addAccount.account"),
-    imap: t("addAccount.incoming"),
-    smtp: t("addAccount.outgoing"),
-    test: t("addAccount.verify"),
+    basic: t('addAccount.account'),
+    imap: t('addAccount.incoming'),
+    smtp: t('addAccount.outgoing'),
+    test: t('addAccount.verify'),
   };
-  const [currentStep, setCurrentStep] = useState<Step>("basic");
+  const [currentStep, setCurrentStep] = useState<Step>('basic');
   const [form, setForm] = useState<FormState>(() => {
     if (prefill) {
       return {
@@ -228,26 +216,23 @@ export function AddImapAccount({
     }
     return initialFormState;
   });
-  const [imapTest, setImapTest] = useState<TestStatus>({ state: "idle" });
-  const [smtpTest, setSmtpTest] = useState<TestStatus>({ state: "idle" });
+  const [imapTest, setImapTest] = useState<TestStatus>({ state: 'idle' });
+  const [smtpTest, setSmtpTest] = useState<TestStatus>({ state: 'idle' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [discoveryApplied, setDiscoveryApplied] = useState(false);
   const [oauthConnecting, setOauthConnecting] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
-  const [detectedAuthMethods, setDetectedAuthMethods] = useState<AuthMode[]>(["password"]);
+  const [detectedAuthMethods, setDetectedAuthMethods] = useState<AuthMode[]>(['password']);
   const [detectedOAuthProviderId, setDetectedOAuthProviderId] = useState<string | null>(null);
 
   const addAccount = useAccountStore((s) => s.addAccount);
 
   const currentStepIndex = steps.indexOf(currentStep);
 
-  const updateForm = useCallback(
-    <K extends keyof FormState>(key: K, value: FormState[K]) => {
-      setForm((prev) => ({ ...prev, [key]: value }));
-    },
-    [],
-  );
+  const updateForm = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   const handleEmailBlur = useCallback(() => {
     if (discoveryApplied) return;
@@ -263,7 +248,7 @@ export function AddImapAccount({
         smtpSecurity: result.settings.smtpSecurity,
         acceptInvalidCerts: result.acceptInvalidCerts ?? false,
         // Auto-select OAuth2 if it's the only option (e.g. Outlook)
-        authMode: result.authMethods[0] === "oauth2" ? "oauth2" : prev.authMode,
+        authMode: result.authMethods[0] === 'oauth2' ? 'oauth2' : prev.authMode,
         oauthProvider: result.oauthProviderId ?? null,
       }));
       setDetectedAuthMethods(result.authMethods);
@@ -272,37 +257,30 @@ export function AddImapAccount({
     }
   }, [form.email, form.imapHost, form.smtpHost, discoveryApplied]);
 
-  const handleImapSecurityChange = useCallback(
-    (security: SecurityType) => {
-      setForm((prev) => ({
-        ...prev,
-        imapSecurity: security,
-        imapPort: getDefaultImapPort(security),
-      }));
-    },
-    [],
-  );
+  const handleImapSecurityChange = useCallback((security: SecurityType) => {
+    setForm((prev) => ({
+      ...prev,
+      imapSecurity: security,
+      imapPort: getDefaultImapPort(security),
+    }));
+  }, []);
 
-  const handleSmtpSecurityChange = useCallback(
-    (security: SecurityType) => {
-      setForm((prev) => ({
-        ...prev,
-        smtpSecurity: security,
-        smtpPort: getDefaultSmtpPort(security),
-      }));
-    },
-    [],
-  );
+  const handleSmtpSecurityChange = useCallback((security: SecurityType) => {
+    setForm((prev) => ({
+      ...prev,
+      smtpSecurity: security,
+      smtpPort: getDefaultSmtpPort(security),
+    }));
+  }, []);
 
-  const isOAuth = form.authMode === "oauth2";
+  const isOAuth = form.authMode === 'oauth2';
   const hasOAuthTokens = !!(form.oauthAccessToken && form.oauthRefreshToken);
 
   const canAdvanceFromBasic =
-    form.email.trim().includes("@") &&
-    (isOAuth ? hasOAuthTokens : form.password.trim().length > 0);
+    form.email.trim().includes('@') && (isOAuth ? hasOAuthTokens : form.password.trim().length > 0);
   const canAdvanceFromImap = form.imapHost.trim().length > 0 && form.imapPort > 0;
   const canAdvanceFromSmtp = form.smtpHost.trim().length > 0 && form.smtpPort > 0;
-  const bothTestsPassed = imapTest.state === "success" && smtpTest.state === "success";
+  const bothTestsPassed = imapTest.state === 'success' && smtpTest.state === 'success';
 
   const goNext = useCallback(() => {
     const idx = steps.indexOf(currentStep);
@@ -322,13 +300,13 @@ export function AddImapAccount({
 
   const canGoNext = useCallback((): boolean => {
     switch (currentStep) {
-      case "basic":
+      case 'basic':
         return canAdvanceFromBasic;
-      case "imap":
+      case 'imap':
         return canAdvanceFromImap;
-      case "smtp":
+      case 'smtp':
         return canAdvanceFromSmtp;
-      case "test":
+      case 'test':
         return false;
       default:
         return false;
@@ -337,7 +315,7 @@ export function AddImapAccount({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && currentStep !== "test" && canGoNext()) {
+      if (e.key === 'Enter' && currentStep !== 'test' && canGoNext()) {
         e.preventDefault();
         goNext();
       }
@@ -353,7 +331,7 @@ export function AddImapAccount({
     }
 
     if (!form.oauthClientId.trim()) {
-      setOauthError("Please enter a Client ID first.");
+      setOauthError('Please enter a Client ID first.');
       return;
     }
 
@@ -388,78 +366,71 @@ export function AddImapAccount({
   };
 
   const testImapConnection = async () => {
-    setImapTest({ state: "testing" });
+    setImapTest({ state: 'testing' });
     try {
       const result = await testConnectionWithTimeout(() =>
-        invokeCommand<string>("imap_test_connection", {
+        invokeCommand<string>('imap_test_connection', {
           config: {
             host: form.imapHost,
             port: form.imapPort,
             security: mapSecurity(form.imapSecurity),
             username: form.imapUsername || (isOAuth ? (form.oauthEmail ?? form.email) : form.email),
-            password: isOAuth ? (form.oauthAccessToken ?? "") : form.password,
-            auth_method: isOAuth ? "oauth2" : "password",
+            password: isOAuth ? (form.oauthAccessToken ?? '') : form.password,
+            auth_method: isOAuth ? 'oauth2' : 'password',
             accept_invalid_certs: form.acceptInvalidCerts,
           },
         }),
       );
-      setImapTest({ state: "success", message: result });
+      setImapTest({ state: 'success', message: result });
     } catch (err) {
-      const { message, code } = formatConnectionError(
-        err,
-        "IMAP",
-        form.imapHost,
-        form.imapPort,
-      );
-      setImapTest({ state: "error", message, errorCode: code });
+      const { message, code } = formatConnectionError(err, 'IMAP', form.imapHost, form.imapPort);
+      setImapTest({ state: 'error', message, errorCode: code });
     }
   };
 
   const testSmtpConnection = async () => {
-    setSmtpTest({ state: "testing" });
+    setSmtpTest({ state: 'testing' });
     try {
-      const smtpUsername = form.smtpUsername || form.imapUsername || (isOAuth ? (form.oauthEmail ?? form.email) : form.email);
+      const smtpUsername =
+        form.smtpUsername ||
+        form.imapUsername ||
+        (isOAuth ? (form.oauthEmail ?? form.email) : form.email);
       const smtpPassword = isOAuth
-        ? (form.oauthAccessToken ?? "")
+        ? (form.oauthAccessToken ?? '')
         : form.samePassword
           ? form.password
           : form.smtpPassword;
       const result = await testConnectionWithTimeout(() =>
-        invokeCommand<{ success: boolean; message: string }>("smtp_test_connection", {
+        invokeCommand<{ success: boolean; message: string }>('smtp_test_connection', {
           config: {
             host: form.smtpHost,
             port: form.smtpPort,
             security: mapSecurity(form.smtpSecurity),
             username: smtpUsername,
             password: smtpPassword,
-            auth_method: isOAuth ? "oauth2" : "password",
+            auth_method: isOAuth ? 'oauth2' : 'password',
             accept_invalid_certs: form.acceptInvalidCerts,
           },
         }),
       );
       // SMTP returns a result object - check if it was successful
       if (result.success) {
-        setSmtpTest({ state: "success", message: result.message });
+        setSmtpTest({ state: 'success', message: result.message });
       } else {
         // Even if invoke succeeds, the SMTP test may have failed
         // Try to parse the error message for structured error codes
         const normalized = normalizeError(result.message);
         const { message: friendlyMessage, code } = formatConnectionError(
           normalized,
-          "SMTP",
+          'SMTP',
           form.smtpHost,
           form.smtpPort,
         );
-        setSmtpTest({ state: "error", message: friendlyMessage, errorCode: code });
+        setSmtpTest({ state: 'error', message: friendlyMessage, errorCode: code });
       }
     } catch (err) {
-      const { message, code } = formatConnectionError(
-        err,
-        "SMTP",
-        form.smtpHost,
-        form.smtpPort,
-      );
-      setSmtpTest({ state: "error", message, errorCode: code });
+      const { message, code } = formatConnectionError(err, 'SMTP', form.smtpHost, form.smtpPort);
+      setSmtpTest({ state: 'error', message, errorCode: code });
     }
   };
 
@@ -478,43 +449,43 @@ export function AddImapAccount({
 
       const createdAccount = isOAuth
         ? await insertOAuthImapAccount({
-          id: accountId,
-          email,
-          displayName: form.displayName.trim() || null,
-          avatarUrl: null,
-          imapHost: form.imapHost.trim(),
-          imapPort: form.imapPort,
-          imapSecurity: form.imapSecurity,
-          smtpHost: form.smtpHost.trim(),
-          smtpPort: form.smtpPort,
-          smtpSecurity: form.smtpSecurity,
-          accessToken: form.oauthAccessToken!,
-          refreshToken: form.oauthRefreshToken!,
-          tokenExpiresAt: form.oauthExpiresAt!,
-          oauthProvider: form.oauthProvider!,
-          oauthClientId: form.oauthClientId.trim(),
-          oauthClientSecret: form.oauthClientSecret.trim() || null,
-          imapUsername,
-          acceptInvalidCerts: form.acceptInvalidCerts,
-        })
+            id: accountId,
+            email,
+            displayName: form.displayName.trim() || null,
+            avatarUrl: null,
+            imapHost: form.imapHost.trim(),
+            imapPort: form.imapPort,
+            imapSecurity: form.imapSecurity,
+            smtpHost: form.smtpHost.trim(),
+            smtpPort: form.smtpPort,
+            smtpSecurity: form.smtpSecurity,
+            accessToken: form.oauthAccessToken!,
+            refreshToken: form.oauthRefreshToken!,
+            tokenExpiresAt: form.oauthExpiresAt!,
+            oauthProvider: form.oauthProvider!,
+            oauthClientId: form.oauthClientId.trim(),
+            oauthClientSecret: form.oauthClientSecret.trim() || null,
+            imapUsername,
+            acceptInvalidCerts: form.acceptInvalidCerts,
+          })
         : await insertImapAccount({
-          id: accountId,
-          email,
-          displayName: form.displayName.trim() || null,
-          avatarUrl: null,
-          imapHost: form.imapHost.trim(),
-          imapPort: form.imapPort,
-          imapSecurity: form.imapSecurity,
-          smtpHost: form.smtpHost.trim(),
-          smtpPort: form.smtpPort,
-          smtpSecurity: form.smtpSecurity,
-          authMethod: "password",
-          password: form.password,
-          smtpUsername: form.smtpUsername.trim() || null,
-          smtpPassword: form.samePassword ? null : form.smtpPassword,
-          imapUsername,
-          acceptInvalidCerts: form.acceptInvalidCerts,
-        });
+            id: accountId,
+            email,
+            displayName: form.displayName.trim() || null,
+            avatarUrl: null,
+            imapHost: form.imapHost.trim(),
+            imapPort: form.imapPort,
+            imapSecurity: form.imapSecurity,
+            smtpHost: form.smtpHost.trim(),
+            smtpPort: form.smtpPort,
+            smtpSecurity: form.smtpSecurity,
+            authMethod: 'password',
+            password: form.password,
+            smtpUsername: form.smtpUsername.trim() || null,
+            smtpPassword: form.samePassword ? null : form.smtpPassword,
+            imapUsername,
+            acceptInvalidCerts: form.acceptInvalidCerts,
+          });
 
       const acc: Account = {
         id: createdAccount.id,
@@ -543,17 +514,15 @@ export function AddImapAccount({
         return (
           <div key={step} className="flex items-center gap-1">
             {i > 0 && (
-              <div
-                className={`w-6 h-px ${isCompleted ? "bg-accent" : "bg-border-primary"}`}
-              />
+              <div className={`w-6 h-px ${isCompleted ? 'bg-accent' : 'bg-border-primary'}`} />
             )}
             <div
               className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-accent/10 text-accent"
+                  ? 'bg-accent/10 text-accent'
                   : isCompleted
-                    ? "text-accent"
-                    : "text-text-tertiary"
+                    ? 'text-accent'
+                    : 'text-text-tertiary'
               }`}
             >
               {stepIcons[step]}
@@ -566,21 +535,21 @@ export function AddImapAccount({
   );
 
   const renderAuthModeSelector = () => {
-    const showOAuth = detectedAuthMethods.includes("oauth2") || form.authMode === "oauth2";
+    const showOAuth = detectedAuthMethods.includes('oauth2') || form.authMode === 'oauth2';
     if (!showOAuth) return null;
 
     return (
       <div className="mb-4">
         <label className={labelClass}>Authentication Method</label>
         <div className="flex gap-2">
-          {detectedAuthMethods.includes("password") && (
+          {detectedAuthMethods.includes('password') && (
             <button
               type="button"
-              onClick={() => updateForm("authMode", "password")}
+              onClick={() => updateForm('authMode', 'password')}
               className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors ${
-                form.authMode === "password"
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-border-primary bg-bg-secondary text-text-secondary hover:bg-bg-hover"
+                form.authMode === 'password'
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-border-primary bg-bg-secondary text-text-secondary hover:bg-bg-hover'
               }`}
             >
               <KeyRound className="w-4 h-4" />
@@ -590,15 +559,15 @@ export function AddImapAccount({
           <button
             type="button"
             onClick={() => {
-              updateForm("authMode", "oauth2");
+              updateForm('authMode', 'oauth2');
               if (detectedOAuthProviderId) {
-                updateForm("oauthProvider", detectedOAuthProviderId);
+                updateForm('oauthProvider', detectedOAuthProviderId);
               }
             }}
             className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors ${
-              form.authMode === "oauth2"
-                ? "border-accent bg-accent/10 text-accent"
-                : "border-border-primary bg-bg-secondary text-text-secondary hover:bg-bg-hover"
+              form.authMode === 'oauth2'
+                ? 'border-accent bg-accent/10 text-accent'
+                : 'border-border-primary bg-bg-secondary text-text-secondary hover:bg-bg-hover'
             }`}
           >
             <ShieldCheck className="w-4 h-4" />
@@ -611,7 +580,8 @@ export function AddImapAccount({
 
   const renderOAuthSection = () => {
     const providerId = form.oauthProvider ?? detectedOAuthProviderId;
-    const providerName = providerId === "microsoft" ? "Microsoft" : providerId === "yahoo" ? "Yahoo" : "Provider";
+    const providerName =
+      providerId === 'microsoft' ? 'Microsoft' : providerId === 'yahoo' ? 'Yahoo' : 'Provider';
 
     return (
       <div className="space-y-3">
@@ -623,7 +593,7 @@ export function AddImapAccount({
             id="oauth-client-id"
             type="text"
             value={form.oauthClientId}
-            onChange={(e) => updateForm("oauthClientId", e.target.value)}
+            onChange={(e) => updateForm('oauthClientId', e.target.value)}
             placeholder={`${providerName} app Client ID`}
             className={inputClass}
             disabled={hasOAuthTokens}
@@ -637,7 +607,7 @@ export function AddImapAccount({
             id="oauth-client-secret"
             type="password"
             value={form.oauthClientSecret}
-            onChange={(e) => updateForm("oauthClientSecret", e.target.value)}
+            onChange={(e) => updateForm('oauthClientSecret', e.target.value)}
             placeholder="Leave blank for public clients"
             className={inputClass}
             disabled={hasOAuthTokens}
@@ -660,7 +630,7 @@ export function AddImapAccount({
             icon={oauthConnecting ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
             loading={oauthConnecting}
           >
-            {oauthConnecting ? "Connecting..." : `Sign in with ${providerName}`}
+            {oauthConnecting ? 'Connecting...' : `Sign in with ${providerName}`}
           </Button>
         )}
 
@@ -671,12 +641,18 @@ export function AddImapAccount({
         )}
 
         <p className="text-xs text-text-tertiary">
-          You need to register an app with {providerName} to get a Client ID.{" "}
-          {providerId === "microsoft" && (
-            <>Register at the Azure Portal (App Registrations) with redirect URI <code className="text-accent">http://127.0.0.1:17248</code>.</>
+          You need to register an app with {providerName} to get a Client ID.{' '}
+          {providerId === 'microsoft' && (
+            <>
+              Register at the Azure Portal (App Registrations) with redirect URI{' '}
+              <code className="text-accent">http://127.0.0.1:17248</code>.
+            </>
           )}
-          {providerId === "yahoo" && (
-            <>Register at the Yahoo Developer Network with redirect URI <code className="text-accent">http://127.0.0.1:17248</code>.</>
+          {providerId === 'yahoo' && (
+            <>
+              Register at the Yahoo Developer Network with redirect URI{' '}
+              <code className="text-accent">http://127.0.0.1:17248</code>.
+            </>
           )}
         </p>
       </div>
@@ -689,16 +665,22 @@ export function AddImapAccount({
         <button
           type="button"
           onClick={() => {
-            updateForm("email", import.meta.env.VITE_DEMO_EMAIL as string);
-            updateForm("displayName", import.meta.env.VITE_DEMO_DISPLAY_NAME as string);
-            updateForm("imapHost", import.meta.env.VITE_DEMO_IMAP_HOST as string);
-            updateForm("imapPort", Number(import.meta.env.VITE_DEMO_IMAP_PORT));
-            updateForm("imapSecurity", import.meta.env.VITE_DEMO_IMAP_SECURITY as "ssl" | "starttls" | "none");
-            updateForm("smtpHost", import.meta.env.VITE_DEMO_SMTP_HOST as string);
-            updateForm("smtpPort", Number(import.meta.env.VITE_DEMO_SMTP_PORT));
-            updateForm("smtpSecurity", import.meta.env.VITE_DEMO_SMTP_SECURITY as "ssl" | "starttls" | "none");
-            updateForm("password", import.meta.env.VITE_DEMO_PASSWORD as string);
-            updateForm("samePassword", true);
+            updateForm('email', import.meta.env.VITE_DEMO_EMAIL as string);
+            updateForm('displayName', import.meta.env.VITE_DEMO_DISPLAY_NAME as string);
+            updateForm('imapHost', import.meta.env.VITE_DEMO_IMAP_HOST as string);
+            updateForm('imapPort', Number(import.meta.env.VITE_DEMO_IMAP_PORT));
+            updateForm(
+              'imapSecurity',
+              import.meta.env.VITE_DEMO_IMAP_SECURITY as 'ssl' | 'starttls' | 'none',
+            );
+            updateForm('smtpHost', import.meta.env.VITE_DEMO_SMTP_HOST as string);
+            updateForm('smtpPort', Number(import.meta.env.VITE_DEMO_SMTP_PORT));
+            updateForm(
+              'smtpSecurity',
+              import.meta.env.VITE_DEMO_SMTP_SECURITY as 'ssl' | 'starttls' | 'none',
+            );
+            updateForm('password', import.meta.env.VITE_DEMO_PASSWORD as string);
+            updateForm('samePassword', true);
           }}
           className="w-full px-4 py-2.5 text-sm border border-dashed border-accent/50 text-accent rounded-lg hover:bg-accent/5 transition-colors"
         >
@@ -713,7 +695,7 @@ export function AddImapAccount({
           id="imap-email"
           type="email"
           value={form.email}
-          onChange={(e) => updateForm("email", e.target.value)}
+          onChange={(e) => updateForm('email', e.target.value)}
           onBlur={handleEmailBlur}
           placeholder="you@example.com"
           className={inputClass}
@@ -736,7 +718,7 @@ export function AddImapAccount({
               id="imap-display-name"
               type="text"
               value={form.displayName}
-              onChange={(e) => updateForm("displayName", e.target.value)}
+              onChange={(e) => updateForm('displayName', e.target.value)}
               placeholder="Your Name"
               className={inputClass}
             />
@@ -749,7 +731,7 @@ export function AddImapAccount({
               id="imap-username"
               type="text"
               value={form.imapUsername}
-              onChange={(e) => updateForm("imapUsername", e.target.value)}
+              onChange={(e) => updateForm('imapUsername', e.target.value)}
               placeholder="Leave blank to use your email address"
               className={inputClass}
             />
@@ -765,7 +747,7 @@ export function AddImapAccount({
               id="imap-password"
               type="password"
               value={form.password}
-              onChange={(e) => updateForm("password", e.target.value)}
+              onChange={(e) => updateForm('password', e.target.value)}
               placeholder="Enter your email password or app password"
               className={inputClass}
             />
@@ -785,7 +767,7 @@ export function AddImapAccount({
             id="imap-display-name"
             type="text"
             value={form.displayName}
-            onChange={(e) => updateForm("displayName", e.target.value)}
+            onChange={(e) => updateForm('displayName', e.target.value)}
             placeholder="Your Name"
             className={inputClass}
           />
@@ -798,19 +780,20 @@ export function AddImapAccount({
     <div className="space-y-4">
       {isOAuth && (
         <p className="text-xs text-text-tertiary">
-          Server settings have been auto-configured for your provider. You can adjust them if needed.
+          Server settings have been auto-configured for your provider. You can adjust them if
+          needed.
         </p>
       )}
       <div>
         <label htmlFor="imap-host" className={labelClass}>
-          {t("account.imapHost")}
+          {t('account.imapHost')}
         </label>
         <input
           id="imap-host"
           type="text"
           value={form.imapHost}
-          onChange={(e) => updateForm("imapHost", e.target.value)}
-          placeholder={t("account.imapHostPlaceholder")}
+          onChange={(e) => updateForm('imapHost', e.target.value)}
+          placeholder={t('account.imapHostPlaceholder')}
           className={inputClass}
           autoFocus
         />
@@ -818,33 +801,29 @@ export function AddImapAccount({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="imap-port" className={labelClass}>
-            {t("account.imapPort")}
+            {t('account.imapPort')}
           </label>
           <input
             id="imap-port"
             type="number"
             value={form.imapPort}
-            onChange={(e) =>
-              updateForm("imapPort", parseInt(e.target.value, 10) || 0)
-            }
+            onChange={(e) => updateForm('imapPort', parseInt(e.target.value, 10) || 0)}
             className={inputClass}
           />
         </div>
         <div>
           <label htmlFor="imap-security" className={labelClass}>
-            {t("account.imapSecurity")}
+            {t('account.imapSecurity')}
           </label>
           <select
             id="imap-security"
             value={form.imapSecurity}
-            onChange={(e) =>
-              handleImapSecurityChange(e.target.value as SecurityType)
-            }
+            onChange={(e) => handleImapSecurityChange(e.target.value as SecurityType)}
             className={selectClass}
           >
-            <option value="ssl">{t("account.imapSecuritySsl")}</option>
-            <option value="starttls">{t("account.imapSecurityStarttls")}</option>
-            <option value="none">{t("account.imapSecurityNone")}</option>
+            <option value="ssl">{t('account.imapSecuritySsl')}</option>
+            <option value="starttls">{t('account.imapSecurityStarttls')}</option>
+            <option value="none">{t('account.imapSecurityNone')}</option>
           </select>
         </div>
       </div>
@@ -853,17 +832,14 @@ export function AddImapAccount({
           id="accept-invalid-certs"
           type="checkbox"
           checked={form.acceptInvalidCerts}
-          onChange={(e) => updateForm("acceptInvalidCerts", e.target.checked)}
+          onChange={(e) => updateForm('acceptInvalidCerts', e.target.checked)}
           className="rounded border-border-primary text-accent focus:ring-accent"
         />
-        <label
-          htmlFor="accept-invalid-certs"
-          className="text-sm text-text-secondary"
-        >
+        <label htmlFor="accept-invalid-certs" className="text-sm text-text-secondary">
           Accept self-signed certificates
         </label>
       </div>
-      <p className="text-xs text-text-tertiary -mt-2 ml-6">
+      <p className="text-xs text-text-tertiary -mt-2 ms-6">
         Enable for local mail bridges like ProtonMail Bridge
       </p>
     </div>
@@ -873,19 +849,20 @@ export function AddImapAccount({
     <div className="space-y-4">
       {isOAuth && (
         <p className="text-xs text-text-tertiary">
-          Server settings have been auto-configured for your provider. You can adjust them if needed.
+          Server settings have been auto-configured for your provider. You can adjust them if
+          needed.
         </p>
       )}
       <div>
         <label htmlFor="smtp-host" className={labelClass}>
-          {t("account.smtpHost")}
+          {t('account.smtpHost')}
         </label>
         <input
           id="smtp-host"
           type="text"
           value={form.smtpHost}
-          onChange={(e) => updateForm("smtpHost", e.target.value)}
-          placeholder={t("account.smtpHostPlaceholder")}
+          onChange={(e) => updateForm('smtpHost', e.target.value)}
+          placeholder={t('account.smtpHostPlaceholder')}
           className={inputClass}
           autoFocus
         />
@@ -893,33 +870,29 @@ export function AddImapAccount({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="smtp-port" className={labelClass}>
-            {t("account.smtpPort")}
+            {t('account.smtpPort')}
           </label>
           <input
             id="smtp-port"
             type="number"
             value={form.smtpPort}
-            onChange={(e) =>
-              updateForm("smtpPort", parseInt(e.target.value, 10) || 0)
-            }
+            onChange={(e) => updateForm('smtpPort', parseInt(e.target.value, 10) || 0)}
             className={inputClass}
           />
         </div>
         <div>
           <label htmlFor="smtp-security" className={labelClass}>
-            {t("account.smtpSecurity")}
+            {t('account.smtpSecurity')}
           </label>
           <select
             id="smtp-security"
             value={form.smtpSecurity}
-            onChange={(e) =>
-              handleSmtpSecurityChange(e.target.value as SecurityType)
-            }
+            onChange={(e) => handleSmtpSecurityChange(e.target.value as SecurityType)}
             className={selectClass}
           >
-            <option value="ssl">{t("account.imapSecuritySsl")}</option>
-            <option value="starttls">{t("account.imapSecurityStarttls")}</option>
-            <option value="none">{t("account.imapSecurityNone")}</option>
+            <option value="ssl">{t('account.imapSecuritySsl')}</option>
+            <option value="starttls">{t('account.imapSecurityStarttls')}</option>
+            <option value="none">{t('account.imapSecurityNone')}</option>
           </select>
         </div>
       </div>
@@ -930,13 +903,10 @@ export function AddImapAccount({
               id="smtp-same-password"
               type="checkbox"
               checked={form.samePassword}
-              onChange={(e) => updateForm("samePassword", e.target.checked)}
+              onChange={(e) => updateForm('samePassword', e.target.checked)}
               className="rounded border-border-primary text-accent focus:ring-accent"
             />
-            <label
-              htmlFor="smtp-same-password"
-              className="text-sm text-text-secondary"
-            >
+            <label htmlFor="smtp-same-password" className="text-sm text-text-secondary">
               Use same password as IMAP
             </label>
           </div>
@@ -950,7 +920,7 @@ export function AddImapAccount({
                   id="smtp-username"
                   type="text"
                   value={form.smtpUsername}
-                  onChange={(e) => updateForm("smtpUsername", e.target.value)}
+                  onChange={(e) => updateForm('smtpUsername', e.target.value)}
                   placeholder="Leave blank to use IMAP username"
                   className={inputClass}
                 />
@@ -966,7 +936,7 @@ export function AddImapAccount({
                   id="smtp-password"
                   type="password"
                   value={form.smtpPassword}
-                  onChange={(e) => updateForm("smtpPassword", e.target.value)}
+                  onChange={(e) => updateForm('smtpPassword', e.target.value)}
                   placeholder="SMTP password"
                   className={inputClass}
                 />
@@ -980,11 +950,11 @@ export function AddImapAccount({
 
   const renderTestResult = (label: string, status: TestStatus) => {
     const icon =
-      status.state === "testing" ? (
+      status.state === 'testing' ? (
         <Loader2 className="w-4 h-4 animate-spin text-accent" />
-      ) : status.state === "success" ? (
+      ) : status.state === 'success' ? (
         <CheckCircle2 className="w-4 h-4 text-success" />
-      ) : status.state === "error" ? (
+      ) : status.state === 'error' ? (
         <XCircle className="w-4 h-4 text-danger" />
       ) : (
         <div className="w-4 h-4 rounded-full border-2 border-border-primary" />
@@ -998,18 +968,18 @@ export function AddImapAccount({
           {status.message && (
             <div
               className={`text-xs mt-0.5 ${
-                status.state === "error"
-                  ? "text-danger"
-                  : status.state === "success"
-                    ? "text-success"
-                    : "text-text-tertiary"
+                status.state === 'error'
+                  ? 'text-danger'
+                  : status.state === 'success'
+                    ? 'text-success'
+                    : 'text-text-tertiary'
               }`}
             >
               {status.message}
             </div>
           )}
           {/* Show error code for debugging when there's an error */}
-          {status.state === "error" && status.errorCode && (
+          {status.state === 'error' && status.errorCode && (
             <div className="text-xs text-text-tertiary font-mono mt-1">
               Error code: <span className="text-accent">{status.errorCode}</span>
             </div>
@@ -1026,20 +996,20 @@ export function AddImapAccount({
       </div>
 
       <div className="space-y-3">
-        {renderTestResult("IMAP Connection", imapTest)}
-        {renderTestResult("SMTP Connection", smtpTest)}
+        {renderTestResult('IMAP Connection', imapTest)}
+        {renderTestResult('SMTP Connection', smtpTest)}
       </div>
 
       <button
         onClick={testBothConnections}
-        disabled={imapTest.state === "testing" || smtpTest.state === "testing"}
+        disabled={imapTest.state === 'testing' || smtpTest.state === 'testing'}
         className="w-full px-4 py-2 text-sm bg-bg-secondary border border-border-primary rounded-lg text-text-primary hover:bg-bg-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {imapTest.state === "testing" || smtpTest.state === "testing"
-          ? "Testing..."
-          : imapTest.state === "idle" && smtpTest.state === "idle"
-            ? t("account.testConnection")
-            : "Re-test Connection"}
+        {imapTest.state === 'testing' || smtpTest.state === 'testing'
+          ? 'Testing...'
+          : imapTest.state === 'idle' && smtpTest.state === 'idle'
+            ? t('account.testConnection')
+            : 'Re-test Connection'}
       </button>
 
       {saveError && (
@@ -1052,48 +1022,34 @@ export function AddImapAccount({
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case "basic":
+      case 'basic':
         return renderBasicStep();
-      case "imap":
+      case 'imap':
         return renderImapStep();
-      case "smtp":
+      case 'smtp':
         return renderSmtpStep();
-      case "test":
+      case 'test':
         return renderTestStep();
     }
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Add IMAP/SMTP Account"
-      size="xl"
-    >
+    <Modal isOpen={true} onClose={onClose} title="Add IMAP/SMTP Account" size="xl">
       <div className="p-4" onKeyDown={handleKeyDown}>
         {renderStepIndicator()}
         {renderStepContent()}
 
         <div className="flex items-center justify-between mt-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<ArrowLeft size={16} />}
-            onClick={goPrev}
-          >
-            {t("common.back")}
+          <Button variant="ghost" size="sm" icon={<ArrowLeft size={16} />} onClick={goPrev}>
+            {t('common.back')}
           </Button>
 
           <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onClose}
-            >
-              {t("common.cancel")}
+            <Button variant="secondary" size="sm" onClick={onClose}>
+              {t('common.cancel')}
             </Button>
 
-            {currentStep === "test" ? (
+            {currentStep === 'test' ? (
               <Button
                 variant="primary"
                 size="md"
@@ -1101,7 +1057,7 @@ export function AddImapAccount({
                 disabled={!bothTestsPassed || saving}
                 loading={saving}
               >
-                {saving ? "Adding..." : t("account.save")}
+                {saving ? 'Adding...' : t('account.save')}
               </Button>
             ) : (
               <Button
@@ -1111,7 +1067,7 @@ export function AddImapAccount({
                 onClick={goNext}
                 disabled={!canGoNext()}
               >
-                {t("common.next")}
+                {t('common.next')}
               </Button>
             )}
           </div>

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams, useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
   User,
@@ -10,10 +10,10 @@ import {
   FolderOpen,
   Megaphone,
   AlertCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { usePlatform } from "@shared/hooks/usePlatform";
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { usePlatform } from '@shared/hooks/usePlatform';
 import {
   getContactById,
   getContactStats,
@@ -22,19 +22,19 @@ import {
   type DbContact,
   type ContactStats,
   type ContactEngagementRow,
-} from "@features/contacts/db/contacts";
-import { getContactFilesBySender, type ContactFile } from "@features/contacts/db/contactFiles";
-import { getCampaignsForContact } from "@features/campaigns/db/campaignRecipients";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+} from '@features/contacts/db/contacts';
+import { getContactFilesBySender, type ContactFile } from '@features/contacts/db/contactFiles';
+import { getCampaignsForContact } from '@features/campaigns/db/campaignRecipients';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
-import { ContactFilesList } from "@features/contacts/components/ContactFilesList";
-import { ContactCampaignHistory } from "@features/contacts/components/ContactCampaignHistory";
-import type { CampaignHistoryEntry } from "@features/contacts/components/ContactCampaignHistory";
-import { useContactNotes } from "@features/contacts/hooks/useContactNotes";
-import { ContactHeroCard } from "@features/contacts/components/ContactHeroCard";
-import { ContactQuickEditModal } from "@features/contacts/components/ContactQuickEditModal";
-import { SlideOverComposer } from "@features/contacts/components/SlideOverComposer";
+import { ContactFilesList } from '@features/contacts/components/ContactFilesList';
+import { ContactCampaignHistory } from '@features/contacts/components/ContactCampaignHistory';
+import type { CampaignHistoryEntry } from '@features/contacts/components/ContactCampaignHistory';
+import { useContactNotes } from '@features/contacts/hooks/useContactNotes';
+import { ContactHeroCard } from '@features/contacts/components/ContactHeroCard';
+import { ContactQuickEditModal } from '@features/contacts/components/ContactQuickEditModal';
+import { SlideOverComposer } from '@features/contacts/components/SlideOverComposer';
 import {
   ContactInfoCard,
   ContactInfoTab,
@@ -46,28 +46,28 @@ import {
   type ContactGroupInfo,
   type DetailTab,
   type TabDefinition,
-} from "@features/contacts/components/contactDetail";
+} from '@features/contacts/components/contactDetail';
 
 // ─── Tab configuration ─────────────────────────────────────────────────────
 
 const TABS: TabDefinition[] = [
-  { id: "info", label: "Info", icon: User },
-  { id: "emails", label: "Emails", icon: Mail },
-  { id: "attachments", label: "Attachments", icon: Paperclip },
-  { id: "notes", label: "Notes", icon: StickyNote },
-  { id: "files", label: "Files", icon: FolderOpen },
-  { id: "campaigns", label: "Campaigns", icon: Megaphone },
-  { id: "activity", label: "Activity", icon: Activity },
+  { id: 'info', label: 'Info', icon: User },
+  { id: 'emails', label: 'Emails', icon: Mail },
+  { id: 'attachments', label: 'Attachments', icon: Paperclip },
+  { id: 'notes', label: 'Notes', icon: StickyNote },
+  { id: 'files', label: 'Files', icon: FolderOpen },
+  { id: 'campaigns', label: 'Campaigns', icon: Megaphone },
+  { id: 'activity', label: 'Activity', icon: Activity },
 ];
 
 const VALID_TABS: DetailTab[] = TABS.map((t) => t.id);
 
 function readTabFromUrl(): DetailTab {
-  if (typeof window === "undefined") return "info";
+  if (typeof window === 'undefined') return 'info';
   const params = new URLSearchParams(window.location.search);
-  const t = params.get("tab") as DetailTab | null;
+  const t = params.get('tab') as DetailTab | null;
   if (t && VALID_TABS.includes(t)) return t;
-  return "info";
+  return 'info';
 }
 
 // ─── Main component ────────────────────────────────────────────────────────
@@ -77,9 +77,7 @@ export function ContactDetailPage() {
   const navigate = useNavigate();
   const { screen } = usePlatform();
   const isMobile = screen.isMobile;
-  const primaryAccountId = useAccountStore((s) =>
-    s.accounts.find((a) => a.isActive)?.id ?? "",
-  );
+  const primaryAccountId = useAccountStore((s) => s.accounts.find((a) => a.isActive)?.id ?? '');
 
   // ── Active tab (URL-persisted) ──
   const [activeTab, setActiveTab] = useState<DetailTab>(() => readTabFromUrl());
@@ -110,10 +108,10 @@ export function ContactDetailPage() {
     handleChange: handleNotesChange,
     handleBlur: handleNotesBlur,
     isDirty: notesDirty,
-  } = useContactNotes(contact?.email ?? "", contact?.notes ?? "");
-  const [notesSaveStatus, setNotesSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  } = useContactNotes(contact?.email ?? '', contact?.notes ?? '');
+  const [notesSaveStatus, setNotesSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  );
 
   // ── Quick edit modal ──
   const [showQuickEdit, setShowQuickEdit] = useState(false);
@@ -123,11 +121,11 @@ export function ContactDetailPage() {
 
   // ── URL tab sync ──
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
-    if (url.searchParams.get("tab") !== activeTab) {
-      url.searchParams.set("tab", activeTab);
-      window.history.replaceState({}, "", url.toString());
+    if (url.searchParams.get('tab') !== activeTab) {
+      url.searchParams.set('tab', activeTab);
+      window.history.replaceState({}, '', url.toString());
     }
   }, [activeTab]);
 
@@ -145,14 +143,16 @@ export function ContactDetailPage() {
         setContact(c);
       } catch (err) {
         if (cancelled) return;
-        setContactError(err instanceof Error ? err.message : "Failed to load contact");
+        setContactError(err instanceof Error ? err.message : 'Failed to load contact');
       } finally {
         if (!cancelled) setContactLoading(false);
       }
     };
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contactId]);
 
   // ── Load engagement, stats, tags, groups when contact available ──
@@ -168,13 +168,15 @@ export function ContactDetailPage() {
       if (!cancelled) setStats(s);
     });
 
-    invokeCommand<ContactTag[]>("db_contact_tags", { contactId: contact.id }).then((tags) => {
+    invokeCommand<ContactTag[]>('db_contact_tags', { contactId: contact.id }).then((tags) => {
       if (!cancelled) setContactTags(tags);
     });
 
-    invokeCommand<ContactGroupInfo[]>("db_contact_groups", { contactId: contact.id }).then((groups) => {
-      if (!cancelled) setContactGroups(groups);
-    });
+    invokeCommand<ContactGroupInfo[]>('db_contact_groups', { contactId: contact.id }).then(
+      (groups) => {
+        if (!cancelled) setContactGroups(groups);
+      },
+    );
 
     getContactFilesBySender(contact.email).then((files) => {
       if (!cancelled) setVaultFiles(files);
@@ -188,15 +190,17 @@ export function ContactDetailPage() {
       }
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [contact]);
 
   // ── Notes save status indicator ──
   useEffect(() => {
     if (!contact) return;
     if (notesDirty) {
-      setNotesSaveStatus("saving");
-      const t = setTimeout(() => setNotesSaveStatus("saved"), 1500);
+      setNotesSaveStatus('saving');
+      const t = setTimeout(() => setNotesSaveStatus('saved'), 1500);
       return () => clearTimeout(t);
     }
     return undefined;
@@ -216,10 +220,10 @@ export function ContactDetailPage() {
     async (tagId: string) => {
       if (!contact) return;
       try {
-        await invokeCommand("db_remove_contact_tag", { contactId: contact.id, tagId });
+        await invokeCommand('db_remove_contact_tag', { contactId: contact.id, tagId });
         setContactTags((prev) => prev.filter((t) => t.id !== tagId));
       } catch (err) {
-        console.error("Failed to remove tag:", err);
+        console.error('Failed to remove tag:', err);
       }
     },
     [contact],
@@ -229,13 +233,13 @@ export function ContactDetailPage() {
     async (groupId: string) => {
       if (!contact) return;
       try {
-        await invokeCommand("db_remove_contact_from_group", {
+        await invokeCommand('db_remove_contact_from_group', {
           groupId,
           contactId: contact.id,
         });
         setContactGroups((prev) => prev.filter((g) => g.id !== groupId));
       } catch (err) {
-        console.error("Failed to remove group:", err);
+        console.error('Failed to remove group:', err);
       }
     },
     [contact],
@@ -250,7 +254,7 @@ export function ContactDetailPage() {
       }
       if (updates.notes !== contact.notes) {
         // Notes use the same hook pipeline; just persist directly here
-        await invokeCommand("db_update_contact", {
+        await invokeCommand('db_update_contact', {
           id: contact.id,
           updates: { set: { notes: updates.notes, updated_at: Math.floor(Date.now() / 1000) } },
         });
@@ -262,7 +266,7 @@ export function ContactDetailPage() {
 
   // ── Derived values ──
   const displayName = useMemo(
-    () => contact?.display_name ?? contact?.email.split("@")[0] ?? "Unknown",
+    () => contact?.display_name ?? contact?.email.split('@')[0] ?? 'Unknown',
     [contact],
   );
 
@@ -286,7 +290,7 @@ export function ContactDetailPage() {
           <p className="text-sm font-medium text-text-primary">Failed to load contact</p>
           <p className="text-xs text-text-tertiary text-center max-w-sm">{contactError}</p>
           <button
-            onClick={() => navigate({ to: "/people" })}
+            onClick={() => navigate({ to: '/people' })}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
           >
             <ArrowLeft size={13} />
@@ -307,7 +311,7 @@ export function ContactDetailPage() {
     }
 
     switch (activeTab) {
-      case "info":
+      case 'info':
         return (
           <div className="flex flex-col gap-5 p-5">
             {/* Sidebar: legacy ContactInfoCard (kept for parity) */}
@@ -335,13 +339,13 @@ export function ContactDetailPage() {
           </div>
         );
 
-      case "emails":
+      case 'emails':
         return <ContactEmailsTab email={contact.email} />;
 
-      case "attachments":
+      case 'attachments':
         return <ContactAttachmentsTab email={contact.email} />;
 
-      case "notes":
+      case 'notes':
         return (
           <ContactNotesTab
             notes={notes}
@@ -351,25 +355,20 @@ export function ContactDetailPage() {
           />
         );
 
-      case "files":
+      case 'files':
         return (
           <div className="p-5">
             <ContactFilesList files={vaultFiles} />
           </div>
         );
 
-      case "campaigns":
+      case 'campaigns':
         return (
-          <ContactCampaignHistory
-            campaigns={campaignHistory}
-            isLoading={campaignHistoryLoading}
-          />
+          <ContactCampaignHistory campaigns={campaignHistory} isLoading={campaignHistoryLoading} />
         );
 
-      case "activity":
-        return (
-          <ContactActivityTab email={contact.email} accountId={primaryAccountId} />
-        );
+      case 'activity':
+        return <ContactActivityTab email={contact.email} accountId={primaryAccountId} />;
 
       default:
         return null;
@@ -379,10 +378,12 @@ export function ContactDetailPage() {
   return (
     <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-bg-primary/50">
       {/* Header with back button + breadcrumb */}
-      <div className={`flex items-center gap-2 px-4 py-2 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm ${isMobile ? "safe-area-top" : ""}`}>
+      <div
+        className={`flex items-center gap-2 px-4 py-2 border-b border-border-primary shrink-0 bg-bg-primary/60 backdrop-blur-sm ${isMobile ? 'safe-area-top' : ''}`}
+      >
         <button
-          onClick={() => navigate({ to: "/people" })}
-          className={`p-1 -ml-1 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors ${isMobile ? "min-h-[44px] min-w-[44px] flex items-center justify-center" : ""}`}
+          onClick={() => navigate({ to: '/people' })}
+          className={`p-1 -ms-1 text-text-tertiary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors ${isMobile ? 'min-h-[44px] min-w-[44px] flex items-center justify-center' : ''}`}
           aria-label="Back to contacts"
         >
           <ArrowLeft size={18} />
@@ -391,7 +392,7 @@ export function ContactDetailPage() {
           <span>Contacts</span>
           <span>/</span>
           <span className="text-text-primary truncate font-medium">
-            {contactLoading ? "Loading..." : displayName}
+            {contactLoading ? 'Loading...' : displayName}
           </span>
         </div>
       </div>
@@ -430,10 +431,10 @@ export function ContactDetailPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${isMobile ? "min-h-[44px]" : ""} ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${isMobile ? 'min-h-[44px]' : ''} ${
                 isActive
-                  ? "text-accent border-accent"
-                  : "text-text-tertiary border-transparent hover:text-text-secondary"
+                  ? 'text-accent border-accent'
+                  : 'text-text-tertiary border-transparent hover:text-text-secondary'
               }`}
             >
               <Icon size={14} />
@@ -444,7 +445,9 @@ export function ContactDetailPage() {
       </div>
 
       {/* Tab content */}
-      <div className={`flex-1 overflow-y-auto ${isMobile ? "safe-area-bottom" : ""}`}>{renderTabContent()}</div>
+      <div className={`flex-1 overflow-y-auto ${isMobile ? 'safe-area-bottom' : ''}`}>
+        {renderTabContent()}
+      </div>
 
       {/* Modals */}
       <ContactQuickEditModal

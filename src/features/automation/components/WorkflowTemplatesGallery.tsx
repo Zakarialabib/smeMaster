@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Archive,
   Star,
@@ -13,11 +13,11 @@ import {
   Sparkles,
   Check,
   Workflow,
-} from "lucide-react";
-import { WORKFLOW_PRESETS } from "@/constants/workflowPresets";
-import type { WorkflowPreset } from "@/constants/workflowPresets";
-import { GlassPanel } from "@shared/components/ui";
-import { Button } from "@shared/components/ui/Button";
+} from 'lucide-react';
+import { WORKFLOW_PRESETS } from '@/constants/workflowPresets';
+import type { WorkflowPreset } from '@/constants/workflowPresets';
+import { GlassPanel } from '@shared/components/ui';
+import { Button } from '@shared/components/ui/Button';
 
 // ── Action icons ─────────────────────────────────────────────────────────────
 
@@ -35,7 +35,9 @@ const ACTION_ICONS: Record<string, React.ComponentType<{ size?: number; classNam
   flag: Star,
 };
 
-function getActionIcon(actionType: string): React.ComponentType<{ size?: number; className?: string }> {
+function getActionIcon(
+  actionType: string,
+): React.ComponentType<{ size?: number; className?: string }> {
   return ACTION_ICONS[actionType] ?? Workflow;
 }
 
@@ -64,7 +66,7 @@ export function WorkflowTemplatesGallery({
 }: WorkflowTemplatesGalleryProps) {
   const { t } = useTranslation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [category, setCategory] = useState<"automation" | "ai_enhanced">("automation");
+  const [category, setCategory] = useState<'automation' | 'ai_enhanced'>('automation');
 
   const filteredPresets = useMemo(
     () => WORKFLOW_PRESETS.filter((p) => p.category === category),
@@ -84,35 +86,35 @@ export function WorkflowTemplatesGallery({
         <div>
           <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
             <LayoutTemplate size={16} className="text-accent" />
-            {t("automation.templatesTitle", "Workflow Templates")}
+            {t('automation.templatesTitle', 'Workflow Templates')}
           </h3>
           <p className="text-xs text-text-tertiary mt-0.5">
-            {t("automation.templatesSubtitle", "Pre-built workflows — one click to activate")}
+            {t('automation.templatesSubtitle', 'Pre-built workflows — one click to activate')}
           </p>
         </div>
         <div className="flex items-center gap-1 bg-bg-tertiary rounded-lg p-0.5">
           <button
             type="button"
-            onClick={() => setCategory("automation")}
+            onClick={() => setCategory('automation')}
             className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              category === "automation"
-                ? "bg-accent text-white"
-                : "text-text-tertiary hover:text-text-primary"
+              category === 'automation'
+                ? 'bg-accent text-white'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
-            {t("automation.templatesAutomation", "Automation")}
+            {t('automation.templatesAutomation', 'Automation')}
           </button>
           <button
             type="button"
-            onClick={() => setCategory("ai_enhanced")}
+            onClick={() => setCategory('ai_enhanced')}
             className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              category === "ai_enhanced"
-                ? "bg-accent text-white"
-                : "text-text-tertiary hover:text-text-primary"
+              category === 'ai_enhanced'
+                ? 'bg-accent text-white'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
-            <Sparkles size={12} className="inline mr-1" />
-            {t("automation.templatesAiEnhanced", "AI Enhanced")}
+            <Sparkles size={12} className="inline me-1" />
+            {t('automation.templatesAiEnhanced', 'AI Enhanced')}
           </button>
         </div>
       </div>
@@ -128,15 +130,13 @@ export function WorkflowTemplatesGallery({
               key={preset.id}
               variant="card"
               className={`p-3.5 transition-all duration-200 ${
-                isApplying ? "opacity-60" : "hover:shadow-md hover:border-accent/30"
+                isApplying ? 'opacity-60' : 'hover:shadow-md hover:border-accent/30'
               }`}
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-text-primary truncate">
-                    {preset.name}
-                  </p>
+                  <p className="text-sm font-semibold text-text-primary truncate">{preset.name}</p>
                   <p className="text-xs text-text-tertiary mt-0.5 line-clamp-2">
                     {preset.description}
                   </p>
@@ -147,7 +147,7 @@ export function WorkflowTemplatesGallery({
               <div className="flex items-center gap-1.5 mb-2">
                 <Clock size={12} className="text-accent shrink-0" />
                 <span className="text-xs text-text-secondary capitalize">
-                  {preset.trigger_event.replace(/_/g, " ")}
+                  {preset.trigger_event.replace(/_/g, ' ')}
                 </span>
               </div>
 
@@ -169,16 +169,22 @@ export function WorkflowTemplatesGallery({
 
               {/* Use button */}
               <Button
-                variant={isApplying ? "glass" : "primary"}
+                variant={isApplying ? 'glass' : 'primary'}
                 size="xs"
                 className="w-full"
-                icon={isApplying ? <RefreshCw size={12} className="animate-spin" /> : <Check size={12} />}
+                icon={
+                  isApplying ? (
+                    <RefreshCw size={12} className="animate-spin" />
+                  ) : (
+                    <Check size={12} />
+                  )
+                }
                 onClick={() => handleUse(preset)}
                 disabled={isApplying}
               >
                 {isApplying
-                  ? t("automation.applying", "Applying...")
-                  : t("automation.useTemplate", "Use Template")}
+                  ? t('automation.applying', 'Applying...')
+                  : t('automation.useTemplate', 'Use Template')}
               </Button>
             </GlassPanel>
           );
@@ -188,7 +194,7 @@ export function WorkflowTemplatesGallery({
       {/* Cancel */}
       <div className="flex justify-center">
         <Button variant="ghost" size="sm" onClick={onCancel}>
-          {t("common.cancel")}
+          {t('common.cancel')}
         </Button>
       </div>
     </div>

@@ -151,6 +151,28 @@ pub async fn db_finalize_onboarding(
     Ok(())
 }
 
+/// Allow or deny demo/seed data.
+///
+/// When `enabled` is false, the orchestrator will not auto-seed demo data on
+/// startup (and any future first-run will stay empty). When true (the default),
+/// demo data seeds on first run as before. This gives the user explicit control
+/// over whether mock data is present alongside their real data.
+///
+/// Note: this only gates *auto* seeding. Explicit seeding via
+/// `db_seed_demo_preset` (onboarding preset choice) is unaffected.
+#[command]
+pub async fn db_set_demo_data_enabled(
+    pool: State<'_, SqlitePool>,
+    enabled: bool,
+) -> Result<(), String> {
+    sqlx::query("INSERT OR REPLACE INTO settings (key, value) VALUES ('demo_data_enabled', ?)")
+        .bind(if enabled { "true" } else { "false" })
+        .execute(&*pool)
+        .await
+        .map_err(|e| format!("Failed to set demo_data_enabled: {e}"))?;
+    Ok(())
+}
+
 /// Check if user has connected at least one email account
 #[command]
 pub async fn db_has_email_accounts(

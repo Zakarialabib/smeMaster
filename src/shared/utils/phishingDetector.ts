@@ -18,7 +18,7 @@ export interface LinkAnalysis {
   url: string;
   displayText: string;
   riskScore: number;
-  riskLevel: "safe" | "low" | "medium" | "high";
+  riskLevel: 'safe' | 'low' | 'medium' | 'high';
   triggeredRules: TriggeredRule[];
 }
 
@@ -34,50 +34,102 @@ export interface MessageScanResult {
 // ── Constants ──────────────────────────────────────────────────────
 
 const SUSPICIOUS_TLDS_TIER1 = new Set([
-  ".zip", ".mov", ".top", ".click", ".buzz", ".tk", ".ml", ".ga", ".cf", ".gq",
+  '.zip',
+  '.mov',
+  '.top',
+  '.click',
+  '.buzz',
+  '.tk',
+  '.ml',
+  '.ga',
+  '.cf',
+  '.gq',
 ]);
 const SUSPICIOUS_TLDS_TIER2 = new Set([
-  ".xyz", ".work", ".rest", ".surf", ".icu", ".cam", ".quest", ".sbs", ".cfd",
+  '.xyz',
+  '.work',
+  '.rest',
+  '.surf',
+  '.icu',
+  '.cam',
+  '.quest',
+  '.sbs',
+  '.cfd',
 ]);
 const SUSPICIOUS_TLDS_TIER3 = new Set([
-  ".info", ".online", ".site", ".club", ".space", ".fun", ".store", ".live",
+  '.info',
+  '.online',
+  '.site',
+  '.club',
+  '.space',
+  '.fun',
+  '.store',
+  '.live',
 ]);
 
 const URL_SHORTENERS = new Set([
-  "bit.ly", "t.co", "tinyurl.com", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rebrand.ly",
+  'bit.ly',
+  't.co',
+  'tinyurl.com',
+  'goo.gl',
+  'ow.ly',
+  'is.gd',
+  'buff.ly',
+  'rebrand.ly',
 ]);
 
 const SUSPICIOUS_PATH_KEYWORDS = [
-  "login", "signin", "verify", "confirm", "suspend", "secure",
-  "password", "credential", "wallet", "banking", "oauth", "token", "authenticate",
+  'login',
+  'signin',
+  'verify',
+  'confirm',
+  'suspend',
+  'secure',
+  'password',
+  'credential',
+  'wallet',
+  'banking',
+  'oauth',
+  'token',
+  'authenticate',
 ];
 
-const DANGEROUS_PROTOCOLS = new Set(["data:", "javascript:", "vbscript:", "blob:"]);
+const DANGEROUS_PROTOCOLS = new Set(['data:', 'javascript:', 'vbscript:', 'blob:']);
 
 const IMPERSONATED_BRANDS = [
-  "paypal", "amazon", "apple", "microsoft", "google", "chase",
-  "wellsfargo", "bankofamerica", "netflix", "facebook", "instagram", "dropbox",
+  'paypal',
+  'amazon',
+  'apple',
+  'microsoft',
+  'google',
+  'chase',
+  'wellsfargo',
+  'bankofamerica',
+  'netflix',
+  'facebook',
+  'instagram',
+  'dropbox',
 ];
 
 const MAX_LINKS = 200;
 
 // ── Risk Level ─────────────────────────────────────────────────────
 
-export function getRiskLevel(score: number): "safe" | "low" | "medium" | "high" {
-  if (score >= 60) return "high";
-  if (score >= 40) return "medium";
-  if (score >= 20) return "low";
-  return "safe";
+export function getRiskLevel(score: number): 'safe' | 'low' | 'medium' | 'high' {
+  if (score >= 60) return 'high';
+  if (score >= 40) return 'medium';
+  if (score >= 20) return 'low';
+  return 'safe';
 }
 
 // ── Individual Rule Functions ──────────────────────────────────────
 
 function checkIpAddress(hostname: string): TriggeredRule | null {
   const ipv4 = /^\d{1,3}(\.\d{1,3}){3}$/;
-  if (ipv4.test(hostname) || hostname.startsWith("[")) {
+  if (ipv4.test(hostname) || hostname.startsWith('[')) {
     return {
-      ruleId: "ip-address",
-      name: "IP Address URL",
+      ruleId: 'ip-address',
+      name: 'IP Address URL',
       score: 40,
       detail: `URL points to raw IP address: ${hostname}`,
     };
@@ -87,11 +139,11 @@ function checkIpAddress(hostname: string): TriggeredRule | null {
 
 function checkHomograph(hostname: string): TriggeredRule | null {
   // Split hostname into labels and check each for xn-- prefix (Punycode)
-  const labels = hostname.split(".");
-  if (labels.some((label) => label.startsWith("xn--"))) {
+  const labels = hostname.split('.');
+  if (labels.some((label) => label.startsWith('xn--'))) {
     return {
-      ruleId: "homograph",
-      name: "Homograph/Punycode Domain",
+      ruleId: 'homograph',
+      name: 'Homograph/Punycode Domain',
       score: 50,
       detail: `Domain uses Punycode (internationalized characters): ${hostname}`,
     };
@@ -100,30 +152,30 @@ function checkHomograph(hostname: string): TriggeredRule | null {
 }
 
 function checkSuspiciousTld(hostname: string): TriggeredRule | null {
-  const lastDot = hostname.lastIndexOf(".");
+  const lastDot = hostname.lastIndexOf('.');
   if (lastDot === -1) return null;
   const tld = hostname.slice(lastDot).toLowerCase();
 
   if (SUSPICIOUS_TLDS_TIER1.has(tld)) {
     return {
-      ruleId: "suspicious-tld",
-      name: "Suspicious TLD",
+      ruleId: 'suspicious-tld',
+      name: 'Suspicious TLD',
       score: 35,
       detail: `High-risk top-level domain: ${tld}`,
     };
   }
   if (SUSPICIOUS_TLDS_TIER2.has(tld)) {
     return {
-      ruleId: "suspicious-tld",
-      name: "Suspicious TLD",
+      ruleId: 'suspicious-tld',
+      name: 'Suspicious TLD',
       score: 20,
       detail: `Medium-risk top-level domain: ${tld}`,
     };
   }
   if (SUSPICIOUS_TLDS_TIER3.has(tld)) {
     return {
-      ruleId: "suspicious-tld",
-      name: "Suspicious TLD",
+      ruleId: 'suspicious-tld',
+      name: 'Suspicious TLD',
       score: 10,
       detail: `Low-risk top-level domain: ${tld}`,
     };
@@ -136,10 +188,10 @@ function checkSuspiciousTld(hostname: string): TriggeredRule | null {
  * This is a simplified version that handles common cases.
  */
 function getRegistrableDomain(hostname: string): string {
-  const parts = hostname.toLowerCase().split(".");
+  const parts = hostname.toLowerCase().split('.');
   // Return last 2 parts (e.g. "example.com" from "sub.example.com")
   if (parts.length >= 2) {
-    return parts.slice(-2).join(".");
+    return parts.slice(-2).join('.');
   }
   return hostname.toLowerCase();
 }
@@ -149,17 +201,18 @@ function checkDisplayHrefMismatch(url: string, displayText: string): TriggeredRu
   if (!trimmed) return null;
 
   // Check if display text looks like a URL (contains :// or matches domain pattern)
-  const looksLikeUrl = trimmed.includes("://") || /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/|$)/.test(trimmed);
+  const looksLikeUrl =
+    trimmed.includes('://') || /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/|$)/.test(trimmed);
   if (!looksLikeUrl) return null;
 
   // Extract domain from display text
   let displayDomain: string;
   try {
     // Try parsing with protocol
-    if (trimmed.includes("://")) {
+    if (trimmed.includes('://')) {
       displayDomain = new URL(trimmed).hostname;
     } else {
-      displayDomain = new URL("https://" + trimmed).hostname;
+      displayDomain = new URL('https://' + trimmed).hostname;
     }
   } catch {
     return null;
@@ -178,8 +231,8 @@ function checkDisplayHrefMismatch(url: string, displayText: string): TriggeredRu
 
   if (displayRegistrable !== hrefRegistrable) {
     return {
-      ruleId: "display-mismatch",
-      name: "Display vs URL Mismatch",
+      ruleId: 'display-mismatch',
+      name: 'Display vs URL Mismatch',
       score: 60,
       detail: `Link text shows "${displayDomain}" but points to "${hrefDomain}"`,
     };
@@ -191,8 +244,8 @@ function checkExcessiveSubdomains(hostname: string): TriggeredRule | null {
   const dotCount = (hostname.match(/\./g) ?? []).length;
   if (dotCount >= 4) {
     return {
-      ruleId: "excessive-subdomains",
-      name: "Excessive Subdomains",
+      ruleId: 'excessive-subdomains',
+      name: 'Excessive Subdomains',
       score: 25,
       detail: `Hostname has ${dotCount} dots: ${hostname}`,
     };
@@ -204,8 +257,8 @@ function checkUrlShortener(hostname: string): TriggeredRule | null {
   const lower = hostname.toLowerCase();
   if (URL_SHORTENERS.has(lower)) {
     return {
-      ruleId: "url-shortener",
-      name: "URL Shortener",
+      ruleId: 'url-shortener',
+      name: 'URL Shortener',
       score: 15,
       detail: `Link uses URL shortener: ${hostname}`,
     };
@@ -218,10 +271,10 @@ function checkSuspiciousPathKeywords(pathname: string, search: string): Triggere
   const found = SUSPICIOUS_PATH_KEYWORDS.filter((kw) => combined.includes(kw));
   if (found.length > 0) {
     return {
-      ruleId: "suspicious-keywords",
-      name: "Suspicious Path Keywords",
+      ruleId: 'suspicious-keywords',
+      name: 'Suspicious Path Keywords',
       score: 15,
-      detail: `Path contains suspicious keywords: ${found.join(", ")}`,
+      detail: `Path contains suspicious keywords: ${found.join(', ')}`,
     };
   }
   return null;
@@ -232,8 +285,8 @@ function checkDangerousProtocol(url: string): TriggeredRule | null {
   for (const proto of DANGEROUS_PROTOCOLS) {
     if (lower.startsWith(proto)) {
       return {
-        ruleId: "dangerous-protocol",
-        name: "Dangerous URI Scheme",
+        ruleId: 'dangerous-protocol',
+        name: 'Dangerous URI Scheme',
         score: 70,
         detail: `Uses dangerous protocol: ${proto}`,
       };
@@ -250,20 +303,20 @@ function checkUrlObfuscation(url: string, _hostname: string): TriggeredRule | nu
     const parsed = new URL(url);
     if (parsed.username || parsed.password) {
       return {
-        ruleId: "url-obfuscation",
-        name: "URL Obfuscation",
+        ruleId: 'url-obfuscation',
+        name: 'URL Obfuscation',
         score: 45,
-        detail: "URL contains @ sign used for credential spoofing",
+        detail: 'URL contains @ sign used for credential spoofing',
       };
     }
   } catch {
     // If URL can't be parsed, check raw string
-    if (url.includes("@")) {
+    if (url.includes('@')) {
       return {
-        ruleId: "url-obfuscation",
-        name: "URL Obfuscation",
+        ruleId: 'url-obfuscation',
+        name: 'URL Obfuscation',
         score: 45,
-        detail: "URL contains @ sign used for credential spoofing",
+        detail: 'URL contains @ sign used for credential spoofing',
       };
     }
   }
@@ -271,20 +324,20 @@ function checkUrlObfuscation(url: string, _hostname: string): TriggeredRule | nu
   // Check for percent-encoded hostname in the raw URL string.
   // URL parsers normalize percent encoding, so we must check the raw string.
   // Extract the host portion from the raw URL (between :// and the next / or end).
-  const protoEnd = url.indexOf("://");
+  const protoEnd = url.indexOf('://');
   if (protoEnd !== -1) {
     const afterProto = url.slice(protoEnd + 3);
     const hostEnd = afterProto.search(/[/?#]/);
     const rawHost = hostEnd === -1 ? afterProto : afterProto.slice(0, hostEnd);
     // Strip userinfo (anything before @)
-    const atIdx = rawHost.lastIndexOf("@");
+    const atIdx = rawHost.lastIndexOf('@');
     const hostPart = atIdx !== -1 ? rawHost.slice(atIdx + 1) : rawHost;
-    if (hostPart.includes("%")) {
+    if (hostPart.includes('%')) {
       return {
-        ruleId: "url-obfuscation",
-        name: "URL Obfuscation",
+        ruleId: 'url-obfuscation',
+        name: 'URL Obfuscation',
         score: 45,
-        detail: "Hostname contains percent-encoded characters",
+        detail: 'Hostname contains percent-encoded characters',
       };
     }
   }
@@ -297,7 +350,7 @@ function checkBrandImpersonation(hostname: string, pathname: string): TriggeredR
   const lowerPath = pathname.toLowerCase();
   const registrable = getRegistrableDomain(lowerHost);
   // Extract just the second-level domain name (e.g. "paypal" from "paypal.com")
-  const sld = registrable.split(".")[0] ?? "";
+  const sld = registrable.split('.')[0] ?? '';
 
   for (const brand of IMPERSONATED_BRANDS) {
     // Brand must appear anywhere in the hostname or path
@@ -310,8 +363,8 @@ function checkBrandImpersonation(hostname: string, pathname: string): TriggeredR
       // e.g. paypal.evil.com → sld "evil" ≠ "paypal" → flagged
       if (sld !== brand) {
         return {
-          ruleId: "brand-impersonation",
-          name: "Brand Impersonation",
+          ruleId: 'brand-impersonation',
+          name: 'Brand Impersonation',
           score: 50,
           detail: `"${brand}" appears in URL but domain is ${registrable}`,
         };
@@ -350,7 +403,7 @@ export function analyzeLink(url: string, displayText: string): LinkAnalysis {
       url,
       displayText,
       riskScore: 0,
-      riskLevel: "safe",
+      riskLevel: 'safe',
       triggeredRules: [],
     };
   }
@@ -410,8 +463,8 @@ export function analyzeLink(url: string, displayText: string): LinkAnalysis {
 
 export function scanLinksInHtml(html: string): LinkAnalysis[] {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  const anchors = doc.querySelectorAll("a[href]");
+  const doc = parser.parseFromString(html, 'text/html');
+  const anchors = doc.querySelectorAll('a[href]');
 
   const results: LinkAnalysis[] = [];
   let count = 0;
@@ -419,25 +472,31 @@ export function scanLinksInHtml(html: string): LinkAnalysis[] {
   for (const anchor of anchors) {
     if (count >= MAX_LINKS) break;
 
-    const href = anchor.getAttribute("href") ?? "";
+    const href = anchor.getAttribute('href') ?? '';
     const trimmedHref = href.trim();
 
     // Skip mailto:, tel:, #, empty, and relative URLs
     if (
       !trimmedHref ||
-      trimmedHref.startsWith("mailto:") ||
-      trimmedHref.startsWith("tel:") ||
-      trimmedHref.startsWith("#")
+      trimmedHref.startsWith('mailto:') ||
+      trimmedHref.startsWith('tel:') ||
+      trimmedHref.startsWith('#')
     ) {
       continue;
     }
 
     // Skip relative URLs (no protocol and doesn't look like a dangerous scheme)
-    if (!trimmedHref.includes("://") && !trimmedHref.startsWith("data:") && !trimmedHref.startsWith("javascript:") && !trimmedHref.startsWith("vbscript:") && !trimmedHref.startsWith("blob:")) {
+    if (
+      !trimmedHref.includes('://') &&
+      !trimmedHref.startsWith('data:') &&
+      !trimmedHref.startsWith('javascript:') &&
+      !trimmedHref.startsWith('vbscript:') &&
+      !trimmedHref.startsWith('blob:')
+    ) {
       continue;
     }
 
-    const displayText = anchor.textContent ?? "";
+    const displayText = anchor.textContent ?? '';
     const analysis = analyzeLink(trimmedHref, displayText);
     results.push(analysis);
     count++;
@@ -448,16 +507,23 @@ export function scanLinksInHtml(html: string): LinkAnalysis[] {
 
 // ── Message Scanning ───────────────────────────────────────────────
 
-export type PhishingSensitivity = "low" | "default" | "high";
+export type PhishingSensitivity = 'low' | 'default' | 'high';
 
 /** Banner thresholds per sensitivity level */
-const SENSITIVITY_THRESHOLDS: Record<PhishingSensitivity, { scoreThreshold: number; countThreshold: number }> = {
+const SENSITIVITY_THRESHOLDS: Record<
+  PhishingSensitivity,
+  { scoreThreshold: number; countThreshold: number }
+> = {
   low: { scoreThreshold: 60, countThreshold: 5 },
   default: { scoreThreshold: 40, countThreshold: 3 },
   high: { scoreThreshold: 20, countThreshold: 1 },
 };
 
-export function scanMessage(messageId: string, html: string | null, sensitivity: PhishingSensitivity = "default"): MessageScanResult {
+export function scanMessage(
+  messageId: string,
+  html: string | null,
+  sensitivity: PhishingSensitivity = 'default',
+): MessageScanResult {
   if (!html) {
     return {
       messageId,

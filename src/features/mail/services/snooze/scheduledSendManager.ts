@@ -1,11 +1,11 @@
 ﻿import {
   getPendingScheduledEmails,
   updateScheduledEmailStatus,
-} from "@features/mail/db/scheduledEmails";
-import { getGmailClient } from "../gmail/tokenManager";
-import { buildRawEmail, type EmailAttachment } from "@shared/utils/emailBuilder";
-import { getAccount } from "@features/accounts/db/accounts";
-import { createBackgroundChecker } from "@shared/services/backgroundCheckers";
+} from '@features/mail/db/scheduledEmails';
+import { getGmailClient } from '../gmail/tokenManager';
+import { buildRawEmail, type EmailAttachment } from '@shared/utils/emailBuilder';
+import { getAccount } from '@features/accounts/db/accounts';
+import { createBackgroundChecker } from '@shared/services/backgroundCheckers';
 
 /**
  * Check for scheduled emails that are ready to be sent.
@@ -17,12 +17,12 @@ async function checkScheduledEmails(): Promise<void> {
     try {
       const account = await getAccount(email.account_id);
       if (!account) {
-        await updateScheduledEmailStatus(email.id, "failed");
+        await updateScheduledEmailStatus(email.id, 'failed');
         continue;
       }
 
       // Mark as "sending" BEFORE attempting send to prevent duplicate sends
-      await updateScheduledEmailStatus(email.id, "sending");
+      await updateScheduledEmailStatus(email.id, 'sending');
 
       const client = await getGmailClient(email.account_id);
 
@@ -38,36 +38,32 @@ async function checkScheduledEmails(): Promise<void> {
 
       const raw = buildRawEmail({
         from: account.email,
-        to: email.to_addresses.split(",").map((a) => a.trim()),
-        cc: email.cc_addresses
-          ? email.cc_addresses.split(",").map((a) => a.trim())
-          : undefined,
-        bcc: email.bcc_addresses
-          ? email.bcc_addresses.split(",").map((a) => a.trim())
-          : undefined,
-        subject: email.subject ?? "",
+        to: email.to_addresses.split(',').map((a) => a.trim()),
+        cc: email.cc_addresses ? email.cc_addresses.split(',').map((a) => a.trim()) : undefined,
+        bcc: email.bcc_addresses ? email.bcc_addresses.split(',').map((a) => a.trim()) : undefined,
+        subject: email.subject ?? '',
         htmlBody: email.body_html,
         threadId: email.thread_id ?? undefined,
         attachments,
       });
 
       await client.sendMessage(raw, email.thread_id ?? undefined);
-      await updateScheduledEmailStatus(email.id, "sent");
+      await updateScheduledEmailStatus(email.id, 'sent');
     } catch (err) {
       console.error(`Failed to send scheduled email ${email.id}:`, err);
       // Distinguish transient vs permanent errors
       const message = err instanceof Error ? err.message : String(err);
-      const isTransient = message.includes("5") && /\b5\d{2}\b/.test(message)
-        || message.toLowerCase().includes("network")
-        || message.toLowerCase().includes("timeout")
-        || message.toLowerCase().includes("econnrefused");
+      const isTransient =
+        (message.includes('5') && /\b5\d{2}\b/.test(message)) ||
+        message.toLowerCase().includes('network') ||
+        message.toLowerCase().includes('timeout') ||
+        message.toLowerCase().includes('econnrefused');
       // Revert to pending for transient errors (allows retry), mark failed for permanent
-      await updateScheduledEmailStatus(email.id, isTransient ? "pending" : "failed");
+      await updateScheduledEmailStatus(email.id, isTransient ? 'pending' : 'failed');
     }
   }
 }
 
-const scheduledSendChecker = createBackgroundChecker("ScheduledSend", checkScheduledEmails);
+const scheduledSendChecker = createBackgroundChecker('ScheduledSend', checkScheduledEmails);
 export const startScheduledSendChecker = scheduledSendChecker.start;
 export const stopScheduledSendChecker = scheduledSendChecker.stop;
-

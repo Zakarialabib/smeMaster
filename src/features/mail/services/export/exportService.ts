@@ -1,6 +1,6 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
-export type ExportFormat = "mbox" | "eml" | "pdf" | "zip";
+export type ExportFormat = 'mbox' | 'eml' | 'pdf' | 'zip';
 
 export interface ExportOptions {
   accountId: string;
@@ -28,7 +28,7 @@ export interface BackupSchedule {
 
 export async function getExportFormats(): Promise<string[]> {
   try {
-    return await invokeCommand<string[]>("get_export_formats");
+    return await invokeCommand<string[]>('get_export_formats');
   } catch (error) {
     throw new Error(
       `Failed to get export formats: ${error instanceof Error ? error.message : String(error)}`,
@@ -36,12 +36,9 @@ export async function getExportFormats(): Promise<string[]> {
   }
 }
 
-export async function validateExportConfig(
-  format: string,
-  destination: string,
-): Promise<boolean> {
+export async function validateExportConfig(format: string, destination: string): Promise<boolean> {
   try {
-    return await invokeCommand<boolean>("validate_export_config", { format, destination });
+    return await invokeCommand<boolean>('validate_export_config', { format, destination });
   } catch (error) {
     throw new Error(
       `Failed to validate export config: ${error instanceof Error ? error.message : String(error)}`,
@@ -52,16 +49,18 @@ export async function validateExportConfig(
 export async function exportMessages(options: ExportOptions): Promise<void> {
   await validateExportConfig(options.format, options.destinationPath);
 
-  const messages = await invokeCommand<{
-    id: string;
-    from_address: string | null;
-    date: number;
-    subject: string | null;
-    to_addresses: string | null;
-    cc_addresses: string | null;
-    body_text: string | null;
-    body_html: string | null;
-  }[]>("db_get_messages_for_export", {
+  const messages = await invokeCommand<
+    {
+      id: string;
+      from_address: string | null;
+      date: number;
+      subject: string | null;
+      to_addresses: string | null;
+      cc_addresses: string | null;
+      body_text: string | null;
+      body_html: string | null;
+    }[]
+  >('db_get_messages_for_export', {
     accountId: options.accountId,
     dateFrom: options.dateFrom ?? null,
     dateTo: options.dateTo ?? null,
@@ -71,11 +70,11 @@ export async function exportMessages(options: ExportOptions): Promise<void> {
 
   for (const msg of messages) {
     const rfc2822 = buildRfc2822(msg);
-    const from = msg.from_address ?? "unknown";
+    const from = msg.from_address ?? 'unknown';
     const date = msg.date ?? Math.floor(Date.now() / 1000);
 
     try {
-      await invokeCommand("append_to_mbox", {
+      await invokeCommand('append_to_mbox', {
         filePath: options.destinationPath,
         messageRfc2822: rfc2822,
         fromAddress: from,
@@ -107,14 +106,14 @@ function buildRfc2822(msg: {
   if (msg.to_addresses) lines.push(`To: ${msg.to_addresses}`);
   if (msg.cc_addresses) lines.push(`Cc: ${msg.cc_addresses}`);
   lines.push(`Date: ${dateStr}`);
-  lines.push(`Subject: ${msg.subject ?? "(No Subject)"}`);
-  lines.push("MIME-Version: 1.0");
-  lines.push("Content-Type: text/plain; charset=UTF-8");
-  lines.push("Content-Transfer-Encoding: 8bit");
-  lines.push("");
-  lines.push(msg.body_text || msg.body_html || "");
+  lines.push(`Subject: ${msg.subject ?? '(No Subject)'}`);
+  lines.push('MIME-Version: 1.0');
+  lines.push('Content-Type: text/plain; charset=UTF-8');
+  lines.push('Content-Transfer-Encoding: 8bit');
+  lines.push('');
+  lines.push(msg.body_text || msg.body_html || '');
 
-  return lines.join("\r\n");
+  return lines.join('\r\n');
 }
 
 export async function scheduleBackup(schedule: {
@@ -125,7 +124,7 @@ export async function scheduleBackup(schedule: {
   destinationPath: string;
   encrypt: boolean;
 }): Promise<void> {
-  await invokeCommand<void>("db_create_backup_schedule", {
+  await invokeCommand<void>('db_create_backup_schedule', {
     accountId: schedule.accountId,
     name: schedule.name,
     format: schedule.format,
@@ -136,11 +135,11 @@ export async function scheduleBackup(schedule: {
 }
 
 export async function getSchedules(accountId: string): Promise<BackupSchedule[]> {
-  return invokeCommand<BackupSchedule[]>("db_list_backup_schedules", { accountId });
+  return invokeCommand<BackupSchedule[]>('db_list_backup_schedules', { accountId });
 }
 
 export async function toggleSchedule(id: string, enabled: boolean): Promise<void> {
-  await invokeCommand<void>("db_update_backup_schedule", {
+  await invokeCommand<void>('db_update_backup_schedule', {
     id,
     fields: { set: { is_enabled: enabled ? 1 : 0 }, unset: [] },
   });
@@ -164,35 +163,34 @@ export async function updateSchedule(
   if (updates.encrypt !== undefined) set.encrypt = updates.encrypt ? 1 : 0;
   if (Object.keys(set).length === 0) return;
 
-  await invokeCommand<void>("db_update_backup_schedule", {
+  await invokeCommand<void>('db_update_backup_schedule', {
     id,
     fields: { set, unset: [] },
   });
 }
 
 export async function deleteSchedule(id: string): Promise<void> {
-  await invokeCommand<void>("db_delete_backup_schedule", { id });
+  await invokeCommand<void>('db_delete_backup_schedule', { id });
 }
 
 export async function runBackupNow(scheduleId: string): Promise<void> {
-  const schedule = await invokeCommand<BackupSchedule | null>(
-    "db_get_backup_schedule",
-    { id: scheduleId },
-  );
+  const schedule = await invokeCommand<BackupSchedule | null>('db_get_backup_schedule', {
+    id: scheduleId,
+  });
 
   if (!schedule) {
     throw new Error(`Backup schedule not found: ${scheduleId}`);
   }
 
   await exportMessages({
-    accountId: schedule.account_id ?? "",
+    accountId: schedule.account_id ?? '',
     format: schedule.format as ExportFormat,
-    destinationPath: schedule.destination_path ?? "",
+    destinationPath: schedule.destination_path ?? '',
     includeAttachments: true,
     encryptBackup: schedule.encrypt === 1,
   });
 
-  await invokeCommand<void>("db_update_backup_schedule_last_run", {
+  await invokeCommand<void>('db_update_backup_schedule_last_run', {
     id: scheduleId,
     lastRunAt: Math.floor(Date.now() / 1000),
   });

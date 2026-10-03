@@ -1,14 +1,14 @@
-import type { EmailProvider, EmailFolder, SyncResult } from "./types";
-import type { GmailClient } from "../gmail/client";
-import { parseGmailMessage, type ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import type { EmailProvider, EmailFolder, SyncResult } from './types';
+import type { GmailClient } from '../gmail/client';
+import { parseGmailMessage, type ParsedMessage } from '@features/mail/services/gmail/messageParser';
 
 /** Map Gmail system label IDs to IMAP special-use flags */
 const GMAIL_SPECIAL_USE: Record<string, string | null> = {
   INBOX: null,
-  SENT: "\\Sent",
-  TRASH: "\\Trash",
-  DRAFT: "\\Drafts",
-  SPAM: "\\Junk",
+  SENT: '\\Sent',
+  TRASH: '\\Trash',
+  DRAFT: '\\Drafts',
+  SPAM: '\\Junk',
   STARRED: null,
   IMPORTANT: null,
   CATEGORY_PERSONAL: null,
@@ -26,7 +26,7 @@ const GMAIL_SPECIAL_USE: Record<string, string | null> = {
  */
 export class GmailApiProvider implements EmailProvider {
   readonly accountId: string;
-  readonly type = "gmail_api" as const;
+  readonly type = 'gmail_api' as const;
   private client: GmailClient;
 
   constructor(accountId: string, client: GmailClient) {
@@ -40,12 +40,9 @@ export class GmailApiProvider implements EmailProvider {
       id: label.id,
       name: label.name,
       path: label.name,
-      type: label.type === "system" ? "system" : "user",
-      specialUse:
-        label.type === "system"
-          ? (GMAIL_SPECIAL_USE[label.id] ?? null)
-          : null,
-      delimiter: "/",
+      type: label.type === 'system' ? 'system' : 'user',
+      specialUse: label.type === 'system' ? (GMAIL_SPECIAL_USE[label.id] ?? null) : null,
+      delimiter: '/',
       messageCount: label.messagesTotal ?? 0,
       unreadCount: label.messagesUnread ?? 0,
     }));
@@ -58,9 +55,9 @@ export class GmailApiProvider implements EmailProvider {
       id: label.id,
       name: label.name,
       path: label.name,
-      type: "user",
+      type: 'user',
       specialUse: null,
-      delimiter: "/",
+      delimiter: '/',
       messageCount: 0,
       unreadCount: 0,
     };
@@ -99,7 +96,7 @@ export class GmailApiProvider implements EmailProvider {
     do {
       const resp = await this.client.getHistory(
         syncToken,
-        ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"],
+        ['messageAdded', 'messageDeleted', 'labelAdded', 'labelRemoved'],
         pageToken,
       );
       latestHistoryId = resp.historyId;
@@ -139,67 +136,48 @@ export class GmailApiProvider implements EmailProvider {
 
   async fetchRawMessage(messageId: string): Promise<string> {
     // Gmail API with format=raw returns a { raw: string } field (base64url-encoded RFC822)
-    const resp = await this.client.getMessage(messageId, "raw") as unknown as { raw: string };
-    const base64 = resp.raw.replace(/-/g, "+").replace(/_/g, "/");
+    const resp = (await this.client.getMessage(messageId, 'raw')) as unknown as { raw: string };
+    const base64 = resp.raw.replace(/-/g, '+').replace(/_/g, '/');
     return atob(base64);
   }
 
   async archive(threadId: string, _messageIds: string[]): Promise<void> {
-    await this.client.modifyThread(threadId, undefined, ["INBOX"]);
+    await this.client.modifyThread(threadId, undefined, ['INBOX']);
   }
 
   async trash(threadId: string, _messageIds: string[]): Promise<void> {
-    await this.client.modifyThread(threadId, ["TRASH"], ["INBOX"]);
+    await this.client.modifyThread(threadId, ['TRASH'], ['INBOX']);
   }
 
-  async permanentDelete(
-    threadId: string,
-    _messageIds: string[],
-  ): Promise<void> {
+  async permanentDelete(threadId: string, _messageIds: string[]): Promise<void> {
     await this.client.deleteThread(threadId);
   }
 
-  async markRead(
-    threadId: string,
-    _messageIds: string[],
-    read: boolean,
-  ): Promise<void> {
+  async markRead(threadId: string, _messageIds: string[], read: boolean): Promise<void> {
     await this.client.modifyThread(
       threadId,
-      read ? undefined : ["UNREAD"],
-      read ? ["UNREAD"] : undefined,
+      read ? undefined : ['UNREAD'],
+      read ? ['UNREAD'] : undefined,
     );
   }
 
-  async star(
-    threadId: string,
-    _messageIds: string[],
-    starred: boolean,
-  ): Promise<void> {
+  async star(threadId: string, _messageIds: string[], starred: boolean): Promise<void> {
     await this.client.modifyThread(
       threadId,
-      starred ? ["STARRED"] : undefined,
-      starred ? undefined : ["STARRED"],
+      starred ? ['STARRED'] : undefined,
+      starred ? undefined : ['STARRED'],
     );
   }
 
-  async spam(
-    threadId: string,
-    _messageIds: string[],
-    isSpam: boolean,
-  ): Promise<void> {
+  async spam(threadId: string, _messageIds: string[], isSpam: boolean): Promise<void> {
     await this.client.modifyThread(
       threadId,
-      isSpam ? ["SPAM"] : ["INBOX"],
-      isSpam ? ["INBOX"] : ["SPAM"],
+      isSpam ? ['SPAM'] : ['INBOX'],
+      isSpam ? ['INBOX'] : ['SPAM'],
     );
   }
 
-  async moveToFolder(
-    threadId: string,
-    _messageIds: string[],
-    folderPath: string,
-  ): Promise<void> {
+  async moveToFolder(threadId: string, _messageIds: string[], folderPath: string): Promise<void> {
     await this.client.modifyThread(threadId, [folderPath], undefined);
   }
 
@@ -211,18 +189,12 @@ export class GmailApiProvider implements EmailProvider {
     await this.client.modifyThread(threadId, undefined, [labelId]);
   }
 
-  async sendMessage(
-    rawBase64Url: string,
-    threadId?: string,
-  ): Promise<{ id: string }> {
+  async sendMessage(rawBase64Url: string, threadId?: string): Promise<{ id: string }> {
     const resp = await this.client.sendMessage(rawBase64Url, threadId);
     return { id: resp.id };
   }
 
-  async createDraft(
-    rawBase64Url: string,
-    threadId?: string,
-  ): Promise<{ draftId: string }> {
+  async createDraft(rawBase64Url: string, threadId?: string): Promise<{ draftId: string }> {
     const resp = await this.client.createDraft(rawBase64Url, threadId);
     return { draftId: resp.id };
   }
@@ -232,11 +204,7 @@ export class GmailApiProvider implements EmailProvider {
     rawBase64Url: string,
     threadId?: string,
   ): Promise<{ draftId: string }> {
-    const resp = await this.client.updateDraft(
-      draftId,
-      rawBase64Url,
-      threadId,
-    );
+    const resp = await this.client.updateDraft(draftId, rawBase64Url, threadId);
     return { draftId: resp.id };
   }
 
@@ -254,8 +222,7 @@ export class GmailApiProvider implements EmailProvider {
     } catch (err) {
       return {
         success: false,
-        message:
-          err instanceof Error ? err.message : "Unknown connection error",
+        message: err instanceof Error ? err.message : 'Unknown connection error',
       };
     }
   }

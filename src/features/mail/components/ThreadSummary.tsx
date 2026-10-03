@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { Sparkles, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
-import { isAiAvailable } from "@shared/services/ai/providerManager";
-import { summarizeThread } from "@shared/services/ai/aiService";
-import type { DbMessage } from "@shared/services/db/messages";
-import { CenteredLoader } from "@shared/components/ui/CenteredLoader";
-import { useRefreshableAiCache } from "@features/mail/hooks/useRefreshableAiCache";
+import { useState, useEffect, useRef } from 'react';
+import { Sparkles, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { isAiAvailable } from '@shared/services/ai/providerManager';
+import { summarizeThread } from '@shared/services/ai/aiService';
+import type { DbMessage } from '@shared/services/db/messages';
+import { CenteredLoader } from '@shared/components/ui/CenteredLoader';
+import { useRefreshableAiCache } from '@features/mail/hooks/useRefreshableAiCache';
 
 interface ThreadSummaryProps {
   threadId: string;
@@ -34,13 +34,13 @@ export function ThreadSummary({ threadId, accountId, messages }: ThreadSummaryPr
   } = useRefreshableAiCache<string>({
     accountId,
     threadId,
-    cacheType: "summary",
+    cacheType: 'summary',
     fetcher: (a, t) => summarizeThread(t, a, messages),
   });
 
   // Preserve the original console.error behavior for summary errors.
   useEffect(() => {
-    if (error) console.error("Failed to summarize thread:", error);
+    if (error) console.error('Failed to summarize thread:', error);
   }, [error]);
 
   // Auto-load summary when available.
@@ -55,7 +55,7 @@ export function ThreadSummary({ threadId, accountId, messages }: ThreadSummaryPr
     <div className="mx-4 my-2 p-3 rounded-lg bg-accent/5 border border-accent/20">
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full text-left"
+        className="flex items-center gap-2 w-full text-start"
       >
         <Sparkles size={14} className="text-accent shrink-0" />
         <span className="text-xs font-medium text-accent flex-1">AI Summary</span>
@@ -63,21 +63,32 @@ export function ThreadSummary({ threadId, accountId, messages }: ThreadSummaryPr
           <span
             role="button"
             tabIndex={0}
-            onClick={(e) => { e.stopPropagation(); refresh(); }}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); refresh(); } }}
+            onClick={(e) => {
+              e.stopPropagation();
+              refresh();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                e.preventDefault();
+                refresh();
+              }
+            }}
             className="p-0.5 text-text-tertiary hover:text-accent transition-colors cursor-pointer"
             title="Refresh summary"
           >
-            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           </span>
         )}
-        {collapsed ? <ChevronDown size={14} className="text-text-tertiary" /> : <ChevronUp size={14} className="text-text-tertiary" />}
+        {collapsed ? (
+          <ChevronDown size={14} className="text-text-tertiary" />
+        ) : (
+          <ChevronUp size={14} className="text-text-tertiary" />
+        )}
       </button>
       {!collapsed && (
         <div className="mt-2 text-sm text-text-secondary">
-          {loading && !summary && (
-            <CenteredLoader size="sm" inline label="Generating summary..." />
-          )}
+          {loading && !summary && <CenteredLoader size="sm" inline label="Generating summary..." />}
           {summary && <p className="text-xs leading-relaxed">{summary}</p>}
         </div>
       )}

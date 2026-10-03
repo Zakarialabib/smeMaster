@@ -1,61 +1,88 @@
-import { useState, useReducer, useRef, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Mail, Calendar, ShieldCheck, CheckCircle2, Settings, Plug, Loader2, ArrowLeft, Search } from "lucide-react";
-import { AccountImportScanner, type DiscoveredAccount } from "./AccountImportScanner";
-import { startOAuthFlow } from "@features/mail/services/gmail/auth";
-import { startMicrosoftOAuthFlow } from "@features/mail/services/microsoft/auth";
-import { insertAccount, insertMicrosoftAccount } from "@features/accounts/db/accounts";
-import { getClientId, getClientSecret } from "@features/mail/services/gmail/tokenManager";
-import { getMicrosoftClientId, getMicrosoftClientSecret } from "@features/mail/services/microsoft/tokenManager";
-import { useAccountStore, type Account } from "@features/accounts/stores/accountStore";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { SetupClientId } from "./SetupClientId";
-import { AddImapAccount } from "./AddImapAccount";
-import { AddCalDavAccount } from "./AddCalDavAccount";
-import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
-import { detectProvider, type ProviderInfo } from "@features/accounts/utils/providerDetection";
-import { setQueueSchedule, type QueueSchedulePreset } from "@features/settings/db/settings";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { useState, useReducer, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Mail,
+  Calendar,
+  ShieldCheck,
+  CheckCircle2,
+  Settings,
+  Plug,
+  Loader2,
+  ArrowLeft,
+  Search,
+} from 'lucide-react';
+import { AccountImportScanner, type DiscoveredAccount } from './AccountImportScanner';
+import { startOAuthFlow } from '@features/mail/services/gmail/auth';
+import { startMicrosoftOAuthFlow } from '@features/mail/services/microsoft/auth';
+import { insertAccount, insertMicrosoftAccount } from '@features/accounts/db/accounts';
+import { getClientId, getClientSecret } from '@features/mail/services/gmail/tokenManager';
+import {
+  getMicrosoftClientId,
+  getMicrosoftClientSecret,
+} from '@features/mail/services/microsoft/tokenManager';
+import { useAccountStore, type Account } from '@features/accounts/stores/accountStore';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { SetupClientId } from './SetupClientId';
+import { AddImapAccount } from './AddImapAccount';
+import { AddCalDavAccount } from './AddCalDavAccount';
+import { getCurrentUnixTimestamp } from '@shared/utils/timestamp';
+import { detectProvider, type ProviderInfo } from '@features/accounts/utils/providerDetection';
+import { setQueueSchedule, type QueueSchedulePreset } from '@features/settings/db/settings';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 interface AddAccountProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-type Step = "select-provider" | "gmail-method" | "gmail-fast-sync" | "gmail-easy" | "microsoft-fast-sync" | "imap" | "caldav" | "import-scanner" | "sync-schedule" | "done";
+type Step =
+  | 'select-provider'
+  | 'gmail-method'
+  | 'gmail-fast-sync'
+  | 'gmail-easy'
+  | 'microsoft-fast-sync'
+  | 'imap'
+  | 'caldav'
+  | 'import-scanner'
+  | 'sync-schedule'
+  | 'done';
 
 type AccountSetupState = {
   step: Step;
-  status: "idle" | "checking" | "authenticating" | "saving" | "syncing" | "error";
+  status: 'idle' | 'checking' | 'authenticating' | 'saving' | 'syncing' | 'error';
   error: string | null;
 };
 
 type Action =
-  | { type: "GO_TO"; step: Step }
-  | { type: "SET_STATUS"; status: AccountSetupState["status"] }
-  | { type: "SET_ERROR"; error: string }
-  | { type: "RESET" };
+  | { type: 'GO_TO'; step: Step }
+  | { type: 'SET_STATUS'; status: AccountSetupState['status'] }
+  | { type: 'SET_ERROR'; error: string }
+  | { type: 'RESET' };
 
 function reducer(state: AccountSetupState, action: Action): AccountSetupState {
   switch (action.type) {
-    case "GO_TO":
-      return { step: action.step, status: "idle", error: null };
-    case "SET_STATUS":
-      return { ...state, status: action.status, error: action.status === "error" ? state.error : null };
-    case "SET_ERROR":
-      return { ...state, status: "error", error: action.error };
-    case "RESET":
-      return { step: "select-provider", status: "idle", error: null };
+    case 'GO_TO':
+      return { step: action.step, status: 'idle', error: null };
+    case 'SET_STATUS':
+      return {
+        ...state,
+        status: action.status,
+        error: action.status === 'error' ? state.error : null,
+      };
+    case 'SET_ERROR':
+      return { ...state, status: 'error', error: action.error };
+    case 'RESET':
+      return { step: 'select-provider', status: 'idle', error: null };
   }
 }
 
 const ONBOARDING_STEPS = [
-  { step: 1, label: "Setup", icon: Settings },
-  { step: 2, label: "Connect", icon: Plug },
-  { step: 3, label: "Verify", icon: ShieldCheck },
-  { step: 4, label: "Sync", icon: Calendar },
-  { step: 5, label: "Done", icon: CheckCircle2 },
+  { step: 1, label: 'Setup', icon: Settings },
+  { step: 2, label: 'Connect', icon: Plug },
+  { step: 3, label: 'Verify', icon: ShieldCheck },
+  { step: 4, label: 'Sync', icon: Calendar },
+  { step: 5, label: 'Done', icon: CheckCircle2 },
 ];
 
 function OnboardingStepIndicator({ currentStep }: { currentStep: number }) {
@@ -69,16 +96,16 @@ function OnboardingStepIndicator({ currentStep }: { currentStep: number }) {
           <div key={s.step} className="flex items-center gap-1">
             {i > 0 && (
               <div
-                className={`w-8 h-px transition-colors duration-300 ${isCompleted ? "bg-accent" : "bg-border-primary"}`}
+                className={`w-8 h-px transition-colors duration-300 ${isCompleted ? 'bg-accent' : 'bg-border-primary'}`}
               />
             )}
             <div
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-300 ${
                 isActive
-                  ? "bg-accent/10 text-accent ring-1 ring-accent/30"
+                  ? 'bg-accent/10 text-accent ring-1 ring-accent/30'
                   : isCompleted
-                    ? "text-accent"
-                    : "text-text-tertiary"
+                    ? 'text-accent'
+                    : 'text-text-tertiary'
               }`}
             >
               {isCompleted ? (
@@ -98,28 +125,25 @@ function OnboardingStepIndicator({ currentStep }: { currentStep: number }) {
 export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
   const { t } = useTranslation();
   const [{ step, status, error }, dispatch] = useReducer(reducer, {
-    step: "select-provider",
-    status: "idle",
+    step: 'select-provider',
+    status: 'idle',
     error: null,
   });
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [emailInput, setEmailInput] = useState("");
+  const [emailInput, setEmailInput] = useState('');
   const [detectedProvider, setDetectedProvider] = useState<ProviderInfo | null>(null);
   const [showAllProviders, setShowAllProviders] = useState(false);
   const addAccount = useAccountStore((s) => s.addAccount);
   const accounts = useAccountStore((s) => s.accounts);
   const abortRef = useRef<AbortController | null>(null);
-  const [syncSchedule, setSyncSchedule] = useState<QueueSchedulePreset>("normal");
+  const [syncSchedule, setSyncSchedule] = useState<QueueSchedulePreset>('normal');
   const [syncingNow, setSyncingNow] = useState(false);
   const [discoveredAccount, setDiscoveredAccount] = useState<DiscoveredAccount | null>(null);
 
-  const handleImportFromScanner = useCallback(
-    (account: DiscoveredAccount) => {
-      setDiscoveredAccount(account);
-      dispatch({ type: "GO_TO", step: "imap" });
-    },
-    [],
-  );
+  const handleImportFromScanner = useCallback((account: DiscoveredAccount) => {
+    setDiscoveredAccount(account);
+    dispatch({ type: 'GO_TO', step: 'imap' });
+  }, []);
 
   const abortOAuth = () => {
     if (abortRef.current) {
@@ -133,7 +157,7 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
     setEmailInput(value);
 
     // Detect provider when email looks complete (contains @ and domain)
-    if (value.includes("@") && value.split("@")[1]?.trim()) {
+    if (value.includes('@') && value.split('@')[1]?.trim()) {
       setDetectedProvider(detectProvider(value));
     } else {
       setDetectedProvider(null);
@@ -142,20 +166,20 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
 
   const onboardingStep = (() => {
     switch (step) {
-      case "select-provider":
-      case "gmail-method":
+      case 'select-provider':
+      case 'gmail-method':
         return 1;
-      case "gmail-easy":
-      case "imap":
-      case "caldav":
-      case "import-scanner":
+      case 'gmail-easy':
+      case 'imap':
+      case 'caldav':
+      case 'import-scanner':
         return 2;
-      case "gmail-fast-sync":
-      case "microsoft-fast-sync":
-        return status === "idle" || status === "checking" ? 2 : status === "authenticating" ? 3 : 4;
-      case "sync-schedule":
+      case 'gmail-fast-sync':
+      case 'microsoft-fast-sync':
+        return status === 'idle' || status === 'checking' ? 2 : status === 'authenticating' ? 3 : 4;
+      case 'sync-schedule':
         return 4;
-      case "done":
+      case 'done':
         return 5;
     }
   })();
@@ -164,7 +188,7 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
     const ac = new AbortController();
     abortRef.current = ac;
 
-    dispatch({ type: "SET_STATUS", status: "checking" });
+    dispatch({ type: 'SET_STATUS', status: 'checking' });
 
     try {
       const clientId = await getClientId();
@@ -172,7 +196,7 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
 
       if (ac.signal.aborted) return;
 
-      dispatch({ type: "SET_STATUS", status: "authenticating" });
+      dispatch({ type: 'SET_STATUS', status: 'authenticating' });
 
       const { tokens, userInfo } = await startOAuthFlow(clientId, clientSecret);
 
@@ -187,149 +211,149 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
         displayName: userInfo.name,
         avatarUrl: userInfo.picture,
         accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? "",
+        refreshToken: tokens.refresh_token ?? '',
         tokenExpiresAt: expiresAt,
       });
 
       if (ac.signal.aborted) return;
 
-const acc1: Account = {
-          id: account.id,
-          email: account.email,
-          displayName: account.display_name,
-          company: null,
-          avatarUrl: account.avatar_url ?? userInfo.picture ?? null,
-          isActive: true,
-          provider: account.provider,
-        };
-addAccount(acc1);
+      const acc1: Account = {
+        id: account.id,
+        email: account.email,
+        displayName: account.display_name,
+        company: null,
+        avatarUrl: account.avatar_url ?? userInfo.picture ?? null,
+        isActive: true,
+        provider: account.provider,
+      };
+      addAccount(acc1);
 
-abortRef.current = null;
-        dispatch({ type: "GO_TO", step: "sync-schedule" });
-      } catch (err) {
-       if (ac.signal.aborted) {
-         abortRef.current = null;
-         return;
-       }
-       abortRef.current = null;
-       console.error("Add account error:", err);
-       const message =
-         err instanceof Error ? err.message : String(err);
-       if (message.includes("Client ID not configured")) {
-         setNeedsSetup(true);
-       } else {
-         dispatch({ type: "SET_ERROR", error: message });
-       }
-     }
-   };
-
-   const handleAddMicrosoftAccount = async () => {
-     const ac = new AbortController();
-     abortRef.current = ac;
-
-     dispatch({ type: "SET_STATUS", status: "checking" });
-
-     try {
-       const clientId = await getMicrosoftClientId();
-       const clientSecret = await getMicrosoftClientSecret();
-
-       if (ac.signal.aborted) return;
-
-       dispatch({ type: "SET_STATUS", status: "authenticating" });
-
-       const { tokens, userInfo } = await startMicrosoftOAuthFlow(clientId, clientSecret);
-
-       if (ac.signal.aborted) return;
-
-       const accountId = crypto.randomUUID();
-       const expiresAt = getCurrentUnixTimestamp() + tokens.expires_in;
-
-       const account = await insertMicrosoftAccount({
-         id: accountId,
-         email: userInfo.email,
-         displayName: userInfo.name,
-         avatarUrl: userInfo.picture,
-         accessToken: tokens.access_token,
-         refreshToken: tokens.refresh_token ?? "",
-         tokenExpiresAt: expiresAt,
-       });
-
-       if (ac.signal.aborted) return;
-
-const acc2: Account = {
-           id: account.id,
-           email: account.email,
-           displayName: account.display_name,
-           company: null,
-           avatarUrl: account.avatar_url ?? userInfo.picture ?? null,
-           isActive: true,
-           provider: account.provider,
-         };
-addAccount(acc2);
-
+      abortRef.current = null;
+      dispatch({ type: 'GO_TO', step: 'sync-schedule' });
+    } catch (err) {
+      if (ac.signal.aborted) {
         abortRef.current = null;
-       dispatch({ type: "GO_TO", step: "sync-schedule" });
-     } catch (err) {
-       if (ac.signal.aborted) {
-         abortRef.current = null;
-         return;
-       }
-       abortRef.current = null;
-       console.error("Add Microsoft account error:", err);
-       const message =
-         err instanceof Error ? err.message : String(err);
-       if (message.includes("Client ID not configured")) {
-         setNeedsSetup(true);
-       } else {
-         dispatch({ type: "SET_ERROR", error: message });
-       }
-     }
-   };
+        return;
+      }
+      abortRef.current = null;
+      console.error('Add account error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('Client ID not configured')) {
+        setNeedsSetup(true);
+      } else {
+        dispatch({ type: 'SET_ERROR', error: message });
+      }
+    }
+  };
 
-   if (needsSetup) {
+  const handleAddMicrosoftAccount = async () => {
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    dispatch({ type: 'SET_STATUS', status: 'checking' });
+
+    try {
+      const clientId = await getMicrosoftClientId();
+      const clientSecret = await getMicrosoftClientSecret();
+
+      if (ac.signal.aborted) return;
+
+      dispatch({ type: 'SET_STATUS', status: 'authenticating' });
+
+      const { tokens, userInfo } = await startMicrosoftOAuthFlow(clientId, clientSecret);
+
+      if (ac.signal.aborted) return;
+
+      const accountId = crypto.randomUUID();
+      const expiresAt = getCurrentUnixTimestamp() + tokens.expires_in;
+
+      const account = await insertMicrosoftAccount({
+        id: accountId,
+        email: userInfo.email,
+        displayName: userInfo.name,
+        avatarUrl: userInfo.picture,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token ?? '',
+        tokenExpiresAt: expiresAt,
+      });
+
+      if (ac.signal.aborted) return;
+
+      const acc2: Account = {
+        id: account.id,
+        email: account.email,
+        displayName: account.display_name,
+        company: null,
+        avatarUrl: account.avatar_url ?? userInfo.picture ?? null,
+        isActive: true,
+        provider: account.provider,
+      };
+      addAccount(acc2);
+
+      abortRef.current = null;
+      dispatch({ type: 'GO_TO', step: 'sync-schedule' });
+    } catch (err) {
+      if (ac.signal.aborted) {
+        abortRef.current = null;
+        return;
+      }
+      abortRef.current = null;
+      console.error('Add Microsoft account error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('Client ID not configured')) {
+        setNeedsSetup(true);
+      } else {
+        dispatch({ type: 'SET_ERROR', error: message });
+      }
+    }
+  };
+
+  if (needsSetup) {
     return (
       <SetupClientId
         onComplete={() => {
           setNeedsSetup(false);
-          dispatch({ type: "SET_STATUS", status: "idle" });
+          dispatch({ type: 'SET_STATUS', status: 'idle' });
         }}
         onCancel={onClose}
       />
     );
   }
 
-  if (step === "caldav") {
+  if (step === 'caldav') {
     return (
       <AddCalDavAccount
         onClose={onClose}
-        onSuccess={() => dispatch({ type: "GO_TO", step: "sync-schedule" })}
-        onBack={() => dispatch({ type: "GO_TO", step: "select-provider" })}
+        onSuccess={() => dispatch({ type: 'GO_TO', step: 'sync-schedule' })}
+        onBack={() => dispatch({ type: 'GO_TO', step: 'select-provider' })}
       />
     );
   }
 
-  if (step === "import-scanner") {
+  if (step === 'import-scanner') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Add Account" size="xl">
         <div className="p-5">
           <AccountImportScanner
             onSelectAccount={handleImportFromScanner}
-            onClose={() => dispatch({ type: "GO_TO", step: "select-provider" })}
+            onClose={() => dispatch({ type: 'GO_TO', step: 'select-provider' })}
           />
         </div>
       </Modal>
     );
   }
 
-  if (step === "imap") {
+  if (step === 'imap') {
     const imapPrefill = discoveredAccount?.imap_host
       ? {
           imapHost: discoveredAccount.imap_host,
           imapPort: discoveredAccount.imap_port ?? 993,
-          imapSecurity: (discoveredAccount.imap_security?.toLowerCase() ?? "ssl") as "ssl" | "starttls" | "none",
-          smtpHost: discoveredAccount.smtp_host ?? "",
+          imapSecurity: (discoveredAccount.imap_security?.toLowerCase() ?? 'ssl') as
+            'ssl' | 'starttls' | 'none',
+          smtpHost: discoveredAccount.smtp_host ?? '',
           smtpPort: discoveredAccount.smtp_port ?? 465,
-          smtpSecurity: (discoveredAccount.smtp_security?.toLowerCase() ?? "ssl") as "ssl" | "starttls" | "none",
+          smtpSecurity: (discoveredAccount.smtp_security?.toLowerCase() ?? 'ssl') as
+            'ssl' | 'starttls' | 'none',
         }
       : undefined;
     return (
@@ -337,36 +361,36 @@ addAccount(acc2);
         onClose={onClose}
         onSuccess={() => {
           setDiscoveredAccount(null);
-          dispatch({ type: "GO_TO", step: "sync-schedule" });
+          dispatch({ type: 'GO_TO', step: 'sync-schedule' });
         }}
         onBack={() => {
           setDiscoveredAccount(null);
-          dispatch({ type: "GO_TO", step: "select-provider" });
+          dispatch({ type: 'GO_TO', step: 'select-provider' });
         }}
         prefill={imapPrefill}
       />
     );
   }
 
-  if (step === "gmail-easy") {
+  if (step === 'gmail-easy') {
     return (
       <AddImapAccount
         onClose={onClose}
         onSuccess={onSuccess}
-        onBack={() => dispatch({ type: "GO_TO", step: "select-provider" })}
+        onBack={() => dispatch({ type: 'GO_TO', step: 'select-provider' })}
         prefill={{
-          imapHost: "imap.gmail.com",
+          imapHost: 'imap.gmail.com',
           imapPort: 993,
-          imapSecurity: "ssl",
-          smtpHost: "smtp.gmail.com",
+          imapSecurity: 'ssl',
+          smtpHost: 'smtp.gmail.com',
           smtpPort: 465,
-          smtpSecurity: "ssl",
+          smtpSecurity: 'ssl',
         }}
       />
     );
   }
 
-  if (step === "done") {
+  if (step === 'done') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Add Account" size="xl">
         <div className="p-5">
@@ -376,13 +400,14 @@ addAccount(acc2);
               <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
             <h3 className="text-lg font-semibold text-text-primary mb-1.5">
-              {t("addAccount.connected") || "Account Connected!"}
+              {t('addAccount.connected') || 'Account Connected!'}
             </h3>
             <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-              {t("addAccount.connectedDesc") || "Your account has been connected. SMEMaster will now sync your emails."}
+              {t('addAccount.connectedDesc') ||
+                'Your account has been connected. SMEMaster will now sync your emails.'}
             </p>
             <Button variant="primary" size="md" onClick={onClose}>
-              {t("addAccount.done") || "Done"}
+              {t('addAccount.done') || 'Done'}
             </Button>
           </div>
         </div>
@@ -390,12 +415,12 @@ addAccount(acc2);
     );
   }
 
-  if (step === "sync-schedule") {
+  if (step === 'sync-schedule') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Sync Settings" size="md">
         <div className="p-5">
           <OnboardingStepIndicator currentStep={onboardingStep} />
-          
+
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
@@ -411,18 +436,26 @@ addAccount(acc2);
 
             <div className="space-y-2">
               {[
-                { value: "fast", label: "Fast (every 10s)", desc: "Quick updates, more battery usage" },
-                { value: "normal", label: "Normal (every 30s)", desc: "Balanced performance" },
-                { value: "gentle", label: "Gentle (every 2min)", desc: "Battery friendly" },
-                { value: "business-hours", label: "Business Hours", desc: "Only sync 9am-5pm weekdays" },
+                {
+                  value: 'fast',
+                  label: 'Fast (every 10s)',
+                  desc: 'Quick updates, more battery usage',
+                },
+                { value: 'normal', label: 'Normal (every 30s)', desc: 'Balanced performance' },
+                { value: 'gentle', label: 'Gentle (every 2min)', desc: 'Battery friendly' },
+                {
+                  value: 'business-hours',
+                  label: 'Business Hours',
+                  desc: 'Only sync 9am-5pm weekdays',
+                },
               ].map((option) => (
                 <button
                   key={option.value}
                   onClick={() => setSyncSchedule(option.value as QueueSchedulePreset)}
-                  className={`w-full p-3 rounded-lg border text-left transition-colors ${
+                  className={`w-full p-3 rounded-lg border text-start transition-colors ${
                     syncSchedule === option.value
-                      ? "border-accent bg-accent/5"
-                      : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
+                      ? 'border-accent bg-accent/5'
+                      : 'border-border-primary bg-bg-secondary hover:bg-bg-hover'
                   }`}
                 >
                   <div className="text-sm font-medium text-text-primary">{option.label}</div>
@@ -441,20 +474,20 @@ addAccount(acc2);
                   if (latestAccount) {
                     setSyncingNow(true);
                     try {
-                      await invokeCommand("sync_protocol_full", { account_id: latestAccount.id });
+                      await invokeCommand('sync_protocol_full', { account_id: latestAccount.id });
                     } catch (e) {
-                      console.warn("Initial sync failed:", e);
+                      console.warn('Initial sync failed:', e);
                     }
                     setSyncingNow(false);
                   }
-                  dispatch({ type: "GO_TO", step: "done" });
+                  dispatch({ type: 'GO_TO', step: 'done' });
                 }}
                 disabled={syncingNow}
                 loading={syncingNow}
               >
-                {syncingNow ? "Syncing..." : "Save & Sync Now"}
+                {syncingNow ? 'Syncing...' : 'Save & Sync Now'}
               </Button>
-              
+
               <Button
                 variant="secondary"
                 size="md"
@@ -471,36 +504,34 @@ addAccount(acc2);
     );
   }
 
-  if (step === "gmail-method") {
+  if (step === 'gmail-method') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Add Gmail Account" size="xl">
         <div className="p-5">
           <OnboardingStepIndicator currentStep={onboardingStep} />
-          <p className="text-text-secondary text-sm mb-3">
-            {t("addAccount.chooseMethod")}
-          </p>
+          <p className="text-text-secondary text-sm mb-3">{t('addAccount.chooseMethod')}</p>
 
           <div className="space-y-3 mb-6">
             <button
-              onClick={() => dispatch({ type: "GO_TO", step: "gmail-easy" })}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+              onClick={() => dispatch({ type: 'GO_TO', step: 'gmail-easy' })}
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
             >
               <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-accent" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                  {t("addAccount.easySetup")}
+                  {t('addAccount.easySetup')}
                 </div>
                 <div className="text-xs text-text-tertiary mt-0.5">
-                  {t("addAccount.easySetupDesc")}
+                  {t('addAccount.easySetupDesc')}
                 </div>
               </div>
             </button>
 
             <button
-              onClick={() => dispatch({ type: "GO_TO", step: "gmail-fast-sync" })}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+              onClick={() => dispatch({ type: 'GO_TO', step: 'gmail-fast-sync' })}
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
             >
               <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -524,10 +555,10 @@ addAccount(acc2);
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                  {t("addAccount.fastSync")}
+                  {t('addAccount.fastSync')}
                 </div>
                 <div className="text-xs text-text-tertiary mt-0.5">
-                  {t("addAccount.fastSyncDesc")}
+                  {t('addAccount.fastSyncDesc')}
                 </div>
               </div>
             </button>
@@ -538,7 +569,7 @@ addAccount(acc2);
               variant="ghost"
               size="sm"
               icon={<ArrowLeft size={14} />}
-              onClick={() => dispatch({ type: "GO_TO", step: "select-provider" })}
+              onClick={() => dispatch({ type: 'GO_TO', step: 'select-provider' })}
             >
               Back
             </Button>
@@ -551,12 +582,12 @@ addAccount(acc2);
     );
   }
 
-  if (step === "gmail-fast-sync") {
+  if (step === 'gmail-fast-sync') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Add Gmail Account" size="xl">
         <div className="p-5">
           <OnboardingStepIndicator currentStep={onboardingStep} />
-          {status === "idle" || status === "checking" ? (
+          {status === 'idle' || status === 'checking' ? (
             <>
               <p className="text-text-secondary text-sm mb-6">
                 Sign in with your Google account to connect it to SMEMaster.
@@ -575,7 +606,7 @@ addAccount(acc2);
                   icon={<ArrowLeft size={14} />}
                   onClick={() => {
                     abortOAuth();
-                    dispatch({ type: "GO_TO", step: "gmail-method" });
+                    dispatch({ type: 'GO_TO', step: 'gmail-method' });
                   }}
                 >
                   Back
@@ -588,23 +619,25 @@ addAccount(acc2);
                     variant="primary"
                     size="md"
                     onClick={handleAddGmailAccount}
-                    disabled={status === "checking"}
-                    icon={status === "checking" ? <Loader2 className="animate-spin" size={14} /> : undefined}
+                    disabled={status === 'checking'}
+                    icon={
+                      status === 'checking' ? (
+                        <Loader2 className="animate-spin" size={14} />
+                      ) : undefined
+                    }
                   >
-                    {status === "checking" ? "Checking..." : "Sign in with Google"}
+                    {status === 'checking' ? 'Checking...' : 'Sign in with Google'}
                   </Button>
                 </div>
               </div>
             </>
-          ) : status === "authenticating" ? (
+          ) : status === 'authenticating' ? (
             <div>
               <div className="text-center py-8">
                 <div className="mb-4 flex justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-                <p className="text-text-secondary text-sm mb-2">
-                  Waiting for Google sign-in...
-                </p>
+                <p className="text-text-secondary text-sm mb-2">Waiting for Google sign-in...</p>
                 <p className="text-xs text-text-tertiary">
                   Complete the sign-in in your browser, then return here.
                 </p>
@@ -622,7 +655,7 @@ addAccount(acc2);
                   size="sm"
                   onClick={() => {
                     abortOAuth();
-                    dispatch({ type: "GO_TO", step: "gmail-method" });
+                    dispatch({ type: 'GO_TO', step: 'gmail-method' });
                   }}
                 >
                   Cancel
@@ -635,12 +668,12 @@ addAccount(acc2);
     );
   }
 
-  if (step === "microsoft-fast-sync") {
+  if (step === 'microsoft-fast-sync') {
     return (
       <Modal isOpen={true} onClose={onClose} title="Add Microsoft Account" size="xl">
         <div className="p-5">
           <OnboardingStepIndicator currentStep={onboardingStep} />
-          {status === "idle" || status === "checking" ? (
+          {status === 'idle' || status === 'checking' ? (
             <>
               <p className="text-text-secondary text-sm mb-6">
                 Sign in with your Microsoft account to connect it to SMEMaster.
@@ -659,7 +692,7 @@ addAccount(acc2);
                   icon={<ArrowLeft size={14} />}
                   onClick={() => {
                     abortOAuth();
-                    dispatch({ type: "GO_TO", step: "select-provider" });
+                    dispatch({ type: 'GO_TO', step: 'select-provider' });
                   }}
                 >
                   Back
@@ -672,23 +705,25 @@ addAccount(acc2);
                     variant="primary"
                     size="md"
                     onClick={handleAddMicrosoftAccount}
-                    disabled={status === "checking"}
-                    icon={status === "checking" ? <Loader2 className="animate-spin" size={14} /> : undefined}
+                    disabled={status === 'checking'}
+                    icon={
+                      status === 'checking' ? (
+                        <Loader2 className="animate-spin" size={14} />
+                      ) : undefined
+                    }
                   >
-                    {status === "checking" ? "Checking..." : "Sign in with Microsoft"}
+                    {status === 'checking' ? 'Checking...' : 'Sign in with Microsoft'}
                   </Button>
                 </div>
               </div>
             </>
-          ) : status === "authenticating" ? (
+          ) : status === 'authenticating' ? (
             <div>
               <div className="text-center py-8">
                 <div className="mb-4 flex justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-                <p className="text-text-secondary text-sm mb-2">
-                  Waiting for Microsoft sign-in...
-                </p>
+                <p className="text-text-secondary text-sm mb-2">Waiting for Microsoft sign-in...</p>
                 <p className="text-xs text-text-tertiary">
                   Complete the sign-in in your browser, then return here.
                 </p>
@@ -706,7 +741,7 @@ addAccount(acc2);
                   size="sm"
                   onClick={() => {
                     abortOAuth();
-                    dispatch({ type: "GO_TO", step: "select-provider" });
+                    dispatch({ type: 'GO_TO', step: 'select-provider' });
                   }}
                 >
                   Cancel
@@ -721,19 +756,23 @@ addAccount(acc2);
 
   // Provider selection view
 
-  const isDetected = detectedProvider !== null && emailInput.includes("@");
+  const isDetected = detectedProvider !== null && emailInput.includes('@');
 
   return (
     <Modal isOpen={true} onClose={onClose} title="Add Account" size="xl">
       <div className="p-5">
         <OnboardingStepIndicator currentStep={onboardingStep} />
         <p className="text-text-secondary text-sm mb-4">
-          {t("addAccount.chooseProvider") || "Enter your email to get started, or choose a provider below."}
+          {t('addAccount.chooseProvider') ||
+            'Enter your email to get started, or choose a provider below.'}
         </p>
 
         {/* Email input with provider detection */}
         <div className="mb-5">
-          <label htmlFor="detect-email" className="block text-xs font-medium text-text-secondary mb-1.5">
+          <label
+            htmlFor="detect-email"
+            className="block text-xs font-medium text-text-secondary mb-1.5"
+          >
             Email Address
           </label>
           <div className="relative">
@@ -743,12 +782,12 @@ addAccount(acc2);
               value={emailInput}
               onChange={handleEmailChange}
               placeholder="you@example.com"
-              className="w-full px-3 py-2.5 pr-12 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors"
+              className="w-full px-3 py-2.5 pe-12 bg-bg-secondary border border-border-primary rounded-lg text-sm text-text-primary outline-none focus:border-accent transition-colors"
               autoFocus
               autoComplete="email"
             />
             {isDetected && detectedProvider && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <div className="absolute inset-inline-end-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <span
                   className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold leading-none ${detectedProvider.color} ${detectedProvider.textColor}`}
                   aria-label={`Detected provider: ${detectedProvider.label}`}
@@ -768,11 +807,11 @@ addAccount(acc2);
                 {detectedProvider.letter}
               </span>
               Detected: {detectedProvider.label}
-              {detectedProvider.type === "gmail_api" && (
-                <span className="text-success ml-1">Recommended</span>
+              {detectedProvider.type === 'gmail_api' && (
+                <span className="text-success ms-1">Recommended</span>
               )}
-              {detectedProvider.type === "microsoft_graph" && (
-                <span className="text-success ml-1">Recommended</span>
+              {detectedProvider.type === 'microsoft_graph' && (
+                <span className="text-success ms-1">Recommended</span>
               )}
             </p>
           )}
@@ -782,16 +821,17 @@ addAccount(acc2);
         <div className="space-y-3">
           {/* Educational tip for first-time users */}
           <div className="p-3 bg-info/10 border border-info/20 rounded-lg text-xs text-text-secondary mb-2">
-            💡 Tip: Enter your email above to auto-detect your provider. IMAP/SMTP works with any email service.
+            💡 Tip: Enter your email above to auto-detect your provider. IMAP/SMTP works with any
+            email service.
           </div>
 
           {/* Always show Gmail option */}
           <button
-            onClick={() => dispatch({ type: "GO_TO", step: "gmail-method" })}
-            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
-              detectedProvider?.type === "gmail_api"
-                ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
-                : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
+            onClick={() => dispatch({ type: 'GO_TO', step: 'gmail-method' })}
+            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
+              detectedProvider?.type === 'gmail_api'
+                ? 'border-accent/40 bg-accent/5 ring-1 ring-accent/20'
+                : 'border-border-primary bg-bg-secondary hover:bg-bg-hover'
             }`}
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
@@ -817,29 +857,31 @@ addAccount(acc2);
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                  {detectedProvider?.type === "gmail_api" ? "Gmail (Recommended)" : "Google (Gmail)"}
+                  {detectedProvider?.type === 'gmail_api'
+                    ? 'Gmail (Recommended)'
+                    : 'Google (Gmail)'}
                 </span>
-                {detectedProvider?.type === "gmail_api" && (
+                {detectedProvider?.type === 'gmail_api' && (
                   <span className="text-[10px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded-full">
                     Best match
                   </span>
                 )}
               </div>
               <div className="text-xs text-text-tertiary mt-0.5">
-                {detectedProvider?.type === "gmail_api"
-                  ? "Connect via OAuth — fastest sync, full Gmail API support"
-                  : "Connect via OAuth with full Gmail API support"}
+                {detectedProvider?.type === 'gmail_api'
+                  ? 'Connect via OAuth — fastest sync, full Gmail API support'
+                  : 'Connect via OAuth with full Gmail API support'}
               </div>
             </div>
           </button>
 
           {/* IMAP/SMTP option — always shown but highlighted for imap/jmap */}
           <button
-            onClick={() => dispatch({ type: "GO_TO", step: "imap" })}
-            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
-              detectedProvider?.type === "imap" || detectedProvider?.type === "jmap"
-                ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
-                : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
+            onClick={() => dispatch({ type: 'GO_TO', step: 'imap' })}
+            className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
+              detectedProvider?.type === 'imap' || detectedProvider?.type === 'jmap'
+                ? 'border-accent/40 bg-accent/5 ring-1 ring-accent/20'
+                : 'border-border-primary bg-bg-secondary hover:bg-bg-hover'
             }`}
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
@@ -848,36 +890,36 @@ addAccount(acc2);
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                  {detectedProvider?.type === "imap" || detectedProvider?.type === "jmap"
-                    ? "IMAP/SMTP (Recommended)"
-                    : "IMAP / SMTP"}
+                  {detectedProvider?.type === 'imap' || detectedProvider?.type === 'jmap'
+                    ? 'IMAP/SMTP (Recommended)'
+                    : 'IMAP / SMTP'}
                 </span>
-                {(detectedProvider?.type === "imap" || detectedProvider?.type === "jmap") && (
+                {(detectedProvider?.type === 'imap' || detectedProvider?.type === 'jmap') && (
                   <span className="text-[10px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded-full">
-                    {detectedProvider?.type === "jmap" ? "JMAP available" : "Best match"}
+                    {detectedProvider?.type === 'jmap' ? 'JMAP available' : 'Best match'}
                   </span>
                 )}
               </div>
               <div className="text-xs text-text-tertiary mt-0.5">
-                {detectedProvider?.type === "imap"
-                  ? "Connect any email provider with manual server configuration"
-                  : detectedProvider?.type === "jmap"
-                    ? "Connect via JMAP — modern protocol for Yahoo, FastMail & more"
-                    : "Connect any email provider with manual server configuration"}
+                {detectedProvider?.type === 'imap'
+                  ? 'Connect any email provider with manual server configuration'
+                  : detectedProvider?.type === 'jmap'
+                    ? 'Connect via JMAP — modern protocol for Yahoo, FastMail & more'
+                    : 'Connect any email provider with manual server configuration'}
               </div>
             </div>
           </button>
 
           {/* Microsoft Graph option — only shown when detected or when showing all */}
-          {(detectedProvider?.type === "microsoft_graph" || showAllProviders) && (
+          {(detectedProvider?.type === 'microsoft_graph' || showAllProviders) && (
             <button
               onClick={() => {
-                dispatch({ type: "GO_TO", step: "microsoft-fast-sync" });
+                dispatch({ type: 'GO_TO', step: 'microsoft-fast-sync' });
               }}
-              className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group hover-lift ${
-                detectedProvider?.type === "microsoft_graph"
-                  ? "border-accent/40 bg-accent/5 ring-1 ring-accent/20"
-                  : "border-border-primary bg-bg-secondary hover:bg-bg-hover"
+              className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-start group hover-lift ${
+                detectedProvider?.type === 'microsoft_graph'
+                  ? 'border-accent/40 bg-accent/5 ring-1 ring-accent/20'
+                  : 'border-border-primary bg-bg-secondary hover:bg-bg-hover'
               }`}
             >
               <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
@@ -891,20 +933,20 @@ addAccount(acc2);
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
-                    {detectedProvider?.type === "microsoft_graph"
-                      ? "Microsoft (Recommended)"
-                      : "Microsoft (Outlook/Hotmail)"}
+                    {detectedProvider?.type === 'microsoft_graph'
+                      ? 'Microsoft (Recommended)'
+                      : 'Microsoft (Outlook/Hotmail)'}
                   </span>
-                  {detectedProvider?.type === "microsoft_graph" && (
+                  {detectedProvider?.type === 'microsoft_graph' && (
                     <span className="text-[10px] font-semibold text-success bg-success/10 px-1.5 py-0.5 rounded-full">
                       Best match
                     </span>
                   )}
                 </div>
                 <div className="text-xs text-text-tertiary mt-0.5">
-                  {detectedProvider?.type === "microsoft_graph"
-                    ? "Connect via OAuth — fastest sync with Microsoft Graph API"
-                    : "Connect Outlook, Hotmail or Live accounts"}
+                  {detectedProvider?.type === 'microsoft_graph'
+                    ? 'Connect via OAuth — fastest sync with Microsoft Graph API'
+                    : 'Connect Outlook, Hotmail or Live accounts'}
                 </div>
               </div>
             </button>
@@ -912,8 +954,8 @@ addAccount(acc2);
 
           {/* CalDAV option — always shown */}
           <button
-            onClick={() => dispatch({ type: "GO_TO", step: "caldav" })}
-            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+            onClick={() => dispatch({ type: 'GO_TO', step: 'caldav' })}
+            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
               <Calendar className="w-5 h-5 text-text-secondary" />
@@ -932,8 +974,8 @@ addAccount(acc2);
 
           {/* Import from System option — discover Thunderbird, Apple Mail, Outlook, etc. */}
           <button
-            onClick={() => dispatch({ type: "GO_TO", step: "import-scanner" })}
-            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-left group hover-lift"
+            onClick={() => dispatch({ type: 'GO_TO', step: 'import-scanner' })}
+            className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors text-start group hover-lift"
           >
             <div className="shrink-0 w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center">
               <Search className="w-5 h-5 text-text-secondary" />
@@ -968,4 +1010,3 @@ addAccount(acc2);
     </Modal>
   );
 }
-

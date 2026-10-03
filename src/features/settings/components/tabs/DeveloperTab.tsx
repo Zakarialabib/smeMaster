@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   RefreshCw,
   Download,
@@ -28,78 +28,85 @@ import {
   Shield,
   Bell,
   Server,
-} from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useLogs, useClearLogs } from "@shared/hooks/useLogs";
-import type { LogEntry } from "@shared/services/logger";
-import { cn } from "@shared/utils/cn";
-import SubsystemStatusPanel from "@features/settings/components/SubsystemStatusPanel";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { FEATURE_FLAGS, isDevProMode, getFeatureAccessWithDevPro } from "@/constants/featureFlags";
+} from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useLogs, useClearLogs } from '@shared/hooks/useLogs';
+import type { LogEntry } from '@shared/services/logger';
+import { cn } from '@shared/utils/cn';
+import SubsystemStatusPanel from '@features/settings/components/SubsystemStatusPanel';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { FEATURE_FLAGS, isDevProMode, getFeatureAccessWithDevPro } from '@/constants/featureFlags';
 
 // ── Log Level Filter Type ──────────────────────────────────────────────────
-type LogFilterLevel = "error" | "warning" | "info" | "debug" | "critical";
+type LogFilterLevel = 'error' | 'warning' | 'info' | 'debug' | 'critical';
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 interface SubTab {
-  id: "health" | "updates" | "logs";
+  id: 'health' | 'updates' | 'logs';
   labelKey: string;
   icon: typeof Activity;
 }
 
 const SUB_TABS: SubTab[] = [
-  { id: "health", labelKey: "System Health", icon: Activity },
-  { id: "updates", labelKey: "Updates & Data", icon: Package },
-  { id: "logs", labelKey: "Logs", icon: FileText },
+  { id: 'health', labelKey: 'System Health', icon: Activity },
+  { id: 'updates', labelKey: 'Updates & Data', icon: Package },
+  { id: 'logs', labelKey: 'Logs', icon: FileText },
 ];
 
 // ── Log Level Config ─────────────────────────────────────────────────────────
 const LOG_LEVEL_CONFIG: Record<
   LogFilterLevel,
-  { icon: React.ElementType; label: string; color: string; bg: string; border: string; badge: string }
+  {
+    icon: React.ElementType;
+    label: string;
+    color: string;
+    bg: string;
+    border: string;
+    badge: string;
+  }
 > = {
   critical: {
     icon: AlertCircle,
-    label: "Critical",
-    color: "text-danger",
-    bg: "bg-danger/10",
-    border: "border-s-danger",
-    badge: "bg-danger text-white",
+    label: 'Critical',
+    color: 'text-danger',
+    bg: 'bg-danger/10',
+    border: 'border-s-danger',
+    badge: 'bg-danger text-white',
   },
   error: {
     icon: AlertCircle,
-    label: "Error",
-    color: "text-danger",
-    bg: "bg-danger/5",
-    border: "border-s-danger",
-    badge: "bg-danger/90 text-white",
+    label: 'Error',
+    color: 'text-danger',
+    bg: 'bg-danger/5',
+    border: 'border-s-danger',
+    badge: 'bg-danger/90 text-white',
   },
   warning: {
     icon: AlertTriangle,
-    label: "Warning",
-    color: "text-warning",
-    bg: "bg-warning/5",
-    border: "border-s-warning",
-    badge: "bg-warning text-white",
+    label: 'Warning',
+    color: 'text-warning',
+    bg: 'bg-warning/5',
+    border: 'border-s-warning',
+    badge: 'bg-warning text-white',
   },
   info: {
     icon: Info,
-    label: "Info",
-    color: "text-info",
-    bg: "bg-info/5",
-    border: "border-s-info",
-    badge: "bg-info text-white",
+    label: 'Info',
+    color: 'text-info',
+    bg: 'bg-info/5',
+    border: 'border-s-info',
+    badge: 'bg-info text-white',
   },
   debug: {
     icon: Terminal,
-    label: "Debug",
-    color: "text-text-tertiary",
-    bg: "bg-bg-tertiary",
-    border: "border-s-border",
-    badge: "bg-text-secondary text-bg-primary",
+    label: 'Debug',
+    color: 'text-text-tertiary',
+    bg: 'bg-bg-tertiary',
+    border: 'border-s-border',
+    badge: 'bg-text-secondary text-bg-primary',
   },
 } as const;
 
@@ -107,17 +114,17 @@ const LOG_LEVEL_CONFIG: Record<
 
 const copyToClipboard = async (text: string, label: string) => {
   try {
-    const { copyToClipboard: clip } = await import("@shared/hooks/useClipboard");
+    const { copyToClipboard: clip } = await import('@shared/hooks/useClipboard');
     await clip(text);
-    notify(label, "Copied to clipboard");
+    notify(label, 'Copied to clipboard');
   } catch {
-    notify(label, "Failed to copy");
+    notify(label, 'Failed to copy');
   }
 };
 
 const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
+  if (bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 };
@@ -130,7 +137,7 @@ const formatUptime = (seconds: number): string => {
   if (days > 0) parts.push(`${days}d`);
   if (hours > 0) parts.push(`${hours}h`);
   if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
-  return parts.join(" ");
+  return parts.join(' ');
 };
 
 interface DbHealthStats {
@@ -146,32 +153,32 @@ function StatCard({
   label,
   value,
   sublabel,
-  tone = "neutral",
+  tone = 'neutral',
 }: {
   icon: typeof Activity;
   label: string;
   value: string;
   sublabel?: string;
-  tone?: "accent" | "success" | "warning" | "neutral";
+  tone?: 'accent' | 'success' | 'warning' | 'neutral';
 }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
-        tone === "accent" && "bg-accent/5 border-accent/20",
-        tone === "success" && "bg-success/5 border-success/20",
-        tone === "warning" && "bg-warning/5 border-warning/20",
-        tone === "neutral" && "bg-bg-tertiary/40 border-border/40",
+        'flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm',
+        tone === 'accent' && 'bg-accent/5 border-accent/20',
+        tone === 'success' && 'bg-success/5 border-success/20',
+        tone === 'warning' && 'bg-warning/5 border-warning/20',
+        tone === 'neutral' && 'bg-bg-tertiary/40 border-border/40',
       )}
     >
       <div className="p-2 rounded-lg bg-white/50">
         <Icon
           className={cn(
-            "w-4 h-4",
-            tone === "accent" && "text-accent",
-            tone === "success" && "text-success",
-            tone === "warning" && "text-warning",
-            tone === "neutral" && "text-text-tertiary",
+            'w-4 h-4',
+            tone === 'accent' && 'text-accent',
+            tone === 'success' && 'text-success',
+            tone === 'warning' && 'text-warning',
+            tone === 'neutral' && 'text-text-tertiary',
           )}
         />
       </div>
@@ -198,8 +205,8 @@ function InfoCard({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl bg-bg-tertiary/50 border border-border/50",
-        "hover:border-border hover:bg-bg-tertiary transition-all duration-200 group",
+        'flex items-center gap-3 p-3 rounded-xl bg-bg-tertiary/50 border border-border/50',
+        'hover:border-border hover:bg-bg-tertiary transition-all duration-200 group',
       )}
     >
       <div className="p-2 rounded-lg bg-bg-primary border border-border/50 text-text-tertiary group-hover:text-text-secondary transition-colors">
@@ -235,17 +242,24 @@ function StatusBadge({
   variant,
 }: {
   children: React.ReactNode;
-  variant: "success" | "warning" | "info" | "neutral";
+  variant: 'success' | 'warning' | 'info' | 'neutral';
 }) {
   const variants = {
-    success: "bg-success/10 text-success border-success/20",
-    warning: "bg-warning/10 text-warning border-warning/20",
-    info: "bg-accent/10 text-accent border-accent/20",
-    neutral: "bg-bg-tertiary text-text-tertiary border-border",
+    success: 'bg-success/10 text-success border-success/20',
+    warning: 'bg-warning/10 text-warning border-warning/20',
+    info: 'bg-accent/10 text-accent border-accent/20',
+    neutral: 'bg-bg-tertiary text-text-tertiary border-border',
   };
   return (
-    <span className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border", variants[variant])}>
-      {variant === "success" && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border',
+        variants[variant],
+      )}
+    >
+      {variant === 'success' && (
+        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+      )}
       {children}
     </span>
   );
@@ -260,17 +274,17 @@ function LogRow({ log }: { log: LogEntry }) {
   const config = LOG_LEVEL_CONFIG[log.level as LogFilterLevel] || LOG_LEVEL_CONFIG.info;
 
   const getContextLabel = (category?: string) => {
-    if (!category) return "System";
+    if (!category) return 'System';
     return category
-      .split("_")
+      .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+      .join(' ');
   };
 
   const handleCopyData = async () => {
     if (!log.data) return;
     const text = JSON.stringify(log.data, null, 2);
-    await copyToClipboard(text, "Log Data");
+    await copyToClipboard(text, 'Log Data');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -280,29 +294,34 @@ function LogRow({ log }: { log: LogEntry }) {
   return (
     <div
       className={cn(
-        "group border-s-[3px] mb-1.5 rounded-e-lg transition-all duration-200",
-        "hover:shadow-sm hover:translate-x-0.5",
+        'group border-s-[3px] mb-1.5 rounded-e-lg transition-all duration-200',
+        'hover:shadow-sm hover:translate-x-0.5',
         config.bg,
         config.border,
-        isExpanded && "bg-bg-tertiary/80 ring-1 ring-inset ring-border shadow-sm",
+        isExpanded && 'bg-bg-tertiary/80 ring-1 ring-inset ring-border shadow-sm',
       )}
     >
       <div
         className={cn(
-          "flex items-center gap-3 p-3 cursor-pointer select-none",
-          !hasData && "cursor-default",
+          'flex items-center gap-3 p-3 cursor-pointer select-none',
+          !hasData && 'cursor-default',
         )}
         onClick={() => hasData && setIsExpanded(!isExpanded)}
       >
         {/* Level Icon */}
         <div className="shrink-0 mt-0.5">
-          <config.icon className={cn("w-4 h-4", config.color)} />
+          <config.icon className={cn('w-4 h-4', config.color)} />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0 flex flex-col gap-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={cn("px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider", config.badge)}>
+            <span
+              className={cn(
+                'px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider',
+                config.badge,
+              )}
+            >
               {log.level}
             </span>
             <span className="px-1.5 py-0.5 rounded-md bg-bg-tertiary text-[10px] font-semibold text-text-tertiary border border-border">
@@ -310,9 +329,9 @@ function LogRow({ log }: { log: LogEntry }) {
             </span>
             <span className="text-[10px] font-mono text-text-tertiary opacity-60 tabular-nums ms-auto md:ms-0">
               {new Date(log.timestamp).toLocaleTimeString(undefined, {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
                 hour12: false,
               })}
             </span>
@@ -326,9 +345,9 @@ function LogRow({ log }: { log: LogEntry }) {
         {hasData && (
           <div
             className={cn(
-              "shrink-0 p-1 rounded-full transition-all duration-200",
-              "text-text-tertiary group-hover:text-text-secondary group-hover:bg-bg-tertiary",
-              isExpanded && "rotate-180 bg-bg-tertiary text-text-primary",
+              'shrink-0 p-1 rounded-full transition-all duration-200',
+              'text-text-tertiary group-hover:text-text-secondary group-hover:bg-bg-tertiary',
+              isExpanded && 'rotate-180 bg-bg-tertiary text-text-primary',
             )}
           >
             <ChevronDown className="w-4 h-4" />
@@ -346,7 +365,7 @@ function LogRow({ log }: { log: LogEntry }) {
                 className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-medium text-text-secondary backdrop-blur-sm border border-white/10 transition-colors"
               >
                 {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copied ? "Copied" : "Copy JSON"}
+                {copied ? 'Copied' : 'Copy JSON'}
               </button>
             </div>
             <div className="p-3 bg-black/90 rounded-lg text-[11px] text-success font-mono overflow-auto max-h-64 custom-scrollbar shadow-inner border border-white/5">
@@ -364,10 +383,10 @@ function LogRow({ log }: { log: LogEntry }) {
 /* ─── Main Component ─── */
 
 export default function DeveloperTab() {
-  const [appVersion, setAppVersion] = useState("");
-  const [tauriVersion, setTauriVersion] = useState("");
-  const [webviewVersion, setWebviewVersion] = useState("");
-  const [platformLabel, setPlatformLabel] = useState("...");
+  const [appVersion, setAppVersion] = useState('');
+  const [tauriVersion, setTauriVersion] = useState('');
+  const [webviewVersion, setWebviewVersion] = useState('');
+  const [platformLabel, setPlatformLabel] = useState('...');
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [updateCheckDone, setUpdateCheckDone] = useState(false);
@@ -375,7 +394,7 @@ export default function DeveloperTab() {
 
   useEffect(() => {
     async function load() {
-      const { getVersion, getTauriVersion } = await import("@tauri-apps/api/app");
+      const { getVersion, getTauriVersion } = await import('@tauri-apps/api/app');
       setAppVersion(await getVersion());
       setTauriVersion(await getTauriVersion());
 
@@ -383,19 +402,19 @@ export default function DeveloperTab() {
       const edgMatch = /Edg\/(\S+)/.exec(ua);
       const chromeMatch = /Chrome\/(\S+)/.exec(ua);
       const webkitMatch = /AppleWebKit\/(\S+)/.exec(ua);
-      setWebviewVersion(edgMatch?.[1] ?? chromeMatch?.[1] ?? webkitMatch?.[1] ?? "Unknown");
+      setWebviewVersion(edgMatch?.[1] ?? chromeMatch?.[1] ?? webkitMatch?.[1] ?? 'Unknown');
 
       if (/mac/i.test(ua)) {
-        setPlatformLabel(/arm|aarch/i.test(ua) ? "macOS (Apple Silicon)" : "macOS (Intel)");
+        setPlatformLabel(/arm|aarch/i.test(ua) ? 'macOS (Apple Silicon)' : 'macOS (Intel)');
       } else if (/win/i.test(ua)) {
-        setPlatformLabel(/arm|aarch/i.test(ua) ? "Windows (ARM)" : "Windows (x64)");
+        setPlatformLabel(/arm|aarch/i.test(ua) ? 'Windows (ARM)' : 'Windows (x64)');
       } else if (/linux/i.test(ua)) {
-        setPlatformLabel("Linux");
+        setPlatformLabel('Linux');
       } else {
-        setPlatformLabel("Unknown");
+        setPlatformLabel('Unknown');
       }
 
-      const { getAvailableUpdate } = await import("@shared/services/updateManager");
+      const { getAvailableUpdate } = await import('@shared/services/updateManager');
       const existing = getAvailableUpdate();
       if (existing) setUpdateVersion(existing.version);
     }
@@ -407,7 +426,7 @@ export default function DeveloperTab() {
     setUpdateCheckDone(false);
     setUpdateVersion(null);
     try {
-      const { checkForUpdateNow } = await import("@shared/services/updateManager");
+      const { checkForUpdateNow } = await import('@shared/services/updateManager');
       const result = await checkForUpdateNow();
       if (result) {
         setUpdateVersion(result.version);
@@ -415,7 +434,7 @@ export default function DeveloperTab() {
         setUpdateCheckDone(true);
       }
     } catch (err) {
-      console.error("Update check failed:", err);
+      console.error('Update check failed:', err);
       setUpdateCheckDone(true);
     } finally {
       setCheckingForUpdate(false);
@@ -425,36 +444,37 @@ export default function DeveloperTab() {
   const handleInstallUpdate = async () => {
     setInstallingUpdate(true);
     try {
-      const { installUpdate } = await import("@shared/services/updateManager");
+      const { installUpdate } = await import('@shared/services/updateManager');
       await installUpdate();
     } catch (err) {
-      console.error("Update install failed:", err);
+      console.error('Update install failed:', err);
       setInstallingUpdate(false);
     }
   };
 
   const [seeding, setSeeding] = useState(false);
   const [seedDone, setSeedDone] = useState(false);
-  const [seedResult, setSeedResult] = useState("");
+  const [seedResult, setSeedResult] = useState('');
 
   const handleSeedDemo = useCallback(async () => {
     setSeeding(true);
     setSeedDone(false);
-    setSeedResult("");
+    setSeedResult('');
     try {
-      const { invokeCommand } = await import("@shared/services/db/invoke/command");
-      const result = await invokeCommand<{ seeded: number }>("db_reseed_demo");
-      const msg = result.seeded > 0
-        ? `Seeded ${result.seeded} records`
-        : "Demo data already exists — skipped";
+      const { invokeCommand } = await import('@shared/services/db/invoke/command');
+      const result = await invokeCommand<{ seeded: number }>('db_reseed_demo');
+      const msg =
+        result.seeded > 0
+          ? `Seeded ${result.seeded} records`
+          : 'Demo data already exists — skipped';
       setSeedResult(msg);
       setSeedDone(true);
-      notify("Demo Data", msg);
+      notify('Demo Data', msg);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Seed failed";
+      const msg = err instanceof Error ? err.message : 'Seed failed';
       setSeedResult(msg);
       setSeedDone(true);
-      notify("Demo Data", `Failed: ${msg}`);
+      notify('Demo Data', `Failed: ${msg}`);
     } finally {
       setSeeding(false);
     }
@@ -465,15 +485,19 @@ export default function DeveloperTab() {
 
   // ── Logs State ────────────────────────────────────────────────────────
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<LogFilterLevel[]>([
-    "error",
-    "warning",
-    "info",
-    "debug",
+    'error',
+    'warning',
+    'info',
+    'debug',
   ]);
 
-  const { data: logItems, isLoading: logsLoading, refetch } = useLogs({
+  const {
+    data: logItems,
+    isLoading: logsLoading,
+    refetch,
+  } = useLogs({
     limit: 100,
     filters: activeFilters,
     searchQuery,
@@ -488,12 +512,15 @@ export default function DeveloperTab() {
   const clearLogsMutation = useClearLogs();
 
   const handleClearLogs = async () => {
-    if (!confirm("Are you sure you want to clear all system logs?")) return;
+    if (!confirm('Are you sure you want to clear all system logs?')) return;
     try {
       await clearLogsMutation.mutateAsync();
       refetch();
     } catch (err) {
-      notify("Logs", `Failed to clear logs: ${err instanceof Error ? err.message : "Unknown error"}`);
+      notify(
+        'Logs',
+        `Failed to clear logs: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -510,16 +537,16 @@ export default function DeveloperTab() {
     }
     setResetting(true);
     try {
-      const { invokeCommand } = await import("@shared/services/db/invoke/command");
+      const { invokeCommand } = await import('@shared/services/db/invoke/command');
       // `db_reset_and_reseed` drops all tables, re-runs migrations, and re-seeds the
       // full demo dataset (company, pipelines, deals, tasks, invoices, contacts). The
       // frontend listener soft-reloads so the dev server stays alive and the freshly
       // seeded schema is re-read immediately.
-      await invokeCommand<{ seeded: number }>("db_reset_and_reseed");
+      await invokeCommand<{ seeded: number }>('db_reset_and_reseed');
       window.location.reload();
     } catch (err) {
       window.location.reload();
-      notify("Reset DB", `Failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      notify('Reset DB', `Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setResetting(false);
       setResetConfirm(false);
     }
@@ -528,19 +555,19 @@ export default function DeveloperTab() {
   const { t } = useTranslation();
 
   // ── Sub-navigation state ─────────────────────────────────────────────
-  const [activeSubTab, setActiveSubTab] = useState<"health" | "updates" | "logs">("health");
+  const [activeSubTab, setActiveSubTab] = useState<'health' | 'updates' | 'logs'>('health');
 
   // ── Derived state ─────────────────────────────────────────────────────
   const tier = useFeatureFlagStore((s) => s.tier);
   const overrideEnabled = useFeatureFlagStore((s) => s.overrideEnabled);
   const overrideTier = useFeatureFlagStore((s) => s.overrideTier);
   const devPro = isDevProMode();
-  const effectiveTier: "basic" | "pro" = overrideEnabled ? overrideTier : tier;
+  const effectiveTier: 'basic' | 'pro' = overrideEnabled ? overrideTier : tier;
   const totalFeatures = FEATURE_FLAGS.length;
   const enabledFeatures = FEATURE_FLAGS.filter(
-    (f) => getFeatureAccessWithDevPro(f.id, effectiveTier, 0) === "enabled",
+    (f) => getFeatureAccessWithDevPro(f.id, effectiveTier, 0) === 'enabled',
   ).length;
-  const ragAvailable = getFeatureAccessWithDevPro("rag", effectiveTier, 0) === "enabled";
+  const ragAvailable = getFeatureAccessWithDevPro('rag', effectiveTier, 0) === 'enabled';
 
   // ── Health Dashboard State ──────────────────────────────────────────
   const [healthStats, setHealthStats] = useState<DbHealthStats>({
@@ -553,8 +580,8 @@ export default function DeveloperTab() {
     let cancelled = false;
     const fetchHealth = async () => {
       try {
-        const { invokeCommand } = await import("@shared/services/db/invoke/command");
-        const stats = await invokeCommand<DbHealthStats>("db_health_stats");
+        const { invokeCommand } = await import('@shared/services/db/invoke/command');
+        const stats = await invokeCommand<DbHealthStats>('db_health_stats');
         if (!cancelled) setHealthStats(stats);
       } catch {
         // Silently ignore — health stats are non-critical
@@ -571,24 +598,24 @@ export default function DeveloperTab() {
   // ── Export Logs Handler ─────────────────────────────────────────────
   const handleExportLogs = async () => {
     try {
-      const { save } = await import("@tauri-apps/plugin-dialog");
+      const { save } = await import('@tauri-apps/plugin-dialog');
       const path = await save({
         defaultPath: `smemaster-logs-${Date.now()}.txt`,
         filters: [
-          { name: "Text Files", extensions: ["txt"] },
-          { name: "All Files", extensions: ["*"] },
+          { name: 'Text Files', extensions: ['txt'] },
+          { name: 'All Files', extensions: ['*'] },
         ],
       });
       if (!path) return;
-      const { invokeCommand } = await import("@shared/services/db/invoke/command");
-      await invokeCommand("db_export_logs", { destination: path });
-      notify("Logs", "Logs exported successfully");
+      const { invokeCommand } = await import('@shared/services/db/invoke/command');
+      await invokeCommand('db_export_logs', { destination: path });
+      notify('Logs', 'Logs exported successfully');
     } catch (err) {
-      notify("Logs", `Export failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      notify('Logs', `Export failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
-  const modeLabel = devPro ? "Dev Pro" : effectiveTier === "pro" ? "Pro" : "Basic";
+  const modeLabel = devPro ? 'Dev Pro' : effectiveTier === 'pro' ? 'Pro' : 'Basic';
 
   return (
     <div className="space-y-4 md:space-y-6 pb-8">
@@ -599,13 +626,13 @@ export default function DeveloperTab() {
           label="System Status"
           value={modeLabel}
           sublabel={`${platformLabel}`}
-          tone={devPro ? "warning" : effectiveTier === "pro" ? "success" : "neutral"}
+          tone={devPro ? 'warning' : effectiveTier === 'pro' ? 'success' : 'neutral'}
         />
         <StatCard
           icon={Zap}
           label="Features"
           value={`${enabledFeatures} / ${totalFeatures}`}
-          sublabel={ragAvailable ? "RAG Available" : "RAG Locked"}
+          sublabel={ragAvailable ? 'RAG Available' : 'RAG Locked'}
           tone="accent"
         />
         <StatCard
@@ -618,9 +645,9 @@ export default function DeveloperTab() {
         <StatCard
           icon={Bell}
           label="Updates"
-          value={updateVersion ? "Available" : "Up to Date"}
-          sublabel={updateVersion ? `v${updateVersion}` : "No pending update"}
-          tone={updateVersion ? "warning" : "neutral"}
+          value={updateVersion ? 'Available' : 'Up to Date'}
+          sublabel={updateVersion ? `v${updateVersion}` : 'No pending update'}
+          tone={updateVersion ? 'warning' : 'neutral'}
         />
       </div>
 
@@ -634,10 +661,10 @@ export default function DeveloperTab() {
               key={sub.id}
               onClick={() => setActiveSubTab(sub.id)}
               className={cn(
-                "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all shrink-0 border",
+                'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all shrink-0 border',
                 isActive
-                  ? "bg-accent text-white shadow-sm border-accent scale-[1.02]"
-                  : "bg-bg-secondary text-text-secondary hover:text-text-primary hover:bg-bg-hover border-border-primary/50",
+                  ? 'bg-accent text-white shadow-sm border-accent scale-[1.02]'
+                  : 'bg-bg-secondary text-text-secondary hover:text-text-primary hover:bg-bg-hover border-border-primary/50',
               )}
             >
               <Icon size={14} />
@@ -650,7 +677,7 @@ export default function DeveloperTab() {
       {/* ==================================================================== */}
       {/*  HEALTH TAB                                                          */}
       {/* ==================================================================== */}
-      {activeSubTab === "health" && (
+      {activeSubTab === 'health' && (
         <div className="space-y-4 md:space-y-6">
           {/* ── Health Dashboard ────────────────────────────────────────── */}
           <SettingGroup
@@ -658,20 +685,32 @@ export default function DeveloperTab() {
             description="Real-time observability metrics for the app runtime."
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <InfoCard label="Database Size" value={formatFileSize(healthStats.dbSizeBytes)} icon={Database} />
-              <InfoCard label="WAL File Size" value={formatFileSize(healthStats.walSizeBytes)} icon={Database} />
-              <InfoCard label="Uptime" value={formatUptime(healthStats.uptimeSecs)} icon={Activity} />
+              <InfoCard
+                label="Database Size"
+                value={formatFileSize(healthStats.dbSizeBytes)}
+                icon={Database}
+              />
+              <InfoCard
+                label="WAL File Size"
+                value={formatFileSize(healthStats.walSizeBytes)}
+                icon={Database}
+              />
+              <InfoCard
+                label="Uptime"
+                value={formatUptime(healthStats.uptimeSecs)}
+                icon={Activity}
+              />
               <InfoCard label="Cache Status" value="Active" icon={Activity} />
             </div>
           </SettingGroup>
 
           {/* ── App Info ──────────────────────────────────────────────────── */}
-          <SettingGroup title={t("settings.appInfo")}>
+          <SettingGroup title={t('settings.appInfo')}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <InfoCard label={t("settings.version")} value={appVersion} icon={Package} />
-              <InfoCard label={t("settings.tauriVersion")} value={tauriVersion} icon={Cpu} />
-              <InfoCard label={t("settings.webviewVersion")} value={webviewVersion} icon={Globe} />
-              <InfoCard label={t("settings.platform")} value={platformLabel} icon={Monitor} />
+              <InfoCard label={t('settings.version')} value={appVersion} icon={Package} />
+              <InfoCard label={t('settings.tauriVersion')} value={tauriVersion} icon={Cpu} />
+              <InfoCard label={t('settings.webviewVersion')} value={webviewVersion} icon={Globe} />
+              <InfoCard label={t('settings.platform')} value={platformLabel} icon={Monitor} />
             </div>
           </SettingGroup>
 
@@ -679,14 +718,14 @@ export default function DeveloperTab() {
           <SubsystemStatusPanel />
 
           {/* ── Developer Tools ──────────────────────────────────────────── */}
-          <SettingGroup title={t("settings.developerTools")}>
+          <SettingGroup title={t('settings.developerTools')}>
             <div className="flex items-center justify-between p-1">
               <div className="space-y-1">
                 <span className="text-sm font-medium text-text-secondary">
-                  {t("settings.openDevtools")}
+                  {t('settings.openDevtools')}
                 </span>
                 <p className="text-xs text-text-tertiary">
-                  {t("settings.openDevtoolsDescription")}
+                  {t('settings.openDevtoolsDescription')}
                 </p>
               </div>
               <Button
@@ -694,11 +733,11 @@ export default function DeveloperTab() {
                 size="md"
                 icon={<Code2 size={14} />}
                 onClick={async () => {
-                  const { invokeCommand } = await import("@shared/services/db/invoke/command");
-                  await invokeCommand("open_devtools");
+                  const { invokeCommand } = await import('@shared/services/db/invoke/command');
+                  await invokeCommand('open_devtools');
                 }}
               >
-                {t("settings.openDevtools")}
+                {t('settings.openDevtools')}
               </Button>
             </div>
           </SettingGroup>
@@ -706,9 +745,9 @@ export default function DeveloperTab() {
           {/* ── Feature Flags ────────────────────────────────────────────── */}
           <SettingGroup title="Feature Flags">
             <p className="text-xs text-text-tertiary mb-3">
-              View feature access status and test tier-based progressive disclosure.
-              Feature flags control which capabilities are available based on your
-              subscription tier and usage limits.
+              View feature access status and test tier-based progressive disclosure. Feature flags
+              control which capabilities are available based on your subscription tier and usage
+              limits.
             </p>
             <div className="flex items-center gap-3">
               <Button
@@ -716,8 +755,8 @@ export default function DeveloperTab() {
                 size="sm"
                 icon={<Code2 size={14} />}
                 onClick={async () => {
-                  const { navigateToSettings } = await import("@/router/navigate");
-                  navigateToSettings("feature-flags");
+                  const { navigateToSettings } = await import('@/router/navigate');
+                  navigateToSettings('feature-flags');
                 }}
                 className="bg-bg-tertiary text-text-primary border border-border-primary"
               >
@@ -727,10 +766,22 @@ export default function DeveloperTab() {
             <HelpCard
               collapsible
               items={[
-                { type: "why", text: "Developer tools give you deep visibility into app health, logs, database state, and feature flags — essential for troubleshooting and performance tuning." },
-                { type: "how", text: "Health dashboard shows real-time metrics. Subsystem panel reports component status. Logs capture filtered app events. Feature flags control tier access." },
-                { type: "when", text: "Use developer tools when diagnosing issues, checking update status, monitoring subsystem health, or testing feature flag behavior." },
-                { type: "tip", text: "Export logs before clearing them if you're investigating a recurring issue — they can be shared with support for faster resolution." },
+                {
+                  type: 'why',
+                  text: 'Developer tools give you deep visibility into app health, logs, database state, and feature flags — essential for troubleshooting and performance tuning.',
+                },
+                {
+                  type: 'how',
+                  text: 'Health dashboard shows real-time metrics. Subsystem panel reports component status. Logs capture filtered app events. Feature flags control tier access.',
+                },
+                {
+                  type: 'when',
+                  text: 'Use developer tools when diagnosing issues, checking update status, monitoring subsystem health, or testing feature flag behavior.',
+                },
+                {
+                  type: 'tip',
+                  text: "Export logs before clearing them if you're investigating a recurring issue — they can be shared with support for faster resolution.",
+                },
               ]}
             />
           </SettingGroup>
@@ -742,18 +793,18 @@ export default function DeveloperTab() {
           >
             <div
               className={cn(
-                "rounded-xl border transition-all duration-300",
-                resetConfirm
-                  ? "border-danger/50 bg-danger/5 p-4"
-                  : "border-transparent p-1",
+                'rounded-xl border transition-all duration-300',
+                resetConfirm ? 'border-danger/50 bg-danger/5 p-4' : 'border-transparent p-1',
               )}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "p-2 rounded-lg shrink-0",
-                      resetConfirm ? "bg-danger/10 text-danger" : "bg-bg-tertiary text-text-tertiary",
+                      'p-2 rounded-lg shrink-0',
+                      resetConfirm
+                        ? 'bg-danger/10 text-danger'
+                        : 'bg-bg-tertiary text-text-tertiary',
                     )}
                   >
                     {resetConfirm ? <AlertTriangle size={18} /> : <HardDrive size={18} />}
@@ -761,13 +812,13 @@ export default function DeveloperTab() {
                   <div>
                     <span
                       className={cn(
-                        "text-sm font-medium",
-                        resetConfirm ? "text-danger" : "text-text-secondary",
+                        'text-sm font-medium',
+                        resetConfirm ? 'text-danger' : 'text-text-secondary',
                       )}
                     >
                       {resetConfirm
-                        ? "This action is irreversible. All data will be lost."
-                        : "Delete database, reset to clean state, and restart"}
+                        ? 'This action is irreversible. All data will be lost.'
+                        : 'Delete database, reset to clean state, and restart'}
                     </span>
                     {resetConfirm && (
                       <p className="text-xs text-danger/80 mt-0.5">
@@ -777,7 +828,7 @@ export default function DeveloperTab() {
                   </div>
                 </div>
                 <Button
-                  variant={resetConfirm ? "danger" : "secondary"}
+                  variant={resetConfirm ? 'danger' : 'secondary'}
                   size="md"
                   icon={
                     resetting ? (
@@ -789,7 +840,7 @@ export default function DeveloperTab() {
                   onClick={handleResetDb}
                   disabled={resetting}
                 >
-                  {resetting ? "Resetting..." : resetConfirm ? "Confirm Reset" : "Reset Database"}
+                  {resetting ? 'Resetting...' : resetConfirm ? 'Confirm Reset' : 'Reset Database'}
                 </Button>
               </div>
             </div>
@@ -800,26 +851,26 @@ export default function DeveloperTab() {
       {/* ==================================================================== */}
       {/*  UPDATES & DATA TAB                                                  */}
       {/* ==================================================================== */}
-      {activeSubTab === "updates" && (
+      {activeSubTab === 'updates' && (
         <div className="space-y-4 md:space-y-6">
           {/* ── Software Updates ──────────────────────────────────────────── */}
-          <SettingGroup title={t("settings.updates")}>
+          <SettingGroup title={t('settings.updates')}>
             <div className="flex items-center justify-between p-1">
               <div className="space-y-1">
                 <span className="text-sm font-medium text-text-secondary">
-                  {t("settings.softwareUpdates")}
+                  {t('settings.softwareUpdates')}
                 </span>
                 <div className="flex items-center gap-2">
                   {updateVersion && (
                     <StatusBadge variant="info">
                       <Zap className="w-3 h-3" />
-                      {t("settings.updateAvailable", { version: updateVersion })}
+                      {t('settings.updateAvailable', { version: updateVersion })}
                     </StatusBadge>
                   )}
                   {updateCheckDone && !updateVersion && (
                     <StatusBadge variant="success">
                       <CheckCircle className="w-3 h-3" />
-                      {t("settings.upToDate")}
+                      {t('settings.upToDate')}
                     </StatusBadge>
                   )}
                   {checkingForUpdate && (
@@ -839,22 +890,19 @@ export default function DeveloperTab() {
                     onClick={handleInstallUpdate}
                     disabled={installingUpdate}
                   >
-                    {installingUpdate ? t("settings.updating") : t("settings.updateAndRestart")}
+                    {installingUpdate ? t('settings.updating') : t('settings.updateAndRestart')}
                   </Button>
                 ) : (
                   <Button
                     variant="secondary"
                     size="md"
                     icon={
-                      <RefreshCw
-                        size={14}
-                        className={cn(checkingForUpdate && "animate-spin")}
-                      />
+                      <RefreshCw size={14} className={cn(checkingForUpdate && 'animate-spin')} />
                     }
                     onClick={handleCheckForUpdate}
                     disabled={checkingForUpdate}
                   >
-                    {checkingForUpdate ? t("common.checking") : t("settings.checkForUpdates")}
+                    {checkingForUpdate ? t('common.checking') : t('settings.checkForUpdates')}
                   </Button>
                 )}
               </div>
@@ -874,8 +922,8 @@ export default function DeveloperTab() {
                 {seedDone && seedResult && (
                   <div
                     className={cn(
-                      "flex items-center gap-1.5 text-xs",
-                      seedResult.includes("Failed") ? "text-danger" : "text-success",
+                      'flex items-center gap-1.5 text-xs',
+                      seedResult.includes('Failed') ? 'text-danger' : 'text-success',
                     )}
                   >
                     <CheckCircle size={12} />
@@ -887,16 +935,12 @@ export default function DeveloperTab() {
                 variant="secondary"
                 size="md"
                 icon={
-                  seeding ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Database size={14} />
-                  )
+                  seeding ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />
                 }
                 onClick={handleSeedDemo}
                 disabled={seeding}
               >
-                {seeding ? "Seeding..." : "Seed Demo Data"}
+                {seeding ? 'Seeding...' : 'Seed Demo Data'}
               </Button>
             </div>
           </SettingGroup>
@@ -906,7 +950,7 @@ export default function DeveloperTab() {
       {/* ==================================================================== */}
       {/*  LOGS TAB                                                            */}
       {/* ==================================================================== */}
-      {activeSubTab === "logs" && (
+      {activeSubTab === 'logs' && (
         <SettingGroup title="System Logs">
           <div className="border border-border rounded-2xl bg-card overflow-hidden flex flex-col h-[520px] shadow-sm">
             {/* Toolbar */}
@@ -929,7 +973,7 @@ export default function DeveloperTab() {
                   className="h-8 w-8 p-0"
                   title="Refresh"
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", logsLoading && "animate-spin")} />
+                  <RefreshCw className={cn('w-3.5 h-3.5', logsLoading && 'animate-spin')} />
                 </Button>
                 <Button
                   variant="ghost"
@@ -957,7 +1001,7 @@ export default function DeveloperTab() {
             {/* Search & Filters */}
             <div className="px-4 py-3 border-b border-border/50 bg-bg-tertiary/10 flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
                 <input
                   type="text"
                   placeholder="Search messages, components, or data..."
@@ -967,7 +1011,7 @@ export default function DeveloperTab() {
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => setSearchQuery('')}
                     className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-primary transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -975,7 +1019,7 @@ export default function DeveloperTab() {
                 )}
               </div>
               <div className="flex items-center gap-1 p-1 bg-bg-tertiary rounded-xl border border-border shrink-0">
-                {(["error", "warning", "info", "debug"] as LogFilterLevel[]).map((level) => {
+                {(['error', 'warning', 'info', 'debug'] as LogFilterLevel[]).map((level) => {
                   const config = LOG_LEVEL_CONFIG[level];
                   const isActive = activeFilters.includes(level);
                   return (
@@ -983,10 +1027,10 @@ export default function DeveloperTab() {
                       key={level}
                       onClick={() => toggleFilter(level)}
                       className={cn(
-                        "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5",
+                        'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5',
                         isActive
-                          ? cn(config.badge, "shadow-sm scale-105")
-                          : "text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary",
+                          ? cn(config.badge, 'shadow-sm scale-105')
+                          : 'text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary',
                       )}
                     >
                       <config.icon className="w-3 h-3" />
@@ -1005,15 +1049,13 @@ export default function DeveloperTab() {
                     <Bug className="w-8 h-8 text-text-tertiary opacity-30" />
                   </div>
                   <div className="space-y-1">
-                    <p className="font-semibold text-sm text-text-tertiary">
-                      No matching events
-                    </p>
+                    <p className="font-semibold text-sm text-text-tertiary">No matching events</p>
                     <p className="text-xs text-text-tertiary max-w-[240px]">
                       Adjust your filters or search query to find what you're looking for.
                     </p>
                   </div>
                   {searchQuery && (
-                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")}>
+                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery('')}>
                       Clear Search
                     </Button>
                   )}
@@ -1030,7 +1072,7 @@ export default function DeveloperTab() {
             {/* Footer */}
             <div className="px-4 py-2.5 bg-bg-tertiary/50 border-t border-border flex items-center justify-between">
               <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
-                {logs.length} {logs.length === 1 ? "event" : "events"} displayed
+                {logs.length} {logs.length === 1 ? 'event' : 'events'} displayed
               </span>
               <div className="flex items-center gap-2 text-[10px] font-medium text-text-tertiary uppercase tracking-widest">
                 <span className="relative flex h-2 w-2">

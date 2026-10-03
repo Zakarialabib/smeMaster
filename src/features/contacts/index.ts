@@ -5,15 +5,11 @@ export type {
   ContactStats,
   ContactEngagementRow,
   DynamicSegmentRow,
-} from "./db/contacts";
+} from './db/contacts';
 
-export type {
-  ContactTag,
-  ContactGroup,
-  ContactSegment,
-} from "./stores/contactStore";
+export type { ContactTag, ContactGroup, ContactSegment } from './stores/contactStore';
 
-export { useContactStore } from "./stores/contactStore";
+export { useContactStore } from './stores/contactStore';
 
 export {
   searchContacts,
@@ -34,4 +30,4 @@ export {
   createDynamicSegment,
   updateDynamicSegmentRefresh,
   deleteDynamicSegment,
-} from "./db/contacts";
+} from './db/contacts';

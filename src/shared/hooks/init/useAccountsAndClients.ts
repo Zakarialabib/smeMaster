@@ -1,23 +1,18 @@
-import { useEffect, useCallback, useRef, useState } from "react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import type { Account } from "@features/accounts/stores/accountStore";
-import { getAllAccounts } from "@features/accounts/db/accounts";
-import { getSetting } from "@features/settings/db/settings";
-import {
-  initializeClients,
-  getGmailClient,
-} from "@features/mail/services/gmail/tokenManager";
-import { fetchSendAsAliases } from "@features/mail/services/gmail/sendAs";
-import { syncAccount } from "@features/mail/services/gmail/syncManager";
-import { withRetry } from "./_utils";
+import { useEffect, useCallback, useRef, useState } from 'react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import type { Account } from '@features/accounts/stores/accountStore';
+import { getAllAccounts } from '@features/accounts/db/accounts';
+import { getSetting } from '@features/settings/db/settings';
+import { initializeClients, getGmailClient } from '@features/mail/services/gmail/tokenManager';
+import { fetchSendAsAliases } from '@features/mail/services/gmail/sendAs';
+import { syncAccount } from '@features/mail/services/gmail/syncManager';
+import { withRetry } from './_utils';
 
 /**
  * Maps a `DbAccount` (snake_case, number booleans) to the store's `Account`
  * type (camelCase, boolean booleans).
  */
-function mapDbAccounts(
-  dbAccounts: Awaited<ReturnType<typeof getAllAccounts>>,
-): Account[] {
+function mapDbAccounts(dbAccounts: Awaited<ReturnType<typeof getAllAccounts>>): Account[] {
   return dbAccounts.map((a) => ({
     id: a.id,
     email: a.email,
@@ -35,7 +30,7 @@ function mapDbAccounts(
  */
 async function fetchAliasesForAccounts(accounts: Account[]): Promise<void> {
   const emailAccountIds = accounts
-    .filter((a) => a.isActive && a.provider !== "caldav" && a.provider !== "local")
+    .filter((a) => a.isActive && a.provider !== 'caldav' && a.provider !== 'local')
     .map((a) => a.id);
 
   await Promise.allSettled(
@@ -71,7 +66,7 @@ export function useAccountsAndClients(): {
     async function load() {
       // Phase 5: Load accounts & initialize clients
       const mapped = await withRetry<Account[]>(
-        "getAllAccounts",
+        'getAllAccounts',
         async () => {
           const dbAccounts = await getAllAccounts();
           return mapDbAccounts(dbAccounts);
@@ -80,14 +75,14 @@ export function useAccountsAndClients(): {
       );
       if (!mapped || mapped.length === 0) return;
 
-      const savedAccountId = await withRetry("getSetting(active_account_id)", () =>
-        getSetting("active_account_id"),
+      const savedAccountId = await withRetry('getSetting(active_account_id)', () =>
+        getSetting('active_account_id'),
       );
 
       useAccountStore.getState().setAccounts(mapped, savedAccountId ?? undefined);
       setAccounts(mapped);
 
-      await withRetry("initializeClients", () => initializeClients());
+      await withRetry('initializeClients', () => initializeClients());
 
       // Phase 7: Fetch send-as aliases (non-blocking per account)
       fetchAliasesForAccounts(mapped).catch(() => {});
@@ -107,7 +102,7 @@ export function useAccountsAndClients(): {
     const newest = mapped[mapped.length - 1];
     if (newest) {
       syncAccount(newest.id);
-      if (newest.provider !== "caldav") {
+      if (newest.provider !== 'caldav') {
         getGmailClient(newest.id)
           .then((client) => fetchSendAsAliases(client, newest.id))
           .catch((err) =>

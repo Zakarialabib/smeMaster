@@ -1,3 +1,4 @@
+#[cfg(feature = "local-ai")]
 pub mod ai;
 pub mod accounting;
 pub mod account_import;
@@ -108,6 +109,13 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             #[cfg(desktop)]
             system_desktop::open_devtools,
 
+            // === agent (voice + WhatsApp console) ===
+            // The desktop holds no provider key and sends no tenant id; the
+            // bearer token is read from the auth store, not from an argument.
+            crate::agent::client::agent_health,
+            crate::agent::client::agent_ops_snapshot,
+            crate::agent::client::agent_provider_health,
+            crate::agent::client::agent_create_session,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,
@@ -175,6 +183,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::orchestrator::gating::get_subsystem_status,
             crate::orchestrator::gating::get_tool_state,
             crate::orchestrator::gating::apply_tool_state,
+            crate::orchestrator::gating::db_restart_subsystem,
 
             // === commands::onboarding_cmds (6 commands) ===
             onboarding_cmds::db_save_onboarding_step,
@@ -182,6 +191,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             onboarding_cmds::db_seed_demo_preset,
             onboarding_cmds::db_finalize_onboarding,
             onboarding_cmds::db_has_email_accounts,
+            onboarding_cmds::db_set_demo_data_enabled,
             onboarding_cmds::db_get_tool_status,
 
             // === pairing (3 commands) ===
@@ -224,27 +234,84 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::vault::ops::db_delete_vault_items_by_account,
             crate::vault::ops::db_count_vault_items,
 
-            // === commands::ai (9 commands) ===
+            // === downloader (7 commands) — resumable model/generic downloads ===
+            crate::downloader::commands::downloader_create_job,
+            crate::downloader::commands::downloader_get_job,
+            crate::downloader::commands::downloader_list_jobs,
+            crate::downloader::commands::downloader_pause_job,
+            crate::downloader::commands::downloader_resume_job,
+            crate::downloader::commands::downloader_cancel_job,
+            crate::downloader::commands::downloader_clear_finished,
+
+            // === commands::ai (20 commands, all gated behind local-ai) ===
+            #[cfg(feature = "local-ai")]
             ai::ai_download_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_load_embedding_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_index_emails,
+            #[cfg(feature = "local-ai")]
             ai::ai_query_rag,
+            #[cfg(feature = "local-ai")]
             ai::ai_search_by_vector,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_models_dir,
+            #[cfg(feature = "local-ai")]
             ai::ai_delete_model,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_vector_db_path,
+            #[cfg(feature = "local-ai")]
             ai::ai_reset_vector_db,
+            #[cfg(feature = "local-ai")]
             ai::ai_get_email_chunks,
+            #[cfg(feature = "local-ai")]
             ai::ai_insert_provider_vectors,
+            #[cfg(feature = "local-ai")]
             ai::db_get_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_set_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_cache,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_cache_by_thread,
+            #[cfg(feature = "local-ai")]
             ai::db_get_ai_config_by_type,
+            #[cfg(feature = "local-ai")]
             ai::db_upsert_ai_config,
+            #[cfg(feature = "local-ai")]
             ai::db_delete_ai_config,
+            #[cfg(feature = "local-ai")]
             ai::db_list_ai_configs,
+            #[cfg(feature = "local-ai")]
             ai::db_upsert_ai_cache,
+            #[cfg(feature = "local-ai")]
+            ai::ai_get_sidecar_status,
+            #[cfg(feature = "local-ai")]
+            ai::ai_get_sidecar_metrics,
+            #[cfg(feature = "local-ai")]
+            ai::ai_list_sidecar_models,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_transcribe_audio,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_synthesize_speech,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_sidecar_control_status,
+            #[cfg(feature = "local-ai")]
+            ai::ai_start_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_stop_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_prepare_model_dir,
+            #[cfg(feature = "local-ai")]
+            ai::ai_remove_model_dir,
 
             // === commands::calendar (15 commands) ===
             calendar::db_list_calendars,
@@ -421,6 +488,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             contacts::db_contact_tags,
             contacts::db_contact_workflow_rule_count,
             contacts::db_list_contacts,
+            contacts::db_filter_contacts,
             contacts::db_count_contacts,
             contacts::db_get_contact,
             contacts::db_get_contact_by_email,
@@ -871,6 +939,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             tasks::db_get_tasks_for_account,
             tasks::db_get_tasks_with_contacts,
             tasks::db_get_tasks_with_contacts_paginated,
+            tasks::db_filter_tasks,
             tasks::db_count_tasks,
             tasks::db_get_tasks_for_thread,
             tasks::db_get_subtasks,

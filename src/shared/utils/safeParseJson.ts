@@ -21,7 +21,7 @@ export function safeParseJson<T>(
   fallback: T,
   validate?: (v: unknown) => v is T,
 ): T {
-  if (value == null || value === "") return fallback;
+  if (value == null || value === '') return fallback;
   try {
     const parsed: unknown = JSON.parse(value);
     if (validate) {
@@ -32,4 +32,3 @@ export function safeParseJson<T>(
     return fallback;
   }
 }
-

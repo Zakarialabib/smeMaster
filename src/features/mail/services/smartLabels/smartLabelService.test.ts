@@ -1,43 +1,43 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock("@features/mail/db/smartLabelRules", () => ({
+vi.mock('@features/mail/db/smartLabelRules', () => ({
   getEnabledSmartLabelRules: vi.fn(),
 }));
 
-vi.mock("@features/mail/services/filters/filterEngine", () => ({
+vi.mock('@features/mail/services/filters/filterEngine', () => ({
   messageMatchesFilter: vi.fn(),
 }));
 
-vi.mock("@shared/services/ai/aiService", () => ({
+vi.mock('@shared/services/ai/aiService', () => ({
   classifyThreadsBySmartLabels: vi.fn(),
 }));
 
-import { getEnabledSmartLabelRules } from "@features/mail/db/smartLabelRules";
-import { messageMatchesFilter } from "@features/mail/services/filters/filterEngine";
-import { classifyThreadsBySmartLabels } from "@shared/services/ai/aiService";
-import { matchSmartLabels } from "./smartLabelService";
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import { getEnabledSmartLabelRules } from '@features/mail/db/smartLabelRules';
+import { messageMatchesFilter } from '@features/mail/services/filters/filterEngine';
+import { classifyThreadsBySmartLabels } from '@shared/services/ai/aiService';
+import { matchSmartLabels } from './smartLabelService';
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
 
 function makeMessage(overrides: Partial<ParsedMessage> = {}): ParsedMessage {
   return {
-    id: "msg-1",
-    threadId: "t1",
-    fromAddress: "sender@example.com",
-    fromName: "Sender",
-    toAddresses: "me@example.com",
+    id: 'msg-1',
+    threadId: 't1',
+    fromAddress: 'sender@example.com',
+    fromName: 'Sender',
+    toAddresses: 'me@example.com',
     ccAddresses: null,
     bccAddresses: null,
     replyTo: null,
-    subject: "Test Subject",
-    snippet: "Test snippet",
+    subject: 'Test Subject',
+    snippet: 'Test snippet',
     date: Date.now(),
     isRead: false,
     isStarred: false,
     bodyHtml: null,
-    bodyText: "Test body",
+    bodyText: 'Test body',
     rawSize: 100,
     internalDate: Date.now(),
-    labelIds: ["INBOX"],
+    labelIds: ['INBOX'],
     hasAttachments: false,
     attachments: [],
     listUnsubscribe: null,
@@ -47,28 +47,28 @@ function makeMessage(overrides: Partial<ParsedMessage> = {}): ParsedMessage {
   };
 }
 
-describe("matchSmartLabels", () => {
+describe('matchSmartLabels', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns empty when no rules exist", async () => {
+  it('returns empty when no rules exist', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([]);
 
-    const result = await matchSmartLabels("acc-1", [makeMessage()]);
+    const result = await matchSmartLabels('acc-1', [makeMessage()]);
 
     expect(result).toEqual([]);
     expect(classifyThreadsBySmartLabels).not.toHaveBeenCalled();
   });
 
-  it("matches via criteria fast path", async () => {
+  it('matches via criteria fast path', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc-1",
-        label_id: "label-jobs",
-        ai_description: "Job applications",
-        criteria_json: JSON.stringify({ from: "recruiter" }),
+        id: 'r1',
+        account_id: 'acc-1',
+        label_id: 'label-jobs',
+        ai_description: 'Job applications',
+        criteria_json: JSON.stringify({ from: 'recruiter' }),
         is_enabled: 1,
         sort_order: 0,
         created_at: 100,
@@ -77,52 +77,50 @@ describe("matchSmartLabels", () => {
     vi.mocked(messageMatchesFilter).mockReturnValue(true);
     vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(new Map());
 
-    const result = await matchSmartLabels("acc-1", [makeMessage()]);
+    const result = await matchSmartLabels('acc-1', [makeMessage()]);
 
-    expect(result).toEqual([{ threadId: "t1", labelIds: ["label-jobs"] }]);
+    expect(result).toEqual([{ threadId: 't1', labelIds: ['label-jobs'] }]);
     expect(messageMatchesFilter).toHaveBeenCalled();
   });
 
-  it("falls back to AI when no criteria match", async () => {
+  it('falls back to AI when no criteria match', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc-1",
-        label_id: "label-jobs",
-        ai_description: "Job applications",
+        id: 'r1',
+        account_id: 'acc-1',
+        label_id: 'label-jobs',
+        ai_description: 'Job applications',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
         created_at: 100,
       },
     ]);
-    vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(
-      new Map([["t1", ["label-jobs"]]]),
-    );
+    vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(new Map([['t1', ['label-jobs']]]));
 
-    const result = await matchSmartLabels("acc-1", [makeMessage()]);
+    const result = await matchSmartLabels('acc-1', [makeMessage()]);
 
-    expect(result).toEqual([{ threadId: "t1", labelIds: ["label-jobs"] }]);
+    expect(result).toEqual([{ threadId: 't1', labelIds: ['label-jobs'] }]);
     expect(classifyThreadsBySmartLabels).toHaveBeenCalled();
   });
 
-  it("merges criteria and AI matches without duplicates", async () => {
+  it('merges criteria and AI matches without duplicates', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc-1",
-        label_id: "label-jobs",
-        ai_description: "Job applications",
-        criteria_json: JSON.stringify({ from: "recruiter" }),
+        id: 'r1',
+        account_id: 'acc-1',
+        label_id: 'label-jobs',
+        ai_description: 'Job applications',
+        criteria_json: JSON.stringify({ from: 'recruiter' }),
         is_enabled: 1,
         sort_order: 0,
         created_at: 100,
       },
       {
-        id: "r2",
-        account_id: "acc-1",
-        label_id: "label-orders",
-        ai_description: "Orders",
+        id: 'r2',
+        account_id: 'acc-1',
+        label_id: 'label-orders',
+        ai_description: 'Orders',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 1,
@@ -131,66 +129,64 @@ describe("matchSmartLabels", () => {
     ]);
     vi.mocked(messageMatchesFilter).mockReturnValue(true);
     vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(
-      new Map([["t1", ["label-jobs", "label-orders"]]]),
+      new Map([['t1', ['label-jobs', 'label-orders']]]),
     );
 
-    const result = await matchSmartLabels("acc-1", [makeMessage()]);
+    const result = await matchSmartLabels('acc-1', [makeMessage()]);
 
     // Should have both labels but no duplicate label-jobs
     expect(result).toHaveLength(1);
-    expect(result[0]!.labelIds).toContain("label-jobs");
-    expect(result[0]!.labelIds).toContain("label-orders");
-    expect(result[0]!.labelIds.filter((l) => l === "label-jobs")).toHaveLength(1);
+    expect(result[0]!.labelIds).toContain('label-jobs');
+    expect(result[0]!.labelIds).toContain('label-orders');
+    expect(result[0]!.labelIds.filter((l) => l === 'label-jobs')).toHaveLength(1);
   });
 
-  it("deduplicates threads (uses first message per thread)", async () => {
+  it('deduplicates threads (uses first message per thread)', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc-1",
-        label_id: "label-1",
-        ai_description: "Test",
+        id: 'r1',
+        account_id: 'acc-1',
+        label_id: 'label-1',
+        ai_description: 'Test',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
         created_at: 100,
       },
     ]);
-    vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(
-      new Map([["t1", ["label-1"]]]),
-    );
+    vi.mocked(classifyThreadsBySmartLabels).mockResolvedValue(new Map([['t1', ['label-1']]]));
 
-    const msg1 = makeMessage({ id: "msg-1", threadId: "t1" });
-    const msg2 = makeMessage({ id: "msg-2", threadId: "t1" });
+    const msg1 = makeMessage({ id: 'msg-1', threadId: 't1' });
+    const msg2 = makeMessage({ id: 'msg-2', threadId: 't1' });
 
-    await matchSmartLabels("acc-1", [msg1, msg2]);
+    await matchSmartLabels('acc-1', [msg1, msg2]);
 
     // AI should only receive one thread
     expect(classifyThreadsBySmartLabels).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ id: "t1" })]),
+      expect.arrayContaining([expect.objectContaining({ id: 't1' })]),
       expect.anything(),
     );
     const threads = vi.mocked(classifyThreadsBySmartLabels).mock.calls[0]![0];
     expect(threads).toHaveLength(1);
   });
 
-  it("continues with criteria matches when AI fails", async () => {
+  it('continues with criteria matches when AI fails', async () => {
     vi.mocked(getEnabledSmartLabelRules).mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc-1",
-        label_id: "label-jobs",
-        ai_description: "Job applications",
-        criteria_json: JSON.stringify({ from: "recruiter" }),
+        id: 'r1',
+        account_id: 'acc-1',
+        label_id: 'label-jobs',
+        ai_description: 'Job applications',
+        criteria_json: JSON.stringify({ from: 'recruiter' }),
         is_enabled: 1,
         sort_order: 0,
         created_at: 100,
       },
       {
-        id: "r2",
-        account_id: "acc-1",
-        label_id: "label-ai",
-        ai_description: "AI only rule",
+        id: 'r2',
+        account_id: 'acc-1',
+        label_id: 'label-ai',
+        ai_description: 'AI only rule',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 1,
@@ -198,12 +194,11 @@ describe("matchSmartLabels", () => {
       },
     ]);
     vi.mocked(messageMatchesFilter).mockReturnValue(true);
-    vi.mocked(classifyThreadsBySmartLabels).mockRejectedValue(new Error("AI error"));
+    vi.mocked(classifyThreadsBySmartLabels).mockRejectedValue(new Error('AI error'));
 
-    const result = await matchSmartLabels("acc-1", [makeMessage()]);
+    const result = await matchSmartLabels('acc-1', [makeMessage()]);
 
     // Criteria match should still work
-    expect(result).toEqual([{ threadId: "t1", labelIds: ["label-jobs"] }]);
+    expect(result).toEqual([{ threadId: 't1', labelIds: ['label-jobs'] }]);
   });
 });
-

@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import { DateTimePickerDialog } from "@shared/components/ui/DateTimePickerDialog";
+import { useTranslation } from 'react-i18next';
+import { DateTimePickerDialog } from '@shared/components/ui/DateTimePickerDialog';
 
 interface ScheduleSendDialogProps {
   onSchedule: (timestamp: number) => void;
@@ -30,17 +30,32 @@ export function ScheduleSendDialog({ onSchedule, onClose }: ScheduleSendDialogPr
     return [
       {
         label: t('composer.tomorrowMorning'),
-        detail: tomorrowMorning.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) + " 9:00 AM",
+        detail:
+          tomorrowMorning.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }) + ' 9:00 AM',
         timestamp: Math.floor(tomorrowMorning.getTime() / 1000),
       },
       {
         label: t('composer.tomorrowAfternoon'),
-        detail: tomorrowAfternoon.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) + " 1:00 PM",
+        detail:
+          tomorrowAfternoon.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }) + ' 1:00 PM',
         timestamp: Math.floor(tomorrowAfternoon.getTime() / 1000),
       },
       {
         label: t('composer.mondayMorning'),
-        detail: monday.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) + " 9:00 AM",
+        detail:
+          monday.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }) + ' 9:00 AM',
         timestamp: Math.floor(monday.getTime() / 1000),
       },
     ];

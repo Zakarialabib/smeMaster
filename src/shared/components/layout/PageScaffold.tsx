@@ -16,8 +16,8 @@
  * search box, FilterBar, table, etc. into the slots.
  */
 
-import type { ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
+import type { ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
 
 export interface PageScaffoldProps {
   /** Page title (already translated by the caller). */
@@ -44,14 +44,14 @@ export interface PageScaffoldProps {
   /** Extra classes for the content region. */
   contentClassName?: string;
   /** Constrain content width; defaults to full-bleed for list pages. */
-  maxWidth?: "full" | "prose" | "xl" | "2xl";
+  maxWidth?: 'full' | 'prose' | 'xl' | '2xl';
 }
 
-const MAX_WIDTH: Record<NonNullable<PageScaffoldProps["maxWidth"]>, string> = {
-  full: "max-w-none",
-  xl: "max-w-[1280px] mx-auto w-full",
-  "2xl": "max-w-[1536px] mx-auto w-full",
-  prose: "max-w-3xl mx-auto w-full",
+const MAX_WIDTH: Record<NonNullable<PageScaffoldProps['maxWidth']>, string> = {
+  full: 'max-w-none',
+  xl: 'max-w-[1280px] mx-auto w-full',
+  '2xl': 'max-w-[1536px] mx-auto w-full',
+  prose: 'max-w-3xl mx-auto w-full',
 };
 
 export function PageScaffold({
@@ -65,24 +65,22 @@ export function PageScaffold({
   children,
   className,
   contentClassName,
-  maxWidth = "full",
+  maxWidth = 'full',
 }: PageScaffoldProps) {
   return (
-    <div className={cn("flex h-full min-h-0 w-full flex-col", className)}>
+    <div className={cn('flex h-full min-h-0 w-full flex-col', className)}>
       {/* Header */}
       <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-5 pb-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="truncate text-xl font-semibold text-text-primary">{title}</h1>
-            {typeof count === "number" && (
+            {typeof count === 'number' && (
               <span className="rounded-full bg-bg-tertiary px-2 py-0.5 text-xs font-medium text-text-secondary">
                 {count}
               </span>
             )}
           </div>
-          {subtitle && (
-            <p className="mt-0.5 text-sm text-text-tertiary">{subtitle}</p>
-          )}
+          {subtitle && <p className="mt-0.5 text-sm text-text-tertiary">{subtitle}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
@@ -97,7 +95,7 @@ export function PageScaffold({
       {/* Content */}
       <div
         className={cn(
-          "min-h-0 flex-1 overflow-auto px-6 py-4",
+          'min-h-0 flex-1 overflow-auto px-6 py-4',
           MAX_WIDTH[maxWidth],
           contentClassName,
         )}

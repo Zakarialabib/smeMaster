@@ -1,10 +1,10 @@
-import type { Invoice, InvoiceWithItems, CreateInvoiceRequest } from "../types";
+import type { Invoice, InvoiceWithItems, CreateInvoiceRequest } from '../types';
 import {
   listInvoices as dbListInvoices,
   getInvoiceWithItems as dbGetInvoiceWithItems,
   createInvoice as dbCreateInvoice,
   generateInvoiceDocuments as dbGenerateInvoiceDocuments,
-} from "@shared/services/db/invoke/invoicing";
+} from '@shared/services/db/invoke/invoicing';
 
 /**
  * Thin feature-layer wrappers that delegate to the canonical `db_*` Tauri
@@ -15,14 +15,12 @@ import {
  * with matching argument shapes.
  */
 
-export const listInvoices = (companyId: string): Promise<Invoice[]> =>
-  dbListInvoices(companyId);
+export const listInvoices = (companyId: string): Promise<Invoice[]> => dbListInvoices(companyId);
 
 export const getInvoiceWithItems = (invoiceId: string): Promise<InvoiceWithItems> =>
   dbGetInvoiceWithItems(invoiceId);
 
-export const createInvoice = (req: CreateInvoiceRequest): Promise<Invoice> =>
-  dbCreateInvoice(req);
+export const createInvoice = (req: CreateInvoiceRequest): Promise<Invoice> => dbCreateInvoice(req);
 
 /**
  * Generates the invoice PDF + PEPPOL XML and returns their on-disk paths

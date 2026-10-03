@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -13,7 +13,7 @@ export interface SegmentedControlProps<T extends string> {
   /** Optional ÔÇö whether to show labels (default: true) */
   showLabels?: boolean;
   /** Size variant */
-  size?: "sm" | "md";
+  size?: 'sm' | 'md';
   /** ARIA label for the group */
   ariaLabel?: string;
   /** Extra class name */
@@ -21,20 +21,19 @@ export interface SegmentedControlProps<T extends string> {
 }
 
 const SIZE_CLASSES = {
-  sm: "px-2 py-1 text-[0.625rem] min-h-[28px]",
-  md: "px-3 py-1.5 text-xs min-h-[32px]",
+  sm: 'px-2 py-1 text-[0.625rem] min-h-[28px]',
+  md: 'px-3 py-1.5 text-xs min-h-[32px]',
 } as const;
 
 const ACTIVE_CLASSES = {
-  sm: "bg-bg-tertiary text-text-primary shadow-sm",
-  md: "bg-accent text-white shadow-sm",
+  sm: 'bg-bg-tertiary text-text-primary shadow-sm',
+  md: 'bg-accent text-white shadow-sm',
 } as const;
 
-const INACTIVE_CLASSES =
-  "text-text-tertiary hover:text-text-primary";
+const INACTIVE_CLASSES = 'text-text-tertiary hover:text-text-primary';
 
 const FOCUS_RING =
-  "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1";
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1';
 
 /**
  * Generic segmented control ÔÇö a row of toggle buttons.
@@ -48,9 +47,9 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   showLabels = true,
-  size = "sm",
-  ariaLabel = "Segmented control",
-  className = "",
+  size = 'sm',
+  ariaLabel = 'Segmented control',
+  className = '',
 }: SegmentedControlProps<T>) {
   return (
     <div
@@ -77,7 +76,7 @@ export function SegmentedControl<T extends string>({
               ${FOCUS_RING}
             `}
           >
-            {Icon && <Icon size={size === "sm" ? 12 : 14} />}
+            {Icon && <Icon size={size === 'sm' ? 12 : 14} />}
             {showLabels && <span>{opt.label}</span>}
           </button>
         );
@@ -120,7 +119,7 @@ export function DensityControl<T extends string = string>({
             title={opt.label}
             className={`
               inline-flex items-center justify-center w-7 h-7 rounded-md transition-all text-xs font-medium min-h-[44px] min-w-[44px]
-              ${isActive ? "bg-accent text-white shadow-sm" : "text-text-tertiary hover:text-text-primary"}
+              ${isActive ? 'bg-accent text-white shadow-sm' : 'text-text-tertiary hover:text-text-primary'}
               focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1
             `}
           >

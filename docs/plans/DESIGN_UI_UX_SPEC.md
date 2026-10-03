@@ -14,9 +14,7 @@
 
 ## 0. Direction — DECISION REQUIRED (approve or change)
 
-The repo already ships a real design system (Frosted Glass). Two prior proposals exist but
-stalled: `docs/plans/UI_REFACTOR_2026-07-12.md` (proposed DROPPING glassmorphism for a flat
-system) and `docs/03-FRONTEND/12-ui-super-app-spec.md` (empty stub). This spec does NOT
+The repo already ships a real design system (Frosted Glass). One prior proposal stalled: `docs/03-FRONTEND/12-ui-super-app-spec.md` (empty stub). The earlier `UI_REFACTOR_2026-07-12.md` (a "Flat & Calm" proposal) was superseded by this spec and removed. This spec does NOT
 re-litigate the visual identity from scratch — it locks one direction, codifies the existing
 pattern library as the single source of truth, fixes the gaps, and standardizes UX across
 all pages + both form factors.
@@ -314,14 +312,13 @@ cross-page visual audit desktop + Android emulator; i18n key sync; CRLF check on
 - Feature pages under `src/features/{dashboard,campaigns,mail,pos,vault,settings,workflows,accounts,sync,deliverability,assistant}/**`
 - `src/locales/{en,ar,fr,it}/translation.json` (i18n keys)
 - `docs/03-FRONTEND/DESIGN_SYSTEM_GUIDE.md`, `06-mobile-ui-strategy.md`, `08-ui-ux-roadmap.md`,
-  `12-ui-super-app-spec.md`; `docs/00-INDEX.md`; `docs/plans/UI_REFACTOR_2026-07-12.md`
+  `12-ui-super-app-spec.md`; `docs/00-INDEX.md`
 
 ---
 
-## 12. Reusable Content Merged from UI_REFACTOR_2026-07-12.md
+## 12. Reusable Content Merged from the prior UI_REFACTOR plan
 
-The consolidated roadmap (`docs/plans/UI_REFACTOR_2026-07-12.md`, dated 2026-07-13) was
-folded into this spec as the single source of truth. Verified-against-code facts it got
+The prior `UI_REFACTOR_2026-07-12.md` ("Flat & Calm" proposal, dated 2026-07-12) was folded into this spec as the single source of truth and subsequently removed. Verified-against-code facts it got
 RIGHT (reuse as-is): the 33-row status dashboard, per-page verdicts, Settings re-section
 plan, i18n roadmap, keyboard/shortcut map (`Cmd+K`, `E`/`R`/`S`, `N`, `Cmd+Shift+F`, `Cmd+B`),
 skeleton system (`Skeleton.tsx`), and the C1–C10 execution plan. Facts it got STALE

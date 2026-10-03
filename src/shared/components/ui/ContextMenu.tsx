@@ -1,9 +1,9 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react";
-import { useClickOutside } from "@shared/hooks/useClickOutside";
-import { useScreenInfo } from "@shared/hooks/usePlatform";
-import { ChevronRight, Check } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { MENU_BASE, MENU_ITEM, MENU_SEPARATOR, FOCUS_RING } from "@shared/styles/ui-tokens";
+﻿import { useEffect, useRef, useState, useCallback } from 'react';
+import { useClickOutside } from '@shared/hooks/useClickOutside';
+import { useScreenInfo } from '@shared/hooks/usePlatform';
+import { ChevronRight, Check } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { MENU_BASE, MENU_ITEM, MENU_SEPARATOR, FOCUS_RING } from '@shared/styles/ui-tokens';
 
 export interface ContextMenuItem {
   id: string;
@@ -61,7 +61,7 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           setFocusedIndex((prev) => {
             let next = prev + 1;
@@ -70,7 +70,7 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
           });
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
           setFocusedIndex((prev) => {
             let next = prev - 1;
@@ -79,7 +79,7 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
           });
           break;
         }
-        case "ArrowRight": {
+        case 'ArrowRight': {
           e.preventDefault();
           const focused = items[focusedIndex];
           if (focused?.children && !focused.disabled) {
@@ -87,12 +87,12 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
           }
           break;
         }
-        case "ArrowLeft": {
+        case 'ArrowLeft': {
           e.preventDefault();
           setSubmenuOpenId(null);
           break;
         }
-        case "Enter": {
+        case 'Enter': {
           e.preventDefault();
           const focused = items[focusedIndex];
           if (focused && !focused.disabled && !focused.separator) {
@@ -105,7 +105,7 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
           }
           break;
         }
-        case "Escape": {
+        case 'Escape': {
           e.preventDefault();
           e.stopPropagation();
           onClose();
@@ -113,13 +113,13 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
         }
       }
 
-      if (["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Enter", "Escape"].includes(e.key)) {
+      if (['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Enter', 'Escape'].includes(e.key)) {
         e.stopPropagation();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [items, focusedIndex, onClose]);
 
   const cancelSubmenuTimer = useCallback(() => {
@@ -129,41 +129,47 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
     }
   }, []);
 
-  const handleMouseEnter = useCallback((index: number, item: ContextMenuItem) => {
-    setFocusedIndex(index);
-    cancelSubmenuTimer();
+  const handleMouseEnter = useCallback(
+    (index: number, item: ContextMenuItem) => {
+      setFocusedIndex(index);
+      cancelSubmenuTimer();
 
-    if (item.children && !item.disabled) {
-      submenuTimerRef.current = setTimeout(() => {
-        setSubmenuOpenId(item.id);
-      }, 100);
-    } else {
-      submenuTimerRef.current = setTimeout(() => {
-        setSubmenuOpenId(null);
-      }, 300);
-    }
-  }, [cancelSubmenuTimer]);
+      if (item.children && !item.disabled) {
+        submenuTimerRef.current = setTimeout(() => {
+          setSubmenuOpenId(item.id);
+        }, 100);
+      } else {
+        submenuTimerRef.current = setTimeout(() => {
+          setSubmenuOpenId(null);
+        }, 300);
+      }
+    },
+    [cancelSubmenuTimer],
+  );
 
-  const handleItemClick = useCallback((item: ContextMenuItem) => {
-    if (item.disabled || item.separator) return;
-    if (item.children) {
-      setSubmenuOpenId((prev) => prev === item.id ? null : item.id);
-      return;
-    }
-    item.action?.();
-    onClose();
-  }, [onClose]);
+  const handleItemClick = useCallback(
+    (item: ContextMenuItem) => {
+      if (item.disabled || item.separator) return;
+      if (item.children) {
+        setSubmenuOpenId((prev) => (prev === item.id ? null : item.id));
+        return;
+      }
+      item.action?.();
+      onClose();
+    },
+    [onClose],
+  );
 
   useEffect(() => {
     if (!submenuOpenId) return;
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as Node;
       if (menuRef.current?.contains(target)) return;
-      if ((target as HTMLElement).closest?.("[data-submenu-portal]")) return;
+      if ((target as HTMLElement).closest?.('[data-submenu-portal]')) return;
       onClose();
     };
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [submenuOpenId, onClose]);
 
   useEffect(() => {
@@ -207,15 +213,17 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                 onMouseEnter={() => handleMouseEnter(index, item)}
                 className={`${MENU_ITEM} ${FOCUS_RING} ${
                   item.disabled
-                    ? "text-text-tertiary cursor-default"
+                    ? 'text-text-tertiary cursor-default'
                     : item.danger
-                      ? `text-danger ${isFocused || isSubmenuOpen ? "bg-bg-hover" : ""}`
-                      : `text-text-primary ${isFocused || isSubmenuOpen ? "bg-bg-hover" : ""}`
+                      ? `text-danger ${isFocused || isSubmenuOpen ? 'bg-bg-hover' : ''}`
+                      : `text-text-primary ${isFocused || isSubmenuOpen ? 'bg-bg-hover' : ''}`
                 }`}
               >
                 <span className="w-4 h-4 flex items-center justify-center shrink-0">
                   {item.checked != null ? (
-                    item.checked ? <Check size={12} /> : null
+                    item.checked ? (
+                      <Check size={12} />
+                    ) : null
                   ) : Icon ? (
                     <Icon size={12} />
                   ) : null}
@@ -223,12 +231,10 @@ export function ContextMenu({ items, position, onClose }: ContextMenuProps) {
 
                 <span className="flex-1">{item.label}</span>
 
-                {hasSubmenu && (
-                  <ChevronRight size={12} className="text-text-tertiary shrink-0" />
-                )}
+                {hasSubmenu && <ChevronRight size={12} className="text-text-tertiary shrink-0" />}
 
                 {item.shortcut && !hasSubmenu && (
-                  <span className="text-text-tertiary ml-4 shrink-0">{item.shortcut}</span>
+                  <span className="text-text-tertiary ms-4 shrink-0">{item.shortcut}</span>
                 )}
               </button>
             </div>
@@ -314,13 +320,15 @@ function Submenu({
             }}
             className={`${MENU_ITEM} ${
               item.disabled
-                ? "text-text-tertiary cursor-default"
-                : "text-text-primary hover:bg-bg-hover"
+                ? 'text-text-tertiary cursor-default'
+                : 'text-text-primary hover:bg-bg-hover'
             }`}
           >
             <span className="w-4 h-4 flex items-center justify-center shrink-0">
               {item.checked != null ? (
-                item.checked ? <Check size={12} className="text-accent" /> : null
+                item.checked ? (
+                  <Check size={12} className="text-accent" />
+                ) : null
               ) : Icon ? (
                 <Icon size={12} />
               ) : null}

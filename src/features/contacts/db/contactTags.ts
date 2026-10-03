@@ -7,7 +7,7 @@
   getContactTagById as dbGetContactTagById,
   upsertContactTag as dbUpsertContactTag,
   getContactCountForTag as dbGetContactCountForTag,
-} from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
 
 export interface DbContactTag {
   id: string;
@@ -49,14 +49,14 @@ export async function getContactCountForTag(tagId: string): Promise<number> {
 }
 
 export async function addTagToContact(contactId: string, tagId: string): Promise<void> {
-  await addEntityLink("contact", contactId, "label", tagId);
+  await addEntityLink('contact', contactId, 'label', tagId);
 }
 
 export async function removeTagFromContact(contactId: string, tagId: string): Promise<void> {
-  await removeEntityLink("contact", contactId, "label", tagId);
+  await removeEntityLink('contact', contactId, 'label', tagId);
 }
 
 export async function getTagIdsForContact(contactId: string): Promise<string[]> {
-  const pivots = await getLinkedEntities("contact", contactId);
+  const pivots = await getLinkedEntities('contact', contactId);
   return pivots.map((p) => p.pivot_id);
 }

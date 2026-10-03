@@ -1,9 +1,11 @@
+// providers/openAiCompatibleProvider.ts (enhanced)
 /**
- * Factory for OpenAI-compatible providers (custom, lmstudio, ollama).
+ * Factory for OpenAI-compatible providers (custom, lmstudio, ollama, byteplus, mistral).
  * Consolidates the common chat completion pattern with configurable baseURL and auth.
  */
-import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from "../types";
-import { buildSystemPrompt } from "../utils";
+import type { AiProviderClient, AiCompletionRequest, AiEmbeddingRequest } from '../types';
+import type { EmbeddingResult } from '../capabilities';
+import { buildSystemPrompt } from '../utils';
 
 interface ChatCompletionRequest {
   model: string;
@@ -23,15 +25,11 @@ interface EmbeddingResponse {
   model: string;
 }
 
-/**
- * Validates that a URL uses http or https protocol.
- * Used by both custom and lmstudio providers.
- */
 export function validateUrl(url: string): string {
   try {
     const parsed = new URL(url);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new Error("Only http and https are allowed");
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('Only http and https are allowed');
     }
     return url;
   } catch (err) {
@@ -39,23 +37,20 @@ export function validateUrl(url: string): string {
   }
 }
 
-/**
- * Creates an OpenAI-compatible provider client.
- * Used by customProvider, lmstudioProvider, and ollamaProvider (via SDK).
- */
 export function createOpenAICompatibleProvider(
   baseUrl: string,
   apiKey: string,
   model: string,
-  aiLanguage = "auto",
+  aiLanguage = 'auto',
+  embeddingModel?: string,
 ): AiProviderClient {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
 
   async function chatCompletion(req: ChatCompletionRequest): Promise<ChatCompletionResponse> {
     const response = await fetch(`${normalizedBaseUrl}/v1/chat/completions`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(req),
@@ -63,25 +58,28 @@ export function createOpenAICompatibleProvider(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`AI provider error (${response.status}): ${errorText}`);
+      throw new Error(`AI provider error (${response.status}) [model=${model}]: ${errorText}`);
     }
 
     return response.json();
   }
 
-  async function embeddingsRequest(input: string | string[]): Promise<EmbeddingResponse> {
+  async function embeddingsRequest(
+    input: string | string[],
+    embModel: string,
+  ): Promise<EmbeddingResponse> {
     const response = await fetch(`${normalizedBaseUrl}/v1/embeddings`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ model, input }),
+      body: JSON.stringify({ model: embModel, input }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Embeddings error (${response.status}): ${errorText}`);
+      throw new Error(`Embeddings error (${response.status}) [model=${embModel}]: ${errorText}`);
     }
 
     return response.json();
@@ -93,9 +91,9 @@ export function createOpenAICompatibleProvider(
       const messages: { role: string; content: string }[] = [];
 
       if (systemPrompt) {
-        messages.push({ role: "system", content: systemPrompt });
+        messages.push({ role: 'system', content: systemPrompt });
       }
-      messages.push({ role: "user", content: req.userContent });
+      messages.push({ role: 'user', content: req.userContent });
 
       const response = await chatCompletion({
         model,
@@ -103,14 +101,14 @@ export function createOpenAICompatibleProvider(
         max_tokens: req.maxTokens ?? 1024,
       });
 
-      return response.choices[0]?.message?.content ?? "";
+      return response.choices[0]?.message?.content ?? '';
     },
 
     async testConnection(): Promise<boolean> {
       try {
         const response = await chatCompletion({
           model,
-          messages: [{ role: "user", content: "Say hi" }],
+          messages: [{ role: 'user', content: 'Say hi' }],
           max_tokens: 10,
         });
         return !!response.choices[0]?.message?.content;
@@ -119,26 +117,21 @@ export function createOpenAICompatibleProvider(
       }
     },
 
-    async getEmbeddings(req: AiEmbeddingRequest): Promise<number[][] | null> {
+    async getEmbeddings(req: AiEmbeddingRequest): Promise<EmbeddingResult | null> {
+      const embModel = req.model ?? embeddingModel ?? model;
       try {
-        const response = await embeddingsRequest(req.input);
-        return response.data.map((d) => d.embedding);
+        const response = await embeddingsRequest(req.input, embModel);
+        const vectors = response.data.map((d) => d.embedding);
+        const dimensions = vectors[0]?.length ?? 0;
+        return {
+          vectors,
+          spaceId: `openai-compatible-${embModel}-${dimensions}`,
+          dimensions,
+          modelId: embModel,
+        };
       } catch {
         return null;
       }
     },
   };
-}
-
-/**
- * Shared test helper for provider connection tests.
- * Wraps a callable and returns true on success, false on any error.
- */
-export async function runTest(callable: () => Promise<unknown>): Promise<boolean> {
-  try {
-    await callable();
-    return true;
-  } catch {
-    return false;
-  }
 }

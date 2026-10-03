@@ -47,9 +47,9 @@ Standard store boundaries (see [02-state-management](02-state-management.md)): R
 | `RagResultBubble.tsx` | Renders retrieved chunks (local path) or LLM answer + context (cloud path). |
 | `AiAssistantPage.tsx` | `/ai-assistant` page composing the above.                                   |
 
-### Settings UI — `LocalRagSettings.tsx`
+### Settings UI — `KnowledgeBaseSettings.tsx`
 
-`src/features/settings/components/LocalRagSettings.tsx`, rendered inside `Settings → AiTab`:
+`src/features/settings/components/KnowledgeBaseSettings.tsx`, rendered inside `Settings → AiTab`:
 
 | Card                      | Responsibility                                                                                                |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -60,7 +60,7 @@ Standard store boundaries (see [02-state-management](02-state-management.md)): R
 ## Routing & navigation
 
 - Route: `/ai-assistant` (registered in `src/routeTree.gen.ts` via the assistant feature).
-- Nav entry: added to `src/config/navConfig.ts` (nav-rail item, i18n label `nav.assistant`).
+- Nav entry: added to `src/shared/components/layout/shell/navConfig.ts` (nav-rail item, i18n label `nav.assistant`).
 
 ## Design tokens (UI/UX)
 
@@ -98,5 +98,12 @@ ragStore.queryRag() → { context, query }
 | Store               | `src/features/assistant/stores/ragStore.ts`             |
 | Components          | `src/features/assistant/components/`                    |
 | Page                | `src/features/assistant/pages/AiAssistantPage.tsx`      |
-| Settings UI         | `src/features/settings/components/LocalRagSettings.tsx` |
-| Route + nav         | `src/routeTree.gen.ts` · `src/config/navConfig.ts`      |
+| Settings UI         | `src/features/settings/components/KnowledgeBaseSettings.tsx` |
+| Route + nav         | `src/routeTree.gen.ts` · `src/shared/components/layout/shell/navConfig.ts`      |
+
+## Source reconciliation (2026-07-19)
+
+| Claim (before) | Verified reality | Evidence |
+| --- | --- | --- |
+| RAG Settings UI `src/features/settings/components/LocalRagSettings.tsx` | Actual `KnowledgeBaseSettings.tsx` | `find src/features/settings -iname '*knowledge*'` |
+| Nav `src/config/navConfig.ts` | Actual `src/shared/components/layout/shell/navConfig.ts` | file absent at `src/config/` |

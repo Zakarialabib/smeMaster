@@ -22,11 +22,11 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 | ---------------- | ------------------------------------------------------- | ---------------------------------------- |
 | `DesktopShell`   | `src/shared/components/layout/shell/DesktopShell.tsx`   | Full sidebar, three-pane layout          |
 | `AppLayout`      | `src/shared/components/layout/AppLayout.tsx`            | Responsive container                     |
-| `Sidebar`        | `src/shared/components/layout/Sidebar.tsx`              | Navigation + a11y, skip-to-content       |
+| `SidebarContainer` | `src/shared/components/layout/shell/SidebarContainer.tsx` | Navigation + a11y, skip-to-content (note: no `Sidebar.tsx` exists; this is the real component) |
 | `CommandPalette` | `src/shared/components/layout/shell/CommandPalette.tsx` | Bottom-anchor mobile, top-center desktop |
 | `AppLauncher`    | `src/shared/components/layout/shell/AppLauncher.tsx`    | Odoo-inspired app tile grid              |
 | `ViewSwitcher`   | `src/shared/components/ui/ViewSwitcher.tsx`             | List/card/board/kanban toggle            |
-| `ActionBar`      | `src/shared/components/ui/ActionBar.tsx`                | a11y-labeled icon buttons                |
+| `ActionBar`      | `src/features/mail/components/ActionBar.tsx`        | a11y-labeled icon buttons                |
 | `Modal`          | `src/shared/components/ui/Modal.tsx`                    | Focus trap, a11y attributes              |
 | `ConfirmDialog`  | `src/shared/components/ui/ConfirmDialog.tsx`            | Loading state, a11y labels               |
 | `SlidePanel`     | `src/shared/components/ui/SlidePanel.tsx`               | Desktop right panel                      |
@@ -36,8 +36,7 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 | Component              | Location                                                      | Notes                               |
 | ---------------------- | ------------------------------------------------------------- | ----------------------------------- |
 | `MobileShell`          | `src/shared/components/layout/shell/MobileShell.tsx`          | Runtime shell selection             |
-| `PhoneShell`           | `src/shared/components/layout/shell/PhoneShell.tsx`           | Bottom tab bar, single pane         |
-| `TabletLandscapeShell` | `src/shared/components/layout/shell/TabletLandscapeShell.tsx` | Two-pane sidebar                    |
+| `PhoneShell` / `TabletLandscapeShell` | _(do not exist as files)_ — shell selection is handled at runtime inside `MobileShell.tsx` + `mobile.css` | Bottom tab bar / two-pane sidebar are runtime variants, not separate components |
 | `BottomTabBar`         | `src/features/mail/components/layout/BottomTabBar.tsx`        | 5 tabs + FAB entry                  |
 | `FloatingActionButton` | `src/shared/components/ui/FloatingActionButton.tsx`           | Radial menu mobile, toolbar desktop |
 | `PageTransition`       | `src/shared/components/layout/shell/PageTransition.tsx`       | Slide left/right spring transitions |
@@ -80,8 +79,8 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 | Component             | Location                                        | Behavior                    |
 | --------------------- | ----------------------------------------------- | --------------------------- |
 | `OfflineBanner`       | `src/shared/components/ui/OfflineBanner.tsx`    | Sync animation, queue count |
-| `MobileSyncStatus`    | `src/components/settings/MobileSyncStatus.tsx`  | Last sync time, refresh     |
-| `MobilePullToRefresh` | `src/components/layout/MobilePullToRefresh.tsx` | Custom pull-to-refresh      |
+| `MobileSyncStatus`     | `src/features/mobile/MobileSyncStatus.tsx`                          | Last sync time, refresh     |
+| `MobilePullToRefresh` | `src/features/mobile/MobilePullToRefresh.tsx`                      | Custom pull-to-refresh      |
 | `useNetworkStatus`    | `src/shared/hooks/useNetworkStatus.ts`          | Online/offline monitoring   |
 
 ### Mobile Native Features
@@ -105,7 +104,7 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 | 3 UI Densities          | `useDensity.ts` + store                   | spacious/compact/default         |
 | 8 Color Palettes        | Theme store                               | Light/dark + 6 accent colors     |
 | 5 Locales               | i18n system                               | en, fr, ar, ja, it (RTL support) |
-| 668 Typed IPC          | `src/shared/services/db/db-invoke.ts`     | Full Rust↔TS type safety          |
+| 536 Typed IPC          | `src/shared/services/db/invoke/` (per-domain wrappers) + `src/shared/services/commands.ts` | Full Rust↔TS type safety (canonical count per STATUS.md: 479 `invoke/` + 57 `commands.ts`) |
 
 ---
 

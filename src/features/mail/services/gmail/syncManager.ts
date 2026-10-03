@@ -1,25 +1,32 @@
-﻿import { getGmailClient } from "./tokenManager";
-import { initialSync, deltaSync, type SyncProgress } from "./sync";
-import { getAccount, clearAccountHistoryId } from "@features/accounts/db/accounts";
-import { getSetting } from "@features/settings/db/settings";
-import { getThreadCountForAccount, deleteAllThreadsForAccount } from "@shared/services/db/threads";
-import { deleteAllMessagesForAccount } from "@shared/services/db/messages";
-import { imapInitialSync, imapDeltaSync } from "../imap/imapSync";
-import { clearAllFolderSyncStates } from "@shared/services/db/folderSyncState";
-import { ensureFreshToken } from "@shared/services/oauth/oauthTokenManager";
-import { hasCalendarSupport, getCalendarProvider } from "@features/calendar/services/providerFactory";
-import { getVisibleCalendars, upsertCalendar, updateCalendarSyncToken } from "@features/calendar/db/calendars";
-import { upsertCalendarEvent, deleteEventByRemoteId } from "@features/calendar/db/calendarEvents";
+﻿import { getGmailClient } from './tokenManager';
+import { initialSync, deltaSync, type SyncProgress } from './sync';
+import { getAccount, clearAccountHistoryId } from '@features/accounts/db/accounts';
+import { getSetting } from '@features/settings/db/settings';
+import { getThreadCountForAccount, deleteAllThreadsForAccount } from '@shared/services/db/threads';
+import { deleteAllMessagesForAccount } from '@shared/services/db/messages';
+import { imapInitialSync, imapDeltaSync } from '../imap/imapSync';
+import { clearAllFolderSyncStates } from '@shared/services/db/folderSyncState';
+import { ensureFreshToken } from '@shared/services/oauth/oauthTokenManager';
+import {
+  hasCalendarSupport,
+  getCalendarProvider,
+} from '@features/calendar/services/providerFactory';
+import {
+  getVisibleCalendars,
+  upsertCalendar,
+  updateCalendarSyncToken,
+} from '@features/calendar/db/calendars';
+import { upsertCalendarEvent, deleteEventByRemoteId } from '@features/calendar/db/calendarEvents';
 
 const SYNC_INTERVAL_MS = 60_000; // 60 seconds â€” delta syncs are lightweight (single API call when idle)
 
 /** Map IMAP sync phases to the SyncProgress phases the UI understands. */
-function mapImapPhase(phase: string): "labels" | "threads" | "messages" | "done" {
-  if (phase === "folders") return "labels";
-  if (phase === "threading" || phase === "storing_threads") return "threads";
-  if (phase === "messages") return "messages";
-  if (phase === "done") return "done";
-  return phase as "labels" | "threads" | "messages" | "done";
+function mapImapPhase(phase: string): 'labels' | 'threads' | 'messages' | 'done' {
+  if (phase === 'folders') return 'labels';
+  if (phase === 'threading' || phase === 'storing_threads') return 'threads';
+  if (phase === 'messages') return 'messages';
+  if (phase === 'done') return 'done';
+  return phase as 'labels' | 'threads' | 'messages' | 'done';
 }
 
 let syncTimer: ReturnType<typeof setInterval> | null = null;
@@ -28,7 +35,7 @@ let pendingAccountIds: string[] | null = null;
 
 export type SyncStatusCallback = (
   accountId: string,
-  status: "syncing" | "done" | "error",
+  status: 'syncing' | 'done' | 'error',
   progress?: SyncProgress,
   error?: string,
 ) => void;
@@ -50,22 +57,22 @@ async function syncGmailAccount(accountId: string): Promise<void> {
   const account = await getAccount(accountId);
 
   if (!account) {
-    throw new Error("Account not found");
+    throw new Error('Account not found');
   }
 
-  const syncPeriodStr = await getSetting("sync_period_days");
-  const syncDays = parseInt(syncPeriodStr ?? "365", 10) || 365;
+  const syncPeriodStr = await getSetting('sync_period_days');
+  const syncDays = parseInt(syncPeriodStr ?? '365', 10) || 365;
 
   if (account.history_id) {
     // Delta sync
     try {
       await deltaSync(client, accountId, account.history_id);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err ?? "");
-      if (message === "HISTORY_EXPIRED") {
+      const message = err instanceof Error ? err.message : String(err ?? '');
+      if (message === 'HISTORY_EXPIRED') {
         // Fallback to full sync
         await initialSync(client, accountId, syncDays, (progress) => {
-          statusCallback?.(accountId, "syncing", progress);
+          statusCallback?.(accountId, 'syncing', progress);
         });
       } else {
         throw err;
@@ -74,7 +81,7 @@ async function syncGmailAccount(accountId: string): Promise<void> {
   } else {
     // First time â€” full initial sync
     await initialSync(client, accountId, syncDays, (progress) => {
-      statusCallback?.(accountId, "syncing", progress);
+      statusCallback?.(accountId, 'syncing', progress);
     });
   }
 }
@@ -86,16 +93,16 @@ async function syncImapAccount(accountId: string): Promise<void> {
   const account = await getAccount(accountId);
 
   if (!account) {
-    throw new Error("Account not found");
+    throw new Error('Account not found');
   }
 
   // Refresh OAuth2 token before syncing (if applicable)
-  if (account.auth_method === "oauth2") {
+  if (account.auth_method === 'oauth2') {
     await ensureFreshToken(account);
   }
 
-  const syncPeriodStr = await getSetting("sync_period_days");
-  const syncDays = parseInt(syncPeriodStr ?? "365", 10) || 365;
+  const syncPeriodStr = await getSetting('sync_period_days');
+  const syncDays = parseInt(syncPeriodStr ?? '365', 10) || 365;
 
   if (account.history_id) {
     // Delta sync â€” IMAP uses folder-level UID tracking
@@ -107,11 +114,13 @@ async function syncImapAccount(accountId: string): Promise<void> {
     if (result.messages.length === 0) {
       const threadCount = await getThreadCountForAccount(accountId);
       if (threadCount === 0) {
-        console.warn(`[syncManager] IMAP delta sync returned 0 new messages and DB has 0 threads for ${accountId} â€” forcing full re-sync`);
+        console.warn(
+          `[syncManager] IMAP delta sync returned 0 new messages and DB has 0 threads for ${accountId} â€” forcing full re-sync`,
+        );
         await clearAccountHistoryId(accountId);
         await clearAllFolderSyncStates(accountId);
         await imapInitialSync(accountId, syncDays, (progress) => {
-          statusCallback?.(accountId, "syncing", {
+          statusCallback?.(accountId, 'syncing', {
             phase: mapImapPhase(progress.phase),
             current: progress.current,
             total: progress.total,
@@ -122,7 +131,7 @@ async function syncImapAccount(accountId: string): Promise<void> {
   } else {
     // First time â€” full initial sync
     await imapInitialSync(accountId, syncDays, (progress) => {
-      statusCallback?.(accountId, "syncing", {
+      statusCallback?.(accountId, 'syncing', {
         phase: mapImapPhase(progress.phase),
         current: progress.current,
         total: progress.total,
@@ -194,12 +203,15 @@ async function syncCalendarForAccount(accountId: string): Promise<void> {
           await updateCalendarSyncToken(cal.id, syncResult.newSyncToken, syncResult.newCtag);
         }
       } catch (err) {
-        console.warn(`[syncManager] Calendar sync failed for ${cal.display_name ?? cal.remote_id}:`, err);
+        console.warn(
+          `[syncManager] Calendar sync failed for ${cal.display_name ?? cal.remote_id}:`,
+          err,
+        );
       }
     }
 
     // Emit event for UI update
-    window.dispatchEvent(new CustomEvent("smemaster-calendar-sync-done"));
+    window.dispatchEvent(new CustomEvent('smemaster-calendar-sync-done'));
   } catch (err) {
     console.warn(`[syncManager] Calendar sync failed for account ${accountId}:`, err);
   }
@@ -214,27 +226,29 @@ async function syncAccountInternal(accountId: string): Promise<void> {
     const account = await getAccount(accountId);
 
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error('Account not found');
     }
 
-    statusCallback?.(accountId, "syncing");
+    statusCallback?.(accountId, 'syncing');
 
-    console.log(`[syncManager] Syncing account ${accountId} (provider=${account.provider}, history_id=${account.history_id ?? "null"})`);
+    console.log(
+      `[syncManager] Syncing account ${accountId} (provider=${account.provider}, history_id=${account.history_id ?? 'null'})`,
+    );
 
-    if (account.provider === "local") {
+    if (account.provider === 'local') {
       // Local/demo accounts have no real backend — skip sync entirely
-      statusCallback?.(accountId, "done");
+      statusCallback?.(accountId, 'done');
       return;
     }
 
-    if (account.provider === "caldav") {
+    if (account.provider === 'caldav') {
       // CalDAV-only accounts — skip email sync, only sync calendar
       await syncCalendarForAccount(accountId);
-      statusCallback?.(accountId, "done");
+      statusCallback?.(accountId, 'done');
       return;
     }
 
-    if (account.provider === "imap") {
+    if (account.provider === 'imap') {
       await syncImapAccount(accountId);
     } else {
       await syncGmailAccount(accountId);
@@ -243,16 +257,16 @@ async function syncAccountInternal(accountId: string): Promise<void> {
     // Always emit "done" when an initial sync completes (clears the bar).
     // Also emit for delta syncs that fell back to initial (recovery re-sync)
     // since those emit progress via statusCallback inside syncImapAccount.
-    statusCallback?.(accountId, "done");
+    statusCallback?.(accountId, 'done');
 
     // Sync calendar alongside email (non-blocking â€” calendar errors don't affect email sync)
     syncCalendarForAccount(accountId).catch((err) => {
       console.warn(`[syncManager] Calendar sync error for ${accountId}:`, err);
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err ?? "Unknown error");
+    const message = err instanceof Error ? err.message : String(err ?? 'Unknown error');
     console.error(`[syncManager] Sync failed for account ${accountId}:`, message);
-    statusCallback?.(accountId, "error", undefined, message);
+    statusCallback?.(accountId, 'error', undefined, message);
   }
 }
 
@@ -353,5 +367,3 @@ export async function resyncAccount(accountId: string): Promise<void> {
   await clearAllFolderSyncStates(accountId);
   await runSync([accountId]);
 }
-
-

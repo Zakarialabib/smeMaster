@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useVaultStore } from "./vaultStore";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { useVaultStore } from './vaultStore';
 
-vi.mock("@shared/services/vault/vaultService", () => ({
+vi.mock('@shared/services/vault/vaultService', () => ({
   getVaultRoot: vi.fn(),
   listVaultDir: vi.fn(),
   deleteFromVault: vi.fn(),
@@ -16,30 +16,30 @@ vi.mock("@shared/services/vault/vaultService", () => ({
   hasVaultPin: vi.fn(),
 }));
 
-import { getVaultRoot, listVaultDir } from "@shared/services/vault/vaultService";
+import { getVaultRoot, listVaultDir } from '@shared/services/vault/vaultService';
 
 beforeEach(() => {
   useVaultStore.setState({
     entries: [],
-    vaultRoot: "",
-    currentPath: "",
+    vaultRoot: '',
+    currentPath: '',
     searchResults: null,
     vaultSize: 0,
-    viewMode: "grid",
-    sortField: "name",
-    sortDirection: "asc",
-    searchQuery: "",
+    viewMode: 'grid',
+    sortField: 'name',
+    sortDirection: 'asc',
+    searchQuery: '',
     isLoading: false,
     error: null,
     bioAvailable: false,
     unlocked: false,
-    pinMode: "none",
+    pinMode: 'none',
   });
   vi.clearAllMocks();
 });
 
-describe("vaultStore — withMutation wiring", () => {
-  it("isLoading is true while loadDir is pending", async () => {
+describe('vaultStore — withMutation wiring', () => {
+  it('isLoading is true while loadDir is pending', async () => {
     let resolveFn: (v: string) => void = () => {};
     vi.mocked(getVaultRoot).mockReturnValue(
       new Promise<string>((resolve) => {
@@ -48,21 +48,21 @@ describe("vaultStore — withMutation wiring", () => {
     );
     vi.mocked(listVaultDir).mockResolvedValue([]);
 
-    const p = useVaultStore.getState().loadDir("");
+    const p = useVaultStore.getState().loadDir('');
     expect(useVaultStore.getState().isLoading).toBe(true);
 
-    resolveFn("/vault");
+    resolveFn('/vault');
     await p;
     expect(useVaultStore.getState().isLoading).toBe(false);
   });
 
-  it("isLoading is false and error is set after loadDir failure", async () => {
-    vi.mocked(getVaultRoot).mockRejectedValue(new Error("Vault error"));
+  it('isLoading is false and error is set after loadDir failure', async () => {
+    vi.mocked(getVaultRoot).mockRejectedValue(new Error('Vault error'));
 
-    await useVaultStore.getState().loadDir("");
+    await useVaultStore.getState().loadDir('');
 
     const s = useVaultStore.getState();
     expect(s.isLoading).toBe(false);
-    expect(s.error).toBe("Vault error");
+    expect(s.error).toBe('Vault error');
   });
 });

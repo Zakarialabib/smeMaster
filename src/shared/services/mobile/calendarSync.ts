@@ -15,7 +15,7 @@
  */
 
 // Use invokeCommand (generic wrapper) since mobile-only commands aren't in the typed CommandRegistry
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -55,7 +55,7 @@ declare global {
  */
 export async function syncAndroidCalendar(): Promise<AndroidCalendarEvent[]> {
   try {
-    const raw = await invokeCommand<string>("get_android_calendar_events");
+    const raw = await invokeCommand<string>('get_android_calendar_events');
     return JSON.parse(raw) as AndroidCalendarEvent[];
   } catch {
     return [];
@@ -80,10 +80,10 @@ export async function refreshAndroidCalendar(): Promise<boolean> {
     }
 
     // Fallback: call via Tauri IPC (command routes to Kotlin @TauriPlugin)
-    await invokeCommand("plugin:calendar|fetch_events");
+    await invokeCommand('plugin:calendar|fetch_events');
     return true;
   } catch (err) {
-    console.error("[calendarSync] Failed to refresh calendar:", err);
+    console.error('[calendarSync] Failed to refresh calendar:', err);
     return false;
   }
 }
@@ -93,5 +93,5 @@ export async function refreshAndroidCalendar(): Promise<boolean> {
  * Returns true only on Android with the bridge injected.
  */
 export function isCalendarBridgeAvailable(): boolean {
-  return typeof window.CalendarBridge?.fetchCalendarEvents === "function";
+  return typeof window.CalendarBridge?.fetchCalendarEvents === 'function';
 }

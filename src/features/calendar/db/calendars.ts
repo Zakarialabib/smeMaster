@@ -4,8 +4,8 @@
   createCalendar,
   updateCalendar,
   deleteCalendar,
-} from "../../../shared/services/db/db-invoke";
-import type { Calendar } from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
+import type { Calendar } from '../../../shared/services/db/db-invoke';
 
 export type DbCalendar = Calendar;
 
@@ -54,9 +54,7 @@ export async function updateCalendarSyncToken(
 
 export async function deleteCalendarsForAccount(companyId: string): Promise<void> {
   const calendars = await listCalendars(companyId);
-  await Promise.all(
-    calendars.map((cal) => deleteCalendar(cal.id)),
-  );
+  await Promise.all(calendars.map((cal) => deleteCalendar(cal.id)));
 }
 
 export async function getCalendarById(calendarId: string): Promise<Calendar | null> {

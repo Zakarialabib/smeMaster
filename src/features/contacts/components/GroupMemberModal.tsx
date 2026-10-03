@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
-import { Users, Trash2, Loader2 } from "lucide-react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { MODAL_HEADER } from "@shared/styles/ui-tokens";
-import type { ContactGroup } from "@features/contacts/stores/contactStore";
+import { useEffect, useState, useCallback } from 'react';
+import { Users, Trash2, Loader2 } from 'lucide-react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { MODAL_HEADER } from '@shared/styles/ui-tokens';
+import type { ContactGroup } from '@features/contacts/stores/contactStore';
 
 interface GroupMember {
   contact_id: string;
@@ -39,12 +39,12 @@ export function GroupMemberModal({
     if (!group) return;
     setLoading(true);
     try {
-      const list = await invokeCommand<GroupMember[]>("db_group_members", {
+      const list = await invokeCommand<GroupMember[]>('db_group_members', {
         groupId: group.id,
       });
       setMembers(list);
     } catch (err) {
-      console.error("Failed to load group members:", err);
+      console.error('Failed to load group members:', err);
       setMembers([]);
     } finally {
       setLoading(false);
@@ -60,14 +60,14 @@ export function GroupMemberModal({
       if (!group) return;
       setRemovingId(contactId);
       try {
-        await invokeCommand("db_remove_contact_from_group", {
+        await invokeCommand('db_remove_contact_from_group', {
           groupId: group.id,
           contactId,
         });
         setMembers((prev) => prev.filter((m) => m.contact_id !== contactId));
         onMemberRemoved?.(group, contactId);
       } catch (err) {
-        console.error("Failed to remove member:", err);
+        console.error('Failed to remove member:', err);
       } finally {
         setRemovingId(null);
       }
@@ -87,16 +87,11 @@ export function GroupMemberModal({
         <div className={`${MODAL_HEADER} flex items-center gap-2`}>
           <Users size={16} className="text-accent shrink-0" />
           <div className="min-w-0 flex-1">
-            <h3
-              id="modal-title"
-              className="text-sm font-semibold text-text-primary truncate"
-            >
+            <h3 id="modal-title" className="text-sm font-semibold text-text-primary truncate">
               {group.name}
             </h3>
             {group.description && (
-              <p className="text-[0.625rem] text-text-tertiary truncate">
-                {group.description}
-              </p>
+              <p className="text-[0.625rem] text-text-tertiary truncate">{group.description}</p>
             )}
           </div>
         </div>
@@ -105,7 +100,7 @@ export function GroupMemberModal({
       {/* Stats */}
       <div className="px-4 py-2 border-b border-border-primary bg-bg-primary/40 flex items-center gap-2">
         <span className="text-[0.625rem] text-text-tertiary">
-          {members.length} {members.length === 1 ? "member" : "members"}
+          {members.length} {members.length === 1 ? 'member' : 'members'}
         </span>
       </div>
 
@@ -114,10 +109,7 @@ export function GroupMemberModal({
         {loading ? (
           <div className="space-y-2 p-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 p-2 animate-pulse"
-              >
+              <div key={i} className="flex items-center gap-2 p-2 animate-pulse">
                 <div className="w-8 h-8 rounded-full bg-bg-tertiary" />
                 <div className="flex-1 space-y-1">
                   <div className="h-3 bg-bg-tertiary rounded w-32" />
@@ -128,10 +120,7 @@ export function GroupMemberModal({
           </div>
         ) : members.length === 0 ? (
           <div className="text-center py-8">
-            <Users
-              size={32}
-              className="text-text-tertiary/30 mx-auto mb-2"
-            />
+            <Users size={32} className="text-text-tertiary/30 mx-auto mb-2" />
             <p className="text-xs text-text-tertiary">No members yet</p>
             <p className="text-[0.625rem] text-text-tertiary mt-1">
               Add contacts to this group from the Contacts tab.
@@ -154,9 +143,7 @@ export function GroupMemberModal({
                   <p className="text-xs font-medium text-text-primary truncate">
                     {m.display_name ?? m.email}
                   </p>
-                  <p className="text-[0.625rem] text-text-tertiary truncate">
-                    {m.email}
-                  </p>
+                  <p className="text-[0.625rem] text-text-tertiary truncate">{m.email}</p>
                 </div>
                 <button
                   type="button"

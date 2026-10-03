@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
-import { usePlatform, __resetPlatformCache, type FullPlatformInfo } from "./usePlatform";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
+import { usePlatform, __resetPlatformCache, type FullPlatformInfo } from './usePlatform';
 
 // usePlatform routes its IPC through the app's typed command wrapper, not
 // @tauri-apps/api/core directly. Mock the real module it imports.
-vi.mock("@shared/services/db/invoke/command", () => ({
+vi.mock('@shared/services/db/invoke/command', () => ({
   invokeCommand: vi.fn(),
 }));
 
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 // Tests below reference `invoke` for ergonomics; alias it to the real wrapper.
 const invoke = invokeCommand;
@@ -19,8 +19,8 @@ const invoke = invokeCommand;
 const DEFAULT_SCREEN = {
   isMobile: false,
   isDesktop: true,
-  category: "desktop" as const,
-  aspect: "landscape" as const,
+  category: 'desktop' as const,
+  aspect: 'landscape' as const,
   width: 1024,
   height: 768,
   isFoldable: false,
@@ -36,10 +36,15 @@ function TestComponent() {
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
-describe("usePlatform", () => {
+describe('usePlatform', () => {
   beforeEach(() => {
     __resetPlatformCache();
     vi.clearAllMocks();
+    // The shared tauri.mock.ts setup marks jsdom as a Tauri shell so DB-service
+    // tests can reach the mocked invoke. usePlatform's web-fallback assertions
+    // require the *non-Tauri* path, so strip that global here.
+    delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+    delete (window as unknown as Record<string, unknown>).__TAURI__;
   });
 
   afterEach(() => {
@@ -47,25 +52,35 @@ describe("usePlatform", () => {
     vi.restoreAllMocks();
   });
 
-  it("1: Default fallback on initial render (invoke returns undefined)", () => {
+  it('1: Default fallback on initial render (invoke returns undefined)', () => {
     (invoke as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
     render(<TestComponent />);
 
-    // When invoke returns undefined, the catch handler sets WEB_FALLBACK
-    expect(screen.getByTestId("platform").textContent).toBe(
+    // When invoke returns undefined, the catch handler sets WEB_FALLBACK.
+    // Outside a Tauri shell (jsdom has no __TAURI_INTERNALS__) the capability
+    // flags are false — there is no native backend in a browser dev server.
+    expect(screen.getByTestId('platform').textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
-        is_tablet: false, is_phone: false,
+        mobile: false,
+        desktop: false,
+        os: 'web',
+        arch: 'web',
+        is_tablet: false,
+        is_phone: false,
         screen: DEFAULT_SCREEN,
-      })
+      }),
     );
   });
 
-  it("2: Successful Tauri invoke sets platform state", async () => {
+  it('2: Successful Tauri invoke sets platform state', async () => {
     const platformData = {
-      mobile: true, desktop: false, os: "android", arch: "arm64",
-      is_tablet: false, is_phone: true,
+      mobile: true,
+      desktop: false,
+      os: 'android',
+      arch: 'arm64',
+      is_tablet: false,
+      is_phone: true,
     };
     (invoke as ReturnType<typeof vi.fn>).mockResolvedValue(platformData);
 
@@ -76,13 +91,13 @@ describe("usePlatform", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    expect(screen.getByTestId("platform").textContent).toBe(
-      JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN })
+    expect(screen.getByTestId('platform').textContent).toBe(
+      JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN }),
     );
   });
 
-  it("3: Invoke failure falls back to web defaults", async () => {
-    (invoke as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Tauri error"));
+  it('3: Invoke failure falls back to web defaults', async () => {
+    (invoke as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Tauri error'));
 
     render(<TestComponent />);
 
@@ -90,19 +105,27 @@ describe("usePlatform", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    expect(screen.getByTestId("platform").textContent).toBe(
+    expect(screen.getByTestId('platform').textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
-        is_tablet: false, is_phone: false,
+        mobile: false,
+        desktop: false,
+        os: 'web',
+        arch: 'web',
+        is_tablet: false,
+        is_phone: false,
         screen: DEFAULT_SCREEN,
-      })
+      }),
     );
   });
 
-  it("4: Caching prevents redundant invocations", async () => {
+  it('4: Caching prevents redundant invocations', async () => {
     (invoke as ReturnType<typeof vi.fn>).mockResolvedValue({
-      mobile: true, desktop: false, os: "android", arch: "arm64",
-      is_tablet: false, is_phone: true,
+      mobile: true,
+      desktop: false,
+      os: 'android',
+      arch: 'arm64',
+      is_tablet: false,
+      is_phone: true,
     });
 
     const { unmount } = render(<TestComponent />);
@@ -124,8 +147,8 @@ describe("usePlatform", () => {
     expect((invoke as ReturnType<typeof vi.fn>).mock.calls.length).toBe(invokeCount);
   });
 
-  it("5: Invoke rejection falls back to web defaults", async () => {
-    (invoke as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Tauri error"));
+  it('5: Invoke rejection falls back to web defaults', async () => {
+    (invoke as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Tauri error'));
 
     render(<TestComponent />);
 
@@ -133,19 +156,27 @@ describe("usePlatform", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    expect(screen.getByTestId("platform").textContent).toBe(
+    expect(screen.getByTestId('platform').textContent).toBe(
       JSON.stringify({
-        mobile: false, desktop: true, os: "web", arch: "web",
-        is_tablet: false, is_phone: false,
+        mobile: false,
+        desktop: false,
+        os: 'web',
+        arch: 'web',
+        is_tablet: false,
+        is_phone: false,
         screen: DEFAULT_SCREEN,
-      })
+      }),
     );
   });
 
-  it("6: Module-level cache persists across renders", async () => {
+  it('6: Module-level cache persists across renders', async () => {
     const platformData = {
-      mobile: true, desktop: false, os: "android", arch: "arm64",
-      is_tablet: false, is_phone: true,
+      mobile: true,
+      desktop: false,
+      os: 'android',
+      arch: 'arm64',
+      is_tablet: false,
+      is_phone: true,
     };
     (invoke as ReturnType<typeof vi.fn>).mockResolvedValue(platformData);
 
@@ -155,10 +186,8 @@ describe("usePlatform", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    const firstRenderData = screen.getByTestId("platform").textContent;
-    expect(firstRenderData).toBe(
-      JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN })
-    );
+    const firstRenderData = screen.getByTestId('platform').textContent;
+    expect(firstRenderData).toBe(JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN }));
 
     unmount();
 
@@ -171,8 +200,8 @@ describe("usePlatform", () => {
     });
 
     // Second mount should use cached platform (no extra invoke call)
-    expect(screen.getByTestId("platform").textContent).toBe(
-      JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN })
+    expect(screen.getByTestId('platform').textContent).toBe(
+      JSON.stringify({ ...platformData, screen: DEFAULT_SCREEN }),
     );
     expect((invoke as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
   });

@@ -1,4 +1,4 @@
-import type { DomainHealth } from "@features/deliverability/services/domainHealthService";
+import type { DomainHealth } from '@features/deliverability/services/domainHealthService';
 
 interface Props {
   health: DomainHealth;
@@ -11,9 +11,9 @@ interface ProviderRow {
 
 function getProviderRows(health: DomainHealth): ProviderRow[] {
   return [
-    { name: "Gmail", ready: health.spf_status.valid && health.dkim_status.valid },
-    { name: "Outlook", ready: health.spf_status.valid },
-    { name: "Yahoo", ready: health.dmarc_status.valid },
+    { name: 'Gmail', ready: health.spf_status.valid && health.dkim_status.valid },
+    { name: 'Outlook', ready: health.spf_status.valid },
+    { name: 'Yahoo', ready: health.dmarc_status.valid },
   ];
 }
 
@@ -25,10 +25,10 @@ export function ProviderMatrix({ health }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-bg-secondary">
-            <th className="text-left px-4 py-2 text-xs font-medium text-text-tertiary uppercase tracking-wider">
+            <th className="text-start px-4 py-2 text-xs font-medium text-text-tertiary uppercase tracking-wider">
               Provider
             </th>
-            <th className="text-left px-4 py-2 text-xs font-medium text-text-tertiary uppercase tracking-wider">
+            <th className="text-start px-4 py-2 text-xs font-medium text-text-tertiary uppercase tracking-wider">
               Status
             </th>
           </tr>

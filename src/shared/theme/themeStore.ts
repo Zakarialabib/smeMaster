@@ -5,13 +5,13 @@
  *   1. localStorage via Zustand `persist` (instant hydration, no FOUC)
  *   2. Backend DB (cross-window sync, survives localStorage wipe)
  */
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { invoke } from "@shared/services/commands";
-import type { ColorThemeId } from "@/constants/themes";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
-import { useConfigStore } from "@/stores/core";
-export type { ColorThemeId } from "@/constants/themes";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { invoke } from '@shared/services/commands';
+import type { ColorThemeId } from '@/constants/themes';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
+import { useConfigStore } from '@/stores/core';
+export type { ColorThemeId } from '@/constants/themes';
 
 export interface ThemePreference {
   mode: ThemeMode;
@@ -26,19 +26,19 @@ export interface ThemePreference {
 }
 
 /** UI density. */
-export type UiDensity = "compact" | "normal" | "relaxed";
+export type UiDensity = 'compact' | 'normal' | 'relaxed';
 
 /** Visual surface style. */
-export type SurfaceStyle = "flat" | "glass";
+export type SurfaceStyle = 'flat' | 'glass';
 
-export type ThemeMode = "light" | "dark" | "system";
-export type FontScale = "small" | "default" | "large" | "xlarge";
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type FontScale = 'small' | 'default' | 'large' | 'xlarge';
 
-const DEFAULT_MODE: ThemeMode = "system";
-const DEFAULT_COLOR: ColorThemeId = "indigo";
-const DEFAULT_SCALE: FontScale = "default";
-const DEFAULT_SURFACE: SurfaceStyle = "flat";
-const DEFAULT_DENSITY: UiDensity = "normal";
+const DEFAULT_MODE: ThemeMode = 'system';
+const DEFAULT_COLOR: ColorThemeId = 'indigo';
+const DEFAULT_SCALE: FontScale = 'default';
+const DEFAULT_SURFACE: SurfaceStyle = 'glass';
+const DEFAULT_DENSITY: UiDensity = 'normal';
 
 interface ThemeState {
   mode: ThemeMode;
@@ -66,27 +66,23 @@ interface ThemeState {
   _syncConfig: () => void;
 }
 
-const sanitize = (
-  raw: Partial<ThemePreference> | undefined
-): ThemePreference => ({
+const sanitize = (raw: Partial<ThemePreference> | undefined): ThemePreference => ({
   mode:
-    raw?.mode === "light" ||
-    raw?.mode === "dark" ||
-    raw?.mode === "system"
+    raw?.mode === 'light' || raw?.mode === 'dark' || raw?.mode === 'system'
       ? raw!.mode
       : DEFAULT_MODE,
-  colorTheme:
-    (raw?.colorTheme as ColorThemeId) ?? DEFAULT_COLOR,
+  colorTheme: (raw?.colorTheme as ColorThemeId) ?? DEFAULT_COLOR,
   fontScale:
-    raw?.fontScale === "small" ||
-    raw?.fontScale === "large" ||
-    raw?.fontScale === "xlarge"
+    raw?.fontScale === 'small' || raw?.fontScale === 'large' || raw?.fontScale === 'xlarge'
       ? raw!.fontScale
       : DEFAULT_SCALE,
-  reduceMotion: typeof raw?.reduceMotion === "boolean" ? raw!.reduceMotion : false,
-  highContrast: typeof raw?.highContrast === "boolean" ? raw!.highContrast : false,
-  surface: raw?.surface === "glass" || raw?.surface === "flat" ? raw!.surface : DEFAULT_SURFACE,
-  density: raw?.density === "compact" || raw?.density === "normal" || raw?.density === "relaxed" ? raw!.density : DEFAULT_DENSITY,
+  reduceMotion: typeof raw?.reduceMotion === 'boolean' ? raw!.reduceMotion : false,
+  highContrast: typeof raw?.highContrast === 'boolean' ? raw!.highContrast : false,
+  surface: raw?.surface === 'glass' || raw?.surface === 'flat' ? raw!.surface : DEFAULT_SURFACE,
+  density:
+    raw?.density === 'compact' || raw?.density === 'normal' || raw?.density === 'relaxed'
+      ? raw!.density
+      : DEFAULT_DENSITY,
 });
 
 export const useThemeStore = create<ThemeState>()(
@@ -145,25 +141,24 @@ export const useThemeStore = create<ThemeState>()(
 
       setSurface: (surface) => {
         set({ surface });
-        if (typeof document !== "undefined") {
-          document.documentElement.setAttribute("data-surface", surface);
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-surface', surface);
         }
         void get().persistToBackend();
       },
 
       setDensity: (density) => {
         set({ density });
-        if (typeof document !== "undefined") {
-          document.documentElement.setAttribute("data-density", density);
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-density', density);
         }
         void get().persistToBackend();
       },
 
       syncFromBackend: async () => {
         try {
-          const raw = (await invoke("db_get_theme_preference")) as unknown as
-            | Partial<ThemePreference>
-            | undefined;
+          const raw = (await invoke('db_get_theme_preference')) as unknown as
+            Partial<ThemePreference> | undefined;
           if (raw) {
             const incoming = sanitize(raw);
             set({
@@ -185,7 +180,7 @@ export const useThemeStore = create<ThemeState>()(
       persistToBackend: async () => {
         const { mode, colorTheme, fontScale, reduceMotion, surface, density } = get();
         try {
-          await invoke("db_set_theme_preference", {
+          await invoke('db_set_theme_preference', {
             preference: { mode, colorTheme, fontScale, reduceMotion, surface, density },
           });
         } catch {
@@ -194,7 +189,7 @@ export const useThemeStore = create<ThemeState>()(
       },
     }),
     {
-      name: "smemaster.theme.preference",
+      name: 'smemaster.theme.preference',
       version: 3,
       storage: createJSONStorage(() => tauriStoreStorage),
       partialize: (s) => ({
@@ -209,6 +204,6 @@ export const useThemeStore = create<ThemeState>()(
         const incoming = sanitize(persisted as Partial<ThemePreference>);
         return { ...current, ...incoming, theme: incoming.mode ?? current.mode };
       },
-    }
-  )
+    },
+  ),
 );

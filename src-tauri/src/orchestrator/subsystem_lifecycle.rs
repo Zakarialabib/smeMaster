@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use serde::Serialize;
 use tauri::AppHandle;
 
@@ -108,6 +108,10 @@ pub struct SubsystemRegistry {
     app_handle: Option<AppHandle>,
     /// Typed handle storage for downcast retrieval of concrete service handles.
     handles: Arc<DashMap<String, Box<dyn std::any::Any + Send + Sync + 'static>>>,
+    /// Runtime feature flags (e.g. "ai", "pairing", "campaigns") that gate
+    /// whether a subsystem with that flag can be activated. Set during init.
+    /// Checked by `gating::require_subsystem_active`.
+    enabled_features: Arc<DashSet<&'static str>>,
 }
 
 impl SubsystemRegistry {
@@ -116,6 +120,7 @@ impl SubsystemRegistry {
             entries: DashMap::new(),
             app_handle: Some(app_handle),
             handles: Arc::new(DashMap::new()),
+            enabled_features: Arc::new(DashSet::new()),
         }
     }
 
@@ -126,7 +131,32 @@ impl SubsystemRegistry {
             entries: DashMap::new(),
             app_handle: None,
             handles: Arc::new(DashMap::new()),
+            enabled_features: Arc::new(DashSet::new()),
         }
+    }
+
+    // ── Runtime Feature Flag API ─────────────────────────────────────
+
+    /// Mark a feature flag as enabled at runtime.
+    /// When a subsystem's `feature_flag` matches an enabled flag, it can be
+    /// activated. Otherwise `require_active` will return `SubsystemInactive`.
+    pub fn enable_feature(&self, flag: &'static str) {
+        self.enabled_features.insert(flag);
+    }
+
+    /// Mark a feature flag as disabled.
+    pub fn disable_feature(&self, flag: &'static str) {
+        self.enabled_features.remove(flag);
+    }
+
+    /// Check whether a specific feature flag is currently enabled.
+    pub fn is_feature_enabled(&self, flag: &str) -> bool {
+        self.enabled_features.contains(flag)
+    }
+
+    /// Return a snapshot of all currently-enabled feature flags.
+    pub fn enabled_feature_flags(&self) -> Vec<&'static str> {
+        self.enabled_features.iter().map(|e| *e).collect()
     }
 
     /// Register a Lazy subsystem (pre-built, init at boot, start on demand).
@@ -163,11 +193,25 @@ impl SubsystemRegistry {
     /// CAS-based activation. Returns Ok(()) if Active/Starting/Dormant.
     /// On Dormant: builds OnDemand if needed, calls start(), CAS to Active.
     /// On failure: CAS to Failed, return error.
+    ///
+    /// Feature flag check: if the entry has a `feature_flag` set, this method
+    /// checks the registry's `enabled_features` set. If the flag is not enabled,
+    /// returns `SubsystemInactive` — the subsystem exists but is gated off.
     pub async fn require_active(&self, name: &str) -> Result<(), AppError> {
         // Get entry Arc (clone to avoid borrowing DashMap across awaits)
         let entry = self.entries.get(name)
             .map(|r| r.clone())
             .ok_or_else(|| AppError::SubsystemNotFound { name: name.to_string() })?;
+
+        // ── Runtime feature flag check ───────────────────────────────
+        if let Some(flag) = entry.feature_flag {
+            if !self.enabled_features.contains(flag) {
+                return Err(AppError::SubsystemInactive {
+                    tool: Some(flag),
+                    reason: format!("feature flag '{flag}' is not enabled at runtime"),
+                });
+            }
+        }
 
         // Acquire activation lock to serialize concurrent callers
         let _guard = entry.activation_lock.lock().await;
@@ -358,6 +402,121 @@ impl SubsystemRegistry {
 
         log::info!("[subsystem] {} force_shutdown complete", name);
         Ok(())
+    }
+
+    /// Restart a named subsystem and return its post-restart status snapshot.
+    ///
+    /// Real implementation (not a no-op):
+    /// 1. Look up the entry by name (returns `AppError::SubsystemNotFound` if missing).
+    /// 2. `force_shutdown(name)` stops it (status → Inactive).
+    /// 3. Re-activate per class:
+    ///    - `Lazy`: set status back to `Dormant` with reason "restart requested"
+    ///      (mirrors `enable_ready_subsystems` for a single entry). The next
+    ///      `require_active` will start it again.
+    ///    - `OnDemand`: leave as `Inactive` — it restarts on next demand.
+    ///    - `AlwaysOn`: not expected in this registry; return an error rather than
+    ///      silently leaving it stopped.
+    /// 4. Build and return the entry's `SubsystemStatusSnapshot`.
+    pub async fn restart_subsystem(&self, name: &str) -> Result<SubsystemStatusSnapshot, AppError> {
+        // 1. Lookup (also validates the name exists before we touch anything).
+        let entry = self.entries.get(name)
+            .map(|r| r.clone())
+            .ok_or_else(|| AppError::SubsystemNotFound { name: name.to_string() })?;
+
+        // 2. Stop it.
+        self.force_shutdown(name).await?;
+
+        // 3. Re-activate per class.
+        match entry.class {
+            SubsystemClass::AlwaysOn => {
+                return Err(AppError::SubsystemUnavailable {
+                    name: name.to_string(),
+                    status: "always_on".to_string(),
+                    message: "AlwaysOn subsystems are managed externally and cannot be restarted via this command".to_string(),
+                });
+            }
+            SubsystemClass::Lazy => {
+                let mut status = entry.status.write().await;
+                *status = SubsystemStatus::Dormant {
+                    reason: "restart requested".to_string(),
+                };
+                log::info!("[subsystem] {} restarted (Dormant)", name);
+            }
+            SubsystemClass::OnDemand => {
+                // Already Inactive after force_shutdown — it will rebuild on next demand.
+                log::info!("[subsystem] {} restarted (Inactive, on-demand)", name);
+            }
+        }
+
+        // 4. Build the snapshot for this single entry (reuse get_all_status logic).
+        Ok(self.get_status_for(name))
+    }
+
+    /// Build a `SubsystemStatusSnapshot` for a single named subsystem.
+    ///
+    /// Returns a snapshot with status "unknown" if the entry exists but its
+    /// status lock is contended. Panics are avoided by using `try_read`.
+    pub fn get_status_for(&self, name: &str) -> SubsystemStatusSnapshot {
+        let entry = match self.entries.get(name) {
+            Some(e) => e.clone(),
+            None => return SubsystemStatusSnapshot {
+                name: name.to_string(),
+                class: "unknown".to_string(),
+                status: "not_found".to_string(),
+                reason: "subsystem not registered".to_string(),
+                uptime_secs: None,
+                error: None,
+                feature_flag: None,
+            },
+        };
+
+        let class = match entry.class {
+            SubsystemClass::AlwaysOn => "always_on",
+            SubsystemClass::Lazy => "lazy",
+            SubsystemClass::OnDemand => "on_demand",
+        };
+
+        let status_snapshot = match entry.status.try_read() {
+            Ok(status) => status.clone(),
+            Err(_) => return SubsystemStatusSnapshot {
+                name: entry.name.clone(),
+                class: class.to_string(),
+                status: "unknown".to_string(),
+                reason: "status lock contended".to_string(),
+                uptime_secs: None,
+                error: None,
+                feature_flag: entry.feature_flag.map(|s| s.to_string()),
+            },
+        };
+
+        let (status_str, reason, uptime_secs, error) = match status_snapshot {
+            SubsystemStatus::Inactive { reason } => ("inactive", reason, None, None),
+            SubsystemStatus::Dormant { reason } => ("dormant", reason, None, None),
+            SubsystemStatus::Starting { .. } => {
+                ("starting", "activation in progress".to_string(), None, None)
+            }
+            SubsystemStatus::Active { started_at } => (
+                "active",
+                "running".to_string(),
+                Some(started_at.elapsed().as_secs()),
+                None,
+            ),
+            SubsystemStatus::ShuttingDown { .. } => {
+                ("shutting_down", "grace period".to_string(), None, None)
+            }
+            SubsystemStatus::Failed { error, .. } => {
+                ("failed", "error".to_string(), None, Some(error))
+            }
+        };
+        SubsystemStatusSnapshot {
+            name: entry.name.clone(),
+            class: class.to_string(),
+            status: status_str.to_string(),
+            reason,
+            uptime_secs,
+            error,
+            feature_flag: entry.feature_flag.map(|s| s.to_string()),
+        }
     }
 
     /// Report idle: start the grace period timer.
@@ -638,5 +797,138 @@ mod tests {
         assert_eq!(snapshots[0].name, "test_service");
         assert_eq!(snapshots[0].class, "lazy");
         assert_eq!(snapshots[0].feature_flag.as_deref(), Some("test-flag"));
+    }
+
+    // ── Runtime Feature Flag Tests ──────────────────────────────────
+
+    #[test]
+    fn test_feature_flag_default_disabled() {
+        let registry = SubsystemRegistry::new_test();
+        assert!(!registry.is_feature_enabled("ai"));
+        assert!(!registry.is_feature_enabled("nonexistent"));
+    }
+
+    #[test]
+    fn test_enable_feature_flag() {
+        let registry = SubsystemRegistry::new_test();
+        registry.enable_feature("ai");
+        assert!(registry.is_feature_enabled("ai"));
+        assert!(!registry.is_feature_enabled("pairing"));
+    }
+
+    #[test]
+    fn test_disable_feature_flag() {
+        let registry = SubsystemRegistry::new_test();
+        registry.enable_feature("ai");
+        assert!(registry.is_feature_enabled("ai"));
+        registry.disable_feature("ai");
+        assert!(!registry.is_feature_enabled("ai"));
+    }
+
+    #[test]
+    fn test_enabled_feature_flags_snapshot() {
+        let registry = SubsystemRegistry::new_test();
+        assert!(registry.enabled_feature_flags().is_empty());
+        registry.enable_feature("ai");
+        registry.enable_feature("workflows");
+        let flags = registry.enabled_feature_flags();
+        assert_eq!(flags.len(), 2);
+        assert!(flags.contains(&"ai"));
+        assert!(flags.contains(&"workflows"));
+    }
+
+    #[tokio::test]
+    async fn test_feature_flag_gates_activation_unless_enabled() {
+        // Register a subsystem with a feature_flag that is NOT enabled
+        let registry = SubsystemRegistry::new_test();
+        let mock = Arc::new(MockService::new());
+        registry.register_lazy(SubsystemEntry::new_lazy(
+            "ml_sidecar",
+            Some("ai"),
+            mock.clone(),
+            None,
+        ));
+
+        // "ai" is not enabled → require_active should return SubsystemInactive
+        // with tool = Some("ai")
+        let result = registry.require_active("ml_sidecar").await;
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            AppError::SubsystemInactive { tool, reason } => {
+                assert_eq!(tool, Some("ai"));
+                assert!(reason.contains("ai"), "reason should mention the flag: {reason}");
+            }
+            other => panic!("expected SubsystemInactive, got {other:?}"),
+        }
+
+        // start() must NOT have been called since activation was gated
+        assert_eq!(mock.start_count.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn test_enabling_feature_flag_allows_activation() {
+        let registry = SubsystemRegistry::new_test();
+        let mock = Arc::new(MockService::new());
+
+        // Enable "ai" BEFORE registration
+        registry.enable_feature("ai");
+
+        registry.register_lazy(SubsystemEntry::new_lazy(
+            "ml_sidecar",
+            Some("ai"),
+            mock.clone(),
+            None,
+        ));
+
+        // Feature flag is enabled → activation proceeds normally
+        registry.enable_ready_subsystems().await;
+        let result = registry.require_active("ml_sidecar").await;
+        assert!(result.is_ok(), "activation should succeed: {result:?}");
+        assert_eq!(mock.start_count.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn test_feature_flag_disabled_after_enabled() {
+        let registry = SubsystemRegistry::new_test();
+        let mock = Arc::new(MockService::new());
+
+        // Enable then disable "ai"
+        registry.enable_feature("ai");
+        registry.register_lazy(SubsystemEntry::new_lazy(
+            "ml_sidecar",
+            Some("ai"),
+            mock.clone(),
+            None,
+        ));
+        registry.disable_feature("ai");
+
+        // Activation should fail even though subsystem is registered
+        let result = registry.require_active("ml_sidecar").await;
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            AppError::SubsystemInactive { tool, .. } => {
+                assert_eq!(tool, Some("ai"));
+            }
+            other => panic!("expected SubsystemInactive, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_null_feature_flag_ignores_gating() {
+        // A subsystem with feature_flag=None should not be gated
+        let registry = SubsystemRegistry::new_test();
+        let mock = Arc::new(MockService::new());
+        registry.register_lazy(SubsystemEntry::new_lazy(
+            "no_flag_service",
+            None,
+            mock.clone(),
+            None,
+        ));
+
+        // Should hit the Inactive state check (not a feature flag check)
+        registry.enable_ready_subsystems().await;
+        let result = registry.require_active("no_flag_service").await;
+        assert!(result.is_ok());
+        assert_eq!(mock.start_count.load(Ordering::SeqCst), 1);
     }
 }

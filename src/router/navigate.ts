@@ -1,15 +1,15 @@
-import { router } from "./index";
+import { router } from './index';
 
 /** Known system labels that map to /mail/$label */
 const SYSTEM_LABELS = new Set([
-  "inbox",
-  "starred",
-  "snoozed",
-  "sent",
-  "drafts",
-  "trash",
-  "spam",
-  "all",
+  'inbox',
+  'starred',
+  'snoozed',
+  'sent',
+  'drafts',
+  'trash',
+  'spam',
+  'all',
 ]);
 
 /**
@@ -20,74 +20,74 @@ export function navigateToLabel(
   label: string,
   opts?: { category?: string; threadId?: string },
 ): void {
-  if (label === "settings") {
-    router.navigate({ to: "/settings/$tab", params: { tab: "general" } });
+  if (label === 'settings') {
+    router.navigate({ to: '/settings/$tab', params: { tab: 'general' } });
     return;
   }
 
-  if (label === "license") {
-    router.navigate({ to: "/settings/$tab", params: { tab: "license" } });
+  if (label === 'license') {
+    router.navigate({ to: '/settings/$tab', params: { tab: 'license' } });
     return;
   }
 
-  if (label === "tasks") {
-    router.navigate({ to: "/tasks" });
+  if (label === 'tasks') {
+    router.navigate({ to: '/tasks' });
     return;
   }
 
-  if (label === "attachments") {
-    router.navigate({ to: "/attachments" });
+  if (label === 'attachments') {
+    router.navigate({ to: '/attachments' });
     return;
   }
 
-  if (label === "campaigns") {
-    router.navigate({ to: "/campaigns" });
+  if (label === 'campaigns') {
+    router.navigate({ to: '/campaigns' });
     return;
   }
 
-  if (label === "calendar") {
-    router.navigate({ to: "/calendar" });
+  if (label === 'calendar') {
+    router.navigate({ to: '/calendar' });
     return;
   }
 
-  if (label === "help") {
+  if (label === 'help') {
     router.navigate({
-      to: "/help/$topic",
-      params: { topic: "getting-started" },
+      to: '/help/$topic',
+      params: { topic: 'getting-started' },
     });
     return;
   }
 
-  if (label === "people" || label === "contacts") {
-    router.navigate({ to: "/people" });
+  if (label === 'people' || label === 'contacts') {
+    router.navigate({ to: '/people' });
     return;
   }
 
-  if (label === "dashboard") {
-    router.navigate({ to: "/dashboard" });
+  if (label === 'dashboard') {
+    router.navigate({ to: '/dashboard' });
     return;
   }
 
-  if (label === "automation") {
-    router.navigate({ to: "/automation" });
+  if (label === 'automation') {
+    router.navigate({ to: '/automation' });
     return;
   }
 
-  if (label === "workflows") {
-    router.navigate({ to: "/automation" });
+  if (label === 'workflows') {
+    router.navigate({ to: '/automation' });
     return;
   }
 
-  if (label.startsWith("smart-folder:")) {
-    const folderId = label.replace("smart-folder:", "");
+  if (label.startsWith('smart-folder:')) {
+    const folderId = label.replace('smart-folder:', '');
     if (opts?.threadId) {
       router.navigate({
-        to: "/smart-folder/$folderId/thread/$threadId",
+        to: '/smart-folder/$folderId/thread/$threadId',
         params: { folderId, threadId: opts.threadId },
       });
     } else {
       router.navigate({
-        to: "/smart-folder/$folderId",
+        to: '/smart-folder/$folderId',
         params: { folderId },
       });
     }
@@ -96,16 +96,16 @@ export function navigateToLabel(
 
   if (SYSTEM_LABELS.has(label)) {
     const search: Record<string, string> = {};
-    if (opts?.category) search["category"] = opts.category;
+    if (opts?.category) search['category'] = opts.category;
     if (opts?.threadId) {
       router.navigate({
-        to: "/mail/$label/thread/$threadId",
+        to: '/mail/$label/thread/$threadId',
         params: { label, threadId: opts.threadId },
         search,
       });
     } else {
       router.navigate({
-        to: "/mail/$label",
+        to: '/mail/$label',
         params: { label },
         search,
       });
@@ -116,12 +116,12 @@ export function navigateToLabel(
   // Custom user label
   if (opts?.threadId) {
     router.navigate({
-      to: "/label/$labelId/thread/$threadId",
+      to: '/label/$labelId/thread/$threadId',
       params: { labelId: label, threadId: opts.threadId },
     });
   } else {
     router.navigate({
-      to: "/label/$labelId",
+      to: '/label/$labelId',
       params: { labelId: label },
     });
   }
@@ -139,7 +139,7 @@ export function navigateToThread(threadId: string): void {
   const mailMatch = pathname.match(/^\/mail\/([^/]+)/);
   if (mailMatch) {
     router.navigate({
-      to: "/mail/$label/thread/$threadId",
+      to: '/mail/$label/thread/$threadId',
       params: { label: mailMatch[1]!, threadId },
       search: location.search as Record<string, string>,
     });
@@ -150,7 +150,7 @@ export function navigateToThread(threadId: string): void {
   const labelMatch = pathname.match(/^\/label\/([^/]+)/);
   if (labelMatch) {
     router.navigate({
-      to: "/label/$labelId/thread/$threadId",
+      to: '/label/$labelId/thread/$threadId',
       params: { labelId: labelMatch[1]!, threadId },
       search: location.search as Record<string, string>,
     });
@@ -161,7 +161,7 @@ export function navigateToThread(threadId: string): void {
   const sfMatch = pathname.match(/^\/smart-folder\/([^/]+)/);
   if (sfMatch) {
     router.navigate({
-      to: "/smart-folder/$folderId/thread/$threadId",
+      to: '/smart-folder/$folderId/thread/$threadId',
       params: { folderId: sfMatch[1]!, threadId },
       search: location.search as Record<string, string>,
     });
@@ -170,30 +170,30 @@ export function navigateToThread(threadId: string): void {
 
   // Fallback: navigate to inbox with thread
   router.navigate({
-    to: "/mail/$label/thread/$threadId",
-    params: { label: "inbox", threadId },
+    to: '/mail/$label/thread/$threadId',
+    params: { label: 'inbox', threadId },
   });
 }
 
 /**
  * Navigate to settings with an optional tab.
  */
-export function navigateToSettings(tab = "general"): void {
-  router.navigate({ to: "/settings/$tab", params: { tab } });
+export function navigateToSettings(tab = 'general'): void {
+  router.navigate({ to: '/settings/$tab', params: { tab } });
 }
 
 /**
  * Navigate to the license settings tab.
  */
 export function navigateToLicense(): void {
-  navigateToSettings("license");
+  navigateToSettings('license');
 }
 
 /**
  * Navigate to help with an optional topic.
  */
-export function navigateToHelp(topic = "getting-started"): void {
-  router.navigate({ to: "/help/$topic", params: { topic } });
+export function navigateToHelp(topic = 'getting-started'): void {
+  router.navigate({ to: '/help/$topic', params: { topic } });
 }
 
 /**
@@ -207,7 +207,7 @@ export function navigateBack(): void {
   const mailThreadMatch = pathname.match(/^\/mail\/([^/]+)\/thread\//);
   if (mailThreadMatch) {
     router.navigate({
-      to: "/mail/$label",
+      to: '/mail/$label',
       params: { label: mailThreadMatch[1]! },
       search: location.search as Record<string, string>,
     });
@@ -217,7 +217,7 @@ export function navigateBack(): void {
   const labelThreadMatch = pathname.match(/^\/label\/([^/]+)\/thread\//);
   if (labelThreadMatch) {
     router.navigate({
-      to: "/label/$labelId",
+      to: '/label/$labelId',
       params: { labelId: labelThreadMatch[1]! },
       search: location.search as Record<string, string>,
     });
@@ -227,7 +227,7 @@ export function navigateBack(): void {
   const sfThreadMatch = pathname.match(/^\/smart-folder\/([^/]+)\/thread\//);
   if (sfThreadMatch) {
     router.navigate({
-      to: "/smart-folder/$folderId",
+      to: '/smart-folder/$folderId',
       params: { folderId: sfThreadMatch[1]! },
       search: location.search as Record<string, string>,
     });
@@ -235,7 +235,7 @@ export function navigateBack(): void {
   }
 
   // Not on a thread route — navigate to inbox
-  router.navigate({ to: "/mail/$label", params: { label: "inbox" } });
+  router.navigate({ to: '/mail/$label', params: { label: 'inbox' } });
 }
 
 /**
@@ -244,56 +244,53 @@ export function navigateBack(): void {
 export function getActiveLabel(): string {
   const matches = router.state.matches;
   for (const match of matches) {
-    if (
-      match.routeId === "/mail/$label" ||
-      match.routeId === "/mail/$label/thread/$threadId"
-    ) {
+    if (match.routeId === '/mail/$label' || match.routeId === '/mail/$label/thread/$threadId') {
       return (match.params as { label: string }).label;
     }
     if (
-      match.routeId === "/label/$labelId" ||
-      match.routeId === "/label/$labelId/thread/$threadId"
+      match.routeId === '/label/$labelId' ||
+      match.routeId === '/label/$labelId/thread/$threadId'
     ) {
       return (match.params as { labelId: string }).labelId;
     }
     if (
-      match.routeId === "/smart-folder/$folderId" ||
-      match.routeId === "/smart-folder/$folderId/thread/$threadId"
+      match.routeId === '/smart-folder/$folderId' ||
+      match.routeId === '/smart-folder/$folderId/thread/$threadId'
     ) {
       return `smart-folder:${(match.params as { folderId: string }).folderId}`;
     }
-    if (match.routeId === "/settings/$tab" || match.routeId === "/settings") {
-      return "settings";
+    if (match.routeId === '/settings/$tab' || match.routeId === '/settings') {
+      return 'settings';
     }
-    if (match.routeId === "/attachments") {
-      return "attachments";
+    if (match.routeId === '/attachments') {
+      return 'attachments';
     }
-    if (match.routeId === "/campaigns") {
-      return "campaigns";
+    if (match.routeId === '/campaigns') {
+      return 'campaigns';
     }
-    if (match.routeId === "/dashboard") {
-      return "dashboard";
+    if (match.routeId === '/dashboard') {
+      return 'dashboard';
     }
-    if (match.routeId === "/automation") {
-      return "automation";
+    if (match.routeId === '/automation') {
+      return 'automation';
     }
-    if (match.routeId === "/workflows") {
-      return "automation";
+    if (match.routeId === '/workflows') {
+      return 'automation';
     }
-    if (match.routeId === "/people" || match.routeId === "/people/$contactId") {
-      return "people";
+    if (match.routeId === '/people' || match.routeId === '/people/$contactId') {
+      return 'people';
     }
-    if (match.routeId === "/tasks") {
-      return "tasks";
+    if (match.routeId === '/tasks') {
+      return 'tasks';
     }
-    if (match.routeId === "/calendar") {
-      return "calendar";
+    if (match.routeId === '/calendar') {
+      return 'calendar';
     }
-    if (match.routeId === "/help/$topic" || match.routeId === "/help") {
-      return "help";
+    if (match.routeId === '/help/$topic' || match.routeId === '/help') {
+      return 'help';
     }
   }
-  return "inbox";
+  return 'inbox';
 }
 
 /**
@@ -303,8 +300,8 @@ export function getSelectedThreadId(): string | null {
   const matches = router.state.matches;
   for (const match of matches) {
     const params = match.params as Record<string, string>;
-    if (params["threadId"]) {
-      return params["threadId"];
+    if (params['threadId']) {
+      return params['threadId'];
     }
   }
   return null;

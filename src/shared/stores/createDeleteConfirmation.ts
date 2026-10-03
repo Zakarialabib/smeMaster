@@ -1,4 +1,4 @@
-import type { StoreApi } from "zustand";
+import type { StoreApi } from 'zustand';
 
 // ── State shape ─────────────────────────────────────────────────────────────
 
@@ -56,8 +56,8 @@ export interface DeleteConfirmationOptions {
  * ```
  */
 export function createDeleteConfirmation(
-  set: StoreApi<any>["setState"],
-  get: StoreApi<any>["getState"],
+  set: StoreApi<any>['setState'],
+  get: StoreApi<any>['getState'],
   opts: DeleteConfirmationOptions,
 ): DeleteConfirmationSlice {
   const setState: typeof set = set;

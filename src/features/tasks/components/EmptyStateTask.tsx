@@ -9,20 +9,16 @@
  *
  * @spec Phase 5
  */
-import { Circle, LayoutGrid, Calendar, ClipboardList } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import type { TaskViewMode } from "@features/tasks/stores/taskStore";
+import { Circle, LayoutGrid, Calendar, ClipboardList } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import type { TaskViewMode } from '@features/tasks/stores/taskStore';
 
 /**
  * Empty state variants
  */
 export type EmptyStateVariant =
-  | "no-tasks"
-  | "no-results"
-  | "filtered"
-  | "view-empty"
-  | "search-empty";
+  'no-tasks' | 'no-results' | 'filtered' | 'view-empty' | 'search-empty';
 
 /**
  * Props for EmptyStateTask component.
@@ -57,63 +53,62 @@ function getDefaultContent(
   t: (key: string) => string,
 ): { title: string; subtitle: string; actionLabel: string; secondaryActionLabel?: string } {
   switch (variant) {
-    case "no-tasks":
+    case 'no-tasks':
       return {
-        title: t("tasks.empty.noTasksTitle"),
+        title: t('tasks.empty.noTasksTitle'),
         subtitle:
-          viewMode === "kanban"
-            ? t("tasks.empty.noTasksSubtitleKanban")
-            : viewMode === "calendar"
-              ? t("tasks.empty.noTasksSubtitleCalendar")
-              : viewMode === "agenda"
-                ? t("tasks.empty.noTasksSubtitleAgenda")
-                : t("tasks.empty.noTasksSubtitleList"),
-        actionLabel: t("tasks.empty.addFirstTask"),
+          viewMode === 'kanban'
+            ? t('tasks.empty.noTasksSubtitleKanban')
+            : viewMode === 'calendar'
+              ? t('tasks.empty.noTasksSubtitleCalendar')
+              : viewMode === 'agenda'
+                ? t('tasks.empty.noTasksSubtitleAgenda')
+                : t('tasks.empty.noTasksSubtitleList'),
+        actionLabel: t('tasks.empty.addFirstTask'),
       };
 
-    case "filtered":
+    case 'filtered':
       return {
-        title: t("tasks.empty.filteredTitle"),
-        subtitle: t("tasks.empty.filteredSubtitle"),
-        actionLabel: t("tasks.empty.addTaskInstead"),
-        secondaryActionLabel: t("tasks.empty.clearFilters"),
+        title: t('tasks.empty.filteredTitle'),
+        subtitle: t('tasks.empty.filteredSubtitle'),
+        actionLabel: t('tasks.empty.addTaskInstead'),
+        secondaryActionLabel: t('tasks.empty.clearFilters'),
       };
 
-    case "no-results":
+    case 'no-results':
       return {
-        title: t("tasks.empty.noResultsTitle"),
-        subtitle: t("tasks.empty.noResultsSubtitle"),
-        actionLabel: t("tasks.empty.clearFilters"),
+        title: t('tasks.empty.noResultsTitle'),
+        subtitle: t('tasks.empty.noResultsSubtitle'),
+        actionLabel: t('tasks.empty.clearFilters'),
       };
 
-    case "view-empty":
+    case 'view-empty':
       return {
         title:
-          viewMode === "kanban"
-            ? t("tasks.empty.viewEmptyTitleKanban")
-            : viewMode === "calendar"
-              ? t("tasks.empty.viewEmptyTitleCalendar")
-              : viewMode === "agenda"
-                ? t("tasks.empty.viewEmptyTitleAgenda")
-                : t("tasks.empty.viewEmptyTitleList"),
-        subtitle: t("tasks.empty.viewEmptySubtitle"),
-        actionLabel: t("tasks.empty.addTask"),
-        secondaryActionLabel:
-          viewMode !== "list" ? t("tasks.empty.switchToList") : undefined,
+          viewMode === 'kanban'
+            ? t('tasks.empty.viewEmptyTitleKanban')
+            : viewMode === 'calendar'
+              ? t('tasks.empty.viewEmptyTitleCalendar')
+              : viewMode === 'agenda'
+                ? t('tasks.empty.viewEmptyTitleAgenda')
+                : t('tasks.empty.viewEmptyTitleList'),
+        subtitle: t('tasks.empty.viewEmptySubtitle'),
+        actionLabel: t('tasks.empty.addTask'),
+        secondaryActionLabel: viewMode !== 'list' ? t('tasks.empty.switchToList') : undefined,
       };
 
-    case "search-empty":
+    case 'search-empty':
       return {
-        title: t("tasks.empty.searchEmptyTitle"),
-        subtitle: t("tasks.empty.searchEmptySubtitle"),
-        actionLabel: t("tasks.empty.clearSearch"),
+        title: t('tasks.empty.searchEmptyTitle'),
+        subtitle: t('tasks.empty.searchEmptySubtitle'),
+        actionLabel: t('tasks.empty.clearSearch'),
       };
 
     default:
       return {
-        title: t("tasks.empty.defaultTitle"),
-        subtitle: t("tasks.empty.defaultSubtitle"),
-        actionLabel: t("tasks.empty.defaultAction"),
+        title: t('tasks.empty.defaultTitle'),
+        subtitle: t('tasks.empty.defaultSubtitle'),
+        actionLabel: t('tasks.empty.defaultAction'),
       };
   }
 }
@@ -123,11 +118,11 @@ function getDefaultContent(
  */
 function getViewIcon(viewMode?: TaskViewMode) {
   switch (viewMode) {
-    case "kanban":
+    case 'kanban':
       return LayoutGrid;
-    case "calendar":
+    case 'calendar':
       return Calendar;
-    case "agenda":
+    case 'agenda':
       return ClipboardList;
     default:
       return Circle;
@@ -143,15 +138,15 @@ function getViewIcon(viewMode?: TaskViewMode) {
  * @spec Phase 5
  */
 export function EmptyStateTask({
-  viewMode = "list",
-  variant = "no-tasks",
+  viewMode = 'list',
+  variant = 'no-tasks',
   onAction,
   onSecondaryAction,
   title: customTitle,
   subtitle: customSubtitle,
   actionLabel: customActionLabel,
   secondaryActionLabel: customSecondaryActionLabel,
-  className = "",
+  className = '',
 }: EmptyStateTaskProps) {
   const { t } = useTranslation();
   const content = getDefaultContent(variant, viewMode, t);

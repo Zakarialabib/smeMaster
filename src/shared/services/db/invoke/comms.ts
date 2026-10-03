@@ -216,10 +216,7 @@ export async function getTemplateContent(templateId: string): Promise<ContentRow
   return invokeCommand<ContentRow[]>('db_get_template_content', { templateId });
 }
 
-export async function searchTemplates(
-  companyId: string,
-  query: string,
-): Promise<Template[]> {
+export async function searchTemplates(companyId: string, query: string): Promise<Template[]> {
   return invokeCommand<Template[]>('db_search_templates', { companyId, query });
 }
 
@@ -435,9 +432,6 @@ export async function listComposerPresets(accountId: string): Promise<ComposerPr
 // `POST /me/messages` endpoint and returns the remote draft id. Used by the
 // composer for Microsoft-connected accounts to keep a server-side copy of
 // in-progress drafts.
-export async function createGraphDraft(
-  accountId: string,
-  rawMessage: string,
-): Promise<string> {
+export async function createGraphDraft(accountId: string, rawMessage: string): Promise<string> {
   return invokeCommand<string>('create_graph_draft', { accountId, rawMessage });
 }

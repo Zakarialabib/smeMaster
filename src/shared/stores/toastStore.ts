@@ -1,16 +1,16 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface ToastItem {
   id: number;
   message: string;
-  type: "success" | "error" | "info";
+  type: 'success' | 'error' | 'info';
   /** Auto-dismiss duration in ms. 0 = sticky. */
   duration: number;
 }
 
 interface ToastState {
   toasts: ToastItem[];
-  addToast: (t: Omit<ToastItem, "id">) => void;
+  addToast: (t: Omit<ToastItem, 'id'>) => void;
   removeToast: (id: number) => void;
   clear: () => void;
 }
@@ -33,8 +33,7 @@ export const useToastStore = create<ToastState>((set) => ({
     }
   },
 
-  removeToast: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  removeToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   clear: () => set({ toasts: [] }),
 }));
@@ -42,9 +41,9 @@ export const useToastStore = create<ToastState>((set) => ({
 /** Convenience helpers */
 export const toast = {
   success: (message: string, duration = 2500) =>
-    useToastStore.getState().addToast({ message, type: "success", duration }),
+    useToastStore.getState().addToast({ message, type: 'success', duration }),
   error: (message: string, duration = 4000) =>
-    useToastStore.getState().addToast({ message, type: "error", duration }),
+    useToastStore.getState().addToast({ message, type: 'error', duration }),
   info: (message: string, duration = 2000) =>
-    useToastStore.getState().addToast({ message, type: "info", duration }),
+    useToastStore.getState().addToast({ message, type: 'info', duration }),
 };

@@ -125,8 +125,8 @@ const result = platform.mobile ? await invoke('plugin:biometric|check_biometric'
 | ------------------------------------------------------ | ----------------------------------------- |
 | `src/shared/hooks/usePlatform.ts`                      | Runtime platform detection                |
 | `src/shared/hooks/useMobile.ts`                        | Screen width detection                    |
-| `src/shared/components/mobile/MobileShell.tsx`         | Adaptive shell (phone/tablet/desktop)     |
-| `src/shared/components/mobile/BiometricLockScreen.tsx` | Biometric auth                            |
+| `src/shared/components/layout/shell/MobileShell.tsx` | Adaptive shell (phone/tablet/desktop)     |
+| `src/features/accounts/components/mobile/BiometricLockScreen.tsx` | Biometric auth                            |
 | `src-tauri/src/platform.rs`                            | `get_platform` command                    |
 | `src-tauri/gen/android/.../MainActivity.kt`            | Kotlin entry — splash, bridges, lifecycle |
 
@@ -139,3 +139,10 @@ const result = platform.mobile ? await invoke('plugin:biometric|check_biometric'
 - `is_tablet` is hardcoded to `false` in Rust — Kotlin should provide actual screen metrics
 - `useBreakpoint.ts` in contacts uses `639px` threshold — inconsistent with rest of app
 - Background sync drains battery (FCM-driven sync planned)
+
+## Source reconciliation (2026-07-19)
+
+Two `Key Files (Mobile)` paths were wrong and corrected against source:
+- `MobileShell.tsx` lives at `src/shared/components/layout/shell/MobileShell.tsx` (not `src/shared/components/mobile/`).
+- `BiometricLockScreen.tsx` lives at `src/features/accounts/components/mobile/BiometricLockScreen.tsx` (not `src/shared/components/mobile/`).
+The `useBreakpoint.ts` "639px threshold in contacts" limitation remains accurate: `src/features/contacts/services/` references `useBreakpoint.ts` with a 639px threshold (see `src/shared/hooks/useBreakpoint.ts`).

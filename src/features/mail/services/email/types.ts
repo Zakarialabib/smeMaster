@@ -1,12 +1,12 @@
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
 
-export type AccountProvider = "gmail_api" | "imap" | "caldav" | "microsoft_graph";
+export type AccountProvider = 'gmail_api' | 'imap' | 'caldav' | 'microsoft_graph';
 
 export interface EmailFolder {
   id: string;
   name: string;
   path: string;
-  type: "system" | "user";
+  type: 'system' | 'user';
   specialUse: string | null;
   delimiter: string;
   messageCount: number;
@@ -42,48 +42,23 @@ export interface EmailProvider {
 
   // Message operations
   fetchMessage(messageId: string): Promise<ParsedMessage>;
-  fetchAttachment(
-    messageId: string,
-    attachmentId: string,
-  ): Promise<{ data: string; size: number }>;
+  fetchAttachment(messageId: string, attachmentId: string): Promise<{ data: string; size: number }>;
   fetchRawMessage(messageId: string): Promise<string>;
 
   // Actions (operate on thread/message level)
   archive(threadId: string, messageIds: string[]): Promise<void>;
   trash(threadId: string, messageIds: string[]): Promise<void>;
   permanentDelete(threadId: string, messageIds: string[]): Promise<void>;
-  markRead(
-    threadId: string,
-    messageIds: string[],
-    read: boolean,
-  ): Promise<void>;
-  star(
-    threadId: string,
-    messageIds: string[],
-    starred: boolean,
-  ): Promise<void>;
-  spam(
-    threadId: string,
-    messageIds: string[],
-    isSpam: boolean,
-  ): Promise<void>;
-  moveToFolder(
-    threadId: string,
-    messageIds: string[],
-    folderPath: string,
-  ): Promise<void>;
+  markRead(threadId: string, messageIds: string[], read: boolean): Promise<void>;
+  star(threadId: string, messageIds: string[], starred: boolean): Promise<void>;
+  spam(threadId: string, messageIds: string[], isSpam: boolean): Promise<void>;
+  moveToFolder(threadId: string, messageIds: string[], folderPath: string): Promise<void>;
   addLabel(threadId: string, labelId: string): Promise<void>;
   removeLabel(threadId: string, labelId: string): Promise<void>;
 
   // Send/Draft operations
-  sendMessage(
-    rawBase64Url: string,
-    threadId?: string,
-  ): Promise<{ id: string }>;
-  createDraft(
-    rawBase64Url: string,
-    threadId?: string,
-  ): Promise<{ draftId: string }>;
+  sendMessage(rawBase64Url: string, threadId?: string): Promise<{ id: string }>;
+  createDraft(rawBase64Url: string, threadId?: string): Promise<{ draftId: string }>;
   updateDraft(
     draftId: string,
     rawBase64Url: string,

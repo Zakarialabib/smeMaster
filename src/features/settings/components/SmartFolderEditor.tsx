@@ -1,15 +1,15 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import { Trash2, Pencil } from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+﻿import { useState, useEffect, useCallback } from 'react';
+import { Trash2, Pencil } from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getSmartFolders,
   insertSmartFolder,
   updateSmartFolder,
   deleteSmartFolder,
   type DbSmartFolder,
-} from "@features/mail/db/smartFolders";
-import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
-import { useTranslation } from "react-i18next";
+} from '@features/mail/db/smartFolders';
+import { useSmartFolderStore } from '@features/mail/stores/smartFolderStore';
+import { useTranslation } from 'react-i18next';
 
 export function SmartFolderEditor() {
   const { t } = useTranslation();
@@ -20,10 +20,10 @@ export function SmartFolderEditor() {
   const [showForm, setShowForm] = useState(false);
 
   // Form state
-  const [name, setName] = useState("");
-  const [query, setQuery] = useState("");
-  const [icon, setIcon] = useState("Search");
-  const [color, setColor] = useState("");
+  const [name, setName] = useState('');
+  const [query, setQuery] = useState('');
+  const [icon, setIcon] = useState('Search');
+  const [color, setColor] = useState('');
 
   const loadFolders = useCallback(async () => {
     const f = await getSmartFolders(activeAccountId ?? undefined);
@@ -36,10 +36,10 @@ export function SmartFolderEditor() {
   }, [activeAccountId]);
 
   const resetForm = useCallback(() => {
-    setName("");
-    setQuery("");
-    setIcon("Search");
-    setColor("");
+    setName('');
+    setQuery('');
+    setIcon('Search');
+    setColor('');
     setEditingId(null);
     setShowForm(false);
   }, []);
@@ -51,7 +51,7 @@ export function SmartFolderEditor() {
       await updateSmartFolder(editingId, {
         name: name.trim(),
         query: query.trim(),
-        icon: icon.trim() || "Search",
+        icon: icon.trim() || 'Search',
         color: color.trim() || undefined,
       });
     } else {
@@ -59,7 +59,7 @@ export function SmartFolderEditor() {
         name: name.trim(),
         query: query.trim(),
         accountId: activeAccountId ?? undefined,
-        icon: icon.trim() || "Search",
+        icon: icon.trim() || 'Search',
         color: color.trim() || undefined,
       });
     }
@@ -74,16 +74,19 @@ export function SmartFolderEditor() {
     setName(folder.name);
     setQuery(folder.query);
     setIcon(folder.icon);
-    setColor(folder.color ?? "");
+    setColor(folder.color ?? '');
     setShowForm(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteSmartFolder(id);
-    if (editingId === id) resetForm();
-    await loadFolders();
-    await reloadStore(activeAccountId ?? undefined);
-  }, [editingId, resetForm, loadFolders, reloadStore, activeAccountId]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteSmartFolder(id);
+      if (editingId === id) resetForm();
+      await loadFolders();
+      await reloadStore(activeAccountId ?? undefined);
+    },
+    [editingId, resetForm, loadFolders, reloadStore, activeAccountId],
+  );
 
   return (
     <div className="space-y-3">
@@ -101,9 +104,7 @@ export function SmartFolderEditor() {
                 </span>
               )}
             </div>
-            <div className="text-xs text-text-tertiary truncate">
-              {folder.query}
-            </div>
+            <div className="text-xs text-text-tertiary truncate">{folder.query}</div>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -199,4 +200,3 @@ export function SmartFolderEditor() {
     </div>
   );
 }
-

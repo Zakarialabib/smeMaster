@@ -9,10 +9,6 @@ import {
   updateInvoice,
   deleteInvoice,
   updateInvoiceStatus,
-  listClients,
-  createClient,
-  updateClient,
-  deleteClient,
   listItems,
   createItem,
   updateItem,
@@ -22,6 +18,12 @@ import {
   generateInvoiceDocuments,
   sendInvoice,
 } from '@shared/services/db/invoke/invoicing';
+import {
+  listInvoicingClients,
+  createBillingContact,
+  updateBillingContact,
+  deleteBillingContact,
+} from '../services/clientRegistry';
 
 export interface InvoiceFilters {
   type?: string | null;
@@ -46,11 +48,26 @@ interface InvoicingState {
   generateDocuments: (id: string) => Promise<[string, string]>;
   sendInvoice: (id: string, to: string) => Promise<void>;
 
-  // ----- clients -----
+  // UI-only extension: invoicing clients are unified contacts with
+  // `contact_type === 'client'`. Advanced billing fields are stored on the
+  // same contacts row so the UI does not need a separate invoice client registry.
   clients: Client[];
   clientsLoading: boolean;
   fetchClients: (companyId: string) => Promise<void>;
-  createClient: (data: Parameters<typeof createClient>[0]) => Promise<Client>;
+  createClient: (data: {
+    companyId: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+    country?: string;
+    taxId?: string | null;
+    role?: string;
+    creditLimit?: number;
+    paymentTerms?: number;
+    notes?: string | null;
+  }) => Promise<Client>;
   updateClient: (id: string, fields: Record<string, unknown>) => Promise<void>;
   removeClient: (id: string) => Promise<void>;
 
@@ -82,14 +99,17 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
 
   fetchInvoices: async (companyId) => {
     set({ listLoading: true, listError: null });
-    await handle(async () => {
-      const invoices = await listInvoices(
-        companyId,
-        get().filters.type ?? undefined,
-        get().filters.status ?? undefined,
-      );
-      set({ invoices, listLoading: false });
-    }, (m) => set({ listError: m, listLoading: false }));
+    await handle(
+      async () => {
+        const invoices = await listInvoices(
+          companyId,
+          get().filters.type ?? undefined,
+          get().filters.status ?? undefined,
+        );
+        set({ invoices, listLoading: false });
+      },
+      (m) => set({ listError: m, listLoading: false }),
+    );
   },
 
   getInvoice: (id) => getInvoice(id),
@@ -116,34 +136,43 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
   changeStatus: async (id, status) => {
     await updateInvoiceStatus(id, status);
     set((s) => ({
-      invoices: s.invoices.map((i) => (i.id === id ? { ...i, status: status as Invoice['status'] } : i)),
+      invoices: s.invoices.map((i) =>
+        i.id === id ? { ...i, status: status as Invoice['status'] } : i,
+      ),
     }));
   },
 
   generateDocuments: (id) => generateInvoiceDocuments(id),
   sendInvoice: (id, to) => sendInvoice(id, to),
 
-  // ----- clients -----
-  clients: [],
+  /* UI-only extension: invoicing clients are unified contacts with
+   * `contact_type === 'client'`. These store methods preserve existing API
+   * names while delegating to the shared TS wrappers, so UI can migrate to
+   * contacts-backed behavior without renaming callers.
+   */
+  clients: [] as Client[],
   clientsLoading: false,
   fetchClients: async (companyId) => {
     set({ clientsLoading: true });
-    await handle(async () => {
-      const clients = await listClients(companyId);
-      set({ clients, clientsLoading: false });
-    }, () => set({ clientsLoading: false }));
+    await handle(
+      async () => {
+        const clients = await listInvoicingClients(companyId);
+        set({ clients, clientsLoading: false });
+      },
+      () => set({ clientsLoading: false }),
+    );
   },
   createClient: async (data) => {
-    const client = await createClient(data);
+    const client = await createBillingContact(data);
     set((s) => ({ clients: [client, ...s.clients] }));
     return client;
   },
   updateClient: async (id, fields) => {
-    await updateClient(id, fields);
+    await updateBillingContact(id, fields);
     set((s) => ({ clients: s.clients.map((c) => (c.id === id ? { ...c, ...fields } : c)) }));
   },
   removeClient: async (id) => {
-    await deleteClient(id);
+    await deleteBillingContact(id);
     set((s) => ({ clients: s.clients.filter((c) => c.id !== id) }));
   },
 
@@ -152,10 +181,13 @@ export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
   itemsLoading: false,
   fetchItems: async (companyId) => {
     set({ itemsLoading: true });
-    await handle(async () => {
-      const items = await listItems(companyId);
-      set({ items, itemsLoading: false });
-    }, () => set({ itemsLoading: false }));
+    await handle(
+      async () => {
+        const items = await listItems(companyId);
+        set({ items, itemsLoading: false });
+      },
+      () => set({ itemsLoading: false }),
+    );
   },
   createItem: async (data) => {
     const item = await createItem(data);

@@ -24,11 +24,7 @@ export function PageTransition({ children, routeKey, className = '' }: PageTrans
 
   return (
     <div
-      className={`${className} ${
-        isEntering
-          ? 'page-slide-enter-active'
-          : ''
-      }`}
+      className={`${className} ${isEntering ? 'page-slide-enter-active' : ''}`}
       style={{
         animation: isEntering ? 'none' : undefined,
       }}

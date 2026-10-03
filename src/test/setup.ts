@@ -1,5 +1,5 @@
-import { vi } from "vitest";
-import i18n from "i18next";
+import { vi } from 'vitest';
+import i18n from 'i18next';
 
 // Mock ResizeObserver
 class ResizeObserverMock {
@@ -9,11 +9,11 @@ class ResizeObserverMock {
 }
 
 global.ResizeObserver = ResizeObserverMock as any;
-import { initReactI18next } from "react-i18next";
-import en from "@/locales/en/translation.json";
+import { initReactI18next } from 'react-i18next';
+import en from '@/locales/en/translation.json';
 
 // Polyfill window.matchMedia for jsdom (needed by usePlatform/useMobile hooks)
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -27,10 +27,36 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// Polyfill localStorage for jsdom (some components call it directly, e.g. SavedViews).
+// jsdom may expose a localStorage whose methods are non-functional; override unconditionally.
+{
+  const store = new Map<string, string>();
+  const localStorageMock = {
+    getItem: (k: string) => (store.has(k) ? store.get(k)! : null),
+    setItem: (k: string, v: string) => void store.set(k, String(v)),
+    removeItem: (k: string) => void store.delete(k),
+    clear: () => store.clear(),
+    key: (i: number) => Array.from(store.keys())[i] ?? null,
+    get length() {
+      return store.size;
+    },
+  };
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en } },
-  lng: "en",
-  fallbackLng: "en",
+  lng: 'en',
+  fallbackLng: 'en',
   interpolation: { escapeValue: false },
   returnNull: false,
 });
@@ -39,21 +65,21 @@ i18n.use(initReactI18next).init({
 // defaulting to [] for the db-invoke pattern). Do not re-mock @tauri-apps/api/core here.
 
 // Mock Tauri notification API
-vi.mock("@tauri-apps/api/notification", async () => {
-  const actual = await vi.importActual("@tauri-apps/api/notification");
+vi.mock('@tauri-apps/api/notification', async () => {
+  const actual = await vi.importActual('@tauri-apps/api/notification');
   return {
     ...actual,
     default: {
       notify: vi.fn().mockResolvedValue(undefined),
-      requestPermission: vi.fn().mockResolvedValue("granted"),
+      requestPermission: vi.fn().mockResolvedValue('granted'),
       isPermissionGranted: vi.fn().mockResolvedValue(true),
     },
   };
 });
 
 // Mock Tauri window API
-vi.mock("@tauri-apps/api/window", async () => {
-  const actual = await vi.importActual("@tauri-apps/api/window");
+vi.mock('@tauri-apps/api/window', async () => {
+  const actual = await vi.importActual('@tauri-apps/api/window');
   return {
     ...actual,
     getCurrentWindow: vi.fn().mockReturnValue({
@@ -69,9 +95,9 @@ vi.mock("@tauri-apps/api/window", async () => {
 // Integration tests mock @tauri-apps/api/core directly.
 
 // Mock zustand persist middleware globally — localStorage is unreliable in test env
-vi.mock("zustand/middleware", () => ({
+vi.mock('zustand/middleware', () => ({
   persist: vi.fn((configFn: unknown, _options: unknown) => configFn),
   createJSONStorage: vi.fn(() => ({})),
 }));
 
-import "@testing-library/jest-dom/vitest";
+import '@testing-library/jest-dom/vitest';

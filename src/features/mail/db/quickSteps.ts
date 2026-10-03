@@ -6,9 +6,9 @@ import {
   deleteQuickStep as dbDeleteQuickStep,
   reorderQuickSteps as dbReorderQuickSteps,
   getEnabledQuickSteps,
-} from "@/shared/services/db/db-invoke";
-import type { QuickStep } from "@shared/services/db/schema";
-import type { QuickStepAction } from "@features/settings/services/quickSteps/types";
+} from '@/shared/services/db/db-invoke';
+import type { QuickStep } from '@shared/services/db/schema';
+import type { QuickStepAction } from '@features/settings/services/quickSteps/types';
 
 export type DbQuickStep = QuickStep;
 
@@ -63,7 +63,8 @@ export async function updateQuickStep(
   if (updates.actions !== undefined) set.actions_json = JSON.stringify(updates.actions);
   if (updates.icon !== undefined) set.icon = updates.icon;
   if (updates.isEnabled !== undefined) set.is_enabled = updates.isEnabled ? 1 : 0;
-  if (updates.continueOnError !== undefined) set.continue_on_error = updates.continueOnError ? 1 : 0;
+  if (updates.continueOnError !== undefined)
+    set.continue_on_error = updates.continueOnError ? 1 : 0;
   if (Object.keys(set).length > 0) {
     await dbUpdateQuickStep(id, { set, unset: [] });
   }

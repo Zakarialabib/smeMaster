@@ -18,10 +18,7 @@ import { invokeCommand } from './command';
  * @param filename - File to download (e.g. "model.safetensors")
  * @returns The local file path of the downloaded model
  */
-export async function aiDownloadModel(
-  repoId: string,
-  filename: string,
-): Promise<string> {
+export async function aiDownloadModel(repoId: string, filename: string): Promise<string> {
   return invokeCommand<string>('ai_download_model', { repoId, filename });
 }
 
@@ -77,10 +74,7 @@ export async function aiQueryRag(query: string): Promise<string> {
  * @param query - Original query text for prompt construction
  * @returns Augmented prompt string with context + query
  */
-export async function aiSearchByVector(
-  embedding: number[],
-  query: string,
-): Promise<string> {
+export async function aiSearchByVector(embedding: number[], query: string): Promise<string> {
   return invokeCommand<string>('ai_search_by_vector', { embedding, query });
 }
 
@@ -119,8 +113,8 @@ export async function aiResetVectorDb(): Promise<void> {
  * Fetch every chunked document (id + text) from emails, attachments,
  * and vault items — without embedding them. The frontend embeds each
  * chunk with a local provider (LM Studio / Ollama / …) and sends the
- * vectors back via `aiInsertProviderVectors`. This lets users build the
- * RAG index from a local provider without downloading BGE-small.
+ * vectors back via `aiInsertProviderVectors`. This lets users build
+ * the RAG index from a local provider without downloading BGE-small.
  */
 export async function aiGetEmailChunks(): Promise<{ id: string; text: string }[]> {
   return invokeCommand<{ id: string; text: string }[]>('ai_get_email_chunks');
@@ -145,3 +139,187 @@ export async function aiInsertProviderVectors(
   });
 }
 
+// ── Sidecar observability (gaps #1, #3, #5, #7, #9) ────────────────────────
+
+/** Sidecar runtime status: enabled, running, healthy, version. */
+export async function aiGetSidecarStatus(): Promise<{
+  enabled: boolean;
+  running: boolean;
+  healthy: boolean;
+  version: string | null;
+}> {
+  return invokeCommand('ai_get_sidecar_status');
+}
+
+/** Sidecar self-metrics: embed/index/query/parse counts, RSS, etc. */
+export async function aiGetSidecarMetrics(): Promise<{
+  embed_count: number;
+  index_count: number;
+  query_count: number;
+  parse_count: number;
+  unload_count: number;
+  last_model_load_ms: number;
+  model_loaded: boolean;
+  rss_mb: number;
+} | null> {
+  return invokeCommand<{
+    embed_count: number;
+    index_count: number;
+    query_count: number;
+    parse_count: number;
+    unload_count: number;
+    last_model_load_ms: number;
+    model_loaded: boolean;
+    rss_mb: number;
+  } | null>('ai_get_sidecar_metrics');
+}
+
+/** Models registered in the sidecar registry (gap #7). */
+export async function aiListSidecarModels(): Promise<any> {
+  return invokeCommand<any>('ai_list_sidecar_models');
+}
+
+// ── Offline speech (STT/TTS) ───────────────────────────────────────────────
+// These forward to the ml-sidecar's `offline-speech` methods. The sidecar
+// binary must have been built with that feature; otherwise the calls reject
+// with "unknown method", which callers must handle as "offline speech not
+// available on this install" rather than a bug.
+//
+// See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+
+/** Result of loading an offline STT model. */
+export interface SttModelInfo {
+  status: string;
+  model_dir: string;
+  num_threads: number;
+  load_ms: number;
+}
+
+/** Result of loading an offline TTS voice. */
+export interface TtsVoiceInfo {
+  status: string;
+  model_dir: string;
+  sample_rate: number;
+  num_speakers: number;
+  num_threads: number;
+  load_ms: number;
+}
+
+/** Result of a transcription. `empty` is true for legitimate silence. */
+export interface TranscriptionResult {
+  text: string;
+  empty: boolean;
+  samples: number;
+  sample_rate: number;
+  transcribe_ms: number;
+}
+
+/** Result of a synthesis. `samples` are mono f32 in [-1, 1]. */
+export interface SynthesisResult {
+  samples: number[];
+  sample_rate: number;
+  duration_secs: number;
+  synth_ms: number;
+  /** synthesis_time / audio_duration. < 1.0 is faster than real time. */
+  rtf: number;
+  chars: number;
+}
+
+/** Load an offline STT model (transducer layout). */
+export async function aiLoadSttModel(modelDir: string, numThreads?: number): Promise<SttModelInfo> {
+  return invokeCommand<SttModelInfo>('ai_load_stt_model', { modelDir, numThreads });
+}
+
+/** Transcribe mono f32 samples. The caller decodes the audio container. */
+export async function aiTranscribeAudio(
+  samples: number[],
+  sampleRate?: number,
+): Promise<TranscriptionResult> {
+  return invokeCommand<TranscriptionResult>('ai_transcribe_audio', { samples, sampleRate });
+}
+
+export async function aiUnloadSttModel(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_unload_stt_model');
+}
+
+/** Load an offline TTS voice (VITS/Piper layout). */
+export async function aiLoadTtsVoice(modelDir: string, numThreads?: number): Promise<TtsVoiceInfo> {
+  return invokeCommand<TtsVoiceInfo>('ai_load_tts_voice', { modelDir, numThreads });
+}
+
+/** Synthesise speech. Returns raw mono f32 samples + sample_rate. */
+export async function aiSynthesizeSpeech(
+  text: string,
+  speed?: number,
+  speakerId?: number,
+): Promise<SynthesisResult> {
+  return invokeCommand<SynthesisResult>('ai_synthesize_speech', { text, speed, speakerId });
+}
+
+export async function aiUnloadTtsVoice(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_unload_tts_voice');
+}
+
+// ── ml-sidecar lifecycle ───────────────────────────────────────────────────
+// The sidecar is OnDemand — it does NOT run until started. These expose that
+// state and control it, so the Voice tab can explain itself instead of showing
+// a bare failure.
+
+export interface SidecarControlStatus {
+  /** False when the app was built without the `local-ai` feature. */
+  feature_enabled: boolean;
+  /** False when the feature is on but the service never registered. */
+  registered: boolean;
+  running: boolean;
+  healthy: boolean;
+  version: string | null;
+  /** A real ping — distinguishes "process alive" from "process answering". */
+  reachable: boolean;
+}
+
+export async function aiSidecarControlStatus(): Promise<SidecarControlStatus> {
+  return invokeCommand<SidecarControlStatus>('ai_sidecar_control_status');
+}
+
+export async function aiStartSidecar(): Promise<{
+  status: string;
+  started_in_ms?: number;
+  healthy?: boolean;
+}> {
+  return invokeCommand<{ status: string; started_in_ms?: number; healthy?: boolean }>(
+    'ai_start_sidecar',
+  );
+}
+
+export async function aiStopSidecar(): Promise<{ status: string }> {
+  return invokeCommand<{ status: string }>('ai_stop_sidecar');
+}
+
+// ── Model directory preparation ────────────────────────────────────────────
+// Downloads land in the hf-hub cache layout; the engines need a flat directory.
+// These bridge the two.
+
+export interface PrepareModelDirResult {
+  model_dir: string;
+  linked: number;
+  copied: number;
+  missing: string[];
+}
+
+/**
+ * Materialise a flat model directory from downloaded cache files.
+ *
+ * `files` maps a resolved cache path to its destination name inside the model
+ * directory. Without this step a downloaded model cannot be loaded — the cache
+ * layout (`models--<repo>/snapshots/<sha>/…`) is not what the engines read.
+ */
+export async function aiPrepareModelDir(
+  modelId: string,
+  files: { source: string; dest: string }[],
+): Promise<PrepareModelDirResult> {
+  return invokeCommand<PrepareModelDirResult>('ai_prepare_model_dir', { modelId, files });
+}
+
+export async function aiRemoveModelDir(modelId: string): Promise<{ removed: string }> {
+  return invokeCommand<{ removed: string }>('ai_remove_model_dir', { modelId });
+}

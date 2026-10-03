@@ -1,21 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
-import { Trash2, Pencil, Plus, GripVertical, ChevronDown } from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { getLabelsForAccount, type DbLabel } from "@shared/services/db/labels";
+import { useState, useEffect, useCallback } from 'react';
+import { Trash2, Pencil, Plus, GripVertical, ChevronDown } from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { getLabelsForAccount, type DbLabel } from '@shared/services/db/labels';
 import {
   getQuickStepsForAccount,
   insertQuickStep,
   updateQuickStep,
   deleteQuickStep,
   type DbQuickStep,
-} from "@features/mail/db/quickSteps";
+} from '@features/mail/db/quickSteps';
 import {
   ACTION_TYPE_METADATA,
   type QuickStepAction,
   type QuickStepActionType,
-} from "@features/settings/services/quickSteps/types";
-import { ALL_CATEGORIES } from "@features/mail/db/threadCategories";
-import { seedDefaultQuickSteps } from "@features/settings/services/quickSteps/defaults";
+} from '@features/settings/services/quickSteps/types';
+import { ALL_CATEGORIES } from '@features/mail/db/threadCategories';
+import { seedDefaultQuickSteps } from '@features/settings/services/quickSteps/defaults';
 
 function describeActions(actionsJson: string): string {
   try {
@@ -28,9 +28,9 @@ function describeActions(actionsJson: string): string {
         if (a.params?.category) label += ` (${a.params.category})`;
         return label;
       })
-      .join(" -> ");
+      .join(' -> ');
   } catch {
-    return "Invalid actions";
+    return 'Invalid actions';
   }
 }
 
@@ -42,10 +42,10 @@ export function QuickStepEditor() {
   const [showForm, setShowForm] = useState(false);
 
   // Form state
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [shortcut, setShortcut] = useState("");
-  const [icon, setIcon] = useState("");
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [shortcut, setShortcut] = useState('');
+  const [icon, setIcon] = useState('');
   const [continueOnError, setContinueOnError] = useState(false);
   const [actions, setActions] = useState<QuickStepAction[]>([]);
 
@@ -61,16 +61,16 @@ export function QuickStepEditor() {
     if (!activeAccountId) return;
     loadQuickSteps();
     getLabelsForAccount(activeAccountId).then((l) =>
-      setLabels(l.filter((lb) => lb.type === "user")),
+      setLabels(l.filter((lb) => lb.type === 'user')),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loadQuickSteps is stable, only re-run on activeAccountId change
   }, [activeAccountId]);
 
   const resetForm = useCallback(() => {
-    setName("");
-    setDescription("");
-    setShortcut("");
-    setIcon("");
+    setName('');
+    setDescription('');
+    setShortcut('');
+    setIcon('');
     setContinueOnError(false);
     setActions([]);
     setEditingId(null);
@@ -103,14 +103,25 @@ export function QuickStepEditor() {
 
     resetForm();
     await loadQuickSteps();
-  }, [activeAccountId, name, description, shortcut, icon, continueOnError, actions, editingId, resetForm, loadQuickSteps]);
+  }, [
+    activeAccountId,
+    name,
+    description,
+    shortcut,
+    icon,
+    continueOnError,
+    actions,
+    editingId,
+    resetForm,
+    loadQuickSteps,
+  ]);
 
   const handleEdit = useCallback((qs: DbQuickStep) => {
     setEditingId(qs.id);
     setName(qs.name);
-    setDescription(qs.description ?? "");
-    setShortcut(qs.shortcut ?? "");
-    setIcon(qs.icon ?? "");
+    setDescription(qs.description ?? '');
+    setShortcut(qs.shortcut ?? '');
+    setIcon(qs.icon ?? '');
     setContinueOnError(qs.continue_on_error === 1);
 
     try {
@@ -122,19 +133,25 @@ export function QuickStepEditor() {
     setShowForm(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteQuickStep(id);
-    if (editingId === id) resetForm();
-    await loadQuickSteps();
-  }, [editingId, resetForm, loadQuickSteps]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteQuickStep(id);
+      if (editingId === id) resetForm();
+      await loadQuickSteps();
+    },
+    [editingId, resetForm, loadQuickSteps],
+  );
 
-  const handleToggleEnabled = useCallback(async (qs: DbQuickStep) => {
-    await updateQuickStep(qs.id, { isEnabled: qs.is_enabled !== 1 });
-    await loadQuickSteps();
-  }, [loadQuickSteps]);
+  const handleToggleEnabled = useCallback(
+    async (qs: DbQuickStep) => {
+      await updateQuickStep(qs.id, { isEnabled: qs.is_enabled !== 1 });
+      await loadQuickSteps();
+    },
+    [loadQuickSteps],
+  );
 
   const addAction = useCallback(() => {
-    setActions((prev) => [...prev, { type: "archive" }]);
+    setActions((prev) => [...prev, { type: 'archive' }]);
   }, []);
 
   const removeAction = useCallback((index: number) => {
@@ -150,7 +167,7 @@ export function QuickStepEditor() {
     });
   }, []);
 
-  const updateActionParams = useCallback((index: number, params: QuickStepAction["params"]) => {
+  const updateActionParams = useCallback((index: number, params: QuickStepAction['params']) => {
     setActions((prev) => {
       const next = [...prev];
       const existing = next[index];
@@ -193,13 +210,13 @@ export function QuickStepEditor() {
             <button
               onClick={() => handleToggleEnabled(qs)}
               className={`w-8 h-4 rounded-full transition-colors relative ${
-                qs.is_enabled === 1 ? "bg-accent" : "bg-bg-tertiary"
+                qs.is_enabled === 1 ? 'bg-accent' : 'bg-bg-tertiary'
               }`}
-              title={qs.is_enabled === 1 ? "Disable" : "Enable"}
+              title={qs.is_enabled === 1 ? 'Disable' : 'Enable'}
             >
               <span
                 className={`absolute top-0.5 start-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow ${
-                  qs.is_enabled === 1 ? "translate-x-4" : ""
+                  qs.is_enabled === 1 ? 'translate-x-4' : ''
                 }`}
               />
             </button>
@@ -263,9 +280,10 @@ export function QuickStepEditor() {
             <div className="text-xs font-medium text-text-secondary mb-1.5">Action chain</div>
             <div className="space-y-2">
               {actions.map((action, index) => {
-                const needsLabelParam = action.type === "applyLabel" || action.type === "removeLabel";
-                const needsCategoryParam = action.type === "moveToCategory";
-                const needsSnoozeDuration = action.type === "snooze";
+                const needsLabelParam =
+                  action.type === 'applyLabel' || action.type === 'removeLabel';
+                const needsCategoryParam = action.type === 'moveToCategory';
+                const needsSnoozeDuration = action.type === 'snooze';
 
                 return (
                   <div key={index} className="flex items-start gap-2">
@@ -276,7 +294,9 @@ export function QuickStepEditor() {
                       <div className="relative">
                         <select
                           value={action.type}
-                          onChange={(e) => updateAction(index, e.target.value as QuickStepActionType)}
+                          onChange={(e) =>
+                            updateAction(index, e.target.value as QuickStepActionType)
+                          }
                           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary appearance-none pe-6"
                         >
                           {ACTION_TYPE_METADATA.map((m) => (
@@ -285,36 +305,45 @@ export function QuickStepEditor() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown size={10} className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+                        <ChevronDown
+                          size={10}
+                          className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none"
+                        />
                       </div>
                       {needsLabelParam && labels.length > 0 && (
                         <select
-                          value={action.params?.labelId ?? ""}
+                          value={action.params?.labelId ?? ''}
                           onChange={(e) => updateActionParams(index, { labelId: e.target.value })}
                           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
                         >
                           <option value="">Select label...</option>
                           {labels.map((l) => (
-                            <option key={l.id} value={l.id}>{l.name}</option>
+                            <option key={l.id} value={l.id}>
+                              {l.name}
+                            </option>
                           ))}
                         </select>
                       )}
                       {needsCategoryParam && (
                         <select
-                          value={action.params?.category ?? ""}
+                          value={action.params?.category ?? ''}
                           onChange={(e) => updateActionParams(index, { category: e.target.value })}
                           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
                         >
                           <option value="">Select category...</option>
                           {ALL_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>{cat}</option>
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
                           ))}
                         </select>
                       )}
                       {needsSnoozeDuration && (
                         <select
-                          value={action.params?.snoozeDuration ?? ""}
-                          onChange={(e) => updateActionParams(index, { snoozeDuration: Number(e.target.value) })}
+                          value={action.params?.snoozeDuration ?? ''}
+                          onChange={(e) =>
+                            updateActionParams(index, { snoozeDuration: Number(e.target.value) })
+                          }
                           className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
                         >
                           <option value="">Select duration...</option>
@@ -362,7 +391,7 @@ export function QuickStepEditor() {
               disabled={!name.trim() || actions.length === 0}
               className="px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors disabled:opacity-50"
             >
-              {editingId ? "Update" : "Save"}
+              {editingId ? 'Update' : 'Save'}
             </button>
             <button
               onClick={resetForm}
@@ -383,4 +412,3 @@ export function QuickStepEditor() {
     </div>
   );
 }
-

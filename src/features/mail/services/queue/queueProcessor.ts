@@ -1,6 +1,9 @@
-import { createBackgroundChecker, type BackgroundChecker } from "@shared/services/backgroundCheckers";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { useQueueProgressStore } from "@shared/stores/queueProgressStore";
+import {
+  createBackgroundChecker,
+  type BackgroundChecker,
+} from '@shared/services/backgroundCheckers';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { useQueueProgressStore } from '@shared/stores/queueProgressStore';
 import {
   getPendingOperations,
   updateOperationStatus,
@@ -8,15 +11,14 @@ import {
   incrementRetry,
   getPendingOpsCount,
   compactQueue,
-} from "@features/settings/db/pendingOperations";
-import { executeQueuedAction } from "@features/mail/services/emailActions";
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
-import { getContactById } from "../../../../features/contacts/db/contacts.ts";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { renderTemplate } from "@features/mail/services/templates/renderPipeline";
-import { classifyError } from "@shared/utils/networkErrors";
-import { getQueueSchedule } from "@features/settings/db/settings";
-
+} from '@features/settings/db/pendingOperations';
+import { executeQueuedAction } from '@features/mail/services/emailActions';
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
+import { getContactById } from '../../../../features/contacts/db/contacts.ts';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { renderTemplate } from '@features/mail/services/templates/renderPipeline';
+import { classifyError } from '@shared/utils/networkErrors';
+import { getQueueSchedule } from '@features/settings/db/settings';
 
 const BATCH_SIZE = 50;
 
@@ -32,7 +34,7 @@ async function processSendCampaignEmail(
   const templateId = params.templateId as string | undefined;
 
   if (!campaignId || !contactId) {
-    throw new Error("send_campaign_email: missing campaignId or contactId");
+    throw new Error('send_campaign_email: missing campaignId or contactId');
   }
 
   // 1. Get contact email
@@ -43,16 +45,16 @@ async function processSendCampaignEmail(
   }
 
   // 2. Get template content
-  let subject = "";
-  let bodyHtml = "";
+  let subject = '';
+  let bodyHtml = '';
   if (templateId) {
     const rows = await invokeCommand<{ subject: string | null; body_html: string }[]>(
-      "db_get_template_content",
+      'db_get_template_content',
       { templateId },
     );
     const tmpl = rows[0];
     if (tmpl) {
-      subject = tmpl.subject ?? "";
+      subject = tmpl.subject ?? '';
       bodyHtml = tmpl.body_html;
     }
   }
@@ -69,10 +71,7 @@ async function processSendCampaignEmail(
   const rawContent = btoa(
     `To: ${contact.email}\r\nSubject: ${rendered.subject}\r\nContent-Type: text/html; charset=utf-8\r\n\r\n${rendered.bodyHtml}`,
   );
-  const rawBase64Url = rawContent
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  const rawBase64Url = rawContent.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   await provider.sendMessage(rawBase64Url);
 }
@@ -95,15 +94,15 @@ async function processQueue(): Promise<void> {
 
   for (const op of ops) {
     try {
-      useQueueProgressStore.getState().setProgress(op.id, op.operation_type, "processing");
+      useQueueProgressStore.getState().setProgress(op.id, op.operation_type, 'processing');
 
       // Mark as executing
-      await updateOperationStatus(op.id, "executing");
+      await updateOperationStatus(op.id, 'executing');
 
       // Parse params
       const params = JSON.parse(op.params) as Record<string, unknown>;
 
-      if (op.operation_type === "send_campaign_email") {
+      if (op.operation_type === 'send_campaign_email') {
         await processSendCampaignEmail(op.id, op.company_id, params);
       } else {
         await executeQueuedAction(op.company_id, op.operation_type, params);
@@ -111,19 +110,25 @@ async function processQueue(): Promise<void> {
 
       // Success — delete from queue
       await deleteOperation(op.id);
-      useQueueProgressStore.getState().setProgress(op.id, op.operation_type, "completed", "Completed successfully");
+      useQueueProgressStore
+        .getState()
+        .setProgress(op.id, op.operation_type, 'completed', 'Completed successfully');
     } catch (err) {
       const classified = classifyError(err);
 
       if (classified.isRetryable) {
         // Increment retry with exponential backoff
-        await updateOperationStatus(op.id, "pending", classified.message);
+        await updateOperationStatus(op.id, 'pending', classified.message);
         await incrementRetry(op.id);
-        useQueueProgressStore.getState().setProgress(op.id, op.operation_type, "failed", `Retrying: ${classified.message}`);
+        useQueueProgressStore
+          .getState()
+          .setProgress(op.id, op.operation_type, 'failed', `Retrying: ${classified.message}`);
       } else {
         // Permanent failure
-        await updateOperationStatus(op.id, "failed", classified.message);
-        useQueueProgressStore.getState().setProgress(op.id, op.operation_type, "failed", classified.message);
+        await updateOperationStatus(op.id, 'failed', classified.message);
+        useQueueProgressStore
+          .getState()
+          .setProgress(op.id, op.operation_type, 'failed', classified.message);
       }
     }
   }
@@ -139,7 +144,7 @@ async function updatePendingCount(): Promise<void> {
 export async function startQueueProcessor(): Promise<void> {
   if (checker) return;
   const schedule = await getQueueSchedule();
-  checker = createBackgroundChecker("QueueProcessor", processQueue, schedule.intervalMs);
+  checker = createBackgroundChecker('QueueProcessor', processQueue, schedule.intervalMs);
   checker.start();
 }
 
@@ -156,8 +161,6 @@ export async function triggerQueueFlush(): Promise<void> {
   try {
     await processQueue();
   } catch (err) {
-    console.error("[QueueProcessor] flush failed:", err);
+    console.error('[QueueProcessor] flush failed:', err);
   }
 }
-
-

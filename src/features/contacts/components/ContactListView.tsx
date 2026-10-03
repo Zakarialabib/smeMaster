@@ -1,12 +1,12 @@
-import { useCallback, useMemo, useRef } from "react";
-import { ArrowUp, ArrowDown } from "lucide-react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import type { DbContact } from "@features/contacts/db/contacts";
-import type { Density, SortField, SortDirection } from "@features/contacts/hooks/useViewPrefs";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { ContactActions } from "@features/contacts/components/ContactActions";
-import { formatRelativeDate } from "@shared/utils/date";
-import { getHealthStyle } from "@shared/utils/scoreVariant";
+import { useCallback, useMemo, useRef } from 'react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import type { DbContact } from '@features/contacts/db/contacts';
+import type { Density, SortField, SortDirection } from '@features/contacts/hooks/useViewPrefs';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { ContactActions } from '@features/contacts/components/ContactActions';
+import { formatRelativeDate } from '@shared/utils/date';
+import { getHealthStyle } from '@shared/utils/scoreVariant';
 
 interface ContactListViewProps {
   contacts: DbContact[];
@@ -40,49 +40,49 @@ interface DensityConfig {
 const DENSITY_CONFIGS: Record<Density, DensityConfig> = {
   compact: {
     avatar: 24,
-    rowClass: "py-1 px-2",
-    cellTextClass: "text-[0.65rem]",
-    nameClass: "text-xs",
-    checkboxClass: "w-3 h-3",
+    rowClass: 'py-1 px-2',
+    cellTextClass: 'text-[0.65rem]',
+    nameClass: 'text-xs',
+    checkboxClass: 'w-3 h-3',
     showSecondary: false,
     rowHeight: 36,
   },
   normal: {
     avatar: 28,
-    rowClass: "py-2 px-3",
-    cellTextClass: "text-xs",
-    nameClass: "text-sm",
-    checkboxClass: "w-3.5 h-3.5",
+    rowClass: 'py-2 px-3',
+    cellTextClass: 'text-xs',
+    nameClass: 'text-sm',
+    checkboxClass: 'w-3.5 h-3.5',
     showSecondary: true,
     rowHeight: 48,
   },
   comfortable: {
     avatar: 32,
-    rowClass: "py-2.5 px-4",
-    cellTextClass: "text-sm",
-    nameClass: "text-sm",
-    checkboxClass: "w-4 h-4",
+    rowClass: 'py-2.5 px-4',
+    cellTextClass: 'text-sm',
+    nameClass: 'text-sm',
+    checkboxClass: 'w-4 h-4',
     showSecondary: true,
     rowHeight: 56,
   },
 };
 
 interface ColumnDef {
-  id: SortField | "select" | "contact" | "actions" | "score";
+  id: SortField | 'select' | 'contact' | 'actions' | 'score';
   label: string;
   sortable: boolean;
   width: string;
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
 }
 
 const COLUMNS: ColumnDef[] = [
-  { id: "select", label: "", sortable: false, width: "32px" },
-  { id: "contact", label: "Contact", sortable: false, width: "" },
-  { id: "email", label: "Email", sortable: true, width: "200px" },
-  { id: "frequency", label: "Freq.", sortable: true, width: "70px", align: "right" },
-  { id: "last_contact", label: "Last Contact", sortable: true, width: "110px", align: "right" },
-  { id: "score", label: "Score", sortable: true, width: "152px", align: "right" },
-  { id: "actions", label: "", sortable: false, width: "auto" },
+  { id: 'select', label: '', sortable: false, width: '32px' },
+  { id: 'contact', label: 'Contact', sortable: false, width: '' },
+  { id: 'email', label: 'Email', sortable: true, width: '200px' },
+  { id: 'frequency', label: 'Freq.', sortable: true, width: '70px', align: 'right' },
+  { id: 'last_contact', label: 'Last Contact', sortable: true, width: '110px', align: 'right' },
+  { id: 'score', label: 'Score', sortable: true, width: '152px', align: 'right' },
+  { id: 'actions', label: '', sortable: false, width: 'auto' },
 ];
 
 function sortContacts(
@@ -90,26 +90,29 @@ function sortContacts(
   field: SortField,
   direction: SortDirection,
 ): DbContact[] {
-  const dir = direction === "asc" ? 1 : -1;
+  const dir = direction === 'asc' ? 1 : -1;
   const sorted = [...contacts];
   sorted.sort((a, b) => {
     switch (field) {
-      case "name": {
+      case 'name': {
         const an = (a.display_name ?? a.email).toLowerCase();
         const bn = (b.display_name ?? b.email).toLowerCase();
         return an.localeCompare(bn) * dir;
       }
-      case "email":
+      case 'email':
         return a.email.localeCompare(b.email) * dir;
-      case "frequency":
+      case 'frequency':
         return (a.frequency - b.frequency) * dir;
-      case "last_contact": {
+      case 'last_contact': {
         const av = a.last_contacted_at ?? 0;
         const bv = b.last_contacted_at ?? 0;
         return (av - bv) * dir;
       }
-      case "score":
-        return ((a.engagement_score as unknown as number) - (b.engagement_score as unknown as number)) * dir;
+      case 'score':
+        return (
+          ((a.engagement_score as unknown as number) - (b.engagement_score as unknown as number)) *
+          dir
+        );
       default:
         return 0;
     }
@@ -145,9 +148,9 @@ export function ContactListView({
   const handleHeaderSort = useCallback(
     (field: SortField) => {
       if (sortField === field) {
-        onSortChange(field, sortDirection === "asc" ? "desc" : "asc");
+        onSortChange(field, sortDirection === 'asc' ? 'desc' : 'asc');
       } else {
-        onSortChange(field, "asc");
+        onSortChange(field, 'asc');
       }
     },
     [sortField, sortDirection, onSortChange],
@@ -163,7 +166,7 @@ export function ContactListView({
   });
 
   const gridStyle = {
-    gridTemplateColumns: "32px minmax(180px, 1fr) 200px 70px 110px 152px auto",
+    gridTemplateColumns: '32px minmax(180px, 1fr) 200px 70px 110px 152px auto',
   } as const;
 
   const renderRow = (contact: DbContact, isSelected: boolean) => {
@@ -175,21 +178,15 @@ export function ContactListView({
         aria-selected={isSelected}
         onClick={() => onContactClick(contact.id)}
         className={`group transition-colors ${
-          isSelected ? "bg-accent/5 hover:bg-accent/10" : "hover:bg-bg-hover"
+          isSelected ? 'bg-accent/5 hover:bg-accent/10' : 'hover:bg-bg-hover'
         } cursor-pointer grid items-center`}
         style={gridStyle}
       >
-        <div
-          role="cell"
-          className={cfg.rowClass}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div role="cell" className={cfg.rowClass} onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={(e) =>
-              onToggleSelect(contact.id, (e.nativeEvent as MouseEvent).shiftKey)
-            }
+            onChange={(e) => onToggleSelect(contact.id, (e.nativeEvent as MouseEvent).shiftKey)}
             className={`${cfg.checkboxClass} rounded border-border-primary text-accent focus:ring-accent focus:ring-offset-0 cursor-pointer`}
             aria-label={`Select ${contact.display_name ?? contact.email}`}
             onClick={(e) => e.stopPropagation()}
@@ -219,14 +216,14 @@ export function ContactListView({
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right tabular-nums`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end tabular-nums`}
         >
-          {contact.frequency > 0 ? contact.frequency : "—"}
+          {contact.frequency > 0 ? contact.frequency : '—'}
         </div>
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end`}
         >
           {contact.last_contacted_at ? (
             <span>{formatRelativeDate(contact.last_contacted_at)}</span>
@@ -237,7 +234,7 @@ export function ContactListView({
 
         <div
           role="cell"
-          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-right`}
+          className={`${cfg.rowClass} ${cfg.cellTextClass} text-text-tertiary text-end`}
         >
           <div className="flex items-center justify-end gap-1.5 min-w-0">
             <span
@@ -257,11 +254,7 @@ export function ContactListView({
           </div>
         </div>
 
-        <div
-          role="cell"
-          className={cfg.rowClass}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div role="cell" className={cfg.rowClass} onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-end">
             <ContactActions
               contact={contact}
@@ -286,18 +279,18 @@ export function ContactListView({
       <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div
         role="row"
-        className="grid border-b border-border-primary text-left sticky top-0 z-10 bg-bg-primary"
+        className="grid border-b border-border-primary text-start sticky top-0 z-10 bg-bg-primary"
         style={gridStyle}
       >
         {COLUMNS.map((col) => {
           const sortable = col.sortable;
           const isSorted = sortable && col.id === sortField;
           const align =
-            col.align === "right"
-              ? "text-right"
-              : col.align === "center"
-                ? "text-center"
-                : "text-left";
+            col.align === 'right'
+              ? 'text-end'
+              : col.align === 'center'
+                ? 'text-center'
+                : 'text-start';
           return (
             <div
               key={col.id}
@@ -310,16 +303,12 @@ export function ContactListView({
                   type="button"
                   onClick={() => handleHeaderSort(col.id as SortField)}
                   className={`inline-flex items-center gap-1 hover:text-text-primary transition-colors ${
-                    isSorted ? "text-accent" : ""
+                    isSorted ? 'text-accent' : ''
                   }`}
                 >
                   <span>{col.label}</span>
                   {isSorted &&
-                    (sortDirection === "asc" ? (
-                      <ArrowUp size={10} />
-                    ) : (
-                      <ArrowDown size={10} />
-                    ))}
+                    (sortDirection === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
                 </button>
               ) : (
                 col.label
@@ -337,8 +326,8 @@ export function ContactListView({
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
-            width: "100%",
-            position: "relative",
+            width: '100%',
+            position: 'relative',
           }}
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
@@ -351,10 +340,10 @@ export function ContactListView({
                 data-index={virtualRow.index}
                 className="animate-[fadeSlideIn_200ms_ease-out]"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: 0,
                   left: 0,
-                  width: "100%",
+                  width: '100%',
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                   animationDelay: `${virtualRow.index * 20}ms`,

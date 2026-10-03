@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import type { TextAlign } from "../types";
-import { AlignButtons } from "./TypographyConfig";
+import { useTranslation } from 'react-i18next';
+import type { TextAlign } from '../types';
+import { AlignButtons } from './TypographyConfig';
 
 export interface AlignmentConfigProps {
   value: TextAlign;
@@ -12,7 +12,7 @@ export function AlignmentConfig({ value, onChange }: AlignmentConfigProps) {
   return (
     <div className="mb-3">
       <label className="mb-1 block text-xs font-medium text-text-secondary">
-        {t("campaign.editor.align")}
+        {t('campaign.editor.align')}
       </label>
       <AlignButtons value={value} onChange={onChange} />
     </div>
