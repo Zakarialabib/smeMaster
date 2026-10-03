@@ -6,6 +6,8 @@ use crate::ai::vector_db::VectorDb;
 use crate::ai::parser::DocParser;
 use crate::db::mail::schema::{Message, Attachment};
 use crate::db::vault::schema::VaultItem;
+use crate::db::contacts::schema::Contact;
+use crate::db::tables::crm::deals::Deal;
 use crate::db::tables::core::settings;
 use std::sync::Arc;
 use arrow::array::{RecordBatch, StringArray, FixedSizeListArray, Float32Array, RecordBatchIterator};
@@ -49,6 +51,28 @@ impl Default for ChunkConfig {
     }
 }
 
+/// Index scope — which data sources are included in the knowledge base.
+#[derive(Debug, Clone)]
+pub struct IndexScope {
+    pub emails: bool,
+    pub attachments: bool,
+    pub vault: bool,
+    pub contacts: bool,
+    pub deals: bool,
+}
+
+impl Default for IndexScope {
+    fn default() -> Self {
+        Self {
+            emails: true,
+            attachments: true,
+            vault: true,
+            contacts: true,
+            deals: true,
+        }
+    }
+}
+
 pub struct Indexer {
     pool: SqlitePool,
     engine: Arc<Mutex<Option<LocalEngine>>>,
@@ -72,22 +96,62 @@ impl Indexer {
         ChunkConfig { size, overlap, splitter }
     }
 
+    /// Read index scope from the settings table.
+    /// Stored as JSON: `{"emails":true,"attachments":true,"vault":true,"contacts":true,"deals":true}`
+    async fn load_index_scope(&self) -> IndexScope {
+        let raw = settings::get(&self.pool, "rag_index_scope").await.ok().flatten();
+        match raw {
+            Some(json_str) => {
+                match serde_json::from_str::<serde_json::Value>(&json_str) {
+                    Ok(v) => IndexScope {
+                        emails: v.get("emails").and_then(|x| x.as_bool()).unwrap_or(true),
+                        attachments: v.get("attachments").and_then(|x| x.as_bool()).unwrap_or(true),
+                        vault: v.get("vault").and_then(|x| x.as_bool()).unwrap_or(true),
+                        contacts: v.get("contacts").and_then(|x| x.as_bool()).unwrap_or(true),
+                        deals: v.get("deals").and_then(|x| x.as_bool()).unwrap_or(true),
+                    },
+                    Err(_) => IndexScope::default(),
+                }
+            }
+            None => IndexScope::default(),
+        }
+    }
+
     pub async fn index_all(&self) -> Result<()> {
         let _ = self.app_handle.emit("ai:indexing_started", ());
 
         let table = self.vector_db.ensure_default_table().await?;
         let cfg = self.load_chunk_config().await;
+        let scope = self.load_index_scope().await;
 
-        if let Err(e) = self.index_all_emails(&table, &cfg).await {
-            log::error!("Error indexing emails: {:?}", e);
+        if scope.emails {
+            if let Err(e) = self.index_all_emails(&table, &cfg).await {
+                log::error!("Error indexing emails: {:?}", e);
+            }
         }
 
-        if let Err(e) = self.index_all_attachments(&table, &cfg).await {
-            log::error!("Error indexing attachments: {:?}", e);
+        if scope.attachments {
+            if let Err(e) = self.index_all_attachments(&table, &cfg).await {
+                log::error!("Error indexing attachments: {:?}", e);
+            }
         }
 
-        if let Err(e) = self.index_vault_items(&table, &cfg).await {
-            log::error!("Error indexing vault items: {:?}", e);
+        if scope.vault {
+            if let Err(e) = self.index_vault_items(&table, &cfg).await {
+                log::error!("Error indexing vault items: {:?}", e);
+            }
+        }
+
+        if scope.contacts {
+            if let Err(e) = self.index_all_contacts(&table, &cfg).await {
+                log::error!("Error indexing contacts: {:?}", e);
+            }
+        }
+
+        if scope.deals {
+            if let Err(e) = self.index_all_deals(&table, &cfg).await {
+                log::error!("Error indexing deals: {:?}", e);
+            }
         }
 
         let _ = self.app_handle.emit("ai:indexing_completed", ());
@@ -183,6 +247,84 @@ impl Indexer {
                     );
                 }
             }
+        }
+
+        Ok(())
+    }
+
+    pub async fn index_all_contacts(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
+        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts WHERE deleted_at IS NULL")
+            .fetch_all(&self.pool)
+            .await?;
+
+        let total = contacts.len();
+        for (i, contact) in contacts.iter().enumerate() {
+            let _ = self.app_handle.emit("ai:indexing_progress", serde_json::json!({
+                "source": "contacts",
+                "current": i + 1,
+                "total": total,
+            }));
+
+            let tags: Vec<String> = sqlx::query_scalar(
+                "SELECT ct.name FROM contact_tags ct \
+                 INNER JOIN contact_tag_pivot ctp ON ctp.tag_id = ct.id \
+                 WHERE ctp.contact_id = ?",
+            )
+            .bind(&contact.id)
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+
+            let text = format!(
+                "Name: {}\nEmail: {}\nNotes: {}\nTags: {}\nType: {}",
+                contact.display_name.as_deref().unwrap_or(""),
+                contact.email,
+                contact.notes.as_deref().unwrap_or(""),
+                tags.join(", "),
+                contact.health_status,
+            );
+
+            if text.trim().is_empty() { continue; }
+            self.index_document(table, &contact.id, &text, cfg).await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn index_all_deals(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
+        let deals = sqlx::query_as::<_, Deal>("SELECT * FROM deals")
+            .fetch_all(&self.pool)
+            .await?;
+
+        let total = deals.len();
+        for (i, deal) in deals.iter().enumerate() {
+            let _ = self.app_handle.emit("ai:indexing_progress", serde_json::json!({
+                "source": "deals",
+                "current": i + 1,
+                "total": total,
+            }));
+
+            let stage_name: Option<String> = sqlx::query_scalar(
+                "SELECT name FROM deal_stages WHERE id = ?",
+            )
+            .bind(&deal.stage_id)
+            .fetch_one(&self.pool)
+            .await
+            .ok();
+
+            let amount = deal.amount_minor as f64 / 100.0;
+            let text = format!(
+                "Title: {}\nAmount: {} {}\nStage: {}\nStatus: {}\nNotes: {}",
+                deal.title,
+                amount,
+                deal.currency,
+                stage_name.as_deref().unwrap_or(""),
+                deal.status,
+                deal.notes.as_deref().unwrap_or(""),
+            );
+
+            if text.trim().is_empty() { continue; }
+            self.index_document(table, &deal.id, &text, cfg).await?;
         }
 
         Ok(())

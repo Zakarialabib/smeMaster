@@ -347,6 +347,38 @@ pub async fn ai_get_email_chunks(
     Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
 }
 
+/// Return every chunked contact document (id, text) — without embedding.
+/// Used by the provider-embedding indexing path.
+#[tauri::command]
+pub async fn ai_get_contact_chunks(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+) -> CmdResult<Vec<ChunkRecord>> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let chunks = indexer.get_contact_chunks().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+    Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
+}
+
+/// Return every chunked deal document (id, text) — without embedding.
+/// Used by the provider-embedding indexing path.
+#[tauri::command]
+pub async fn ai_get_deal_chunks(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+) -> CmdResult<Vec<ChunkRecord>> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let chunks = indexer.get_deal_chunks().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+    Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProviderVectorRequest {
