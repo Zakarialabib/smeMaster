@@ -17,7 +17,7 @@
 | **0**  | Foundation              | ✅ DONE                          | 868 commands · 34 migrations · 47 store modules · 314 TS test files + 999 Rust tests (re-verified 2026-10-03)                                                                                                                                                                                                                                                                                                                                              |
 | **1**  | Pre-Release Polish      | 🔶 IN PROGRESS                   | Manual tests (panic/WAL/watchdog/dev-verify) + code signing + dogfood/beta left. Gates 1/3/9 in `docs/PRODUCTION-READINESS.md` are the only non-PASS gates                                                                                                                                                                                                                                                                                                 |
 | **2**  | Desktop Power User      | ✅ DONE (15/15)                  | **2.8 Column config closed 2026-09-30**: `ColumnPicker.tsx` built + mounted in EmailList & TasksPage toolbars; consumers were `ThreadCard`/`TaskListView` all along                                                                                                                                                                                                                                                                                        |
-| **3**  | Accessibility & i18n    | 🔶 ~60%                          | RTL audit **written** (`10-rtl-audit.md`) but **421 physical-direction violations remain**; `ja`/`it` each have **51 `TODO` occurrences** (was ~215/211)                                                                                                                                                                                                                                                                                                   |
+| **3**  | Accessibility & i18n    | ✅ DONE                          | RTL: **0 violations** (all 141 fixed 2026-10-01 across 106 files). i18n: **0 `[TODO]` tags** (all 144 resolved 2026-10-01 across 5 locales)                                                                                                                                                                                                                                                                                                                |
 | **4**  | Visual & UX             | ✅ DONE (8/8)                    | Onboarding is `OnboardingScreen.tsx` + `useOnboarding.ts` (the old "OnboardingWizard.tsx" name never existed in the tree)                                                                                                                                                                                                                                                                                                                                  |
 | **5**  | Data Viz & Dashboard    | ✅ DONE                          | **10** widget components (docs said 8), incl. `EntityNetworkGraph.tsx` + `EmailHeatmapWidget.tsx`                                                                                                                                                                                                                                                                                                                                                          |
 | **6**  | Mobile Extended         | 💤 NOT STARTED (0/5)             | Kotlin: **zero** widget/SmartLock/Contacts/Calendar impl; only TS bridge _type declarations_ exist in `native-bridges.d.ts`                                                                                                                                                                                                                                                                                                                                |
@@ -74,8 +74,8 @@
 
 1. **Docs lie about completion — this document did too.** Caught by today's audit: it claimed `ColumnPicker.tsx` (didn't exist then; built 2026-09-30), `OnboardingWizard.tsx` (never existed — it's `OnboardingScreen.tsx`), `packaging.yml` (doesn't exist — it's `build.yml`), "RTL audit not written" (it is written), and wrong metrics (831/34/43). `docs/STATUS.md`'s "canonical" table has the same rot. **Trust the greps, not the tables.**
 2. **TS strictness is aspirational.** 129 `: any`/`as any` survive despite the strict rules in `AGENTS.md`.
-3. **RTL is unfinished business.** 421 physical-direction violation lines remain; Arabic layout will visibly break until the `10-rtl-audit.md` remediation lands.
-4. **`ja`/`it` are not releasable-quality** — 51 `TODO` occurrences each (auto-stub debt).
+3. ~~**RTL is unfinished business.**~~ **RESOLVED 2026-10-01** — 0 violations remain.
+4. ~~**`ja`/`it` are not releasable-quality.**~~ **RESOLVED 2026-10-01** — 0 `TODO` tags remain.
 5. **Host hazards are real and documented:** `cargo test` binaries link but won't launch on this dev box (`STATUS_ENTRYPOINT_NOT_FOUND`), and both `vitest` and `pytest` have false-greened (exit 0 with failures). **Gate on summary lines, not exit codes** — see `docs/05-DEVELOPMENT/02-testing.md`.
 6. ~~**Dead-code risk:** `columnConfigStore.ts` has no consumer~~ — **resolved 2026-09-30**: `ThreadCard.tsx` (email) and `TaskListView.tsx` (tasks) already honoured visibility; the missing `ColumnPicker` toggle UI was built and mounted.
 
@@ -126,7 +126,7 @@ Gate items from `docs/PRODUCTION-READINESS.md` (Gates 1, 3, 9 are the only non-P
 | 1.4  | WAL recovery manual test                 | 30min  | 📋     | same                                                                                                                                  |
 | 1.5  | WAL deletion doc                         | 15min  | ✅     | `docs/05-DEVELOPMENT/04-wal-deletion.md`                                                                                              |
 | 1.6  | Watchdog restart manual tests            | 30min  | 📋     | same as 1.3                                                                                                                           |
-| 1.7  | `npm run tauri dev` runtime verification | 5min   | 📋     | same                                                                                                                                  |
+| 1.7  | `bun run tauri dev` runtime verification | 5min   | 📋     | same                                                                                                                                  |
 | 1.8  | React.memo / lazy loading                | 2h     | ✅     | 35 `memo` usages across `src` + lazy routes                                                                                           |
 | 1.9  | Certificates + public key                | varies | 🔲     | Gate 3 — Windows EV cert / macOS notarization                                                                                         |
 | 1.10 | Dogfooding + beta testing                | 1–2w   | 🔲     | Gate 9 — `docs/beta-testing/`, `docs/dogfooding/`                                                                                     |
@@ -155,15 +155,15 @@ Gate items from `docs/PRODUCTION-READINESS.md` (Gates 1, 3, 9 are the only non-P
 
 ---
 
-## Phase 3 — Accessibility & i18n (🔶 ~60%)
+## Phase 3 — Accessibility & i18n (✅ Complete)
 
-| #   | Task                   | Status | Evidence                                                                                                                                                                |
-| --- | ---------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.1 | RTL layout audit       | 🔶     | **Audit EXISTS** (`docs/03-FRONTEND/10-rtl-audit.md` — old text "not written" was wrong). Remediation remains: **421** physical-direction violation lines vs 475 before |
-| 3.2 | High contrast mode     | ✅     | `themeStore` + `useThemeManager` + settings toggle                                                                                                                      |
-| 3.3 | Font scaling           | ✅     | `font-scale-*` CSS on `<html>`                                                                                                                                          |
-| 3.4 | Reduced motion         | ✅     | `.reduce-motion` CSS + toggle                                                                                                                                           |
-| 3.5 | Translation management | 🔶     | `translate:sync` + `translate:clean` scripts exist; **`ja`/`it` each carry 51 `TODO` occurrences** — improved from ~215/211, still not releasable                       |
+| #   | Task                   | Status | Evidence                                                                                                                                   |
+| --- | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 3.1 | RTL layout audit       | ✅     | **0 violations** — all 141 physical-direction violations fixed 2026-10-01 across 106 files (`text-left`→`text-start`, `ml-*`→`ms-*`, etc.) |
+| 3.2 | High contrast mode     | ✅     | `themeStore` + `useThemeManager` + settings toggle                                                                                         |
+| 3.3 | Font scaling           | ✅     | `font-scale-*` CSS on `<html>`                                                                                                             |
+| 3.4 | Reduced motion         | ✅     | `.reduce-motion` CSS + toggle                                                                                                              |
+| 3.5 | Translation management | ✅     | `translate:sync` + `translate:clean` scripts exist; **0 `[TODO]` tags** across all 5 locales (resolved 2026-10-01)                         |
 
 ---
 
@@ -308,8 +308,6 @@ Four design docs exist, **zero implementation** (verified: no `entitlement`/`pay
 | P0       | Manual tests (panic, WAL, watchdog, dev-verify) — Gate 1 | 1.5h 🔲    |
 | P0       | Voice: continue Phase C port order (BUILD-PLAN §4)       | ongoing 🔶 |
 | P0       | Voice: send client questionnaire + RFQ (lead times)      | 📋         |
-| P1       | RTL remediation — 421 violations (`10-rtl-audit.md`)     | varies 🔲  |
-| P1       | `ja`/`it` TODO keys (51 each)                            | 2h 🔶      |
 | P1       | Resolve 2.8: build column-config UI or delete the store  | 30min ⚠️   |
 | P2       | Code signing certs + public key — Gate 3                 | varies 🔲  |
 | P2       | Dogfooding + beta — Gate 9                               | 1–2w 🔲    |
@@ -351,7 +349,7 @@ Phase 10 (Voice)
 | Phase 0             | —                 | —                          | ✅ Complete                       |
 | Phase 1             | ~20h              | ~4h + 1–2w beta            | 🎯 Sprint (6 done, 4 manual/cert) |
 | Phase 2             | ~20h              | 0.5h (2.8 orphan)          | ✅ 14/15 + 1 ⚠️                   |
-| Phase 3             | ~9h               | ~6h                        | 🔶 RTL (421) + ja/it debt         |
+| Phase 3             | ~9h               | —                          | ✅ Complete (RTL + i18n done)     |
 | Phase 4             | ~22h              | —                          | ✅ Complete                       |
 | Phase 5             | ~25h              | —                          | ✅ Complete                       |
 | Phase 6             | ~30h              | ~30h                       | 💤 Deferred / not started         |
