@@ -7,6 +7,7 @@ import type {
   ProviderHealth,
   WsStatus,
 } from '../types/commands';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 /**
  * Store split for the agent console — one store per domain, per
@@ -225,8 +226,7 @@ export const useConfigStore = create<ConfigState>((set) => ({
   save: async () => {
     set({ saving: true });
     try {
-      // Phase C wires this to agent_set_provider_tier. Until then the store is
-      // the only writer, and `dirty` still clears so the path is exercised.
+      await invokeCommand('agent_set_provider_tier', { tier: useConfigStore.getState().tier });
       set({ dirty: false });
     } finally {
       set({ saving: false });
