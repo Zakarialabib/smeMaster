@@ -199,7 +199,6 @@ export default function VoiceSettings() {
             <option value="elevenlabs">ElevenLabs</option>
             <option value="lmstudio">LM Studio (local)</option>
             <option value="custom">Custom (OpenAI-compatible)</option>
-            <option value="agent-core">Agent Core (Python)</option>
           </select>
         </SettingRow>
 

@@ -84,7 +84,7 @@ export const AI_SETTINGS_SCHEMA = {
     type: 'string',
     secure: false,
     description: 'Voice provider',
-    options: ['browser', 'openai', 'elevenlabs', 'lmstudio', 'custom', 'agent-core'],
+    options: ['browser', 'openai', 'elevenlabs', 'lmstudio', 'custom', 'offline'],
   },
   voice_base_url: { type: 'string', secure: false, description: 'Voice base URL' },
   voice_api_key: { type: 'string', secure: true, description: 'Voice API key' },

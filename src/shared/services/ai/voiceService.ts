@@ -27,7 +27,6 @@ export type VoiceProviderType =
   | 'elevenlabs'
   | 'lmstudio'
   | 'custom'
-  | 'agent-core'
   /** On-device sherpa-onnx (ml-sidecar `offline-speech`). No key, no network. */
   | 'offline';
 
@@ -316,9 +315,6 @@ export async function synthesizeSpeech(
     case 'elevenlabs':
       // TODO: Implement ElevenLabs TTS
       throw new Error('ElevenLabs TTS not yet implemented');
-    case 'agent-core':
-      // TODO: Proxy through agent-core HTTP API
-      throw new Error('Agent-core TTS not yet implemented');
     case 'offline':
       // On-device sherpa-onnx via ml-sidecar. No key, no network.
       return synthesizeWithOffline(text, config, options);
@@ -345,9 +341,6 @@ export async function transcribeSpeech(
     case 'elevenlabs':
       // TODO: Implement ElevenLabs STT
       throw new Error('ElevenLabs STT not yet implemented');
-    case 'agent-core':
-      // TODO: Proxy through agent-core HTTP API
-      throw new Error('Agent-core STT not yet implemented');
     case 'offline':
       // On-device sherpa-onnx via ml-sidecar. No key, no network.
       return transcribeWithOffline(audio, config);
@@ -387,10 +380,7 @@ export function getVoiceCapabilities(config: VoiceConfig): {
     case 'elevenlabs':
       // Both directions throw ("not yet implemented") — do not advertise them.
       return { stt: false, tts: false };
-    case 'agent-core':
-      // Both directions throw ("not yet implemented") — do not advertise them.
-      // This previously reported { stt: true, tts: true } for two stubs.
-      return { stt: false, tts: false };
+
     case 'offline':
       // Both directions are implemented (sherpa-onnx via ml-sidecar).
       //
