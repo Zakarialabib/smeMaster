@@ -728,6 +728,7 @@ export function Composer() {
               onToggleAiAssist={() => setShowAiAssist(!showAiAssist)}
               aiAssistOpen={showAiAssist}
               onToggleTemplatePicker={() => setTemplatePickerOpen((prev) => !prev)}
+              onVoiceModalOpen={() => setVoiceModalOpen(true)}
             />
 
             {/* Desktop: side-by-side editor + AI Assist */}

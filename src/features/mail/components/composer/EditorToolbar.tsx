@@ -25,7 +25,6 @@ import {
 } from '@features/mail/db/quickReplies';
 import { useComposerStore } from '@features/mail/stores/composerStore';
 import { EmojiPicker } from './EmojiPicker';
-import { VoiceModal } from './VoiceModal';
 import { InvoiceSelectionModal } from '../../../invoicing/components/InvoiceSelectionModal';
 import { Invoice } from '../../../invoicing/types';
 import { formatMoney, formatDate } from '../../../invoicing/utils/format';
@@ -35,6 +34,7 @@ interface EditorToolbarProps {
   onToggleAiAssist?: () => void;
   aiAssistOpen?: boolean;
   onToggleTemplatePicker?: () => void;
+  onVoiceModalOpen?: () => void;
 }
 
 export function EditorToolbar({
@@ -42,6 +42,7 @@ export function EditorToolbar({
   onToggleAiAssist,
   aiAssistOpen,
   onToggleTemplatePicker,
+  onVoiceModalOpen,
 }: EditorToolbarProps) {
   const { t } = useTranslation();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -51,7 +52,6 @@ export function EditorToolbar({
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const qrMenuRef = useRef<HTMLDivElement | null>(null);
   const tableMenuRef = useRef<HTMLDivElement | null>(null);
@@ -275,7 +275,7 @@ export function EditorToolbar({
       {/* Voice compose */}
       <button
         type="button"
-        onClick={() => setVoiceModalOpen(true)}
+        onClick={onVoiceModalOpen}
         title={t('composer.voiceCompose')}
         className="p-1 rounded hover:bg-bg-hover transition-colors text-text-secondary hover:text-accent"
       >
@@ -507,16 +507,6 @@ export function EditorToolbar({
           }}
         />
       )}
-
-      {/* Voice compose modal */}
-      <VoiceModal
-        isOpen={voiceModalOpen}
-        onClose={() => setVoiceModalOpen(false)}
-        onTranscribe={(text) => {
-          editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
-          useComposerStore.getState().setBodyHtml(editor.getHTML());
-        }}
-      />
 
       {btn(t('composer.undo'), false, () => editor.chain().focus().undo().run())}
       {btn(t('composer.redo'), false, () => editor.chain().focus().redo().run())}
