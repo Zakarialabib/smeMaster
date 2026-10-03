@@ -1,6 +1,6 @@
 # SMEMaster v1.0.0 — Production Readiness Status
 
-> **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup.
+> **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup. (Note: `SECURITY-AUDIT.md` was never created — security evidence lives in Gate 0 above.)
 
 > **Last updated:** 2026-09-30 (command/migration counts reconciled against source this pass)
 
@@ -160,7 +160,7 @@
 
 ### 3.3 Installer UX (v1.0.0 = Windows MSI/NSIS + Android APK, unsigned)
 
-- [x] Bundle targets: **MSI, NSIS (Windows) + APK (Android)** — per `SECURITY-AUDIT.md` (DMG/AppImage/DEB are NOT built for v1.0.0)
+- [x] Bundle targets: **MSI, NSIS (Windows) + APK (Android)** — DMG/AppImage/DEB are NOT built for v1.0.0
 - [x] Windows NSIS `installMode: currentUser`, WiX `language: en-US`
 - [x] App icons: 32x32.png, 128x128.png, 128x128@2x.png, icon.icns, icon.ico
 - [ ] Manual verify: installers on Windows + Android

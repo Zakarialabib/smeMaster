@@ -1,6 +1,6 @@
 # SMEMaster Code Signing Guide
 
-> ⚠️ **SCOPE — FUTURE / POST-v1.0.0.** Per `../SECURITY-AUDIT.md`, v1.0.0 ships **Windows (MSI/NSIS) + Android (APK) only, unsigned, with no auto-updater** (no external certs/keys). The macOS notarization and Linux GPG procedures below are **reference for a later release**, not v1.0.0 tasks. The `packaging.yml` / `update-homebrew.yml` workflows referenced in older sections do **not** exist yet.
+> ⚠️ **SCOPE — FUTURE / POST-v1.0.0.** Per [PRODUCTION-READINESS.md](../PRODUCTION-READINESS.md), v1.0.0 ships **Windows (MSI/NSIS) + Android (APK) only, unsigned, with no auto-updater** (no external certs/keys). The macOS notarization and Linux GPG procedures below are **reference for a later release**, not v1.0.0 tasks. The `packaging.yml` / `update-homebrew.yml` workflows referenced in older sections do **not** exist yet.
 
 Every binary that ships to a user must be **signed**. An unsigned build is a
 trust failure, a SmartScreen warning, and on macOS a hard block. This document
@@ -38,13 +38,13 @@ for distribution outside the Mac App Store.
 
 Set the following in the repository / organization secrets:
 
-| Secret | Value |
-| --- | --- |
-| `APPLE_ID` | The Apple ID email used for notarization. |
-| `APPLE_PASSWORD` | The app-specific password for that Apple ID. |
-| `APPLE_TEAM_ID` | The 10-character Apple Team ID. |
-| `MACOS_CERT_P12` | Base64 of the `.p12` Developer ID Application certificate. |
-| `MACOS_CERT_PASSWORD` | Password for the `.p12`. |
+| Secret                    | Value                                                        |
+| ------------------------- | ------------------------------------------------------------ |
+| `APPLE_ID`                | The Apple ID email used for notarization.                    |
+| `APPLE_PASSWORD`          | The app-specific password for that Apple ID.                 |
+| `APPLE_TEAM_ID`           | The 10-character Apple Team ID.                              |
+| `MACOS_CERT_P12`          | Base64 of the `.p12` Developer ID Application certificate.   |
+| `MACOS_CERT_PASSWORD`     | Password for the `.p12`.                                     |
 | `MACOS_KEYCHAIN_PASSWORD` | A random password used for the temporary keychain during CI. |
 
 ### Signing and notarization workflow
@@ -122,10 +122,10 @@ but triggers a one-time SmartScreen warning that must be clicked through.
 
 ### CI secrets
 
-| Secret | Value |
-| --- | --- |
-| `WINDOWS_CERT_FILE` | Base64 of the `.pfx` certificate. |
-| `WINDOWS_CERT_PASSWORD` | Password for the `.pfx`. |
+| Secret                  | Value                                               |
+| ----------------------- | --------------------------------------------------- |
+| `WINDOWS_CERT_FILE`     | Base64 of the `.pfx` certificate.                   |
+| `WINDOWS_CERT_PASSWORD` | Password for the `.pfx`.                            |
 | `WINDOWS_TIMESTAMP_URL` | `http://timestamp.digicert.com` (or your CA's URL). |
 
 ### Signing and notarization workflow
@@ -203,11 +203,11 @@ signatures.
 
 ### CI secrets
 
-| Secret | Value |
-| --- | --- |
+| Secret            | Value                                                                        |
+| ----------------- | ---------------------------------------------------------------------------- |
 | `GPG_PRIVATE_KEY` | ASCII-armored private subkey (the **signing subkey only**, not the primary). |
-| `GPG_PASSPHRASE` | Passphrase for that subkey, if any. |
-| `GPG_KEY_ID` | Long key ID of the signing subkey, e.g. `0xDEADBEEF12345678`. |
+| `GPG_PASSPHRASE`  | Passphrase for that subkey, if any.                                          |
+| `GPG_KEY_ID`      | Long key ID of the signing subkey, e.g. `0xDEADBEEF12345678`.                |
 
 ### Signing workflow
 
@@ -302,10 +302,10 @@ existing installs.
 
 ## 5. Summary — what goes where
 
-| Secret | macOS | Windows | Linux |
-| --- | --- | --- | --- |
-| Signing material | `MACOS_CERT_P12`, `MACOS_CERT_PASSWORD` | `WINDOWS_CERT_FILE`, `WINDOWS_CERT_PASSWORD` | `GPG_PRIVATE_KEY` |
-| Identity | `APPLE_ID`, `APPLE_TEAM_ID` | n/a | `GPG_KEY_ID` |
-| Notarization | `APPLE_PASSWORD` | n/a | n/a |
-| Timestamp | implicit in `notarytool` | `WINDOWS_TIMESTAMP_URL` | n/a |
-| Auto-updater | `TAURI_SIGNING_PRIVATE_KEY` | `TAURI_SIGNING_PRIVATE_KEY` | `TAURI_SIGNING_PRIVATE_KEY` |
+| Secret           | macOS                                   | Windows                                      | Linux                       |
+| ---------------- | --------------------------------------- | -------------------------------------------- | --------------------------- |
+| Signing material | `MACOS_CERT_P12`, `MACOS_CERT_PASSWORD` | `WINDOWS_CERT_FILE`, `WINDOWS_CERT_PASSWORD` | `GPG_PRIVATE_KEY`           |
+| Identity         | `APPLE_ID`, `APPLE_TEAM_ID`             | n/a                                          | `GPG_KEY_ID`                |
+| Notarization     | `APPLE_PASSWORD`                        | n/a                                          | n/a                         |
+| Timestamp        | implicit in `notarytool`                | `WINDOWS_TIMESTAMP_URL`                      | n/a                         |
+| Auto-updater     | `TAURI_SIGNING_PRIVATE_KEY`             | `TAURI_SIGNING_PRIVATE_KEY`                  | `TAURI_SIGNING_PRIVATE_KEY` |

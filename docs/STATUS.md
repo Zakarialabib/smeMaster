@@ -19,7 +19,7 @@
 > ✅ **Pre-Release Stability Tests — Automated (2026-10-01):** Added 8 Rust integration tests in `src-tauri/tests/panic_and_wal.rs` covering panic injection (crash.log + crash_count.txt verification), WAL recovery (crash mid-transaction → data integrity verified), WAL checkpoint compaction, and watchdog restart logic (crash counter increment/restore). All tests pass `cargo test --test panic_and_wal`.
 >
 > ✅ **RTL Physical-Direction Violations — Fixed (2026-10-01):** Resolved all **141 violations** across **106 files**: `text-left`→`text-start` (55), `text-right`→`text-end` (7), `ml-*`→`ms-*` (64), `mr-*`→`me-*` (17), `margin-left/right`→`margin-inline-start` (2 in globals.css). Zero violations remain in `src/`.
->
+
 |> ✅ **i18n Sync Complete (2026-10-01):** Ran `npm run translate:sync` — added **52 missing English base keys**. All **144 `[TODO]`-tagged** auto-translated keys translated across `fr` (63), `ar` (57), `ja` (62), `it` (57), plus 7 cross-locale keys. Zero `[TODO]` tags remain in any locale.
 |>
 |> ✅ **Vite 8 Upgrade — Complete (2026-10-01):** Upgraded from v7.3.6 → v8.0.5. Fixed `@rolldown/binding-win32-x64-msvc` extraction failure by deleting `package-lock.json`, running `npm cache verify`, and reinstalling (the npm optional-dependency lockfile bug). Fixed `manualChunks` object→function format for Rolldown compatibility in `vite.config.ts`. Build: clean 5.16s. TSC: zero errors.
@@ -27,7 +27,7 @@
 |> ✅ **AI Capabilities Architecture (2026-10-01):** Complete capability interface system — 14 narrow composable interfaces (Text, Streaming, Embeddings with space pinning, Structured Output, Tool Calling, Reasoning, Vision, Context Caching, Batch Processing, STT, TTS, Realtime Voice, Model Discovery, Connection Test) with type guards. Task router with fallback chains, cost-aware scoring, and exponential backoff retry. 30+ model registry entries across 10 providers. 74 new TS tests added.
 |>
 |> ✅ **BytePlus Embedding Support (2026-10-01):** Added `EmbeddingCapable` to BytePlus provider — uses OpenAI-compatible `/embeddings` endpoint with Seed embedding models. Space pinning: `byteplus-<model>-<dims>`. Model registry updated with embedding dimensions for Doubao Pro/Lite 32K.
->
+
 > ✅ **Keyboard Navigation + Screen Reader (WCAG AA) — Done (2026-07-14):** Created reusable `<SkipLink>` component (replaced inline skip-links in App.tsx + MobileShell.tsx), `<FocusOrderManager>` landmark wrapper, added `aria-describedby` on PremiumSidebar, `role="status"`+`aria-live="polite"` on NotificationToast/EmptyState, `role="search"` on SearchBar. i18n keys (`skipToContent`, `nav.keyboardNavHint`) added to all 5 locales.
 >
 > ✅ **Campaign Scheduling — Wired End-to-End (2026-07-14):** Migration 029 adds `scheduled_at` + `recurring_cron` to campaigns + `campaign_schedules` table. Rust DAL/operations updated to accept scheduling params. Frontend `ScheduleStep` data now flows through `CampaignCreateInput` → Rust `create_campaign_with_recipients`. Scheduled campaigns show calendar icon + cancel button in CampaignList. Remaining: background worker for deferred send.
@@ -134,7 +134,7 @@ Rust-side groundwork for Gmail/Outlook-grade email UX (Phase B):
 5. **Entitlement / monetization engine:** `EntitlementEngine`, paywall gating, `owned_modules` are **not implemented** (deferred post-v1.0). Plans: `docs/06-ROADMAP/10-`→`13-monetization-*.md`.
 6. **CRDT multi-device sync hardening:** sync engine + offline queue exist; conflict-resolution UX/convergence still needs work per north-star goal.
 7. **Stale doc figures:** a few body tables still cite 56/58/22 migrations and 652/668/764 commands (historical snapshots, left intact). Trust the corrected header totals (831 / 34).
-8. **Stray/duplicate docs:** `docs/analysis.md` and `docs/monetization-style.md` are archived working docs (content consumed into STATUS/roadmap); `docs/plans/`, `docs/superpowers/specs/` overlap the roadmap and should be indexed or merged. (Already removed: `docs/draft.md`, `docs/analysis/`, `docs/specs/`, `docs/UI_TEST_IMPROVE_PROMPT.md`, `docs/plans/UI_REFACTOR_2026-07-12.md` — 2026-07-19.)
+8. **Stray/duplicate docs:** `docs/analysis.md`, `docs/monetization-style.md`, `docs/plans/`, and `docs/superpowers/` have been removed (content consumed into STATUS/roadmap). (Already removed earlier: `docs/draft.md`, `docs/analysis/`, `docs/specs/`, `docs/UI_TEST_IMPROVE_PROMPT.md`, `docs/plans/UI_REFACTOR_2026-07-12.md` — 2026-07-19.)
 
 ---
 
@@ -248,7 +248,7 @@ The `docs/specs/ai-rag-ui.md` spec (the only file in the `docs/specs/` staging f
 | **Evidence**             | 5 Rust commands, `src/shared/services/db/invoke/rag.ts`, `src/features/assistant/` (store + page + 4 components), `LocalRagSettings.tsx` in `AiTab`, `/ai-assistant` route + nav entry |
 | **Cross-refs fixed**     | Canonical doc is now `docs/04-FEATURES/ai-rag.md`; `00-INDEX.md`, `22-ai-integration.md`, `30-contact-intelligence.md` links updated                                                   |
 
-**Status verification of the `analysis.md` blueprint:** the Wondershare-style monetization/entitlement recommendations (§8) remain **deferred to post-v1.0** and are **not implemented in code** (zero matches in `src-tauri`/`src` for `EntitlementEngine`, `check_entitlement`, `paywall-trigger`, `owned_modules`, `entitlement_overrides`, `gating="execute"`, `usePaywallTrigger`). Deferred plans: `docs/06-ROADMAP/10-` to `13-monetization-*.md`.
+**Status verification of the monetization blueprint:** the Wondershare-style monetization/entitlement recommendations remain **deferred to post-v1.0** and are **not implemented in code** (zero matches in `src-tauri`/`src` for `EntitlementEngine`, `check_entitlement`, `paywall-trigger`, `owned_modules`, `entitlement_overrides`, `gating="execute"`, `usePaywallTrigger`). Deferred plans: `docs/06-ROADMAP/10-` to `13-monetization-*.md`.
 
 ### Invoicing / ERP — Frontend Build, Wiring Audit & Tests (2026-07-11, evening)
 
@@ -401,7 +401,7 @@ Both `PreCacheService` and `QueueService` now implement `Drop` to automatically 
 | Item                                  | Change                                                                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **README**                            | Rewritten with feature table, health metrics, production gates, quick-start                                          |
-| **SECURITY-AUDIT.md**                 | New security posture documentation                                                                                   |
+| **PRODUCTION-READINESS.md**           | New security posture documentation                                                                                   |
 | **docs/06-ROADMAP/09-master-plan.md** | Single canonical roadmap — all remaining work merged (incl. competitive analysis, spec-driven plan, template vision) |
 | **.gitignore**                        | Updated for IDE and analysis files                                                                                   |
 
@@ -455,7 +455,7 @@ Consolidated the sprawling roadmap document set into a single canonical source:
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Merged 9 roadmaps → 1**                         | `09-master-plan.md` is now the single canonical roadmap — deleted 07, 08, 10, 11, 12, 13, 14, 15 from `06-ROADMAP/`              |
 | **Moved feature specs → `04-FEATURES/`**          | `14-onboarding-reboot-plan.md` → `36-onboarding-reboot-plan.md`, `15-settings-redesign-spec.md` → `37-settings-redesign-spec.md` |
-| **Moved frontend specs → `03-FRONTEND/`**         | `08-ui-ux-roadmap.md`, `10-rtl-audit.md`, `12-ui-super-app-spec.md`                                                              |
+| **Moved frontend specs → `03-FRONTEND/`**         | `08-ui-ux-roadmap.md`, `10-rtl-audit.md`                                                                                         |
 | **Renamed `08-typed-ipc.md` → `11-typed-ipc.md`** | Updated all cross-references in STATUS.md, DESIGN_SYSTEM_GUIDE.md, and 5 frontend/backend docs                                   |
 
 ### Orphaned Components Repurposed — 4 Components Integrated

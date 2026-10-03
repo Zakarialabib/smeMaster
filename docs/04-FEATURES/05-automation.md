@@ -13,7 +13,7 @@ It covers:
 - automation settings and routes
 - preset-based automation starting points
 
-The separate `../27-workflow-engine.md` page exists only as a compatibility note for legacy workflow naming.
+The separate `../27-workflow-engine.md` page has been removed. Current rules live in this document.
 
 ## Current Ownership
 

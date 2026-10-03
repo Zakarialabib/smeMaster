@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-07-20
 > **Status:** Implementation complete — runtime stubs pending real candle/LanceDB wiring
-> **Cross-reference:** Simple-Signage `AI_SIDECAR.md` v2 (aligned), `08-sidecar-gap-analysis.md` (improvement candidates)
+> **Cross-reference:** Simple-Signage `AI_SIDECAR.md` v2 (aligned)
 
 ## Overview
 
@@ -317,7 +317,7 @@ The `externalBin` config in `tauri.conf.json` tells Tauri to bundle `binaries/ml
 ## Cross-Project Reference
 
 - **Simple-Signage AI Sidecar Spec:** `Simple-Signage/docs/specs/AI_SIDECAR.md` (draft v2, aligned with this implementation)
-- **Gap Analysis:** `docs/01-ARCHITECTURE/08-sidecar-gap-analysis.md` — improvement opportunities from Simple-Signage's forward-looking design
+- **Gap Analysis:** ~~`docs/01-ARCHITECTURE/08-sidecar-gap-analysis.md`~~ — **REMOVED** (all gaps closed 2026-07-20)
 
 ## Future Work
 

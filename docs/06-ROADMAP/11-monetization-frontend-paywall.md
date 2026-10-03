@@ -1,7 +1,7 @@
 # SMEMaster — Post-v1.0 Monetization: Frontend Paywall & Tier UX
 
 > **Status:** 💤 Deferred (post-v1.0)
-> **Source analysis:** [`docs/analysis.md`](../analysis.md#83-frontend-what-smemaster-could-benefit-from) §8.3, [`docs/monetization-style.md`](../monetization-style.md) §2
+> **Source analysis:** Original analysis docs removed; content consumed into STATUS.md and this roadmap.
 > **Last updated:** 2026-07-09
 > **Constraint:** Zero breaking changes to existing components, stores, or styles. All additions are new components/hooks/props.
 >
@@ -83,7 +83,7 @@ Extend `UpgradeBadge.tsx` with new variants (additive — existing `pro-only` an
 User clicks → invoke('feature') → Rust does work → returns result
 ```
 
-**Target flow** (from `monetization-style.md` §2.2 and `analysis.md` §8.3.3):
+**Target flow** (from original monetization analysis):
 
 ```
 User clicks Pro feature
@@ -200,6 +200,6 @@ Add a non-breaking 5th step to `OnboardingScreen.tsx`:
 - **Backend entitlement engine:** [`10-monetization-entitlement-engine.md`](10-monetization-entitlement-engine.md)
 - **Asset delivery UI (download progress, asset browser):** [`12-monetization-asset-delivery.md`](12-monetization-asset-delivery.md)
 - **Mobile-specific rendering:** [`13-monetization-mobile-strategy.md`](13-monetization-mobile-strategy.md)
-- **Source analysis:** [`../analysis.md`](../analysis.md#83-frontend-what-smemaster-could-benefit-from) §8.3, [`../monetization-style.md`](../monetization-style.md) §2
-- **Existing UpgradeBadge:** [`../03-FRONTEND/12-ui-super-app-spec.md`](../03-FRONTEND/12-ui-super-app-spec.md)
+- **Source analysis:** Original analysis docs removed; content consumed into STATUS.md and this roadmap.
+- **Existing UpgradeBadge:** [`../03-FRONTEND/14-navigation-ia-spec.md`](../03-FRONTEND/14-navigation-ia-spec.md)
 - **Existing Modal a11y:** [`../05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md`](../05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md)

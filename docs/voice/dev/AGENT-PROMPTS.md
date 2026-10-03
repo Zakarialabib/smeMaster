@@ -165,14 +165,16 @@ A. Broken links (mechanical — do this first, separately)
    1. Repair these pre-existing broken links by finding the real target. They are
       NOT voice-related: fix the link, do not restructure the other docs.
         docs/01-ARCHITECTURE/03-data-model.md   -> 04-FEATURES/Invoicing-ERP/01-company-tenant.md
-        docs/03-FRONTEND/12-ui-super-app-spec.md-> ../../plans/DESIGN_UI_UX_SPEC.md
+        docs/03-FRONTEND/14-navigation-ia-spec.md -> ../../05-DEVELOPMENT/05-reuse-patterns.md
         docs/03-FRONTEND/15-shared-components.md-> ../../05-DEVELOPMENT/05-reuse-patterns.md
         docs/05-DEVELOPMENT/05-reuse-patterns.md-> ../../03-FRONTEND/15-shared-components.md
-      If a target genuinely does not exist, mark the reference
-      "MISSING — <reason>" the way 00-INDEX.md already marks
-      36-onboarding-reboot-plan.md. Do not silently delete a row.
-   2. Leave docs/00-INDEX.md -> 04-FEATURES/36-onboarding-reboot-plan.md alone —
-      it is an intentional "spec not written yet" placeholder.
+       If a target genuinely does not exist, mark the reference
+       "MISSING — <reason>" the way 00-INDEX.md already marks
+       36-onboarding-reboot-plan.md. Do not silently delete a row.
+    2. Leave docs/00-INDEX.md -> 04-FEATURES/36-onboarding-reboot-plan.md alone —
+       it is an intentional "spec not written yet" placeholder. (Note: 12-ui-super-app-spec.md
+       and plans/DESIGN_UI_UX_SPEC.md have been removed; 14-navigation-ia-spec.md is the
+       canonical replacement.)
 
 B. Wireframes — raise the uncovered surfaces to full depth
    WIREFRAMES §0 lists 11 surfaces but 8–11 have no layout, no region→action and

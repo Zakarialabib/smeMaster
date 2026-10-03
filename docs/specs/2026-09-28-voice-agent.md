@@ -28,40 +28,40 @@ missed call to the owner on WhatsApp. It does **not** write to CRM/calendar, doe
 ## 2. The one hard constraint
 
 **WhatsApp live voice calls are not buildable.** No official API exposes them, and
-no unofficial library does either. WhatsApp voice *notes* can be transcribed; live
+no unofficial library does either. WhatsApp voice _notes_ can be transcribed; live
 calls cannot be answered by an agent.
 
-*Corroborated from the opposite direction (2026-09-28):* the one open-source
+_Corroborated from the opposite direction (2026-09-28):_ the one open-source
 client that places in-app WhatsApp calls — `karem505/whatRust`, MIT — does so by
 loading `web.whatsapp.com` in an OS webview, and its own limitations note that
-calling only works *"where the system webview ships WebRTC"*. That is a human
+calling only works _"where the system webview ships WebRTC"_. That is a human
 clicking "call" in a GUI: not an API, not server-side, not automatable. It
 confirms the constraint rather than qualifying it. See
 [`docs/06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md`](../06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md).
 
 So the voice channel is a **dedicated PSTN/SIP number**, not WhatsApp. This is
 stated in the client questionnaire and must be confirmed in writing before any
-engineering begins. If the client's actual expectation is AI voice *inside*
+engineering begins. If the client's actual expectation is AI voice _inside_
 WhatsApp, that conversation is the next email, not the next line of code.
 
 ## 3. Ground truth — what SMEMaster already has
 
 Verified against the working tree 2026-09-28 (not from docs alone).
 
-| Existing asset | Evidence | Impact on this plan |
-|---|---|---|
-| **ML sidecar — real, not a stub** | `src-tauri/crates/ml-sidecar/src/main.rs` — candle + lancedb + hf-hub, JSON-RPC 2.0 over stdin/stdout | **A sidecar pattern already exists and is proven in this repo.** The agent sidecar follows its shape. |
-| Sidecar architecture doc | `docs/01-ARCHITECTURE/07-sidecar-architecture.md` (+ `08-sidecar-gap-analysis.md`) | Reuse the architecture, not a new invention. |
-| **AI/RAG feature** | `docs/04-FEATURES/ai-rag.md` — candle embeddings, LanceDB, assistant chat UI in `src/features/assistant/` | **Do not build a new RAG from scratch.** But see the embedding constraint below. |
-| **Embedder is English-only** | `BAAI/bge-small-en-v1.5` hard-coded in 6 files (see `RAG-FORK.md`) | **Blocking for FR.** A French query against `bge-small-en` retrieves nothing. Requires a multilingual embedder. |
-| **Provider abstraction already exists** | `src/shared/services/ai/providerFactory.ts`, `providerManager.ts`; providers include Claude, OpenAI, Gemini, Ollama, Copilot, custom OpenAI-compatible | **The LLM provider seam already exists.** Map to it; do not build a parallel one. |
-| **Tool registry** | Subsystem Orchestration — lifecycle, state machine, tool registry, gating (master plan Phase 0) | Map agent tools onto the existing registry. |
-| **Invoicing** | `docs/04-FEATURES/36-invoicing.md` (Morocco DGI-compliant) | **Reuse for billing.** Do not build a second billing system. |
-| **Deliverability monitoring** | `21-deliverability.md`; `src-tauri/src/deliverability/` — blacklist, reputation, alerts, bulk health | Reuse for **number** reputation alerting on the voice side. |
-| **i18n: en, fr, ar, ja, it** (ar RTL) | `32-i18n-localization.md` | **FR UI already ships.** Gate 6 is about *voice* config, not strings. Note: UI locale ≠ embedding locale ≠ voice locale. |
-| **Orchestrator** | `src-tauri/src/orchestrator/` — `init.rs`, `services.rs`, `subsystem_lifecycle.rs` | Match this shape for the agent's lifecycle. |
-| Test harnesses | 2,470+ TS / 900+ Rust tests; vitest + playwright; `cmd /c "node node_modules/vitest/vitest.mjs ..."` | Gate verification uses existing harnesses. |
-| Docs conventions | `docs/00-INDEX.md` index + `docs/06-ROADMAP/09-master-plan.md` canonical roadmap (phases, legend) | This spec and companions are registered in both. |
+| Existing asset                          | Evidence                                                                                                                                               | Impact on this plan                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **ML sidecar — real, not a stub**       | `src-tauri/crates/ml-sidecar/src/main.rs` — candle + lancedb + hf-hub, JSON-RPC 2.0 over stdin/stdout                                                  | **A sidecar pattern already exists and is proven in this repo.** The agent sidecar follows its shape.                    |
+| Sidecar architecture doc                | `docs/01-ARCHITECTURE/07-sidecar-architecture.md`                                                                                                      | Reuse the architecture, not a new invention.                                                                             |
+| **AI/RAG feature**                      | `docs/04-FEATURES/ai-rag.md` — candle embeddings, LanceDB, assistant chat UI in `src/features/assistant/`                                              | **Do not build a new RAG from scratch.** But see the embedding constraint below.                                         |
+| **Embedder is English-only**            | `BAAI/bge-small-en-v1.5` hard-coded in 6 files (see `RAG-FORK.md`)                                                                                     | **Blocking for FR.** A French query against `bge-small-en` retrieves nothing. Requires a multilingual embedder.          |
+| **Provider abstraction already exists** | `src/shared/services/ai/providerFactory.ts`, `providerManager.ts`; providers include Claude, OpenAI, Gemini, Ollama, Copilot, custom OpenAI-compatible | **The LLM provider seam already exists.** Map to it; do not build a parallel one.                                        |
+| **Tool registry**                       | Subsystem Orchestration — lifecycle, state machine, tool registry, gating (master plan Phase 0)                                                        | Map agent tools onto the existing registry.                                                                              |
+| **Invoicing**                           | `docs/04-FEATURES/36-invoicing.md` (Morocco DGI-compliant)                                                                                             | **Reuse for billing.** Do not build a second billing system.                                                             |
+| **Deliverability monitoring**           | `21-deliverability.md`; `src-tauri/src/deliverability/` — blacklist, reputation, alerts, bulk health                                                   | Reuse for **number** reputation alerting on the voice side.                                                              |
+| **i18n: en, fr, ar, ja, it** (ar RTL)   | `32-i18n-localization.md`                                                                                                                              | **FR UI already ships.** Gate 6 is about _voice_ config, not strings. Note: UI locale ≠ embedding locale ≠ voice locale. |
+| **Orchestrator**                        | `src-tauri/src/orchestrator/` — `init.rs`, `services.rs`, `subsystem_lifecycle.rs`                                                                     | Match this shape for the agent's lifecycle.                                                                              |
+| Test harnesses                          | 2,470+ TS / 900+ Rust tests; vitest + playwright; `cmd /c "node node_modules/vitest/vitest.mjs ..."`                                                   | Gate verification uses existing harnesses.                                                                               |
+| Docs conventions                        | `docs/00-INDEX.md` index + `docs/06-ROADMAP/09-master-plan.md` canonical roadmap (phases, legend)                                                      | This spec and companions are registered in both.                                                                         |
 
 **Net effect:** v1 of a greenfield plan would have been ~30–35 days. Reuse-before-build
 brings the new work down to roughly **the voice path**, with metering and billing
@@ -121,18 +121,18 @@ Four seams, implemented before anything else (the 4th, `EmbeddingProvider`, was 
 2026-09-28 — see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D3).
 Every one of them is a per-tenant config change, never a refactor:
 
-| Seam | v1 default | Behind the seam | Why |
-|---|---|---|---|
-| `LLMProvider` | `google/gemini-3.x-flash` via OpenRouter | Groq Llama (lower TTFT), `gpt-4o-mini` fallback | Existing `providerFactory` is the model for this. |
-| `TTSProvider` | ElevenLabs (FR + EN) | Kokoro-82M (budget), Azure Neural (margin rescue) | **Edge TTS is excluded from every client tier** — unofficial endpoint, gray ToS. |
-| `STTProvider` | Deepgram Nova streaming (live) / ElevenLabs Scribe (batch, voicemail) | local faster-whisper (budget) | Scribe Realtime FR availability **unverified** — check before relying on it. |
-| `EmbeddingProvider` | self-hosted `bge-m3` (MIT) | `arctic-embed-l-v2.0` (Apache-2.0, same arch → config swap) | **4th seam, added 2026-09-28.** The embedder is exactly as swappable as the other three; leaving it out made the trait rule inconsistent. Config = model id, dims, prefix/instruction, normalize, distance. See [`RAG-FORK.md`](../voice/dev/RAG-FORK.md). |
+| Seam                | v1 default                                                            | Behind the seam                                             | Why                                                                                                                                                                                                                                                        |
+| ------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LLMProvider`       | `google/gemini-3.x-flash` via OpenRouter                              | Groq Llama (lower TTFT), `gpt-4o-mini` fallback             | Existing `providerFactory` is the model for this.                                                                                                                                                                                                          |
+| `TTSProvider`       | ElevenLabs (FR + EN)                                                  | Kokoro-82M (budget), Azure Neural (margin rescue)           | **Edge TTS is excluded from every client tier** — unofficial endpoint, gray ToS.                                                                                                                                                                           |
+| `STTProvider`       | Deepgram Nova streaming (live) / ElevenLabs Scribe (batch, voicemail) | local faster-whisper (budget)                               | Scribe Realtime FR availability **unverified** — check before relying on it.                                                                                                                                                                               |
+| `EmbeddingProvider` | self-hosted `bge-m3` (MIT)                                            | `arctic-embed-l-v2.0` (Apache-2.0, same arch → config swap) | **4th seam, added 2026-09-28.** The embedder is exactly as swappable as the other three; leaving it out made the trait rule inconsistent. Config = model id, dims, prefix/instruction, normalize, distance. See [`RAG-FORK.md`](../voice/dev/RAG-FORK.md). |
 
 `ChannelAdapter`: `inbound_events()` async iterator + `send_text()`.
 Telephony and WhatsApp implement it; the agent core never branches on channel.
 
 **Why OpenRouter is the brain and not the voice:** verified 2026-09-28 against
-`https://openrouter.ai/api/v1/models` — 458 models, ~41 accept audio *input*,
+`https://openrouter.ai/api/v1/models` — 458 models, ~41 accept audio _input_,
 only **4 produce audio output**. Latency is dominated by STT/TTS streaming and turn
 detection, not by which LLM answers. (Re-verify at Gate 1; these numbers drift.)
 
@@ -146,7 +146,8 @@ resolves (`vocodedev/vocode-core`, MIT, 3.8k★) but its last push is **2024-11-
 
 Serial where gates touch shared files. G0 is the only gate that can start now.
 
-### GATE 0 — Spec + client packet (1–2 days, no code) ✅ *this pass*
+### GATE 0 — Spec + client packet (1–2 days, no code) ✅ _this pass_
+
 **Owns:** `docs/specs/2026-09-28-voice-agent.md`, `docs/voice/**`
 **Delivered:** this spec; `COST-MODEL.md`; `CALL-FLOW.md`; `RAG-FORK.md`;
 `PILOT-CRITERIA.md`; `VENDOR-QUOTE-REQUEST.md`; `CLIENT-QUESTIONNAIRE.md`.
@@ -157,6 +158,7 @@ Index + roadmap registration is **done** (`docs/00-INDEX.md`, master plan `10.1`
 `Decided by` field — that is the correct state today.
 
 ### GATE 1 — `agent-core` skeleton + four provider traits (3–4 days)
+
 **Owns:** `services/agent-core/**` only. **Fence:** nothing under `src/` or `src-tauri/`.
 `pyproject.toml`: `livekit-agents`, `fastapi`, `uvicorn`, `httpx`, `asyncpg`,
 `pytest`, `pytest-asyncio`. `providers/base.py` with the four ABCs (async
@@ -173,6 +175,7 @@ line, not the exit code.** Plus a test proving a second implementation swaps in 
 config alone.
 
 ### GATE 2 — WhatsApp channel, sandbox via Baileys (3–4 days)
+
 **Owns:** `channels/whatsapp.py`, `channels/bsp.py` (stub), `tests/`.
 Baileys (`WhiskeySockets/Baileys`, MIT, 11.2k★, active) as the **dev sandbox**;
 `bsp.py` stub with the identical signature raising `NotConfigured`. This is the
@@ -190,6 +193,7 @@ in every format. Then a live sandbox round-trip visible in the transcript.
 Baileys connections.
 
 ### GATE 3 — Console + Rust IPC bridge (4–5 days)
+
 **Owns:** `src/features/agent/` (mirroring the existing `src/features/assistant/`
 convention), `src-tauri/src/commands/agent.rs`, `Cargo.toml`, router, `lib.rs`.
 `models.rs` serde ↔ agent-core pydantic; `client.rs` (reqwest, one base URL from
@@ -204,6 +208,7 @@ existing Zustand stores.
 Run `git status --short` first — do not touch another agent's uncommitted files.
 
 ### GATE 4 — Telephony, inbound FR number (5–7 days) ← longest gate
+
 **Owns:** `channels/telephony.py`, `orchestrator.py`, `CALL-FLOW.md`.
 Telnyx media-stream inbound (μ-law 8k ↔ 16k resample), LiveKit turn detection wired
 into the orchestrator, warm transfer ladder, voicemail detection, and the
@@ -218,6 +223,7 @@ cause of a slipped date.
 `answer_latency` p95 < 2s, `turn_gap` p50 < 1.0s.
 
 ### GATE 5 — Metering + provider tiers (1–2 days)
+
 **Owns:** `metering.py`, one SQLite migration, cost view.
 Per-minute and per-message events tagged by tenant + tier, following the existing
 migration convention. **Billing reuses the existing invoicing module** — no second
@@ -228,17 +234,19 @@ monitoring.**
 provider costs, and the console total matches the DB row exactly.
 
 ### GATE 6 — Bilingual voice enforcement (1–2 days)
+
 **Owns:** `services/agent-core/agent_core/i18n/`, `docs/voice/LANGUAGE-MATRIX.md`.
-FR **UI** already ships — this gate is *voice* config only: per-locale voice +
+FR **UI** already ships — this gate is _voice_ config only: per-locale voice +
 prompt, language detect on the first utterance pinned for the session, mid-call
 FR↔EN switch, and cross-lingual retrieval (a French query retrieving English
 documents) via the multilingual embedder chosen in `RAG-FORK.md`.
 **Explicitly out:** Darija/Arabic. See `CALL-FLOW.md` §7 for why the repo's `ar`
-UI locale does not imply Arabic *voice*.
+UI locale does not imply Arabic _voice_.
 **Verify:** a recorded FR call, an EN call, and a mid-call FR→EN switch, transcripts
 showing correct pinning.
 
 ### GATE 7 — Production BSP swap + ops (4–5 days, partly waiting on Meta)
+
 **Owns:** `channels/bsp.py` (replaces the stub), runbooks.
 Real BSP behind the **identical** `ChannelAdapter` signature. 24-hour-window and
 template enforcement. Runbooks: provider outage, number reputation, agent
@@ -249,15 +257,15 @@ a sandbox traffic run shows zero Baileys connections under production config.
 
 ## 6. Blocking decisions — nothing past Gate 0 starts without these
 
-| # | Decision | Owner | Status |
-|---|---|---|---|
-| 1 | Vertical + the one killer outcome | client | ☐ |
-| 2 | Cost model signed (volume table, not a number) | client | ☐ |
-| 3 | Two-channel split confirmed in writing | client | ☐ |
-| 4 | Recording consent model (recommendation: no audio, announce-first) | client | ☐ |
-| 5 | RAG fork (recommendation: server-side pgvector + `bge-m3`) | us | ☐ |
-| 6 | BSP + carrier quotes back | vendors | ☐ |
-| 7 | Regulatory dates verified with counsel (AI Act Art. 50; French 2025 law) | counsel | ☐ |
+| #   | Decision                                                                 | Owner   | Status |
+| --- | ------------------------------------------------------------------------ | ------- | ------ |
+| 1   | Vertical + the one killer outcome                                        | client  | ☐      |
+| 2   | Cost model signed (volume table, not a number)                           | client  | ☐      |
+| 3   | Two-channel split confirmed in writing                                   | client  | ☐      |
+| 4   | Recording consent model (recommendation: no audio, announce-first)       | client  | ☐      |
+| 5   | RAG fork (recommendation: server-side pgvector + `bge-m3`)               | us      | ☐      |
+| 6   | BSP + carrier quotes back                                                | vendors | ☐      |
+| 7   | Regulatory dates verified with counsel (AI Act Art. 50; French 2025 law) | counsel | ☐      |
 
 Items 5–7 are ours or the vendors'; **1–4 are the client's and gate everything.**
 
@@ -270,7 +278,7 @@ voice · supervisor barge-in on a live call.
 
 ## 8. Honest risks
 
-- **The local embedder is English-only *and its dimension is not fixed*** —
+- **The local embedder is English-only _and its dimension is not fixed_** —
   `bge-small-en-v1.5` (6 call sites) is the `rust_bge` source; the assistant can also
   run on the active provider's embedding endpoint, which returns whatever the operator
   pointed it at. Any French retrieval silently fails under `rust_bge`, and any code

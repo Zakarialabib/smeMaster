@@ -214,7 +214,7 @@ Gate items from `docs/PRODUCTION-READINESS.md` (Gates 1, 3, 9 are the only non-P
 | 7.2 | Campaign scheduling (fully wired)           | ✅     | migration `029_campaign_scheduling.sql` + ScheduleStep → `scheduled_at`                                                                                                                                                                                         |
 | 7.3 | Calendar provider expansion (beyond Google) | 🔶     | Production `CalDavDriver` registered (`calendar/drivers/mod.rs:40` — REPORT/PUT/DELETE/PROPFIND) + sync persistence fixed 2026-09-30; **still missing: ETag incremental sync, PROPFIND discovery, background-loop auto-start** (`02-BACKEND/12-diagnostics.md`) |
 | 7.4 | Template engine unification (3 → 1)         | 🔲     | `campaignPresets.ts` + `warmupPresets.ts` still TS constants; no SQLite `TemplateCatalog`                                                                                                                                                                       |
-| 7.5 | Mail composer feature gaps (25)             | 🔲     | tracked in `docs/superpowers/composer-architecture.md`                                                                                                                                                                                                          |
+| 7.5 | Mail composer feature gaps (25)             | 🔲     | tracked in `04-FEATURES/34-mail-composer.md`                                                                                                                                                                                                                    |
 | 7.6 | Campaign analytics end-to-end               | 🔶     | `CampaignAnalytics.tsx` + `analyticsService.ts` + tests exist; **live-data pipeline end-to-end ⚠️ UNVERIFIED**                                                                                                                                                  |
 | 7.7 | Mobile push notification completeness       | 🔲     | `tauri-plugin-notification = 2.3.3` present; product coverage partial                                                                                                                                                                                           |
 
@@ -371,7 +371,7 @@ Preserved for context; the tables above are authoritative.
 - **Template engine** (was `07-template-engine.md`): 3 systems → one `TemplateCatalog`, SQLite + `template_type`. Still Phase 7.4, not started.
 - **Competitive analysis** (was `11-top-apps-comparison.md`): sub-100ms interactions, command discoverability, offline queue UX, keyboard-first — Phases 1/2 cover most.
 - **Spec-driven dev** (was `12-spec-driven-dev-plan.md`): Spec → Files → Workflow → Acceptance per phase.
-- **Correction (2026-09-30):** the old "37-settings-redesign-spec.md MISSING" note is stale — the spec exists (`docs/04-FEATURES/37-settings-redesign-spec.md`); `36-onboarding-reboot-plan.md` is still ⚠️ MISSING.
+- **Correction (2026-09-30):** the old "37-settings-redesign-spec.md MISSING" note is stale — the spec exists (`docs/04-FEATURES/37-settings-redesign-spec.md`); `36-onboarding-reboot-plan.md` is still ⚠️ MISSING (spec not yet written).
 
 ---
 
@@ -379,9 +379,9 @@ Preserved for context; the tables above are authoritative.
 
 - [Production Readiness](../PRODUCTION-READINESS.md) — 10 gates with evidence (1, 3, 9 in progress)
 - [STATUS.md](../STATUS.md) — project status ⚠️ its metrics table is stale; trust `00-INDEX.md`
-- [UI/UX Super-App Spec](../03-FRONTEND/12-ui-super-app-spec.md) — desktop & mobile UI/UX gaps
+- [UI/UX Super-App Spec](../03-FRONTEND/14-navigation-ia-spec.md) — desktop & mobile UI/UX gaps
 - [RTL Audit](../03-FRONTEND/10-rtl-audit.md) — remediation plan for the 421 violations
-- [Composer Architecture](../superpowers/composer-architecture.md) — composer gaps (Phase 7.5)
+- [Composer Architecture](../04-FEATURES/34-mail-composer.md) — composer gaps (Phase 7.5)
 - [Voice README](../voice/README.md) — voice engagement entry point
 
 ## Source reconciliation (2026-09-30)
