@@ -93,17 +93,17 @@ What the app does, grouped by functional area.
 
 ### Core Workflows
 
-| Doc                                                                   | Covers                                                |
-| --------------------------------------------------------------------- | ----------------------------------------------------- |
-| [Email](04-FEATURES/01-email-management.md) ⚠️ **MISSING**            | Inbox, threads, sync, triage — not yet written        |
-| [Accounts](04-FEATURES/04-accounts.md) ⚠️ **MISSING**                 | Account setup, auth, providers — not yet written      |
-| [CRM](04-FEATURES/03-crm-contacts.md) ⚠️ **MISSING**                  | Contacts, groups, segments — not yet written          |
-| [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)                   | Campaign builder, block editor, mail merge            |
-| [Calendar](04-FEATURES/07-calendar.md) ⚠️ **MISSING**                 | Calendars, events, views — not yet written            |
-| [Tasks](04-FEATURES/08-tasks.md) ⚠️ **MISSING**                       | Priorities, recurrence, linked work — not yet written |
-| [Automation](04-FEATURES/Core/05-automation.md)                       | Trigger/action rules                                  |
-| [Account Cleaning](04-FEATURES/06-account-cleaning.md) ⚠️ **MISSING** | Retention and cleanup workflows — not yet written     |
-| [Dashboard](04-FEATURES/09-dashboard.md) ⚠️ **MISSING**               | Cross-feature overview widgets — not yet written      |
+| Doc                                                    | Covers                                        |
+| ------------------------------------------------------ | --------------------------------------------- |
+| [Email](04-FEATURES/01-email-management.md)            | Inbox, threads, sync, triage, compose, search |
+| [Accounts](04-FEATURES/04-accounts.md)                 | Account setup, auth, providers, switching     |
+| [CRM](04-FEATURES/03-crm-contacts.md)                  | Contacts, companies, deals, Customer 360      |
+| [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)    | Campaign builder, block editor, mail merge    |
+| [Calendar](04-FEATURES/07-calendar.md)                 | Calendars, events, views, CalDAV              |
+| [Tasks](04-FEATURES/08-tasks.md)                       | Priorities, recurrence, kanban, AI extraction |
+| [Automation](04-FEATURES/Core/05-automation.md)        | Trigger/action rules                          |
+| [Account Cleaning](04-FEATURES/06-account-cleaning.md) | Retention policies and cleanup rules          |
+| [Dashboard](04-FEATURES/09-dashboard.md)               | Cross-feature overview, 10 widgets            |
 
 ### Messaging Layer
 
@@ -212,6 +212,7 @@ runs on a dedicated number, not in WhatsApp.
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ✅ written 2026-07-15 | Settings IA regroup (9 groups), Appearance promotion, navConfig drift fix, global/per-account matrix |
 | [Navigation & IA Spec](03-FRONTEND/14-navigation-ia-spec.md) ✅ written 2026-07-15  | Email-first rail order, orphaned Tasks/Calendar/Campaigns fix, Customer-360 cross-wiring             |
+| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) ✅ written 2026-10-03 | Full-screen 5-step wizard (Welcome → Account → Import → PGP → Tour)                                  |
 
 ## Development
 

@@ -1,85 +1,64 @@
 # Tasks
 
-> Task management, task views, and task-linked workflow support.
+> **Status:** Production — priorities, recurrence, linked work, and four views.
+> **Stack:** React 19 + Zustand + Rust + SQLite
 
-## Scope
+## Overview
 
-The tasks feature covers:
+Tasks handle personal and linked work: priorities, recurrence, kanban, calendar overlay, and AI extraction from email. The workflow engine drives state transitions.
 
-- task CRUD
-- list, board, agenda, and related task views
-- recurrence and date-oriented workflows
-- task detail and linked-entity context
-- task integrations with mail and automation
+## Architecture
 
-This page should describe the active task product surface without over-claiming always-on AI behavior that is not currently wired.
+```
+TasksPage.tsx → taskStore.ts → taskManager.ts / taskWorkflowEngine.ts
+  → invokeCommand("db_*") → Rust (tasks domain)
+  → SQLite (tasks table)
+```
 
-## Current Ownership
+View prefs (list/kanban/calendar/agenda) persist per user via `useTaskViewPrefs`.
 
-Primary frontend ownership lives in:
+## Core Capabilities
 
-- `src/features/tasks/`
+| Area                | What it does                                        | Key files                                                                     |
+| ------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Task CRUD**       | Create modal, detail panel, quick-add, mobile sheet | `components/TaskCreateModal.tsx`, `TaskDetailPanel.tsx`, `TaskQuickAdd.tsx`   |
+| **List view**       | Virtualized, density-aware, smart filters           | `components/TaskListView.tsx`, `SmartFilterBar.tsx`                           |
+| **Kanban view**     | Columns + cards + drag-drop                         | `components/TaskKanbanView.tsx`, `TaskKanbanColumn.tsx`, `TaskKanbanCard.tsx` |
+| **Calendar view**   | Tasks on calendar grid                              | `components/TaskCalendarView.tsx`, `TaskCalendarDay.tsx`                      |
+| **Agenda view**     | Day agenda drawer                                   | `components/TaskAgendaView.tsx`, `DayAgendaDrawer.tsx`                        |
+| **Sidebar**         | Filters + navigation                                | `components/TaskSidebar.tsx`                                                  |
+| **Workflow engine** | State machine for task lifecycle                    | `services/taskWorkflowEngine.ts`, `hooks/useTaskWorkflowEngine.ts`            |
+| **AI extraction**   | Extract tasks from email body                       | `components/AiTaskExtractDialog.tsx`, `AiTaskSuggestionBanner.tsx`            |
+| **Schedule page**   | Combined plan view                                  | `pages/SchedulePage.tsx`                                                      |
 
-Representative files:
+## Views
 
-- `src/features/tasks/components/TasksPage.tsx`
-- `src/features/tasks/stores/taskStore.ts`
-- `src/features/tasks/hooks/useTaskViewPrefs.ts`
-- `src/features/tasks/components/AiTaskExtractDialog.tsx`
+| View         | Component          | Best for             |
+| ------------ | ------------------ | -------------------- |
+| **List**     | `TaskListView`     | Triage, bulk actions |
+| **Kanban**   | `TaskKanbanView`   | Pipeline, drag-drop  |
+| **Calendar** | `TaskCalendarView` | Due-date planning    |
+| **Agenda**   | `TaskAgendaView`   | Day-at-a-glance      |
 
-Backend ownership includes:
+## AI Integration
 
-- `src-tauri/src/commands/tasks.rs`
-- `src-tauri/src/db/tasks/`
-
-## What It Does
-
-### Task management
-
-The tasks feature gives users a dedicated task surface with multiple ways to view and manage work items.
-
-### View modes and preferences
-
-Task display preferences are not owned solely by the main task store; view-related state can live in dedicated hooks or preference layers. Keep this page aligned with the actual ownership split between task state and task-view preferences.
-
-### Linked work context
-
-Tasks can surface linked business context, making the feature useful as part of a larger workflow rather than a standalone todo list.
-
-### AI-assisted task extraction
-
-AI support in the current product should be described carefully:
-
-- task-related AI assistance exists
-- extraction/review flows are present
-- do not document it as a fully autonomous always-on task system unless the code proves that behavior
-
-## Boundaries
-
-Keep these responsibilities separate:
-
-- automation rules belong to `05-automation.md`
-- contact intelligence belongs to `../30-contact-intelligence.md`
-- general AI platform behavior belongs to `../22-ai-integration.md`
+- **AI task extraction:** `AiTaskExtractDialog` parses email bodies into task candidates
+- **AI suggestions:** `AiTaskSuggestionBanner` surfaces follow-ups
+- Both route through the shared AI provider layer (`22-ai-integration.md`)
 
 ## Key Files
 
-| Area             | Files                                                   |
-| ---------------- | ------------------------------------------------------- |
-| Main page        | `src/features/tasks/components/TasksPage.tsx`           |
-| Store            | `src/features/tasks/stores/taskStore.ts`                |
-| View preferences | `src/features/tasks/hooks/useTaskViewPrefs.ts`          |
-| AI extraction UI | `src/features/tasks/components/AiTaskExtractDialog.tsx` |
-| Feature root     | `src/features/tasks/index.ts`                           |
-| Route            | `src/router/routeTree.tsx`                              |
-| Backend commands | `src-tauri/src/commands/tasks.rs`                       |
-| Backend DB       | `src-tauri/src/db/tasks/`                               |
+| Layer      | Path                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------- |
+| Store      | `src/features/tasks/stores/taskStore.ts`                                              |
+| Services   | `src/features/tasks/services/` (manager, workflowEngine, errorHandler)                |
+| Hooks      | `src/features/tasks/hooks/` (`useTasks`, `useTaskViewPrefs`, `useTaskWorkflowEngine`) |
+| DB wrapper | `src/features/tasks/db/tasks.ts`                                                      |
+| Components | `src/features/tasks/components/` (views, modals, filters)                             |
 
-## Update Rules
+## Related Docs
 
-Update this page when:
-
-- task-view ownership changes
-- AI task behavior becomes substantially more autonomous
-- task-linked entity support changes materially
-- the tasks feature gains major new workflow responsibilities
+- [Calendar](07-calendar.md) — tasks on calendar
+- [Email Management](01-email-management.md) — extraction source
+- [AI Integration](22-ai-integration.md) — provider layer
+- [Keyboard Shortcuts](31-keyboard-shortcuts.md) — task shortcuts

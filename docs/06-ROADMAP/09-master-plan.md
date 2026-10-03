@@ -118,18 +118,18 @@ Everything in the app compiles, tests pass, and core features are wired end-to-e
 
 Gate items from `docs/PRODUCTION-READINESS.md` (Gates 1, 3, 9 are the only non-PASS).
 
-| #    | Task                                     | Effort | Status | Evidence / notes                                                                                                                      |
-| ---- | ---------------------------------------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1  | CI pipeline                              | 30min  | ✅     | `ci.yml` + `release.yml` + `release-please.yml` + `daily-pr.yml` + `build.yml` (⚠️ earlier text cited a non-existent `packaging.yml`) |
-| 1.2  | Keyboard shortcuts system                | 2h     | ✅     | `useKeyboardShortcuts.ts` + `shortcutStore.ts` + `ShortcutsTab.tsx` — all found                                                       |
-| 1.3  | Panic injection manual test              | 30min  | 📋     | `docs/05-DEVELOPMENT/03-manual-tests.md` — run before tagging                                                                         |
-| 1.4  | WAL recovery manual test                 | 30min  | 📋     | same                                                                                                                                  |
-| 1.5  | WAL deletion doc                         | 15min  | ✅     | `docs/05-DEVELOPMENT/04-wal-deletion.md`                                                                                              |
-| 1.6  | Watchdog restart manual tests            | 30min  | 📋     | same as 1.3                                                                                                                           |
-| 1.7  | `bun run tauri dev` runtime verification | 5min   | 📋     | same                                                                                                                                  |
-| 1.8  | React.memo / lazy loading                | 2h     | ✅     | 35 `memo` usages across `src` + lazy routes                                                                                           |
-| 1.9  | Certificates + public key                | varies | 🔲     | Gate 3 — Windows EV cert / macOS notarization                                                                                         |
-| 1.10 | Dogfooding + beta testing                | 1–2w   | 🔲     | Gate 9 — `docs/beta-testing/`, `docs/dogfooding/`                                                                                     |
+| #    | Task                                     | Effort | Status | Evidence / notes                                                                                                                        |
+| ---- | ---------------------------------------- | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1  | CI pipeline                              | 30min  | ✅     | `ci.yml` + `release.yml` + `release-please.yml` + `daily-pr.yml` + `build.yml` (⚠️ earlier text cited a non-existent `packaging.yml`)   |
+| 1.2  | Keyboard shortcuts system                | 2h     | ✅     | `useKeyboardShortcuts.ts` + `shortcutStore.ts` + `ShortcutsTab.tsx` — all found                                                         |
+| 1.3  | Panic injection (automated ✅)           | 30min  | ✅     | `cargo test --test panic_and_wal` (8 tests pass). Manual UI verification optional — see `03-manual-tests.md` §1                         |
+| 1.4  | WAL recovery (automated ✅)              | 30min  | ✅     | Same suite: `test_wal_recovery_after_crash`, `test_wal_mode_enabled`, `test_wal_checkpoint_compaction`. Manual kill/restart optional §2 |
+| 1.5  | WAL deletion doc                         | 15min  | ✅     | `docs/05-DEVELOPMENT/04-wal-deletion.md`                                                                                                |
+| 1.6  | Watchdog restart (automated ✅)          | 30min  | ✅     | Same suite: `test_watchdog_restart_logic`, `test_crash_count_increment`. Manual service-failure optional §4                             |
+| 1.7  | `bun run tauri dev` runtime verification | 5min   | 📋     | Human step — requires working Rust toolchain + 15GB disk. See `03-manual-tests.md` §5 + host caveats                                    |
+| 1.8  | React.memo / lazy loading                | 2h     | ✅     | 35 `memo` usages across `src` + lazy routes                                                                                             |
+| 1.9  | Certificates + public key                | varies | 🔲     | Gate 3 — Windows EV cert / macOS notarization                                                                                           |
+| 1.10 | Dogfooding + beta testing                | 1–2w   | 🔲     | Gate 9 — `docs/beta-testing/`, `docs/dogfooding/`                                                                                       |
 
 ---
 

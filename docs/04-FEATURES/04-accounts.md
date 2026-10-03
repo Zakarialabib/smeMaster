@@ -1,98 +1,68 @@
 # Accounts
 
-> Account setup, authentication, provider selection, and account-management flows.
+> **Status:** Production — multi-provider account setup, auth, and switching.
+> **Stack:** React 19 + Zustand + Rust (OAuth PKCE, credential encryption) + SQLite
 
-## Scope
+## Overview
 
-This page is the canonical account-management doc for SMEMaster.
+Accounts are the identity layer. Each account holds credentials, provider config, and sync state. The app supports multiple simultaneous accounts across Gmail, Microsoft 365, and generic IMAP/SMTP + CalDAV.
 
-It covers:
+## Architecture
 
-- account records and provider-aware setup
-- OAuth and credential-backed account flows
-- account settings and management UI
-- provider support boundaries that affect the product surface
+```
+AddAccount.tsx → providerDetection.ts → OAuth (PKCE) or IMAP form
+  → Rust: token exchange + encrypt_value (AES-256-GCM)
+  → SQLite: accounts table
+  → accountStore.ts (active account, switcher)
+```
 
-It should remain the source of truth for provider status and account lifecycle behavior.
+Credentials never touch disk unencrypted. OAuth tokens are encrypted via `db::crypto::encrypt_value`.
 
-## Current Ownership
+## Core Capabilities
 
-Primary frontend ownership spans:
+| Area                   | What it does                                     | Key files                                                  |
+| ---------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| **Add account wizard** | Provider picker → OAuth or manual IMAP/SMTP      | `components/AddAccount.tsx`                                |
+| **Provider detection** | Email → provider guess (Gmail/Outlook/custom)    | `utils/providerDetection.ts`                               |
+| **OAuth flow**         | PKCE + localhost callback server + token refresh | `services/` (gmail/microsoft auth)                         |
+| **IMAP/SMTP setup**    | Manual host/port/TLS + auto-discovery            | `components/AddImapAccount.tsx`                            |
+| **CalDAV setup**       | Calendar account wiring                          | `components/AddCalDavAccount.tsx`                          |
+| **Account switcher**   | Active account + per-account isolation           | `components/AccountSwitcher.tsx`, `stores/accountStore.ts` |
+| **Token management**   | Refresh + re-auth banner on expiry               | `hooks/useAccountToken.ts`, `hooks/useAccounts.ts`         |
+| **Import scanner**     | Bulk account import                              | `components/AccountImportScanner.tsx`                      |
+| **Biometric lock**     | Mobile biometric gate                            | `components/mobile/BiometricLockScreen.tsx`                |
+| **Client ID setup**    | Custom OAuth app credentials                     | `components/SetupClientId.tsx`                             |
 
-- `src/features/accounts/`
-- account-management settings UI under `src/features/settings/components/tabs/AccountsTab.tsx`
+## Supported Providers
 
-Representative files:
+| Provider           | Email           | Calendar                    | Auth              |
+| ------------------ | --------------- | --------------------------- | ----------------- |
+| **Gmail**          | ✅ Gmail API    | ✅ Google Calendar          | OAuth2 PKCE       |
+| **Microsoft 365**  | ✅ Graph API    | 🔶 Graph calendar (partial) | OAuth2 PKCE       |
+| **Generic IMAP**   | ✅ `async-imap` | —                           | Password / OAuth2 |
+| **Generic CalDAV** | —               | ✅ CalDAV driver            | Basic / OAuth2    |
 
-- `src/features/accounts/db/accounts.ts`
-- `src/features/accounts/stores/accountStore.ts`
-- `src/features/accounts/components/`
-- `src/features/settings/components/tabs/AccountsTab.tsx`
+## Security
 
-Backend ownership includes:
-
-- `src-tauri/src/commands/core.rs`
-- account import and scan support in `src-tauri/src/commands/account_import.rs`
-
-## Provider Status
-
-Current product-facing provider reality:
-
-| Provider        | Status                                                 | Notes                                                                                                                            |
-| --------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Gmail API       | Supported                                              | Active account flow and provider-backed mail/calendar integrations exist.                                                        |
-| IMAP/SMTP       | Supported                                              | Generic provider path for standard mail accounts.                                                                                |
-| Microsoft Graph | Partial account presence, not full mail-action support | Account records can exist, but current mail provider dispatch does not support full send/draft operations for `microsoft_graph`. |
-| CalDAV          | Calendar-related integration, not a mail provider      | Calendar ownership belongs partly to `07-calendar.md`.                                                                           |
-
-Do not reintroduce speculative provider claims or token-lifecycle rules unless they are verified in code.
-
-## What It Does
-
-### Account setup and management
-
-Accounts provide the connection between user identity, provider configuration, and the rest of the product's email/calendar workflows.
-
-The account surface includes:
-
-- add/edit/remove account workflows
-- provider-specific setup flows
-- settings-backed account management
-- account import or system scan support where available
-
-### Authentication and credentials
-
-Account flows can involve OAuth-backed providers or credential-driven setups. The important product rule is that security-sensitive operations are backend-owned and should not be documented with stale frontend-only assumptions.
-
-### Account import and pairing-adjacent flows
-
-This page may reference account import or device-aware onboarding flows, but it should only describe the active commands and user-facing capabilities that exist now.
-
-## Boundaries
-
-Keep these responsibilities separate:
-
-- inbox/thread behavior belongs to `01-email-management.md`
-- compose/send behavior belongs to `../34-mail-composer.md`
-- calendar provider behavior belongs to `07-calendar.md`
-- device pairing belongs to `../33-device-pairing.md`
+- OAuth tokens encrypted (AES-256-GCM), key derived at runtime
+- IMAP/SMTP passwords encrypted, never plaintext
+- No credentials in logs (grep-verified)
+- `db_wipe_all_data` removes key file + all account rows
 
 ## Key Files
 
-| Area                     | Files                                                                                        |
-| ------------------------ | -------------------------------------------------------------------------------------------- |
-| Account DB layer         | `src/features/accounts/db/accounts.ts`                                                       |
-| Account store            | `src/features/accounts/stores/accountStore.ts`                                               |
-| Account UI               | `src/features/accounts/components/`, `src/features/settings/components/tabs/AccountsTab.tsx` |
-| Routes/settings shell    | `src/router/routeTree.tsx`, `src/features/settings/components/SettingsTabRegistry.ts`        |
-| Backend account commands | `src-tauri/src/commands/core.rs`                                                             |
-| System import support    | `src-tauri/src/commands/account_import.rs`                                                   |
+| Layer      | Path                                                                       |
+| ---------- | -------------------------------------------------------------------------- |
+| Store      | `src/features/accounts/stores/accountStore.ts`                             |
+| Hooks      | `src/features/accounts/hooks/` (`useAccounts`, `useAccountToken`)          |
+| DB wrapper | `src/features/accounts/db/accounts.ts`                                     |
+| Components | `src/features/accounts/components/` (Add, Switcher, Import, Biometric)     |
+| Utils      | `src/features/accounts/utils/providerDetection.ts`                         |
+| Rust       | `src-tauri/src/commands/` (accounts domain) + `src-tauri/src/db/crypto.rs` |
 
-## Update Rules
+## Related Docs
 
-Update this page when:
-
-- provider support changes materially
-- token/credential lifecycle behavior changes in code
-- account import capabilities expand or contract
-- account ownership moves between dedicated feature and settings surfaces
+- [Email Management](01-email-management.md) — inbox and sync
+- [Calendar](07-calendar.md) — calendar providers
+- [PGP Encryption](26-pgp-encryption.md) — key management
+- [User Guide — Account Setup](../user-guide/account-setup.md) — end-user walkthrough
