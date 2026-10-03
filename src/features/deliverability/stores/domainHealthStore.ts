@@ -7,6 +7,7 @@ import {
 } from '@features/deliverability/services/domainHealthService';
 import type {
   DomainHealth,
+  FailureType,
   RemediationNode,
   SentinelAlert,
 } from '@features/deliverability/services/domainHealthService';
@@ -17,8 +18,9 @@ interface DomainHealthState {
   remediation: RemediationNode[];
   alerts: SentinelAlert[];
   isLoading: boolean;
+  error: string | null;
   checkDomain: (domain: string, sendingIp?: string) => Promise<void>;
-  getRemediationForDomain: (domain: string, failures: string[]) => Promise<void>;
+  getRemediationForDomain: (domain: string, failures: FailureType[]) => Promise<void>;
   runSentinel: (domain: string, previousScore: number) => Promise<void>;
   setCurrentDomain: (domain: string | null) => void;
 }
@@ -44,7 +46,7 @@ export const useDomainHealthStore = create<DomainHealthState>((set) => {
     },
 
     getRemediationForDomain: async (domain, failures) => {
-      const result = await getRemediation(domain, failures as any);
+      const result = await getRemediation(domain, failures);
       set({ remediation: result });
     },
 

@@ -8,7 +8,9 @@ export const initialAsyncState: AsyncSlice = {
   error: null,
 };
 
-export function createAsyncActions<T extends AsyncSlice>(set: any) {
+export function createAsyncActions<T extends AsyncSlice>(
+  set: (partial: Partial<T> | ((state: T) => Partial<T>)) => void,
+) {
   return {
     withLoading: async <R>(fn: () => Promise<R>): Promise<R | undefined> => {
       set((s: T) => ({ ...s, isLoading: true, error: null }) as Partial<T>);

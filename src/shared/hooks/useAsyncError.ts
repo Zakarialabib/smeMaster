@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 interface AsyncError {
   message: string;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
 interface UseAsyncErrorReturn {

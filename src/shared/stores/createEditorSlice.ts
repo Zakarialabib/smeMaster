@@ -1,5 +1,3 @@
-import type { StoreApi } from 'zustand';
-
 export interface EditorSlice<T, S = T> {
   showEditor: boolean;
   editor: T;
@@ -16,39 +14,36 @@ export interface EditorSliceOptions<T, S = T> {
 }
 
 export function createEditorSlice<T, S = T>(
-  set: StoreApi<any>['setState'],
-  _get: StoreApi<any>['getState'],
+  set: (
+    state: Partial<EditorSlice<T, S>> | ((state: EditorSlice<T, S>) => Partial<EditorSlice<T, S>>),
+  ) => void,
   options: EditorSliceOptions<T, S>,
 ): EditorSlice<T, S> {
-  const setState = (
-    state: Partial<EditorSlice<T>> | ((state: EditorSlice<T>) => Partial<EditorSlice<T>>),
-  ) => set(state as any);
-
   return {
     showEditor: false,
     editor: { ...options.defaultEditor },
 
     openEditor: () => {
-      setState({ showEditor: true, editor: { ...options.defaultEditor } });
+      set({ showEditor: true, editor: { ...options.defaultEditor } });
     },
 
     openEditorForEdit: (item: S) => {
       const editorState = options.onItemSelect
         ? { ...options.defaultEditor, ...options.onItemSelect(item) }
         : { ...options.defaultEditor, ...(item as unknown as T) };
-      setState({ showEditor: true, editor: editorState });
+      set({ showEditor: true, editor: editorState });
     },
 
     closeEditor: () => {
-      setState({ showEditor: false, editor: { ...options.defaultEditor } });
+      set({ showEditor: false, editor: { ...options.defaultEditor } });
     },
 
     resetEditor: () => {
-      setState({ editor: { ...options.defaultEditor } });
+      set({ editor: { ...options.defaultEditor } });
     },
 
     setEditorField: <K extends keyof T>(field: K, value: T[K]) => {
-      setState((state: EditorSlice<T>) => ({
+      set((state) => ({
         editor: { ...state.editor, [field]: value },
       }));
     },

@@ -117,6 +117,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::agent::client::agent_ops_snapshot,
             crate::agent::client::agent_provider_health,
             crate::agent::client::agent_create_session,
+            crate::agent::client::agent_set_provider_tier,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,

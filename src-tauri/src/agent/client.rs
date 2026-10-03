@@ -188,6 +188,18 @@ pub async fn agent_create_session(
     post_json("/session", &token, &body).await
 }
 
+/// Set the provider tier for the agent.
+#[tauri::command]
+pub async fn agent_set_provider_tier(
+    auth: State<'_, AgentAuth>,
+    tier: String,
+) -> Result<(), AgentError> {
+    let token = require(&auth)?;
+    let body = serde_json::json!({ "tier": tier }).to_string();
+    post_json::<()>("/provider/tier", &token, &body).await?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

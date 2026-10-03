@@ -45,10 +45,7 @@ export function DeliverabilityPanel() {
       failures.push(FailureType.MissingDmarc);
     }
     if (failures.length > 0) {
-      getRemediationForDomain(
-        currentDomain,
-        failures.map((f) => f.toString()),
-      );
+      getRemediationForDomain(currentDomain, failures);
     }
   }, [health, currentDomain, getRemediationForDomain]);
 
