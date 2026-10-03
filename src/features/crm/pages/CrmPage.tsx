@@ -1,4 +1,5 @@
 import { lazy, Suspense, Component, type ReactNode } from 'react';
+import { toast } from '@shared/stores/toastStore';
 import { SkeletonPage } from '@shared/components/ui/Skeleton';
 import { CardTabBar, type CardTabItem } from '@shared/components/ui';
 import { useLocation, useNavigate } from '@tanstack/react-router';
