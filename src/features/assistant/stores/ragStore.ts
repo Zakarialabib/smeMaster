@@ -24,6 +24,9 @@ import {
 } from '@shared/services/db/invoke/rag';
 import {
   downloaderListJobs,
+  downloaderPauseJob,
+  downloaderResumeJob,
+  downloaderCancelJob,
   type DownloaderProgressEvent,
 } from '@shared/services/db/invoke/downloader';
 import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
@@ -44,7 +47,7 @@ const BGE_TOKENIZER_FILE = 'tokenizer.json';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type ModelStatus = 'idle' | 'downloading' | 'loading' | 'loaded' | 'error';
+export type ModelStatus = 'idle' | 'downloading' | 'paused' | 'loading' | 'loaded' | 'error';
 export type IndexingStatus = 'idle' | 'indexing' | 'completed' | 'error';
 export type EmbeddingSource = 'rust_bge' | 'provider' | null;
 
@@ -96,6 +99,9 @@ export interface RagState {
   fetchModelsDir: () => Promise<void>;
   removeModel: () => Promise<void>;
   downloadBgeModel: () => Promise<void>;
+  pauseDownload: () => Promise<void>;
+  resumeDownload: () => Promise<void>;
+  cancelDownload: () => Promise<void>;
   loadEmbeddingModel: () => Promise<void>;
   indexAll: () => Promise<void>;
   search: (query: string) => Promise<void>;
@@ -256,6 +262,56 @@ export const useRagStore = create<RagState>((set, get) => ({
       set({ modelStatus: 'error', modelError: msg });
     } finally {
       downloadRunning = false;
+    }
+  },
+
+  // ── Pause download ──
+  pauseDownload: async () => {
+    try {
+      const jobs = await downloaderListJobs('ai_model');
+      const active = jobs.find(
+        (j) => j.status === 'downloading' || j.status === 'probing' || j.status === 'queued',
+      );
+      if (active) {
+        await downloaderPauseJob(active.jobId);
+        set({ modelStatus: 'paused' });
+      }
+    } catch {
+      /* backend not ready */
+    }
+  },
+
+  // ── Resume download ──
+  resumeDownload: async () => {
+    try {
+      const jobs = await downloaderListJobs('ai_model');
+      const paused = jobs.find((j) => j.status === 'paused' || j.status === 'failed');
+      if (paused) {
+        await downloaderResumeJob(paused.jobId);
+        set({ modelStatus: 'downloading' });
+      }
+    } catch {
+      /* backend not ready */
+    }
+  },
+
+  // ── Cancel download ──
+  cancelDownload: async () => {
+    try {
+      const jobs = await downloaderListJobs('ai_model');
+      const active = jobs.find(
+        (j) =>
+          j.status === 'downloading' ||
+          j.status === 'probing' ||
+          j.status === 'queued' ||
+          j.status === 'paused',
+      );
+      if (active) {
+        await downloaderCancelJob(active.jobId, false);
+        set({ modelStatus: 'idle', downloadProgress: null });
+      }
+    } catch {
+      /* backend not ready */
     }
   },
 

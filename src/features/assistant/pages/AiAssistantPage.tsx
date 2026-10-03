@@ -17,6 +17,7 @@ import { RagResultBubble } from '@features/assistant/components/RagResultBubble'
 import { RagEmptyState } from '@features/assistant/components/RagEmptyState';
 import { RagSkeleton } from '@features/assistant/components/RagSkeleton';
 import { VoiceButton } from '@features/assistant/components/VoiceButton';
+import { DownloadProgress } from '@features/assistant/components/DownloadProgress';
 import { GlassPanel } from '@shared/components/ui/glass-panel';
 import { Button } from '@shared/components/ui/Button';
 import { cn } from '@shared/utils/cn';
@@ -32,9 +33,13 @@ export function AiAssistantPage() {
     isSearching,
     searchError,
     modelStatus,
+    downloadProgress,
     search,
     clearHistory,
     hydrate,
+    pauseDownload,
+    resumeDownload,
+    cancelDownload,
   } = useRagStore();
 
   const [query, setQuery] = useState('');
@@ -143,6 +148,20 @@ export function AiAssistantPage() {
             <Settings className="w-3.5 h-3.5 me-1" />
             Settings
           </Button>
+        </div>
+      )}
+
+      {/* ── Download progress ── */}
+      {(modelStatus === 'downloading' || modelStatus === 'paused') && (
+        <div className="mx-4 sm:mx-6 mt-2 px-4 py-3 frost-surface rounded-[--frost-radius-sm] border border-border-primary flex-shrink-0">
+          <DownloadProgress
+            progress={downloadProgress}
+            status={modelStatus}
+            label="Embedding model"
+            onPause={pauseDownload}
+            onResume={resumeDownload}
+            onCancel={cancelDownload}
+          />
         </div>
       )}
 
