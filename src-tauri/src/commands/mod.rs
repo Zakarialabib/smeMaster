@@ -712,6 +712,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             db::db_export_logs,
             db::db_get_migration_history,
             db::db_rollback_migrations,
+            db::db_list_threads,
 
             // === commands::deliverability (27 commands) ===
             deliverability::db_list_deliverability_configs,

@@ -78,6 +78,11 @@ pub struct LicenseState {
     pub db_pool: Option<SqlitePool>,
 }
 
+// LicenseState is Send + Sync because it's wrapped in Arc<Mutex<...>>
+// and all its fields are Send + Sync.
+unsafe impl Send for LicenseState {}
+unsafe impl Sync for LicenseState {}
+
 impl LicenseState {
     /// Create a new LicenseState instance
     pub fn new(public_key_b64: &str) -> std::result::Result<Self, String> {

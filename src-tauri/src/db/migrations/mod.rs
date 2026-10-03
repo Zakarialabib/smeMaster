@@ -332,23 +332,25 @@ pub async fn check_db_state(pool: &SqlitePool) -> DbState {
 
 /// Drop all user tables in the database (for force-rebuild).
 pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
     // Disable FK checks to allow dropping in any order
     sqlx::query("PRAGMA foreign_keys = OFF")
-        .execute(pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
 
     // Get all user table names
     let tables: Vec<String> =
         sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-            .fetch_all(pool)
+            .fetch_all(&mut *tx)
             .await
             .map_err(|e| e.to_string())?;
 
     for table in &tables {
         let sql = format!("DROP TABLE IF EXISTS \"{table}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop table {table}: {e}"))?;
     }
@@ -357,14 +359,14 @@ pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
     let triggers: Vec<String> = sqlx::query_scalar(
         "SELECT name FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'sqlite_%'",
     )
-    .fetch_all(pool)
+    .fetch_all(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
     for trigger in &triggers {
         let sql = format!("DROP TRIGGER IF EXISTS \"{trigger}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop trigger {trigger}: {e}"))?;
     }
@@ -372,23 +374,25 @@ pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
     let indexes: Vec<String> = sqlx::query_scalar(
         "SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'",
     )
-    .fetch_all(pool)
+    .fetch_all(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
     for index in &indexes {
         let sql = format!("DROP INDEX IF EXISTS \"{index}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop index {index}: {e}"))?;
     }
 
     // Re-enable FK checks
     sqlx::query("PRAGMA foreign_keys = ON")
-        .execute(pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     log::info!("[migrate] Dropped {} tables, {} triggers, {} indexes", tables.len(), triggers.len(), indexes.len());
     Ok(())

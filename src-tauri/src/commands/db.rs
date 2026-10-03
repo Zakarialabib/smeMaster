@@ -1028,3 +1028,22 @@ pub async fn db_rollback_migrations(
 
     Ok(reverted)
 }
+
+/// List threads for an account. Used by the inbox thread list.
+#[tauri::command]
+pub async fn db_list_threads(
+    pool: State<'_, SqlitePool>,
+    account_id: String,
+    limit: Option<i64>,
+    offset: Option<i64>,
+) -> CmdResult<Vec<crate::db::mail::schema::Thread>> {
+    crate::db::tables::core::threads::list(
+        &pool,
+        &account_id,
+        limit.unwrap_or(50),
+        offset.unwrap_or(0),
+        None,
+    )
+    .await
+    .map_err(|e| SerializedError::new(ERR_DB, format!("Failed to list threads: {e}")))
+}
