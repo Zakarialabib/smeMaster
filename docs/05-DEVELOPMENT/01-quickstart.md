@@ -46,25 +46,25 @@ passing on this host; they should run in CI. Full detail, including disk-space r
 
 ```bash
 # Start Tauri dev (frontend + backend together)
-npm run tauri dev
+bun run tauri dev
 
 # Vite dev server only (no Tauri window)
-npm run dev
+bun run dev
 
 # Run all tests
-npm run test
+bun run test
 
 # Run tests in watch mode (my go-to during dev)
-npm run test:watch
+bun run test:watch
 
 # Run a specific test file
-npx vitest run src/stores/core/uiStore.test.ts
+bunx vitest run src/stores/core/uiStore.test.ts
 
 # Type-check the whole TypeScript codebase
-npx tsc --noEmit
+bunx tsc --noEmit
 
 # Build for production
-npm run tauri build
+bun run tauri build
 
 # Rust-only commands (from src-tauri/)
 cargo build
@@ -130,7 +130,7 @@ git push origin v0.1.0
 ## The voice agent's second dev loop (`services/agent-core/`)
 
 SMEMaster has a **second runtime** — a Python FastAPI service for the voice/messaging
-agent. It is **not** started by `npm run tauri dev` and is not a Cargo workspace member
+agent. It is **not** started by `bun run tauri dev` and is not a Cargo workspace member
 (see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D1).
 
 | You want to…                                                           | Read                                                                                                    |
@@ -141,7 +141,7 @@ agent. It is **not** started by `npm run tauri dev` and is not a Cargo workspace
 | Understand the phase sequence                                          | [`../voice/dev/BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
 
 ```bash
-# agent-core dev mode (NOT part of `npm run tauri dev`)
+# agent-core dev mode (NOT part of `bun run tauri dev`)
 cd services/agent-core
 .venv/Scripts/python.exe -m uvicorn agent_core.api:app \
   --host 127.0.0.1 --port 8788 --reload --log-level info
@@ -149,6 +149,6 @@ cd services/agent-core
 
 ## Source reconciliation (2026-07-19)
 
-| Claim (before)                              | Verified reality                         | Evidence                             |
-| ------------------------------------------- | ---------------------------------------- | ------------------------------------ |
-| `npx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |
+| Claim (before)                               | Verified reality                         | Evidence                             |
+| -------------------------------------------- | ---------------------------------------- | ------------------------------------ |
+| `bunx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |

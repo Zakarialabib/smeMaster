@@ -8,19 +8,19 @@
 
 ## Quick Pre-Release Checklist (≈1.5h)
 
-Run these after a fresh `npm run tauri dev` before tagging a release:
+Run these after a fresh `bun run tauri dev` before tagging a release:
 
 1. **Panic Injection** (~5min) — [§1](#1-panic-injection-test): automated test `test_panic_hook_writes_crash_log` verifies crash.log + crash_count.txt. Manual test optional for UI dialog verification.
 2. **WAL Recovery** (~30min) — [§2](#2-wal-recovery-test): automated tests `test_wal_recovery_after_crash`, `test_wal_mode_enabled`, `test_wal_checkpoint_compaction` verify WAL integrity. Manual test optional for live app kill/restart.
 3. **Watchdog Restart** (~15min) — [§4](#4-watchdog-restart-test): automated test `test_watchdog_restart_logic` verifies crash counter. Manual test optional for live service failure/restart.
-4. **Runtime Verification** (~5min) — [§5](#5-runtime-verification): `npm run tauri dev` launches with no console or Rust errors.
+4. **Runtime Verification** (~5min) — [§5](#5-runtime-verification): `bun run tauri dev` launches with no console or Rust errors.
 5. **WAL Deletion Behavior** — [§3](#3-wal-deletion-behavior): understand the impact if the WAL file is deleted while the app is running.
 
 > Detailed step-by-step procedures and acceptance criteria follow below.
 
 ### Host caveats before you start (2026-09-28)
 
-- `npm run tauri dev` needs a working Rust toolchain. On this host the rustup proxies
+- `bun run tauri dev` needs a working Rust toolchain. On this host the rustup proxies
   are broken (`rustc.exe is not applicable to the toolchain`) — use the direct-toolchain
   workaround in [`01-quickstart.md`](01-quickstart.md) → "Toolchain warning", and read
   **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** before touching `cargo`.
@@ -50,7 +50,7 @@ Verify that when a Rust panic occurs, the global panic hook in `src-tauri/src/li
 
 ### Prerequisites
 
-- Development build running (`npm run tauri dev`)
+- Development build running (`bun run tauri dev`)
 - Terminal open to watch Rust logs (`stdout` / `stderr`)
 - `crash.log` path known:
   - **Windows:** `%APPDATA%\com.smemaster.app\crash.log`
@@ -60,7 +60,7 @@ Verify that when a Rust panic occurs, the global panic hook in `src-tauri/src/li
 
 ### Steps
 
-1. **Start the app** with `npm run tauri dev` and let it fully initialise.
+1. **Start the app** with `bun run tauri dev` and let it fully initialise.
 
 2. **Clear any previous crash log** to make verification unambiguous:
 
@@ -134,7 +134,7 @@ Verify that an abrupt termination (kill / crash) during a database write does **
 
 ### Prerequisites
 
-- App running with `npm run tauri dev`
+- App running with `bun run tauri dev`
 - A write-heavy operation available (e.g., email sync, campaign insertion, contact import)
 - Knowledge of the SQLite database location:
   - **Desktop:** `<data_dir>/com.smemaster.app/smemaster.db`
@@ -159,7 +159,7 @@ Verify that an abrupt termination (kill / crash) during a database write does **
    - **Desktop:** Close the window or kill the process (e.g., `taskkill /F /IM smemaster.exe` or `SIGKILL`).
    - **Mobile:** Swipe the app away from the recents screen or force-stop via system settings.
 
-4. **Restart the app** with `npm run tauri dev`.
+4. **Restart the app** with `bun run tauri dev`.
 
 5. **Verify data integrity:**
    - Re-count the table used in step 1: `SELECT COUNT(*) FROM emails;`
@@ -231,7 +231,7 @@ Document and verify the effect of manually deleting the SQLite WAL (`-wal`) and 
    Remove-Item "$env:APPDATA\com.smemaster.app\smemaster.db-shm"
    ```
 
-4. **Start the app** with `npm run tauri dev`.
+4. **Start the app** with `bun run tauri dev`.
 
 5. **Verify behaviour:**
    - The app starts normally — SQLite creates fresh empty `-wal` and `-shm` files on the first write connection.
@@ -273,7 +273,7 @@ Verify that the `Watchdog` (defined in `src-tauri/src/orchestrator/watchdog.rs`)
 
 ### Prerequisites
 
-- App running with `npm run tauri dev`
+- App running with `bun run tauri dev`
 - Terminal open to watch Rust logs (watchdog logs lines containing `[Watchdog]`)
 - A critical service that the watchdog monitors (e.g., the IMAP sync engine)
 - Understanding of watchdog configuration:
@@ -361,7 +361,7 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 
 ### Prerequisites
 
-- Clean build: `npm run tauri build` (or `npm run tauri dev` for development)
+- Clean build: `bun run tauri build` (or `bun run tauri dev` for development)
 - No previous crash log present (optional but recommended)
 
 ### Steps
@@ -369,7 +369,7 @@ Confirm that the application boots cleanly, all subsystems initialise, and there
 1. **Start the app:**
 
    ```bash
-   npm run tauri dev
+   bun run tauri dev
    ```
 
 2. **Watch the terminal output** during startup. Expect in order:

@@ -77,7 +77,7 @@ cargo tauri ios build
 ### ✅ Android project init
 
 ```bash
-npm run tauri android init
+bun run tauri android init
 ```
 
 → `src-tauri\gen\android\` generated successfully.
@@ -92,7 +92,7 @@ Both desktop and Android NDK cross-compilation pass clean.
 | Android ARM64 (aarch64-linux-android) | `. .\build-android.ps1` | ✅                                   |
 | Linux (x86_64-unknown-linux-gnu)      | `cargo check`           | ✅ (cross-compile not tested)        |
 
-**Current limitation:** Running `npm run android` (`cargo tauri android dev`) needs an Android Emulator or physical device:
+**Current limitation:** Running `bun run android` (`cargo tauri android dev`) needs an Android Emulator or physical device:
 
 ```
 Error No available Android Emulator detected
@@ -138,7 +138,7 @@ I still need to do this. Here's what I'll run:
    ```
 4. Run the app:
    ```powershell
-   npm run android
+    bun run android
    ```
 
 **Alternative:** Android Studio bundles its own SDK manager and NDK downloader. Install it, open SDK Manager, install:
@@ -195,10 +195,10 @@ This shows up when trying to run an unsigned `.exe` or `.msi`. Here's what cause
 
 ```powershell
 # Standard Windows installer
-npm run windows:build
+bun run windows:build
 
 # Portable MSI (no admin required)
-npm run windows:portable
+bun run windows:portable
 ```
 
 ## Known issues & their status
@@ -209,7 +209,7 @@ npm run windows:portable
 | NDK clang/ar not in PATH             | ✅ Resolved   | Use `.\build-android.ps1`                                                                                 |
 | Window management APIs on mobile     | ✅ Guarded    | `#[cfg(desktop)]` on tray, shortcuts, window management                                                   |
 | Tray icon on mobile                  | ✅ Guarded    | `#[cfg(desktop)]` — no-op                                                                                 |
-| Global shortcuts                     | ✅ Present    | `tauri-plugin-global-shortcut` 2.2.1, registered in `lib.rs` (do NOT remove) |
+| Global shortcuts                     | ✅ Present    | `tauri-plugin-global-shortcut` 2.2.1, registered in `lib.rs` (do NOT remove)                              |
 | `google-services.json`               | ✅ Configured | Real Firebase project `smemaster-fc43d`                                                                   |
 | Notification channels                | ✅ Configured | 4 channels: email_new, email_sync, downloads, reminders                                                   |
 | Deep link schemes                    | ✅ Configured | `smemaster://` + `smemaster-auth://` in manifest                                                          |

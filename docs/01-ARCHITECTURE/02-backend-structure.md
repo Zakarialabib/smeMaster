@@ -111,7 +111,7 @@ pub async fn db_get_account(
 Frontend (React)
     │  invoke("db_get_account", { account_id: "abc" })
     ▼
-commands/<domain>.rs   ← **841 registered commands** (⚠️ re-grepped 2026-09-30: 777 `#[tauri::command]` + 64 `#[command]`. `docs/STATUS.md` and older docs say 831 = 768 + 63 — that snapshot predates the agent IPC work. **Re-grep before trusting:** `rg -c '#\[tauri::command\]|#\[command\]' src-tauri/src`), thin wrappers over db/tables queries
+commands/<domain>.rs   ← **868 registered commands** (re-verified 2026-10-03: 804 `#[tauri::command]` + 64 `#[command]`), thin wrappers over db/tables queries
     │
     ▼
 db/tables/<domain>/    ← 67 query files using sqlx (parameterized, type-safe)

@@ -375,6 +375,6 @@ Mistral was added as a new provider with the following changes:
 - [ ] Added to `ai_provider` options list
 - [ ] Added models to `MODEL_REGISTRY` in `modelRegistry.ts`
 - [ ] Added i18n keys to all 5 locale files
-- [ ] Unit tests pass (`npx vitest run`)
-- [ ] Type check passes (`npx tsc --noEmit`)
-- [ ] Lint passes (`npx eslint src --max-warnings=0`)
+- [ ] Unit tests pass (`bunx vitest run`)
+- [ ] Type check passes (`bunx tsc --noEmit`)
+- [ ] Lint passes (`bunx eslint src --max-warnings=0`)

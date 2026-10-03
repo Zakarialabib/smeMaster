@@ -25,12 +25,12 @@ Current repo-level numbers are tracked in `README.md`, `STATUS.md`, and `00-INDE
 
 ## Main Commands
 
-| Command            | Purpose                                  |
-| ------------------ | ---------------------------------------- |
-| `npm run test`     | Run the default frontend/unit test suite |
-| `npx tsc --noEmit` | Run TypeScript typecheck                 |
-| `cargo test`       | Run backend tests                        |
-| `cargo check`      | Fast backend compile verification        |
+| Command             | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `bun run test`      | Run the default frontend/unit test suite |
+| `bunx tsc --noEmit` | Run TypeScript typecheck                 |
+| `cargo test`        | Run backend tests                        |
+| `cargo check`       | Fast backend compile verification        |
 
 ### ⚠️ Three host-specific traps — gate on output, not exit codes
 
@@ -69,7 +69,7 @@ Two traps when writing one:
   first version of the script — it reported FAILED on a fully passing run.
 
 > **This is a workaround, not a substitute.** It covers pure logic only. Anything touching the DB,
-  async or Tauri still needs a real `cargo test` run in CI on a properly provisioned host.
+> async or Tauri still needs a real `cargo test` run in CI on a properly provisioned host.
 
 Use `cargo check --workspace`, never `cargo check -p <crate>`: the workspace inherits the
 app's full default features and compiles code `-p` skips.
@@ -77,7 +77,7 @@ app's full default features and compiles code `-p` skips.
 ## The voice agent's test layer (`services/agent-core/`)
 
 A separate Python suite sits alongside the TS/Rust layers. It is **not** covered by
-`npm run test` or `cargo test`.
+`bun run test` or `cargo test`.
 
 ```bash
 cd services/agent-core
@@ -103,7 +103,7 @@ python -m pytest -q                                   # 156 passed, 5 skipped (2
 When changing code:
 
 - run the smallest relevant test set first
-- run `npx tsc --noEmit` for TypeScript-affecting changes
+- run `bunx tsc --noEmit` for TypeScript-affecting changes
 - run `cargo check` or `cargo test` for backend-affecting changes
 - add or adjust tests when the change meaningfully alters behavior or contracts
 
@@ -159,9 +159,9 @@ automated docs-rot detector.
 
 | metric            | expected (2026-09-30) | counting rule                                                                                                                                                                                                                           |
 | ----------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| IPC commands      | **841**               | literal `#[tauri::command]` (777) + `#[command]` (64) occurrences in `src-tauri/src` (recursive); parameterised forms such as `#[tauri::command(rename_all = ...)]` (7) are not counted                                                 |
-| SQLite migrations | **32**                | `*.sql` files in `src-tauri/src/db/migrations/` (`001_core.sql` … `032_deals_pipeline.sql`, sequential, no gaps)                                                                                                                        |
-| Zustand stores    | **44**                | non-test (excludes `*.test.*`, `*.spec.*`, `__tests__/`) `.ts`/`.tsx` under `src/shared/stores/**`, `src/stores/**`, `src/features/*/stores/**` containing the token `create` → 39 `create<` stores + 5 `create*` slice-factory modules |
+| IPC commands      | **868**               | literal `#[tauri::command]` (804) + `#[command]` (64) occurrences in `src-tauri/src` (recursive); parameterised forms such as `#[tauri::command(rename_all = ...)]` (7) are not counted                                                 |
+| SQLite migrations | **34**                | `*.sql` files in `src-tauri/src/db/migrations/` (`001_core.sql` … `034_*.sql`, sequential, no gaps)                                                                                                                                     |
+| Zustand stores    | **47**                | non-test (excludes `*.test.*`, `*.spec.*`, `__tests__/`) `.ts`/`.tsx` under `src/shared/stores/**`, `src/stores/**`, `src/features/*/stores/**` containing the token `create` → 39 `create<` stores + 5 `create*` slice-factory modules |
 
 ### Re-baselining `scripts/ground-truth.json`
 

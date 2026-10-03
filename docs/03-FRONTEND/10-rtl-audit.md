@@ -22,6 +22,6 @@ grep -rn "text-left\|text-right\|ml-\|mr-" src/ --include="*.tsx" --include="*.t
 
 ## i18n Sync — COMPLETE
 
-- Ran `npm run translate:sync` — added **52 missing keys** (English base language)
+- Ran `bun run translate:sync` — added **52 missing keys** (English base language)
 - All **[TODO]**-tagged auto-translated keys in `ja` and `it` locales have been translated
 - Current state across all 5 locales (`en`, `fr`, `ar`, `ja`, `it`): **0 `[TODO]` tags in any value**

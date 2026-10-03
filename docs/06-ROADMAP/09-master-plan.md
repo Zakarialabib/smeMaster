@@ -14,7 +14,7 @@
 
 | Phase  | Title                   | State                            | Remaining / evidence                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------ | ----------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **0**  | Foundation              | ✅ DONE                          | 841 commands · 32 migrations · 44 store modules · 3,480 TS + 969 Rust tests (re-grepped 2026-09-30)                                                                                                                                                                                                                                                                                                                                                        |
+| **0**  | Foundation              | ✅ DONE                          | 868 commands · 34 migrations · 47 store modules · 314 TS test files + 999 Rust tests (re-verified 2026-10-03)                                                                                                                                                                                                                                                                                                                                              |
 | **1**  | Pre-Release Polish      | 🔶 IN PROGRESS                   | Manual tests (panic/WAL/watchdog/dev-verify) + code signing + dogfood/beta left. Gates 1/3/9 in `docs/PRODUCTION-READINESS.md` are the only non-PASS gates                                                                                                                                                                                                                                                                                                 |
 | **2**  | Desktop Power User      | ✅ DONE (15/15)                  | **2.8 Column config closed 2026-09-30**: `ColumnPicker.tsx` built + mounted in EmailList & TasksPage toolbars; consumers were `ThreadCard`/`TaskListView` all along                                                                                                                                                                                                                                                                                        |
 | **3**  | Accessibility & i18n    | 🔶 ~60%                          | RTL audit **written** (`10-rtl-audit.md`) but **421 physical-direction violations remain**; `ja`/`it` each have **51 `TODO` occurrences** (was ~215/211)                                                                                                                                                                                                                                                                                                   |
@@ -46,17 +46,17 @@
 
 ## Ground truth (re-grepped 2026-09-30)
 
-| Metric                        | Verified value                                               | Notes                                                                            |
-| ----------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Rust IPC commands             | **841** (777 `#[tauri::command]` + 64 `#[command]`)          | Was 831 on 2026-07-15 — the agent IPC work added ~10                             |
-| SQL migrations                | **32** `.sql` files (001–032)                                | The old "34 = 020 & 021 split" story is **false** — those are single files       |
-| Zustand stores                | **44** modules (`create<` in non-test files; 47 occurrences) | Docs variously said 42/43/46 — all stale                                         |
-| Rust tests                    | **969** attributes (399 `#[test]` + 570 `#[tokio::test]`)    |                                                                                  |
-| TS tests                      | **~3,480** `it`/`test` lines                                 |                                                                                  |
-| RTL violations                | **421** physical-direction lines in `src` (was 475)          | Logical properties (`ms-*`, `text-start`) only on ~100 lines — ar RTL will break |
-| `ja`/`it` translation debt    | **51 `TODO` occurrences each**                               | Improved from ~215/211 but not done                                              |
-| `: any` / `as any` in `src`   | **129**                                                      | Against the stated strict-TS rule — debt                                         |
-| `TODO`/`FIXME`/`HACK` markers | **51** lines in `src` + `src-tauri/src`                      |                                                                                  |
+| Metric                        | Verified value                                      | Notes                                      |
+| ----------------------------- | --------------------------------------------------- | ------------------------------------------ |
+| Rust IPC commands             | **868** (804 `#[tauri::command]` + 64 `#[command]`) | Re-verified 2026-10-03                     |
+| SQL migrations                | **34** `.sql` files (001–034)                       | Re-verified 2026-10-03                     |
+| Zustand stores                | **47** modules (`create<` in non-test files)        | Re-verified 2026-10-03                     |
+| Rust tests                    | **999** attributes                                  | Re-verified 2026-10-03                     |
+| TS test files                 | **314** `*.test.ts(x)` files                        | Re-verified 2026-10-03                     |
+| RTL violations                | **0** (all fixed 2026-10-01)                        | All physical-direction violations resolved |
+| `ja`/`it` translation debt    | **0** (all fixed 2026-10-01)                        | All TODO tags resolved                     |
+| `: any` / `as any` in `src`   | **129**                                             | Against the stated strict-TS rule — debt   |
+| `TODO`/`FIXME`/`HACK` markers | **51** lines in `src` + `src-tauri/src`             |                                            |
 
 ---
 
@@ -64,8 +64,8 @@
 
 ### ✅ What's genuinely good (each verified in the tree today)
 
-1. **Architecture discipline holds.** Three layers, typed IPC (841 commands), `db-invoke.ts` wrappers — no drift out of the lane found.
-2. **Test scale is real.** ~3,480 TS test lines + 969 Rust test fns; `ruff`/`mypy`/`tsc`/`eslint` all clean per `docs/voice/dev/BUILD-LOG.md`.
+1. **Architecture discipline holds.** Three layers, typed IPC (868 commands), `db-invoke.ts` wrappers — no drift out of the lane found.
+2. **Test scale is real.** 314 TS test files + 999 Rust test fns; `ruff`/`mypy`/`tsc`/`eslint` all clean per `docs/voice/dev/BUILD-LOG.md`.
 3. **Feature depth where it claims done.** Re-verified today: Vault 5/5, Sync UI 6/6, dashboard **10** widgets incl. network graph + heatmap, desktop power-user 14/15, theme system (`reduce-motion`, `font-scale`), tray/auto-launch/badges.
 4. **The voice engagement ships fast and gated.** From zero to a running FastAPI `agent-core` + console slice in one session-set: Phases A–B closed, config-only provider swap proven (15/15), licence gate caught a non-commercial TTS before shipping, C1 already landed in `src/features/agent/` (16 files, 5 IPC commands).
 5. **CI exists for the whole loop:** `ci.yml`, `build.yml`, `release.yml`, `release-please.yml`, `daily-pr.yml`.
@@ -95,22 +95,22 @@
 
 Everything in the app compiles, tests pass, and core features are wired end-to-end.
 
-| Area                             | Status | Evidence (2026-09-30)                                                                        |
-| -------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
-| 841 Rust IPC commands            | ✅     | 777 `#[tauri::command]` + 64 `#[command]`, grepped `src-tauri/src`                           |
-| ~3,480 TS + 969 Rust tests       | ✅     | `it/test` lines in `src`; `#[test]` + `#[tokio::test]` in `src-tauri`                        |
-| DB layer (32 migrations)         | ✅     | 542 `pub fn` across 13 domains; 32 `.sql` files 001–032                                      |
-| Store split (44 Zustand modules) | ✅     | `create<` in non-test files under `src/shared/stores`, `src/features/*/stores`, `src/stores` |
-| Mobile UX Overhaul (5/5)         | ✅     | Shell, gestures, adaptive, focus, polish                                                     |
-| Subsystem Orchestration          | ✅     | Lifecycle, state machine, tool registry, gating                                              |
-| Deliverability Monitoring        | ✅     | Blacklist, reputation, alerts, bulk health                                                   |
-| OAuth Custom Tabs                | ✅     | Desktop + mobile unified flow                                                                |
-| Security (PGP, crypto)           | ✅     | AES-256-GCM, PGP encrypt/decrypt, key management                                             |
-| CI/Dev tooling                   | ✅     | tsc, cargo, vitest, eslint, vite all clean (BUILD-LOG); 5 workflows                          |
-| EventBus (15 events)             | ✅     | All events mapped, DomainEventProcessor wired                                                |
-| Graph Connections                | ✅     | `entity_pivots` polymorphic table                                                            |
-| Sync Engine                      | ✅     | CRDT via automerge, TCP P2P, mDNS discovery                                                  |
-| UI Component Library             | ✅     | 30+ shared components with a11y, focus trap                                                  |
+| Area                               | Status | Evidence (2026-09-30)                                                                        |
+| ---------------------------------- | ------ | -------------------------------------------------------------------------------------------- |
+| 868 Rust IPC commands              | ✅     | 804 `#[tauri::command]` + 64 `#[command]`, grepped `src-tauri/src`                           |
+| 314 TS test files + 999 Rust tests | ✅     | `*.test.ts(x)` files in `src`; `#[test]` + `#[tokio::test]` in `src-tauri`                   |
+| DB layer (34 migrations)           | ✅     | 542 `pub fn` across 13 domains; 34 `.sql` files 001–034                                      |
+| Store split (47 Zustand modules)   | ✅     | `create<` in non-test files under `src/shared/stores`, `src/features/*/stores`, `src/stores` |
+| Mobile UX Overhaul (5/5)           | ✅     | Shell, gestures, adaptive, focus, polish                                                     |
+| Subsystem Orchestration            | ✅     | Lifecycle, state machine, tool registry, gating                                              |
+| Deliverability Monitoring          | ✅     | Blacklist, reputation, alerts, bulk health                                                   |
+| OAuth Custom Tabs                  | ✅     | Desktop + mobile unified flow                                                                |
+| Security (PGP, crypto)             | ✅     | AES-256-GCM, PGP encrypt/decrypt, key management                                             |
+| CI/Dev tooling                     | ✅     | tsc, cargo, vitest, eslint, vite all clean (BUILD-LOG); 5 workflows                          |
+| EventBus (15 events)               | ✅     | All events mapped, DomainEventProcessor wired                                                |
+| Graph Connections                  | ✅     | `entity_pivots` polymorphic table                                                            |
+| Sync Engine                        | ✅     | CRDT via automerge, TCP P2P, mDNS discovery                                                  |
+| UI Component Library               | ✅     | 30+ shared components with a11y, focus trap                                                  |
 
 ---
 
@@ -387,7 +387,7 @@ Preserved for context; the tables above are authoritative.
 ## Source reconciliation (2026-09-30)
 
 Greps run this date; see **Ground truth** above for the table. Superseded claims fixed in this
-revision: 831→841 commands · 34→32 migrations · 43→44 stores · 915→969 Rust tests ·
+revision: 831→841→868 commands · 34→32→34 migrations · 43→44→47 stores · 915→969→999 Rust tests ·
 "ColumnPicker.tsx exists"→was no, built 2026-09-30 (`ColumnPicker.tsx` + EmailList/TasksPage mounts) · "OnboardingWizard.tsx exists"→renamed `OnboardingScreen.tsx` ·
 "packaging.yml"→`build.yml` · "RTL audit not written"→written, 421 violations remain ·
 "No code written" (voice)→Phases A–B closed, C in progress · widget count 8→10 ·

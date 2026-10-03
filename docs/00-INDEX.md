@@ -240,7 +240,6 @@ For contributors and AI agents.
 | [Monetization — Asset Delivery](06-ROADMAP/12-monetization-asset-delivery.md)         | Asset delivery design                                                  |
 | [Monetization — Mobile Strategy](06-ROADMAP/13-monetization-mobile-strategy.md)       | Mobile monetization strategy                                           |
 | [AI Stack — Cross-Pollination](06-ROADMAP/14-ai-stack-cross-pollination.md) 🆕        | Bilateral AI-stack exchange with SignSync (doctor, slots, candle-only) |
-| [Simplified Core Spec](06-ROADMAP/smeMaster_Simplified_Core_Spec.md)                  | Simplified core product spec                                           |
 
 ## Production Readiness
 

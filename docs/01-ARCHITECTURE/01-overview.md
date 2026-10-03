@@ -49,7 +49,7 @@ SQLite (WAL mode)
 
 ## What Happens When You Start the App
 
-1. Tauri's `setup` hook fires → creates SQLite pool → runs **32 migrations** (⚠️ re-grepped 2026-09-30: `src-tauri/src/db/migrations/` holds exactly 32 `.sql` files, 001–032. Older text said "34 migrations (verified 2026-07-19)", which counted a "020 & 021 each split into two" split that does not exist on disk. `docs/STATUS.md` still says 34 — see its Verified Ground Truth table. **Re-grep before trusting any migration count.**) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
+1. Tauri's `setup` hook fires → creates SQLite pool → runs **34 migrations** (re-verified 2026-10-03: `src-tauri/src/db/migrations/` holds exactly 34 `.sql` files, 001–034) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
 
 2. `main.tsx` renders `<WindowBootstrap>` which checks: "what window are we in?"
 
