@@ -13,8 +13,10 @@ export interface WindowInitResult {
 }
 
 export function useWindowInit(options?: { skipClients?: boolean }): WindowInitResult {
-  const { setTheme, setFontScale, setColorTheme } = useThemeStore();
-  const { setAccounts } = useAccountStore();
+  const setTheme = useThemeStore((s) => s.setTheme);
+  const setFontScale = useThemeStore((s) => s.setFontScale);
+  const setColorTheme = useThemeStore((s) => s.setColorTheme);
+  const setAccounts = useAccountStore((s) => s.setAccounts);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

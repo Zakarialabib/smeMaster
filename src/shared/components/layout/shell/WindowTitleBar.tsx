@@ -5,6 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import { useSyncStore } from '@shared/stores/syncStore';
 import { usePlatform } from '@shared/hooks/usePlatform';
+import { useEscapeClose } from '@shared/hooks/useEscapeClose';
 import { useFocusModeStore } from '@shared/stores/focusModeStore';
 import { useThemeStore } from '@shared/theme/themeStore';
 import type { ThemeMode } from '@shared/theme/themeStore';
@@ -186,7 +187,10 @@ export function WindowTitleBar({
 
   // ── Theme config (mobile-native) ───────────────────────────────────────
   const breadcrumb = getBreadcrumb(location.pathname, t);
-  const { mode, colorTheme, setMode, setColorTheme } = useThemeStore();
+  const mode = useThemeStore((s) => s.mode);
+  const colorTheme = useThemeStore((s) => s.colorTheme);
+  const setMode = useThemeStore((s) => s.setMode);
+  const setColorTheme = useThemeStore((s) => s.setColorTheme);
   const [lang, setLang] = useState<SupportedLocale>(
     () => (localStorage.getItem('i18nextLng') as SupportedLocale) || 'en',
   );
@@ -265,14 +269,7 @@ export function WindowTitleBar({
   }, [accountMenuOpen]);
 
   // ── Escape exits focus mode ────────────────────────────────────────────
-  useEffect(() => {
-    if (!focusMode) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') useFocusModeStore.getState().exitFocusMode();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [focusMode]);
+  useEscapeClose(focusMode, () => useFocusModeStore.getState().exitFocusMode());
 
   // ── Handlers ───────────────────────────────────────────────────────────
   const handleMinimize = useCallback(() => {

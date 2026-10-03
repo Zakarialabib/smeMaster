@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { X } from 'lucide-react';
 import { usePlatform } from '@shared/hooks/usePlatform';
+import { useEscapeClose } from '@shared/hooks/useEscapeClose';
 
 /**
  * SlidePanel — right sidebar (desktop) or bottom sheet (mobile).
@@ -52,14 +53,7 @@ export function SlidePanel({
   const effectiveSide = isMobileDevice ? 'bottom' : 'right';
 
   // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, onClose]);
+  useEscapeClose(isOpen, onClose);
 
   // Prevent body scroll when open on mobile
   useEffect(() => {

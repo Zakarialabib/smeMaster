@@ -7,7 +7,10 @@ export function OfflineQueueIndicator() {
   const [expanded, setExpanded] = useState(false);
   const pendingOpsCount = useSyncStore((s) => s.pendingOpsCount);
   const isOnline = useSyncStore((s) => s.isOnline);
-  const { activeProgress, completedCount, failedCount, totalCount } = useQueueProgressStore();
+  const activeProgress = useQueueProgressStore((s) => s.activeProgress);
+  const completedCount = useQueueProgressStore((s) => s.completedCount);
+  const failedCount = useQueueProgressStore((s) => s.failedCount);
+  const totalCount = useQueueProgressStore((s) => s.totalCount);
 
   if (pendingOpsCount === 0 && activeProgress.length === 0) return null;
 
