@@ -1,7 +1,7 @@
 export { useLiveQuery } from './useLiveQuery';
 export type { UseLiveQueryOptions, UseLiveQueryResult } from './useLiveQuery';
 export { useLogs, useClearLogs } from './useLogs';
-export type { } from './useLogs';
+export type {} from './useLogs';
 export { useDensity, type DensityMode, type DensityResult } from './useDensity';
 export { useBreakpoint, usePrefersGridView } from './useBreakpoint';
 export type { Breakpoint } from './useBreakpoint';

@@ -1,0 +1,95 @@
+# ============================================================================
+# ground-truth.yml — SMEMaster ground-truth metrics + summary-gated tests
+#
+# Owner / responsible agent: qa-guardian
+#
+# What this workflow does
+#   (a) `metrics` — runs `node scripts/check-ground-truth.mjs`, which counts the
+#       three canonical metrics straight from source (IPC commands 841,
+#       SQLite migrations 32, Zustand store modules 44), compares them with the
+#       expected values in `scripts/ground-truth.json`, AND cross-checks the
+#       numbers printed in the `docs/00-INDEX.md` header (docs-rot detector).
+#       Node builtins only — no dependency install needed.
+#   (b) `summary-gated-tests` — runs vitest and gates on its SUMMARY LINE via
+#       `scripts/assert-summary.mjs`. On the Windows dev host vitest has been
+#       observed to exit 0 while tests fail ("false green"), so the process
+#       exit code is reported but NOT trusted; the verdict comes from
+#       `Tests ... passed/failed` in the captured output.
+#
+# What this workflow deliberately does NOT do
+#   - typecheck / eslint / cargo / vite build. Those are owned by `ci.yml`
+#     (job `lint-and-test`, windows-latest: `bun run typecheck`, `bun run lint`,
+#     `bun run test --project unit`, cargo check + test, `bun run build`).
+#     This workflow stays focused on the metrics check + summary-gated tests —
+#     do not duplicate ci.yml's jobs here.
+#
+# Re-baselining the expected numbers (only after a legitimate, verified change):
+#   1. Run `node scripts/check-ground-truth.mjs` locally and read the "actual"
+#      column (it also reports the doc-header cross-check).
+#   2. Update `commands` / `migrations` / `stores` + `verifiedOn` in
+#      `scripts/ground-truth.json` (keep `countingRules` in sync if the rule
+#      itself changed).
+#   3. Update the same three numbers in the `docs/00-INDEX.md` header, plus
+#      `docs/06-ROADMAP/09-master-plan.md` and `AGENTS.md` if they cite them.
+#   4. Re-run the checker until it PASSes, then commit baseline + docs together.
+#
+# NOTE on the package manager: bun is authoritative (`bun.lock`). Jobs install
+# with `bun install --frozen-lockfile`; `package-lock.json` is no longer used.
+# ============================================================================
+
+name: Ground Truth
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same branch/PR (mirrors ci.yml)
+concurrency:
+  group: ground-truth-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  metrics:
+    name: Ground-truth metrics (841 / 32 / 44)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+        # No install here: the checker uses node builtins only.
+
+      - name: Check ground-truth metrics + docs/00-INDEX.md header
+        run: node scripts/check-ground-truth.mjs
+
+  summary-gated-tests:
+    name: Vitest (summary-gated)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run vitest (capture output; process exit code is NOT the verdict)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $env:NO_COLOR = '1'
+          bunx vitest run --exclude integration 2>&1 |
+            Tee-Object -FilePath vitest-output.log |
+            ForEach-Object { Write-Host $_ }
+          Write-Host "vitest exit code: $LASTEXITCODE (reported only - the next step gates on the summary line)"
+          exit 0
+
+      - name: Gate on the vitest summary line
+        shell: pwsh
+        run: node scripts/assert-summary.mjs vitest-output.log

@@ -79,7 +79,7 @@ export function VaultToolbar({ className = '' }: VaultToolbarProps) {
 
         {/* View mode toggle */}
         <div
-          className="flex items-center bg-bg-secondary rounded-md border border-border-primary ml-auto"
+          className="flex items-center bg-bg-secondary rounded-md border border-border-primary ms-auto"
           role="radiogroup"
           aria-label="View mode"
         >

@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Modal } from "./Modal";
-import { Button } from "./Button";
-import { INPUT_BASE } from "@shared/styles/ui-tokens";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Modal } from './Modal';
+import { Button } from './Button';
+import { INPUT_BASE } from '@shared/styles/ui-tokens';
 
 interface InputField {
   key: string;
@@ -26,13 +26,10 @@ export function InputDialog({
   onSubmit,
   title,
   fields,
-  submitLabel = "Save",
+  submitLabel = 'Save',
 }: InputDialogProps) {
   const buildInitial = useCallback(
-    () =>
-      Object.fromEntries(
-        fields.map((f) => [f.key, f.defaultValue ?? ""]),
-      ),
+    () => Object.fromEntries(fields.map((f) => [f.key, f.defaultValue ?? ''])),
     [fields],
   );
 
@@ -59,7 +56,7 @@ export function InputDialog({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && fields.length === 1 && isValid) {
+    if (e.key === 'Enter' && fields.length === 1 && isValid) {
       e.preventDefault();
       handleSubmit();
     }
@@ -76,10 +73,8 @@ export function InputDialog({
             <input
               ref={i === 0 ? firstInputRef : undefined}
               type="text"
-              value={values[field.key] ?? ""}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
-              }
+              value={values[field.key] ?? ''}
+              onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
               placeholder={field.placeholder}
               className={INPUT_BASE}
             />

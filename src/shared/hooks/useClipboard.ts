@@ -17,8 +17,7 @@
 
 function isTauri(): boolean {
   return (
-    typeof window !== "undefined" &&
-    ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
   );
 }
 
@@ -29,7 +28,7 @@ function isTauri(): boolean {
 export async function copyToClipboard(text: string): Promise<void> {
   if (isTauri()) {
     try {
-      const { writeText } = await import("@tauri-apps/plugin-clipboard-manager");
+      const { writeText } = await import('@tauri-apps/plugin-clipboard-manager');
       await writeText(text);
       return;
     } catch {
@@ -41,7 +40,7 @@ export async function copyToClipboard(text: string): Promise<void> {
     await navigator.clipboard.writeText(text);
   } catch {
     // Clipboard may be unavailable in non-secure contexts or sandboxed iframes
-    console.warn("[useClipboard] Failed to copy text");
+    console.warn('[useClipboard] Failed to copy text');
   }
 }
 
@@ -52,7 +51,7 @@ export async function copyToClipboard(text: string): Promise<void> {
 export async function pasteFromClipboard(): Promise<string> {
   if (isTauri()) {
     try {
-      const { readText } = await import("@tauri-apps/plugin-clipboard-manager");
+      const { readText } = await import('@tauri-apps/plugin-clipboard-manager');
       return await readText();
     } catch {
       // Fall through to web API
@@ -62,8 +61,8 @@ export async function pasteFromClipboard(): Promise<string> {
   try {
     return await navigator.clipboard.readText();
   } catch {
-    console.warn("[useClipboard] Failed to read clipboard");
-    return "";
+    console.warn('[useClipboard] Failed to read clipboard');
+    return '';
   }
 }
 

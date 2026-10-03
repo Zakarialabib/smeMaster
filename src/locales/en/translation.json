@@ -47,13 +47,13 @@
     "setupWizard": "Setup wizard",
     "steps": {
       "welcome": "Welcome",
-      "features": "Features",
+      "tools": "Features",
       "account": "Account",
-      "ready": "Ready",
+      "complete": "Ready",
       "welcomeDesc": "Theme & Profile",
-      "featuresDesc": "Choose Capabilities",
+      "toolsDesc": "Choose Capabilities",
       "accountDesc": "Connect Email",
-      "readyDesc": "Launch"
+      "completeDesc": "Launch"
     },
     "welcomeTitle": "Welcome to SMEMaster",
     "welcomeDesc": "All-in-one mail, CRM, and campaign management for your business",
@@ -624,6 +624,7 @@
     "providerClaude": "Claude (Anthropic)",
     "providerOpenai": "OpenAI",
     "providerGemini": "Gemini (Google)",
+    "providerMistral": "Mistral AI",
     "providerOllama": "Local AI (Ollama / LMStudio)",
     "providerCopilot": "GitHub Copilot",
     "providerLmstudio": "Local AI (LM Studio)",
@@ -639,6 +640,7 @@
     "subtabProviderModels": "Provider & Models",
     "subtabFeatures": "AI Features",
     "subtabKnowledgeBase": "Knowledge Base",
+    "subtabAiRouter": "AI Router",
     "statusProviderConnected": "Provider Connected",
     "statusEmbeddingSet": "Embedding Set",
     "statusIndexed": "Indexed",
@@ -675,6 +677,8 @@
     "bgeModelDescription": "Download and load the BGE-small-en-v1.5 embedding model locally.",
     "modelStatus": "Model Status",
     "downloadBge": "Download BGE-Small",
+    "downloadSpeed": "Speed",
+    "downloadRemaining": "Remaining",
     "kbLoading": "Loading…",
     "loadModel": "Load Model",
     "localModelsFolder": "Local Models Folder",
@@ -722,9 +726,11 @@
     "openaiApiKey": "OpenAI API Key",
     "githubPat": "GitHub Personal Access Token",
     "googleAiApiKey": "Google AI API Key",
+    "mistralApiKey": "Mistral API Key",
     "claudeKeyPlaceholder": "sk-ant-...",
     "copilotKeyPlaceholder": "ghp_...",
     "geminiKeyPlaceholder": "AI...",
+    "mistralKeyPlaceholder": "mistral-...",
     "enableAiFeaturesDescription": "Master toggle for all AI functionality",
     "autoCategorizeDescription": "Use AI to refine rule-based categorization",
     "autoSummarizeDescription": "Show AI summaries on multi-message threads",
@@ -1122,7 +1128,9 @@
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
-      "cache": "Data cache status, hit rate, and benchmarks"
+      "cache": "Data cache status, hit rate, and benchmarks",
+      "voice": "Speech providers and on-device engines",
+      "localModels": "Download and manage on-device models"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1261,7 +1269,13 @@
     "undoSendQuickPick": "Quick pick",
     "calendarDesc": "Calendar preferences and sync",
     "expiresIn": "Expires in {{count}}",
-    "pairingUnavailableDev": "Pairing is unavailable in development mode"
+    "pairingUnavailableDev": "Pairing is unavailable in development mode",
+    "pairingTitle": "settings.pairingTitle",
+    "providerByteplus": "BytePlus (ByteDance)",
+    "byteplusApiKey": "settings.byteplusApiKey",
+    "byteplusKeyPlaceholder": "settings.byteplusKeyPlaceholder",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",
@@ -1725,6 +1739,19 @@
     "createdLabel": "Created",
     "algorithms": "Algorithms"
   },
+  "columns": {
+    "title": "Columns",
+    "reset": "Reset to defaults",
+    "ids": {
+      "checkbox": "Selection",
+      "star": "Star",
+      "attachments": "Attachments",
+      "priority": "Priority",
+      "subtasks": "Subtasks",
+      "actions": "Actions",
+      "avatar": "Avatar"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -1900,7 +1927,56 @@
     "refresh": "Refresh",
     "updatedSeconds": "Updated {{count}}s ago",
     "updatedMinutes": "Updated {{count}}m ago",
-    "updatedHours": "Updated {{count}}h ago"
+    "updatedHours": "Updated {{count}}h ago",
+    "sections": {
+      "consoleTitle": "Sections",
+      "consoleDescription": "Jump straight into a section — each card shows live stats and a quick overview.",
+      "emails": {
+        "title": "Emails",
+        "description": "Read, reply, and organize your inbox — labels, smart folders, and unread triage all live here."
+      },
+      "people": {
+        "title": "People",
+        "description": "Your contacts and CRM: segments, groups, follow-ups, and the full relationship history for everyone you work with."
+      },
+      "tasks": {
+        "title": "Tasks & Schedule",
+        "description": "Plan your day with due dates, priorities, and the calendar schedule for everything on your plate."
+      },
+      "invoicing": {
+        "title": "Invoicing",
+        "description": "Create and track invoices, delivery bills, and payments — and see what is still unpaid at a glance."
+      },
+      "campaigns": {
+        "title": "Campaigns",
+        "description": "Email campaigns with open and click tracking, managed together with your automation rules."
+      },
+      "automation": {
+        "title": "Automation",
+        "description": "Workflow rules that run automatically — triggered by emails, contacts, or schedules."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Your events and schedule for today and the week ahead, in the schedule view."
+      }
+    },
+    "cards": {
+      "openSection": "Open section",
+      "aboutSection": "About {{section}}",
+      "stat": {
+        "unread": "Unread",
+        "threads": "Threads",
+        "total": "Total",
+        "newWeek": "New this week",
+        "dueToday": "Due today",
+        "overdue": "Overdue",
+        "unpaid": "Unpaid",
+        "sent": "Sent",
+        "rules": "Rules",
+        "active": "Active",
+        "eventsToday": "Today"
+      }
+    }
   },
   "dialog": {
     "snoozeTitle": "Snooze until"
@@ -2314,5 +2390,8 @@
     "promotions": "Promotions",
     "social": "Social",
     "newsletters": "Newsletters"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
   }
 }

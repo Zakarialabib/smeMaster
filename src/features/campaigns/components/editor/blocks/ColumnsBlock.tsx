@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
-import type { ColumnsBlock as ColumnsBlockT } from "../types";
+import { useTranslation } from 'react-i18next';
+import type { ColumnsBlock as ColumnsBlockT } from '../types';
 
 interface ColumnsBlockProps {
   block: ColumnsBlockT;
@@ -15,7 +15,7 @@ export function ColumnsBlock({ block, onChange }: ColumnsBlockProps) {
     >
       <div className="flex flex-col">
         <span className="text-[0.625rem] uppercase tracking-wider text-text-tertiary mb-1">
-          {t("campaign.editor.leftColumn")}
+          {t('campaign.editor.leftColumn')}
         </span>
         <textarea
           value={block.leftHtml}
@@ -26,7 +26,7 @@ export function ColumnsBlock({ block, onChange }: ColumnsBlockProps) {
       </div>
       <div className="flex flex-col">
         <span className="text-[0.625rem] uppercase tracking-wider text-text-tertiary mb-1">
-          {t("campaign.editor.rightColumn")}
+          {t('campaign.editor.rightColumn')}
         </span>
         <textarea
           value={block.rightHtml}

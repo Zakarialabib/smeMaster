@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback, useMemo } from "react";
-import { CSSTransition } from "react-transition-group";
-import { useLabelStore } from "@features/mail/stores/labelStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useThreadStore } from "@features/mail/stores/threadStore";
+import { useState, useRef, useCallback, useMemo } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import { useLabelStore } from '@features/mail/stores/labelStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useThreadStore } from '@features/mail/stores/threadStore';
 import {
   archiveThread,
   trashThread,
@@ -10,17 +10,9 @@ import {
   addThreadLabel,
   removeThreadLabel,
   moveThread,
-} from "@features/mail/services/emailActions";
-import { uiBus } from "@shared/services/events/uiBus";
-import {
-  Inbox,
-  Archive,
-  Trash2,
-  Ban,
-  Search,
-  Tag,
-  Folder,
-} from "lucide-react";
+} from '@features/mail/services/emailActions';
+import { uiBus } from '@shared/services/events/uiBus';
+import { Inbox, Archive, Trash2, Ban, Search, Tag, Folder } from 'lucide-react';
 
 interface MoveToFolderDialogProps {
   isOpen: boolean;
@@ -32,24 +24,20 @@ interface Destination {
   id: string;
   label: string;
   icon: typeof Inbox;
-  type: "system" | "label";
+  type: 'system' | 'label';
   /** For IMAP: the folder path to move to */
   folderPath?: string;
 }
 
 const SYSTEM_DESTINATIONS: Destination[] = [
-  { id: "INBOX", label: "Inbox", icon: Inbox, type: "system" },
-  { id: "__archive__", label: "Archive", icon: Archive, type: "system" },
-  { id: "TRASH", label: "Trash", icon: Trash2, type: "system" },
-  { id: "SPAM", label: "Spam", icon: Ban, type: "system" },
+  { id: 'INBOX', label: 'Inbox', icon: Inbox, type: 'system' },
+  { id: '__archive__', label: 'Archive', icon: Archive, type: 'system' },
+  { id: 'TRASH', label: 'Trash', icon: Trash2, type: 'system' },
+  { id: 'SPAM', label: 'Spam', icon: Ban, type: 'system' },
 ];
 
-export function MoveToFolderDialog({
-  isOpen,
-  threadIds,
-  onClose,
-}: MoveToFolderDialogProps) {
-  const [query, setQuery] = useState("");
+export function MoveToFolderDialog({ isOpen, threadIds, onClose }: MoveToFolderDialogProps) {
+  const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -62,7 +50,7 @@ export function MoveToFolderDialog({
     () => accounts.find((a) => a.id === activeAccountId),
     [accounts, activeAccountId],
   );
-  const isImap = account?.provider === "imap";
+  const isImap = account?.provider === 'imap';
 
   // Build the full destination list: system destinations + user labels
   const destinations = useMemo(() => {
@@ -70,7 +58,7 @@ export function MoveToFolderDialog({
       id: l.id,
       label: l.name,
       icon: Tag,
-      type: "label" as const,
+      type: 'label' as const,
     }));
     return [...SYSTEM_DESTINATIONS, ...userLabels];
   }, [labels]);
@@ -88,20 +76,20 @@ export function MoveToFolderDialog({
       onClose();
 
       for (const threadId of threadIds) {
-        if (dest.id === "__archive__") {
+        if (dest.id === '__archive__') {
           await archiveThread(activeAccountId, threadId, []);
-        } else if (dest.id === "TRASH") {
+        } else if (dest.id === 'TRASH') {
           await trashThread(activeAccountId, threadId, []);
-        } else if (dest.id === "SPAM") {
+        } else if (dest.id === 'SPAM') {
           await spamThread(activeAccountId, threadId, [], true);
-        } else if (dest.id === "INBOX") {
+        } else if (dest.id === 'INBOX') {
           if (isImap) {
-            await moveThread(activeAccountId, threadId, [], "INBOX");
+            await moveThread(activeAccountId, threadId, [], 'INBOX');
           } else {
             // Gmail: add INBOX label (un-archive)
-            await addThreadLabel(activeAccountId, threadId, "INBOX");
+            await addThreadLabel(activeAccountId, threadId, 'INBOX');
           }
-        } else if (dest.type === "label") {
+        } else if (dest.type === 'label') {
           if (isImap) {
             // IMAP: move to folder. The label's id is the folder path for IMAP accounts.
             await moveThread(activeAccountId, threadId, [], dest.id);
@@ -109,45 +97,43 @@ export function MoveToFolderDialog({
             // Gmail: add destination label + remove from current location (archive)
             await addThreadLabel(activeAccountId, threadId, dest.id);
             // Remove INBOX to complete the "move" semantics
-            const thread = useThreadStore
-              .getState()
-              .threads.find((t) => t.id === threadId);
-            if (thread?.labelIds.includes("INBOX")) {
-              await removeThreadLabel(activeAccountId, threadId, "INBOX");
+            const thread = useThreadStore.getState().threads.find((t) => t.id === threadId);
+            if (thread?.labelIds.includes('INBOX')) {
+              await removeThreadLabel(activeAccountId, threadId, 'INBOX');
             }
           }
         }
       }
 
       // Refresh thread list
-      uiBus.emit("data:changed");
+      uiBus.emit('data:changed');
     },
     [activeAccountId, threadIds, isImap, onClose],
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIdx((prev) => {
           const next = Math.min(prev + 1, filtered.length - 1);
           scrollToIndex(next);
           return next;
         });
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedIdx((prev) => {
           const next = Math.max(prev - 1, 0);
           scrollToIndex(next);
           return next;
         });
-      } else if (e.key === "Enter") {
+      } else if (e.key === 'Enter') {
         e.preventDefault();
         const dest = filtered[selectedIdx];
         if (dest) {
           handleSelect(dest);
         }
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
       }
@@ -159,12 +145,12 @@ export function MoveToFolderDialog({
     const list = listRef.current;
     if (!list) return;
     const item = list.children[index] as HTMLElement | undefined;
-    item?.scrollIntoView?.({ block: "nearest" });
+    item?.scrollIntoView?.({ block: 'nearest' });
   };
 
   // Reset state when dialog opens/closes
   const handleEntered = () => {
-    setQuery("");
+    setQuery('');
     setSelectedIdx(0);
     inputRef.current?.focus();
   };
@@ -208,43 +194,35 @@ export function MoveToFolderDialog({
           </div>
 
           {/* Destination list */}
-          <div
-            ref={listRef}
-            className="max-h-64 overflow-y-auto py-1"
-            role="listbox"
-          >
+          <div ref={listRef} className="max-h-64 overflow-y-auto py-1" role="listbox">
             {filtered.length === 0 && (
               <div className="px-3 py-4 text-center text-xs text-text-tertiary">
                 No matching folders or labels
               </div>
             )}
             {filtered.map((dest, idx) => {
-              const Icon = dest.type === "system" ? dest.icon : Folder;
+              const Icon = dest.type === 'system' ? dest.icon : Folder;
               const isSelected = idx === selectedIdx;
               return (
                 <button
                   key={dest.id}
                   role="option"
                   aria-selected={isSelected}
-                  className={`flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-left cursor-pointer transition-colors ${
+                  className={`flex items-center gap-2.5 w-full px-3 py-1.5 text-sm text-start cursor-pointer transition-colors ${
                     isSelected
-                      ? "bg-bg-selected text-text-primary"
-                      : "text-text-secondary hover:bg-bg-hover"
+                      ? 'bg-bg-selected text-text-primary'
+                      : 'text-text-secondary hover:bg-bg-hover'
                   }`}
                   onClick={() => handleSelect(dest)}
                   onMouseEnter={() => setSelectedIdx(idx)}
                 >
                   <Icon
                     size={15}
-                    className={
-                      dest.type === "system"
-                        ? "text-text-tertiary"
-                        : "text-accent"
-                    }
+                    className={dest.type === 'system' ? 'text-text-tertiary' : 'text-accent'}
                   />
                   <span className="truncate">{dest.label}</span>
-                  {dest.type === "system" && (
-                    <span className="ml-auto text-[10px] text-text-tertiary uppercase tracking-wider">
+                  {dest.type === 'system' && (
+                    <span className="ms-auto text-[10px] text-text-tertiary uppercase tracking-wider">
                       System
                     </span>
                   )}
@@ -256,22 +234,15 @@ export function MoveToFolderDialog({
           {/* Footer hint */}
           <div className="flex items-center gap-3 px-3 py-1.5 border-t border-border-secondary text-[10px] text-text-tertiary">
             <span>
-              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
-                ������
-              </kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">������</kbd>{' '}
               navigate
             </span>
             <span>
-              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
-                ���
-              </kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">���</kbd>{' '}
               select
             </span>
             <span>
-              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">
-                esc
-              </kbd>{" "}
-              close
+              <kbd className="px-1 py-0.5 rounded bg-bg-tertiary text-text-tertiary">esc</kbd> close
             </span>
           </div>
         </div>
@@ -279,6 +250,3 @@ export function MoveToFolderDialog({
     </CSSTransition>
   );
 }
-
-
-

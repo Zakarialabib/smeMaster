@@ -1,15 +1,15 @@
-import { useCallback, useMemo, useRef } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { CheckCircle2, Circle, Calendar, Trash2, ChevronRight } from "lucide-react";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { useColumnConfigStore } from "@shared/stores/columnConfigStore";
+import { useCallback, useMemo, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { CheckCircle2, Circle, Calendar, Trash2, ChevronRight } from 'lucide-react';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { useColumnConfigStore } from '@shared/stores/columnConfigStore';
 
 /**
  * Density options for task list rows.
  * @spec §3.3
  */
-export type TaskDensity = "compact" | "normal" | "comfortable";
+export type TaskDensity = 'compact' | 'normal' | 'comfortable';
 
 /**
  * Row height in pixels for each density level (used by the virtualizer).
@@ -25,26 +25,26 @@ const DENSITY_PX: Record<TaskDensity, number> = {
  * @spec §3.3
  */
 const DENSITY_HEIGHTS: Record<TaskDensity, string> = {
-  compact: "h-10",
-  normal: "h-13",
-  comfortable: "h-16",
+  compact: 'h-10',
+  normal: 'h-13',
+  comfortable: 'h-16',
 };
 
 /**
  * Padding mapping for each density level.
  */
 const DENSITY_PADDING: Record<TaskDensity, string> = {
-  compact: "py-1.5",
-  normal: "py-2",
-  comfortable: "py-3",
+  compact: 'py-1.5',
+  normal: 'py-2',
+  comfortable: 'py-3',
 };
 
 const PRIORITY_DOT: Record<TaskPriority, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-500",
-  medium: "bg-amber-500",
-  low: "bg-blue-400",
-  none: "bg-text-tertiary/30",
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-amber-500',
+  low: 'bg-blue-400',
+  none: 'bg-text-tertiary/30',
 };
 
 function getTags(tagsJson: string): string[] {
@@ -66,18 +66,18 @@ function getDayDiff(timestamp: number): number {
 function formatDueDate(timestamp: number): string {
   const diff = getDayDiff(timestamp);
   if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
   if (diff <= 7) return `${diff}d`;
   const date = new Date(timestamp * 1000);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function getDueDateStyle(timestamp: number): string {
   const diff = getDayDiff(timestamp);
-  if (diff < 0) return "text-red-500 bg-red-500/10";
-  if (diff <= 1) return "text-amber-500 bg-amber-500/10";
-  return "text-text-tertiary bg-bg-tertiary";
+  if (diff < 0) return 'text-red-500 bg-red-500/10';
+  if (diff <= 1) return 'text-amber-500 bg-amber-500/10';
+  return 'text-text-tertiary bg-bg-tertiary';
 }
 
 /**
@@ -121,8 +121,8 @@ export interface TaskListViewProps {
  * Internal type for the virtualized row list — either a group header or a task row.
  */
 type VirtualRow =
-  | { type: "group-header"; label: string; key: string }
-  | { type: "task"; task: DbTask; key: string };
+  | { type: 'group-header'; label: string; key: string }
+  | { type: 'task'; task: DbTask; key: string };
 
 /**
  * Estimate the pixel height of a group header row.
@@ -203,13 +203,13 @@ export function TaskListView({
     for (const group of groupedTasks) {
       if (group.label) {
         rows.push({
-          type: "group-header",
+          type: 'group-header',
           label: group.label,
           key: `header-${group.label}`,
         });
       }
       for (const task of group.tasks) {
-        rows.push({ type: "task", task, key: task.id });
+        rows.push({ type: 'task', task, key: task.id });
       }
     }
     return rows;
@@ -233,7 +233,7 @@ export function TaskListView({
     estimateSize: (index) => {
       const row = virtualRows[index];
       if (!row) return estimatedRowHeight;
-      return row.type === "group-header" ? GROUP_HEADER_HEIGHT : estimatedRowHeight;
+      return row.type === 'group-header' ? GROUP_HEADER_HEIGHT : estimatedRowHeight;
     },
     measureElement: (el) => el.getBoundingClientRect().height,
     overscan: 8,
@@ -257,19 +257,19 @@ export function TaskListView({
           onClick={(e) => handleRowClick(task, e)}
           className={`
             group flex items-center gap-2 px-3 rounded-lg cursor-pointer transition-all duration-150 ease-out
-            ${isSelected ? "bg-accent/8 border border-accent/20 shadow-sm" : "hover:bg-bg-hover border border-transparent hover:border-border-primary/40"}
-            ${task.is_completed ? "opacity-55" : ""}
+            ${isSelected ? 'bg-accent/8 border border-accent/20 shadow-sm' : 'hover:bg-bg-hover border border-transparent hover:border-border-primary/40'}
+            ${task.is_completed ? 'opacity-55' : ''}
             ${heightClass} ${paddingClass}
           `}
           role="row"
           aria-selected={isSelected}
         >
           {/* Checkbox */}
-          {visibleColumns.has("checkbox") && (
+          {visibleColumns.has('checkbox') && (
             <button
               onClick={handleToggleComplete(task)}
               className="shrink-0"
-              aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+              aria-label={task.is_completed ? 'Mark incomplete' : 'Mark complete'}
             >
               {task.is_completed ? (
                 <CheckCircle2 size={16} className="text-success" />
@@ -280,7 +280,7 @@ export function TaskListView({
           )}
 
           {/* Priority Dot */}
-          {visibleColumns.has("priority") && task.priority !== "none" && (
+          {visibleColumns.has('priority') && task.priority !== 'none' && (
             <span
               className={`
                 w-1.5 h-1.5 rounded-full shrink-0
@@ -309,12 +309,12 @@ export function TaskListView({
 
           {/* Title + Tags */}
           <div className="flex-1 min-w-0">
-            {visibleColumns.has("title") && (
+            {visibleColumns.has('title') && (
               <div className="flex items-center gap-1.5">
                 <span
                   className={`
                     text-sm truncate
-                    ${task.is_completed ? "line-through text-text-tertiary" : "text-text-primary"}
+                    ${task.is_completed ? 'line-through text-text-tertiary' : 'text-text-primary'}
                   `}
                 >
                   {task.title}
@@ -324,7 +324,7 @@ export function TaskListView({
 
             {!isSubtask && (
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                {visibleColumns.has("dueDate") && task.due_date && (
+                {visibleColumns.has('dueDate') && task.due_date && (
                   <span
                     className={`
                       inline-flex items-center gap-1 text-[0.6875rem] px-1.5 py-0.5 rounded
@@ -343,51 +343,52 @@ export function TaskListView({
                     ↻
                   </span>
                 )}
-                {visibleColumns.has("subtasks") && hasSubtasks && (
+                {visibleColumns.has('subtasks') && hasSubtasks && (
                   <span className="text-[0.6875rem] text-text-tertiary">
                     {completedSubtasks}/{subtasks.length}
                   </span>
                 )}
-                {visibleColumns.has("tags") && tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="
+                {visibleColumns.has('tags') &&
+                  tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="
                       text-[0.625rem] px-1.5 py-0.5 rounded-full
                       bg-accent/10 text-accent
                     "
-                  >
-                    {tag}
-                  </span>
-                ))}
+                    >
+                      {tag}
+                    </span>
+                  ))}
               </div>
             )}
           </div>
 
           {/* Actions (visible on hover) */}
-          {visibleColumns.has("actions") && (
-          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            {hasSubtasks && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Subtask expansion handled at parent level
-                }}
-                className="p-0.5 text-text-tertiary hover:text-text-primary"
-                aria-label="Toggle subtasks"
-              >
-                <ChevronRight size={14} />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={handleDelete(task)}
-                className="p-0.5 text-text-tertiary hover:text-danger transition-colors"
-                aria-label="Delete task"
-              >
-                <Trash2 size={13} />
-              </button>
-            )}
-          </div>
+          {visibleColumns.has('actions') && (
+            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              {hasSubtasks && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Subtask expansion handled at parent level
+                  }}
+                  className="p-0.5 text-text-tertiary hover:text-text-primary"
+                  aria-label="Toggle subtasks"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={handleDelete(task)}
+                  className="p-0.5 text-text-tertiary hover:text-danger transition-colors"
+                  aria-label="Delete task"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
           )}
         </div>
       );
@@ -419,25 +420,20 @@ export function TaskListView({
 
   // ── Virtualized list ────────────────────────────────────────────────
   return (
-    <div
-      ref={parentRef}
-      className="flex-1 overflow-auto"
-      role="table"
-      aria-label="Tasks list"
-    >
+    <div ref={parentRef} className="flex-1 overflow-auto" role="table" aria-label="Tasks list">
       <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          position: "relative",
-          width: "100%",
+          position: 'relative',
+          width: '100%',
         }}
       >
         {virtualizer.getVirtualItems().map((virtualItem) => {
           const row = virtualRows[virtualItem.index];
           if (!row) return null;
 
-          if (row.type === "group-header") {
+          if (row.type === 'group-header') {
             return (
               <div
                 key={virtualItem.key}
@@ -445,10 +441,10 @@ export function TaskListView({
                 ref={virtualizer.measureElement}
                 className="animate-[fadeSlideIn_200ms_ease-out]"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: 0,
                   left: 0,
-                  width: "100%",
+                  width: '100%',
                   height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
                   animationDelay: `${virtualItem.index * 20}ms`,
@@ -475,10 +471,10 @@ export function TaskListView({
               ref={virtualizer.measureElement}
               className="animate-[fadeSlideIn_200ms_ease-out]"
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top: 0,
                 left: 0,
-                width: "100%",
+                width: '100%',
                 height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
                 animationDelay: `${virtualItem.index * 20}ms`,

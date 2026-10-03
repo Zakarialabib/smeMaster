@@ -10,9 +10,9 @@
  * @module
  */
 
-import { create } from "zustand";
+import { create } from 'zustand';
 
-export type AiSidecarStatus = "idle" | "loading" | "ready" | "error";
+export type AiSidecarStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface AiSidecarState {
   /** Whether the user has explicitly activated the local AI sidecar. */
@@ -34,18 +34,16 @@ export interface AiSidecarState {
   /** Cached version string from sidecar `ping`/`init`. */
   version: string | null;
   /** Last metrics snapshot from the sidecar (null until polled). */
-  metrics:
-    | {
-        embed_count: number;
-        index_count: number;
-        query_count: number;
-        parse_count: number;
-        unload_count: number;
-        last_model_load_ms: number;
-        model_loaded: boolean;
-        rss_mb: number;
-      }
-    | null;
+  metrics: {
+    embed_count: number;
+    index_count: number;
+    query_count: number;
+    parse_count: number;
+    unload_count: number;
+    last_model_load_ms: number;
+    model_loaded: boolean;
+    rss_mb: number;
+  } | null;
 
   // ── Actions (UI state only) ─────────────────────────────────────────
   setActive: (active: boolean) => void;
@@ -62,25 +60,23 @@ export interface AiSidecarState {
     version?: string | null;
   }) => void;
   setMetrics: (
-    metrics:
-      | {
-          embed_count: number;
-          index_count: number;
-          query_count: number;
-          parse_count: number;
-          unload_count: number;
-          last_model_load_ms: number;
-          model_loaded: boolean;
-          rss_mb: number;
-        }
-      | null,
+    metrics: {
+      embed_count: number;
+      index_count: number;
+      query_count: number;
+      parse_count: number;
+      unload_count: number;
+      last_model_load_ms: number;
+      model_loaded: boolean;
+      rss_mb: number;
+    } | null,
   ) => void;
 }
 
 export const useAiSidecarStore = create<AiSidecarState>((set) => ({
   active: false,
   modelPath: null,
-  status: "idle",
+  status: 'idle',
   error: null,
   enabled: false,
   running: false,
@@ -96,7 +92,7 @@ export const useAiSidecarStore = create<AiSidecarState>((set) => ({
     set({
       active: false,
       modelPath: null,
-      status: "idle",
+      status: 'idle',
       error: null,
       enabled: false,
       running: false,

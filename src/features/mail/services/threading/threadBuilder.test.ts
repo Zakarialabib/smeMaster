@@ -106,10 +106,7 @@ describe('parseReferences', () => {
   });
 
   it('parses multiple angle-bracket Message-IDs', () => {
-    expect(parseReferences('<id1@host> <id2@host>')).toEqual([
-      'id1@host',
-      'id2@host',
-    ]);
+    expect(parseReferences('<id1@host> <id2@host>')).toEqual(['id1@host', 'id2@host']);
   });
 
   it('parses Message-IDs with various separators', () => {
@@ -121,18 +118,12 @@ describe('parseReferences', () => {
   });
 
   it('handles bare IDs without angle brackets as fallback', () => {
-    expect(parseReferences('id1@host id2@host')).toEqual([
-      'id1@host',
-      'id2@host',
-    ]);
+    expect(parseReferences('id1@host id2@host')).toEqual(['id1@host', 'id2@host']);
   });
 
   it('handles malformed references gracefully', () => {
     // Partial angle brackets
-    expect(parseReferences('<id1@host> garbage <id2@host>')).toEqual([
-      'id1@host',
-      'id2@host',
-    ]);
+    expect(parseReferences('<id1@host> garbage <id2@host>')).toEqual(['id1@host', 'id2@host']);
   });
 
   it('handles empty angle brackets', () => {
@@ -142,9 +133,11 @@ describe('parseReferences', () => {
   });
 
   it('preserves order', () => {
-    expect(
-      parseReferences('<first@host> <second@host> <third@host>'),
-    ).toEqual(['first@host', 'second@host', 'third@host']);
+    expect(parseReferences('<first@host> <second@host> <third@host>')).toEqual([
+      'first@host',
+      'second@host',
+      'third@host',
+    ]);
   });
 });
 
@@ -285,11 +278,7 @@ describe('buildThreads', () => {
     const threads = buildThreads(messages);
     expect(threads).toHaveLength(1);
     // Messages should be sorted by date
-    expect(threads[0].messageIds).toEqual([
-      'local-a',
-      'local-b',
-      'local-c',
-    ]);
+    expect(threads[0].messageIds).toEqual(['local-a', 'local-b', 'local-c']);
   });
 
   it('groups a fork: A → B, A → C into one thread', () => {
@@ -671,16 +660,12 @@ describe('buildThreads', () => {
 
 describe('updateThreads', () => {
   it('returns empty array when no new messages', () => {
-    const existing: ThreadGroup[] = [
-      { threadId: 'imap-thread-abc', messageIds: ['local-1'] },
-    ];
+    const existing: ThreadGroup[] = [{ threadId: 'imap-thread-abc', messageIds: ['local-1'] }];
     expect(updateThreads(existing, [])).toEqual([]);
   });
 
   it('creates new thread for standalone new message', () => {
-    const existing: ThreadGroup[] = [
-      { threadId: 'imap-thread-abc', messageIds: ['local-1'] },
-    ];
+    const existing: ThreadGroup[] = [{ threadId: 'imap-thread-abc', messageIds: ['local-1'] }];
 
     const newMessages: ThreadableMessage[] = [
       {
@@ -704,9 +689,7 @@ describe('updateThreads', () => {
     const rootMsgId = 'root@host';
     const existingThreadId = generateThreadId(rootMsgId);
 
-    const existing: ThreadGroup[] = [
-      { threadId: existingThreadId, messageIds: ['local-1'] },
-    ];
+    const existing: ThreadGroup[] = [{ threadId: existingThreadId, messageIds: ['local-1'] }];
 
     const newMessages: ThreadableMessage[] = [
       {
@@ -806,9 +789,7 @@ describe('updateThreads', () => {
     const result = updateThreads(existing, newMessages);
     // Should have at least one thread containing the new message
     expect(result.length).toBeGreaterThanOrEqual(1);
-    const threadWithBridge = result.find((t) =>
-      t.messageIds.includes('local-3'),
-    );
+    const threadWithBridge = result.find((t) => t.messageIds.includes('local-3'));
     expect(threadWithBridge).toBeDefined();
   });
 });

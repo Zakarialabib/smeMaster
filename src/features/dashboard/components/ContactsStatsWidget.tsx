@@ -1,14 +1,14 @@
-﻿import { useEffect, useState } from "react";
-import { Users, Activity, Layers, Tags, Filter } from "lucide-react";
+﻿import { useEffect, useState } from 'react';
+import { Users, Activity, Layers, Tags, Filter } from 'lucide-react';
 import {
   dashboardContactsTotal,
   dashboardContactsActive,
   dashboardContactsNewWeek,
-} from "@shared/services/db/db-invoke";
-import { listContactLabels, listContactGroups, listSegments } from "@shared/services/db/db-invoke";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { WidgetHeader, WidgetSkeleton, WidgetError } from "./WidgetHelpers";
-import { StatBox } from "./StatBox";
+} from '@shared/services/db/db-invoke';
+import { listContactLabels, listContactGroups, listSegments } from '@shared/services/db/db-invoke';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { WidgetHeader, WidgetSkeleton, WidgetError } from './WidgetHelpers';
+import { StatBox } from './StatBox';
 
 export function ContactsStatsWidget() {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -41,7 +41,9 @@ export function ContactsStatsWidget() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Load group/tag/segment counts
@@ -64,7 +66,9 @@ export function ContactsStatsWidget() {
         // optional metadata, don't block
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeAccountId]);
 
   if (loading) return <WidgetSkeleton />;
@@ -75,11 +79,7 @@ export function ContactsStatsWidget() {
       <WidgetHeader icon={<Users size={16} />} title="Contacts Stats" />
       <div className="space-y-3">
         <div className="grid grid-cols-3 gap-2">
-          <StatBox
-            label="Total"
-            value={total ?? 0}
-            icon={<Users size={13} />}
-          />
+          <StatBox label="Total" value={total ?? 0} icon={<Users size={13} />} />
           <StatBox
             label="Active"
             value={active ?? 0}
@@ -90,21 +90,21 @@ export function ContactsStatsWidget() {
             label="New/Week"
             value={newThisWeek ?? 0}
             icon={<Activity size={13} />}
-            variant={newThisWeek != null && newThisWeek > 0 ? "default" : "muted"}
+            variant={newThisWeek != null && newThisWeek > 0 ? 'default' : 'muted'}
           />
         </div>
         <div className="flex items-center justify-around text-xs text-text-tertiary border-t border-border-secondary pt-2">
           <span className="flex items-center gap-1">
             <Layers size={12} />
-            {groupCount ?? "â€”"} groups
+            {groupCount ?? 'â€”'} groups
           </span>
           <span className="flex items-center gap-1">
             <Tags size={12} />
-            {tagCount ?? "â€”"} tags
+            {tagCount ?? 'â€”'} tags
           </span>
           <span className="flex items-center gap-1">
             <Filter size={12} />
-            {segmentCount ?? "â€”"} segments
+            {segmentCount ?? 'â€”'} segments
           </span>
         </div>
       </div>

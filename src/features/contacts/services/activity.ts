@@ -1,7 +1,7 @@
-﻿import { getContactActivity as dbGetContactActivity } from "@shared/services/db/db-invoke";
+﻿import { getContactActivity as dbGetContactActivity } from '@shared/services/db/db-invoke';
 
 export interface ActivityEvent {
-  type: "email" | "task" | "calendar";
+  type: 'email' | 'task' | 'calendar';
   date: number;
   summary: string;
   id: string;

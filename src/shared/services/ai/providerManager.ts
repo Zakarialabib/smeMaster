@@ -1,69 +1,102 @@
-import { getSetting, getSecureSetting } from "@features/settings/db/settings";
-import { AiError } from "./errors";
-import type { AiProvider, AiProviderClient, TestEmbeddingResult } from "./types";
-import { DEFAULT_MODELS, MODEL_SETTINGS } from "./types";
-import { createClaudeProvider, clearClaudeProvider } from "./providers/claudeProvider";
-import { createOpenAIProvider, clearOpenAIProvider } from "./providers/openaiProvider";
-import { createGeminiProvider, clearGeminiProvider } from "./providers/geminiProvider";
-import { createOllamaProvider, clearOllamaProvider } from "./providers/ollamaProvider";
-import { createCopilotProvider, clearCopilotProvider } from "./providers/copilotProvider";
-import { createCustomProvider } from "./providers/customProvider";
-import { createLMStudioProvider, clearLMStudioProvider, testEmbedding } from "./providers/lmstudioProvider";
-import { createOpenRouterProvider, clearOpenRouterProvider } from "./providers/openrouterProvider";
+import { getSetting, getSecureSetting } from '@features/settings/db/settings';
+import { AiError } from './errors';
+import type { AiProvider, AiProviderClient, TestEmbeddingResult } from './types';
+import { DEFAULT_MODELS, MODEL_SETTINGS } from './types';
+import { createClaudeProvider, clearClaudeProvider } from './providers/claudeProvider';
+import { createOpenAIProvider, clearOpenAIProvider } from './providers/openaiProvider';
+import { createGeminiProvider, clearGeminiProvider } from './providers/geminiProvider';
+import { createMistralProvider, clearMistralProvider } from './providers/mistralProvider';
+import { createBytePlusProvider, clearBytePlusProvider } from './providers/byteplusProvider';
+import { createOllamaProvider, clearOllamaProvider } from './providers/ollamaProvider';
+import { createCopilotProvider, clearCopilotProvider } from './providers/copilotProvider';
+import { createCustomProvider } from './providers/customProvider';
+import {
+  createLMStudioProvider,
+  clearLMStudioProvider,
+  testEmbedding,
+} from './providers/lmstudioProvider';
+import { createOpenRouterProvider, clearOpenRouterProvider } from './providers/openrouterProvider';
+import {
+  isTextCapable,
+  isEmbeddingCapable,
+  isStructuredOutputCapable,
+  isToolCallingCapable,
+  isReasoningCapable,
+  type AiCapability,
+} from './capabilities';
 
-const API_KEY_SETTINGS: Record<Exclude<AiProvider, "ollama" | "custom" | "lmstudio">, string> = {
-  claude: "claude_api_key",
-  openai: "openai_api_key",
-  gemini: "gemini_api_key",
-  copilot: "copilot_api_key",
-  openrouter: "openrouter_api_key",
+const API_KEY_SETTINGS: Record<
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
+  string
+> = {
+  claude: 'claude_api_key',
+  openai: 'openai_api_key',
+  gemini: 'gemini_api_key',
+  mistral: 'mistral_api_key',
+  byteplus: 'byteplus_api_key',
+  copilot: 'copilot_api_key',
+  openrouter: 'openrouter_api_key',
 };
 
 let cachedProvider: { name: AiProvider; key: string; client: AiProviderClient } | null = null;
 
 export async function getActiveProviderName(): Promise<AiProvider> {
-  const setting = await getSetting("ai_provider");
+  const setting = await getSetting('ai_provider');
   if (
-    setting === "openai" ||
-    setting === "gemini" ||
-    setting === "ollama" ||
-    setting === "copilot" ||
-    setting === "lmstudio" ||
-    setting === "openrouter"
+    setting === 'openai' ||
+    setting === 'gemini' ||
+    setting === 'mistral' ||
+    setting === 'byteplus' ||
+    setting === 'ollama' ||
+    setting === 'copilot' ||
+    setting === 'lmstudio' ||
+    setting === 'openrouter'
   )
     return setting;
-  if (setting === "custom") {
-    const apiKey = await getSecureSetting("custom_api_key");
-    if (apiKey) return "custom";
+  if (setting === 'custom') {
+    const apiKey = await getSecureSetting('custom_api_key');
+    if (apiKey) return 'custom';
   }
-  return "claude";
+  return 'claude';
 }
 
 export async function getActiveProvider(): Promise<AiProviderClient> {
   const providerName = await getActiveProviderName();
-  const aiLanguage = (await getSetting("ai_language")) ?? "auto";
+  const aiLanguage = (await getSetting('ai_language')) ?? 'auto';
 
-  if (providerName === "ollama") {
-    const serverUrl = (await getSetting("ollama_server_url")) ?? "http://localhost:11434";
-    const model = (await getSetting("ollama_model")) ?? "llama3.2";
+  if (providerName === 'local') {
+    // `local` is not a chat provider — it holds the on-device speech models
+    // (sherpa-onnx STT/TTS), which are reached through `voiceService`, not this
+    // router. It also has no API-key or model setting, so the generic path
+    // below cannot index for it. Fail with a clear message rather than an
+    // undefined-settings error.
+    throw new AiError(
+      'NOT_CONFIGURED',
+      'Local is not a chat provider — it serves on-device speech models only',
+    );
+  }
+
+  if (providerName === 'ollama') {
+    const serverUrl = (await getSetting('ollama_server_url')) ?? 'http://localhost:11434';
+    const model = (await getSetting('ollama_model')) ?? 'llama3.2';
     const cacheKey = `${serverUrl}|${model}|${aiLanguage}`;
 
-    if (cachedProvider && cachedProvider.name === "ollama" && cachedProvider.key === cacheKey) {
+    if (cachedProvider && cachedProvider.name === 'ollama' && cachedProvider.key === cacheKey) {
       return cachedProvider.client;
     }
 
     const client = createOllamaProvider(serverUrl, model, aiLanguage);
-    cachedProvider = { name: "ollama", key: cacheKey, client };
+    cachedProvider = { name: 'ollama', key: cacheKey, client };
     return client;
   }
 
-  if (providerName === "lmstudio") {
-    const serverUrl = (await getSetting("lmstudio_server_url")) ?? "http://localhost:1234";
-    const model = (await getSetting("lmstudio_model")) ?? "";
-    const embeddingModel = (await getSetting("lmstudio_embedding_model")) ?? "";
+  if (providerName === 'lmstudio') {
+    const serverUrl = (await getSetting('lmstudio_server_url')) ?? 'http://localhost:1234';
+    const model = (await getSetting('lmstudio_model')) ?? '';
+    const embeddingModel = (await getSetting('lmstudio_embedding_model')) ?? '';
     const cacheKey = `${serverUrl}|${model}|${embeddingModel}|${aiLanguage}`;
 
-    if (cachedProvider && cachedProvider.name === "lmstudio" && cachedProvider.key === cacheKey) {
+    if (cachedProvider && cachedProvider.name === 'lmstudio' && cachedProvider.key === cacheKey) {
       return cachedProvider.client;
     }
 
@@ -72,25 +105,25 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
       { chatModel: model, embeddingModel },
       aiLanguage,
     );
-    cachedProvider = { name: "lmstudio", key: cacheKey, client };
+    cachedProvider = { name: 'lmstudio', key: cacheKey, client };
     return client;
   }
 
-  if (providerName === "custom") {
-    const baseUrl = (await getSetting("custom_base_url")) ?? "https://api.openai.com/v1";
-    const apiKey = await getSecureSetting("custom_api_key");
+  if (providerName === 'custom') {
+    const baseUrl = (await getSetting('custom_base_url')) ?? 'https://api.openai.com/v1';
+    const apiKey = await getSecureSetting('custom_api_key');
     if (!apiKey) {
-      throw new AiError("NOT_CONFIGURED", "Custom AI provider API key not configured");
+      throw new AiError('NOT_CONFIGURED', 'Custom AI provider API key not configured');
     }
-    const model = (await getSetting("custom_model")) ?? "gpt-4o-mini";
+    const model = (await getSetting('custom_model')) ?? 'gpt-4o-mini';
     const cacheKey = `${baseUrl}|${apiKey}|${model}|${aiLanguage}`;
 
-    if (cachedProvider && cachedProvider.name === "custom" && cachedProvider.key === cacheKey) {
+    if (cachedProvider && cachedProvider.name === 'custom' && cachedProvider.key === cacheKey) {
       return cachedProvider.client;
     }
 
     const client = createCustomProvider(baseUrl, apiKey, model, aiLanguage);
-    cachedProvider = { name: "custom", key: cacheKey, client };
+    cachedProvider = { name: 'custom', key: cacheKey, client };
     return client;
   }
 
@@ -98,7 +131,7 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
   const apiKey = await getSecureSetting(keySetting);
 
   if (!apiKey) {
-    throw new AiError("NOT_CONFIGURED", `${providerName} API key not configured`);
+    throw new AiError('NOT_CONFIGURED', `${providerName} API key not configured`);
   }
 
   const model = (await getSetting(MODEL_SETTINGS[providerName])) ?? DEFAULT_MODELS[providerName];
@@ -110,19 +143,25 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
 
   let client: AiProviderClient;
   switch (providerName) {
-    case "claude":
+    case 'claude':
       client = createClaudeProvider(apiKey, model, aiLanguage);
       break;
-    case "openai":
+    case 'openai':
       client = createOpenAIProvider(apiKey, model, aiLanguage);
       break;
-    case "gemini":
+    case 'gemini':
       client = createGeminiProvider(apiKey, model, aiLanguage);
       break;
-    case "copilot":
+    case 'mistral':
+      client = createMistralProvider(apiKey, model, aiLanguage);
+      break;
+    case 'byteplus':
+      client = createBytePlusProvider(apiKey, model, aiLanguage);
+      break;
+    case 'copilot':
       client = createCopilotProvider(apiKey, model, aiLanguage);
       break;
-    case "openrouter":
+    case 'openrouter':
       client = createOpenRouterProvider(apiKey, model, aiLanguage);
       break;
   }
@@ -133,23 +172,31 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
 
 export async function isAiAvailable(): Promise<boolean> {
   try {
-    const enabled = await getSetting("ai_enabled");
-    if (enabled === "false") return false;
+    const enabled = await getSetting('ai_enabled');
+    if (enabled === 'false') return false;
     const providerName = await getActiveProviderName();
 
-    if (providerName === "ollama") {
-      const serverUrl = await getSetting("ollama_server_url");
+    if (providerName === 'ollama') {
+      const serverUrl = await getSetting('ollama_server_url');
       return !!serverUrl;
     }
 
-    if (providerName === "lmstudio") {
-      const serverUrl = await getSetting("lmstudio_server_url");
+    if (providerName === 'lmstudio') {
+      const serverUrl = await getSetting('lmstudio_server_url');
       return !!serverUrl;
     }
 
-    if (providerName === "custom") {
-      const key = await getSecureSetting("custom_api_key");
+    if (providerName === 'custom') {
+      const key = await getSecureSetting('custom_api_key');
       return !!key;
+    }
+
+    if (providerName === 'local') {
+      // `local` has no API key. "Configured" for it means an on-device speech
+      // model directory is set — the thing that actually gates its use.
+      const ttsDir = await getSetting('voice_offline_tts_dir');
+      const sttDir = await getSetting('voice_offline_stt_dir');
+      return !!(ttsDir || sttDir);
     }
 
     const keySetting = API_KEY_SETTINGS[providerName];
@@ -165,6 +212,8 @@ export function clearProviderClients(): void {
   clearClaudeProvider();
   clearOpenAIProvider();
   clearGeminiProvider();
+  clearMistralProvider();
+  clearBytePlusProvider();
   clearOllamaProvider();
   clearLMStudioProvider();
   clearCopilotProvider();
@@ -177,7 +226,49 @@ export function clearProviderClients(): void {
  * delegates to the provider's `testEmbedding`. Used by the AI settings UI.
  */
 export async function testLMStudioEmbedding(): Promise<TestEmbeddingResult> {
-  const serverUrl = (await getSetting("lmstudio_server_url")) ?? "http://localhost:1234";
-  const embeddingModel = (await getSetting("lmstudio_embedding_model")) ?? "";
+  const serverUrl = (await getSetting('lmstudio_server_url')) ?? 'http://localhost:1234';
+  const embeddingModel = (await getSetting('lmstudio_embedding_model')) ?? '';
   return testEmbedding(serverUrl, embeddingModel || undefined);
+}
+
+// ── Capability-Aware Resolution ───────────────────────────────────────────
+
+/**
+ * Check if the active provider supports a specific capability.
+ */
+export async function isCapabilityAvailable(cap: AiCapability): Promise<boolean> {
+  try {
+    const provider = await getActiveProvider();
+    switch (cap) {
+      case 'text':
+        return isTextCapable(provider);
+      case 'embedding':
+        return isEmbeddingCapable(provider);
+      case 'structured_output':
+        return isStructuredOutputCapable(provider);
+      case 'tool_calling':
+        return isToolCallingCapable(provider);
+      case 'reasoning':
+        return isReasoningCapable(provider);
+      default:
+        return false;
+    }
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get the active provider if it supports the required capability.
+ * Throws AiError if the provider doesn't support the capability.
+ */
+export async function getProviderForCapability<T extends AiCapability>(
+  cap: T,
+): Promise<AiProviderClient> {
+  const provider = await getActiveProvider();
+  const available = await isCapabilityAvailable(cap);
+  if (!available) {
+    throw new AiError('NOT_CONFIGURED', `Active provider does not support ${cap}`);
+  }
+  return provider;
 }

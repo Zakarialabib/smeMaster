@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { CSSTransition } from "react-transition-group";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { CSSTransition } from 'react-transition-group';
 import {
   setUpdateCallback,
   installUpdate,
   getAvailableUpdate,
-} from "@shared/services/updateManager";
+} from '@shared/services/updateManager';
 
 export function UpdateToast() {
   const [version, setVersion] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export function UpdateToast() {
     try {
       await installUpdate();
     } catch (err) {
-      console.error("Update install failed:", err);
+      console.error('Update install failed:', err);
       setInstalling(false);
     }
   }, []);
@@ -47,9 +47,7 @@ export function UpdateToast() {
         className="fixed bottom-4 right-4 z-50 glass-panel rounded-lg shadow-lg overflow-hidden max-w-xs"
       >
         <div className="px-4 py-3 space-y-2">
-          <p className="text-sm font-medium text-text-primary">
-            SMEMaster v{version} is available
-          </p>
+          <p className="text-sm font-medium text-text-primary">SMEMaster v{version} is available</p>
           <div className="flex items-center gap-2">
             <button
               onClick={handleDismiss}
@@ -63,7 +61,7 @@ export function UpdateToast() {
               disabled={installing}
               className="text-xs font-medium text-accent hover:text-accent-hover transition-colors disabled:opacity-50"
             >
-              {installing ? "Updating..." : "Update Now"}
+              {installing ? 'Updating...' : 'Update Now'}
             </button>
           </div>
         </div>
@@ -71,4 +69,3 @@ export function UpdateToast() {
     </CSSTransition>
   );
 }
-

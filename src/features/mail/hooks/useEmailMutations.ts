@@ -1,13 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   archiveThread,
   trashThread,
   permanentDeleteThread,
   markThreadRead,
   starThread,
-} from "@features/mail/services/emailActions";
-import { useThreadStore as useThreadsStore } from "@features/mail/stores/threadStore";
-import { queryKeys } from "@shared/query/keys";
+} from '@features/mail/services/emailActions';
+import { useThreadStore as useThreadsStore } from '@features/mail/stores/threadStore';
+import { queryKeys } from '@shared/query/keys';
 
 interface ThreadSummary {
   id: string;
@@ -28,11 +28,11 @@ type ThreadList = ThreadSummary[];
 type ThreadSnapshot = [readonly unknown[], ThreadList][];
 
 function snapshotThreadLists(queryClient: ReturnType<typeof useQueryClient>): ThreadSnapshot {
-  return queryClient.getQueriesData<ThreadList>({
-    queryKey: queryKeys.threads.all,
-  }).filter(
-    (entry): entry is [readonly unknown[], ThreadList] => entry[1] !== undefined,
-  );
+  return queryClient
+    .getQueriesData<ThreadList>({
+      queryKey: queryKeys.threads.all,
+    })
+    .filter((entry): entry is [readonly unknown[], ThreadList] => entry[1] !== undefined);
 }
 
 function restoreThreadLists(
@@ -47,21 +47,14 @@ function restoreThreadLists(
 export function useArchiveThread() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      accountId,
-      threadId,
-    }: {
-      accountId: string;
-      threadId: string;
-    }) => {
+    mutationFn: async ({ accountId, threadId }: { accountId: string; threadId: string }) => {
       await archiveThread(accountId, threadId, []);
     },
     onMutate: async ({ threadId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.threads.all });
       const snapshot = snapshotThreadLists(queryClient);
-      queryClient.setQueriesData<ThreadList>(
-        { queryKey: queryKeys.threads.all },
-        (old) => (Array.isArray(old) ? old.filter((t) => t.id !== threadId) : old),
+      queryClient.setQueriesData<ThreadList>({ queryKey: queryKeys.threads.all }, (old) =>
+        Array.isArray(old) ? old.filter((t) => t.id !== threadId) : old,
       );
       return { snapshot };
     },
@@ -98,9 +91,8 @@ export function useDeleteThread() {
     onMutate: async ({ threadId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.threads.all });
       const snapshot = snapshotThreadLists(queryClient);
-      queryClient.setQueriesData<ThreadList>(
-        { queryKey: queryKeys.threads.all },
-        (old) => (Array.isArray(old) ? old.filter((t) => t.id !== threadId) : old),
+      queryClient.setQueriesData<ThreadList>({ queryKey: queryKeys.threads.all }, (old) =>
+        Array.isArray(old) ? old.filter((t) => t.id !== threadId) : old,
       );
       return { snapshot };
     },
@@ -119,24 +111,16 @@ export function useDeleteThread() {
 export function useMarkRead() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      accountId,
-      threadId,
-    }: {
-      accountId: string;
-      threadId: string;
-    }) => {
+    mutationFn: async ({ accountId, threadId }: { accountId: string; threadId: string }) => {
       await markThreadRead(accountId, threadId, [], true);
     },
     onMutate: async ({ threadId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.threads.all });
       const snapshot = snapshotThreadLists(queryClient);
-      queryClient.setQueriesData<ThreadList>(
-        { queryKey: queryKeys.threads.all },
-        (old) =>
-          Array.isArray(old)
-            ? old.map((t) => (t.id === threadId ? { ...t, is_read: true } : t))
-            : old,
+      queryClient.setQueriesData<ThreadList>({ queryKey: queryKeys.threads.all }, (old) =>
+        Array.isArray(old)
+          ? old.map((t) => (t.id === threadId ? { ...t, is_read: true } : t))
+          : old,
       );
       return { snapshot };
     },
@@ -155,24 +139,16 @@ export function useMarkRead() {
 export function useMarkUnread() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      accountId,
-      threadId,
-    }: {
-      accountId: string;
-      threadId: string;
-    }) => {
+    mutationFn: async ({ accountId, threadId }: { accountId: string; threadId: string }) => {
       await markThreadRead(accountId, threadId, [], false);
     },
     onMutate: async ({ threadId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.threads.all });
       const snapshot = snapshotThreadLists(queryClient);
-      queryClient.setQueriesData<ThreadList>(
-        { queryKey: queryKeys.threads.all },
-        (old) =>
-          Array.isArray(old)
-            ? old.map((t) => (t.id === threadId ? { ...t, is_read: false } : t))
-            : old,
+      queryClient.setQueriesData<ThreadList>({ queryKey: queryKeys.threads.all }, (old) =>
+        Array.isArray(old)
+          ? old.map((t) => (t.id === threadId ? { ...t, is_read: false } : t))
+          : old,
       );
       return { snapshot };
     },
@@ -205,14 +181,10 @@ export function useStarThread() {
     onMutate: async ({ threadId, starred }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.threads.all });
       const snapshot = snapshotThreadLists(queryClient);
-      queryClient.setQueriesData<ThreadList>(
-        { queryKey: queryKeys.threads.all },
-        (old) =>
-          Array.isArray(old)
-            ? old.map((t) =>
-                t.id === threadId ? { ...t, is_starred: starred } : t,
-              )
-            : old,
+      queryClient.setQueriesData<ThreadList>({ queryKey: queryKeys.threads.all }, (old) =>
+        Array.isArray(old)
+          ? old.map((t) => (t.id === threadId ? { ...t, is_starred: starred } : t))
+          : old,
       );
       return { snapshot };
     },

@@ -1,6 +1,6 @@
-﻿import { extractTaskFromThread as aiExtract } from "./aiService";
-import type { DbMessage } from "@shared/services/db/messages";
-import type { TaskPriority } from "@features/tasks/db/tasks";
+﻿import { extractTaskFromThread as aiExtract } from './aiService';
+import type { DbMessage } from '@shared/services/db/messages';
+import type { TaskPriority } from '@features/tasks/db/tasks';
 
 export interface ExtractedTask {
   title: string;
@@ -9,7 +9,7 @@ export interface ExtractedTask {
   priority: TaskPriority;
 }
 
-const VALID_PRIORITIES = new Set<TaskPriority>(["none", "low", "medium", "high", "urgent"]);
+const VALID_PRIORITIES = new Set<TaskPriority>(['none', 'low', 'medium', 'high', 'urgent']);
 
 /**
  * Extract a task from a thread using AI, with robust parsing of the result.
@@ -24,7 +24,7 @@ export async function extractTask(
   try {
     // Extract JSON from potential markdown code fences
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No JSON found in AI response");
+    if (!jsonMatch) throw new Error('No JSON found in AI response');
 
     const parsed = JSON.parse(jsonMatch[0]) as {
       title?: string;
@@ -33,26 +33,27 @@ export async function extractTask(
       priority?: string;
     };
 
-    const subject = messages[0]?.subject ?? "Email task";
+    const subject = messages[0]?.subject ?? 'Email task';
 
     return {
-      title: (typeof parsed.title === "string" && parsed.title.trim())
-        ? parsed.title.trim()
-        : `Follow up on: ${subject}`,
-      description: typeof parsed.description === "string" ? parsed.description : null,
-      dueDate: typeof parsed.dueDate === "number" ? parsed.dueDate : null,
+      title:
+        typeof parsed.title === 'string' && parsed.title.trim()
+          ? parsed.title.trim()
+          : `Follow up on: ${subject}`,
+      description: typeof parsed.description === 'string' ? parsed.description : null,
+      dueDate: typeof parsed.dueDate === 'number' ? parsed.dueDate : null,
       priority: VALID_PRIORITIES.has(parsed.priority as TaskPriority)
         ? (parsed.priority as TaskPriority)
-        : "medium",
+        : 'medium',
     };
   } catch {
     // Fallback if parsing fails
-    const subject = messages[0]?.subject ?? "Email task";
+    const subject = messages[0]?.subject ?? 'Email task';
     return {
       title: `Follow up on: ${subject}`,
       description: null,
       dueDate: null,
-      priority: "medium",
+      priority: 'medium',
     };
   }
 }

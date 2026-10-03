@@ -20,6 +20,17 @@ gpu = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
 cuda = ["gpu"]
 metal = ["candle-core/metal", "candle-nn/metal", "candle-transformers/metal"]
 
+# ── offline-speech ─────────────────────────────────────────────────────────
+# Offline STT + TTS via sherpa-onnx (Apache-2.0). OFF by default, deliberately:
+# `sherpa-onnx-sys`'s build script DOWNLOADS a prebuilt ~117 MB onnxruntime
+# archive from GitHub releases at build time. That download is the fragile part
+# on a flaky link (it fails with `cannot decrypt peer's message`), so the
+# dependency stays optional until the archive is available on the target host.
+# To build without network, pre-fetch the archive and set
+# SHERPA_ONNX_ARCHIVE_DIR (or SHERPA_ONNX_LIB_DIR for extracted libs).
+# See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+offline-speech = ["dep:sherpa-onnx"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -40,6 +51,9 @@ tokenizers = "0.21"
 calamine = "0.26"
 docx-rs = "0.4"
 lopdf = "0.34"
+
+# ── Optional: offline speech (feature `offline-speech`) ────────────────────
+sherpa-onnx = { version = "1.13", optional = true }
 
 # ── Optional / debug dependencies (behind features) ──────────────────────
 # `http-debug`: spawn an axum HTTP server on localhost:9876 exposing

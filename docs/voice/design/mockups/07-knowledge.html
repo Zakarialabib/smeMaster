@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Console — Knowledge scope</title>
+<style>
+  /* ---- Tokens copied verbatim from src/styles/globals.css (@theme) ---- */
+  :root{
+    --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px; --radius-2xl:24px;
+    --bg-primary:#ffffff; --bg-secondary:#f7f8fa; --bg-tertiary:#f0f1f3; --bg-hover:#eef0f3;
+    --bg-selected:rgba(11,87,208,.12);
+    --text-primary:#1c1b1f; --text-secondary:#49454f; --text-tertiary:#7a7680;
+    --border-primary:#e4e6ea; --border-secondary:#eceef1;
+    --accent:#0b57d0; --accent-hover:#0842a0; --accent-light:#d3e3fd; --accent-subtle:rgba(11,87,208,.08);
+    --ai:#9333ea; --ai-subtle:rgba(147,51,234,.08);
+    --danger:#e11d48; --warning:#d97706; --warning-light:#fef3c7;
+    --success:#059669; --success-light:#d1fae5; --info:#0284c7; --info-light:#e0f2fe;
+    --glass-blur:14px;
+    --elevation-sm:0 1px 2px rgba(16,24,40,.04);
+    --elevation-md:0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --elevation-lg:0 4px 16px rgba(16,24,40,.08);
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px; line-height:1.45; color:var(--text-primary);
+    background:
+      radial-gradient(1200px 600px at 88% -10%, rgba(11,87,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 4% 110%, rgba(147,51,234,.07), transparent 60%),
+      var(--bg-secondary);
+    min-height:100vh; padding:var(--space-4);
+  }
+  .frost{background:rgba(255,255,255,.72);backdrop-filter:blur(var(--glass-blur));
+    -webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--border-primary);
+    box-shadow:var(--elevation-sm)}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-4)}
+
+  /* app rail */
+  .rail{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-2) var(--space-3);
+    border-radius:var(--radius-lg);overflow-x:auto}
+  .rail .brand{font-weight:600;padding-inline-end:var(--space-3);white-space:nowrap}
+  .rail a{color:var(--text-secondary);text-decoration:none;padding:6px 10px;border-radius:var(--radius);
+    white-space:nowrap}
+  .rail a.on{color:var(--accent);background:var(--bg-selected);font-weight:600}
+
+  /* console nav */
+  .cnav{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);
+    border-radius:var(--radius-lg)}
+  .cnav button{font:inherit;border:0;background:transparent;color:var(--text-secondary);
+    padding:7px 12px;border-radius:var(--radius);cursor:pointer}
+  .cnav button.on{color:var(--accent);background:var(--accent-subtle);font-weight:600}
+  .cnav .spacer{flex:1}
+  .tenant{font-size:12px;color:var(--text-tertiary);padding-inline-end:var(--space-2)}
+
+  /* panel */
+  .panel{border-radius:var(--radius-lg);background:var(--bg-primary);
+    border:1px solid var(--border-primary);box-shadow:var(--elevation-sm);overflow:hidden}
+  .phead{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;
+    padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-primary)}
+  .phead h1{font-size:16px;margin:0;font-weight:600}
+  .phead .grow{flex:1}
+  .pbody{padding:var(--space-4)}
+
+  /* controls */
+  .btn{font:inherit;font-weight:500;border-radius:var(--radius);padding:7px 12px;cursor:pointer;
+    border:1px solid var(--border-primary);background:var(--bg-primary);color:var(--text-secondary)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .sel{font:inherit;border:1px solid var(--border-primary);background:var(--bg-tertiary);
+    color:var(--text-primary);border-radius:var(--radius);padding:6px 10px}
+  .sel:disabled{opacity:.55}
+
+  /* AI banner — the app's AiSuggestionBanner shape */
+  .ai{display:flex;gap:var(--space-3);align-items:flex-start;margin:var(--space-3) var(--space-4);
+    padding:var(--space-3);border-radius:var(--radius-lg);
+    background:var(--ai-subtle);border:1px solid rgba(147,51,234,.28)}
+  .ai .mk{width:22px;height:22px;flex:none;border-radius:999px;background:var(--ai);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:700}
+  .ai .bd{flex:1;min-width:0}
+  .ai .bd b{display:block;color:var(--ai);font-weight:600;margin-bottom:2px}
+  .ai .bd p{margin:0;color:var(--text-secondary)}
+  .ai .act{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-2)}
+  .ai .act a{font-size:12px;font-weight:600;color:var(--ai);text-decoration:none}
+  .ai .act a.mut{color:var(--text-tertiary);font-weight:400}
+
+  /* degraded / offline banner — never a bare empty state */
+  .down{margin:var(--space-3) var(--space-4);padding:var(--space-3);border-radius:var(--radius-lg);
+    background:#fff1f2;border:1px solid rgba(225,29,72,.3);display:flex;gap:var(--space-3);
+    align-items:flex-start}
+  .down .mk{width:22px;height:22px;flex:none;border-radius:999px;background:var(--danger);
+    color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .down .bd b{display:block;color:#9f1239;margin-bottom:2px}
+  .down .bd p{margin:0;color:var(--text-secondary)}
+  .note{margin:var(--space-3) var(--space-4);padding:var(--space-3);border-radius:var(--radius-lg);
+    background:var(--bg-tertiary);color:var(--text-secondary);font-size:12.5px}
+
+  .sub{font-size:12px;color:var(--text-tertiary)}
+  .row{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .num{font-variant-numeric:tabular-nums}
+  .end{text-align:end}
+  .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill.ok{background:var(--success-light);color:#065f46;border-color:rgba(5,150,105,.25)}
+  .pill.tr{background:var(--accent-light);color:var(--accent-hover);border-color:rgba(11,87,208,.25)}
+  .pill.vm{background:var(--info-light);color:#075985;border-color:rgba(2,132,199,.25)}
+  .pill.p1{background:#ffe4e6;color:#9f1239;border-color:rgba(225,29,72,.3)}
+  .pill.flag{background:var(--warning-light);color:#92400e;border-color:rgba(217,119,6,.3)}
+  .pill.off{background:var(--bg-tertiary);color:var(--text-tertiary);border-color:var(--border-primary)}
+  .dot{width:6px;height:6px;border-radius:999px;background:var(--danger);display:inline-block}
+  .dot.ok{background:var(--success)}
+  .dot.warn{background:var(--warning)}
+
+  @media (max-width:720px){
+    body{padding:var(--space-2)}
+    .rail a:nth-child(n+6){display:none}
+  }
+
+  /* form rows */
+  .fset{padding:var(--space-4);border-bottom:1px solid var(--border-secondary)}
+  .fset:last-of-type{border-bottom:0}
+  .fset > h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);
+    margin:0 0 var(--space-3);font-weight:600}
+  .f{display:grid;grid-template-columns:220px 1fr;gap:var(--space-3);align-items:center;
+    padding:var(--space-2) 0}
+  .f > label{color:var(--text-secondary);font-size:13px}
+  .f .ctl{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+  .f .hint{color:var(--text-tertiary);font-size:12px}
+  .radios{display:flex;gap:var(--space-3);flex-wrap:wrap}
+  .radios label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)}
+  .radios label.dis{color:var(--text-tertiary);cursor:not-allowed}
+  .tier{border:1px solid var(--border-primary);border-radius:var(--radius-lg);padding:var(--space-3);
+    display:flex;flex-direction:column;gap:4px;min-width:220px}
+  .tier.on{border-color:var(--accent);background:var(--accent-subtle)}
+  .tier.dis{opacity:.6}
+  .tier b{font-size:13px}
+  .tier .price{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .tiers{display:flex;gap:var(--space-3);flex-wrap:wrap}
+  .foot{display:flex;justify-content:flex-end;gap:var(--space-2);padding:var(--space-3) var(--space-4);
+    background:var(--bg-secondary);border-top:1px solid var(--border-primary);
+    position:sticky;bottom:0}
+
+  @media (max-width:720px){
+    .f{grid-template-columns:1fr;gap:var(--space-1)}
+    .tiers{flex-direction:column}
+    .foot{position:static}
+  }
+
+  .scroll{overflow-x:auto}
+  table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:640px}
+  table.data th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);
+    font-weight:600;text-align:start;padding:var(--space-2) var(--space-4);
+    border-bottom:1px solid var(--border-primary);background:var(--bg-secondary)}
+  table.data td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-secondary);
+    color:var(--text-secondary);vertical-align:middle}
+  table.data tbody tr:hover{background:var(--bg-hover)}
+  table.data td.who{color:var(--text-primary);font-weight:500;font-variant-numeric:tabular-nums}
+  .cards{display:none;padding:var(--space-3);gap:var(--space-2);flex-direction:column}
+  .ccard{border:1px solid var(--border-primary);border-radius:var(--radius-lg);
+    background:var(--bg-primary);padding:var(--space-3);display:flex;flex-direction:column;gap:6px}
+  .ccard .top{display:flex;justify-content:space-between;gap:var(--space-2);align-items:center}
+  @media (max-width:720px){ .deskonly{display:none !important} .cards{display:flex} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="rail frost" aria-label="App">
+    <span class="brand">SMEMaster</span><a href="#">Mail</a><a href="#">Today</a><a href="#">CRM</a><a href="#" class="on" aria-current="page">Calls</a><a href="#">Tasks</a><a href="#">Calendar</a><a href="#">AI</a><a href="#">Business</a>
+  </nav>
+
+  <nav class="cnav frost" aria-label="Voice console">
+    <button>Calls</button><button>Live</button><button>Ops</button><button class="on" aria-current="page">Config</button><button>Cost</button><span class="spacer"></span><span class="tenant">⟨client⟩ ▾</span>
+  </nav>
+
+  <section class="panel">
+    <div class="phead"><h1>Knowledge</h1><span class="grow"></span>
+      <span class="sub">what the agent is allowed to see</span></div>
+
+    <div class="fset">
+      <h2>Scope</h2>
+      <div class="f"><span></span><div class="ctl">
+        <label class="radios"><input type="checkbox" checked> services &amp; pricing</label>
+        <span class="hint">142 chunks</span></div></div>
+      <div class="f"><span></span><div class="ctl">
+        <label class="radios"><input type="checkbox" checked> opening hours</label>
+        <span class="hint">18 chunks</span></div></div>
+      <div class="f"><span></span><div class="ctl">
+        <label class="radios"><input type="checkbox" checked> booking rules</label>
+        <span class="hint">31 chunks</span></div></div>
+      <div class="f"><span></span><div class="ctl">
+        <label class="radios dis"><input type="checkbox" disabled> email</label>
+        <span class="pill off">never enabled in v1</span></div></div>
+      <div class="f"><span></span><div class="ctl">
+        <label class="radios dis"><input type="checkbox" disabled> contacts</label>
+        <span class="pill off">needs an explicit decision</span></div></div>
+    </div>
+
+    <div class="fset">
+      <h2>Index</h2>
+      <div class="f"><label for="chunks">Chunks</label>
+        <div class="ctl"><span class="num">287 / 500</span></div></div>
+      <div class="f"><label for="emb">Embedding</label>
+        <div class="ctl"><span class="mono">bge-m3 · 1024-d · self-hosted</span>
+          <span class="hint">ⓘ deliberately separate from the desktop's 384-d local
+            index — the two spaces cannot be merged</span></div></div>
+      <div class="f"><label for="ing">Ingest</label>
+        <div class="ctl"><span>last 2 h ago</span><span class="sub">·</span>
+          <span>next 22:00</span><button class="btn">Re-index now</button></div></div>
+    </div>
+
+    <div class="ai">
+      <span class="mk" aria-hidden="true">⟡</span>
+      <div class="bd">
+        <b>4 digest answers cited no chunk</b>
+        <p>The agent may not know enough about refunds. Sample question: "remboursement
+           sous 30 jours". This is an inference from answer/retrieval pairs, not a
+           recorded fact.</p>
+        <div class="act"><a href="#">See the 4 answers →</a><a href="#" class="mut">Dismiss</a></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn">Discard</button><button class="btn primary">Publish</button>
+    </div>
+    <div class="note">
+      Publishing re-indexes the agent's knowledge. It takes about 90 seconds and the
+      agent keeps serving the previous index until it completes.
+    </div>
+  </section>
+
+  <!-- DEGRADED STATE — nothing published yet -->
+  <section class="panel">
+    <div class="phead"><h1>Knowledge — nothing published yet</h1>
+      <span class="pill flag">not indexed</span></div>
+    <div class="pbody">
+      <div class="note" style="margin:0 0 var(--space-3)">
+        <b>Nothing has been published, so the agent has no knowledge to answer from.</b>
+        It will still answer — from its prompt — and every such answer is a guess. Pick
+        your sources above and publish, or the pilot's containment figure will reflect
+        an empty knowledge base rather than a weak model.
+      </div>
+      <table class="data" style="min-width:0">
+        <caption class="sub" style="text-align:start;padding:0 0 var(--space-2)">
+          What is ready to ingest</caption>
+        <thead><tr><th scope="col">Source</th><th scope="col">Status</th>
+          <th scope="col" class="end">Chunks</th></tr></thead>
+        <tbody>
+          <tr><td class="who">Pricing page (web)</td><td><span class="pill ok">ready</span></td>
+            <td class="end num">142</td></tr>
+          <tr><td class="who">Opening hours (web)</td><td><span class="pill ok">ready</span></td>
+            <td class="end num">18</td></tr>
+          <tr><td class="who">Booking rules (PDF)</td><td><span class="pill flag">parse failed</span></td>
+            <td class="end num">—</td></tr>
+        </tbody>
+      </table>
+      <div class="foot"><button class="btn primary">Publish</button></div>
+    </div>
+  </section>
+
+  <!-- DEGRADED STATE — partial ingest, the silent-consistency case -->
+  <section class="panel">
+    <div class="phead"><h1>Knowledge — ingest incomplete</h1>
+      <span class="pill p1">mixed index</span></div>
+    <div class="down">
+      <span class="mk" aria-hidden="true">!</span>
+      <div class="bd">
+        <b>Ingest stopped at 61% — the index is mixed</b>
+        <p>Services and hours are on the new index; booking rules are still on the old
+           one. Answers may cite either. The previous complete index is still available
+           to roll back to.</p>
+      </div>
+    </div>
+    <div class="pbody"><div class="row">
+      <button class="btn primary">Retry ingest</button>
+      <button class="btn">Roll back to 14:20</button>
+    </div></div>
+  </section>
+
+  <p class="sub" style="text-align:center">
+    Static mockup · tokens from <code>src/styles/globals.css</code> · no JS ·
+    degraded states: nothing published · ingest incomplete
+  </p>
+</div>
+</body>
+</html>

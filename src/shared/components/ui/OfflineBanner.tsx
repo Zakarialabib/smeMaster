@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { WifiOff, Check } from "lucide-react";
-import "@shared/styles/mobile-animations.css";
+import { useEffect, useRef, useState } from 'react';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { WifiOff, Check } from 'lucide-react';
+import '@shared/styles/mobile-animations.css';
 
 export function OfflineBanner() {
   const isOnline = useSyncStore((s) => s.isOnline);
@@ -25,7 +25,7 @@ export function OfflineBanner() {
   if (showReconnected && isOnline) {
     return (
       <div
-        className="fixed top-8 left-0 right-0 z-50 flex items-center justify-center gap-2 bg-success/90 text-white text-xs px-4 py-1.5 backdrop-blur-sm shadow-sm reconnect-animate"
+        className="fixed top-8 inset-inline-start-0 inset-inline-end-0 z-50 flex items-center justify-center gap-2 bg-success/90 text-white text-xs px-4 py-1.5 backdrop-blur-sm shadow-sm reconnect-animate"
         role="status"
         aria-live="assertive"
       >
@@ -37,7 +37,7 @@ export function OfflineBanner() {
 
   if (!isOnline) {
     return (
-      <div className="fixed top-8 left-0 right-0 z-50 flex items-center justify-center gap-2 bg-warning/90 text-white text-xs px-4 py-1.5 backdrop-blur-sm shadow-sm">
+      <div className="fixed top-8 inset-inline-start-0 inset-inline-end-0 z-50 flex items-center justify-center gap-2 bg-warning/90 text-white text-xs px-4 py-1.5 backdrop-blur-sm shadow-sm">
         <WifiOff size={14} />
         <span>You're offline — changes will sync when you reconnect</span>
       </div>

@@ -1,4 +1,4 @@
-﻿import type { ThreadCategory } from "@features/mail/db/threadCategories";
+﻿import type { ThreadCategory } from '@features/mail/db/threadCategories';
 
 export interface CategorizationInput {
   labelIds: string[];
@@ -7,82 +7,82 @@ export interface CategorizationInput {
 }
 
 const SOCIAL_DOMAINS = new Set([
-  "facebookmail.com",
-  "facebook.com",
-  "twitter.com",
-  "x.com",
-  "linkedin.com",
-  "instagram.com",
-  "pinterest.com",
-  "tiktok.com",
-  "reddit.com",
-  "snapchat.com",
-  "tumblr.com",
-  "nextdoor.com",
-  "meetup.com",
-  "discord.com",
-  "mastodon.social",
+  'facebookmail.com',
+  'facebook.com',
+  'twitter.com',
+  'x.com',
+  'linkedin.com',
+  'instagram.com',
+  'pinterest.com',
+  'tiktok.com',
+  'reddit.com',
+  'snapchat.com',
+  'tumblr.com',
+  'nextdoor.com',
+  'meetup.com',
+  'discord.com',
+  'mastodon.social',
 ]);
 
 const NEWSLETTER_DOMAINS = new Set([
-  "substack.com",
-  "mailchimp.com",
-  "convertkit.com",
-  "beehiiv.com",
-  "buttondown.email",
-  "revue.email",
-  "ghost.io",
-  "tinyletter.com",
-  "sendinblue.com",
-  "mailerlite.com",
-  "campaignmonitor.com",
-  "constantcontact.com",
-  "getresponse.com",
-  "aweber.com",
+  'substack.com',
+  'mailchimp.com',
+  'convertkit.com',
+  'beehiiv.com',
+  'buttondown.email',
+  'revue.email',
+  'ghost.io',
+  'tinyletter.com',
+  'sendinblue.com',
+  'mailerlite.com',
+  'campaignmonitor.com',
+  'constantcontact.com',
+  'getresponse.com',
+  'aweber.com',
 ]);
 
 const PROMO_PREFIXES = new Set([
-  "marketing",
-  "promo",
-  "promotions",
-  "deals",
-  "offers",
-  "sales",
-  "shop",
-  "store",
-  "newsletter",
-  "info",
-  "hello",
+  'marketing',
+  'promo',
+  'promotions',
+  'deals',
+  'offers',
+  'sales',
+  'shop',
+  'store',
+  'newsletter',
+  'info',
+  'hello',
 ]);
 
 const UPDATE_PREFIXES = new Set([
-  "noreply",
-  "no-reply",
-  "notifications",
-  "notification",
-  "notify",
-  "alerts",
-  "alert",
-  "donotreply",
-  "do-not-reply",
-  "mailer-daemon",
-  "postmaster",
-  "support",
-  "billing",
-  "account",
-  "security",
-  "verify",
-  "confirm",
+  'noreply',
+  'no-reply',
+  'notifications',
+  'notification',
+  'notify',
+  'alerts',
+  'alert',
+  'donotreply',
+  'do-not-reply',
+  'mailer-daemon',
+  'postmaster',
+  'support',
+  'billing',
+  'account',
+  'security',
+  'verify',
+  'confirm',
 ]);
 
 function getDomain(email: string): string | null {
-  const atIdx = email.lastIndexOf("@");
+  const atIdx = email.lastIndexOf('@');
   if (atIdx === -1) return null;
   return email.slice(atIdx + 1).toLowerCase();
 }
 
 function getLocalPart(email: string): string | null {
-  const atIdx = email.lastIndexOf("@");
+  const atIdx = email.lastIndexOf('@');
   if (atIdx === -1) return null;
   return email.slice(0, atIdx).toLowerCase();
 }
@@ -100,17 +100,17 @@ export function categorizeByRules(input: CategorizationInput): ThreadCategory {
   // Layer 1: Gmail category labels (highest priority â€” Google's own ML)
   for (const label of input.labelIds) {
     switch (label) {
-      case "CATEGORY_PROMOTIONS":
-        return "Promotions";
-      case "CATEGORY_SOCIAL":
-        return "Social";
-      case "CATEGORY_UPDATES":
-        return "Updates";
-      case "CATEGORY_FORUMS":
+      case 'CATEGORY_PROMOTIONS':
+        return 'Promotions';
+      case 'CATEGORY_SOCIAL':
+        return 'Social';
+      case 'CATEGORY_UPDATES':
+        return 'Updates';
+      case 'CATEGORY_FORUMS':
         // Forums map to Primary (closest match)
-        return "Primary";
-      case "CATEGORY_PERSONAL":
-        return "Primary";
+        return 'Primary';
+      case 'CATEGORY_PERSONAL':
+        return 'Primary';
     }
   }
 
@@ -121,18 +121,18 @@ export function categorizeByRules(input: CategorizationInput): ThreadCategory {
 
     if (domain) {
       // Social networks
-      if (SOCIAL_DOMAINS.has(domain)) return "Social";
+      if (SOCIAL_DOMAINS.has(domain)) return 'Social';
 
       // Newsletter platforms
-      if (NEWSLETTER_DOMAINS.has(domain)) return "Newsletters";
+      if (NEWSLETTER_DOMAINS.has(domain)) return 'Newsletters';
     }
 
     if (localPart) {
       // Promotional prefixes
-      if (PROMO_PREFIXES.has(localPart)) return "Promotions";
+      if (PROMO_PREFIXES.has(localPart)) return 'Promotions';
 
       // Update/notification prefixes
-      if (UPDATE_PREFIXES.has(localPart)) return "Updates";
+      if (UPDATE_PREFIXES.has(localPart)) return 'Updates';
     }
   }
 
@@ -141,13 +141,12 @@ export function categorizeByRules(input: CategorizationInput): ThreadCategory {
     // If from a newsletter-ish domain, classify as newsletter
     if (input.fromAddress) {
       const domain = getDomain(input.fromAddress);
-      if (domain && NEWSLETTER_DOMAINS.has(domain)) return "Newsletters";
+      if (domain && NEWSLETTER_DOMAINS.has(domain)) return 'Newsletters';
     }
     // Generic unsubscribable mail â†’ Promotions
-    return "Promotions";
+    return 'Promotions';
   }
 
   // Layer 4: Default
-  return "Primary";
+  return 'Primary';
 }
-

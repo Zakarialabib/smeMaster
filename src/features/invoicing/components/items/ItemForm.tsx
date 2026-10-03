@@ -115,7 +115,10 @@ export default function ItemForm({
       notify(item ? 'Product updated' : 'Product created', form.name.trim());
       onClose();
     } catch (err) {
-      notify(item ? 'Failed to update product' : 'Failed to create product', getUserFriendlyErrorMessage(err, 'save product'));
+      notify(
+        item ? 'Failed to update product' : 'Failed to create product',
+        getUserFriendlyErrorMessage(err, 'save product'),
+      );
     } finally {
       setSaving(false);
     }
@@ -140,7 +143,9 @@ export default function ItemForm({
                 {item ? 'Edit Item' : 'New Item'}
               </h3>
               <p className="text-xs text-text-tertiary">
-                {item ? 'Update the product or service details.' : 'Add a product or service to your catalog.'}
+                {item
+                  ? 'Update the product or service details.'
+                  : 'Add a product or service to your catalog.'}
               </p>
             </div>
           </div>
@@ -290,7 +295,7 @@ function Field({
     <label className={`block ${className}`}>
       <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
         {label}
-        {required && <span className="text-danger ml-0.5">*</span>}
+        {required && <span className="text-danger ms-0.5">*</span>}
       </span>
       <div className="mt-1.5">{children}</div>
     </label>

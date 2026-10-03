@@ -39,8 +39,18 @@ describe('useGestureActions', () => {
   });
 
   it('merges custom actions overriding defaults by id', () => {
-    const custom = [{ id: 'archive', label: 'Custom Archive', icon: null, direction: 'left' as const, onAction: vi.fn() }];
-    const { result } = renderHook(() => useGestureActions({ context: 'mail', customActions: custom }));
+    const custom = [
+      {
+        id: 'archive',
+        label: 'Custom Archive',
+        icon: null,
+        direction: 'left' as const,
+        onAction: vi.fn(),
+      },
+    ];
+    const { result } = renderHook(() =>
+      useGestureActions({ context: 'mail', customActions: custom }),
+    );
     expect(result.current.actions[0].label).toBe('Custom Archive');
   });
 });

@@ -1,18 +1,18 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { DateTimePickerDialog } from "./DateTimePickerDialog";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { DateTimePickerDialog } from './DateTimePickerDialog';
 
 const mockPresets = [
-  { label: "Tomorrow", timestamp: 1737100800 }, // some fixed timestamp
-  { label: "Next Week", timestamp: 1737532800 },
+  { label: 'Tomorrow', timestamp: 1737100800 }, // some fixed timestamp
+  { label: 'Next Week', timestamp: 1737532800 },
 ];
 
 const mockPresetsWithDetail = [
-  { label: "Tomorrow morning", detail: "Thu, Jan 16 9:00 AM", timestamp: 1737100800 },
-  { label: "Monday morning", detail: "Mon, Jan 20 9:00 AM", timestamp: 1737532800 },
+  { label: 'Tomorrow morning', detail: 'Thu, Jan 16 9:00 AM', timestamp: 1737100800 },
+  { label: 'Monday morning', detail: 'Mon, Jan 20 9:00 AM', timestamp: 1737532800 },
 ];
 
-describe("DateTimePickerDialog", () => {
-  it("renders title and preset labels when open", () => {
+describe('DateTimePickerDialog', () => {
+  it('renders title and preset labels when open', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -23,12 +23,12 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Snooze"
       />,
     );
-    expect(screen.getByText("Snooze until...")).toBeInTheDocument();
-    expect(screen.getByText("Tomorrow")).toBeInTheDocument();
-    expect(screen.getByText("Next Week")).toBeInTheDocument();
+    expect(screen.getByText('Snooze until...')).toBeInTheDocument();
+    expect(screen.getByText('Tomorrow')).toBeInTheDocument();
+    expect(screen.getByText('Next Week')).toBeInTheDocument();
   });
 
-  it("does not render when closed", () => {
+  it('does not render when closed', () => {
     render(
       <DateTimePickerDialog
         isOpen={false}
@@ -39,10 +39,10 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Snooze"
       />,
     );
-    expect(screen.queryByText("Hidden")).not.toBeInTheDocument();
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
   });
 
-  it("calls onSelect with preset timestamp when preset is clicked", () => {
+  it('calls onSelect with preset timestamp when preset is clicked', () => {
     const onSelect = vi.fn();
     render(
       <DateTimePickerDialog
@@ -54,11 +54,11 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Submit"
       />,
     );
-    fireEvent.click(screen.getByText("Tomorrow"));
+    fireEvent.click(screen.getByText('Tomorrow'));
     expect(onSelect).toHaveBeenCalledWith(1737100800);
   });
 
-  it("renders custom detail text when provided", () => {
+  it('renders custom detail text when provided', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -69,11 +69,11 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Schedule"
       />,
     );
-    expect(screen.getByText("Thu, Jan 16 9:00 AM")).toBeInTheDocument();
-    expect(screen.getByText("Mon, Jan 20 9:00 AM")).toBeInTheDocument();
+    expect(screen.getByText('Thu, Jan 16 9:00 AM')).toBeInTheDocument();
+    expect(screen.getByText('Mon, Jan 20 9:00 AM')).toBeInTheDocument();
   });
 
-  it("renders default date format when detail is not provided", () => {
+  it('renders default date format when detail is not provided', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -85,12 +85,12 @@ describe("DateTimePickerDialog", () => {
       />,
     );
     // Presets without detail should show formatted date — just check buttons exist
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole('button');
     // 2 presets + close button + submit button = 4
     expect(buttons.length).toBe(4);
   });
 
-  it("disables submit button when no custom date is set", () => {
+  it('disables submit button when no custom date is set', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -101,11 +101,11 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Snooze"
       />,
     );
-    const submitButton = screen.getByText("Snooze");
+    const submitButton = screen.getByText('Snooze');
     expect(submitButton).toBeDisabled();
   });
 
-  it("enables submit button when custom date is set", () => {
+  it('enables submit button when custom date is set', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -117,12 +117,12 @@ describe("DateTimePickerDialog", () => {
       />,
     );
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
-    fireEvent.change(dateInput, { target: { value: "2025-02-01" } });
-    const submitButton = screen.getByText("Snooze");
+    fireEvent.change(dateInput, { target: { value: '2025-02-01' } });
+    const submitButton = screen.getByText('Snooze');
     expect(submitButton).not.toBeDisabled();
   });
 
-  it("calls onSelect with correct timestamp on custom submit", () => {
+  it('calls onSelect with correct timestamp on custom submit', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2025, 0, 15, 10, 0, 0));
 
@@ -141,10 +141,10 @@ describe("DateTimePickerDialog", () => {
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
     const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement;
 
-    fireEvent.change(dateInput, { target: { value: "2025-02-01" } });
-    fireEvent.change(timeInput, { target: { value: "14:30" } });
+    fireEvent.change(dateInput, { target: { value: '2025-02-01' } });
+    fireEvent.change(timeInput, { target: { value: '14:30' } });
 
-    fireEvent.click(screen.getByText("Submit"));
+    fireEvent.click(screen.getByText('Submit'));
 
     expect(onSelect).toHaveBeenCalledTimes(1);
     const timestamp = onSelect.mock.calls[0][0] as number;
@@ -158,7 +158,7 @@ describe("DateTimePickerDialog", () => {
     vi.useRealTimers();
   });
 
-  it("does not call onSelect when submitting without a date", () => {
+  it('does not call onSelect when submitting without a date', () => {
     const onSelect = vi.fn();
     render(
       <DateTimePickerDialog
@@ -170,11 +170,11 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Submit"
       />,
     );
-    fireEvent.click(screen.getByText("Submit"));
+    fireEvent.click(screen.getByText('Submit'));
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it("passes zIndex to Modal", () => {
+  it('passes zIndex to Modal', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -186,11 +186,11 @@ describe("DateTimePickerDialog", () => {
         zIndex="z-[60]"
       />,
     );
-    const overlay = document.querySelector(".fixed");
-    expect(overlay?.className).toContain("z-[60]");
+    const overlay = document.querySelector('.fixed');
+    expect(overlay?.className).toContain('z-[60]');
   });
 
-  it("renders the correct submitLabel", () => {
+  it('renders the correct submitLabel', () => {
     render(
       <DateTimePickerDialog
         isOpen={true}
@@ -201,6 +201,6 @@ describe("DateTimePickerDialog", () => {
         submitLabel="Set reminder"
       />,
     );
-    expect(screen.getByText("Set reminder")).toBeInTheDocument();
+    expect(screen.getByText('Set reminder')).toBeInTheDocument();
   });
 });

@@ -12,8 +12,8 @@ import {
   updateCampaignStatus as dbUpdateCampaignStatus,
   incrementCampaignSentCount as dbIncrementCampaignSentCount,
   deleteCampaign as dbDeleteCampaign,
-} from "@shared/services/db/db-invoke";
-import type { Campaign } from "@shared/services/db/schema";
+} from '@shared/services/db/db-invoke';
+import type { Campaign } from '@shared/services/db/schema';
 
 export type { Campaign };
 export type DbCampaign = Campaign;
@@ -35,12 +35,9 @@ export async function createCampaign(
   return dbCreateCampaign(companyId, name, templateId, segmentId);
 }
 
-export async function updateCampaignStatus(
-  id: string,
-  status: string,
-): Promise<void> {
+export async function updateCampaignStatus(id: string, status: string): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
-  await dbUpdateCampaignStatus(id, status, status === "sent" ? now : null);
+  await dbUpdateCampaignStatus(id, status, status === 'sent' ? now : null);
 }
 
 export async function incrementSentCount(id: string): Promise<void> {

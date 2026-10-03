@@ -5,9 +5,9 @@ interface WorkflowTriggerPickerProps {
 }
 
 const TRIGGER_EVENTS = [
-  { value: "email_received", label: "Email Received" },
-  { value: "no_reply_after_days", label: "No Reply After Days" },
-  { value: "time_based", label: "Time Based" },
+  { value: 'email_received', label: 'Email Received' },
+  { value: 'no_reply_after_days', label: 'No Reply After Days' },
+  { value: 'time_based', label: 'Time Based' },
 ];
 
 interface TriggerConditions {
@@ -37,31 +37,33 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
           value={event}
           onChange={(e) => {
             const newEvent = e.target.value;
-            let defaultConditions = "";
-            if (newEvent === "time_based") {
-              defaultConditions = JSON.stringify({ cron: "0 9 * * 1" });
-            } else if (newEvent === "no_reply_after_days") {
+            let defaultConditions = '';
+            if (newEvent === 'time_based') {
+              defaultConditions = JSON.stringify({ cron: '0 9 * * 1' });
+            } else if (newEvent === 'no_reply_after_days') {
               defaultConditions = JSON.stringify({ days: 3 });
             } else {
-              defaultConditions = JSON.stringify({ from_domain: "", subject_contains: "" });
+              defaultConditions = JSON.stringify({ from_domain: '', subject_contains: '' });
             }
             onChange(newEvent, defaultConditions);
           }}
           className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
         >
           {TRIGGER_EVENTS.map((ev) => (
-            <option key={ev.value} value={ev.value}>{ev.label}</option>
+            <option key={ev.value} value={ev.value}>
+              {ev.label}
+            </option>
           ))}
         </select>
       </div>
 
-      {event === "email_received" && (
+      {event === 'email_received' && (
         <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24">From domain</span>
             <input
               type="text"
-              value={parsed.from_domain ?? ""}
+              value={parsed.from_domain ?? ''}
               onChange={(e) => updateConditions({ from_domain: e.target.value })}
               placeholder="example.com"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
@@ -71,7 +73,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
             <span className="text-xs text-text-secondary w-24">Subject contains</span>
             <input
               type="text"
-              value={parsed.subject_contains ?? ""}
+              value={parsed.subject_contains ?? ''}
               onChange={(e) => updateConditions({ subject_contains: e.target.value })}
               placeholder="keyword"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
@@ -80,7 +82,7 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
         </div>
       )}
 
-      {event === "no_reply_after_days" && (
+      {event === 'no_reply_after_days' && (
         <div className="flex items-center gap-2 ps-2">
           <span className="text-xs text-text-secondary w-24">Days without reply</span>
           <input
@@ -94,13 +96,13 @@ export function WorkflowTriggerPicker({ event, conditions, onChange }: WorkflowT
         </div>
       )}
 
-      {event === "time_based" && (
+      {event === 'time_based' && (
         <div className="space-y-1.5 ps-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-text-secondary w-24">Cron expression</span>
             <input
               type="text"
-              value={parsed.cron ?? ""}
+              value={parsed.cron ?? ''}
               onChange={(e) => updateConditions({ cron: e.target.value })}
               placeholder="0 9 * * 1"
               className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"

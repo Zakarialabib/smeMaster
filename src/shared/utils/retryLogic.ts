@@ -16,13 +16,19 @@ interface UseRetryableOperationReturn {
   reset: () => void;
 }
 
+/** Exponential backoff with a ceiling. Module-scope so it is referentially
+ * stable and can be listed as a hook dependency. */
+function calculateDelay(attempt: number, baseDelay: number, maxDelay: number): number {
+  return Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+}
+
 export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableOperationReturn => {
   const {
     maxAttempts = 3,
     baseDelay = 1000,
     maxDelay = 10000,
     retryCondition = () => true,
-    onRetry
+    onRetry,
   } = options;
 
   const [isRetrying, setIsRetrying] = useState(false);
@@ -30,48 +36,48 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
   const [lastError, setLastError] = useState<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  const calculateDelay = (attempt: number): number => {
-    const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-    return delay;
-  };
+  const execute = useCallback(
+    async <T>(operation: () => Promise<T>): Promise<T> => {
+      let lastAttemptError: any = null;
 
-  const execute = useCallback(async <T>(operation: () => Promise<T>): Promise<T> => {
-    let lastAttemptError: any = null;
-    
-    for (let attempt = 0; attempt <= maxAttempts; attempt++) {
-      try {
-        if (attempt > 0) {
-          setIsRetrying(true);
-          setAttempts(attempt);
-          
-          if (onRetry) {
-            onRetry(attempt, lastAttemptError);
+      for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+        try {
+          if (attempt > 0) {
+            setIsRetrying(true);
+            setAttempts(attempt);
+
+            if (onRetry) {
+              onRetry(attempt, lastAttemptError);
+            }
+
+            await new Promise((resolve) => {
+              timeoutRef.current = setTimeout(
+                resolve,
+                calculateDelay(attempt - 1, baseDelay, maxDelay),
+              );
+            });
           }
-          
-          await new Promise(resolve => {
-            timeoutRef.current = setTimeout(resolve, calculateDelay(attempt - 1));
-          });
-        }
 
-        const result = await operation();
-        setIsRetrying(false);
-        setAttempts(0);
-        setLastError(null);
-        return result;
-        
-      } catch (error) {
-        lastAttemptError = error;
-        setLastError(error);
-        
-        if (attempt === maxAttempts || !retryCondition(error)) {
+          const result = await operation();
           setIsRetrying(false);
-          throw error;
+          setAttempts(0);
+          setLastError(null);
+          return result;
+        } catch (error) {
+          lastAttemptError = error;
+          setLastError(error);
+
+          if (attempt === maxAttempts || !retryCondition(error)) {
+            setIsRetrying(false);
+            throw error;
+          }
         }
       }
-    }
-    
-    throw lastAttemptError;
-  }, [maxAttempts, baseDelay, maxDelay, retryCondition, onRetry]);
+
+      throw lastAttemptError;
+    },
+    [maxAttempts, baseDelay, maxDelay, retryCondition, onRetry],
+  );
 
   const reset = useCallback(() => {
     setIsRetrying(false);
@@ -87,6 +93,6 @@ export const useRetryableOperation = (options: RetryOptions = {}): UseRetryableO
     isRetrying,
     attempts,
     lastError,
-    reset
+    reset,
   };
 };

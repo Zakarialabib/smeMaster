@@ -1,15 +1,15 @@
-﻿import { create } from "zustand";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
-import { initialAsyncState } from "@shared/stores/createAsyncStore";
+﻿import { create } from 'zustand';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
+import { initialAsyncState } from '@shared/stores/createAsyncStore';
 
-export type TaskGroupBy = "none" | "priority" | "dueDate" | "tag";
-export type TaskFilterStatus = "all" | "incomplete" | "completed";
+export type TaskGroupBy = 'none' | 'priority' | 'dueDate' | 'tag';
+export type TaskFilterStatus = 'all' | 'incomplete' | 'completed';
 
 // View mode types (additive)
-export type TaskViewMode = "list" | "kanban" | "calendar" | "agenda";
-export type TaskDensity = "compact" | "normal" | "comfortable";
-export type TaskDateFilter = "all" | "today" | "thisWeek" | "overdue";
-export type TaskSortField = "priority" | "dueDate" | "created" | "title";
+export type TaskViewMode = 'list' | 'kanban' | 'calendar' | 'agenda';
+export type TaskDensity = 'compact' | 'normal' | 'comfortable';
+export type TaskDateFilter = 'all' | 'today' | 'thisWeek' | 'overdue';
+export type TaskSortField = 'priority' | 'dueDate' | 'created' | 'title';
 
 // AI Task Suggestion (additive)
 export interface AiTaskSuggestion {
@@ -60,7 +60,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   threadTasks: [],
   selectedTaskId: null,
   incompleteCount: 0,
-  searchQuery: "",
+  searchQuery: '',
   aiSuggestions: [],
   remindersEnabled: true,
   ...initialAsyncState,
@@ -78,7 +78,8 @@ export const useTaskStore = create<TaskState>((set) => ({
         list.map((t) => (t.id === id ? { ...t, ...updates } : t));
       let countDelta = 0;
       if (updates.is_completed !== undefined) {
-        const existing = state.tasks.find((t) => t.id === id) ?? state.threadTasks.find((t) => t.id === id);
+        const existing =
+          state.tasks.find((t) => t.id === id) ?? state.threadTasks.find((t) => t.id === id);
         if (existing) {
           if (updates.is_completed && !existing.is_completed) countDelta = -1;
           if (!updates.is_completed && existing.is_completed) countDelta = 1;
@@ -117,7 +118,9 @@ export const useTaskStore = create<TaskState>((set) => ({
         tasks: state.tasks.filter((t) => !t.is_completed),
         threadTasks: state.threadTasks.filter((t) => !t.is_completed),
         selectedTaskId:
-          state.selectedTaskId && completedIds.has(state.selectedTaskId) ? null : state.selectedTaskId,
+          state.selectedTaskId && completedIds.has(state.selectedTaskId)
+            ? null
+            : state.selectedTaskId,
         incompleteCount: state.tasks.filter((t) => !t.is_completed).length,
       };
     }),

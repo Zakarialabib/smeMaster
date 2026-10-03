@@ -6,29 +6,29 @@
  *
  * @spec §3.5
  */
-import { useCallback, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { CSSTransition } from "react-transition-group";
-import { X, Calendar, CheckCircle2, Circle, Trash2 } from "lucide-react";
-import type { DbTask, TaskPriority } from "@features/tasks/db/tasks";
+import { useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { CSSTransition } from 'react-transition-group';
+import { X, Calendar, CheckCircle2, Circle, Trash2 } from 'lucide-react';
+import type { DbTask, TaskPriority } from '@features/tasks/db/tasks';
 
 /**
  * Priority colors for display
  */
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  urgent: "text-red-500",
-  high: "text-orange-500",
-  medium: "text-amber-500",
-  low: "text-blue-400",
-  none: "text-text-tertiary",
+  urgent: 'text-red-500',
+  high: 'text-orange-500',
+  medium: 'text-amber-500',
+  low: 'text-blue-400',
+  none: 'text-text-tertiary',
 };
 
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "None",
+  urgent: 'Urgent',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  none: 'None',
 };
 
 /**
@@ -77,10 +77,10 @@ export function DayAgendaDrawer({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
   const handleToggleComplete = useCallback(
@@ -107,21 +107,15 @@ export function DayAgendaDrawer({
     [onDelete],
   );
 
-  const formattedDate = date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+  const formattedDate = date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
 
   return createPortal(
-    <CSSTransition
-      in={isOpen}
-      timeout={200}
-      classNames="slide-up"
-      unmountOnExit
-      nodeRef={nodeRef}
-    >
+    <CSSTransition in={isOpen} timeout={200} classNames="slide-up" unmountOnExit nodeRef={nodeRef}>
       <div
         ref={nodeRef}
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -169,14 +163,14 @@ export function DayAgendaDrawer({
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer
                     transition-colors hover:bg-bg-hover
-                    ${task.is_completed ? "opacity-60" : ""}
+                    ${task.is_completed ? 'opacity-60' : ''}
                   `}
                 >
                   {/* Completion checkbox */}
                   <button
                     onClick={handleToggleComplete(task)}
                     className="shrink-0"
-                    aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
+                    aria-label={task.is_completed ? 'Mark incomplete' : 'Mark complete'}
                   >
                     {task.is_completed ? (
                       <CheckCircle2 size={18} className="text-success" />
@@ -189,26 +183,24 @@ export function DayAgendaDrawer({
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm truncate ${
-                        task.is_completed
-                          ? "line-through text-text-tertiary"
-                          : "text-text-primary"
+                        task.is_completed ? 'line-through text-text-tertiary' : 'text-text-primary'
                       }`}
                     >
                       {task.title}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {task.priority && task.priority !== "none" && (
+                      {task.priority && task.priority !== 'none' && (
                         <span
-                          className={`text-[0.625rem] font-medium ${PRIORITY_COLORS[task.priority as TaskPriority] || "text-text-tertiary"}`}
+                          className={`text-[0.625rem] font-medium ${PRIORITY_COLORS[task.priority as TaskPriority] || 'text-text-tertiary'}`}
                         >
                           {PRIORITY_LABELS[task.priority as TaskPriority] ?? task.priority}
                         </span>
                       )}
                       {task.due_date && (
                         <span className="text-[0.625rem] text-text-tertiary">
-                          {new Date(task.due_date * 1000).toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
+                          {new Date(task.due_date * 1000).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
                           })}
                         </span>
                       )}
@@ -233,4 +225,3 @@ export function DayAgendaDrawer({
     document.body,
   );
 }
-

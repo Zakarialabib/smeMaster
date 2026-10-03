@@ -3,4 +3,4 @@ export {
   type ComposerMode,
   type ComposerViewMode,
   type ComposerAttachment,
-} from "@features/mail/stores/composerStore";
+} from '@features/mail/stores/composerStore';

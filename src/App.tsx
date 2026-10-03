@@ -1,53 +1,55 @@
-import { useEffect, useState, useCallback, Suspense } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { AddAccount } from "@features/accounts/components/AddAccount";
-import { Composer } from "./features/mail/components/composer/Composer";
-import { UndoSendToast } from "./features/mail/components/composer/UndoSendToast";
-import { CommandPalette } from "./features/mail/components/search/CommandPalette";
-import { ShortcutsHelp } from "./features/mail/components/search/ShortcutsHelp";
-import { AskInbox } from "./features/mail/components/search/AskInbox";
-import { useKeyboardShortcuts } from "@shared/hooks/useKeyboardShortcuts";
-import { useInputModality } from "@shared/hooks/useInputModality";
-import { useAppInit } from "@shared/hooks/useAppInit";
-import { useThemeManager } from "@features/settings/hooks/useThemeManager";
-import { useBiometricLock } from "@shared/hooks/useBiometricLock";
-import { useSyncStatus } from "@features/calendar/hooks/useSyncStatus";
-import { useNetworkStatus } from "@shared/hooks/useNetworkStatus";
-import { OfflineIndicator } from "@shared/components/ui/OfflineIndicator";
-import { OfflineQueueIndicator } from "@shared/components/ui/OfflineQueueIndicator";
-import { DndProvider } from "./features/mail/components/dnd/DndProvider";
-import { MobileShell } from "@shared/components/layout/shell/MobileShell";
-import { ContextMenuPortal } from "@shared/components/ui/ContextMenuPortal";
-import { MoveToFolderDialog } from "./features/mail/components/MoveToFolderDialog";
-import { UpdateToast } from "@shared/components/ui/UpdateToast";
-import { NotificationToast } from "@shared/components/ui/NotificationToast";
-import { TemplateDemo } from "./features/mail/components/templates/TemplateDemo";
-import { DEMO_FOLLOW_UP } from "./features/mail/constants/templateDemos";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
-import { SkipLink } from "@shared/components/ui/SkipLink";
-import { OnboardingScreen } from "@features/onboarding/OnboardingScreen";
-import { useLicenseStore } from "@shared/stores/licenseStore";
-import { SinglePageLayout } from "@shared/components/layout";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { triggerSync } from "./features/mail/services/gmail/syncManager";
-import { router } from "./router";
-import { getSelectedThreadId } from "./router/navigate";
-import { useThreadStore } from "./features/mail/stores/threadStore";
-import BiometricLockScreen from "@features/accounts/components/mobile/BiometricLockScreen";
-import { useLocalStorage } from "@shared/hooks/useLocalStorage";
-import { useSyncEvents } from "@shared/hooks/useSyncEvents";
-import { usePushNotifications } from "@shared/hooks/usePushNotifications";
-import { useTaskWorkflowEngine } from "@features/tasks/hooks/useTaskWorkflowEngine";
-import { eventBus } from "@shared/services/events/eventBus";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useNotificationStore } from "@shared/stores/notificationStore";
-import { initActionStatusEventBridge } from "@shared/stores/actionStatus/eventBusBridge";
-import { ConflictResolutionPanel } from "@features/sync/components/ConflictResolutionPanel";
-import { useConflictStore } from "@features/sync/stores/conflictStore";
-import { SyncProgressIndicator } from "@features/sync/components/SyncProgressIndicator";
-import { GitCompareArrows } from "lucide-react";
-import { uiBus } from "@shared/services/events/uiBus";
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { isTauriEnvironment } from '@shared/services/ipc';
+import { AddAccount } from '@features/accounts/components/AddAccount';
+import { Composer } from './features/mail/components/composer/Composer';
+import { UndoSendToast } from './features/mail/components/composer/UndoSendToast';
+import { CommandPalette } from './features/mail/components/search/CommandPalette';
+import { ShortcutsHelp } from './features/mail/components/search/ShortcutsHelp';
+import { AskInbox } from './features/mail/components/search/AskInbox';
+import { useKeyboardShortcuts } from '@shared/hooks/useKeyboardShortcuts';
+import { useInputModality } from '@shared/hooks/useInputModality';
+import { useAppInit } from '@shared/hooks/useAppInit';
+import { useThemeManager } from '@features/settings/hooks/useThemeManager';
+import { useBiometricLock } from '@shared/hooks/useBiometricLock';
+import { useSyncStatus } from '@features/calendar/hooks/useSyncStatus';
+import { useNetworkStatus } from '@shared/hooks/useNetworkStatus';
+import { OfflineIndicator } from '@shared/components/ui/OfflineIndicator';
+import { OfflineQueueIndicator } from '@shared/components/ui/OfflineQueueIndicator';
+import { DndProvider } from './features/mail/components/dnd/DndProvider';
+import { MobileShell } from '@shared/components/layout/shell/MobileShell';
+import { ContextMenuPortal } from '@shared/components/ui/ContextMenuPortal';
+import { MoveToFolderDialog } from './features/mail/components/MoveToFolderDialog';
+import { UpdateToast } from '@shared/components/ui/UpdateToast';
+import { NotificationToast } from '@shared/components/ui/NotificationToast';
+import { TemplateDemo } from './features/mail/components/templates/TemplateDemo';
+import { DEMO_FOLLOW_UP } from './features/mail/constants/templateDemos';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
+import { SkipLink } from '@shared/components/ui/SkipLink';
+import { OnboardingScreen } from '@features/onboarding/OnboardingScreen';
+import { useOnboarding } from '@features/onboarding/hooks/useOnboarding';
+import { useLicenseStore } from '@shared/stores/licenseStore';
+import { SinglePageLayout } from '@shared/components/layout';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { triggerSync } from './features/mail/services/gmail/syncManager';
+import { router } from './router';
+import { getSelectedThreadId } from './router/navigate';
+import { useThreadStore } from './features/mail/stores/threadStore';
+import BiometricLockScreen from '@features/accounts/components/mobile/BiometricLockScreen';
+import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { useSyncEvents } from '@shared/hooks/useSyncEvents';
+import { usePushNotifications } from '@shared/hooks/usePushNotifications';
+import { useTaskWorkflowEngine } from '@features/tasks/hooks/useTaskWorkflowEngine';
+import { eventBus } from '@shared/services/events/eventBus';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useNotificationStore } from '@shared/stores/notificationStore';
+import { initActionStatusEventBridge } from '@shared/stores/actionStatus/eventBusBridge';
+import { ConflictResolutionPanel } from '@features/sync/components/ConflictResolutionPanel';
+import { useConflictStore } from '@features/sync/stores/conflictStore';
+import { SyncProgressIndicator } from '@features/sync/components/SyncProgressIndicator';
+import { GitCompareArrows } from 'lucide-react';
+import { uiBus } from '@shared/services/events/uiBus';
 
 /**
  * Sync bridge: subscribes to router state changes and writes the selected
@@ -56,7 +58,7 @@ import { uiBus } from "@shared/services/events/uiBus";
  */
 function useRouterSyncBridge() {
   useEffect(() => {
-    return router.subscribe("onResolved", () => {
+    return router.subscribe('onResolved', () => {
       const threadId = getSelectedThreadId();
       if (useThreadStore.getState().selectedThreadId !== threadId) {
         useThreadStore.getState().selectThread(threadId);
@@ -71,17 +73,22 @@ function useRouterSyncBridge() {
  */
 function useTrayCheckMail() {
   useEffect(() => {
+    if (!isTauriEnvironment()) return;
     let unlisten: (() => void) | undefined;
-    import("@tauri-apps/api/event").then(({ listen }) => {
-      listen("tray-check-mail", () => {
+    import('@tauri-apps/api/event').then(({ listen }) => {
+      listen('tray-check-mail', () => {
         const accounts = useAccountStore.getState().accounts;
         const activeIds = accounts.filter((a) => a.isActive).map((a) => a.id);
         if (activeIds.length > 0) {
           triggerSync(activeIds);
         }
-      }).then((fn) => { unlisten = fn; });
+      }).then((fn) => {
+        unlisten = fn;
+      });
     });
-    return () => { unlisten?.(); };
+    return () => {
+      unlisten?.();
+    };
   }, []);
 }
 
@@ -93,13 +100,18 @@ function useTrayCheckMail() {
  */
 function useResetCompleteReload() {
   useEffect(() => {
+    if (!isTauriEnvironment()) return;
     let unlisten: (() => void) | undefined;
-    import("@tauri-apps/api/event").then(({ listen }) => {
-      listen("app:reset-complete", () => {
+    import('@tauri-apps/api/event').then(({ listen }) => {
+      listen('app:reset-complete', () => {
         window.location.reload();
-      }).then((fn) => { unlisten = fn; });
+      }).then((fn) => {
+        unlisten = fn;
+      });
     });
-    return () => { unlisten?.(); };
+    return () => {
+      unlisten?.();
+    };
   }, []);
 }
 
@@ -110,11 +122,11 @@ function useResetCompleteReload() {
 function useContextMenuSuppression() {
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).closest?.("[data-native-context-menu]")) return;
+      if ((e.target as HTMLElement).closest?.('[data-native-context-menu]')) return;
       e.preventDefault();
     };
-    document.addEventListener("contextmenu", handler);
-    return () => document.removeEventListener("contextmenu", handler);
+    document.addEventListener('contextmenu', handler);
+    return () => document.removeEventListener('contextmenu', handler);
   }, []);
 }
 
@@ -124,25 +136,27 @@ function useContextMenuSuppression() {
 function useDevtoolsShortcut() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "F12") {
+      if (e.key === 'F12') {
         e.preventDefault();
-        import("@shared/services/db/invoke/command").then(({ invokeCommand }) => {
-          invokeCommand("open_devtools").catch((err) => {
-            console.warn("[devtools] Could not open DevTools:", err);
+        import('@shared/services/db/invoke/command').then(({ invokeCommand }) => {
+          invokeCommand('open_devtools').catch((err) => {
+            console.warn('[devtools] Could not open DevTools:', err);
           });
         });
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 }
 
 function useShareHandler() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    import("@shared/services/mobile/shareHandler").then((m) => {
-      m.initShareHandler().then((c) => { cleanup = c; });
+    import('@shared/services/mobile/shareHandler').then((m) => {
+      m.initShareHandler().then((c) => {
+        cleanup = c;
+      });
     });
     return () => cleanup?.();
   }, []);
@@ -169,69 +183,59 @@ function useEventBus() {
 
     // ── UI Store: sync lifecycle + init ────────────────────────────────
     unregisters.push(
-      eventBus.on("sync:started", (payload) => {
-        useSyncStore.getState().handleEvent?.("sync:started", payload);
+      eventBus.on('sync:started', (payload) => {
+        useSyncStore.getState().handleEvent?.('sync:started', payload);
       }),
     );
     unregisters.push(
-      eventBus.on("sync:complete", (payload) => {
-        useSyncStore.getState().handleEvent?.("sync:complete", payload);
+      eventBus.on('sync:complete', (payload) => {
+        useSyncStore.getState().handleEvent?.('sync:complete', payload);
       }),
     );
     unregisters.push(
-      eventBus.on("sync:error", (payload) => {
-        useSyncStore.getState().handleEvent?.("sync:error", payload);
+      eventBus.on('sync:error', (payload) => {
+        useSyncStore.getState().handleEvent?.('sync:error', payload);
       }),
     );
     unregisters.push(
-      eventBus.on("rust:init:complete", (payload) => {
-        useSyncStore.getState().handleEvent?.("rust:init:complete", payload);
+      eventBus.on('rust:init:complete', (payload) => {
+        useSyncStore.getState().handleEvent?.('rust:init:complete', payload);
       }),
     );
 
     // ── Thread Store: sync data refresh ────────────────────────────────
     unregisters.push(
-      eventBus.on("sync:complete", (payload) => {
-        console.warn(
-          "[EventBus] sync:complete — store should handle this via manifest",
-        );
-        useThreadStore.getState().handleEvent?.("sync:complete", payload);
+      eventBus.on('sync:complete', (payload) => {
+        console.warn('[EventBus] sync:complete — store should handle this via manifest');
+        useThreadStore.getState().handleEvent?.('sync:complete', payload);
       }),
     );
     unregisters.push(
-      eventBus.on("sync:account-complete", (payload) => {
-        console.warn(
-          "[EventBus] sync:account-complete — store should handle this via manifest",
-        );
-        useThreadStore.getState().handleEvent?.("sync:account-complete", payload);
+      eventBus.on('sync:account-complete', (payload) => {
+        console.warn('[EventBus] sync:account-complete — store should handle this via manifest');
+        useThreadStore.getState().handleEvent?.('sync:account-complete', payload);
       }),
     );
     unregisters.push(
-      eventBus.on("sync:account-error", (payload) => {
-        console.warn(
-          "[EventBus] sync:account-error — store should handle this via manifest",
-        );
-        useThreadStore.getState().handleEvent?.("sync:account-error", payload);
+      eventBus.on('sync:account-error', (payload) => {
+        console.warn('[EventBus] sync:account-error — store should handle this via manifest');
+        useThreadStore.getState().handleEvent?.('sync:account-error', payload);
       }),
     );
 
     // ── Composer Store: compose window ────────────────────────────────
     unregisters.push(
-      eventBus.on("composer:open", (payload) => {
-        console.warn(
-          "[EventBus] composer:open — store should handle this via manifest",
-        );
-        useComposerStore.getState().handleEvent?.("composer:open", payload);
+      eventBus.on('composer:open', (payload) => {
+        console.warn('[EventBus] composer:open — store should handle this via manifest');
+        useComposerStore.getState().handleEvent?.('composer:open', payload);
       }),
     );
 
     // ── Notification Store: push notifications ─────────────────────────
     unregisters.push(
-      eventBus.on("notification:received", (payload) => {
-        console.warn(
-          "[EventBus] notification:received — store should handle this via manifest",
-        );
-        useNotificationStore.getState().handleEvent?.("notification:received", payload);
+      eventBus.on('notification:received', (payload) => {
+        console.warn('[EventBus] notification:received — store should handle this via manifest');
+        useNotificationStore.getState().handleEvent?.('notification:received', payload);
       }),
     );
 
@@ -254,16 +258,17 @@ export default function App() {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [showAskInbox, setShowAskInbox] = useState(false);
-  const [moveToFolderState, setMoveToFolderState] = useState<{ open: boolean; threadIds: string[] }>({ open: false, threadIds: [] });
+  const [moveToFolderState, setMoveToFolderState] = useState<{
+    open: boolean;
+    threadIds: string[];
+  }>({ open: false, threadIds: [] });
   const [showTemplateDemo, setShowTemplateDemo] = useState(false);
   const [showConflictPanel, setShowConflictPanel] = useState(false);
   // Paired device count — conflict button only shows when other devices are paired
   const [deviceCount, setDeviceCount] = useState(0);
 
   // Core lifecycle hooks (extracted from the old 689-line monolith)
-  const conflictCount = useConflictStore((s) =>
-    s.conflicts.filter((c) => !c.resolved).length,
-  );
+  const conflictCount = useConflictStore((s) => s.conflicts.filter((c) => !c.resolved).length);
   const { initialized, handleAddAccountSuccess } = useAppInit();
   useThemeManager();
   const biometric = useBiometricLock();
@@ -278,8 +283,8 @@ export default function App() {
 
   // Start attachment pre-cache manager after initialisation
   useEffect(() => {
-    import("@features/mail/services/attachments/preCacheManager").then(
-      ({ startPreCacheManager }) => startPreCacheManager(),
+    import('@features/mail/services/attachments/preCacheManager').then(({ startPreCacheManager }) =>
+      startPreCacheManager(),
     );
   }, []);
   useKeyboardShortcuts();
@@ -295,15 +300,16 @@ export default function App() {
 
   // Fetch paired device count for conditional conflict button visibility
   useEffect(() => {
-    invokeCommand<{ device_id: string }[]>("get_pairings")
+    invokeCommand<{ device_id: string }[]>('get_pairings')
       .then((result) => setDeviceCount(result.length))
       .catch(() => setDeviceCount(0));
   }, []);
 
   // ── Onboarding: persist & restore progress ─────────────────────────────────
-  const [onboardingDone, setOnboardingDone] = useLocalStorage("smemaster.onboarding.done", false);
+  const [onboardingDone, setOnboardingDone] = useLocalStorage('smemaster.onboarding.done', false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [hasData, setHasData] = useState<boolean | null>(null); // null = loading, true = accounts/demo exist
+  const { isSystemInitialized } = useOnboarding();
 
   // Check if email accounts or demo data already exist — skip onboarding if they do
   useEffect(() => {
@@ -311,15 +317,15 @@ export default function App() {
     let cancelled = false;
     (async () => {
       try {
-        const { invokeCommand } = await import("@shared/services/db/invoke/command");
-        const hasAccounts = await invokeCommand<boolean>("db_has_email_accounts", {});
+        const { invokeCommand } = await import('@shared/services/db/invoke/command');
+        const hasAccounts = await invokeCommand<boolean>('db_has_email_accounts', {});
         if (!cancelled) {
           if (hasAccounts) {
             setHasData(true);
             setOnboardingDone(true);
           } else {
             // No accounts — check if system was initialized (e.g. demo data seeded)
-            const sysInit = await invokeCommand<boolean>("is_system_initialized", {}).catch(() => false);
+            const sysInit = await isSystemInitialized();
             if (!cancelled) {
               setHasData(sysInit);
               if (sysInit) setOnboardingDone(true);
@@ -330,16 +336,18 @@ export default function App() {
         if (!cancelled) setHasData(false);
       }
     })();
-    return () => { cancelled = true; };
-  }, [initialized, setOnboardingDone]);
+    return () => {
+      cancelled = true;
+    };
+  }, [initialized, setOnboardingDone, isSystemInitialized]);
 
   // Restore onboarding progress from sessionStorage on tab crash / close
   useEffect(() => {
     if (!onboardingDone && !onboardingDismissed && hasData === false) {
-      const savedStep = sessionStorage.getItem("smemaster.onboarding.step");
+      const savedStep = sessionStorage.getItem('smemaster.onboarding.step');
       if (savedStep) {
         window.dispatchEvent(
-          new CustomEvent("smemaster-restore-onboarding", { detail: { step: Number(savedStep) } }),
+          new CustomEvent('smemaster-restore-onboarding', { detail: { step: Number(savedStep) } }),
         );
       }
     }
@@ -348,20 +356,16 @@ export default function App() {
   const handleOnboardingComplete = useCallback(() => {
     setOnboardingDone(true);
     setOnboardingDismissed(true);
-    sessionStorage.removeItem("smemaster.onboarding.step");
+    sessionStorage.removeItem('smemaster.onboarding.step');
   }, [setOnboardingDone]);
 
   const handleOnboardingProgress = useCallback((step: number) => {
-    sessionStorage.setItem("smemaster.onboarding.step", String(step));
+    sessionStorage.setItem('smemaster.onboarding.step', String(step));
   }, []);
 
   // Show onboarding only when truly fresh: no accounts, no demo data, not completed prior
   const showOnboarding =
-    !onboardingDone &&
-    !onboardingDismissed &&
-    initialized &&
-    hasData === false &&
-    hasData !== null;
+    !onboardingDone && !onboardingDismissed && initialized && hasData === false && hasData !== null;
 
   // Listen for command palette / shortcuts help / ask inbox toggle events
   useEffect(() => {
@@ -372,17 +376,17 @@ export default function App() {
       setMoveToFolderState({ open: true, threadIds: detail.threadIds });
     };
     const toggleDemo = () => setShowTemplateDemo((p) => !p);
-    window.addEventListener("smemaster-toggle-command-palette", togglePalette);
-    window.addEventListener("smemaster-toggle-shortcuts-help", toggleHelp);
-    window.addEventListener("smemaster-toggle-ask-inbox", toggleAskInbox);
-    uiBus.on("move-to-folder", handleMoveToFolder);
-    window.addEventListener("smemaster-toggle-template-demo", toggleDemo);
+    window.addEventListener('smemaster-toggle-command-palette', togglePalette);
+    window.addEventListener('smemaster-toggle-shortcuts-help', toggleHelp);
+    window.addEventListener('smemaster-toggle-ask-inbox', toggleAskInbox);
+    uiBus.on('move-to-folder', handleMoveToFolder);
+    window.addEventListener('smemaster-toggle-template-demo', toggleDemo);
     return () => {
-      window.removeEventListener("smemaster-toggle-command-palette", togglePalette);
-      window.removeEventListener("smemaster-toggle-shortcuts-help", toggleHelp);
-      window.removeEventListener("smemaster-toggle-ask-inbox", toggleAskInbox);
-      uiBus.off("move-to-folder", handleMoveToFolder);
-      window.removeEventListener("smemaster-toggle-template-demo", toggleDemo);
+      window.removeEventListener('smemaster-toggle-command-palette', togglePalette);
+      window.removeEventListener('smemaster-toggle-shortcuts-help', toggleHelp);
+      window.removeEventListener('smemaster-toggle-ask-inbox', toggleAskInbox);
+      uiBus.off('move-to-folder', handleMoveToFolder);
+      window.removeEventListener('smemaster-toggle-template-demo', toggleDemo);
     };
   }, []);
 
@@ -404,9 +408,7 @@ export default function App() {
             <div className="absolute inset-0 rounded-full border-2 border-accent/20" />
             <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent animate-spin" />
           </div>
-          <span className="text-xs text-text-tertiary animate-pulse">
-            Loading your inbox...
-          </span>
+          <span className="text-xs text-text-tertiary animate-pulse">Loading your inbox...</span>
         </div>
       </SinglePageLayout>
     );
@@ -415,12 +417,27 @@ export default function App() {
   return (
     <>
       {showOnboarding ? (
-        <OnboardingScreen onComplete={handleOnboardingComplete} onProgress={handleOnboardingProgress} />
+        <OnboardingScreen
+          onComplete={handleOnboardingComplete}
+          onProgress={handleOnboardingProgress}
+        />
       ) : (
         <ErrorBoundary name="App">
-          <Suspense fallback={<div className="flex h-screen items-center justify-center bg-bg-primary"><span className="text-xs text-text-tertiary">Loading...</span></div>}>
+          <Suspense
+            fallback={
+              <div className="flex h-screen items-center justify-center bg-bg-primary">
+                <span className="text-xs text-text-tertiary">Loading...</span>
+              </div>
+            }
+          >
             <SkipLink />
-            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" id="status-announcer" />
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+              id="status-announcer"
+            />
             {biometric.isLocked && biometric.isAvailable && (
               <BiometricLockScreen
                 error={biometric.error}
@@ -432,9 +449,7 @@ export default function App() {
             <OfflineQueueIndicator />
             <DndProvider>
               <div id="main-content">
-                <MobileShell
-                  onAddAccount={() => setShowAddAccount(true)}
-                />
+                <MobileShell onAddAccount={() => setShowAddAccount(true)} />
               </div>
             </DndProvider>
 
@@ -442,7 +457,7 @@ export default function App() {
             {syncStatus && (
               <div
                 className={`fixed bottom-0 left-0 right-0 glass-panel text-white text-xs px-4 py-1.5 text-center z-40 animate-[slideUp_200ms_ease-out,fadeIn_200ms_ease-out] ${
-                  syncStatus.startsWith("Sync failed") ? "bg-danger/90" : "bg-accent/90"
+                  syncStatus.startsWith('Sync failed') ? 'bg-danger/90' : 'bg-accent/90'
                 }`}
               >
                 {syncStatus}
@@ -455,26 +470,26 @@ export default function App() {
                 onClick={() => setShowConflictPanel((p) => !p)}
                 className={`fixed bottom-4 right-4 z-50 flex items-center justify-center w-10 h-10 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 ${
                   showConflictPanel
-                    ? "bg-accent text-white"
+                    ? 'bg-accent text-white'
                     : conflictCount > 0
-                      ? "bg-danger text-white"
-                      : "bg-bg-primary text-text-secondary border border-border-primary"
+                      ? 'bg-danger text-white'
+                      : 'bg-bg-primary text-text-secondary border border-border-primary'
                 }`}
                 aria-label={
                   showConflictPanel
-                    ? "Close conflict panel"
-                    : `Open conflict panel${conflictCount > 0 ? ` (${conflictCount} unresolved)` : ""}`
+                    ? 'Close conflict panel'
+                    : `Open conflict panel${conflictCount > 0 ? ` (${conflictCount} unresolved)` : ''}`
                 }
                 title={
                   conflictCount > 0
-                    ? `${conflictCount} unresolved conflict${conflictCount > 1 ? "s" : ""}`
-                    : "Sync conflicts"
+                    ? `${conflictCount} unresolved conflict${conflictCount > 1 ? 's' : ''}`
+                    : 'Sync conflicts'
                 }
               >
                 <GitCompareArrows size={18} />
                 {conflictCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-danger rounded-full leading-none">
-                    {conflictCount > 9 ? "9+" : conflictCount}
+                    {conflictCount > 9 ? '9+' : conflictCount}
                   </span>
                 )}
               </button>
@@ -515,15 +530,9 @@ export default function App() {
                 onClose={() => setShowCommandPalette(false)}
               />
             </ErrorBoundary>
-            <ShortcutsHelp
-              isOpen={showShortcutsHelp}
-              onClose={() => setShowShortcutsHelp(false)}
-            />
+            <ShortcutsHelp isOpen={showShortcutsHelp} onClose={() => setShowShortcutsHelp(false)} />
             <ErrorBoundary name="AskInbox">
-              <AskInbox
-                isOpen={showAskInbox}
-                onClose={() => setShowAskInbox(false)}
-              />
+              <AskInbox isOpen={showAskInbox} onClose={() => setShowAskInbox(false)} />
             </ErrorBoundary>
             <ContextMenuPortal />
             <MoveToFolderDialog
@@ -532,10 +541,7 @@ export default function App() {
               onClose={() => setMoveToFolderState({ open: false, threadIds: [] })}
             />
             {showTemplateDemo && (
-              <TemplateDemo
-                demo={DEMO_FOLLOW_UP}
-                onClose={() => setShowTemplateDemo(false)}
-              />
+              <TemplateDemo demo={DEMO_FOLLOW_UP} onClose={() => setShowTemplateDemo(false)} />
             )}
           </Suspense>
         </ErrorBoundary>

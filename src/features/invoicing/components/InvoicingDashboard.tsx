@@ -2,7 +2,16 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  ReceiptText, Plus, Users, Package, Settings2, Building2, ChevronDown, AlertTriangle, RefreshCw, AlertCircle,
+  ReceiptText,
+  Plus,
+  Users,
+  Package,
+  Settings2,
+  Building2,
+  ChevronDown,
+  AlertTriangle,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { PageScaffold } from '@shared/components/layout';
@@ -64,15 +73,18 @@ export default function InvoicingDashboard() {
 
   useEffect(() => {
     setLoadError(null);
-    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID).catch((err: unknown) => {
-      setLoadError(err instanceof Error ? err.message : 'Failed to load invoices');
-    });
-    if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID).catch((err: unknown) => {
-      setLoadError(err instanceof Error ? err.message : 'Failed to load clients');
-    });
-    if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID).catch((err: unknown) => {
-      setLoadError(err instanceof Error ? err.message : 'Failed to load items');
-    });
+    if (tab === 'invoices')
+      fetchInvoices(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load invoices');
+      });
+    if (tab === 'clients')
+      fetchClients(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load clients');
+      });
+    if (tab === 'items')
+      fetchItems(ACTIVE_COMPANY_ID).catch((err: unknown) => {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load items');
+      });
   }, [tab, fetchInvoices, fetchClients, fetchItems]);
 
   const handleRetry = () => {
@@ -83,7 +95,6 @@ export default function InvoicingDashboard() {
   };
 
   const isLoading = listLoading && !loadError;
-
 
   return (
     <PageScaffold
@@ -100,7 +111,9 @@ export default function InvoicingDashboard() {
           onClick={() => {}}
         >
           <Building2 size={13} />
-          <span className="truncate max-w-[180px]">{company?.name ?? t('invoicing.yourCompany')}</span>
+          <span className="truncate max-w-[180px]">
+            {company?.name ?? t('invoicing.yourCompany')}
+          </span>
           <ChevronDown size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
           {lowStockCount > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-danger/10 text-danger shrink-0">
@@ -118,10 +131,7 @@ export default function InvoicingDashboard() {
             onClick={() => {}}
             className="hidden sm:inline-flex"
           />
-          <Button
-            icon={<Plus size={18} />}
-            onClick={() => navigate({ to: '/invoicing/new' })}
-          >
+          <Button icon={<Plus size={18} />} onClick={() => navigate({ to: '/invoicing/new' })}>
             {t('invoicing.newDocument')}
           </Button>
         </>
@@ -163,7 +173,9 @@ export default function InvoicingDashboard() {
             <div className="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center">
               <AlertCircle size={28} />
             </div>
-            <p className="text-text-primary font-semibold">{t('invoicing.failedToLoad', { tab: tab })}</p>
+            <p className="text-text-primary font-semibold">
+              {t('invoicing.failedToLoad', { tab: tab })}
+            </p>
             <p className="text-sm text-text-tertiary max-w-md text-center">{loadError}</p>
             <Button icon={<RefreshCw size={16} />} onClick={handleRetry}>
               {t('invoicing.retry')}

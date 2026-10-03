@@ -1,31 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useDroppable } from "@dnd-kit/core";
-import { LabelForm } from "@features/mail/components/labels/LabelForm";
-import { InputDialog } from "@shared/components/ui/InputDialog";
-import { useDensity } from "@shared/hooks/useDensity";
-import { useLayoutStore } from "@shared/stores/layoutStore";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useLabelStore, type Label } from "@features/mail/stores/labelStore";
-import { useContextMenuStore } from "@features/mail/stores/contextMenuStore";
-import { useSmartFolderStore } from "@features/mail/stores/smartFolderStore";
-import {
-  useActiveLabel,
-  useActiveCategory,
-} from "@shared/hooks/useRouteNavigation";
-import { navigateToLabel } from "@/router/navigate";
-import { getCategoryUnreadCounts } from "@features/mail/db/threadCategories";
-import { uiBus } from "@shared/services/events/uiBus";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDroppable } from '@dnd-kit/core';
+import { LabelForm } from '@features/mail/components/labels/LabelForm';
+import { InputDialog } from '@shared/components/ui/InputDialog';
+import { useDensity } from '@shared/hooks/useDensity';
+import { useLayoutStore } from '@shared/stores/layoutStore';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useLabelStore, type Label } from '@features/mail/stores/labelStore';
+import { useContextMenuStore } from '@features/mail/stores/contextMenuStore';
+import { useSmartFolderStore } from '@features/mail/stores/smartFolderStore';
+import { useActiveLabel, useActiveCategory } from '@shared/hooks/useRouteNavigation';
+import { navigateToLabel } from '@/router/navigate';
+import { getCategoryUnreadCounts } from '@features/mail/db/threadCategories';
+import { uiBus } from '@shared/services/events/uiBus';
 
-import { isDevProMode } from "@/constants/featureFlags";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useTaskStore } from "@features/tasks/stores/taskStore";
-import { AccountSwitcher } from "@features/accounts/components/AccountSwitcher";
-import { AddAccount } from "@features/accounts/components/AddAccount";
-import { ALL_NAV_ITEMS } from "./navConfig";
-import type { NavRailGroup } from "./NavRail";
+import { isDevProMode } from '@/constants/featureFlags';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useTaskStore } from '@features/tasks/stores/taskStore';
+import { AccountSwitcher } from '@features/accounts/components/AccountSwitcher';
+import { AddAccount } from '@features/accounts/components/AddAccount';
+import { ALL_NAV_ITEMS } from './navConfig';
+import type { NavRailGroup } from './NavRail';
 import {
   Plus,
   Tag,
@@ -46,8 +43,8 @@ import {
   Star,
   Clock,
   Inbox,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,19 +58,19 @@ export interface PremiumSidebarProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DIVIDER_ID = "__divider__";
+const DIVIDER_ID = '__divider__';
 const DENSITY_GAP_MAP: Record<string, string> = {
-  "gap-6 p-6": "gap-3",
-  "gap-4 p-4": "gap-2",
-  "gap-2 p-2": "gap-1",
+  'gap-6 p-6': 'gap-3',
+  'gap-4 p-4': 'gap-2',
+  'gap-2 p-2': 'gap-1',
 };
 
 const CATEGORY_ITEMS: { id: string; label: string; icon: LucideIcon }[] = [
-  { id: "Primary", label: "categories.primary", icon: Inbox },
-  { id: "Updates", label: "categories.updates", icon: Bell },
-  { id: "Promotions", label: "categories.promotions", icon: Tag },
-  { id: "Social", label: "categories.social", icon: Users },
-  { id: "Newsletters", label: "categories.newsletters", icon: Newspaper },
+  { id: 'Primary', label: 'categories.primary', icon: Inbox },
+  { id: 'Updates', label: 'categories.updates', icon: Bell },
+  { id: 'Promotions', label: 'categories.promotions', icon: Tag },
+  { id: 'Social', label: 'categories.social', icon: Users },
+  { id: 'Newsletters', label: 'categories.newsletters', icon: Newspaper },
 ];
 
 const LABELS_COLLAPSED_COUNT = 3;
@@ -120,13 +117,15 @@ function DroppableNavItem({
       onClick={onClick}
       onContextMenu={onContextMenu}
       title={title}
-      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${collapsed ? "justify-center px-0" : "gap-3 px-3 text-left"
-        } ${isOver
-          ? "glass-accent-tint ring-1 ring-accent"
+      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${
+        collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
+      } ${
+        isOver
+          ? 'glass-accent-tint ring-1 ring-accent'
           : isActive
-            ? "glass-accent-tint text-accent font-medium"
-            : "hover:glass-accent-tint text-sidebar-text hover:text-text-primary"
-        }`}
+            ? 'glass-accent-tint text-accent font-medium'
+            : 'hover:glass-accent-tint text-sidebar-text hover:text-text-primary'
+      }`}
     >
       {children(isOver)}
     </button>
@@ -153,7 +152,7 @@ function DroppableLabelItem({
   onEditClick: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: label.id });
-  const initial = (label.name[0] ?? "?").toUpperCase();
+  const initial = (label.name[0] ?? '?').toUpperCase();
 
   return (
     <button
@@ -161,13 +160,15 @@ function DroppableLabelItem({
       onClick={onClick}
       onContextMenu={onContextMenu}
       title={collapsed ? label.name : undefined}
-      className={`sidebar-nav-item group flex items-center w-full py-2 text-sm transition-all duration-150 ${collapsed ? "justify-center px-0" : "gap-3 px-3 text-start"
-        } ${isOver
-          ? "glass-accent-tint ring-1 ring-accent"
+      className={`sidebar-nav-item group flex items-center w-full py-2 text-sm transition-all duration-150 ${
+        collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
+      } ${
+        isOver
+          ? 'glass-accent-tint ring-1 ring-accent'
           : isActive
-            ? "glass-accent-tint text-accent font-medium"
-            : "hover:glass-accent-tint text-sidebar-text hover:text-text-primary"
-        }`}
+            ? 'glass-accent-tint text-accent font-medium'
+            : 'hover:glass-accent-tint text-sidebar-text hover:text-text-primary'
+      }`}
     >
       {collapsed ? (
         <span
@@ -175,16 +176,16 @@ function DroppableLabelItem({
           style={
             label.colorBg
               ? {
-                backgroundColor: label.colorBg,
-                color: label.colorFg ?? "#ffffff",
-              }
+                  backgroundColor: label.colorBg,
+                  color: label.colorFg ?? '#ffffff',
+                }
               : undefined
           }
         >
           {label.colorBg ? initial : <Tag size={14} />}
           {unreadCount !== undefined && unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 flex items-center justify-center bg-accent text-white text-[0.5rem] font-bold rounded-full transition-all duration-300">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </span>
@@ -212,7 +213,7 @@ function DroppableLabelItem({
               onEditClick();
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
                 onEditClick();
@@ -246,7 +247,7 @@ function PendingOpsIndicator({ collapsed }: { collapsed: boolean }) {
         </div>
       ) : (
         <div className="text-xs text-text-tertiary">
-          {t("nav.nPending", { n: pendingOpsCount })}
+          {t('nav.nPending', { n: pendingOpsCount })}
         </div>
       )}
     </div>
@@ -264,7 +265,7 @@ export function PremiumSidebar({
 }: PremiumSidebarProps) {
   const { t } = useTranslation();
   const { spacingClass } = useDensity();
-  const gapClass = DENSITY_GAP_MAP[spacingClass] ?? "gap-2";
+  const gapClass = DENSITY_GAP_MAP[spacingClass] ?? 'gap-2';
 
   // ── Layout store ────────────────────────────────────────────────────────
   const collapsed = useLayoutStore((s) => s.sidebarCollapsed);
@@ -297,9 +298,7 @@ export function PremiumSidebar({
   const smartFolders = useSmartFolderStore((s) => s.folders);
   const smartFolderCounts = useSmartFolderStore((s) => s.unreadCounts);
   const loadSmartFolders = useSmartFolderStore((s) => s.loadFolders);
-  const refreshSmartFolderCounts = useSmartFolderStore(
-    (s) => s.refreshUnreadCounts,
-  );
+  const refreshSmartFolderCounts = useSmartFolderStore((s) => s.refreshUnreadCounts);
   const createSmartFolder = useSmartFolderStore((s) => s.createFolder);
 
   // ── Thread store ────────────────────────────────────────────────────────
@@ -328,15 +327,13 @@ export function PremiumSidebar({
   const [showSmartFolderModal, setShowSmartFolderModal] = useState(false);
 
   // ── Category unread counts ──────────────────────────────────────────────
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
-    {},
-  );
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   // ── Add account modal ──────────────────────────────────────────────────
   const [showAddAccount, setShowAddAccount] = useState(false);
 
   // ── Derived: visible nav items from sidebarNavConfig ────────────────────
-  const SECTION_IDS = useMemo(() => new Set(["smart-folders", "labels"]), []);
+  const SECTION_IDS = useMemo(() => new Set(['smart-folders', 'labels']), []);
 
   const { visibleNavItems, showSmartFolders, showLabels } = useMemo(() => {
     if (!sidebarNavConfig) {
@@ -354,11 +351,11 @@ export function PremiumSidebar({
     let labelsVisible = true;
     for (const entry of sidebarNavConfig) {
       seen.add(entry.id);
-      if (entry.id === "smart-folders") {
+      if (entry.id === 'smart-folders') {
         smartFoldersVisible = entry.visible;
         continue;
       }
-      if (entry.id === "labels") {
+      if (entry.id === 'labels') {
         labelsVisible = entry.visible;
         continue;
       }
@@ -377,15 +374,12 @@ export function PremiumSidebar({
   }, [sidebarNavConfig, SECTION_IDS]);
 
   // ── Separate bottom groups (settings, help) from main groups ────────────
-  const bottomIds = useMemo(() => new Set(["settings", "help"]), []);
+  const bottomIds = useMemo(() => new Set(['settings', 'help']), []);
   const bottomGroups = useMemo(
     () => groups.filter((g) => bottomIds.has(g.id)),
     [groups, bottomIds],
   );
-  const mainGroups = useMemo(
-    () => groups.filter((g) => !bottomIds.has(g.id)),
-    [groups, bottomIds],
-  );
+  const mainGroups = useMemo(() => groups.filter((g) => !bottomIds.has(g.id)), [groups, bottomIds]);
 
   // ── Collapse only hides mail content panel ────────────────────────────
   // Icon rail is always visible on all pages. Settings/Help have their own
@@ -419,8 +413,8 @@ export function PremiumSidebar({
         setOpenGroupId(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openGroupId]);
 
   // ── Load data when account changes ─────────────────────────────────────
@@ -434,7 +428,7 @@ export function PremiumSidebar({
       }
       setCategoryCounts(merged);
     } catch (err) {
-      console.error("Failed to refresh category counts:", err);
+      console.error('Failed to refresh category counts:', err);
     }
   }, [activeAccountId]);
 
@@ -451,12 +445,7 @@ export function PremiumSidebar({
       refreshSmartFolderCounts(activeAccountId);
       refreshCategoryCounts();
     }
-  }, [
-    activeAccountId,
-    loadSmartFolders,
-    refreshSmartFolderCounts,
-    refreshCategoryCounts,
-  ]);
+  }, [activeAccountId, loadSmartFolders, refreshSmartFolderCounts, refreshCategoryCounts]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -472,7 +461,7 @@ export function PremiumSidebar({
         useSyncStore.getState().setSyncingFolder(null);
       }, 500);
     };
-    const off = uiBus.on("data:changed", handler);
+    const off = uiBus.on('data:changed', handler);
     return () => {
       off();
       if (timer) clearTimeout(timer);
@@ -492,24 +481,22 @@ export function PremiumSidebar({
       let nextIndex = -1;
 
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           nextIndex = (currentIndex + 1) % orderedGroupIds.length;
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
-          nextIndex =
-            (currentIndex - 1 + orderedGroupIds.length) %
-            orderedGroupIds.length;
+          nextIndex = (currentIndex - 1 + orderedGroupIds.length) % orderedGroupIds.length;
           break;
         }
-        case "Home": {
+        case 'Home': {
           e.preventDefault();
           nextIndex = 0;
           break;
         }
-        case "End": {
+        case 'End': {
           e.preventDefault();
           nextIndex = orderedGroupIds.length - 1;
           break;
@@ -520,9 +507,7 @@ export function PremiumSidebar({
 
       const nextId = orderedGroupIds[nextIndex];
       if (nextId) {
-        const btn = document.querySelector<HTMLButtonElement>(
-          `[data-nav-icon-id="${nextId}"]`,
-        );
+        const btn = document.querySelector<HTMLButtonElement>(`[data-nav-icon-id="${nextId}"]`);
         btn?.focus();
       }
     },
@@ -537,7 +522,7 @@ export function PremiumSidebar({
 
       // Don't open flyout for settings/help — their content panel handles
       // navigation with search, sections, and richer UI.
-      if (hasItems && groupId !== "settings" && groupId !== "help") {
+      if (hasItems && groupId !== 'settings' && groupId !== 'help') {
         setOpenGroupId((prev) => (prev === groupId ? null : groupId));
       } else {
         setOpenGroupId(null);
@@ -564,31 +549,26 @@ export function PremiumSidebar({
       if (!openGroupId || visibleItems.length === 0) return;
 
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           setFocusedSubItemIndex((prev) => (prev + 1) % visibleItems.length);
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
-          setFocusedSubItemIndex(
-            (prev) => (prev - 1 + visibleItems.length) % visibleItems.length,
-          );
+          setFocusedSubItemIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length);
           break;
         }
-        case "Enter":
-        case " ": {
+        case 'Enter':
+        case ' ': {
           e.preventDefault();
-          if (
-            focusedSubItemIndex >= 0 &&
-            focusedSubItemIndex < visibleItems.length
-          ) {
+          if (focusedSubItemIndex >= 0 && focusedSubItemIndex < visibleItems.length) {
             const item = visibleItems[focusedSubItemIndex]!;
             onSubItemSelect(openGroupId, item.id);
           }
           break;
         }
-        case "Escape": {
+        case 'Escape': {
           e.preventDefault();
           setOpenGroupId(null);
           const iconBtn = document.querySelector<HTMLButtonElement>(
@@ -612,16 +592,13 @@ export function PremiumSidebar({
     }
   }, [focusedSubItemIndex, currentItems]);
 
-  const setSubItemRef = useCallback(
-    (id: string, el: HTMLButtonElement | null) => {
-      if (el) {
-        subItemRefs.current.set(id, el);
-      } else {
-        subItemRefs.current.delete(id);
-      }
-    },
-    [],
-  );
+  const setSubItemRef = useCallback((id: string, el: HTMLButtonElement | null) => {
+    if (el) {
+      subItemRefs.current.set(id, el);
+    } else {
+      subItemRefs.current.delete(id);
+    }
+  }, []);
 
   // ── Label handlers ───────────────────────────────────────────────────
   const handleDeleteLabel = useCallback(
@@ -659,7 +636,7 @@ export function PremiumSidebar({
   const handleNavContextMenu = useCallback(
     (e: React.MouseEvent, navId: string) => {
       e.preventDefault();
-      openMenu("sidebarNav", { x: e.clientX, y: e.clientY }, { navId });
+      openMenu('sidebarNav', { x: e.clientX, y: e.clientY }, { navId });
     },
     [openMenu],
   );
@@ -668,7 +645,7 @@ export function PremiumSidebar({
     (e: React.MouseEvent, labelId: string) => {
       e.preventDefault();
       openMenu(
-        "sidebarLabel",
+        'sidebarLabel',
         { x: e.clientX, y: e.clientY },
         {
           labelId,
@@ -690,39 +667,35 @@ export function PremiumSidebar({
     const isActive = group.id === activeGroupId;
 
     return (
-      <div
-        key={group.id}
-        className="relative group flex items-center justify-center w-full"
-      >
+      <div key={group.id} className="relative group flex items-center justify-center w-full">
         {isActive && (
-          <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-r bg-accent" />
+          <div className="absolute inset-inline-start-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-e bg-accent" />
         )}
 
         <button
           data-nav-icon-id={group.id}
           onClick={() => handleGroupClick(group.id)}
           onKeyDown={(e) => handleIconKeyDown(e, group.id)}
-          aria-current={isActive ? "page" : undefined}
+          aria-current={isActive ? 'page' : undefined}
           aria-label={t(group.label)}
           aria-expanded={openGroupId === group.id ? true : undefined}
-          aria-haspopup={group.items.length > 0 ? ("true" as const) : undefined}
-          className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent ${isActive
-              ? "text-accent glass-accent-tint"
-              : "text-text-tertiary hover:text-text-primary hover:glass-accent-tint"
-            }`}
+          aria-haspopup={group.items.length > 0 ? ('true' as const) : undefined}
+          className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent ${
+            isActive
+              ? 'text-accent glass-accent-tint'
+              : 'text-text-tertiary hover:text-text-primary hover:glass-accent-tint'
+          }`}
         >
           <Icon size={20} aria-hidden="true" />
 
           {group.badge !== undefined && group.badge > 0 && (
             <span className="absolute -top-0.5 -inset-inline-end-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-medium text-white bg-danger rounded-full leading-none">
-              {group.badge > 99 ? "99+" : group.badge}
+              {group.badge > 99 ? '99+' : group.badge}
             </span>
           )}
         </button>
 
-        <div
-          className="absolute inset-s-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary"
-        >
+        <div className="absolute inset-s-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary">
           {t(group.label)}
         </div>
       </div>
@@ -743,9 +716,7 @@ export function PremiumSidebar({
         aria-label={`${t(group.label)} navigation`}
       >
         <div className="px-4 py-3 border-b border-border-primary">
-          <h2 className="text-sm font-semibold text-text-primary">
-            {t(group.label)}
-          </h2>
+          <h2 className="text-sm font-semibold text-text-primary">{t(group.label)}</h2>
         </div>
 
         <div
@@ -755,19 +726,12 @@ export function PremiumSidebar({
           aria-label={`${t(group.label)} items`}
         >
           {group.items.length === 0 && (
-            <p className="px-4 py-6 text-xs text-text-tertiary text-center">
-              {t("nav.noItems")}
-            </p>
+            <p className="px-4 py-6 text-xs text-text-tertiary text-center">{t('nav.noItems')}</p>
           )}
 
           {group.items.map((item, index) => {
             if (item.id === DIVIDER_ID) {
-              return (
-                <hr
-                  key={DIVIDER_ID}
-                  className="mx-3 my-2 border-t border-border-primary"
-                />
-              );
+              return <hr key={DIVIDER_ID} className="mx-3 my-2 border-t border-border-primary" />;
             }
 
             const ItemIcon = item.icon;
@@ -782,12 +746,13 @@ export function PremiumSidebar({
                 role="option"
                 aria-selected={isSubItemActive}
                 tabIndex={isFocused ? 0 : -1}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${isSubItemActive
-                    ? "glass-accent-tint text-accent font-medium"
+                className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
+                  isSubItemActive
+                    ? 'glass-accent-tint text-accent font-medium'
                     : isFocused
-                      ? "bg-bg-tertiary text-text-primary"
-                      : "text-text-tertiary hover:glass-accent-tint hover:text-text-primary"
-                  }`}
+                      ? 'bg-bg-tertiary text-text-primary'
+                      : 'text-text-tertiary hover:glass-accent-tint hover:text-text-primary'
+                }`}
               >
                 {ItemIcon && (
                   <span className="flex items-center justify-center w-5 h-5 shrink-0">
@@ -799,7 +764,7 @@ export function PremiumSidebar({
 
                 {item.badge !== undefined && item.badge > 0 && (
                   <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] font-medium text-white bg-danger rounded-full leading-none shrink-0">
-                    {item.badge > 99 ? "99+" : item.badge}
+                    {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
               </button>
@@ -815,14 +780,9 @@ export function PremiumSidebar({
     <div className="shrink-0 w-[280px] h-full glass-panel-sidebar flex flex-col overflow-hidden">
       {/* Account Switcher */}
       <div className="px-3 pt-2">
-        <AccountSwitcher
-          collapsed={false}
-          onAddAccount={() => setShowAddAccount(true)}
-        />
+        <AccountSwitcher collapsed={false} onAddAccount={() => setShowAddAccount(true)} />
         {activeAccount?.company && (
-          <p className="text-xs text-text-tertiary mt-1 px-1 truncate">
-            {activeAccount.company}
-          </p>
+          <p className="text-xs text-text-tertiary mt-1 px-1 truncate">{activeAccount.company}</p>
         )}
       </div>
 
@@ -833,7 +793,7 @@ export function PremiumSidebar({
           className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white rounded-lg py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97]"
         >
           <Plus size={16} />
-          <span>{t("nav.compose")}</span>
+          <span>{t('nav.compose')}</span>
         </button>
       </div>
 
@@ -841,22 +801,21 @@ export function PremiumSidebar({
       <nav className="flex-1 overflow-y-auto py-2" aria-label="Mail folders">
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
-          const isInbox = item.id === "inbox";
+          const isInbox = item.id === 'inbox';
           return (
             <div key={item.id}>
               <DroppableNavItem
                 id={item.id}
                 isActive={
                   isInbox
-                    ? activeLabel === "inbox" &&
-                    (inboxViewMode === "unified" ||
-                      activeCategory === "Primary")
+                    ? activeLabel === 'inbox' &&
+                      (inboxViewMode === 'unified' || activeCategory === 'Primary')
                     : activeLabel === item.id
                 }
                 collapsed={false}
                 onClick={() => {
-                  if (isInbox && inboxViewMode === "split") {
-                    navigateToLabel(item.id, { category: "Primary" });
+                  if (isInbox && inboxViewMode === 'split') {
+                    navigateToLabel(item.id, { category: 'Primary' });
                   } else {
                     navigateToLabel(item.id);
                   }
@@ -866,22 +825,17 @@ export function PremiumSidebar({
                 {() => (
                   <>
                     {isSyncingFolder === item.id ? (
-                      <Loader2
-                        size={18}
-                        className="shrink-0 animate-spin text-accent"
-                      />
+                      <Loader2 size={18} className="shrink-0 animate-spin text-accent" />
                     ) : (
                       <Icon size={18} className="shrink-0" />
                     )}
-                    <span className="flex-1 truncate text-start">
-                      {t(item.label)}
-                    </span>
-                    {isInbox && (threadUnreadCounts["INBOX"] ?? 0) > 0 && (
+                    <span className="flex-1 truncate text-start">{t(item.label)}</span>
+                    {isInbox && (threadUnreadCounts['INBOX'] ?? 0) > 0 && (
                       <span className="bg-danger text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                        {threadUnreadCounts["INBOX"]}
+                        {threadUnreadCounts['INBOX']}
                       </span>
                     )}
-                    {item.id === "productivity" && taskIncompleteCount > 0 && (
+                    {item.id === 'productivity' && taskIncompleteCount > 0 && (
                       <span className="text-[0.625rem] bg-accent/15 text-accent px-1.5 rounded-full leading-normal">
                         {taskIncompleteCount}
                       </span>
@@ -892,28 +846,25 @@ export function PremiumSidebar({
                         tabIndex={0}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setInboxViewMode(
-                            inboxViewMode === "split" ? "unified" : "split",
-                          );
+                          setInboxViewMode(inboxViewMode === 'split' ? 'unified' : 'split');
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
+                          if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             e.stopPropagation();
-                            setInboxViewMode(
-                              inboxViewMode === "split" ? "unified" : "split",
-                            );
+                            setInboxViewMode(inboxViewMode === 'split' ? 'unified' : 'split');
                           }
                         }}
                         title={
-                          inboxViewMode === "split"
-                            ? t("email.switchToUnifiedInbox")
-                            : t("email.switchToSplitInbox")
+                          inboxViewMode === 'split'
+                            ? t('email.switchToUnifiedInbox')
+                            : t('email.switchToSplitInbox')
                         }
-                        className={`p-1 rounded transition-colors shrink-0 ${inboxViewMode === "split"
-                            ? "text-accent hover:bg-accent/10"
-                            : "text-sidebar-text/40 hover:text-sidebar-text hover:bg-bg-tertiary"
-                          }`}
+                        className={`p-1 rounded transition-colors shrink-0 ${
+                          inboxViewMode === 'split'
+                            ? 'text-accent hover:bg-accent/10'
+                            : 'text-sidebar-text/40 hover:text-sidebar-text hover:bg-bg-tertiary'
+                        }`}
                       >
                         <Columns2 size={14} />
                       </span>
@@ -923,27 +874,25 @@ export function PremiumSidebar({
               </DroppableNavItem>
 
               {/* Category sub-items when split mode */}
-              {isInbox && inboxViewMode === "split" && (
+              {isInbox && inboxViewMode === 'split' && (
                 <div>
                   {CATEGORY_ITEMS.map((cat) => {
                     const CatIcon = cat.icon;
-                    const isCatActive =
-                      activeLabel === "inbox" && activeCategory === cat.id;
+                    const isCatActive = activeLabel === 'inbox' && activeCategory === cat.id;
                     return (
                       <button
                         key={cat.id}
                         onClick={() => {
-                          navigateToLabel("inbox", { category: cat.id });
+                          navigateToLabel('inbox', { category: cat.id });
                         }}
-                        className={`flex items-center gap-2 w-full py-1.5 pl-7 pr-3 text-left text-[0.8125rem] transition-all duration-150 ${isCatActive
-                            ? "text-accent font-medium glass-accent-tint"
-                            : "text-text-tertiary/70 hover:text-text-tertiary hover:glass-accent-tint"
-                          }`}
+                        className={`flex items-center gap-2 w-full py-1.5 ps-7 pe-3 text-start text-[0.8125rem] transition-all duration-150 ${
+                          isCatActive
+                            ? 'text-accent font-medium glass-accent-tint'
+                            : 'text-text-tertiary/70 hover:text-text-tertiary hover:glass-accent-tint'
+                        }`}
                       >
                         <CatIcon size={14} className="shrink-0" />
-                        <span className="flex-1 truncate">
-                          {t(cat.label)}
-                        </span>
+                        <span className="flex-1 truncate">{t(cat.label)}</span>
                         {(categoryCounts[cat.id] ?? 0) > 0 && (
                           <span className="me-auto bg-danger text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                             {categoryCounts[cat.id] ?? 0}
@@ -963,12 +912,12 @@ export function PremiumSidebar({
           <>
             <div className="flex items-center justify-between px-3 pt-4 pb-1">
               <span className="text-xs font-medium text-text-tertiary/60 uppercase tracking-wider">
-                {t("nav.smartFolders")}
+                {t('nav.smartFolders')}
               </span>
               <button
                 onClick={handleAddSmartFolder}
                 className="p-0.5 text-sidebar-text/40 hover:text-sidebar-text transition-colors"
-                title={t("nav.addSmartFolder")}
+                title={t('nav.addSmartFolder')}
               >
                 <Plus size={14} />
               </button>
@@ -981,19 +930,18 @@ export function PremiumSidebar({
                 <button
                   key={folder.id}
                   onClick={() => navigateToLabel(`smart-folder:${folder.id}`)}
-                  className={`flex items-center gap-3 w-full px-3 py-2 text-sm transition-all duration-150 ${isActive
-                      ? "glass-accent-tint text-accent font-medium"
-                      : "text-text-tertiary hover:glass-accent-tint hover:text-text-primary"
-                    }`}
+                  className={`flex items-center gap-3 w-full px-3 py-2 text-sm transition-all duration-150 ${
+                    isActive
+                      ? 'glass-accent-tint text-accent font-medium'
+                      : 'text-text-tertiary hover:glass-accent-tint hover:text-text-primary'
+                  }`}
                 >
                   <Icon
                     size={18}
                     className="shrink-0"
                     style={folder.color ? { color: folder.color } : undefined}
                   />
-                  <span className="flex-1 truncate text-start">
-                    {folder.name}
-                  </span>
+                  <span className="flex-1 truncate text-start">{folder.name}</span>
                   {count > 0 && (
                     <span className="me-auto bg-danger text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                       {count}
@@ -1009,12 +957,12 @@ export function PremiumSidebar({
         {showSmartFolders && smartFolders.length === 0 && (
           <div className="flex items-center justify-between px-3 pt-4 pb-1">
             <span className="text-xs font-medium text-text-tertiary/60 uppercase tracking-wider">
-              {t("nav.smartFolders")}
+              {t('nav.smartFolders')}
             </span>
             <button
               onClick={handleAddSmartFolder}
               className="p-0.5 text-sidebar-text/40 hover:text-sidebar-text transition-colors"
-              title={t("nav.addSmartFolder")}
+              title={t('nav.addSmartFolder')}
             >
               <Plus size={14} />
             </button>
@@ -1026,12 +974,12 @@ export function PremiumSidebar({
           <>
             <div className="flex items-center justify-between px-3 pt-4 pb-1">
               <span className="text-xs font-medium text-text-tertiary/60 uppercase tracking-wider">
-                {t("nav.labels")}
+                {t('nav.labels')}
               </span>
               <button
                 onClick={handleAddLabel}
                 className="p-0.5 text-sidebar-text/40 hover:text-sidebar-text transition-colors"
-                title={t("nav.addLabel")}
+                title={t('nav.addLabel')}
               >
                 <Plus size={14} />
               </button>
@@ -1063,7 +1011,7 @@ export function PremiumSidebar({
             {/* Collapsible labels */}
             {labels.length > LABELS_COLLAPSED_COUNT && (
               <div
-                className={`grid transition-[grid-template-rows] duration-300 ease-out ${labelsExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                className={`grid transition-[grid-template-rows] duration-300 ease-out ${labelsExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
               >
                 <div className="overflow-hidden">
                   {labels.slice(LABELS_COLLAPSED_COUNT).map((label) => (
@@ -1074,9 +1022,7 @@ export function PremiumSidebar({
                         collapsed={false}
                         unreadCount={threadUnreadCounts[label.id] ?? 0}
                         onClick={() => navigateToLabel(label.id)}
-                        onContextMenu={(e) =>
-                          handleLabelContextMenu(e, label.id)
-                        }
+                        onContextMenu={(e) => handleLabelContextMenu(e, label.id)}
                         onEditClick={() => handleEditLabel(label.id)}
                       />
                       {editingLabelId === label.id && activeAccountId && (
@@ -1102,13 +1048,13 @@ export function PremiumSidebar({
                 {labelsExpanded ? (
                   <>
                     <ChevronUp size={12} />
-                    <span>{t("nav.showLess")}</span>
+                    <span>{t('nav.showLess')}</span>
                   </>
                 ) : (
                   <>
                     <ChevronDown size={12} />
                     <span>
-                      {t("nav.nMore", {
+                      {t('nav.nMore', {
                         n: labels.length - LABELS_COLLAPSED_COUNT,
                       })}
                     </span>
@@ -1119,11 +1065,7 @@ export function PremiumSidebar({
 
             {/* New label form */}
             {showNewLabelForm && activeAccountId && (
-              <LabelForm
-                accountId={activeAccountId}
-                onDone={handleFormDone}
-                variant="sidebar"
-              />
+              <LabelForm accountId={activeAccountId} onDone={handleFormDone} variant="sidebar" />
             )}
           </>
         )}
@@ -1133,25 +1075,21 @@ export function PremiumSidebar({
           <>
             <div className="flex items-center justify-between px-3 pt-4 pb-1">
               <span className="text-xs font-medium text-text-tertiary/60 uppercase tracking-wider">
-                {t("nav.labels")}
+                {t('nav.labels')}
               </span>
               <button
                 onClick={handleAddLabel}
                 className="p-0.5 text-sidebar-text/40 hover:text-sidebar-text transition-colors"
-                title={t("nav.addLabel")}
+                title={t('nav.addLabel')}
               >
                 <Plus size={14} />
               </button>
             </div>
             <p className="px-3 py-2 text-xs text-text-tertiary/50 italic">
-              {t("nav.addYourFirstLabel")}
+              {t('nav.addYourFirstLabel')}
             </p>
             {showNewLabelForm && activeAccountId && (
-              <LabelForm
-                accountId={activeAccountId}
-                onDone={handleFormDone}
-                variant="sidebar"
-              />
+              <LabelForm accountId={activeAccountId} onDone={handleFormDone} variant="sidebar" />
             )}
           </>
         )}
@@ -1165,11 +1103,7 @@ export function PremiumSidebar({
   // ── Smart folder dialog handler ──────────────────────────────────────
   const handleSmartFolderSubmit = useCallback(
     (values: Record<string, string>) => {
-      createSmartFolder(
-        values.name!.trim(),
-        values.query!.trim(),
-        activeAccountId ?? undefined,
-      );
+      createSmartFolder(values.name!.trim(), values.query!.trim(), activeAccountId ?? undefined);
       setShowSmartFolderModal(false);
     },
     [createSmartFolder, activeAccountId],
@@ -1181,7 +1115,7 @@ export function PremiumSidebar({
     <>
       <div
         ref={navRef}
-        className={`flex h-full shrink-0 ${activeGroupId === "mail" && !collapsed ? "w-[344px]" : "w-16"}`}
+        className={`flex h-full shrink-0 ${activeGroupId === 'mail' && !collapsed ? 'w-[344px]' : 'w-16'}`}
       >
         {/* Icon rail — always visible on every page */}
         <nav
@@ -1191,7 +1125,7 @@ export function PremiumSidebar({
           className="hidden md:flex flex-col h-full w-16 glass-nav-rail shrink-0 overflow-hidden"
         >
           <span id="nav-rail-desc" className="sr-only">
-            {t("nav.keyboardNavHint")}
+            {t('nav.keyboardNavHint')}
           </span>
           {/* Main groups — top-aligned */}
           <div className={`flex-1 flex flex-col items-center ${gapClass} py-3`}>
@@ -1204,8 +1138,8 @@ export function PremiumSidebar({
             <div className="relative group flex items-center justify-center w-full">
               <button
                 onClick={toggleSidebar}
-                aria-label={collapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
-                title={collapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+                aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
+                title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
                 className="relative flex h-10 w-10 items-center justify-center rounded-md text-text-tertiary transition-all duration-150 hover:glass-accent-tint hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
               >
                 {collapsed ? (
@@ -1215,21 +1149,19 @@ export function PremiumSidebar({
                 )}
               </button>
               <div className="absolute start-full ms-3 whitespace-nowrap rounded-md glass-dropdown px-2.5 py-1.5 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-all duration-150 pointer-events-none invisible group-hover:visible group-hover:opacity-100">
-                {collapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+                {collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
               </div>
             </div>
             <div className="relative group flex items-center justify-center w-full">
               <button
                 onClick={() => openComposer()}
-                aria-label={t("nav.compose")}
+                aria-label={t('nav.compose')}
                 className="relative flex items-center justify-center w-10 h-10 rounded-md text-text-tertiary hover:text-accent hover:glass-accent-tint transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <Plus size={20} aria-hidden="true" />
               </button>
-              <div
-                className="absolute start-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary"
-              >
-                {t("nav.compose")}
+              <div className="absolute start-full ms-3 px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50 glass-dropdown shadow-lg text-text-primary">
+                {t('nav.compose')}
               </div>
             </div>
           </div>
@@ -1253,10 +1185,10 @@ export function PremiumSidebar({
         </nav>
 
         {/* Flyout panel — shown when collapsed on mail pages for groups with sub-items */}
-        {activeGroupId !== "settings" && activeGroupId !== "help" && collapsed && renderPanel()}
+        {activeGroupId !== 'settings' && activeGroupId !== 'help' && collapsed && renderPanel()}
 
         {/* Mail content panel — only shown on mail pages when expanded */}
-        {activeGroupId === "mail" && !collapsed && renderContentPanel()}
+        {activeGroupId === 'mail' && !collapsed && renderContentPanel()}
       </div>
 
       {/* Smart folder creation dialog */}
@@ -1265,17 +1197,17 @@ export function PremiumSidebar({
         isOpen={showSmartFolderModal}
         onClose={() => setShowSmartFolderModal(false)}
         onSubmit={handleSmartFolderSubmit}
-        title={t("nav.newSmartFolder")}
+        title={t('nav.newSmartFolder')}
         fields={[
           {
-            key: "name",
-            label: t("common.name"),
-            placeholder: t("nav.nameExample"),
+            key: 'name',
+            label: t('common.name'),
+            placeholder: t('nav.nameExample'),
           },
           {
-            key: "query",
-            label: t("nav.searchQuery"),
-            placeholder: t("nav.searchQueryExample"),
+            key: 'query',
+            label: t('nav.searchQuery'),
+            placeholder: t('nav.searchQueryExample'),
           },
         ]}
       />
@@ -1290,4 +1222,3 @@ export function PremiumSidebar({
     </>
   );
 }
-

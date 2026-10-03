@@ -4,8 +4,8 @@ import {
   createCalendarEvent,
   updateCalendarEvent,
   deleteCalendarEvent as dbDeleteCalendarEvent,
-} from "../../../shared/services/db/db-invoke";
-import type { CalendarEvent } from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
+import type { CalendarEvent } from '../../../shared/services/db/db-invoke';
 
 export type DbCalendarEvent = CalendarEvent;
 
@@ -67,9 +67,7 @@ export async function getCalendarEventsInRangeMulti(
     return getCalendarEventsInRange(companyId, startTime, endTime);
   }
   const all = await listCalendarEvents(companyId, null, startTime, endTime);
-  return all.filter(
-    (evt) => evt.calendar_id === null || calendarIds.includes(evt.calendar_id),
-  );
+  return all.filter((evt) => evt.calendar_id === null || calendarIds.includes(evt.calendar_id));
 }
 
 export async function deleteEventsForCalendar(

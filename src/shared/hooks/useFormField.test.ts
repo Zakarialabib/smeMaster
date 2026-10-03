@@ -15,7 +15,7 @@ describe('useFormField', () => {
   });
 
   it('validates on blur', () => {
-    const validator = (v: string) => v.length < 3 ? 'Too short' : undefined;
+    const validator = (v: string) => (v.length < 3 ? 'Too short' : undefined);
     const { result } = renderHook(() => useFormField({ validator }));
     act(() => result.current.onChange('ab'));
     act(() => result.current.onBlur());

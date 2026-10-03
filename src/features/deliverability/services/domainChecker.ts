@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 export interface DnsCheckResult {
   spf: string | null;
@@ -7,7 +7,7 @@ export interface DnsCheckResult {
 }
 
 export async function checkDomainDns(domain: string): Promise<DnsCheckResult> {
-  return invokeCommand<DnsCheckResult>("check_dns_records", { domain });
+  return invokeCommand<DnsCheckResult>('check_dns_records', { domain });
 }
 
 export function extractDomain(email: string): string | null {

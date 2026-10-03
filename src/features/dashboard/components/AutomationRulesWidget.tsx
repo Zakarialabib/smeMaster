@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Workflow } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Workflow } from 'lucide-react';
 import {
   dashboardWorkflowRulesTotal,
   dashboardWorkflowRulesActive,
-} from "@shared/services/db/db-invoke";
-import { WidgetHeader, WidgetSkeleton, WidgetError } from "./WidgetHelpers";
-import { StatBox } from "./StatBox";
+} from '@shared/services/db/db-invoke';
+import { WidgetHeader, WidgetSkeleton, WidgetError } from './WidgetHelpers';
+import { StatBox } from './StatBox';
 
 export function AutomationRulesWidget() {
   const [total, setTotal] = useState<number | null>(null);
@@ -32,7 +32,9 @@ export function AutomationRulesWidget() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) return <WidgetSkeleton />;
@@ -44,11 +46,15 @@ export function AutomationRulesWidget() {
       <div className="flex items-center justify-between">
         <div className="grid grid-cols-2 gap-3 flex-1">
           <StatBox label="Total Rules" value={total ?? 0} />
-          <StatBox label="Active" value={active ?? 0} variant={active != null && active > 0 ? "default" : "warning"} />
+          <StatBox
+            label="Active"
+            value={active ?? 0}
+            variant={active != null && active > 0 ? 'default' : 'warning'}
+          />
         </div>
         <Link
           to="/automation"
-          className="ml-3 text-xs text-accent hover:text-accent/80 flex items-center gap-1 transition-colors"
+          className="ms-3 text-xs text-accent hover:text-accent/80 flex items-center gap-1 transition-colors"
         >
           Manage
         </Link>

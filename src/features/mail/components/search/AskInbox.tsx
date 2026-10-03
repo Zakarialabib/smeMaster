@@ -1,14 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { Sparkles, X, Send, ExternalLink, Download } from "lucide-react";
-import { askMyInbox, type AskInboxResult } from "@shared/services/ai/askInbox";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { navigateToLabel } from "@/router/navigate";
-import {
-  ensureAiSidecar,
-  activateAiSidecar,
-} from "@features/assistant/services/aiSidecar";
-import { useAiSidecarStore } from "@features/assistant/stores/aiSidecarStore";
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Sparkles, X, Send, ExternalLink, Download } from 'lucide-react';
+import { askMyInbox, type AskInboxResult } from '@shared/services/ai/askInbox';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { navigateToLabel } from '@/router/navigate';
+import { ensureAiSidecar, activateAiSidecar } from '@features/assistant/services/aiSidecar';
+import { useAiSidecarStore } from '@features/assistant/stores/aiSidecarStore';
 
 interface AskInboxProps {
   isOpen: boolean;
@@ -16,7 +13,7 @@ interface AskInboxProps {
 }
 
 export function AskInbox({ isOpen, onClose }: AskInboxProps) {
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AskInboxResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +48,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
     try {
       await activateAiSidecar();
     } catch (err) {
-      console.error("Failed to activate AI sidecar:", err);
+      console.error('Failed to activate AI sidecar:', err);
     } finally {
       setActivating(false);
     }
@@ -65,9 +62,9 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
       const res = await askMyInbox(question.trim(), activeAccountId);
       setResult(res);
     } catch (err) {
-      console.error("Ask inbox failed:", err);
+      console.error('Ask inbox failed:', err);
       setResult({
-        answer: "Sorry, something went wrong. Please check your AI configuration and try again.",
+        answer: 'Sorry, something went wrong. Please check your AI configuration and try again.',
         sourceMessages: [],
       });
     } finally {
@@ -77,23 +74,26 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.preventDefault();
         handleAsk();
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         onClose();
       }
     },
     [handleAsk, onClose],
   );
 
-  const handleNavigateToThread = useCallback((threadId: string) => {
-    navigateToLabel("all", { threadId });
-    onClose();
-  }, [onClose]);
+  const handleNavigateToThread = useCallback(
+    (threadId: string) => {
+      navigateToLabel('all', { threadId });
+      onClose();
+    },
+    [onClose],
+  );
 
   const handleClear = useCallback(() => {
-    setQuestion("");
+    setQuestion('');
     setResult(null);
     inputRef.current?.focus();
   }, []);
@@ -164,19 +164,22 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
                       <button
                         key={msg.message_id}
                         onClick={() => handleNavigateToThread(msg.thread_id)}
-                        className="w-full text-left px-3 py-2 rounded-md bg-bg-secondary hover:bg-bg-hover transition-colors group"
+                        className="w-full text-start px-3 py-2 rounded-md bg-bg-secondary hover:bg-bg-hover transition-colors group"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-medium text-text-primary truncate">
-                            {msg.from_name ?? msg.from_address ?? "Unknown"}
+                            {msg.from_name ?? msg.from_address ?? 'Unknown'}
                           </span>
-                          <span className="text-[0.625rem] text-text-tertiary shrink-0 ml-2">
+                          <span className="text-[0.625rem] text-text-tertiary shrink-0 ms-2">
                             {new Date(msg.date).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="text-xs text-text-secondary truncate mt-0.5 flex items-center gap-1">
-                          {msg.subject ?? "(no subject)"}
-                          <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 shrink-0" />
+                          {msg.subject ?? '(no subject)'}
+                          <ExternalLink
+                            size={10}
+                            className="opacity-0 group-hover:opacity-100 shrink-0"
+                          />
                         </div>
                       </button>
                     ))}
@@ -201,7 +204,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
           )}
 
           {/* Local AI sidecar not ready — degrade gracefully with a prompt. */}
-          {sidecarStatus !== "ready" && sidecarStatus !== "loading" && (
+          {sidecarStatus !== 'ready' && sidecarStatus !== 'loading' && (
             <div className="px-4 py-6 text-center">
               <div className="flex items-center justify-center gap-2 text-sm text-text-secondary mb-3">
                 <Download size={16} className="text-accent" />
@@ -210,14 +213,14 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
               <p className="text-xs text-text-tertiary mb-3">
                 {sidecarError
                   ? `Could not load the model: ${sidecarError}`
-                  : "Download the on-device embedding model to enable semantic search."}
+                  : 'Download the on-device embedding model to enable semantic search.'}
               </p>
               <button
                 onClick={handleDownloadModel}
                 disabled={activating}
                 className="px-3 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {activating ? "Downloading…" : "Download model"}
+                {activating ? 'Downloading…' : 'Download model'}
               </button>
             </div>
           )}

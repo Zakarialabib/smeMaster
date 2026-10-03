@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface MainWorkspaceProps {
   children: ReactNode;
@@ -6,11 +6,7 @@ interface MainWorkspaceProps {
 
 export function MainWorkspace({ children }: MainWorkspaceProps) {
   return (
-    <main
-      id="main-content"
-      className="flex-1 min-w-0 overflow-hidden flex flex-col"
-      role="main"
-    >
+    <main id="main-content" className="flex-1 min-w-0 overflow-hidden flex flex-col" role="main">
       {children}
     </main>
   );

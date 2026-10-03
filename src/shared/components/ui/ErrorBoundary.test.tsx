@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ErrorBoundary } from "./ErrorBoundary";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ErrorBoundary } from './ErrorBoundary';
 
 // A component that throws on render
 function ThrowingComponent({ message }: { message: string }) {
@@ -11,7 +11,7 @@ function GoodComponent() {
   return <div>All good</div>;
 }
 
-describe("ErrorBoundary", () => {
+describe('ErrorBoundary', () => {
   // Suppress console.error for expected errors in tests
   const originalError = console.error;
   beforeEach(() => {
@@ -21,57 +21,57 @@ describe("ErrorBoundary", () => {
     console.error = originalError;
   });
 
-  it("renders children when there is no error", () => {
+  it('renders children when there is no error', () => {
     render(
       <ErrorBoundary>
         <GoodComponent />
       </ErrorBoundary>,
     );
-    expect(screen.getByText("All good")).toBeInTheDocument();
+    expect(screen.getByText('All good')).toBeInTheDocument();
   });
 
-  it("renders default fallback UI when a child throws", () => {
+  it('renders default fallback UI when a child throws', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent message="Test error" />
       </ErrorBoundary>,
     );
-    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-    expect(screen.getByText("Test error")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Test error')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 
-  it("renders custom fallback when provided", () => {
+  it('renders custom fallback when provided', () => {
     render(
       <ErrorBoundary fallback={<div>Custom fallback</div>}>
         <ThrowingComponent message="Test error" />
       </ErrorBoundary>,
     );
-    expect(screen.getByText("Custom fallback")).toBeInTheDocument();
-    expect(screen.queryByText("Something went wrong")).not.toBeInTheDocument();
+    expect(screen.getByText('Custom fallback')).toBeInTheDocument();
+    expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
   });
 
-  it("logs the error with the boundary name", () => {
+  it('logs the error with the boundary name', () => {
     render(
       <ErrorBoundary name="TestBoundary">
         <ThrowingComponent message="Named error" />
       </ErrorBoundary>,
     );
     expect(console.error).toHaveBeenCalledWith(
-      "[ErrorBoundary: TestBoundary]",
+      '[ErrorBoundary: TestBoundary]',
       expect.any(Error),
       expect.objectContaining({ componentStack: expect.any(String) }),
     );
   });
 
-  it("logs the error without a name when name is not provided", () => {
+  it('logs the error without a name when name is not provided', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent message="Unnamed error" />
       </ErrorBoundary>,
     );
     expect(console.error).toHaveBeenCalledWith(
-      "[ErrorBoundary]",
+      '[ErrorBoundary]',
       expect.any(Error),
       expect.objectContaining({ componentStack: expect.any(String) }),
     );
@@ -81,7 +81,7 @@ describe("ErrorBoundary", () => {
     let shouldThrow = true;
 
     function MaybeThrow() {
-      if (shouldThrow) throw new Error("Conditional error");
+      if (shouldThrow) throw new Error('Conditional error');
       return <div>Recovered</div>;
     }
 
@@ -91,30 +91,30 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>,
     );
 
-    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
     // Fix the error condition
     shouldThrow = false;
 
-    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(screen.getByText("Recovered")).toBeInTheDocument();
-    expect(screen.queryByText("Something went wrong")).not.toBeInTheDocument();
+    expect(screen.getByText('Recovered')).toBeInTheDocument();
+    expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
   });
 
-  it("shows fallback again if child still throws after retry", () => {
+  it('shows fallback again if child still throws after retry', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent message="Persistent error" />
       </ErrorBoundary>,
     );
 
-    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     // Still broken, so fallback should reappear
-    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-    expect(screen.getByText("Persistent error")).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Persistent error')).toBeInTheDocument();
   });
 });

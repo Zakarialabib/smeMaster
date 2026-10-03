@@ -1,13 +1,20 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { save } from "@tauri-apps/plugin-dialog";
-import { writeFile } from "@tauri-apps/plugin-fs";
-import { getAttachmentsForMessage, type DbAttachment } from "@shared/services/db/attachments";
-import { getEmailProvider } from "@features/mail/services/email/providerFactory";
-import { saveAttachmentToVault } from "@features/mail/services/attachments/vaultService";
-import { Modal } from "@shared/components/ui/Modal";
-import { Download, Eye, Archive } from "lucide-react";
-import { formatFileSize, isImage, isPdf, isText, canPreview, getFileIcon } from "@shared/utils/fileTypeHelpers";
-import { useTranslation } from "react-i18next";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
+import { getAttachmentsForMessage, type DbAttachment } from '@shared/services/db/attachments';
+import { getEmailProvider } from '@features/mail/services/email/providerFactory';
+import { saveAttachmentToVault } from '@features/mail/services/attachments/vaultService';
+import { Modal } from '@shared/components/ui/Modal';
+import { Download, Eye, Archive } from 'lucide-react';
+import {
+  formatFileSize,
+  isImage,
+  isPdf,
+  isText,
+  canPreview,
+  getFileIcon,
+} from '@shared/utils/fileTypeHelpers';
+import { useTranslation } from 'react-i18next';
 
 /** Dedup attachments by filename+size (content-based) */
 function dedup(attachments: DbAttachment[]): DbAttachment[] {
@@ -33,7 +40,7 @@ function useIsVisible(ref: React.RefObject<HTMLElement | null>): boolean {
           observer.disconnect();
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: '200px' },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -72,13 +79,15 @@ function LazyAttachmentItem({
         const provider = await getEmailProvider(accountId);
         const response = await provider.fetchAttachment(messageId, attachment.gmail_attachment_id);
 
-        const base64 = response.data.replace(/-/g, "+").replace(/_/g, "/");
+        const base64 = response.data.replace(/-/g, '+').replace(/_/g, '/');
         const binaryStr = atob(base64);
         const bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) {
           bytes[i] = binaryStr.charCodeAt(i);
         }
-        const blob = new Blob([bytes.buffer as ArrayBuffer], { type: attachment.mime_type ?? "image/png" });
+        const blob = new Blob([bytes.buffer as ArrayBuffer], {
+          type: attachment.mime_type ?? 'image/png',
+        });
         setThumbnailUrl(URL.createObjectURL(blob));
       } catch {
         // Silent fail - thumbnail preload is optional
@@ -101,7 +110,7 @@ function LazyAttachmentItem({
       {thumbnailUrl ? (
         <img
           src={thumbnailUrl}
-          alt={attachment.filename ?? "Attachment"}
+          alt={attachment.filename ?? 'Attachment'}
           className="w-6 h-6 object-cover rounded"
           loading="lazy"
         />
@@ -128,18 +137,26 @@ interface AttachmentListProps {
   fromAddress?: string | null;
 }
 
-export function AttachmentList({ accountId, messageId, attachments, referencedCids, fromAddress }: AttachmentListProps) {
+export function AttachmentList({
+  accountId,
+  messageId,
+  attachments,
+  referencedCids,
+  fromAddress,
+}: AttachmentListProps) {
   const { t } = useTranslation();
   const [preview, setPreview] = useState<DbAttachment | null>(null);
 
   // Filter out CID images rendered in the email body and true inline parts, then dedup
-  const fileAttachments = dedup(attachments.filter((a) => {
-    // Skip attachments whose CID is referenced in the email body (already rendered inline)
-    if (a.content_id && referencedCids?.has(a.content_id)) return false;
-    // True inline: marked inline with no filename
-    if (a.is_inline && !a.filename) return false;
-    return true;
-  }));
+  const fileAttachments = dedup(
+    attachments.filter((a) => {
+      // Skip attachments whose CID is referenced in the email body (already rendered inline)
+      if (a.content_id && referencedCids?.has(a.content_id)) return false;
+      // True inline: marked inline with no filename
+      if (a.is_inline && !a.filename) return false;
+      return true;
+    }),
+  );
 
   if (fileAttachments.length === 0) return null;
 
@@ -207,7 +224,7 @@ export function AttachmentPreview({
     const response = await provider.fetchAttachment(messageId, attachment.gmail_attachment_id!);
 
     // Normalize URL-safe base64 (Gmail API) to standard base64
-    const base64 = response.data.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = response.data.replace(/-/g, '+').replace(/_/g, '/');
     const binaryStr = atob(base64);
     const bytes = new Uint8Array(binaryStr.length);
     for (let i = 0; i < binaryStr.length; i++) {
@@ -224,13 +241,13 @@ export function AttachmentPreview({
     try {
       const bytes = await fetchData();
       const effectiveMime = isPdf(attachment.mime_type, attachment.filename)
-        ? "application/pdf"
-        : (attachment.mime_type ?? "application/octet-stream");
+        ? 'application/pdf'
+        : (attachment.mime_type ?? 'application/octet-stream');
       const blob = new Blob([bytes.buffer as ArrayBuffer], { type: effectiveMime });
       setBlobUrl(URL.createObjectURL(blob));
     } catch (err) {
-      console.error("Failed to load preview:", err);
-      setError("Failed to load preview");
+      console.error('Failed to load preview:', err);
+      setError('Failed to load preview');
     } finally {
       setLoading(false);
     }
@@ -249,8 +266,8 @@ export function AttachmentPreview({
     setSaving(true);
     try {
       const filePath = await save({
-        defaultPath: attachment.filename ?? "attachment",
-        filters: [{ name: "All Files", extensions: ["*"] }],
+        defaultPath: attachment.filename ?? 'attachment',
+        filters: [{ name: 'All Files', extensions: ['*'] }],
       });
 
       if (!filePath) {
@@ -261,7 +278,7 @@ export function AttachmentPreview({
       const bytes = await fetchData();
       await writeFile(filePath, bytes);
     } catch (err) {
-      console.error("Failed to save attachment:", err);
+      console.error('Failed to save attachment:', err);
     } finally {
       setSaving(false);
     }
@@ -275,7 +292,7 @@ export function AttachmentPreview({
       setVaultSaved(true);
       setTimeout(() => setVaultSaved(false), 2000);
     } catch (err) {
-      console.error("Failed to save to vault:", err);
+      console.error('Failed to save to vault:', err);
     } finally {
       setSavingToVault(false);
     }
@@ -299,19 +316,23 @@ export function AttachmentPreview({
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2 shrink-0 ml-4">
+      <div className="flex items-center gap-2 shrink-0 ms-4">
         {fromAddress && (
           <button
             onClick={handleSaveToVault}
             disabled={savingToVault}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50 ${
               vaultSaved
-                ? "text-success bg-success/10 border border-success/30"
-                : "text-accent border border-accent/30 hover:bg-accent/10"
+                ? 'text-success bg-success/10 border border-success/30'
+                : 'text-accent border border-accent/30 hover:bg-accent/10'
             }`}
           >
             <Archive size={13} />
-            {savingToVault ? t('common.saving') : vaultSaved ? t('common.saved') : t('vault.saveToVault')}
+            {savingToVault
+              ? t('common.saving')
+              : vaultSaved
+                ? t('common.saved')
+                : t('vault.saveToVault')}
           </button>
         )}
         <button
@@ -336,23 +357,22 @@ export function AttachmentPreview({
     <Modal
       isOpen={true}
       onClose={handleClose}
-      title={attachment.filename ?? "Attachment"}
+      title={attachment.filename ?? 'Attachment'}
       width="w-[800px]"
       panelClassName="max-w-[90vw] max-h-[85vh] flex flex-col"
       renderHeader={header}
     >
       {/* Allow native right-click in preview (save image, copy, etc.) */}
-      <div className="flex-1 overflow-auto min-h-[200px] flex items-center justify-center p-4" data-native-context-menu>
-        {loading && (
-          <p className="text-sm text-text-tertiary">{t('common.loadingPreview')}</p>
-        )}
-        {error && (
-          <p className="text-sm text-text-tertiary">{error}</p>
-        )}
+      <div
+        className="flex-1 overflow-auto min-h-[200px] flex items-center justify-center p-4"
+        data-native-context-menu
+      >
+        {loading && <p className="text-sm text-text-tertiary">{t('common.loadingPreview')}</p>}
+        {error && <p className="text-sm text-text-tertiary">{error}</p>}
         {!loading && !error && blobUrl && isImage(attachment.mime_type) && (
           <img
             src={blobUrl}
-            alt={attachment.filename ?? "Attachment"}
+            alt={attachment.filename ?? 'Attachment'}
             className="max-w-full max-h-[70vh] object-contain rounded"
             loading="lazy"
           />
@@ -360,7 +380,7 @@ export function AttachmentPreview({
         {!loading && !error && blobUrl && isPdf(attachment.mime_type, attachment.filename) && (
           <iframe
             src={blobUrl}
-            title={attachment.filename ?? "PDF preview"}
+            title={attachment.filename ?? 'PDF preview'}
             className="w-full h-[70vh] border-0 rounded"
           />
         )}
@@ -384,7 +404,10 @@ function TextPreview({ url }: { url: string }) {
   const [text, setText] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(url).then((r) => r.text()).then(setText).catch(() => setText(t('common.failedToLoadText')));
+    fetch(url)
+      .then((r) => r.text())
+      .then(setText)
+      .catch(() => setText(t('common.failedToLoadText')));
   }, [url, t]);
 
   return (

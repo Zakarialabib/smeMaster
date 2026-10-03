@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
-import { Modal } from "@shared/components/ui/Modal";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { sanitizeHtml } from "@shared/utils/sanitize";
-import { Paperclip, Eye, EyeOff } from "lucide-react";
+import { useMemo, useState } from 'react';
+import { Modal } from '@shared/components/ui/Modal';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { sanitizeHtml } from '@shared/utils/sanitize';
+import { Paperclip, Eye, EyeOff } from 'lucide-react';
 
 interface SendPreviewProps {
   isOpen: boolean;
@@ -26,9 +26,7 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
   const attachments = useComposerStore((s) => s.attachments);
   const bodyHtml = useComposerStore((s) => s.bodyHtml);
   const signatureHtml = useComposerStore((s) => s.signatureHtml);
-  const activeAccount = useAccountStore((s) =>
-    s.accounts.find((a) => a.id === s.activeAccountId),
-  );
+  const activeAccount = useAccountStore((s) => s.accounts.find((a) => a.id === s.activeAccountId));
   const [showPreview, setShowPreview] = useState(true);
 
   const fullHtml = useMemo(() => {
@@ -36,7 +34,7 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
     return `${bodyHtml}<div style="margin-top:16px;border-top:1px solid #e5e5e5;padding-top:12px">${sanitizeHtml(signatureHtml)}</div>`;
   }, [bodyHtml, signatureHtml]);
 
-  const senderEmail = fromEmail ?? activeAccount?.email ?? "";
+  const senderEmail = fromEmail ?? activeAccount?.email ?? '';
   const totalSize = attachments.reduce((sum, a) => sum + a.size, 0);
 
   return (
@@ -56,18 +54,18 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
           </div>
           <div className="flex gap-2">
             <span className="text-text-tertiary w-16 shrink-0">To:</span>
-            <span className="text-text-primary truncate">{to.join(", ") || "(none)"}</span>
+            <span className="text-text-primary truncate">{to.join(', ') || '(none)'}</span>
           </div>
           {cc.length > 0 && (
             <div className="flex gap-2">
               <span className="text-text-tertiary w-16 shrink-0">Cc:</span>
-              <span className="text-text-primary truncate">{cc.join(", ")}</span>
+              <span className="text-text-primary truncate">{cc.join(', ')}</span>
             </div>
           )}
           {bcc.length > 0 && (
             <div className="flex gap-2">
               <span className="text-text-tertiary w-16 shrink-0">Bcc:</span>
-              <span className="text-text-primary truncate">{bcc.join(", ")}</span>
+              <span className="text-text-primary truncate">{bcc.join(', ')}</span>
             </div>
           )}
           {subject && (
@@ -93,14 +91,14 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
             className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-primary transition-colors"
           >
             {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
-            {showPreview ? "Hide preview" : "Show preview"}
+            {showPreview ? 'Hide preview' : 'Show preview'}
           </button>
 
           {/* Attachments summary */}
           {attachments.length > 0 && (
             <span className="text-xs text-text-tertiary flex items-center gap-1">
               <Paperclip size={12} />
-              {attachments.length} file{attachments.length > 1 ? "s" : ""}
+              {attachments.length} file{attachments.length > 1 ? 's' : ''}
               {totalSize > 0 && ` (${formatFileSize(totalSize)})`}
             </span>
           )}
@@ -128,7 +126,7 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
                 className="flex items-center justify-between text-xs text-text-secondary"
               >
                 <span className="truncate flex-1">{att.filename}</span>
-                <span className="text-text-tertiary ml-2 shrink-0">{formatFileSize(att.size)}</span>
+                <span className="text-text-tertiary ms-2 shrink-0">{formatFileSize(att.size)}</span>
               </div>
             ))}
           </div>
@@ -143,7 +141,10 @@ export function SendPreview({ isOpen, onClose, onSend }: SendPreviewProps) {
             Edit
           </button>
           <button
-            onClick={() => { onSend(); onClose(); }}
+            onClick={() => {
+              onSend();
+              onClose();
+            }}
             className="px-4 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
           >
             Send

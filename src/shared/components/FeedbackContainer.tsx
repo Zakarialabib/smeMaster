@@ -86,14 +86,13 @@ const FeedbackToast: React.FC<FeedbackToastProps> = ({ feedback, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg border shadow-lg ${getColorClasses()} transition-all duration-300`}>
+    <div
+      className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg border shadow-lg ${getColorClasses()} transition-all duration-300`}
+    >
       <div className="flex items-center space-x-2">
         <span className="text-lg font-bold">{getIcon()}</span>
         <span className="font-medium">{feedback.message}</span>
-        <button
-          onClick={onClose}
-          className="ml-2 font-bold hover:opacity-70"
-        >
+        <button onClick={onClose} className="ms-2 font-bold hover:opacity-70">
           ×
         </button>
       </div>

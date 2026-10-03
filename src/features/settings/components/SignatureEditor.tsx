@@ -1,42 +1,43 @@
-import { useState, useEffect, useCallback } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
-import { Trash2, Pencil, Code } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { TextField } from "@shared/components/ui/TextField";
-import { EditorToolbar } from "@features/mail/components/composer/EditorToolbar";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { useState, useEffect, useCallback } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
+import { Trash2, Pencil, Code } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { TextField } from '@shared/components/ui/TextField';
+import { EditorToolbar } from '@features/mail/components/composer/EditorToolbar';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getSignaturesForAccount,
   insertSignature,
   updateSignature,
   deleteSignature,
   type DbSignature,
-} from "@features/mail/db/signatures";
+} from '@features/mail/db/signatures';
 
 export function SignatureEditor() {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const [signatures, setSignatures] = useState<DbSignature[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
-  const [rawHtml, setRawHtml] = useState("");
+  const [rawHtml, setRawHtml] = useState('');
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: { openOnClick: false } }),
       Image.configure({ inline: true, allowBase64: true }),
-      Placeholder.configure({ placeholder: "Write your signature..." }),
+      Placeholder.configure({ placeholder: 'Write your signature...' }),
     ],
-    content: "",
+    content: '',
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs",
+        class:
+          'prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs',
       },
     },
   });
@@ -53,13 +54,13 @@ export function SignatureEditor() {
   }, [activeAccountId]);
 
   const resetForm = useCallback(() => {
-    setName("");
+    setName('');
     setIsDefault(false);
     setEditingId(null);
     setShowForm(false);
     setIsHtmlMode(false);
-    setRawHtml("");
-    editor?.commands.setContent("");
+    setRawHtml('');
+    editor?.commands.setContent('');
   }, [editor]);
 
   const toggleHtmlMode = useCallback(() => {
@@ -92,23 +93,39 @@ export function SignatureEditor() {
 
     resetForm();
     await loadSignatures();
-    notify("Signature", editingId ? "Signature updated." : "Signature saved.");
-  }, [activeAccountId, editor, name, isDefault, editingId, isHtmlMode, rawHtml, resetForm, loadSignatures]);
+    notify('Signature', editingId ? 'Signature updated.' : 'Signature saved.');
+  }, [
+    activeAccountId,
+    editor,
+    name,
+    isDefault,
+    editingId,
+    isHtmlMode,
+    rawHtml,
+    resetForm,
+    loadSignatures,
+  ]);
 
-  const handleEdit = useCallback((sig: DbSignature) => {
-    setEditingId(sig.id);
-    setName(sig.name);
-    setIsDefault(sig.is_default === 1);
-    setShowForm(true);
-    editor?.commands.setContent(sig.body_html);
-  }, [editor]);
+  const handleEdit = useCallback(
+    (sig: DbSignature) => {
+      setEditingId(sig.id);
+      setName(sig.name);
+      setIsDefault(sig.is_default === 1);
+      setShowForm(true);
+      editor?.commands.setContent(sig.body_html);
+    },
+    [editor],
+  );
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteSignature(id);
-    if (editingId === id) resetForm();
-    await loadSignatures();
-    notify("Signature", "Signature deleted.");
-  }, [editingId, resetForm, loadSignatures]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteSignature(id);
+      if (editingId === id) resetForm();
+      await loadSignatures();
+      notify('Signature', 'Signature deleted.');
+    },
+    [editingId, resetForm, loadSignatures],
+  );
 
   return (
     <div className="space-y-3">
@@ -170,9 +187,13 @@ export function SignatureEditor() {
                 iconOnly
                 icon={<Code size={14} />}
                 onClick={toggleHtmlMode}
-                className={isHtmlMode ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-primary"}
-                title={isHtmlMode ? "Switch to visual editor" : "Edit HTML source"}
-                aria-label={isHtmlMode ? "Switch to visual editor" : "Edit HTML source"}
+                className={
+                  isHtmlMode
+                    ? 'text-accent bg-accent/10'
+                    : 'text-text-tertiary hover:text-text-primary'
+                }
+                title={isHtmlMode ? 'Switch to visual editor' : 'Edit HTML source'}
+                aria-label={isHtmlMode ? 'Switch to visual editor' : 'Edit HTML source'}
               />
             </div>
             <div className="flex flex-col lg:flex-row">
@@ -190,7 +211,7 @@ export function SignatureEditor() {
               </div>
               <div className="w-full lg:w-1/2 bg-bg-primary">
                 <iframe
-                  srcDoc={isHtmlMode ? rawHtml : editor?.getHTML() ?? ""}
+                  srcDoc={isHtmlMode ? rawHtml : (editor?.getHTML() ?? '')}
                   sandbox="allow-same-origin"
                   className="w-full border-0"
                   style={{ height: 200 }}
@@ -211,31 +232,19 @@ export function SignatureEditor() {
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={!name.trim()}
-            >
-              {editingId ? "Update" : "Save"}
+            <Button variant="primary" onClick={handleSave} disabled={!name.trim()}>
+              {editingId ? 'Update' : 'Save'}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={resetForm}
-            >
+            <Button variant="secondary" onClick={resetForm}>
               Cancel
             </Button>
           </div>
         </div>
       ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowForm(true)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
           + Add signature
         </Button>
       )}
     </div>
   );
 }
-

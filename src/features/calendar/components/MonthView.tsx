@@ -1,7 +1,7 @@
-﻿import { useMemo } from "react";
-import type { DbCalendarEvent } from "@features/calendar/db/calendarEvents";
-import type { DbCalendar } from "@features/calendar/db/calendars";
-import { EventCard, type IntegratedItemType } from "./EventCard";
+﻿import { useMemo } from 'react';
+import type { DbCalendarEvent } from '@features/calendar/db/calendarEvents';
+import type { DbCalendar } from '@features/calendar/db/calendars';
+import { EventCard, type IntegratedItemType } from './EventCard';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -11,12 +11,18 @@ interface MonthViewProps {
   onEventClick: (event: any, type: IntegratedItemType) => void;
 }
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export function MonthView({ currentDate, events, integratedItems, calendars, onEventClick }: MonthViewProps) {
+export function MonthView({
+  currentDate,
+  events,
+  integratedItems,
+  calendars,
+  onEventClick,
+}: MonthViewProps) {
   const calendarColorMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const cal of calendars) map.set(cal.id, cal.color ?? "var(--color-accent)");
+    for (const cal of calendars) map.set(cal.id, cal.color ?? 'var(--color-accent)');
     return map;
   }, [calendars]);
   const year = currentDate.getFullYear();
@@ -43,18 +49,25 @@ export function MonthView({ currentDate, events, integratedItems, calendars, onE
 
       const dayEvents = events
         .filter((e) => e.start_time < dayEnd && e.end_time > dayStart)
-        .map(e => ({ item: e, type: 'event' as const }));
+        .map((e) => ({ item: e, type: 'event' as const }));
 
       const dayIntegrated = (integratedItems || [])
-        .map(item => {
+        .map((item) => {
           let type: IntegratedItemType = 'task';
           let time = 0;
-          if ('due_date' in item) { type = 'task'; time = item.due_date; }
-          else if ('sent_at' in item) { type = 'campaign'; time = item.sent_at; }
-          else if ('scheduled_at' in item) { type = 'scheduled_email'; time = item.scheduled_at; }
+          if ('due_date' in item) {
+            type = 'task';
+            time = item.due_date;
+          } else if ('sent_at' in item) {
+            type = 'campaign';
+            time = item.sent_at;
+          } else if ('scheduled_at' in item) {
+            type = 'scheduled_email';
+            time = item.scheduled_at;
+          }
           return { item, type, time };
         })
-        .filter(i => i.time && i.time >= dayStart && i.time < dayEnd)
+        .filter((i) => i.time && i.time >= dayStart && i.time < dayEnd)
         .map(({ item, type }) => ({ item, type }));
 
       const allItems = [...dayEvents, ...dayIntegrated];
@@ -78,7 +91,12 @@ export function MonthView({ currentDate, events, integratedItems, calendars, onE
       <div className="calendar-grid grid grid-cols-7 flex-1 auto-rows-fr overflow-y-auto">
         {cells.map((day, idx) => {
           if (day === null) {
-            return <div key={`empty-${idx}`} className="border-b border-r border-border-secondary bg-bg-tertiary/30" />;
+            return (
+              <div
+                key={`empty-${idx}`}
+                className="border-b border-r border-border-secondary bg-bg-tertiary/30"
+              />
+            );
           }
           const isToday = `${year}-${month}-${day}` === todayStr;
           const dayItems = itemsByDay.get(day) ?? [];
@@ -88,9 +106,11 @@ export function MonthView({ currentDate, events, integratedItems, calendars, onE
               key={day}
               className="calendar-cell border-b border-r border-border-secondary p-1 min-h-[80px]"
             >
-              <div className={`text-xs font-medium mb-0.5 w-6 h-6 flex items-center justify-center rounded-full ${
-                isToday ? "bg-accent text-white" : "text-text-secondary"
-              }`}>
+              <div
+                className={`text-xs font-medium mb-0.5 w-6 h-6 flex items-center justify-center rounded-full ${
+                  isToday ? 'bg-accent text-white' : 'text-text-secondary'
+                }`}
+              >
                 {day}
               </div>
               <div className="space-y-0.5">
@@ -100,7 +120,9 @@ export function MonthView({ currentDate, events, integratedItems, calendars, onE
                     event={item}
                     type={type}
                     compact
-                    calendarColor={type === 'event' ? calendarColorMap.get(item.calendar_id ?? "") : undefined}
+                    calendarColor={
+                      type === 'event' ? calendarColorMap.get(item.calendar_id ?? '') : undefined
+                    }
                     onClick={() => onEventClick(item, type)}
                   />
                 ))}
@@ -117,4 +139,3 @@ export function MonthView({ currentDate, events, integratedItems, calendars, onE
     </div>
   );
 }
-

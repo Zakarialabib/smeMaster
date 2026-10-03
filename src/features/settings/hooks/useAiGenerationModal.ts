@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 // ─── Shared state for AI Generation Modals ───
 
-export type ModalStep = "prompt" | "generating" | "preview" | "error";
+export type ModalStep = 'prompt' | 'generating' | 'preview' | 'error';
 
 export interface AiGenerationState<T> {
   step: ModalStep;
@@ -21,15 +21,15 @@ export interface AiGenerationActions<T> {
 
 export function useAiGenerationModal<T>(
   generator: (prompt: string) => Promise<T>,
-  initialPrompt = "",
+  initialPrompt = '',
 ): AiGenerationState<T> & AiGenerationActions<T> {
-  const [step, setStep] = useState<ModalStep>("prompt");
+  const [step, setStep] = useState<ModalStep>('prompt');
   const [prompt, setPrompt] = useState(initialPrompt);
   const [result, setResult] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reset = useCallback(() => {
-    setStep("prompt");
+    setStep('prompt');
     setPrompt(initialPrompt);
     setResult(null);
     setError(null);
@@ -37,29 +37,29 @@ export function useAiGenerationModal<T>(
 
   const generate = useCallback(async () => {
     if (!prompt.trim()) return;
-    setStep("generating");
+    setStep('generating');
     setError(null);
     try {
       const res = await generator(prompt.trim());
       setResult(res);
-      setStep("preview");
+      setStep('preview');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Generation failed");
-      setStep("error");
+      setError(err instanceof Error ? err.message : 'Generation failed');
+      setStep('error');
     }
   }, [prompt, generator]);
 
   const regenerate = useCallback(async () => {
     if (!prompt.trim()) return;
-    setStep("generating");
+    setStep('generating');
     setError(null);
     try {
       const res = await generator(prompt.trim());
       setResult(res);
-      setStep("preview");
+      setStep('preview');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Regeneration failed");
-      setStep("error");
+      setError(err instanceof Error ? err.message : 'Regeneration failed');
+      setStep('error');
     }
   }, [prompt, generator]);
 

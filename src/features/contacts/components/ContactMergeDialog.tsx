@@ -1,7 +1,7 @@
-import { useTranslation } from "react-i18next";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { UserIcon, ArrowRight } from "lucide-react";
+import { useTranslation } from 'react-i18next';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { UserIcon, ArrowRight } from 'lucide-react';
 
 export interface MergeCandidate {
   keepId: string;
@@ -19,7 +19,12 @@ interface ContactMergeDialogProps {
   onMerge: (keepId: string, mergeId: string) => void;
 }
 
-export function ContactMergeDialog({ isOpen, onClose, candidates, onMerge }: ContactMergeDialogProps) {
+export function ContactMergeDialog({
+  isOpen,
+  onClose,
+  candidates,
+  onMerge,
+}: ContactMergeDialogProps) {
   const { t } = useTranslation();
 
   if (candidates.length === 0) {
@@ -66,11 +71,7 @@ export function ContactMergeDialog({ isOpen, onClose, candidates, onMerge }: Con
               </div>
             </div>
 
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onMerge(c.keepId, c.mergeId)}
-            >
+            <Button variant="primary" size="sm" onClick={() => onMerge(c.keepId, c.mergeId)}>
               {t('modals.contactMerge.merge')}
             </Button>
           </div>

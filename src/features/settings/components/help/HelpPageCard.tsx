@@ -1,6 +1,6 @@
-import { ChevronRight } from "lucide-react";
-import { navigateToSettings } from "@/router/navigate";
-import type { HelpCard as HelpCardData } from "@/constants/helpContent";
+import { ChevronRight } from 'lucide-react';
+import { navigateToSettings } from '@/router/navigate';
+import type { HelpCard as HelpCardData } from '@/constants/helpContent';
 
 interface HelpPageCardProps {
   card: HelpCardData;
@@ -28,7 +28,7 @@ export function HelpPageCard({ card, isExpanded, onToggle }: HelpPageCardProps) 
         <ChevronRight
           size={14}
           className={`shrink-0 text-text-tertiary transition-transform duration-200 ${
-            isExpanded ? "rotate-90" : ""
+            isExpanded ? 'rotate-90' : ''
           }`}
         />
       </button>
@@ -36,14 +36,12 @@ export function HelpPageCard({ card, isExpanded, onToggle }: HelpPageCardProps) 
       {/* Expanded body: description + tips + settings link */}
       <div
         className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
       >
         <div className="overflow-hidden">
           <div className="px-4 pb-4 ms-11 border-t border-border-secondary/50 pt-3 space-y-3">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              {card.description}
-            </p>
+            <p className="text-xs text-text-secondary leading-relaxed">{card.description}</p>
 
             {card.tips && card.tips.length > 0 && (
               <ul className="space-y-1.5">

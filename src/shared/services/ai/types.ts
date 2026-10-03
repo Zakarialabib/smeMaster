@@ -1,12 +1,27 @@
+import type { EmbeddingResult } from './capabilities';
+
 export type AiProvider =
-  | "claude"
-  | "openai"
-  | "gemini"
-  | "ollama"
-  | "copilot"
-  | "custom"
-  | "lmstudio"
-  | "openrouter";
+  | 'claude'
+  | 'openai'
+  | 'gemini'
+  | 'mistral'
+  | 'byteplus'
+  | 'ollama'
+  | 'copilot'
+  | 'custom'
+  | 'lmstudio'
+  | 'openrouter'
+  /**
+   * On-device models that are NOT chat providers — currently the sherpa-onnx
+   * speech models (STT/TTS) served by the ml-sidecar. It exists so
+   * `ModelDefinition.provider` stays type-safe for local models, and so the
+   * model list can group them.
+   *
+   * It must never be offered as a chat route: `getProvidersForTask` filters it
+   * out, and `getProviderClient` refuses it. Local *chat* models (candle) would
+   * be a separate concern.
+   */
+  | 'local';
 
 export interface AiCompletionRequest {
   systemPrompt: string;
@@ -25,10 +40,10 @@ export interface AiProviderClient {
 
   /**
    * Generate embeddings for the given text input.
-   * Returns an array of vectors (each vector is an array of floats).
+   * Returns an EmbeddingResult with space pinning info.
    * If the provider does not support embeddings, returns null.
    */
-  getEmbeddings?(req: AiEmbeddingRequest): Promise<number[][] | null>;
+  getEmbeddings?(req: AiEmbeddingRequest): Promise<EmbeddingResult | null>;
 }
 
 /** Options for the LM Studio provider. `embeddingModel` is the model loaded in
@@ -46,14 +61,18 @@ export interface TestEmbeddingResult {
 }
 
 export const DEFAULT_MODELS: Record<AiProvider, string> = {
-  claude: "claude-haiku-4-5-20251001",
-  openai: "gpt-4o-mini",
-  gemini: "gemini-2.5-flash-preview-05-20",
-  ollama: "llama3.2",
-  copilot: "openai/gpt-4o-mini",
-  custom: "gpt-4o-mini",
-  lmstudio: "",
-  openrouter: "openai/gpt-4o-mini",
+  claude: 'claude-sonnet-5-5',
+  openai: 'gpt-6.1-sol',
+  gemini: 'gemini-3.8-flash',
+  mistral: 'mistral-medium-3.5',
+  byteplus: 'doubao-seed-2.1-pro',
+  ollama: 'llama3.2',
+  copilot: 'openai/gpt-6.1-sol',
+  custom: 'gpt-6.1-sol',
+  lmstudio: '',
+  openrouter: 'openai/gpt-6.1-sol',
+  // Local speech models are selected by directory, not by a model id string.
+  local: '',
 };
 
 export interface ModelOption {
@@ -62,50 +81,70 @@ export interface ModelOption {
 }
 
 export const PROVIDER_MODELS: Record<
-  Exclude<AiProvider, "ollama" | "custom" | "lmstudio">,
+  // `local` is excluded for the same reason as ollama/custom/lmstudio: it is
+  // not a chat provider, so it has no chat model list. Its speech models live
+  // in MODEL_REGISTRY.
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
   ModelOption[]
 > = {
   claude: [
-    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
-    { id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
-    { id: "claude-opus-4-20250514", label: "Claude Opus 4" },
+    { id: 'claude-opus-5-5', label: 'Claude Opus 5.5' },
+    { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
+    { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5 (coming soon)' },
+    { id: 'claude-opus-5', label: 'Claude Opus 5' },
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5' },
   ],
   openai: [
-    { id: "gpt-4o-mini", label: "GPT-4o Mini" },
-    { id: "gpt-4o", label: "GPT-4o" },
-    { id: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
-    { id: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
-    { id: "gpt-4.1", label: "GPT-4.1" },
+    { id: 'gpt-6-astra', label: 'GPT-6 Astra (Flagship)' },
+    { id: 'gpt-6.1-sol', label: 'GPT-6.1 Sol (Balanced)' },
+    { id: 'gpt-6-luna', label: 'GPT-6 Luna (High-volume)' },
+    { id: 'gpt-6-sol', label: 'GPT-6 Sol (Legacy)' },
+    { id: 'gpt-6-luna', label: 'GPT-6 Luna' },
   ],
   gemini: [
-    { id: "gemini-2.5-flash-preview-05-20", label: "Gemini 2.5 Flash" },
-    { id: "gemini-2.5-pro-preview-05-06", label: "Gemini 2.5 Pro" },
+    { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash' },
+    { id: 'gemini-3.8-flash-lite', label: 'Gemini 3.8 Flash-Lite' },
+    { id: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
+    { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+    { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Legacy)' },
+  ],
+  mistral: [
+    { id: 'mistral-medium-3.5', label: 'Mistral Medium 3.5 (128B)' },
+    { id: 'mistral-small-4', label: 'Mistral Small 4 (119B MoE)' },
+    { id: 'mistral-large-3', label: 'Mistral Large 3 (675B MoE)' },
+    { id: 'mistral-embed', label: 'Mistral Embed' },
+    { id: 'voxtral-realtime', label: 'Voxtral Realtime (STT)' },
+  ],
+  byteplus: [
+    { id: 'doubao-seed-2.1-pro', label: 'Doubao Seed 2.1 Pro' },
+    { id: 'doubao-seed-2.1-turbo', label: 'Doubao Seed 2.1 Turbo' },
+    { id: 'doubao-seed-2.1-lite', label: 'Doubao Seed 2.1 Lite' },
+    { id: 'doubao-seed-evolving', label: 'Doubao Seed Evolving' },
   ],
   copilot: [
-    { id: "openai/gpt-4o-mini", label: "GPT-4o Mini (Low)" },
-    { id: "openai/gpt-4.1-nano", label: "GPT-4.1 Nano (Low)" },
-    { id: "openai/gpt-4.1-mini", label: "GPT-4.1 Mini (High)" },
-    { id: "openai/gpt-4o", label: "GPT-4o (High)" },
-    { id: "openai/gpt-4.1", label: "GPT-4.1 (High)" },
+    { id: 'openai/gpt-6.1-sol', label: 'GPT-6.1 Sol (Low)' },
+    { id: 'openai/gpt-6-luna', label: 'GPT-6 Luna (Low)' },
+    { id: 'openai/gpt-6-astra', label: 'GPT-6 Astra (High)' },
+    { id: 'anthropic/claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
   ],
   openrouter: [
-    { id: "openai/gpt-4o-mini", label: "GPT-4o Mini (OpenRouter)" },
-    { id: "openai/gpt-4o", label: "GPT-4o (OpenRouter)" },
-    { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet (OpenRouter)" },
-    { id: "anthropic/claude-3-haiku", label: "Claude 3 Haiku (OpenRouter)" },
-    { id: "google/gemini-2.0-flash-exp:free", label: "Gemini 2.0 Flash (Free)" },
-    { id: "meta-llama/llama-3.1-8b-instruct:free", label: "Llama 3.1 8B (Free)" },
-    { id: "mistralai/mistral-7b-instruct:free", label: "Mistral 7B (Free)" },
+    { id: 'openai/gpt-6.1-sol', label: 'GPT-6.1 Sol (OpenRouter)' },
+    { id: 'openai/gpt-6-astra', label: 'GPT-6 Astra (OpenRouter)' },
+    { id: 'anthropic/claude-sonnet-5-5', label: 'Claude Sonnet 5.5 (OpenRouter)' },
+    { id: 'google/gemini-3.8-flash', label: 'Gemini 3.8 Flash (OpenRouter)' },
+    { id: 'mistralai/mistral-medium-3.5', label: 'Mistral Medium 3.5 (OpenRouter)' },
   ],
 };
 
 export const MODEL_SETTINGS: Record<
-  Exclude<AiProvider, "ollama" | "custom" | "lmstudio">,
+  Exclude<AiProvider, 'ollama' | 'custom' | 'lmstudio' | 'local'>,
   string
 > = {
-  claude: "claude_model",
-  openai: "openai_model",
-  gemini: "gemini_model",
-  copilot: "copilot_model",
-  openrouter: "openrouter_model",
+  claude: 'claude_model',
+  openai: 'openai_model',
+  gemini: 'gemini_model',
+  mistral: 'mistral_model',
+  byteplus: 'byteplus_model',
+  copilot: 'copilot_model',
+  openrouter: 'openrouter_model',
 };

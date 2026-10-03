@@ -19,8 +19,8 @@
  * Safe to call during module init and SSR-free browser contexts.
  */
 export function isTauriEnvironment(): boolean {
-  if (typeof window === "undefined") return false;
-  return "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+  if (typeof window === 'undefined') return false;
+  return '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
 }
 
 /**
@@ -39,7 +39,7 @@ export class TauriUnavailableError extends Error {
       `Tauri backend is not available in this environment (browser/dev server). ` +
         `Command "${command}" was not executed.`,
     );
-    this.name = "TauriUnavailableError";
+    this.name = 'TauriUnavailableError';
     this.command = command;
     // Preserve prototype chain when targeting ES5/ES2015.
     Object.setPrototypeOf(this, TauriUnavailableError.prototype);

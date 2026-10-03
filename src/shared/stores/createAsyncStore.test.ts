@@ -1,12 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  withMutation,
-  createAsyncActions,
-  initialAsyncState,
-} from "./createAsyncStore";
+import { describe, it, expect, vi } from 'vitest';
+import { withMutation, createAsyncActions, initialAsyncState } from './createAsyncStore';
 
-describe("withMutation", () => {
-  it("returns the resolved value on success", async () => {
+describe('withMutation', () => {
+  it('returns the resolved value on success', async () => {
     const setLoading = vi.fn();
     const setError = vi.fn();
 
@@ -18,61 +14,61 @@ describe("withMutation", () => {
     expect(setError).toHaveBeenCalledWith(null);
   });
 
-  it("returns undefined and calls setError when fn throws an Error", async () => {
+  it('returns undefined and calls setError when fn throws an Error', async () => {
     const setLoading = vi.fn();
     const setError = vi.fn();
 
     const result = await withMutation(
       async () => {
-        throw new Error("boom");
+        throw new Error('boom');
       },
       { setLoading, setError },
     );
 
     expect(result).toBeUndefined();
-    expect(setError).toHaveBeenCalledWith("boom");
+    expect(setError).toHaveBeenCalledWith('boom');
     expect(setLoading).toHaveBeenLastCalledWith(false);
   });
 
-  it("stringifies non-Error throws", async () => {
+  it('stringifies non-Error throws', async () => {
     const setLoading = vi.fn();
     const setError = vi.fn();
 
     const result = await withMutation(
       async () => {
-        throw new Error("string-error");
+        throw new Error('string-error');
       },
       { setLoading, setError },
     );
 
     expect(result).toBeUndefined();
-    expect(setError).toHaveBeenCalledWith("string-error");
+    expect(setError).toHaveBeenCalledWith('string-error');
   });
 
-  it("toggles setLoading true→false in order", async () => {
+  it('toggles setLoading true→false in order', async () => {
     const calls: boolean[] = [];
     const setLoading = vi.fn((v: boolean) => {
       calls.push(v);
     });
     const setError = vi.fn();
 
-    await withMutation(async () => "ok", { setLoading, setError });
+    await withMutation(async () => 'ok', { setLoading, setError });
 
     expect(calls).toEqual([true, false]);
   });
 
-  it("works without any options (all callbacks optional)", async () => {
+  it('works without any options (all callbacks optional)', async () => {
     await expect(withMutation(async () => 7)).resolves.toBe(7);
     await expect(
       withMutation(async () => {
-        throw new Error("x");
+        throw new Error('x');
       }),
     ).resolves.toBeUndefined();
   });
 });
 
-describe("createAsyncActions (regression)", () => {
-  it("withLoading still produces a working helper", async () => {
+describe('createAsyncActions (regression)', () => {
+  it('withLoading still produces a working helper', async () => {
     const set = vi.fn();
     const { withLoading } = createAsyncActions<{
       isLoading: boolean;
@@ -85,8 +81,8 @@ describe("createAsyncActions (regression)", () => {
   });
 });
 
-describe("initialAsyncState", () => {
-  it("has the expected default shape", () => {
+describe('initialAsyncState', () => {
+  it('has the expected default shape', () => {
     expect(initialAsyncState).toEqual({ isLoading: false, error: null });
   });
 });

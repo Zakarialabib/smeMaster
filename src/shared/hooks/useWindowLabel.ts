@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-export type WindowLabel = "main" | "thread" | "compose";
+export type WindowLabel = 'main' | 'thread' | 'compose';
 export type WindowLabelState = WindowLabel | null;
 
 /**
@@ -26,38 +26,36 @@ export function useWindowLabel(): WindowLabelState {
     // This runs BEFORE any rendering in the current task, ensuring
     // thread/compose windows never flash the main app content.
     const params =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search)
-        : null;
-    const isThread = params?.has("thread") && params?.has("account");
-    const isCompose = params?.has("compose");
+      typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const isThread = params?.has('thread') && params?.has('account');
+    const isCompose = params?.has('compose');
 
     if (isThread) {
-      setLabel("thread");
+      setLabel('thread');
       return;
     }
     if (isCompose) {
-      setLabel("compose");
+      setLabel('compose');
       return;
     }
 
     // ── Async Tauri label (source of truth) ─────────────────────────
-    import("@tauri-apps/api/webviewWindow")
+    import('@tauri-apps/api/webviewWindow')
       .then(({ getCurrentWebviewWindow }) => {
         const win = getCurrentWebviewWindow();
         const rawLabel = win.label;
 
-        if (rawLabel.startsWith("thread")) {
-          setLabel("thread");
-        } else if (rawLabel.startsWith("compose")) {
-          setLabel("compose");
+        if (rawLabel.startsWith('thread')) {
+          setLabel('thread');
+        } else if (rawLabel.startsWith('compose')) {
+          setLabel('compose');
         } else {
-          setLabel("main");
+          setLabel('main');
         }
       })
       .catch(() => {
         // Fallback for non-Tauri environments (browser dev, tests)
-        setLabel("main");
+        setLabel('main');
       });
   }, []);
 

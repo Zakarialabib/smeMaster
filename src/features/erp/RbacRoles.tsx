@@ -48,7 +48,8 @@ export default function RbacRoles() {
 
       <InfoBanner>
         Role-based access control arrives with the Platform tier. Toggles below are visual-only for{' '}
-        <span className="font-medium text-text-primary">{company?.name ?? "this company"}</span> and are not enforced yet.
+        <span className="font-medium text-text-primary">{company?.name ?? 'this company'}</span> and
+        are not enforced yet.
       </InfoBanner>
 
       <SectionCard className="overflow-hidden">
@@ -61,7 +62,7 @@ export default function RbacRoles() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-primary">
-                <th className="px-5 py-3 text-left text-[11px] uppercase tracking-wide text-text-tertiary font-semibold">
+                <th className="px-5 py-3 text-start text-[11px] uppercase tracking-wide text-text-tertiary font-semibold">
                   Permission
                 </th>
                 {ROLES.map((r) => (

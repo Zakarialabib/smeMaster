@@ -1,5 +1,5 @@
-﻿import type { GmailClient } from "./client";
-import { deleteThread as deleteThreadFromDb } from "@shared/services/db/threads";
+﻿import type { GmailClient } from './client';
+import { deleteThread as deleteThreadFromDb } from '@shared/services/db/threads';
 
 /**
  * Delete all drafts for a given thread via the Gmail Drafts API, then remove the thread from local DB.

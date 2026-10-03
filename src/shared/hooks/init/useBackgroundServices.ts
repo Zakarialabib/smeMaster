@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { useEffect, useState } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 /**
  * Result of the `db_init_background_services` Rust command.
@@ -36,19 +36,24 @@ export function useBackgroundServices(): {
 
     async function init() {
       try {
-        const result = await invokeCommand<ServiceOwnership>("db_init_background_services");
+        const result = await invokeCommand<ServiceOwnership>('db_init_background_services');
         if (cancelled) return;
         setOwnedBy(result.owner);
         setServices(result.services);
         console.log(
           `[init] Background services owned by "${result.owner}":`,
-          result.services.join(", "),
-          result.already_running ? "(already running)" : "(fresh start)",
+          result.services.join(', '),
+          result.already_running ? '(already running)' : '(fresh start)',
         );
       } catch (err) {
         if (cancelled) return;
+        // Outside a Tauri shell there are no Rust-owned background services
+        // to start — skip the warn and don't surface an error state.
+        if (typeof err === 'object' && err !== null && 'isTauriUnavailable' in err) {
+          return;
+        }
         const msg = err instanceof Error ? err.message : String(err);
-        console.warn("[init] Failed to init background services:", msg);
+        console.warn('[init] Failed to init background services:', msg);
         setError(msg);
       }
     }

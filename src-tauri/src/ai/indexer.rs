@@ -116,9 +116,32 @@ impl Indexer {
         for attach in attachments {
             if let Some(local_path) = &attach.local_path {
                 let path = Path::new(local_path);
-                if let Ok(text) = DocParser::parse_file(path) {
-                    if text.trim().is_empty() { continue; }
-                    self.index_document(table, &attach.id, &text, cfg).await?;
+                match DocParser::parse_file(path) {
+                    Ok(text) => {
+                        // An empty extraction is the expected result for an
+                        // image-only/scanned PDF (there is no text layer). It
+                        // used to `continue` silently, so the document simply
+                        // never appeared in the knowledge base and nothing
+                        // explained why. Log it so the gap is visible.
+                        if text.trim().is_empty() {
+                            log::warn!(
+                                "attachment {} produced no text (likely a scanned/image-only file): {}",
+                                attach.id,
+                                path.display()
+                            );
+                            continue;
+                        }
+                        self.index_document(table, &attach.id, &text, cfg).await?;
+                    }
+                    Err(e) => {
+                        // Unsupported extension or a genuine parse failure —
+                        // previously swallowed by `if let Ok(..)`.
+                        log::warn!(
+                            "attachment {} could not be parsed ({}): {e}",
+                            attach.id,
+                            path.display()
+                        );
+                    }
                 }
             }
         }
@@ -135,10 +158,29 @@ impl Indexer {
             let app_data = self.app_handle.path().app_data_dir().unwrap();
             let full_path = app_data.join("vault").join(&item.company_id).join(&item.relative_path);
 
-            if full_path.exists() {
-                if let Ok(text) = DocParser::parse_file(&full_path) {
-                    if text.trim().is_empty() { continue; }
+            if !full_path.exists() {
+                log::warn!("vault item {} missing on disk: {}", item.id, full_path.display());
+                continue;
+            }
+
+            match DocParser::parse_file(&full_path) {
+                Ok(text) => {
+                    if text.trim().is_empty() {
+                        log::warn!(
+                            "vault item {} produced no text (likely scanned/image-only): {}",
+                            item.id,
+                            full_path.display()
+                        );
+                        continue;
+                    }
                     self.index_document(table, &item.id, &text, cfg).await?;
+                }
+                Err(e) => {
+                    log::warn!(
+                        "vault item {} could not be parsed ({}): {e}",
+                        item.id,
+                        full_path.display()
+                    );
                 }
             }
         }

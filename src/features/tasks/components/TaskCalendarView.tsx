@@ -9,25 +9,35 @@
  *
  * @spec §3.5
  */
-import { useState, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DndContext, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
-import type { DbTask } from "@features/tasks/db/tasks";
-import { TaskCalendarDay } from "./TaskCalendarDay";
-import { DayAgendaDrawer } from "./DayAgendaDrawer";
-import { FOCUS_RING } from "@shared/styles/ui-tokens";
+import { useState, useMemo, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DndContext, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
+import type { DbTask } from '@features/tasks/db/tasks';
+import { TaskCalendarDay } from './TaskCalendarDay';
+import { DayAgendaDrawer } from './DayAgendaDrawer';
+import { FOCUS_RING } from '@shared/styles/ui-tokens';
 
 /**
  * Days of the week labels
  */
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 /**
  * Month names
  */
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 /**
@@ -95,7 +105,9 @@ export function TaskCalendarView({
   onDelete,
 }: TaskCalendarViewProps) {
   const today = useMemo(() => new Date(), []);
-  const [currentMonth, setCurrentMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [currentMonth, setCurrentMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
@@ -123,8 +135,17 @@ export function TaskCalendarView({
     // Previous month overflow
     const prevMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
     for (let i = startDay - 1; i >= 0; i--) {
-      const date = new Date(prevMonthEnd.getFullYear(), prevMonthEnd.getMonth(), prevMonthEnd.getDate() - i);
-      cells.push({ date, day: date.getDate(), isCurrentMonth: false, isToday: isSameDay(date, today) });
+      const date = new Date(
+        prevMonthEnd.getFullYear(),
+        prevMonthEnd.getMonth(),
+        prevMonthEnd.getDate() - i,
+      );
+      cells.push({
+        date,
+        day: date.getDate(),
+        isCurrentMonth: false,
+        isToday: isSameDay(date, today),
+      });
     }
 
     // Current month
@@ -137,7 +158,12 @@ export function TaskCalendarView({
     while (cells.length < 42) {
       const last = cells[cells.length - 1]!.date;
       const date = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
-      cells.push({ date, day: date.getDate(), isCurrentMonth: false, isToday: isSameDay(date, today) });
+      cells.push({
+        date,
+        day: date.getDate(),
+        isCurrentMonth: false,
+        isToday: isSameDay(date, today),
+      });
     }
 
     return cells;
@@ -163,12 +189,9 @@ export function TaskCalendarView({
     return tasksByDate.get(key) ?? [];
   }, [selectedDate, tasksByDate]);
 
-  const handleDayClick = useCallback(
-    (date: Date) => {
-      setSelectedDate(date);
-    },
-    [],
-  );
+  const handleDayClick = useCallback((date: Date) => {
+    setSelectedDate(date);
+  }, []);
 
   const handleCloseDrawer = useCallback(() => {
     setSelectedDate(null);
@@ -184,8 +207,8 @@ export function TaskCalendarView({
       const targetId = over.id as string;
 
       // Extract date from the droppable target ID
-      if (targetId.startsWith("calendar-day-")) {
-        const timestamp = parseInt(targetId.replace("calendar-day-", ""), 10);
+      if (targetId.startsWith('calendar-day-')) {
+        const timestamp = parseInt(targetId.replace('calendar-day-', ''), 10);
         if (!isNaN(timestamp)) {
           const newDate = new Date(timestamp);
           onTaskMove(taskId, newDate);
@@ -248,12 +271,11 @@ export function TaskCalendarView({
       </div>
 
       {/* Calendar Grid */}
-      <DndContext onDragStart={(e) => setDraggedTaskId(e.active.id as string)} onDragEnd={handleDragEnd}>
-        <div
-          className="grid grid-cols-7 flex-1 overflow-y-auto"
-          role="grid"
-          aria-label="Calendar"
-        >
+      <DndContext
+        onDragStart={(e) => setDraggedTaskId(e.active.id as string)}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-7 flex-1 overflow-y-auto" role="grid" aria-label="Calendar">
           {calendarGrid.map((cell) => {
             const key = `${cell.date.getFullYear()}-${cell.date.getMonth()}-${cell.date.getDate()}`;
             const dayTasks = tasksByDate.get(key) ?? [];
@@ -295,4 +317,3 @@ export function TaskCalendarView({
     </div>
   );
 }
-

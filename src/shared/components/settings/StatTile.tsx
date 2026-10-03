@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
+import type { ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
 
-export type StatTone = "neutral" | "success" | "warning" | "danger" | "accent";
+export type StatTone = 'neutral' | 'success' | 'warning' | 'danger' | 'accent';
 
 export interface StatTileProps {
   label: string;
@@ -18,11 +18,11 @@ export interface StatTileProps {
 }
 
 const TONE_CLASSES: Record<StatTone, string> = {
-  neutral: "text-text-secondary bg-bg-tertiary/40 border-border/40",
-  success: "text-success bg-success/5 border-success/20",
-  warning: "text-warning bg-warning/5 border-warning/20",
-  danger: "text-danger bg-danger/5 border-danger/20",
-  accent: "text-accent bg-accent/5 border-accent/20",
+  neutral: 'text-text-secondary bg-bg-tertiary/40 border-border/40',
+  success: 'text-success bg-success/5 border-success/20',
+  warning: 'text-warning bg-warning/5 border-warning/20',
+  danger: 'text-danger bg-danger/5 border-danger/20',
+  accent: 'text-accent bg-accent/5 border-accent/20',
 };
 
 /**
@@ -46,37 +46,28 @@ const TONE_CLASSES: Record<StatTone, string> = {
 export function StatTile({
   label,
   value,
-  tone = "neutral",
+  tone = 'neutral',
   icon,
   sub,
   loading = false,
   className,
 }: StatTileProps) {
-  const displayValue = loading ? "—" : value;
+  const displayValue = loading ? '—' : value;
 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm",
+        'flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-sm',
         TONE_CLASSES[tone],
         className,
       )}
     >
-      {icon && (
-        <div className="p-2 rounded-lg bg-white/50 text-current shrink-0">
-          {icon}
-        </div>
-      )}
+      {icon && <div className="p-2 rounded-lg bg-white/50 text-current shrink-0">{icon}</div>}
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">
-          {label}
-        </p>
+        <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
         <p className="text-sm font-bold truncate">{displayValue}</p>
-        {sub && (
-          <p className="text-[10px] opacity-60 truncate">{sub}</p>
-        )}
+        {sub && <p className="text-[10px] opacity-60 truncate">{sub}</p>}
       </div>
     </div>
   );
 }
-

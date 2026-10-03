@@ -1,14 +1,40 @@
-import { useState, useEffect, useCallback } from "react";
-import { Clock, Pause, Play, RefreshCw, RotateCcw, Trash2, AlertCircle, CheckCircle, Loader, Hourglass, XCircle } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { executeSearchQuery, deletePendingOpsByIds } from "@/shared/services/db/db-invoke";
-import { getPendingOpsCount, getFailedOpsCount, clearFailedOperations, retryFailedOperations } from "@features/settings/db/pendingOperations";
-import { stopQueueProcessor, startQueueProcessor } from "@features/mail/services/queue/queueProcessor";
-import { getQueuePaused, setQueuePaused, getQueueSchedule, setQueueSchedule, getQueueSchedulePresets } from "@features/settings/db/settings";
-import type { QueueSchedule, QueueSchedulePreset } from "@features/settings/db/settings";
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Clock,
+  Pause,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  Trash2,
+  AlertCircle,
+  CheckCircle,
+  Loader,
+  Hourglass,
+  XCircle,
+} from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { executeSearchQuery, deletePendingOpsByIds } from '@/shared/services/db/db-invoke';
+import {
+  getPendingOpsCount,
+  getFailedOpsCount,
+  clearFailedOperations,
+  retryFailedOperations,
+} from '@features/settings/db/pendingOperations';
+import {
+  stopQueueProcessor,
+  startQueueProcessor,
+} from '@features/mail/services/queue/queueProcessor';
+import {
+  getQueuePaused,
+  setQueuePaused,
+  getQueueSchedule,
+  setQueueSchedule,
+  getQueueSchedulePresets,
+} from '@features/settings/db/settings';
+import type { QueueSchedule, QueueSchedulePreset } from '@features/settings/db/settings';
 
 interface QueueOperation {
   id: string;
@@ -33,18 +59,18 @@ const STATUS_ICONS: Record<string, typeof Clock> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "text-warning",
-  executing: "text-accent",
-  sent: "text-success",
-  failed: "text-danger",
+  pending: 'text-warning',
+  executing: 'text-accent',
+  sent: 'text-success',
+  failed: 'text-danger',
 };
 
 const PRESET_LABELS: Record<QueueSchedulePreset, string> = {
-  fast: "Fast (10s)",
-  normal: "Normal (30s)",
-  gentle: "Gentle (2min)",
-  "business-hours": "Business Hours",
-  custom: "Custom",
+  fast: 'Fast (10s)',
+  normal: 'Normal (30s)',
+  gentle: 'Gentle (2min)',
+  'business-hours': 'Business Hours',
+  custom: 'Custom',
 };
 
 export function QueueInspector() {
@@ -52,15 +78,15 @@ export function QueueInspector() {
   const [operations, setOperations] = useState<QueueOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [paused, setPaused] = useState(false);
-  const [filter, setFilter] = useState<string>("all");
-  const [schedule, setSchedule] = useState<QueueSchedule>({ preset: "normal", intervalMs: 30_000 });
+  const [filter, setFilter] = useState<string>('all');
+  const [schedule, setSchedule] = useState<QueueSchedule>({ preset: 'normal', intervalMs: 30_000 });
   const [realFailedCount, setRealFailedCount] = useState(0);
 
   const loadOperations = useCallback(async () => {
     try {
       const [rows, failedCount] = await Promise.all([
         executeSearchQuery(
-          "SELECT * FROM pending_operations ORDER BY created_at DESC LIMIT 100",
+          'SELECT * FROM pending_operations ORDER BY created_at DESC LIMIT 100',
           [],
         ) as unknown as QueueOperation[],
         getFailedOpsCount(),
@@ -68,7 +94,7 @@ export function QueueInspector() {
       setOperations(rows);
       setRealFailedCount(failedCount);
     } catch (err) {
-      console.error("Failed to load queue operations:", err);
+      console.error('Failed to load queue operations:', err);
     } finally {
       setLoading(false);
     }
@@ -87,12 +113,12 @@ export function QueueInspector() {
       startQueueProcessor();
       setPaused(false);
       await setQueuePaused(false);
-      notify("Queue", "Queue processor resumed.");
+      notify('Queue', 'Queue processor resumed.');
     } else {
       stopQueueProcessor();
       setPaused(true);
       await setQueuePaused(true);
-      notify("Queue", "Queue processor paused.");
+      notify('Queue', 'Queue processor paused.');
     }
   }
 
@@ -105,28 +131,28 @@ export function QueueInspector() {
     setSchedule(newSchedule);
     stopQueueProcessor();
     await startQueueProcessor();
-    notify("Queue", `Schedule changed to ${PRESET_LABELS[selectedPreset]}.`);
+    notify('Queue', `Schedule changed to ${PRESET_LABELS[selectedPreset]}.`);
   }
 
   async function handleRetryFailed() {
     await retryFailedOperations();
     await loadOperations();
     await updatePendingCount();
-    notify("Queue", "Retrying all failed operations.");
+    notify('Queue', 'Retrying all failed operations.');
   }
 
   async function handleClearFailed() {
     await clearFailedOperations();
     await loadOperations();
     await updatePendingCount();
-    notify("Queue", "Cleared all failed operations.");
+    notify('Queue', 'Cleared all failed operations.');
   }
 
   async function handleDeleteOp(id: string) {
     await deletePendingOpsByIds([id]);
     await loadOperations();
     await updatePendingCount();
-    notify("Queue", "Operation removed from queue.");
+    notify('Queue', 'Operation removed from queue.');
   }
 
   async function updatePendingCount() {
@@ -134,13 +160,13 @@ export function QueueInspector() {
     useSyncStore.getState().setPendingOpsCount(count);
   }
 
-  const filteredOps = filter === "all" ? operations : operations.filter((o) => o.status === filter);
+  const filteredOps = filter === 'all' ? operations : operations.filter((o) => o.status === filter);
 
   const counts = {
     all: operations.length,
-    pending: operations.filter((o) => o.status === "pending").length,
-    executing: operations.filter((o) => o.status === "executing").length,
-    failed: operations.filter((o) => o.status === "failed").length,
+    pending: operations.filter((o) => o.status === 'pending').length,
+    executing: operations.filter((o) => o.status === 'executing').length,
+    failed: operations.filter((o) => o.status === 'failed').length,
   };
 
   return (
@@ -149,7 +175,9 @@ export function QueueInspector() {
         <div className="flex items-center gap-2 text-sm text-text-primary font-medium">
           <Clock size={16} />
           Queue Inspector
-          <span className="text-xs text-text-tertiary font-normal">({pendingOpsCount} pending)</span>
+          <span className="text-xs text-text-tertiary font-normal">
+            ({pendingOpsCount} pending)
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {/* Schedule preset selector */}
@@ -166,12 +194,12 @@ export function QueueInspector() {
           </select>
           <div className="flex items-center gap-1.5">
             <Button
-              variant={paused ? "primary" : "secondary"}
+              variant={paused ? 'primary' : 'secondary'}
               size="sm"
               icon={paused ? <Play size={14} /> : <Pause size={14} />}
               onClick={handlePauseResume}
             >
-              {paused ? "Resume" : "Pause"}
+              {paused ? 'Resume' : 'Pause'}
             </Button>
             <Button
               variant="secondary"
@@ -207,7 +235,12 @@ export function QueueInspector() {
 
       {/* Schedule info line */}
       <div className="flex items-center gap-2 text-xs text-text-tertiary">
-        <span>Interval: {schedule.intervalMs >= 60_000 ? `${schedule.intervalMs / 60_000}min` : `${schedule.intervalMs / 1_000}s`}</span>
+        <span>
+          Interval:{' '}
+          {schedule.intervalMs >= 60_000
+            ? `${schedule.intervalMs / 60_000}min`
+            : `${schedule.intervalMs / 1_000}s`}
+        </span>
         {schedule.businessHoursOnly && (
           <span className="flex items-center gap-1 text-warning">
             <Clock size={10} />
@@ -215,13 +248,18 @@ export function QueueInspector() {
           </span>
         )}
         {schedule.minSendGapMs && schedule.minSendGapMs > 0 ? (
-          <span>Min gap: {schedule.minSendGapMs >= 1_000 ? `${schedule.minSendGapMs / 1_000}s` : `${schedule.minSendGapMs}ms`}</span>
+          <span>
+            Min gap:{' '}
+            {schedule.minSendGapMs >= 1_000
+              ? `${schedule.minSendGapMs / 1_000}s`
+              : `${schedule.minSendGapMs}ms`}
+          </span>
         ) : null}
       </div>
 
       {/* Status filter tabs */}
       <div className="flex gap-1">
-        {(["all", "pending", "executing", "failed"] as const).map((key) => (
+        {(['all', 'pending', 'executing', 'failed'] as const).map((key) => (
           <Button
             key={key}
             variant="ghost"
@@ -229,8 +267,8 @@ export function QueueInspector() {
             onClick={() => setFilter(key)}
             className={
               filter === key
-                ? "bg-accent/10 text-accent border border-accent/30"
-                : "text-text-tertiary hover:text-text-secondary border border-transparent"
+                ? 'bg-accent/10 text-accent border border-accent/30'
+                : 'text-text-tertiary hover:text-text-secondary border border-transparent'
             }
           >
             {key.charAt(0).toUpperCase() + key.slice(1)}
@@ -265,22 +303,35 @@ export function QueueInspector() {
             <tbody>
               {filteredOps.map((op) => {
                 const StatusIcon = STATUS_ICONS[op.status] ?? Clock;
-                const statusColor = STATUS_COLORS[op.status] ?? "text-text-tertiary";
+                const statusColor = STATUS_COLORS[op.status] ?? 'text-text-tertiary';
                 return (
-                  <tr key={op.id} className="border-b border-border-primary hover:bg-bg-hover transition-colors group">
-                    <td className="py-2 px-2 text-text-primary font-mono text-xs">{op.operation_type}</td>
+                  <tr
+                    key={op.id}
+                    className="border-b border-border-primary hover:bg-bg-hover transition-colors group"
+                  >
+                    <td className="py-2 px-2 text-text-primary font-mono text-xs">
+                      {op.operation_type}
+                    </td>
                     <td className="py-2 px-2">
                       <span className={`flex items-center gap-1 text-xs ${statusColor}`}>
-                        <StatusIcon size={12} className={op.status === "executing" ? "animate-spin" : ""} />
+                        <StatusIcon
+                          size={12}
+                          className={op.status === 'executing' ? 'animate-spin' : ''}
+                        />
                         {op.status}
                       </span>
                     </td>
-                    <td className="py-2 px-2 text-text-secondary text-xs max-w-[160px] truncate" title={op.resource_id}>
+                    <td
+                      className="py-2 px-2 text-text-secondary text-xs max-w-[160px] truncate"
+                      title={op.resource_id}
+                    >
                       {op.resource_id}
                     </td>
                     <td className="py-2 px-2 text-text-secondary text-xs">
                       {op.campaign_id ? (
-                        <span className="font-mono text-[0.625rem]">{op.campaign_id.slice(0, 12)}...</span>
+                        <span className="font-mono text-[0.625rem]">
+                          {op.campaign_id.slice(0, 12)}...
+                        </span>
                       ) : (
                         <span className="text-text-tertiary">—</span>
                       )}
@@ -291,7 +342,10 @@ export function QueueInspector() {
                     <td className="py-2 px-2 text-text-tertiary text-xs">
                       {op.retry_count}/{op.max_retries}
                     </td>
-                    <td className="py-2 px-2 text-xs max-w-[200px] truncate" title={op.error_message ?? ""}>
+                    <td
+                      className="py-2 px-2 text-xs max-w-[200px] truncate"
+                      title={op.error_message ?? ''}
+                    >
                       {op.error_message ? (
                         <span className="text-danger flex items-center gap-1">
                           <AlertCircle size={10} />
@@ -324,7 +378,8 @@ export function QueueInspector() {
       {realFailedCount > counts.failed && (
         <div className="flex items-center gap-2 px-3 py-2 bg-danger/10 border border-danger/30 rounded-lg text-xs text-danger">
           <AlertCircle size={14} />
-          {realFailedCount - counts.failed} additional failed operation{realFailedCount - counts.failed !== 1 ? "s" : ""} not shown (limit: 100)
+          {realFailedCount - counts.failed} additional failed operation
+          {realFailedCount - counts.failed !== 1 ? 's' : ''} not shown (limit: 100)
         </div>
       )}
 

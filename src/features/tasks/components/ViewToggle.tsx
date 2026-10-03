@@ -1,26 +1,26 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { List, LayoutGrid, Calendar, ClipboardList } from "lucide-react";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { FOCUS_RING, TOOLTIP_BASE } from "@shared/styles/ui-tokens";
-import type { TaskViewMode, TaskDensity } from "@features/tasks/stores/taskStore";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { List, LayoutGrid, Calendar, ClipboardList } from 'lucide-react';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { FOCUS_RING, TOOLTIP_BASE } from '@shared/styles/ui-tokens';
+import type { TaskViewMode, TaskDensity } from '@features/tasks/stores/taskStore';
 
 /**
  * View mode options with their icons and labels
  */
 const VIEW_MODES: { value: TaskViewMode; label: string; icon: typeof List }[] = [
-  { value: "list", label: "List", icon: List },
-  { value: "kanban", label: "Kanban", icon: LayoutGrid },
-  { value: "calendar", label: "Calendar", icon: Calendar },
-  { value: "agenda", label: "Agenda", icon: ClipboardList },
+  { value: 'list', label: 'List', icon: List },
+  { value: 'kanban', label: 'Kanban', icon: LayoutGrid },
+  { value: 'calendar', label: 'Calendar', icon: Calendar },
+  { value: 'agenda', label: 'Agenda', icon: ClipboardList },
 ];
 
 /**
  * Density options with their labels
  */
 const DENSITY_OPTIONS: { value: TaskDensity; label: string }[] = [
-  { value: "compact", label: "Compact" },
-  { value: "normal", label: "Normal" },
-  { value: "comfortable", label: "Comfortable" },
+  { value: 'compact', label: 'Compact' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'comfortable', label: 'Comfortable' },
 ];
 
 /**
@@ -64,7 +64,7 @@ export function ViewToggle({
   const recommendationRef = useRef<HTMLDivElement>(null);
 
   // Show recommendation when taskCount > 50 and viewMode is list
-  const shouldShowRecommendation = taskCount > 50 && viewMode === "list";
+  const shouldShowRecommendation = taskCount > 50 && viewMode === 'list';
 
   // Close recommendation on outside click or escape
   useEffect(() => {
@@ -77,17 +77,17 @@ export function ViewToggle({
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setShowRecommendation(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [shouldShowRecommendation]);
 
@@ -95,7 +95,7 @@ export function ViewToggle({
     (mode: TaskViewMode) => {
       onViewModeChange(mode);
       // Close recommendation when user selects kanban
-      if (mode === "kanban" && showRecommendation) {
+      if (mode === 'kanban' && showRecommendation) {
         setShowRecommendation(false);
       }
     },
@@ -112,12 +112,12 @@ export function ViewToggle({
   // Density button symbols
   const getDensitySymbol = (d: TaskDensity): string => {
     switch (d) {
-      case "compact":
-        return "-";
-      case "normal":
-        return "○";
-      case "comfortable":
-        return "+";
+      case 'compact':
+        return '-';
+      case 'normal':
+        return '○';
+      case 'comfortable':
+        return '+';
     }
   };
 
@@ -131,8 +131,8 @@ export function ViewToggle({
       >
         {VIEW_MODES.map((mode) => {
           // Hide agenda on desktop, hide calendar on mobile
-          if (screen.isDesktop && mode.value === "agenda") return null;
-          if (!screen.isDesktop && mode.value === "calendar") return null;
+          if (screen.isDesktop && mode.value === 'agenda') return null;
+          if (!screen.isDesktop && mode.value === 'calendar') return null;
 
           const Icon = mode.icon;
           const isActive = viewMode === mode.value;
@@ -147,8 +147,8 @@ export function ViewToggle({
                 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all
                 ${
                   isActive
-                    ? "bg-accent text-white shadow-sm"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
                 }
                 ${FOCUS_RING}
               `}
@@ -165,7 +165,7 @@ export function ViewToggle({
         <div
           role="radiogroup"
           aria-label="Change density"
-          className="flex items-center bg-bg-tertiary rounded-lg p-0.5 ml-1"
+          className="flex items-center bg-bg-tertiary rounded-lg p-0.5 ms-1"
         >
           {DENSITY_OPTIONS.map((option) => {
             const isActive = density === option.value;
@@ -181,8 +181,8 @@ export function ViewToggle({
                   flex items-center justify-center w-7 h-7 text-xs font-medium rounded-md transition-all
                   ${
                     isActive
-                      ? "bg-accent text-white shadow-sm"
-                      : "text-text-tertiary hover:text-text-primary"
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-text-tertiary hover:text-text-primary'
                   }
                   ${FOCUS_RING}
                 `}
@@ -204,8 +204,8 @@ export function ViewToggle({
         >
           <span>Try Kanban for better overview</span>
           <button
-            onClick={() => handleViewModeClick("kanban")}
-            className="ml-2 text-accent hover:underline text-xs font-medium"
+            onClick={() => handleViewModeClick('kanban')}
+            className="ms-2 text-accent hover:underline text-xs font-medium"
           >
             Switch now
           </button>

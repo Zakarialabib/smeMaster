@@ -1,7 +1,7 @@
-import { useTranslation } from "react-i18next";
-import { Maximize2, Minimize2, ExternalLink, X, Mail, Building2, Eye } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import type { Account } from "@features/accounts/stores/accountStore";
+import { useTranslation } from 'react-i18next';
+import { Maximize2, Minimize2, ExternalLink, X, Mail, Building2, Eye } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import type { Account } from '@features/accounts/stores/accountStore';
 
 interface ComposerHeaderProps {
   modeLabel: string;
@@ -67,24 +67,12 @@ export function ComposerHeader({
           <ExternalLink size={13} />
         </Button>
         {onToggleZen && (
-          <Button
-            variant="ghost"
-            size="xs"
-            iconOnly
-            onClick={onToggleZen}
-            title="Focus mode"
-          >
+          <Button variant="ghost" size="xs" iconOnly onClick={onToggleZen} title="Focus mode">
             <Eye size={13} />
           </Button>
         )}
         <div className="w-px h-4 bg-border-secondary mx-1" />
-        <Button
-          variant="ghost"
-          size="xs"
-          iconOnly
-          onClick={onClose}
-          title={t('common.close')}
-        >
+        <Button variant="ghost" size="xs" iconOnly onClick={onClose} title={t('common.close')}>
           <X size={14} />
         </Button>
       </div>

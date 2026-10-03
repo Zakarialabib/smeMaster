@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { SearchBar } from "@features/mail/components/search/SearchBar";
-import type { ReadFilter } from "@shared/stores/layoutStore";
-import { useConfigStore } from "@/stores/core/configStore";
-import { RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { SearchBar } from '@features/mail/components/search/SearchBar';
+import type { ReadFilter } from '@shared/stores/layoutStore';
+import { useConfigStore } from '@/stores/core/configStore';
+import { RefreshCw } from 'lucide-react';
 
 export interface MailTopBarProps {
   activeLabel: string;
@@ -30,17 +30,18 @@ export function MailTopBar({
   const setFocusedInbox = useConfigStore((s) => s.setFocusedInbox);
 
   const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
       e.preventDefault();
-      const input = searchContainerRef.current?.querySelector<HTMLInputElement>("input[type='text']");
+      const input =
+        searchContainerRef.current?.querySelector<HTMLInputElement>("input[type='text']");
       input?.focus();
       input?.select();
     }
   }, []);
 
   useEffect(() => {
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
   }, [handleGlobalKeyDown]);
 
   return (
@@ -57,8 +58,8 @@ export function MailTopBar({
               type="button"
               onClick={onRefresh}
               className="flex items-center justify-center w-7 h-7 shrink-0 rounded-md text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-all duration-150 active:scale-95"
-              title={t("common.refresh")}
-              aria-label={t("common.refresh")}
+              title={t('common.refresh')}
+              aria-label={t('common.refresh')}
             >
               <RefreshCw size={14} />
             </button>
@@ -81,20 +82,20 @@ export function MailTopBar({
           <span className="w-px h-4 bg-border-primary shrink-0" />
 
           {/* Focused / All segmented toggle (inbox only) */}
-          {_activeLabel === "inbox" && (
+          {_activeLabel === 'inbox' && (
             <div className="flex items-center shrink-0 rounded-md bg-bg-tertiary/60 p-0.5">
               {([true, false] as const).map((v) => (
                 <button
-                  key={v ? "focused" : "all"}
+                  key={v ? 'focused' : 'all'}
                   onClick={() => setFocusedInbox(v)}
                   aria-pressed={focusedInbox === v}
                   className={`px-2 py-1 text-[0.625rem] sm:text-[0.6875rem] font-medium rounded-[4px] transition-all duration-150 whitespace-nowrap ${
                     focusedInbox === v
-                      ? "bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm"
-                      : "text-text-tertiary hover:text-text-primary"
+                      ? 'bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm'
+                      : 'text-text-tertiary hover:text-text-primary'
                   }`}
                 >
-                  {v ? t("email.focused") : t("email.allMail")}
+                  {v ? t('email.focused') : t('email.allMail')}
                 </button>
               ))}
             </div>
@@ -105,17 +106,21 @@ export function MailTopBar({
 
           {/* Read filter toggle — compact pill-style */}
           <div className="flex items-center shrink-0 rounded-md bg-bg-tertiary/60 p-0.5">
-            {(["all", "unread", "read"] as const).map((f) => (
+            {(['all', 'unread', 'read'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => onReadFilterChange(f)}
                 className={`px-2 py-1 text-[0.625rem] sm:text-[0.6875rem] font-medium rounded-[4px] transition-all duration-150 whitespace-nowrap ${
                   readFilter === f
-                    ? "bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm"
-                    : "text-text-tertiary hover:text-text-primary"
+                    ? 'bg-bg-primary dark:bg-bg-secondary text-text-primary shadow-sm'
+                    : 'text-text-tertiary hover:text-text-primary'
                 }`}
               >
-                {f === "all" ? t("email.all") : f === "unread" ? t("email.unread") : t("email.read")}
+                {f === 'all'
+                  ? t('email.all')
+                  : f === 'unread'
+                    ? t('email.unread')
+                    : t('email.read')}
               </button>
             ))}
           </div>
@@ -124,4 +129,3 @@ export function MailTopBar({
     </div>
   );
 }
-

@@ -16,13 +16,12 @@
 
 function isTauri(): boolean {
   return (
-    typeof window !== "undefined" &&
-    ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
   );
 }
 
 // Re-export the plugin's StateFlags for consumers
-export type { StateFlags } from "@tauri-apps/plugin-window-state";
+export type { StateFlags } from '@tauri-apps/plugin-window-state';
 
 export interface UseWindowStateResult {
   /**
@@ -56,30 +55,30 @@ export function useWindowState(): UseWindowStateResult {
   const saveState = async (flags: number = ALL_FLAGS): Promise<void> => {
     if (!isTauri()) return;
     try {
-      const { saveWindowState } = await import("@tauri-apps/plugin-window-state");
+      const { saveWindowState } = await import('@tauri-apps/plugin-window-state');
       await saveWindowState(flags);
     } catch (err) {
-      console.warn("[useWindowState] Failed to save window state", err);
+      console.warn('[useWindowState] Failed to save window state', err);
     }
   };
 
   const restoreState = async (flags: number = ALL_FLAGS): Promise<void> => {
     if (!isTauri()) return;
     try {
-      const { restoreStateCurrent } = await import("@tauri-apps/plugin-window-state");
+      const { restoreStateCurrent } = await import('@tauri-apps/plugin-window-state');
       await restoreStateCurrent(flags);
     } catch (err) {
-      console.warn("[useWindowState] Failed to restore window state", err);
+      console.warn('[useWindowState] Failed to restore window state', err);
     }
   };
 
   const getFilename = async (): Promise<string> => {
-    if (!isTauri()) return "";
+    if (!isTauri()) return '';
     try {
-      const { filename } = await import("@tauri-apps/plugin-window-state");
+      const { filename } = await import('@tauri-apps/plugin-window-state');
       return await filename();
     } catch {
-      return "";
+      return '';
     }
   };
 

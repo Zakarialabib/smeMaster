@@ -33,8 +33,8 @@
  * ```
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { IntersectionOptions } from "react-intersection-observer";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { IntersectionOptions } from 'react-intersection-observer';
 
 export interface UseInViewOptions extends IntersectionOptions {
   /**
@@ -86,7 +86,7 @@ export function useInView(options: UseInViewOptions = {}): UseInViewResult {
       if (!node || frozenRef.current) return;
 
       // Check for IntersectionObserver support
-      if (typeof IntersectionObserver === "undefined") return;
+      if (typeof IntersectionObserver === 'undefined') return;
 
       const observer = new IntersectionObserver(
         (entries) => {

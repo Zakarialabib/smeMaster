@@ -1,8 +1,8 @@
-﻿import { useCallback, useEffect, useState } from "react";
-import Mention from "@tiptap/extension-mention";
-import { ReactRenderer } from "@tiptap/react";
-import type { SuggestionProps } from "@tiptap/suggestion";
-import { searchContacts, type DbContact } from "@features/contacts/db/contacts.ts";
+﻿import { useCallback, useEffect, useState } from 'react';
+import Mention from '@tiptap/extension-mention';
+import { ReactRenderer } from '@tiptap/react';
+import type { SuggestionProps } from '@tiptap/suggestion';
+import { searchContacts, type DbContact } from '@features/contacts/db/contacts.ts';
 
 function MentionList({ items, command }: SuggestionProps<DbContact>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -21,9 +21,7 @@ function MentionList({ items, command }: SuggestionProps<DbContact>) {
   if (items.length === 0) {
     return (
       <div className="mention-popup">
-        <div className="px-3 py-2 text-xs text-text-tertiary">
-          No contacts found
-        </div>
+        <div className="px-3 py-2 text-xs text-text-tertiary">No contacts found</div>
       </div>
     );
   }
@@ -33,18 +31,14 @@ function MentionList({ items, command }: SuggestionProps<DbContact>) {
         <button
           key={item.email}
           onMouseDown={() => selectItem(index)}
-          className={`mention-item ${index === selectedIndex ? "is-selected" : ""}`}
+          className={`mention-item ${index === selectedIndex ? 'is-selected' : ''}`}
         >
           <div className="mention-avatar">
-            {(item.display_name || item.email)[0]?.toUpperCase() ?? "?"}
+            {(item.display_name || item.email)[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="mention-info">
-            <span className="mention-name">
-              {item.display_name || item.email}
-            </span>
-            {item.display_name && (
-              <span className="mention-email">{item.email}</span>
-            )}
+            <span className="mention-name">{item.display_name || item.email}</span>
+            {item.display_name && <span className="mention-email">{item.email}</span>}
           </div>
         </button>
       ))}
@@ -53,9 +47,9 @@ function MentionList({ items, command }: SuggestionProps<DbContact>) {
 }
 
 export const CustomMention = Mention.configure({
-  HTMLAttributes: { class: "mention-tag" },
+  HTMLAttributes: { class: 'mention-tag' },
   suggestion: {
-    char: "@",
+    char: '@',
     items: async ({ query }): Promise<DbContact[]> => {
       if (!query || query.length < 1) return [];
       try {
@@ -73,8 +67,8 @@ export const CustomMention = Mention.configure({
             editor: props.editor,
           });
           const el = component.element as HTMLElement;
-          el.style.position = "absolute";
-          el.style.zIndex = "9999";
+          el.style.position = 'absolute';
+          el.style.zIndex = '9999';
           if (!el.parentElement) document.body.appendChild(el);
           const coords = props.clientRect?.();
           if (coords) {
@@ -92,7 +86,7 @@ export const CustomMention = Mention.configure({
           }
         },
         onKeyDown: (props) => {
-          if (props.event.key === "Escape") {
+          if (props.event.key === 'Escape') {
             component?.destroy();
             component = null;
             return true;

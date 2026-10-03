@@ -14,6 +14,6 @@
  * @throws        Re-throws the underlying AiError from callAi on failure.
  */
 export async function generateWithAi(system: string, user: string): Promise<string> {
-  const { callAi } = await import("@shared/services/ai/aiService");
+  const { callAi } = await import('@shared/services/ai/aiService');
   return callAi(system, user);
 }

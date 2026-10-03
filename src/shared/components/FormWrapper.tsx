@@ -3,7 +3,11 @@ import { useState, ReactNode, FormEvent } from 'react';
 interface FormWrapperProps<T extends Record<string, any>> {
   onSubmit: (data: T) => Promise<void> | void;
   defaultValues?: T;
-  children: (form: { values: T; setField: <K extends keyof T>(key: K, value: T[K]) => void; reset: () => void }) => ReactNode;
+  children: (form: {
+    values: T;
+    setField: <K extends keyof T>(key: K, value: T[K]) => void;
+    reset: () => void;
+  }) => ReactNode;
 }
 
 export const FormWrapper = <T extends Record<string, any>>(props: FormWrapperProps<T>) => {

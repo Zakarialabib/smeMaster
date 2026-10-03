@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Search, Plus, Users, Trash2, Check, AlertTriangle, Phone, MapPin,
-} from 'lucide-react';
+import { Search, Plus, Users, Trash2, Check, AlertTriangle, Phone, MapPin } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 
@@ -39,14 +37,14 @@ export default function ClientList() {
     const q = search.trim().toLowerCase();
     if (!q) return clients;
     return clients.filter(
-      (c) =>
-        c.display_name.toLowerCase().includes(q) ||
-        (c.email ?? '').toLowerCase().includes(q),
+      (c) => c.display_name.toLowerCase().includes(q) || (c.email ?? '').toLowerCase().includes(q),
     );
   }, [clients, search]);
 
   const stats = useMemo(() => {
-    const customers = clients.filter((c) => c.contact_type === 'client' || c.contact_type === 'other').length;
+    const customers = clients.filter(
+      (c) => c.contact_type === 'client' || c.contact_type === 'other',
+    ).length;
     const suppliers = clients.filter((c) => c.contact_type === 'supplier').length;
     return { total: clients.length, customers, suppliers };
   }, [clients]);
@@ -70,15 +68,33 @@ export default function ClientList() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <StatCard label="Clients" value={stats.total} icon={<Users className="text-accent" />} tone="accent" />
-        <StatCard label="Customers" value={stats.customers} icon={<Check className="text-success" />} tone="success" />
-        <StatCard label="Suppliers" value={stats.suppliers} icon={<AlertTriangle className="text-warning" />} tone="warning" />
+        <StatCard
+          label="Clients"
+          value={stats.total}
+          icon={<Users className="text-accent" />}
+          tone="accent"
+        />
+        <StatCard
+          label="Customers"
+          value={stats.customers}
+          icon={<Check className="text-success" />}
+          tone="success"
+        />
+        <StatCard
+          label="Suppliers"
+          value={stats.suppliers}
+          icon={<AlertTriangle className="text-warning" />}
+          tone="warning"
+        />
       </div>
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -99,7 +115,7 @@ export default function ClientList() {
           <EmptyState hasClients={clients.length > 0} onNew={openNew} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead>
                 <tr className="text-text-tertiary text-[11px] uppercase tracking-wide border-b border-border-primary">
                   <th className="px-5 py-3 font-semibold">Name</th>
@@ -121,21 +137,25 @@ export default function ClientList() {
                         <div className="w-9 h-9 rounded-xl bg-bg-tertiary flex items-center justify-center text-text-secondary shrink-0">
                           <Users size={16} />
                         </div>
-                        <span className="font-semibold text-text-primary truncate">{c.display_name}</span>
+                        <span className="font-semibold text-text-primary truncate">
+                          {c.display_name}
+                        </span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-text-secondary truncate max-w-[220px]">
                       {c.email ?? <span className="text-text-tertiary">—</span>}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}
+                      >
                         {ROLE_META[c.contact_type].label}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-text-tertiary font-mono text-xs hidden lg:table-cell">
                       {c.tax_id ?? '—'}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-5 py-3.5 text-end">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <IconBtn
                           title="Delete"
@@ -194,7 +214,9 @@ export default function ClientList() {
                 </IconBtn>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${ROLE_META[c.contact_type].cls}`}
+                >
                   {ROLE_META[c.contact_type].label}
                 </span>
                 {c.tax_id && (
@@ -202,7 +224,7 @@ export default function ClientList() {
                     <MapPin size={12} /> {c.tax_id}
                   </span>
                 )}
-                {(c.phone) && (
+                {c.phone && (
                   <span className="inline-flex items-center gap-1 text-[11px] text-text-tertiary">
                     <Phone size={12} /> {c.phone}
                   </span>
@@ -226,7 +248,17 @@ export default function ClientList() {
   );
 }
 
-function StatCard({ label, value, icon, tone }: { label: string; value: number; icon: React.ReactNode; tone: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  tone: string;
+}) {
   const tones: Record<string, string> = {
     accent: 'bg-accent/10 text-accent',
     warning: 'bg-warning/10 text-warning',
@@ -235,23 +267,41 @@ function StatCard({ label, value, icon, tone }: { label: string; value: number; 
   };
   return (
     <div className="bg-bg-primary/70 backdrop-blur-xl border border-border-primary rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}>{icon}</div>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tones[tone]}`}
+      >
+        {icon}
+      </div>
       <div className="min-w-0">
-        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">{label}</p>
+        <p className="text-text-tertiary text-[11px] font-semibold uppercase tracking-wider truncate">
+          {label}
+        </p>
         <p className="text-lg sm:text-xl font-bold text-text-primary mt-0.5">{value}</p>
       </div>
     </div>
   );
 }
 
-function IconBtn({ children, onClick, title, danger }: { children: React.ReactNode; onClick: (e: React.MouseEvent) => void; title: string; danger?: boolean }) {
+function IconBtn({
+  children,
+  onClick,
+  title,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  danger?: boolean;
+}) {
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97] ${
-        danger ? 'text-text-tertiary hover:text-danger hover:bg-danger/10' : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
+        danger
+          ? 'text-text-tertiary hover:text-danger hover:bg-danger/10'
+          : 'text-text-tertiary hover:text-accent hover:bg-accent/10'
       }`}
     >
       {children}
@@ -284,12 +334,10 @@ function EmptyState({ hasClients, onNew }: { hasClients: boolean; onNew: () => v
         <Users size={30} />
       </div>
       <h3 className="text-lg font-bold text-text-primary">
-        {hasClients ? t("invoicing.clientsNoMatches") : t("invoicing.clientsEmptyTitle")}
+        {hasClients ? t('invoicing.clientsNoMatches') : t('invoicing.clientsEmptyTitle')}
       </h3>
       <p className="text-text-secondary text-sm mt-1 max-w-xs mx-auto">
-        {hasClients
-          ? t("invoicing.clientsNoMatchesHint")
-          : t("invoicing.clientsEmptyHint")}
+        {hasClients ? t('invoicing.clientsNoMatchesHint') : t('invoicing.clientsEmptyHint')}
       </p>
       {!hasClients && (
         <Button icon={<Plus size={16} />} className="mt-5" onClick={onNew}>
@@ -300,9 +348,20 @@ function EmptyState({ hasClients, onNew }: { hasClients: boolean; onNew: () => v
   );
 }
 
-function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: () => void; onConfirm: () => void }) {
+function ConfirmDelete({
+  name,
+  onCancel,
+  onConfirm,
+}: {
+  name: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onCancel}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onCancel}
+    >
       <div
         className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -315,8 +374,12 @@ function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: 
           This permanently removes the client from your directory. This cannot be undone.
         </p>
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>Delete</Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
+            Delete
+          </Button>
         </div>
       </div>
     </div>

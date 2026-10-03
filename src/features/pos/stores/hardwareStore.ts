@@ -30,16 +30,18 @@ export const useHardwareStore = create<HardwareState>()(
       configs: [],
       setConfigs: (configs) => set({ configs }),
       addConfig: (config) => set((state) => ({ configs: [...state.configs, config] })),
-      removeConfig: (id) => set((state) => ({
-        configs: state.configs.filter((c) => c.id !== id),
-      })),
-      updateConfig: (id, updates) => set((state) => ({
-        configs: state.configs.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-      })),
+      removeConfig: (id) =>
+        set((state) => ({
+          configs: state.configs.filter((c) => c.id !== id),
+        })),
+      updateConfig: (id, updates) =>
+        set((state) => ({
+          configs: state.configs.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+        })),
     }),
     {
       name: 'smemaster-hardware-configs',
       storage: createJSONStorage(() => tauriStoreStorage),
-    }
-  )
+    },
+  ),
 );

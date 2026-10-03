@@ -16,8 +16,8 @@
  *   const [blockImages] = useSetting("block_remote_images", "true");
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getSetting, setSetting } from "@features/settings/db/settings";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getSetting, setSetting } from '@features/settings/db/settings';
 
 /**
  * Returns a tuple [value, setValue, { loading }] — same shape as useState
@@ -27,7 +27,7 @@ export function useSetting(
   key: string,
   defaultDefault?: string,
 ): [string, (next: string) => void, { loading: boolean }] {
-  const [value, setValue] = useState<string>(defaultDefault ?? "");
+  const [value, setValue] = useState<string>(defaultDefault ?? '');
   const [loading, setLoading] = useState(true);
   const lastKeyRef = useRef(key);
   const persistedRef = useRef(false);
@@ -63,7 +63,9 @@ export function useSetting(
     }
 
     void load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // Only run on mount / key change — not when defaultDefault changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

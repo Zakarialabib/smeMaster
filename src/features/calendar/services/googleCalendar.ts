@@ -1,6 +1,6 @@
-import type { GmailClient } from "@features/mail/services/gmail/client";
+import type { GmailClient } from '@features/mail/services/gmail/client';
 
-const CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
+const CALENDAR_API_BASE = 'https://www.googleapis.com/calendar/v3';
 
 export interface CalendarEvent {
   id: string;
@@ -29,9 +29,9 @@ export async function listCalendarEvents(
   const params = new URLSearchParams({
     timeMin,
     timeMax,
-    singleEvents: "true",
-    orderBy: "startTime",
-    maxResults: "250",
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    maxResults: '250',
   });
 
   const url = `${CALENDAR_API_BASE}/calendars/primary/events?${params}`;
@@ -52,15 +52,12 @@ export async function createCalendarEvent(
 ): Promise<CalendarEvent> {
   const url = `${CALENDAR_API_BASE}/calendars/primary/events`;
   return client.request<CalendarEvent>(url, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(event),
   });
 }
 
-export async function deleteCalendarEvent(
-  client: GmailClient,
-  eventId: string,
-): Promise<void> {
+export async function deleteCalendarEvent(client: GmailClient, eventId: string): Promise<void> {
   const url = `${CALENDAR_API_BASE}/calendars/primary/events/${eventId}`;
-  await client.request(url, { method: "DELETE" });
+  await client.request(url, { method: 'DELETE' });
 }

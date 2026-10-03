@@ -1,7 +1,4 @@
 @import 'tailwindcss';
-@plugin "@tailwindcss/forms";
-@plugin "@tailwindcss/typography";
-@plugin "tailwindcss-animate";
 
 @import '../shared/components/layout/shell/mobile.css';
 
@@ -171,9 +168,15 @@
 
 /* UI density overrides — must live OUTSIDE @theme (Tailwind v4: @theme only
    allows custom properties / @keyframes, not nested selectors). */
-[data-density="compact"] { --ui-row-height: 32px; }
-[data-density="normal"] { --ui-row-height: 40px; }
-[data-density="relaxed"] { --ui-row-height: 48px; }
+[data-density='compact'] {
+  --ui-row-height: 32px;
+}
+[data-density='normal'] {
+  --ui-row-height: 40px;
+}
+[data-density='relaxed'] {
+  --ui-row-height: 48px;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -279,7 +282,7 @@ body {
   background-attachment: fixed;
   color: var(--color-text-primary);
 }
-[data-surface="glass"] body {
+[data-surface='glass'] body {
   background: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -287,7 +290,8 @@ body {
 }
 
 .dark body {
-  background-image: none; background: #0f1115;
+  background-image: none;
+  background: #0f1115;
 }
 
 html[dir='rtl'] body {
@@ -429,7 +433,7 @@ html[data-input-modality='keyboard'] *:focus {
     transparent 68%
   );
   top: 8%;
-  left: 52%;
+  inset-inline-start: 52%;
   animation-duration: 26s;
   animation-delay: -8s;
   opacity: 0.35;
@@ -838,11 +842,11 @@ html[data-input-modality='keyboard'] *:focus {
 }
 .glass-thread-row:hover {
   background: color-mix(in srgb, var(--color-bg-hover), 60%);
-  border-left: 2px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border-inline-start: 2px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
 }
 .glass-thread-row.selected {
   background: var(--color-bg-selected);
-  border-left: 2px solid var(--color-accent);
+  border-inline-start: 2px solid var(--color-accent);
 }
 
 /* Frosted category tabs bar */
@@ -1030,6 +1034,20 @@ html[data-input-modality='keyboard'] *:focus {
   to {
     transform: translateX(0);
   }
+}
+
+/* RTL: panels anchored to the inline-end slide in from the opposite physical edge */
+@keyframes slideInRightRtl {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+html[dir='rtl'] [class*='slideInRight'],
+html[dir='rtl'] .help-sidebar-panel {
+  animation-name: slideInRightRtl;
 }
 
 @keyframes slideOutRight {
@@ -1646,7 +1664,7 @@ html[data-input-modality='keyboard'] *:focus {
 .skip-to-content {
   position: absolute;
   top: -40px;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 100;
   padding: 8px 16px;
   background: var(--color-accent);
@@ -1742,7 +1760,7 @@ html:not(.mobile) [role='button'] {
 .desktop-shell .offline-queue-indicator {
   position: fixed;
   bottom: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
   z-index: 50;
   max-width: 360px;
   box-shadow: var(--glass-shadow-elevated);
@@ -1841,7 +1859,7 @@ html:not(.mobile) .settings-card:hover {
 /* Help center sidebar */
 .help-sidebar-panel {
   width: 320px;
-  border-left: 1px solid var(--color-border-primary);
+  border-inline-start: 1px solid var(--color-border-primary);
   background: var(--color-bg-primary);
   overflow-y: auto;
   animation: slideInRight 200ms ease-out;
@@ -1866,7 +1884,7 @@ html:not(.mobile) .settings-card:hover {
     background 150ms ease,
     color 150ms ease;
   flex-shrink: 0;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .info-tooltip-trigger:hover {
@@ -1957,7 +1975,7 @@ html:not(.mobile) .composer-toolbar button {
 html:not(.mobile) .composer-toolbar .shortcut-badge {
   font-size: 10px;
   color: var(--color-text-tertiary);
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 /* ============================================
@@ -1969,7 +1987,7 @@ html:not(.mobile) .settings-page {
 }
 
 html:not(.mobile) .settings-nav {
-  border-right: 1px solid var(--color-border-primary);
+  border-inline-end: 1px solid var(--color-border-primary);
   overflow-y: auto;
   padding: 20px 0;
 }
@@ -2039,40 +2057,57 @@ html:not(.mobile) .sidebar-nav-item:hover {
  * [data-surface="glass"] on <html>. Flat is the accessible default; glass turns on
  * the FrostedBackground orbs + real backdrop blur. The legacy bohemi/liquid overrides
  * below are scoped to flat so they no longer fight the glass surface. */
-[data-surface="flat"] .animated-bg { display: none !important; }
-[data-surface="flat"] .liquid-glass::before,
-[data-surface="flat"] .liquid-glass:hover::before,
-[data-surface="flat"] .liquid-glass-elevated::before { opacity: 0 !important; animation: none !important; }
-[data-surface="flat"] .liquid-glow { animation: none !important; }
-[data-surface="flat"] .liquid-sheen-burst::after { display: none !important; }
+[data-surface='flat'] .animated-bg {
+  display: none !important;
+}
+[data-surface='flat'] .liquid-glass::before,
+[data-surface='flat'] .liquid-glass:hover::before,
+[data-surface='flat'] .liquid-glass-elevated::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+[data-surface='flat'] .liquid-glow {
+  animation: none !important;
+}
+[data-surface='flat'] .liquid-sheen-burst::after {
+  display: none !important;
+}
 
 /* Glass surface: orbs visible + real blur on frosted surfaces. */
-[data-surface="glass"] .frosted-bg { opacity: 1; }
-[data-surface="glass"] .frost-surface,
-[data-surface="glass"] .frost-surface-strong,
-[data-surface="glass"] .glass-panel,
-[data-surface="glass"] .glass-modal { backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); }
-[data-surface="glass"] .liquid-glass,
-[data-surface="glass"] .liquid-glass-elevated { backdrop-filter: blur(var(--glass-blur-heavy)); -webkit-backdrop-filter: blur(var(--glass-blur-heavy)); }
+[data-surface='glass'] .frosted-bg {
+  opacity: 1;
+}
+[data-surface='glass'] .frost-surface,
+[data-surface='glass'] .frost-surface-strong,
+[data-surface='glass'] .glass-panel,
+[data-surface='glass'] .glass-modal {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+[data-surface='glass'] .liquid-glass,
+[data-surface='glass'] .liquid-glass-elevated {
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+}
 
 /* Glass mode: upgrade surface tokens to translucent + blur so every bg-bg-* card
  * frosts the orbs behind it (holistic frosted-glass direction). */
-[data-surface="glass"] {
+[data-surface='glass'] {
   --color-bg-primary: rgba(255, 255, 255, 0.55);
   --color-bg-secondary: rgba(255, 255, 255, 0.45);
   --color-bg-tertiary: rgba(255, 255, 255, 0.35);
   --color-bg-elevated: rgba(255, 255, 255, 0.7);
 }
-[data-surface="glass"].dark {
+[data-surface='glass'].dark {
   --color-bg-primary: rgba(26, 29, 35, 0.5);
   --color-bg-secondary: rgba(26, 29, 35, 0.4);
   --color-bg-tertiary: rgba(26, 29, 35, 0.3);
   --color-bg-elevated: rgba(30, 33, 40, 0.65);
 }
-[data-surface="glass"] .bg-bg-primary,
-[data-surface="glass"] .bg-bg-secondary,
-[data-surface="glass"] .bg-bg-tertiary,
-[data-surface="glass"] .bg-bg-elevated {
+[data-surface='glass'] .bg-bg-primary,
+[data-surface='glass'] .bg-bg-secondary,
+[data-surface='glass'] .bg-bg-tertiary,
+[data-surface='glass'] .bg-bg-elevated {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-color: var(--frost-border);

@@ -148,7 +148,10 @@ export default function ClientForm({
       notify(client ? 'Client updated' : 'Client created', form.name.trim());
       onClose();
     } catch (err) {
-      notify(client ? 'Failed to update client' : 'Failed to create client', getUserFriendlyErrorMessage(err, 'save client'));
+      notify(
+        client ? 'Failed to update client' : 'Failed to create client',
+        getUserFriendlyErrorMessage(err, 'save client'),
+      );
     } finally {
       setSaving(false);
     }
@@ -173,7 +176,9 @@ export default function ClientForm({
                 {client ? 'Edit Client' : 'New Client'}
               </h3>
               <p className="text-xs text-text-tertiary">
-                {client ? 'Update the contact details below.' : 'Add a customer or supplier to your directory.'}
+                {client
+                  ? 'Update the contact details below.'
+                  : 'Add a customer or supplier to your directory.'}
               </p>
             </div>
           </div>
@@ -335,7 +340,7 @@ function Field({
     <label className={`block ${className}`}>
       <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
         {label}
-        {required && <span className="text-danger ml-0.5">*</span>}
+        {required && <span className="text-danger ms-0.5">*</span>}
       </span>
       <div className="mt-1.5">{children}</div>
     </label>

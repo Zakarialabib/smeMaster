@@ -15,16 +15,14 @@ import {
   deleteTemplateCategory as dbDeleteTemplateCategory,
   insertTemplateIgnore as dbInsertTemplateIgnore,
   listTemplatesPaginated as dbListTemplatesPaginated,
-} from "@shared/services/db/db-invoke";
-import type { Template, TemplateCategory } from "@shared/services/db/schema";
+} from '@shared/services/db/db-invoke';
+import type { Template, TemplateCategory } from '@shared/services/db/schema';
 
 export type DbTemplate = Template;
 
 export type DbTemplateCategory = TemplateCategory;
 
-export async function getTemplatesForAccount(
-  companyId: string,
-): Promise<DbTemplate[]> {
+export async function getTemplatesForAccount(companyId: string): Promise<DbTemplate[]> {
   return listTemplates(companyId);
 }
 
@@ -78,8 +76,8 @@ export async function insertTemplate(tmpl: {
     shortcut: tmpl.shortcut,
     categoryId: tmpl.categoryId ?? null,
     conditionalBlocksJson: tmpl.conditionalBlocksJson ?? null,
-    templateType: tmpl.templateType ?? "email",
-    origin: tmpl.origin ?? "user_created",
+    templateType: tmpl.templateType ?? 'email',
+    origin: tmpl.origin ?? 'user_created',
     deliveryConfigJson: tmpl.deliveryConfigJson ?? null,
     aiConfigJson: tmpl.aiConfigJson ?? null,
     voiceConfigJson: tmpl.voiceConfigJson ?? null,
@@ -90,7 +88,21 @@ export async function insertTemplate(tmpl: {
 
 export async function updateTemplate(
   id: string,
-  updates: { name?: string; subject?: string | null; bodyHtml?: string; shortcut?: string | null; categoryId?: string | null; isFavorite?: boolean; conditionalBlocksJson?: string | null; templateType?: string; origin?: string; deliveryConfigJson?: string | null; aiConfigJson?: string | null; voiceConfigJson?: string | null; complianceProfileId?: string | null },
+  updates: {
+    name?: string;
+    subject?: string | null;
+    bodyHtml?: string;
+    shortcut?: string | null;
+    categoryId?: string | null;
+    isFavorite?: boolean;
+    conditionalBlocksJson?: string | null;
+    templateType?: string;
+    origin?: string;
+    deliveryConfigJson?: string | null;
+    aiConfigJson?: string | null;
+    voiceConfigJson?: string | null;
+    complianceProfileId?: string | null;
+  },
 ): Promise<void> {
   const set: Record<string, unknown> = {};
   if (updates.name !== undefined) set.name = updates.name;
@@ -99,13 +111,16 @@ export async function updateTemplate(
   if (updates.shortcut !== undefined) set.shortcut = updates.shortcut;
   if (updates.categoryId !== undefined) set.category_id = updates.categoryId;
   if (updates.isFavorite !== undefined) set.is_favorite = updates.isFavorite ? 1 : 0;
-  if (updates.conditionalBlocksJson !== undefined) set.conditional_blocks_json = updates.conditionalBlocksJson;
+  if (updates.conditionalBlocksJson !== undefined)
+    set.conditional_blocks_json = updates.conditionalBlocksJson;
   if (updates.templateType !== undefined) set.template_type = updates.templateType;
   if (updates.origin !== undefined) set.origin = updates.origin;
-  if (updates.deliveryConfigJson !== undefined) set.delivery_config_json = updates.deliveryConfigJson;
+  if (updates.deliveryConfigJson !== undefined)
+    set.delivery_config_json = updates.deliveryConfigJson;
   if (updates.aiConfigJson !== undefined) set.ai_config_json = updates.aiConfigJson;
   if (updates.voiceConfigJson !== undefined) set.voice_config_json = updates.voiceConfigJson;
-  if (updates.complianceProfileId !== undefined) set.compliance_profile_id = updates.complianceProfileId;
+  if (updates.complianceProfileId !== undefined)
+    set.compliance_profile_id = updates.complianceProfileId;
 
   if (Object.keys(set).length > 0) {
     await dbUpdateTemplate(id, { set, unset: [] });
@@ -138,10 +153,10 @@ export async function upsertCategory(cat: {
 export const deleteCategory = dbDeleteTemplateCategory;
 
 export async function seedCampaignTemplates(): Promise<void> {
-  const existing = await dbCountTemplates("campaign", "built_in");
+  const existing = await dbCountTemplates('campaign', 'built_in');
   if (existing[0]?.count && existing[0].count >= 10) return;
 
-  const { campaignTemplates } = await import("@/constants/campaignTemplates");
+  const { campaignTemplates } = await import('@/constants/campaignTemplates');
   for (const t of campaignTemplates) {
     try {
       await dbInsertTemplateIgnore({
@@ -149,8 +164,8 @@ export async function seedCampaignTemplates(): Promise<void> {
         name: t.name,
         subject: t.name,
         bodyHtml: t.html,
-        templateType: "campaign",
-        origin: "built_in",
+        templateType: 'campaign',
+        origin: 'built_in',
         sortOrder: 0,
         isFavorite: true,
       });
@@ -161,13 +176,13 @@ export async function seedCampaignTemplates(): Promise<void> {
 }
 
 export async function seedAllPresets(): Promise<void> {
-  const existing = await dbCountTemplates(null, "built_in");
+  const existing = await dbCountTemplates(null, 'built_in');
   if (existing[0] && existing[0].count >= 10) {
     console.log(`[seed] Presets already seeded: ${existing[0].count} built-in templates`);
     return;
   }
 
-  const { emailPresets } = await import("@features/mail/constants/emailPresets");
+  const { emailPresets } = await import('@features/mail/constants/emailPresets');
   let seeded = 0;
   for (const p of emailPresets) {
     try {
@@ -176,8 +191,8 @@ export async function seedAllPresets(): Promise<void> {
         name: p.name,
         subject: p.subject,
         bodyHtml: p.bodyHtml,
-        templateType: "email",
-        origin: "built_in",
+        templateType: 'email',
+        origin: 'built_in',
         sortOrder: 0,
         isFavorite: true,
       });
@@ -187,7 +202,7 @@ export async function seedAllPresets(): Promise<void> {
     }
   }
 
-  const { campaignPresets } = await import("@/constants/campaignPresets");
+  const { campaignPresets } = await import('@/constants/campaignPresets');
   for (const p of campaignPresets) {
     try {
       await dbInsertTemplateIgnore({
@@ -195,8 +210,8 @@ export async function seedAllPresets(): Promise<void> {
         name: p.name,
         subject: p.subject,
         bodyHtml: p.bodyHtml,
-        templateType: "campaign",
-        origin: "built_in",
+        templateType: 'campaign',
+        origin: 'built_in',
         sortOrder: 0,
         isFavorite: true,
       });
@@ -206,7 +221,7 @@ export async function seedAllPresets(): Promise<void> {
     }
   }
 
-  const { warmupPresets } = await import("@/constants/warmupPresets");
+  const { warmupPresets } = await import('@/constants/warmupPresets');
   for (const p of warmupPresets) {
     try {
       await dbInsertTemplateIgnore({
@@ -214,8 +229,8 @@ export async function seedAllPresets(): Promise<void> {
         name: p.name,
         subject: p.subject,
         bodyHtml: p.bodyHtml,
-        templateType: "warmup",
-        origin: "built_in",
+        templateType: 'warmup',
+        origin: 'built_in',
         sortOrder: 0,
         isFavorite: true,
       });
@@ -225,7 +240,7 @@ export async function seedAllPresets(): Promise<void> {
     }
   }
 
-  const { WORKFLOW_PRESETS } = await import("@/constants/workflowPresets");
+  const { WORKFLOW_PRESETS } = await import('@/constants/workflowPresets');
   for (const p of WORKFLOW_PRESETS) {
     try {
       await dbInsertTemplateIgnore({
@@ -233,8 +248,8 @@ export async function seedAllPresets(): Promise<void> {
         name: p.name,
         subject: p.description,
         bodyHtml: p.description,
-        templateType: "workflow",
-        origin: "built_in",
+        templateType: 'workflow',
+        origin: 'built_in',
         sortOrder: 0,
         isFavorite: true,
         deliveryConfigJson: JSON.stringify({

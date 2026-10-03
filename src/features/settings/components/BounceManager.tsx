@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   AlertCircle,
@@ -17,16 +17,16 @@ import {
   CheckCircle2,
   BarChart3,
   UserX,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { getBounceReport } from "@features/deliverability/services/bounceService";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { getBounceReport } from '@features/deliverability/services/bounceService';
 import {
   getSuppressionList,
   removeFromSuppression,
-} from "@features/deliverability/services/suppressionList";
-import type { BounceReport } from "@features/deliverability/services/bounceService";
-import type { SuppressionEntry } from "@features/deliverability/services/suppressionList";
-import { cn } from "@shared/utils/cn";
+} from '@features/deliverability/services/suppressionList';
+import type { BounceReport } from '@features/deliverability/services/bounceService';
+import type { SuppressionEntry } from '@features/deliverability/services/suppressionList';
+import { cn } from '@shared/utils/cn';
 
 // ─── Stat Card ───
 const StatCard = ({
@@ -39,28 +39,26 @@ const StatCard = ({
   label: string;
   value: number;
   icon: React.ElementType;
-  tone: "neutral" | "danger" | "warning" | "accent";
+  tone: 'neutral' | 'danger' | 'warning' | 'accent';
   sub?: string;
 }) => {
   const toneMap = {
-    neutral: "bg-bg-tertiary/40 border-border/40 text-text-secondary",
-    danger: "bg-danger/5 border-danger/20 text-danger",
-    warning: "bg-warning/5 border-warning/20 text-warning",
-    accent: "bg-accent/5 border-accent/20 text-accent",
+    neutral: 'bg-bg-tertiary/40 border-border/40 text-text-secondary',
+    danger: 'bg-danger/5 border-danger/20 text-danger',
+    warning: 'bg-warning/5 border-warning/20 text-warning',
+    accent: 'bg-accent/5 border-accent/20 text-accent',
   };
   return (
     <div
       className={cn(
-        "flex flex-col p-4 rounded-2xl border transition-all hover:shadow-sm",
-        toneMap[tone]
+        'flex flex-col p-4 rounded-2xl border transition-all hover:shadow-sm',
+        toneMap[tone],
       )}
     >
       <div className="flex items-center justify-between mb-2">
         <Icon className="w-5 h-5 opacity-60" />
         {sub && (
-          <span className="text-[10px] font-bold uppercase tracking-wider opacity-50">
-            {sub}
-          </span>
+          <span className="text-[10px] font-bold uppercase tracking-wider opacity-50">{sub}</span>
         )}
       </div>
       <div className="text-2xl font-bold">{value}</div>
@@ -72,15 +70,7 @@ const StatCard = ({
 };
 
 // ─── Reason Bar ───
-const ReasonBar = ({
-  reason,
-  count,
-  max,
-}: {
-  reason: string;
-  count: number;
-  max: number;
-}) => {
+const ReasonBar = ({ reason, count, max }: { reason: string; count: number; max: number }) => {
   const pct = max > 0 ? (count / max) * 100 : 0;
   return (
     <div className="flex items-center gap-3 py-2 px-3 rounded-xl bg-bg-primary border border-border/50 hover:border-border transition-colors">
@@ -93,9 +83,7 @@ const ReasonBar = ({
           />
         </div>
       </div>
-      <span className="text-xs font-bold text-text-secondary font-mono shrink-0">
-        {count}
-      </span>
+      <span className="text-xs font-bold text-text-secondary font-mono shrink-0">{count}</span>
     </div>
   );
 };
@@ -103,14 +91,16 @@ const ReasonBar = ({
 export function BounceManager() {
   const { t } = useTranslation();
   const accounts = useAccountStore((s) => s.accounts);
-  const [selectedAccountId, setSelectedAccountId] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState('');
   const [report, setReport] = useState<BounceReport | null>(null);
   const [suppressions, setSuppressions] = useState<SuppressionEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [releaseConfirmEmail, setReleaseConfirmEmail] = useState<string | null>(null);
   const [releasing, setReleasing] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<"reasons" | "suppression" | null>("suppression");
+  const [expandedSection, setExpandedSection] = useState<'reasons' | 'suppression' | null>(
+    'suppression',
+  );
 
   useEffect(() => {
     if (accounts.length > 0 && !selectedAccountId) {
@@ -150,13 +140,11 @@ export function BounceManager() {
   }
 
   const filteredSuppressions = suppressions.filter((s) =>
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
+    s.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const maxReasonCount =
-    report && report.topReasons.length > 0
-      ? Math.max(...report.topReasons.map((r) => r.count))
-      : 0;
+    report && report.topReasons.length > 0 ? Math.max(...report.topReasons.map((r) => r.count)) : 0;
 
   return (
     <div className="space-y-6">
@@ -164,7 +152,7 @@ export function BounceManager() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative">
           <label className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5 block">
-            {t("settings.bounce.targetAccount") || "Target Account"}
+            {t('settings.bounce.targetAccount') || 'Target Account'}
           </label>
           <div className="relative">
             <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
@@ -188,8 +176,8 @@ export function BounceManager() {
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl border border-border hover:border-border-secondary transition-all disabled:opacity-50 active:scale-95 shrink-0"
         >
-          <RotateCcw size={13} className={cn(loading && "animate-spin")} />
-          {loading ? "Loading..." : "Refresh Data"}
+          <RotateCcw size={13} className={cn(loading && 'animate-spin')} />
+          {loading ? 'Loading...' : 'Refresh Data'}
         </button>
       </div>
 
@@ -197,7 +185,7 @@ export function BounceManager() {
       {loading && (
         <div className="flex items-center justify-center py-12 gap-3">
           <Loader2 size={18} className="text-accent animate-spin" />
-          <span className="text-sm text-text-secondary">{t("common.loading")}</span>
+          <span className="text-sm text-text-secondary">{t('common.loading')}</span>
         </div>
       )}
 
@@ -205,28 +193,28 @@ export function BounceManager() {
       {!loading && report && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
-            label={t("settings.bounce.total") || "Total Bounces"}
+            label={t('settings.bounce.total') || 'Total Bounces'}
             value={report.totalBounces}
             icon={BarChart3}
             tone="accent"
             sub="All time"
           />
           <StatCard
-            label={t("settings.bounce.hard") || "Hard Bounces"}
+            label={t('settings.bounce.hard') || 'Hard Bounces'}
             value={report.hardBounces}
             icon={Ban}
             tone="danger"
             sub="Permanent"
           />
           <StatCard
-            label={t("settings.bounce.soft") || "Soft Bounces"}
+            label={t('settings.bounce.soft') || 'Soft Bounces'}
             value={report.softBounces}
             icon={AlertTriangle}
             tone="warning"
             sub="Temporary"
           />
           <StatCard
-            label={t("settings.bounce.policy") || "Policy"}
+            label={t('settings.bounce.policy') || 'Policy'}
             value={report.policyBounces}
             icon={Shield}
             tone="neutral"
@@ -239,9 +227,7 @@ export function BounceManager() {
       {!loading && report && (
         <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
           <button
-            onClick={() =>
-              setExpandedSection((s) => (s === "reasons" ? null : "reasons"))
-            }
+            onClick={() => setExpandedSection((s) => (s === 'reasons' ? null : 'reasons'))}
             className="w-full flex items-center justify-between p-4 hover:bg-bg-tertiary/30 transition-colors"
           >
             <div className="flex items-center gap-2.5">
@@ -250,7 +236,7 @@ export function BounceManager() {
               </div>
               <div className="text-start">
                 <h3 className="text-sm font-bold text-text-primary">
-                  {t("settings.bounce.topReasons") || "Top Bounce Reasons"}
+                  {t('settings.bounce.topReasons') || 'Top Bounce Reasons'}
                 </h3>
                 <p className="text-[10px] text-text-tertiary">
                   {report.topReasons.length} distinct reasons found
@@ -260,13 +246,13 @@ export function BounceManager() {
             <ChevronDown
               size={16}
               className={cn(
-                "text-text-tertiary transition-transform",
-                expandedSection === "reasons" && "rotate-180"
+                'text-text-tertiary transition-transform',
+                expandedSection === 'reasons' && 'rotate-180',
               )}
             />
           </button>
 
-          {expandedSection === "reasons" && (
+          {expandedSection === 'reasons' && (
             <div className="px-4 pb-4 space-y-2">
               {report.topReasons.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
@@ -284,12 +270,7 @@ export function BounceManager() {
                 </div>
               )}
               {report.topReasons.slice(0, 5).map((r, i) => (
-                <ReasonBar
-                  key={i}
-                  reason={r.reason}
-                  count={r.count}
-                  max={maxReasonCount}
-                />
+                <ReasonBar key={i} reason={r.reason} count={r.count} max={maxReasonCount} />
               ))}
             </div>
           )}
@@ -299,9 +280,7 @@ export function BounceManager() {
       {/* ── Suppression List ─── */}
       <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
         <button
-          onClick={() =>
-            setExpandedSection((s) => (s === "suppression" ? null : "suppression"))
-          }
+          onClick={() => setExpandedSection((s) => (s === 'suppression' ? null : 'suppression'))}
           className="w-full flex items-center justify-between p-4 hover:bg-bg-tertiary/30 transition-colors"
         >
           <div className="flex items-center gap-2.5">
@@ -310,23 +289,24 @@ export function BounceManager() {
             </div>
             <div className="text-start">
               <h3 className="text-sm font-bold text-text-primary">
-                {t("settings.suppression.title") || "Suppression List"}
+                {t('settings.suppression.title') || 'Suppression List'}
               </h3>
               <p className="text-[10px] text-text-tertiary">
-                {suppressions.length} {suppressions.length === 1 ? "address" : "addresses"} suppressed
+                {suppressions.length} {suppressions.length === 1 ? 'address' : 'addresses'}{' '}
+                suppressed
               </p>
             </div>
           </div>
           <ChevronDown
             size={16}
             className={cn(
-              "text-text-tertiary transition-transform",
-              expandedSection === "suppression" && "rotate-180"
+              'text-text-tertiary transition-transform',
+              expandedSection === 'suppression' && 'rotate-180',
             )}
           />
         </button>
 
-        {expandedSection === "suppression" && (
+        {expandedSection === 'suppression' && (
           <div className="px-4 pb-4 space-y-3">
             {/* Search */}
             {suppressions.length > 0 && (
@@ -341,7 +321,7 @@ export function BounceManager() {
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => setSearchQuery('')}
                     className="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-bg-tertiary text-text-tertiary transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -358,10 +338,11 @@ export function BounceManager() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-text-tertiary">
-                    {t("settings.suppression.empty") || "Suppression list is empty"}
+                    {t('settings.suppression.empty') || 'Suppression list is empty'}
                   </p>
                   <p className="text-xs text-text-tertiary mt-1 max-w-[280px]">
-                    No addresses are currently suppressed. This is a good sign for your list hygiene.
+                    No addresses are currently suppressed. This is a good sign for your list
+                    hygiene.
                   </p>
                 </div>
               </div>
@@ -372,7 +353,7 @@ export function BounceManager() {
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <p className="text-sm text-text-tertiary">No matches found.</p>
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => setSearchQuery('')}
                   className="mt-2 text-xs text-accent hover:underline"
                 >
                   Clear search
@@ -388,10 +369,10 @@ export function BounceManager() {
                   <div
                     key={s.id}
                     className={cn(
-                      "group relative flex items-center gap-3 p-3 rounded-xl border transition-all",
+                      'group relative flex items-center gap-3 p-3 rounded-xl border transition-all',
                       isConfirming
-                        ? "bg-danger/5 border-danger/30"
-                        : "bg-bg-primary border-border/50 hover:border-border hover:shadow-sm"
+                        ? 'bg-danger/5 border-danger/30'
+                        : 'bg-bg-primary border-border/50 hover:border-border hover:shadow-sm',
                     )}
                   >
                     <div className="p-2 rounded-lg bg-danger/10 text-danger shrink-0">
@@ -399,9 +380,7 @@ export function BounceManager() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-text-primary">
-                          {s.email}
-                        </span>
+                        <span className="text-sm font-medium text-text-primary">{s.email}</span>
                         <span className="px-1.5 py-0.5 rounded-md bg-bg-tertiary text-[10px] font-bold text-text-tertiary border border-border">
                           {s.reason}
                         </span>
@@ -421,7 +400,7 @@ export function BounceManager() {
                           className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-accent bg-accent/5 hover:bg-accent/10 rounded-lg border border-accent/20 transition-colors"
                         >
                           <Unlock size={12} />
-                          {t("settings.suppression.release") || "Release"}
+                          {t('settings.suppression.release') || 'Release'}
                         </button>
                       ) : (
                         <div className="flex items-center gap-1.5">
@@ -467,19 +446,19 @@ export function BounceManager() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               {
-                label: "Auto-suppress hard bounces",
-                desc: "Permanently block invalid addresses",
-                status: "pending",
+                label: 'Auto-suppress hard bounces',
+                desc: 'Permanently block invalid addresses',
+                status: 'pending',
               },
               {
-                label: "Soft bounce retry limit",
-                desc: "Suppress after 3 consecutive soft bounces",
-                status: "pending",
+                label: 'Soft bounce retry limit',
+                desc: 'Suppress after 3 consecutive soft bounces',
+                status: 'pending',
               },
               {
-                label: "Complaint auto-suppress",
-                desc: "Block spam complaint addresses immediately",
-                status: "pending",
+                label: 'Complaint auto-suppress',
+                desc: 'Block spam complaint addresses immediately',
+                status: 'pending',
               },
             ].map((item) => (
               <div
@@ -488,8 +467,8 @@ export function BounceManager() {
               >
                 <div
                   className={cn(
-                    "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                    item.status === "active" ? "bg-success" : "bg-warning animate-pulse"
+                    'w-2 h-2 rounded-full mt-1.5 shrink-0',
+                    item.status === 'active' ? 'bg-success' : 'bg-warning animate-pulse',
                   )}
                 />
                 <div>

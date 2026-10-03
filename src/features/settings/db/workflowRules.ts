@@ -6,8 +6,8 @@ import {
   upsertWorkflowRule as dbUpsertWorkflowRule,
   deleteWorkflowRule as dbDeleteWorkflowRule,
   updateWorkflowRuleActive,
-} from "@/shared/services/db/db-invoke";
-import type { WorkflowRule } from "@/shared/services/db/db-invoke";
+} from '@/shared/services/db/db-invoke';
+import type { WorkflowRule } from '@/shared/services/db/db-invoke';
 
 export type { WorkflowRule };
 export type DbWorkflowRule = WorkflowRule;
@@ -39,7 +39,10 @@ export async function countWorkflowRulesForAccount(companyId: string): Promise<n
   return rows[0]?.count ?? 0;
 }
 
-export async function getActiveWorkflowRules(companyId: string, event: string): Promise<WorkflowRule[]> {
+export async function getActiveWorkflowRules(
+  companyId: string,
+  event: string,
+): Promise<WorkflowRule[]> {
   return listActiveWorkflowRules(companyId, event);
 }
 

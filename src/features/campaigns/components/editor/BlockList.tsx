@@ -7,14 +7,14 @@ import {
   useSensors,
   closestCenter,
   type DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import { useTranslation } from "react-i18next";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+} from '@dnd-kit/sortable';
+import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 import type {
   EmailBlock,
   HeadingBlock as HeadingBlockT,
@@ -25,18 +25,18 @@ import type {
   SpacerBlock as SpacerBlockT,
   CardBlock as CardBlockT,
   ColumnsBlock as ColumnsBlockT,
-} from "./types";
-import { useCampaignComposerStore } from "../../stores/campaignComposerStore";
-import { BlockWrapper } from "./BlockWrapper";
-import { BlockPalette } from "./BlockPalette";
-import { HeadingBlock } from "./blocks/HeadingBlock";
-import { ParagraphBlock } from "./blocks/ParagraphBlock";
-import { ImageBlock } from "./blocks/ImageBlock";
-import { ButtonBlock } from "./blocks/ButtonBlock";
-import { DividerBlock } from "./blocks/DividerBlock";
-import { SpacerBlock } from "./blocks/SpacerBlock";
-import { CardBlock } from "./blocks/CardBlock";
-import { ColumnsBlock } from "./blocks/ColumnsBlock";
+} from './types';
+import { useCampaignComposerStore } from '../../stores/campaignComposerStore';
+import { BlockWrapper } from './BlockWrapper';
+import { BlockPalette } from './BlockPalette';
+import { HeadingBlock } from './blocks/HeadingBlock';
+import { ParagraphBlock } from './blocks/ParagraphBlock';
+import { ImageBlock } from './blocks/ImageBlock';
+import { ButtonBlock } from './blocks/ButtonBlock';
+import { DividerBlock } from './blocks/DividerBlock';
+import { SpacerBlock } from './blocks/SpacerBlock';
+import { CardBlock } from './blocks/CardBlock';
+import { ColumnsBlock } from './blocks/ColumnsBlock';
 
 function renderBlockBody(
   block: EmailBlock,
@@ -44,21 +44,21 @@ function renderBlockBody(
   onPickFromVault?: () => void,
 ) {
   switch (block.type) {
-    case "heading":
+    case 'heading':
       return (
         <HeadingBlock
           block={block as HeadingBlockT}
           onChange={onChange as (c: Partial<HeadingBlockT>) => void}
         />
       );
-    case "paragraph":
+    case 'paragraph':
       return (
         <ParagraphBlock
           block={block as ParagraphBlockT}
           onChange={onChange as (c: Partial<ParagraphBlockT>) => void}
         />
       );
-    case "image":
+    case 'image':
       return (
         <ImageBlock
           block={block as ImageBlockT}
@@ -66,28 +66,28 @@ function renderBlockBody(
           onPickFromVault={onPickFromVault}
         />
       );
-    case "button":
+    case 'button':
       return (
         <ButtonBlock
           block={block as ButtonBlockT}
           onChange={onChange as (c: Partial<ButtonBlockT>) => void}
         />
       );
-    case "divider":
+    case 'divider':
       return (
         <DividerBlock
           block={block as DividerBlockT}
           onChange={onChange as (c: Partial<DividerBlockT>) => void}
         />
       );
-    case "spacer":
+    case 'spacer':
       return (
         <SpacerBlock
           block={block as SpacerBlockT}
           onChange={onChange as (c: Partial<SpacerBlockT>) => void}
         />
       );
-    case "card":
+    case 'card':
       return (
         <CardBlock
           block={block as CardBlockT}
@@ -95,7 +95,7 @@ function renderBlockBody(
           onPickFromVault={onPickFromVault}
         />
       );
-    case "columns":
+    case 'columns':
       return (
         <ColumnsBlock
           block={block as ColumnsBlockT}
@@ -135,8 +135,8 @@ export function BlockList({ onPickFromVault }: { onPickFromVault?: () => void })
     return (
       <div className="flex flex-col items-center gap-4 py-10">
         <EmptyState
-          title={t("campaign.editor.noContent")}
-          subtitle={t("campaign.editor.addBlock")}
+          title={t('campaign.editor.noContent')}
+          subtitle={t('campaign.editor.addBlock')}
         />
         <BlockPalette />
       </div>

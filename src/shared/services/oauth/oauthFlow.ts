@@ -1,7 +1,7 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import type { OAuthProviderConfig } from "./providers";
-import { startCustomTabOAuth } from "./customTabAuth";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import type { OAuthProviderConfig } from './providers';
+import { startCustomTabOAuth } from './customTabAuth';
 
 const OAUTH_CALLBACK_PORT = 17248;
 
@@ -34,19 +34,16 @@ function generateCodeVerifier(): string {
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
+  const digest = await crypto.subtle.digest('SHA-256', data);
   return base64UrlEncode(new Uint8Array(digest));
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
-  let binary = "";
+  let binary = '';
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 /**
@@ -75,11 +72,11 @@ export async function startProviderOAuthFlow(
     // Other errors (CSRF, timeout, auth denied) should propagate.
     const msg = err instanceof Error ? err.message : String(err);
     if (
-      msg.includes("deep-link") ||
-      msg.includes("scheme") ||
-      msg.includes("Failed to open browser")
+      msg.includes('deep-link') ||
+      msg.includes('scheme') ||
+      msg.includes('Failed to open browser')
     ) {
-      console.warn("[oauth] Custom-tab flow failed, falling back to localhost:", msg);
+      console.warn('[oauth] Custom-tab flow failed, falling back to localhost:', msg);
     } else {
       throw err;
     }
@@ -110,25 +107,25 @@ async function startProviderOAuthFlowLocalhost(
   const params: Record<string, string> = {
     client_id: clientId,
     redirect_uri: redirectUri,
-    response_type: "code",
-    scope: provider.scopes.join(" "),
+    response_type: 'code',
+    scope: provider.scopes.join(' '),
     state: oauthState,
   };
 
   if (provider.usePkce) {
     params.code_challenge = codeChallenge;
-    params.code_challenge_method = "S256";
+    params.code_challenge_method = 'S256';
   }
 
   // Provider-specific auth params
-  if (provider.id === "microsoft") {
-    params.prompt = "consent";
-    params.response_mode = "query";
+  if (provider.id === 'microsoft') {
+    params.prompt = 'consent';
+    params.response_mode = 'query';
   }
 
   const authUrl = `${provider.authUrl}?${new URLSearchParams(params).toString()}`;
 
-  const serverPromise = invokeCommand<OAuthServerResult>("start_oauth_server", {
+  const serverPromise = invokeCommand<OAuthServerResult>('start_oauth_server', {
     port: OAUTH_CALLBACK_PORT,
     state: oauthState,
   });
@@ -139,7 +136,7 @@ async function startProviderOAuthFlowLocalhost(
   const result = await serverPromise;
 
   if (result.state !== oauthState) {
-    throw new Error("OAuth state mismatch — possible CSRF attack. Please try again.");
+    throw new Error('OAuth state mismatch — possible CSRF attack. Please try again.');
   }
 
   const tokens = await exchangeCode(
@@ -165,14 +162,14 @@ async function exchangeCode(
   clientSecret?: string,
 ): Promise<TokenResponse> {
   // Use Rust backend for token exchange to avoid CORS issues (required for Microsoft native client)
-  return invokeCommand<TokenResponse>("oauth_exchange_token", {
+  return invokeCommand<TokenResponse>('oauth_exchange_token', {
     tokenUrl: provider.tokenUrl,
     code,
     clientId,
     redirectUri,
     codeVerifier: provider.usePkce ? codeVerifier : null,
     clientSecret: clientSecret || null,
-    scope: provider.id === "microsoft" ? provider.scopes.join(" ") : null,
+    scope: provider.id === 'microsoft' ? provider.scopes.join(' ') : null,
   });
 }
 
@@ -186,19 +183,19 @@ export async function refreshProviderToken(
   clientSecret?: string,
 ): Promise<TokenResponse> {
   // Use Rust backend for token refresh to avoid CORS issues
-  return invokeCommand<TokenResponse>("oauth_refresh_token", {
+  return invokeCommand<TokenResponse>('oauth_refresh_token', {
     tokenUrl: provider.tokenUrl,
     refreshToken,
     clientId,
     clientSecret: clientSecret || null,
-    scope: provider.id === "microsoft" ? provider.scopes.join(" ") : null,
+    scope: provider.id === 'microsoft' ? provider.scopes.join(' ') : null,
   });
 }
 
 function parseIdToken(idToken: string): Record<string, unknown> {
-  const payload = idToken.split(".")[1];
-  if (!payload) throw new Error("Invalid ID token format");
-  const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+  const payload = idToken.split('.')[1];
+  if (!payload) throw new Error('Invalid ID token format');
+  const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
   return JSON.parse(decoded);
 }
 
@@ -207,17 +204,17 @@ async function fetchUserInfo(
   tokens: TokenResponse,
 ): Promise<ProviderUserInfo> {
   // Microsoft: extract user info from ID token (can't use Graph API with Outlook scopes)
-  if (provider.id === "microsoft") {
+  if (provider.id === 'microsoft') {
     if (tokens.id_token) {
       const claims = parseIdToken(tokens.id_token);
       return {
-        email: (claims.email as string) || (claims.preferred_username as string) || "",
-        name: (claims.name as string) || "",
+        email: (claims.email as string) || (claims.preferred_username as string) || '',
+        name: (claims.name as string) || '',
         picture: undefined,
       };
     }
     // Fallback if no ID token
-    return { email: "", name: "", picture: undefined };
+    return { email: '', name: '', picture: undefined };
   }
 
   if (!provider.userInfoUrl) {
@@ -235,17 +232,17 @@ async function fetchUserInfo(
   const data = await response.json();
 
   // Normalize response across providers
-  if (provider.id === "yahoo") {
+  if (provider.id === 'yahoo') {
     return {
-      email: data.email || "",
-      name: data.name || data.nickname || "",
+      email: data.email || '',
+      name: data.name || data.nickname || '',
       picture: data.picture || undefined,
     };
   }
 
   return {
-    email: data.email || "",
-    name: data.name || "",
+    email: data.email || '',
+    name: data.name || '',
     picture: data.picture || undefined,
   };
 }

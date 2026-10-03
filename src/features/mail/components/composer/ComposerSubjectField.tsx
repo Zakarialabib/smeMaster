@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 
 interface ComposerSubjectFieldProps {
   subject: string;
@@ -11,9 +11,7 @@ export function ComposerSubjectField({ subject, onChange }: ComposerSubjectField
   return (
     <div className="px-5 py-2 border-b border-border-secondary">
       <div className="flex items-center gap-2">
-        <span className="text-xs text-text-tertiary w-8 shrink-0">
-          {t('composer.sub')}
-        </span>
+        <span className="text-xs text-text-tertiary w-8 shrink-0">{t('composer.sub')}</span>
         <input
           type="text"
           value={subject}

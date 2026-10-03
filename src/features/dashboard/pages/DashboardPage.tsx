@@ -16,7 +16,12 @@ import { Modal } from '@shared/components/ui/Modal';
 import { Button } from '@shared/components/ui/Button';
 import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
 import { SkeletonPage, GlassPanel } from '@shared/components/ui';
-import { useDashboardStore, DASHBOARD_RANGE_OPTIONS, type DashboardRangeDays, type DashboardDensity } from '@features/dashboard/stores/dashboardStore';
+import {
+  useDashboardStore,
+  DASHBOARD_RANGE_OPTIONS,
+  type DashboardRangeDays,
+  type DashboardDensity,
+} from '@features/dashboard/stores/dashboardStore';
 import {
   dashboardContactsTotal,
   dashboardContactsNewWeek,
@@ -24,7 +29,7 @@ import {
   dashboardTasksOverdue,
   dashboardCampaignsTotal,
   dashboardContactGrowth,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 import type { DashboardTimeSeries } from '@shared/services/db/db-invoke';
 import { EmailVolumeWidget } from '@features/dashboard/components/EmailVolumeWidget';
 import { EmailHeatmapWidget } from '@features/dashboard/components/EmailHeatmapWidget';
@@ -37,6 +42,7 @@ import { AutomationRulesWidget } from '@features/dashboard/components/Automation
 import { QuickActionsWidget } from '@features/dashboard/components/QuickActionsWidget';
 import { EntityNetworkGraph } from '@features/dashboard/components/EntityNetworkGraph';
 import { BusinessHealthWidget } from '@features/dashboard/components/BusinessHealthWidget';
+import { SectionConsole } from '@features/dashboard/components/SectionConsole';
 
 // ─── Customization Modal ───────────────────────────────────────────────────
 
@@ -128,7 +134,13 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; density: DashboardDensity }) {
+function HeroMetrics({
+  rangeDays,
+  density,
+}: {
+  rangeDays: DashboardRangeDays;
+  density: DashboardDensity;
+}) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<HeroMetricData[]>([]);
@@ -203,7 +215,8 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
         : featuredMetric.trendPct >= -5
           ? 'text-warning'
           : 'text-danger';
-  const ArrowIcon = featuredMetric.trendPct !== undefined && featuredMetric.trendPct >= 0 ? ArrowUp : ArrowDown;
+  const ArrowIcon =
+    featuredMetric.trendPct !== undefined && featuredMetric.trendPct >= 0 ? ArrowUp : ArrowDown;
 
   return (
     <GlassPanel
@@ -220,7 +233,7 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
               key={m.key}
               onClick={() => setFeatured(m.key)}
               aria-pressed={isFeatured}
-              className={`flex flex-col text-left rounded-lg p-3 border transition-colors ${
+              className={`flex flex-col text-start rounded-lg p-3 border transition-colors ${
                 isFeatured
                   ? 'border-accent/40 bg-accent/5'
                   : 'border-border-primary bg-bg-secondary hover:border-accent/30'
@@ -234,7 +247,9 @@ function HeroMetrics({ rangeDays, density }: { rangeDays: DashboardRangeDays; de
               </span>
               {isFeatured && m.trendPct !== undefined && (
                 <span className="mt-1 flex items-center gap-1 text-xs">
-                  <span className={`inline-flex items-center gap-0.5 font-semibold ${semanticColor}`}>
+                  <span
+                    className={`inline-flex items-center gap-0.5 font-semibold ${semanticColor}`}
+                  >
                     <ArrowIcon size={12} aria-hidden="true" />
                     {Math.abs(m.trendPct)}%
                   </span>
@@ -296,11 +311,7 @@ function WidgetWrapper({
 }) {
   return (
     <ErrorBoundary name={`Widget-${widgetId}`}>
-      <GlassPanel
-        key={refreshKey}
-        variant="card"
-        className={density === 'compact' ? 'p-3' : 'p-4'}
-      >
+      <GlassPanel key={refreshKey} variant="card" className={density === 'compact' ? 'p-3' : 'p-4'}>
         {children}
       </GlassPanel>
     </ErrorBoundary>
@@ -315,15 +326,8 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  const {
-    widgets,
-    loaded,
-    loadPreferences,
-    rangeDays,
-    density,
-    setRangeDays,
-    setDensity,
-  } = useDashboardStore();
+  const { widgets, loaded, loadPreferences, rangeDays, density, setRangeDays, setDensity } =
+    useDashboardStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -457,6 +461,9 @@ export function DashboardPage() {
 
       <HeroMetrics rangeDays={rangeDays} density={density} />
 
+      {/* Menu console — reusable section cards (landing surface above the widget grid) */}
+      <SectionConsole refreshKey={refreshNonce} />
+
       <div
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${gridGap} auto-rows-min`}
         aria-busy={!loaded}
@@ -464,12 +471,7 @@ export function DashboardPage() {
         aria-label="Dashboard widgets"
       >
         {visibleWidgets.map((w) => (
-          <WidgetWrapper
-            key={w.id}
-            widgetId={w.id}
-            density={density}
-            refreshKey={refreshNonce}
-          >
+          <WidgetWrapper key={w.id} widgetId={w.id} density={density} refreshKey={refreshNonce}>
             {renderWidget(w.id, rangeDays)}
           </WidgetWrapper>
         ))}

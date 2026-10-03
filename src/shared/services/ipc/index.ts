@@ -21,4 +21,10 @@ export {
   type CommandParams,
   type CommandResult,
   TauriCommands,
-} from "./invoke";
+} from './invoke';
+
+/**
+ * Environment-safe Tauri event subscription (no-op outside a Tauri shell).
+ * Lives in its own module so importing it never pulls in the invoke stack.
+ */
+export { safeListen } from './safeListen';

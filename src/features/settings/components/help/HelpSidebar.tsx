@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { HELP_CATEGORIES } from "@/constants/helpContent";
-import { cn } from "@shared/utils/cn";
+import { useState } from 'react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { HELP_CATEGORIES } from '@/constants/helpContent';
+import { cn } from '@shared/utils/cn';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ export function HelpSidebar({
   collapsed = false,
   onToggleCollapse,
 }: HelpSidebarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filter categories by search
   const filteredCategories = searchQuery.trim()
@@ -51,10 +51,10 @@ export function HelpSidebar({
               key={cat.id}
               onClick={() => onSelectTopic(cat.id)}
               className={cn(
-                "w-9 h-9 rounded-lg flex items-center justify-center transition-all",
+                'w-9 h-9 rounded-lg flex items-center justify-center transition-all',
                 isActive
-                  ? "bg-accent/15 text-accent"
-                  : "text-text-tertiary hover:text-text-primary hover:bg-bg-hover",
+                  ? 'bg-accent/15 text-accent'
+                  : 'text-text-tertiary hover:text-text-primary hover:bg-bg-hover',
               )}
               title={cat.label}
               aria-label={cat.label}
@@ -125,21 +125,18 @@ export function HelpSidebar({
               key={cat.id}
               onClick={() => {
                 onSelectTopic(cat.id);
-                setSearchQuery("");
+                setSearchQuery('');
               }}
               className={cn(
-                "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs",
+                'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-start transition-all text-xs',
                 isActive
-                  ? "bg-accent/15 text-accent font-semibold"
-                  : "text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+                  ? 'bg-accent/15 text-accent font-semibold'
+                  : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary',
               )}
             >
               <CatIcon
                 size={14}
-                className={cn(
-                  "shrink-0",
-                  isActive ? "text-accent" : "text-text-tertiary",
-                )}
+                className={cn('shrink-0', isActive ? 'text-accent' : 'text-text-tertiary')}
               />
               <span className="truncate">{cat.label}</span>
               <span className="ms-auto text-[10px] text-text-tertiary/60 tabular-nums">

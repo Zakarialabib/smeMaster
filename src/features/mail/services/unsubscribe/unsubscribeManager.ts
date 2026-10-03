@@ -1,25 +1,25 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
-import { normalizeEmail } from "@shared/utils/emailUtils";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { getCurrentUnixTimestamp } from '@shared/utils/timestamp';
+import { normalizeEmail } from '@shared/utils/emailUtils';
 
 function isSafeUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname.toLowerCase();
     if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "0.0.0.0" ||
-      hostname === "[::1]"
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname === '[::1]'
     ) {
       return false;
     }
-    if (hostname.startsWith("10.") || hostname.startsWith("192.168.")) {
+    if (hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
       return false;
     }
-    if (hostname.startsWith("172.")) {
-      const parts = hostname.split(".");
+    if (hostname.startsWith('172.')) {
+      const parts = hostname.split('.');
       if (parts.length >= 2) {
         const second = parseInt(parts[1]!, 10);
         if (second >= 16 && second <= 31) {
@@ -27,7 +27,7 @@ function isSafeUrl(url: string): boolean {
         }
       }
     }
-    if (hostname.startsWith("169.254.")) {
+    if (hostname.startsWith('169.254.')) {
       return false;
     }
     return true;
@@ -61,9 +61,7 @@ export function parseUnsubscribeHeaders(
 ): ParsedUnsubscribe {
   const httpMatch = listUnsubscribe.match(/<(https?:\/\/[^>]+)>/);
   const mailtoMatch = listUnsubscribe.match(/<mailto:([^>]+)>/);
-  const hasOneClick = !!listUnsubscribePost
-    ?.toLowerCase()
-    .includes("list-unsubscribe=one-click");
+  const hasOneClick = !!listUnsubscribePost?.toLowerCase().includes('list-unsubscribe=one-click');
 
   return {
     httpUrl: httpMatch?.[1] ?? null,
@@ -87,53 +85,51 @@ export async function executeUnsubscribe(
   listUnsubscribePost: string | null,
 ): Promise<{ method: string; success: boolean }> {
   const parsed = parseUnsubscribeHeaders(listUnsubscribe, listUnsubscribePost);
-  let method = "browser";
+  let method = 'browser';
   let success = false;
 
   // Method 1: RFC 8058 one-click HTTP POST
   if (parsed.hasOneClick && parsed.httpUrl && isSafeUrl(parsed.httpUrl)) {
     try {
       const response = await fetch(parsed.httpUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new TextEncoder().encode("List-Unsubscribe=One-Click"),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new TextEncoder().encode('List-Unsubscribe=One-Click'),
       });
       success = response.ok || response.status === 200 || response.status === 202;
-      method = "http_post";
+      method = 'http_post';
     } catch (err) {
-      console.error("One-click unsubscribe failed, trying fallback:", err);
+      console.error('One-click unsubscribe failed, trying fallback:', err);
     }
   }
 
   // Method 2: mailto via Gmail API
   if (!success && parsed.mailtoAddress) {
     try {
-      const { getGmailClient } = await import("../gmail/tokenManager");
+      const { getGmailClient } = await import('../gmail/tokenManager');
       const client = await getGmailClient(accountId);
       if (client) {
-        const to = parsed.mailtoAddress.split("?")[0] ?? parsed.mailtoAddress;
+        const to = parsed.mailtoAddress.split('?')[0] ?? parsed.mailtoAddress;
         // Extract subject from mailto params if present
         const subjectMatch = parsed.mailtoAddress.match(/subject=([^&]+)/i);
-        const subject = subjectMatch
-          ? decodeURIComponent(subjectMatch[1]!)
-          : "unsubscribe";
+        const subject = subjectMatch ? decodeURIComponent(subjectMatch[1]!) : 'unsubscribe';
 
-        const { getAccount } = await import("@features/accounts/db/accounts");
+        const { getAccount } = await import('@features/accounts/db/accounts');
         const account = await getAccount(accountId);
-        const { buildRawEmail } = await import("@shared/utils/emailBuilder");
+        const { buildRawEmail } = await import('@shared/utils/emailBuilder');
         const raw = buildRawEmail({
-          from: account?.email ?? "",
+          from: account?.email ?? '',
           to: [to],
           subject,
-          htmlBody: "unsubscribe",
+          htmlBody: 'unsubscribe',
         });
 
         await client.sendMessage(raw);
-        method = "mailto";
+        method = 'mailto';
         success = true;
       }
     } catch (err) {
-      console.error("Mailto unsubscribe failed, trying fallback:", err);
+      console.error('Mailto unsubscribe failed, trying fallback:', err);
     }
   }
 
@@ -141,10 +137,10 @@ export async function executeUnsubscribe(
   if (!success && parsed.httpUrl && isSafeUrl(parsed.httpUrl)) {
     try {
       await openUrl(parsed.httpUrl);
-      method = "browser";
+      method = 'browser';
       success = true;
     } catch (err) {
-      console.error("Browser unsubscribe failed:", err);
+      console.error('Browser unsubscribe failed:', err);
     }
   }
 
@@ -156,7 +152,7 @@ export async function executeUnsubscribe(
     fromName,
     method,
     parsed.httpUrl ?? parsed.mailtoAddress ?? listUnsubscribe,
-    success ? "unsubscribed" : "failed",
+    success ? 'unsubscribed' : 'failed',
   );
 
   return { method, success };
@@ -173,7 +169,7 @@ async function recordUnsubscribeAction(
 ): Promise<void> {
   const id = crypto.randomUUID();
   const now = getCurrentUnixTimestamp();
-  await invokeCommand<void>("db_upsert_unsubscribe_action", {
+  await invokeCommand<void>('db_upsert_unsubscribe_action', {
     id,
     accountId,
     threadId,
@@ -186,17 +182,15 @@ async function recordUnsubscribeAction(
   });
 }
 
-export async function getSubscriptions(
-  accountId: string,
-): Promise<SubscriptionEntry[]> {
-  return invokeCommand<SubscriptionEntry[]>("db_get_subscriptions", { accountId });
+export async function getSubscriptions(accountId: string): Promise<SubscriptionEntry[]> {
+  return invokeCommand<SubscriptionEntry[]>('db_get_subscriptions', { accountId });
 }
 
 export async function getUnsubscribeStatus(
   accountId: string,
   fromAddress: string,
 ): Promise<string | null> {
-  return invokeCommand<string | null>("db_get_unsubscribe_status", {
+  return invokeCommand<string | null>('db_get_unsubscribe_status', {
     accountId,
     fromAddress: normalizeEmail(fromAddress),
   });

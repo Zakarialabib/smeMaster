@@ -1,30 +1,33 @@
-import { useState, useCallback, useRef, lazy, Suspense } from "react";
-import { Send, Plus, Trash2, ChevronDown, ChevronRight, Calendar, Ban } from "lucide-react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useCampaignStore, type Campaign } from "@features/campaigns/stores/campaignStore";
-import { CAMPAIGN_STATUS_COLORS } from "@/constants/campaignDefaults";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { useState, useCallback, useRef, lazy, Suspense } from 'react';
+import { Send, Plus, Trash2, ChevronDown, ChevronRight, Calendar, Ban } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useCampaignStore, type Campaign } from '@features/campaigns/stores/campaignStore';
+import { CAMPAIGN_STATUS_COLORS } from '@/constants/campaignDefaults';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 // Heavy, conditionally-rendered UI: analytics pulls in recharts and the
 // composer wizard pulls in its step components. Both are only mounted on
 // demand, so lazy-load them to keep them out of the campaigns list chunk.
 const CampaignAnalytics = lazy(() =>
-  import("@features/campaigns/components/CampaignAnalytics").then((m) => ({
+  import('@features/campaigns/components/CampaignAnalytics').then((m) => ({
     default: m.CampaignAnalytics,
   })),
 );
 
 const CampaignComposer = lazy(() =>
-  import("@features/campaigns/components/CampaignComposer").then((m) => ({
+  import('@features/campaigns/components/CampaignComposer').then((m) => ({
     default: m.CampaignComposer,
   })),
 );
-import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import { useTranslation } from "react-i18next";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { safeDbOperation } from "@features/campaigns/services/errorHandler";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { deleteCampaign as dbDeleteCampaign, updateCampaignStatus as dbUpdateCampaignStatus } from "@features/campaigns/db/campaigns";
+import { PullToRefresh } from '@shared/components/ui/PullToRefresh';
+import { useTranslation } from 'react-i18next';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { safeDbOperation } from '@features/campaigns/services/errorHandler';
+import { notify } from '@shared/services/notifications/toastHelper';
+import {
+  deleteCampaign as dbDeleteCampaign,
+  updateCampaignStatus as dbUpdateCampaignStatus,
+} from '@features/campaigns/db/campaigns';
 
 interface CampaignListProps {
   accountId: string;
@@ -36,7 +39,7 @@ const DESKTOP_ROW_ESTIMATE = 48;
 
 export function CampaignList({ accountId }: CampaignListProps) {
   const { t } = useTranslation();
-  const isMobileDevice  = usePlatform();
+  const isMobileDevice = usePlatform();
   const campaigns = useCampaignStore((s) => s.campaigns);
   const isLoading = useCampaignStore((s) => s.isLoading);
   const loadStats = useCampaignStore((s) => s.loadStats);
@@ -65,31 +68,41 @@ export function CampaignList({ accountId }: CampaignListProps) {
     return loadCampaigns(accountId);
   }, [loadCampaigns, accountId]);
 
-  const handleDelete = useCallback(async (campaignId: string, campaignName: string) => {
-    const result = await safeDbOperation(
-      async () => { await dbDeleteCampaign(campaignId); },
-      { operationLabel: "delete campaign" },
-    );
-    if (result.success) {
-      notify("Campaign deleted", `"${campaignName}" has been removed.`);
-      loadCampaigns(accountId);
-    } else {
-      notify("Failed to delete campaign", result.error);
-    }
-  }, [accountId, loadCampaigns]);
+  const handleDelete = useCallback(
+    async (campaignId: string, campaignName: string) => {
+      const result = await safeDbOperation(
+        async () => {
+          await dbDeleteCampaign(campaignId);
+        },
+        { operationLabel: 'delete campaign' },
+      );
+      if (result.success) {
+        notify('Campaign deleted', `"${campaignName}" has been removed.`);
+        loadCampaigns(accountId);
+      } else {
+        notify('Failed to delete campaign', result.error);
+      }
+    },
+    [accountId, loadCampaigns],
+  );
 
-  const handleCancelSchedule = useCallback(async (campaignId: string, campaignName: string) => {
-    const result = await safeDbOperation(
-      async () => { await dbUpdateCampaignStatus(campaignId, "draft"); },
-      { operationLabel: "cancel schedule" },
-    );
-    if (result.success) {
-      notify("Schedule cancelled", `"${campaignName}" has been moved to drafts.`);
-      loadCampaigns(accountId);
-    } else {
-      notify("Failed to cancel schedule", result.error);
-    }
-  }, [accountId, loadCampaigns]);
+  const handleCancelSchedule = useCallback(
+    async (campaignId: string, campaignName: string) => {
+      const result = await safeDbOperation(
+        async () => {
+          await dbUpdateCampaignStatus(campaignId, 'draft');
+        },
+        { operationLabel: 'cancel schedule' },
+      );
+      if (result.success) {
+        notify('Schedule cancelled', `"${campaignName}" has been moved to drafts.`);
+        loadCampaigns(accountId);
+      } else {
+        notify('Failed to cancel schedule', result.error);
+      }
+    },
+    [accountId, loadCampaigns],
+  );
 
   const header = (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
@@ -145,7 +158,11 @@ export function CampaignList({ accountId }: CampaignListProps) {
           />
         </div>
         <Suspense fallback={null}>
-          <CampaignComposer isOpen={showComposer} onClose={() => setShowComposer(false)} accountId={accountId} />
+          <CampaignComposer
+            isOpen={showComposer}
+            onClose={() => setShowComposer(false)}
+            accountId={accountId}
+          />
         </Suspense>
       </div>
     );
@@ -157,7 +174,9 @@ export function CampaignList({ accountId }: CampaignListProps) {
       {header}
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-32 text-sm text-text-tertiary">{t('common.loading')}</div>
+        <div className="flex items-center justify-center h-32 text-sm text-text-tertiary">
+          {t('common.loading')}
+        </div>
       ) : isMobileDevice ? (
         /* ── Mobile: virtualized card list with pull-to-refresh ── */
         <PullToRefresh onRefresh={handleRefresh} className="flex-1">
@@ -165,14 +184,14 @@ export function CampaignList({ accountId }: CampaignListProps) {
             <div
               style={{
                 height: `${mobileVirtualizer.getTotalSize()}px`,
-                width: "100%",
-                position: "relative",
+                width: '100%',
+                position: 'relative',
               }}
             >
               {mobileVirtualizer.getVirtualItems().map((vRow) => {
                 const c = campaigns[vRow.index];
                 if (!c) return null;
-                const colorClass = CAMPAIGN_STATUS_COLORS[c.status] ?? "text-text-tertiary";
+                const colorClass = CAMPAIGN_STATUS_COLORS[c.status] ?? 'text-text-tertiary';
                 const campaignStats = stats[c.id];
                 const openRate =
                   campaignStats && campaignStats.sent > 0
@@ -183,21 +202,25 @@ export function CampaignList({ accountId }: CampaignListProps) {
                   <div
                     key={vRow.key}
                     style={{
-                      position: "absolute",
+                      position: 'absolute',
                       top: 0,
                       left: 0,
-                      width: "100%",
+                      width: '100%',
                       transform: `translateY(${vRow.start}px)`,
-                      padding: "0 1rem 0.75rem 1rem",
+                      padding: '0 1rem 0.75rem 1rem',
                     }}
                   >
                     <button
                       onClick={() => handleCardTap(c)}
-                      className="w-full liquid-glass rounded-xl p-4 text-left active:scale-[0.98] active:bg-bg-hover transition-all duration-150"
+                      className="w-full liquid-glass rounded-xl p-4 text-start active:scale-[0.98] active:bg-bg-hover transition-all duration-150"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="text-sm font-medium text-text-primary truncate">{c.name}</span>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full bg-bg-secondary shrink-0 ${colorClass}`}>
+                        <span className="text-sm font-medium text-text-primary truncate">
+                          {c.name}
+                        </span>
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full bg-bg-secondary shrink-0 ${colorClass}`}
+                        >
                           {c.status}
                         </span>
                       </div>
@@ -206,16 +229,23 @@ export function CampaignList({ accountId }: CampaignListProps) {
                         {openRate !== null && (
                           <>
                             <span className="w-1 h-1 rounded-full bg-text-tertiary/30 shrink-0" />
-                            <span>{openRate}% {t('campaign.opened')}</span>
+                            <span>
+                              {openRate}% {t('campaign.opened')}
+                            </span>
                           </>
                         )}
-                        {c.status === "scheduled" && c.scheduled_at && (
+                        {c.status === 'scheduled' && c.scheduled_at && (
                           <>
                             <span className="w-1 h-1 rounded-full bg-text-tertiary/30 shrink-0" />
                             <Calendar size={12} className="text-accent shrink-0" />
-                            <span className="text-accent">{new Date(c.scheduled_at * 1000).toLocaleDateString()}</span>
+                            <span className="text-accent">
+                              {new Date(c.scheduled_at * 1000).toLocaleDateString()}
+                            </span>
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleCancelSchedule(c.id, c.name); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCancelSchedule(c.id, c.name);
+                              }}
                               className="p-0.5 text-text-tertiary hover:text-danger transition-colors shrink-0"
                               title={t('common.cancel')}
                               aria-label={t('common.cancel')}
@@ -224,7 +254,9 @@ export function CampaignList({ accountId }: CampaignListProps) {
                             </button>
                           </>
                         )}
-                        <span className="ml-auto">{new Date(c.created_at * 1000).toLocaleDateString()}</span>
+                        <span className="ms-auto">
+                          {new Date(c.created_at * 1000).toLocaleDateString()}
+                        </span>
                       </div>
                     </button>
                   </div>
@@ -239,50 +271,69 @@ export function CampaignList({ accountId }: CampaignListProps) {
           <div
             style={{
               height: `${desktopVirtualizer.getTotalSize()}px`,
-              width: "100%",
-              position: "relative",
+              width: '100%',
+              position: 'relative',
             }}
           >
             {desktopVirtualizer.getVirtualItems().map((vRow) => {
               const c = campaigns[vRow.index];
               if (!c) return null;
               const isExpanded = expandedId === c.id;
-              const colorClass = CAMPAIGN_STATUS_COLORS[c.status] ?? "text-text-tertiary";
+              const colorClass = CAMPAIGN_STATUS_COLORS[c.status] ?? 'text-text-tertiary';
               return (
                 <div
                   key={vRow.key}
                   data-index={vRow.index}
                   ref={desktopVirtualizer.measureElement}
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     top: 0,
                     left: 0,
-                    width: "100%",
+                    width: '100%',
                     transform: `translateY(${vRow.start}px)`,
-                    paddingBottom: "0.5rem",
+                    paddingBottom: '0.5rem',
                   }}
                 >
                   <div className="liquid-glass rounded-lg overflow-hidden">
                     <button
                       onClick={() => handleToggle(c)}
-                      className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors"
+                      className="flex items-center gap-2 w-full px-4 py-3 text-start hover:bg-bg-hover transition-colors"
                     >
-                      {isExpanded ? <ChevronDown size={14} className="text-text-tertiary shrink-0" /> : <ChevronRight size={14} className="text-text-tertiary shrink-0" />}
+                      {isExpanded ? (
+                        <ChevronDown size={14} className="text-text-tertiary shrink-0" />
+                      ) : (
+                        <ChevronRight size={14} className="text-text-tertiary shrink-0" />
+                      )}
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium text-text-primary truncate block">{c.name}</span>
+                        <span className="text-sm font-medium text-text-primary truncate block">
+                          {c.name}
+                        </span>
                       </div>
-                      <span className={`text-xs font-medium ${colorClass} shrink-0`}>{c.status}</span>
-                      {c.status === "scheduled" && c.scheduled_at && !isMobileDevice && (
+                      <span className={`text-xs font-medium ${colorClass} shrink-0`}>
+                        {c.status}
+                      </span>
+                      {c.status === 'scheduled' && c.scheduled_at && !isMobileDevice && (
                         <span className="flex items-center gap-1 text-xs text-accent shrink-0">
                           <Calendar size={12} />
                           <span>{new Date(c.scheduled_at * 1000).toLocaleDateString()}</span>
                         </span>
                       )}
-                      {!isMobileDevice && <span className="text-xs text-text-tertiary shrink-0">{t('campaign.nSent', { n: c.sent_count })}</span>}
-                      {!isMobileDevice && <span className="text-xs text-text-tertiary shrink-0">{new Date(c.created_at * 1000).toLocaleDateString()}</span>}
-                      {c.status === "scheduled" && (
+                      {!isMobileDevice && (
+                        <span className="text-xs text-text-tertiary shrink-0">
+                          {t('campaign.nSent', { n: c.sent_count })}
+                        </span>
+                      )}
+                      {!isMobileDevice && (
+                        <span className="text-xs text-text-tertiary shrink-0">
+                          {new Date(c.created_at * 1000).toLocaleDateString()}
+                        </span>
+                      )}
+                      {c.status === 'scheduled' && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleCancelSchedule(c.id, c.name); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelSchedule(c.id, c.name);
+                          }}
                           className="p-1 text-text-tertiary hover:text-danger transition-colors shrink-0"
                           title={t('common.cancel')}
                           aria-label={t('common.cancel')}
@@ -291,7 +342,10 @@ export function CampaignList({ accountId }: CampaignListProps) {
                         </button>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.name); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(c.id, c.name);
+                        }}
                         className="p-1 text-text-tertiary hover:text-danger transition-colors shrink-0"
                         title={t('campaign.deleteCampaign')}
                       >
@@ -303,12 +357,20 @@ export function CampaignList({ accountId }: CampaignListProps) {
                         <Suspense
                           fallback={
                             <div className="px-4 py-6 text-xs text-text-tertiary">
-                              {t("common.loading")}
+                              {t('common.loading')}
                             </div>
                           }
                         >
                           <CampaignAnalytics
-                            stats={stats[c.id] ?? { total: 0, sent: 0, opened: 0, clicked: 0, bounced: 0 }}
+                            stats={
+                              stats[c.id] ?? {
+                                total: 0,
+                                sent: 0,
+                                opened: 0,
+                                clicked: 0,
+                                bounced: 0,
+                              }
+                            }
                             campaignId={c.id}
                             campaignName={c.name}
                           />
@@ -323,9 +385,13 @@ export function CampaignList({ accountId }: CampaignListProps) {
         </div>
       )}
 
-    <Suspense fallback={null}>
-      <CampaignComposer isOpen={showComposer} onClose={() => setShowComposer(false)} accountId={accountId} />
-    </Suspense>
-  </div>
-);
+      <Suspense fallback={null}>
+        <CampaignComposer
+          isOpen={showComposer}
+          onClose={() => setShowComposer(false)}
+          accountId={accountId}
+        />
+      </Suspense>
+    </div>
+  );
 }

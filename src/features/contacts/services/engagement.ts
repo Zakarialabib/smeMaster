@@ -1,4 +1,8 @@
-import { logEngagement as dbLogEngagement, getEngagementTrend as dbGetEngagementTrend, getEngagementForEntity as dbGetEngagementForEntity } from "@shared/services/db/db-invoke";
+import {
+  logEngagement as dbLogEngagement,
+  getEngagementTrend as dbGetEngagementTrend,
+  getEngagementForEntity as dbGetEngagementForEntity,
+} from '@shared/services/db/db-invoke';
 
 export interface EngagementTrendPoint {
   date: string;
@@ -29,9 +33,9 @@ export async function logEngagement(
   entityId?: string,
   metadataJson?: string,
 ): Promise<void> {
-  const actualEntityType = entityType ?? (contactId ? "contact" : null);
-  const actualEntityId = entityId ?? (actualEntityType === "contact" ? contactId : null);
-  const actualContactId = actualEntityType === "contact" ? contactId : null;
+  const actualEntityType = entityType ?? (contactId ? 'contact' : null);
+  const actualEntityId = entityId ?? (actualEntityType === 'contact' ? contactId : null);
+  const actualContactId = actualEntityType === 'contact' ? contactId : null;
 
   await dbLogEngagement({
     contactId: actualContactId ?? undefined,
@@ -54,21 +58,17 @@ export async function logEntityEngagement(
   scoreDelta: number,
   metadataJson?: string,
 ): Promise<void> {
-  const contactId = entityType === "contact" ? entityId : null;
-  await logEngagement(
-    contactId ?? "",
-    eventType,
-    scoreDelta,
-    entityType,
-    entityId,
-    metadataJson,
-  );
+  const contactId = entityType === 'contact' ? entityId : null;
+  await logEngagement(contactId ?? '', eventType, scoreDelta, entityType, entityId, metadataJson);
 }
 
 /**
  * Get engagement trend for a contact (backward compatible).
  */
-export async function getEngagementTrend(contactId: string, days = 30): Promise<EngagementTrendPoint[]> {
+export async function getEngagementTrend(
+  contactId: string,
+  days = 30,
+): Promise<EngagementTrendPoint[]> {
   return dbGetEngagementTrend(contactId, days);
 }
 

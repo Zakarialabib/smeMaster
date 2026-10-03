@@ -1,5 +1,5 @@
-import { Folder, Upload } from "lucide-react";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { Folder, Upload } from 'lucide-react';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 interface VaultEmptyStateProps {
   onUpload: () => void;

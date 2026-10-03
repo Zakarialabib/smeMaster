@@ -1,10 +1,10 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { getAllLabelUnreadCounts } from "@shared/services/db/threads";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
-import { subscribeFromManifest } from "@shared/services/events/eventBusMap";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { getAllLabelUnreadCounts } from '@shared/services/db/threads';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
+import { subscribeFromManifest } from '@shared/services/events/eventBusMap';
 
-type PerAccountSyncStatus = "idle" | "syncing" | "error";
+type PerAccountSyncStatus = 'idle' | 'syncing' | 'error';
 
 interface PerAccountSyncState {
   status: PerAccountSyncStatus;
@@ -59,21 +59,21 @@ export const useSyncStore = create<SyncState>()(
           const counts = await getAllLabelUnreadCounts(accountId);
           set({ unreadCounts: counts });
         } catch (err) {
-          console.error("Failed to refresh unread counts:", err);
+          console.error('Failed to refresh unread counts:', err);
         }
       },
 
       handleEvent: (eventType, payload) => {
         switch (eventType) {
-          case "sync:started":
+          case 'sync:started':
             set({
               isSyncing: true,
-              isSyncingFolder: "__all__",
+              isSyncingFolder: '__all__',
               lastError: null,
             });
             break;
 
-          case "sync:complete":
+          case 'sync:complete':
             set({
               isSyncing: false,
               isSyncingFolder: null,
@@ -82,17 +82,17 @@ export const useSyncStore = create<SyncState>()(
             });
             break;
 
-          case "sync:error": {
+          case 'sync:error': {
             const p = payload as { last_error?: string | null } | undefined;
             set({
               isSyncing: false,
               isSyncingFolder: null,
-              lastError: p?.last_error ?? "Sync error",
+              lastError: p?.last_error ?? 'Sync error',
             });
             break;
           }
 
-          case "sync:account-start": {
+          case 'sync:account-start': {
             const p = payload as { host?: string; username?: string };
             const key = accountKey(p);
             set((state) => ({
@@ -100,7 +100,7 @@ export const useSyncStore = create<SyncState>()(
               perAccount: {
                 ...state.perAccount,
                 [key]: {
-                  status: "syncing",
+                  status: 'syncing',
                   lastSyncAt: state.perAccount[key]?.lastSyncAt ?? null,
                   error: null,
                 },
@@ -109,19 +109,19 @@ export const useSyncStore = create<SyncState>()(
             break;
           }
 
-          case "sync:account-complete": {
+          case 'sync:account-complete': {
             const p = payload as { host?: string; username?: string };
             const key = accountKey(p);
             set((state) => ({
               perAccount: {
                 ...state.perAccount,
-                [key]: { status: "idle", lastSyncAt: Date.now(), error: null },
+                [key]: { status: 'idle', lastSyncAt: Date.now(), error: null },
               },
             }));
             break;
           }
 
-          case "sync:account-error": {
+          case 'sync:account-error': {
             const p = payload as {
               host?: string;
               username?: string;
@@ -132,16 +132,16 @@ export const useSyncStore = create<SyncState>()(
               perAccount: {
                 ...state.perAccount,
                 [key]: {
-                  status: "error",
+                  status: 'error',
                   lastSyncAt: state.perAccount[key]?.lastSyncAt ?? null,
-                  error: p?.error ?? "Account sync error",
+                  error: p?.error ?? 'Account sync error',
                 },
               },
             }));
             break;
           }
 
-          case "rust:init:complete":
+          case 'rust:init:complete':
             set({ isOnline: true });
             break;
         }
@@ -157,7 +157,7 @@ export const useSyncStore = create<SyncState>()(
       },
     }),
     {
-      name: "smemaster.sync",
+      name: 'smemaster.sync',
       storage: createJSONStorage(() => tauriStoreStorage),
       partialize: (state) => ({
         isOnline: state.isOnline,
@@ -165,8 +165,8 @@ export const useSyncStore = create<SyncState>()(
       onRehydrateStorage: () => (state) => {
         if (state) state.isHydrated = true;
       },
-    }
-  )
+    },
+  ),
 );
 
 // ── EventBus manifest self-subscription ──────────────────────────────────
@@ -178,8 +178,8 @@ export const useSyncStore = create<SyncState>()(
  * an empty string when the payload lacks host/username (e.g. global events).
  */
 function accountKey(p: { host?: string; username?: string } | undefined): string {
-  if (!p) return "";
-  return `${p.username ?? ""}@${p.host ?? ""}`;
+  if (!p) return '';
+  return `${p.username ?? ''}@${p.host ?? ''}`;
 }
 
 let _syncEventCleanup: (() => void) | null = null;
@@ -201,27 +201,27 @@ let _syncEventCleanup: (() => void) | null = null;
 export function initSyncStoreEvents(): () => void {
   if (_syncEventCleanup) return _syncEventCleanup;
 
-  _syncEventCleanup = subscribeFromManifest("syncStore", {
-    "sync:started": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:started", payload);
+  _syncEventCleanup = subscribeFromManifest('syncStore', {
+    'sync:started': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:started', payload);
     },
-    "sync:complete": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:complete", payload);
+    'sync:complete': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:complete', payload);
     },
-    "sync:error": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:error", payload);
+    'sync:error': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:error', payload);
     },
-    "sync:account-start": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:account-start", payload);
+    'sync:account-start': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:account-start', payload);
     },
-    "sync:account-complete": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:account-complete", payload);
+    'sync:account-complete': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:account-complete', payload);
     },
-    "sync:account-error": (payload) => {
-      useSyncStore.getState().handleEvent?.("sync:account-error", payload);
+    'sync:account-error': (payload) => {
+      useSyncStore.getState().handleEvent?.('sync:account-error', payload);
     },
-    "rust:init:complete": (payload) => {
-      useSyncStore.getState().handleEvent?.("rust:init:complete", payload);
+    'rust:init:complete': (payload) => {
+      useSyncStore.getState().handleEvent?.('rust:init:complete', payload);
     },
   });
 
@@ -230,6 +230,6 @@ export function initSyncStoreEvents(): () => void {
 
 // Eagerly initialise in browser environments (module-level side-effect).
 // This ensures the store self-subscribes before any React component mounts.
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   initSyncStoreEvents();
 }

@@ -160,7 +160,7 @@ export function VaultPage() {
             onClick={() => store.unlock()}
             className="px-6 py-2 bg-accent text-white rounded-lg"
           >
-            <Unlock size={16} className="inline mr-2" />
+            <Unlock size={16} className="inline me-2" />
             {t('vault.unlock')}
           </button>
           <button
@@ -373,7 +373,7 @@ export function VaultPage() {
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-xs text-text-tertiary mt-1 text-right">{uploadProgress}%</p>
+                <p className="text-xs text-text-tertiary mt-1 text-end">{uploadProgress}%</p>
               </div>
             )}
 
@@ -425,7 +425,7 @@ export function VaultPage() {
         />
 
         {activeAccount && (
-          <span className="hidden sm:inline text-xs text-text-tertiary ml-auto">
+          <span className="hidden sm:inline text-xs text-text-tertiary ms-auto">
             {activeAccount.email}
           </span>
         )}
@@ -479,7 +479,7 @@ export function VaultPage() {
       {/* Bulk action bar */}
       {selectionMode && selectedPaths.length > 0 && (
         <div className="flex items-center gap-2 px-4 py-2 bg-accent/5 border-b border-accent/20 shrink-0">
-          <span className="text-xs font-medium text-text-primary mr-auto">
+          <span className="text-xs font-medium text-text-primary me-auto">
             {selectedPaths.length} selected
           </span>
           <button
@@ -548,41 +548,41 @@ export function VaultPage() {
 
       {/* File list */}
       <GlassPanel variant="card" className="flex-1 overflow-y-auto mx-3 mb-3">
-      <div
-        aria-busy={loading && displayEntries.length === 0}
-        aria-live="polite"
-        aria-label="Vault file list"
-      >
-        {loading ? (
-          <SkeletonPage />
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
-            <AlertCircle size={40} className="text-danger-text opacity-60" />
-            <p className="text-sm font-medium text-text-primary">Failed to load vault</p>
-            <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
-            <button
-              onClick={() => store.refresh()}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
-            >
-              <RefreshCw size={13} />
-              Retry
-            </button>
-          </div>
-        ) : displayEntries.length === 0 ? (
-          <VaultEmptyState onUpload={handleUploadClick} />
-        ) : (
-          <VaultFileList
-            entries={displayEntries}
-            viewMode={viewMode}
-            onNavigate={handleNavigate}
-            onPreview={(entry) => setPreviewFile({ path: entry.path, name: entry.name })}
-            onDelete={(path) => store.deleteEntry(path)}
-            selectionMode={selectionMode}
-            selectedPaths={selectedPaths}
-            onToggleSelect={(path) => store.toggleItemSelection(path)}
-          />
-        )}
-      </div>
+        <div
+          aria-busy={loading && displayEntries.length === 0}
+          aria-live="polite"
+          aria-label="Vault file list"
+        >
+          {loading ? (
+            <SkeletonPage />
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
+              <AlertCircle size={40} className="text-danger-text opacity-60" />
+              <p className="text-sm font-medium text-text-primary">Failed to load vault</p>
+              <p className="text-xs text-text-tertiary text-center max-w-sm">{error}</p>
+              <button
+                onClick={() => store.refresh()}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
+              >
+                <RefreshCw size={13} />
+                Retry
+              </button>
+            </div>
+          ) : displayEntries.length === 0 ? (
+            <VaultEmptyState onUpload={handleUploadClick} />
+          ) : (
+            <VaultFileList
+              entries={displayEntries}
+              viewMode={viewMode}
+              onNavigate={handleNavigate}
+              onPreview={(entry) => setPreviewFile({ path: entry.path, name: entry.name })}
+              onDelete={(path) => store.deleteEntry(path)}
+              selectionMode={selectionMode}
+              selectedPaths={selectedPaths}
+              onToggleSelect={(path) => store.toggleItemSelection(path)}
+            />
+          )}
+        </div>
       </GlassPanel>
     </div>
   );

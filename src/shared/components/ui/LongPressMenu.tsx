@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import { useScreenInfo } from "@shared/hooks/usePlatform";
-import { X } from "lucide-react";
+import { useEffect, useRef } from 'react';
+import { useScreenInfo } from '@shared/hooks/usePlatform';
+import { X } from 'lucide-react';
 
 export interface MenuAction {
   id: string;
@@ -26,11 +26,11 @@ export function LongPressMenu({ actions, position, onClose }: Props) {
         onClose();
       }
     };
-    document.addEventListener("touchstart", handleClickOutside, { passive: true });
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("touchstart", handleClickOutside);
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [onClose]);
 
@@ -54,9 +54,14 @@ export function LongPressMenu({ actions, position, onClose }: Props) {
         {actions.map((action) => (
           <button
             key={action.id}
-            onClick={() => { action.onClick(); onClose(); }}
+            onClick={() => {
+              action.onClick();
+              onClose();
+            }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all duration-150 ${
-              action.dangerous ? "text-danger hover:glass-accent-tint" : "text-text-primary hover:glass-accent-tint"
+              action.dangerous
+                ? 'text-danger hover:glass-accent-tint'
+                : 'text-text-primary hover:glass-accent-tint'
             }`}
           >
             {action.icon && <action.icon size={16} />}

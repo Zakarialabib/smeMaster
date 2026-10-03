@@ -1,5 +1,85 @@
 # Changelog
 
+## [v1.0.0-rc.2] — 2026-07-16
+
+This release merges the `dev` branch into `main` (36 commits) and adds the
+largest feature drop since rc.1: a full CRM Deals/Pipeline module, a data-cache
+control surface, Phase B email UX parity, calendar drivers, campaign scheduling
+
+- Microsoft Graph send, and a large documentation/IA reconciliation pass.
+
+### CRM — Deals & Pipeline (new module)
+
+- **Schema + migrations**: `032_deals_pipeline.sql` adds deals, pipelines,
+  stages, and pipeline-stage tables; migrations `030_sender_credentials.sql`
+  and `031_thread_importance_score.sql` also land in this cycle.
+- **Rust DAL + commands**: `src-tauri/src/db/tables/crm/deals.rs` (450 LOC) and
+  `scoring.rs` (lead-scoring engine) plus `src-tauri/src/commands/deals.rs`
+  (218 LOC) implement full CRUD, stage moves, and weighted pipeline value.
+- **Frontend**: `DealCard`, `DealColumn`, `PipelineBoard` Kanban components,
+  `DealsPage`, `dealStore.ts` (single-writer core), and `deals.ts` service
+  wrappers wired into `CrmPage` + nav config.
+- **Seeds**: default CRM pipeline + stages seeded on first run.
+- **Contacts**: score column, segment filter, Kanban nav fix (`/people?tab=deals`),
+  dead segment operator removed, drop errors surfaced.
+
+### Data cache control surface
+
+- **Settings → Cache tab**: live status, hit-rate, benchmark button, and
+  clear-cache action (`CacheTab.tsx`, 252 LOC).
+- **Rust**: `data-cache` control commands + `Cache::benchmark` exposed via IPC
+  (`src-tauri/src/commands/core.rs`, `src-tauri/src/data_cache/cache.rs`).
+
+### Email — Phase B UX parity
+
+- **Hover rail + bulk toolbar** in `EmailList`, **Focused inbox**, **NL snooze**
+  parsing (`parseSnooze.ts` + tests), and an expanded **command palette**
+  (`CommandPalette.tsx`, 336 LOC).
+- **Microsoft Graph provider**: `microsoftGraphProvider.ts` (441 LOC) + Graph
+  send client; provider factory wired for Graph delivery.
+- **Backend**: importance score + auto-categorize (`src-tauri/src/db/tables/core/threads.rs`),
+  expanded Rust demo seeds (Gmail/Outlook-grade category tabs).
+
+### Calendar drivers
+
+- **CalDAV driver** (`src-tauri/src/calendar/drivers/caldav.rs`, 734 LOC) plus
+  driver registry (`driver.rs`, `drivers/mod.rs`, `mod.rs`) and `calendar.rs`
+  commands. Calendar operations refactored onto the new driver layer.
+
+### Campaigns
+
+- **Scheduling + analytics**: `029_campaign_scheduling.sql`, campaign schema
+  extensions, `campaignService` scheduling, `analyticsService` enhancements, and
+  template search wired into `CampaignTemplatePicker`.
+
+### Settings & a11y
+
+- **Reset / data-wipe** routed through `db_reset_and_reseed`; empty task table
+  and dev-server termination fixes; soft reset corrected.
+- **a11y**: `FocusOrderManager`, `SkipLink`, and focus-order utilities added;
+  feature flags / settings registry / help center made translation-ready;
+  rules-of-hooks ESLint errors fixed.
+- **i18n**: 12 failing vitest files fixed; missing validation i18n keys added
+  across en/fr/ar/ja/it.
+
+### Docs & IA reconciliation
+
+- New specs: `14-navigation-ia-spec.md`, `37-settings-redesign-spec.md`,
+  `06-release-pipeline.md`, navigation-redesign proposals, `DEALS-PIPELINE-
+LEAD-SCORING-PLAN.md`, `MVP_LAUNCH_PLAN.md`, `SETTINGS-IA-PROPOSAL.md`.
+- `STATUS.md` + `PRODUCTION-READINESS.md` reconciled with source truth; IPC /
+  migration / store metrics corrected; stray working docs archived/merged.
+
+### CI
+
+- `daily-pr.yml`: daily `dev → main` PR workflow with auto-release chain.
+
+### Quality
+
+- Full vitest suite green with real fixes (not glue); `tsc --noEmit` zero errors;
+  2,470+ TS tests + 735 Rust tests passing; dead-code warnings reduced 13 → 0
+  (12 previously-unused APIs wired up).
+
 ## [v1.0.0-rc.1] — 2026-07-13
 
 ### Highlights

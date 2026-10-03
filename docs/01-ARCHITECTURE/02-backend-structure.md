@@ -101,7 +101,7 @@ pub async fn db_get_account(
 - All DB commands use `db_` prefix — distinguishes them from native Tauri commands
 - Each command is a thin wrapper that delegates to a `db/tables/` query function
 - Errors flow through `AppDbError` → `SerializedError` — typed error codes on the frontend
-- Token fields (access_token, refresh_token, imap_password) are encrypted/decrypted _inside_ query functions — the command sees plaintext
+- Token fields (access*token, refresh_token, imap_password) are encrypted/decrypted \_inside* query functions — the command sees plaintext
 
 ---
 
@@ -111,7 +111,7 @@ pub async fn db_get_account(
 Frontend (React)
     │  invoke("db_get_account", { account_id: "abc" })
     ▼
-commands/<domain>.rs   ← 831 registered commands (768 `#[tauri::command]` + 63 `#[command]` shorthand), thin wrappers over db/tables queries
+commands/<domain>.rs   ← **841 registered commands** (⚠️ re-grepped 2026-09-30: 777 `#[tauri::command]` + 64 `#[command]`. `docs/STATUS.md` and older docs say 831 = 768 + 63 — that snapshot predates the agent IPC work. **Re-grep before trusting:** `rg -c '#\[tauri::command\]|#\[command\]' src-tauri/src`), thin wrappers over db/tables queries
     │
     ▼
 db/tables/<domain>/    ← 67 query files using sqlx (parameterized, type-safe)
@@ -165,15 +165,15 @@ That's it. Two function calls and the DB layer is ready. The old TypeScript `run
 
 ## Key Rust Crates
 
-| Crate                                         | Purpose        |
-| --------------------------------------------- | -------------- |
-| `tauri` 2.11 + 14 plugins                    | App framework  |
-| `async-imap` 0.11.2 + `tokio-rustls`          | IMAP client    |
-| `lettre` 0.11 + `tokio1-rustls-tls`           | SMTP client    |
-| `pgp` 0.19.0                                  | PGP encryption |
-| `trust-dns-resolver` 0.23                     | DNS lookups    |
-| `reqwest` 0.13.4 + `rustls-tls`               | HTTP (OAuth)   |
-| `mail-parser` 0.11                            | MIME parsing   |
+| Crate                                | Purpose        |
+| ------------------------------------ | -------------- |
+| `tauri` 2.11 + 14 plugins            | App framework  |
+| `async-imap` 0.11.2 + `tokio-rustls` | IMAP client    |
+| `lettre` 0.11 + `tokio1-rustls-tls`  | SMTP client    |
+| `pgp` 0.19.0                         | PGP encryption |
+| `trust-dns-resolver` 0.23            | DNS lookups    |
+| `reqwest` 0.13.4 + `rustls-tls`      | HTTP (OAuth)   |
+| `mail-parser` 0.11                   | MIME parsing   |
 
 **TLS:** `rustls` 0.23.40 by default. `native-tls` optional for legacy builds.
 
@@ -198,3 +198,10 @@ No prefix mismatches. ✅ All verified.
 
 - [Data model →](03-data-model.md) — schema ownership, domains, and consolidation patterns
 - [Reuse patterns →](../05-DEVELOPMENT/05-reuse-patterns.md) — code reuse analysis across backend/frontend
+- **[ADR-001 — voice agent integration seams →](decisions/ADR-001-voice-agent-integration-seams.md)**
+  — `services/agent-core/` is a **network sidecar** (Python, on the VPS). It is **not** a
+  Cargo workspace member, **not** a Tauri child process, and has **no** stdio JSON-RPC
+  transport — `ml-sidecar` (above) is precedent for the _contract shape_, not the process
+  model. Forbidden: adding `agent-core` to `src-tauri/Cargo.toml` `members`.
+  Console reads go through one command, `agent_get_ops_snapshot`; no tenant id ever appears
+  in a command argument.

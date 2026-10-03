@@ -1,15 +1,15 @@
-import { create } from "zustand";
-import { createAsyncActions, initialAsyncState } from "@shared/stores/createAsyncStore";
+import { create } from 'zustand';
+import { createAsyncActions, initialAsyncState } from '@shared/stores/createAsyncStore';
 import {
   checkDomainHealth,
   getRemediation,
   runSentinelCheck,
-} from "@features/deliverability/services/domainHealthService";
+} from '@features/deliverability/services/domainHealthService';
 import type {
   DomainHealth,
   RemediationNode,
   SentinelAlert,
-} from "@features/deliverability/services/domainHealthService";
+} from '@features/deliverability/services/domainHealthService';
 
 interface DomainHealthState {
   healthScores: Record<string, DomainHealth>;

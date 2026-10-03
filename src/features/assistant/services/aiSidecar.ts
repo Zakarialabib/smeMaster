@@ -18,18 +18,15 @@ import {
   aiGetSidecarStatus,
   aiGetSidecarMetrics,
   aiListSidecarModels,
-} from "@shared/services/db/invoke/rag";
-import { useRagStore } from "@features/assistant/stores/ragStore";
-import {
-  useAiSidecarStore,
-  type AiSidecarStatus,
-} from "@features/assistant/stores/aiSidecarStore";
+} from '@shared/services/db/invoke/rag';
+import { useRagStore } from '@features/assistant/stores/ragStore';
+import { useAiSidecarStore, type AiSidecarStatus } from '@features/assistant/stores/aiSidecarStore';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 // Kept in sync with ragStore.ts. The local embedding model is BGE-small.
-const BGE_REPO_ID = "BAAI/bge-small-en-v1.5";
-const BGE_MODEL_FILE = "model.safetensors";
-const BGE_TOKENIZER_FILE = "tokenizer.json";
+const BGE_REPO_ID = 'BAAI/bge-small-en-v1.5';
+const BGE_MODEL_FILE = 'model.safetensors';
+const BGE_TOKENIZER_FILE = 'tokenizer.json';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -42,7 +39,7 @@ function setStatus(status: AiSidecarStatus, error: string | null = null): void {
 /** Whether the local AI sidecar is currently active (model loaded & ready). */
 export function isAiSidecarActive(): boolean {
   const { active, status } = useAiSidecarStore.getState();
-  return active && status === "ready";
+  return active && status === 'ready';
 }
 
 /** Refresh runtime observability from the backend into the UI store. */
@@ -109,11 +106,11 @@ export function stopAiSidecarRuntimePolling(): void {
  */
 export async function activateAiSidecar(): Promise<string> {
   const sidecar = useAiSidecarStore.getState();
-  if (sidecar.active && sidecar.status === "ready" && sidecar.modelPath) {
+  if (sidecar.active && sidecar.status === 'ready' && sidecar.modelPath) {
     return sidecar.modelPath;
   }
 
-  setStatus("loading");
+  setStatus('loading');
 
   try {
     const rag = useRagStore.getState();
@@ -127,17 +124,17 @@ export async function activateAiSidecar(): Promise<string> {
       tokenizerPath = await aiDownloadModel(BGE_REPO_ID, BGE_TOKENIZER_FILE);
       // Persist the resolved paths in the rag store so subsequent
       // activations (and the RAG UI) skip the download.
-      useRagStore.setState({ modelPath, tokenizerPath, modelStatus: "idle" });
+      useRagStore.setState({ modelPath, tokenizerPath, modelStatus: 'idle' });
     }
 
     // Load the embedding model into the (lazily created) Rust engine.
     await aiLoadEmbeddingModel(modelPath, tokenizerPath);
 
     // Reflect readiness in both stores.
-    useRagStore.setState({ modelStatus: "loaded", modelPath, tokenizerPath });
+    useRagStore.setState({ modelStatus: 'loaded', modelPath, tokenizerPath });
     useAiSidecarStore.getState().setActive(true);
     useAiSidecarStore.getState().setModelPath(modelPath);
-    setStatus("ready");
+    setStatus('ready');
 
     // Refresh runtime telemetry after activation.
     await refreshAiSidecarRuntime();
@@ -145,7 +142,7 @@ export async function activateAiSidecar(): Promise<string> {
     return modelPath;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    setStatus("error", message);
+    setStatus('error', message);
     throw err;
   }
 }

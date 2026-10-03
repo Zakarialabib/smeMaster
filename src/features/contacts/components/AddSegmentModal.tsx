@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { useTranslation } from "react-i18next";
-import { useFormField } from "@shared/hooks/useFormField";
-import { required } from "@shared/utils/validators";
-import { useContactStore } from "@features/contacts/stores/contactStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { useState, useCallback, useEffect } from 'react';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { useTranslation } from 'react-i18next';
+import { useFormField } from '@shared/hooks/useFormField';
+import { required } from '@shared/utils/validators';
+import { useContactStore } from '@features/contacts/stores/contactStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 
 interface AddSegmentModalProps {
   isOpen: boolean;
@@ -14,9 +14,7 @@ interface AddSegmentModalProps {
 
 export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
   const { t } = useTranslation();
-  const primaryAccountId = useAccountStore((s) =>
-    s.accounts.find((a) => a.isActive)?.id ?? "",
-  );
+  const primaryAccountId = useAccountStore((s) => s.accounts.find((a) => a.isActive)?.id ?? '');
   const createSegment = useContactStore((s) => s.createSegment);
 
   const nameField = useFormField({ validator: required });
@@ -29,7 +27,7 @@ export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
       queryField.reset();
       setCreating(false);
     }
-  }, [isOpen]);
+  }, [isOpen, nameField, queryField]);
 
   const handleCreate = useCallback(async () => {
     // Touch both fields so validation messages surface.
@@ -42,19 +40,14 @@ export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
       await createSegment(primaryAccountId, nameField.value.trim(), queryField.value.trim());
       onClose();
     } catch (err) {
-      console.error("Failed to create segment:", err);
+      console.error('Failed to create segment:', err);
     } finally {
       setCreating(false);
     }
   }, [nameField, queryField, primaryAccountId, createSegment, onClose]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Create Segment"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Create Segment" size="md">
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-xs font-medium text-text-primary mb-1.5">
@@ -94,7 +87,8 @@ export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
             </p>
           )}
           <p className="text-[0.65rem] text-text-tertiary mt-1">
-            Use query syntax like: <code>tags:name</code>, <code>frequency:&gt;N</code>, <code>last_contacted_at:&lt;timestamp</code>
+            Use query syntax like: <code>tags:name</code>, <code>frequency:&gt;N</code>,{' '}
+            <code>last_contacted_at:&lt;timestamp</code>
           </p>
         </div>
 
@@ -108,7 +102,7 @@ export function AddSegmentModal({ isOpen, onClose }: AddSegmentModalProps) {
             onClick={handleCreate}
             disabled={creating || !nameField.value.trim() || !queryField.value.trim()}
           >
-            {creating ? "Creating..." : "Create"}
+            {creating ? 'Creating...' : 'Create'}
           </Button>
         </div>
       </div>

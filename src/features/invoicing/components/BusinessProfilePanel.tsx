@@ -84,10 +84,24 @@ export default function BusinessProfilePanel() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-text-primary">Business Profile</h2>
-            <p className="text-xs text-text-tertiary">Legal identity printed on every DGI-compliant document</p>
+            <p className="text-xs text-text-tertiary">
+              Legal identity printed on every DGI-compliant document
+            </p>
           </div>
         </div>
-        <Button icon={saving ? <Loader2 size={15} className="animate-spin" /> : saved ? <Check size={15} /> : <Save size={15} />} onClick={save} disabled={saving}>
+        <Button
+          icon={
+            saving ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : saved ? (
+              <Check size={15} />
+            ) : (
+              <Save size={15} />
+            )
+          }
+          onClick={save}
+          disabled={saving}
+        >
           {saved ? 'Saved' : 'Save Profile'}
         </Button>
       </div>
@@ -97,13 +111,21 @@ export default function BusinessProfilePanel() {
         <section className="rounded-2xl border border-border-primary bg-bg-secondary/60 backdrop-blur-xl p-5 space-y-4">
           <h3 className="font-bold text-text-primary text-sm">Company Identity</h3>
           <Input label="Display Name" value={form.name} onChange={(v) => set('name', v)} />
-          <Input label="Legal / Registered Name" value={form.legal_name} onChange={(v) => set('legal_name', v)} />
+          <Input
+            label="Legal / Registered Name"
+            value={form.legal_name}
+            onChange={(v) => set('legal_name', v)}
+          />
           <div className="grid grid-cols-2 gap-3">
             <Input label="Email" value={form.email} onChange={(v) => set('email', v)} />
             <Input label="Phone" value={form.phone} onChange={(v) => set('phone', v)} />
           </div>
           <Input label="Website" value={form.website} onChange={(v) => set('website', v)} />
-          <Input label="Address" value={form.address_line1} onChange={(v) => set('address_line1', v)} />
+          <Input
+            label="Address"
+            value={form.address_line1}
+            onChange={(v) => set('address_line1', v)}
+          />
           <div className="grid grid-cols-2 gap-3">
             <Input label="City" value={form.city} onChange={(v) => set('city', v)} />
             <Input label="Country" value={form.country} onChange={(v) => set('country', v)} />
@@ -116,22 +138,66 @@ export default function BusinessProfilePanel() {
             <BadgeCheck size={16} />
             <h3 className="font-bold text-sm">Morocco Legal Identifiers</h3>
           </div>
-          <p className="text-xs text-text-tertiary -mt-2">These appear on invoices, delivery bills, and the PEPPOL/UBL XML.</p>
-          <Input label="ICE" hint="Identifiant Commun de l'Entreprise" value={form.ice} onChange={(v) => set('ice', v)} mono />
-          <Input label="IF (Tax ID)" hint="Identifiant Fiscal" value={form.tax_id} onChange={(v) => set('tax_id', v)} mono />
-          <Input label="RC" hint="Registre de Commerce" value={form.rc} onChange={(v) => set('rc', v)} mono />
-          <Input label="CNSS" hint="Caisse Nationale de Sécurité Sociale" value={form.cnss} onChange={(v) => set('cnss', v)} mono />
+          <p className="text-xs text-text-tertiary -mt-2">
+            These appear on invoices, delivery bills, and the PEPPOL/UBL XML.
+          </p>
+          <Input
+            label="ICE"
+            hint="Identifiant Commun de l'Entreprise"
+            value={form.ice}
+            onChange={(v) => set('ice', v)}
+            mono
+          />
+          <Input
+            label="IF (Tax ID)"
+            hint="Identifiant Fiscal"
+            value={form.tax_id}
+            onChange={(v) => set('tax_id', v)}
+            mono
+          />
+          <Input
+            label="RC"
+            hint="Registre de Commerce"
+            value={form.rc}
+            onChange={(v) => set('rc', v)}
+            mono
+          />
+          <Input
+            label="CNSS"
+            hint="Caisse Nationale de Sécurité Sociale"
+            value={form.cnss}
+            onChange={(v) => set('cnss', v)}
+            mono
+          />
         </section>
       </div>
     </div>
   );
 }
 
-function Input({ label, value, onChange, hint, mono }: { label: string; value: string; onChange: (v: string) => void; hint?: string; mono?: boolean }) {
+function Input({
+  label,
+  value,
+  onChange,
+  hint,
+  mono,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+  mono?: boolean;
+}) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">{label}</span>
-      {hint && <span className="text-[10px] text-text-tertiary/70 ml-2 normal-case font-normal">{hint}</span>}
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
+        {label}
+      </span>
+      {hint && (
+        <span className="text-[10px] text-text-tertiary/70 ms-2 normal-case font-normal">
+          {hint}
+        </span>
+      )}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}

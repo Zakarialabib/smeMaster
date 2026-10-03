@@ -1,7 +1,7 @@
 # SMEMaster — Settings Redesign Specification
 
 > **Status:** DRAFT (2026-07-15). This file CLOSES the ⚠️ MISSING gap tracked in
-> `docs/00-INDEX.md` line 150 and the MVP Launch Plan (`docs/plans/MVP_LAUNCH_PLAN.md`
+> `docs/00-INDEX.md`
 > Phase E / J7: "write the missing `37-settings-redesign-spec.md`").
 > It is an APPROVAL document, not yet an execution plan.
 >
@@ -197,7 +197,7 @@ Not everything belongs in the global settings tree:
 ## 7. Prior Art & Consolidation (VERIFIED 2026-07-15)
 
 A strong pre-existing proposal already covers the settings IA in depth:
-`docs/plans/SETTINGS-IA-PROPOSAL.md` (11-group tree, search/palette layering on the
+`SettingsTabRegistry.ts` (11-group tree, search/palette layering on the
 existing `CommandPalette.fuzzyScore`, Developer-tier disclosure, explicit global-vs-
 per-account via `useSetting` scope, mobile grouped-list renderer reusing `tabGroups`,
 export/import wired to Backup, 8 cited "steal this" patterns). **This spec adopts it;**

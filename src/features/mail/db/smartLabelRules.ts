@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
-import type { FilterCriteria } from "./filters";
+import { v4 as uuidv4 } from 'uuid';
+import type { FilterCriteria } from './filters';
 
 export interface DbSmartLabelRule {
   id: string;
@@ -30,9 +30,7 @@ export async function getSmartLabelRulesForAccount(
  * @deprecated The `smart_label_rules` database table has been removed since v56.
  *   No replacement is available. This function always returns an empty array.
  */
-export async function getEnabledSmartLabelRules(
-  _accountId: string,
-): Promise<DbSmartLabelRule[]> {
+export async function getEnabledSmartLabelRules(_accountId: string): Promise<DbSmartLabelRule[]> {
   return [];
 }
 
@@ -52,7 +50,7 @@ export async function insertSmartLabelRule(rule: {
 }): Promise<string> {
   const id = uuidv4();
   console.warn(
-    "[deprecated] smart_label_rules table has been removed. " +
+    '[deprecated] smart_label_rules table has been removed. ' +
       `Ignoring insertSmartLabelRule for labelId="${rule.labelId}". Generated id="${id}".`,
   );
   return id;
@@ -74,7 +72,7 @@ export async function updateSmartLabelRule(
   },
 ): Promise<void> {
   console.warn(
-    "[deprecated] smart_label_rules table has been removed. " +
+    '[deprecated] smart_label_rules table has been removed. ' +
       `Ignoring updateSmartLabelRule for id="${id}".`,
     updates,
   );
@@ -88,7 +86,7 @@ export async function updateSmartLabelRule(
  */
 export async function deleteSmartLabelRule(id: string): Promise<void> {
   console.warn(
-    "[deprecated] smart_label_rules table has been removed. " +
+    '[deprecated] smart_label_rules table has been removed. ' +
       `Ignoring deleteSmartLabelRule for id="${id}".`,
   );
 }

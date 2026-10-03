@@ -1,18 +1,18 @@
-﻿import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { CategoryTabs } from "./CategoryTabs";
+﻿import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { CategoryTabs } from './CategoryTabs';
 
-vi.mock("@features/mail/db/threadCategories", () => ({
-  ALL_CATEGORIES: ["Primary", "Updates", "Promotions", "Social", "Newsletters"],
+vi.mock('@features/mail/db/threadCategories', () => ({
+  ALL_CATEGORIES: ['Primary', 'Updates', 'Promotions', 'Social', 'Newsletters'],
   updateThreadCategory: vi.fn(),
 }));
-vi.mock("@features/mail/stores/threadStore", () => {
+vi.mock('@features/mail/stores/threadStore', () => {
   const store = { selectedThreadIds: new Set<string>() };
   const hook = Object.assign(() => store, { getState: () => store });
   return { useThreadStore: hook };
 });
-vi.mock("@features/accounts/stores/accountStore", () => {
-  const store = { activeAccountId: "test-account" };
+vi.mock('@features/accounts/stores/accountStore', () => {
+  const store = { activeAccountId: 'test-account' };
   const hook = Object.assign(() => store, { getState: () => store });
   return { useAccountStore: hook };
 });
@@ -28,56 +28,41 @@ beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
-describe("CategoryTabs", () => {
+describe('CategoryTabs', () => {
   const onCategoryChange = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders all 5 category tabs", () => {
-    render(
-      <CategoryTabs
-        activeCategory="Primary"
-        onCategoryChange={onCategoryChange}
-      />,
-    );
+  it('renders all 5 category tabs', () => {
+    render(<CategoryTabs activeCategory="Primary" onCategoryChange={onCategoryChange} />);
 
-    expect(screen.getByText("Primary")).toBeInTheDocument();
-    expect(screen.getByText("Updates")).toBeInTheDocument();
-    expect(screen.getByText("Promotions")).toBeInTheDocument();
-    expect(screen.getByText("Social")).toBeInTheDocument();
-    expect(screen.getByText("Newsletters")).toBeInTheDocument();
+    expect(screen.getByText('Primary')).toBeInTheDocument();
+    expect(screen.getByText('Updates')).toBeInTheDocument();
+    expect(screen.getByText('Promotions')).toBeInTheDocument();
+    expect(screen.getByText('Social')).toBeInTheDocument();
+    expect(screen.getByText('Newsletters')).toBeInTheDocument();
   });
 
-  it("highlights the active category", () => {
-    render(
-      <CategoryTabs
-        activeCategory="Updates"
-        onCategoryChange={onCategoryChange}
-      />,
-    );
+  it('highlights the active category', () => {
+    render(<CategoryTabs activeCategory="Updates" onCategoryChange={onCategoryChange} />);
 
-    const updatesBtn = screen.getByText("Updates").closest("button");
-    expect(updatesBtn?.className).toContain("text-accent");
+    const updatesBtn = screen.getByText('Updates').closest('button');
+    expect(updatesBtn?.className).toContain('text-accent');
 
-    const primaryBtn = screen.getByText("Primary").closest("button");
-    expect(primaryBtn?.className).toContain("text-text-tertiary");
+    const primaryBtn = screen.getByText('Primary').closest('button');
+    expect(primaryBtn?.className).toContain('text-text-tertiary');
   });
 
-  it("calls onCategoryChange when a tab is clicked", () => {
-    render(
-      <CategoryTabs
-        activeCategory="Primary"
-        onCategoryChange={onCategoryChange}
-      />,
-    );
+  it('calls onCategoryChange when a tab is clicked', () => {
+    render(<CategoryTabs activeCategory="Primary" onCategoryChange={onCategoryChange} />);
 
-    fireEvent.click(screen.getByText("Social"));
-    expect(onCategoryChange).toHaveBeenCalledWith("Social");
+    fireEvent.click(screen.getByText('Social'));
+    expect(onCategoryChange).toHaveBeenCalledWith('Social');
   });
 
-  it("shows unread count badges when provided", () => {
+  it('shows unread count badges when provided', () => {
     render(
       <CategoryTabs
         activeCategory="Primary"
@@ -86,11 +71,11 @@ describe("CategoryTabs", () => {
       />,
     );
 
-    expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
   });
 
-  it("does not show unread badge for zero counts", () => {
+  it('does not show unread badge for zero counts', () => {
     render(
       <CategoryTabs
         activeCategory="Primary"
@@ -100,11 +85,11 @@ describe("CategoryTabs", () => {
     );
 
     // "3" should be shown, but "0" should not
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 
-  it("shows pencil icon on tabs with user overrides", () => {
+  it('shows pencil icon on tabs with user overrides', () => {
     render(
       <CategoryTabs
         activeCategory="Primary"
@@ -117,4 +102,3 @@ describe("CategoryTabs", () => {
     expect(pencils.length).toBe(2);
   });
 });
-

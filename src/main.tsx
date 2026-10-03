@@ -1,15 +1,15 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { RouterProvider } from "@tanstack/react-router";
-import { router } from "./router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { setQueryClient } from "@shared/query/queryClient";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
-import { useWindowLabel } from "@shared/hooks/useWindowLabel";
-import ThreadWindowRoot from "./features/threadWindow/ThreadWindowRoot";
-import ComposerWindowRoot from "./features/composerWindow/ComposerWindowRoot";
-import "./styles/globals.css";
-import "./locales/i18n";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from './router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { setQueryClient } from '@shared/query/queryClient';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
+import { useWindowLabel } from '@shared/hooks/useWindowLabel';
+import ThreadWindowRoot from './features/threadWindow/ThreadWindowRoot';
+import ComposerWindowRoot from './features/composerWindow/ComposerWindowRoot';
+import './styles/globals.css';
+import './locales/i18n';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,9 +53,9 @@ function WindowBootstrap() {
   if (label === null) return null;
 
   switch (label) {
-    case "thread":
+    case 'thread':
       return <ThreadWindowRoot />;
-    case "compose":
+    case 'compose':
       return <ComposerWindowRoot />;
     default:
       return <RouterProvider router={router} />;
@@ -66,7 +66,7 @@ function WindowBootstrap() {
 // invalidate queries from EventBus handlers via getQueryClient()).
 setQueryClient(queryClient);
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary name="Global">
       <QueryClientProvider client={queryClient}>

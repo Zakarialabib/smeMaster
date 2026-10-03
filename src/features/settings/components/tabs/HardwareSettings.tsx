@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Printer } from 'lucide-react';
-import { useHardwareStore, HardwareConfig, DeviceType, ConnectionType } from '@features/pos/stores/hardwareStore';
+import {
+  useHardwareStore,
+  HardwareConfig,
+  DeviceType,
+  ConnectionType,
+} from '@features/pos/stores/hardwareStore';
 import { invokeCommand } from '@shared/services/db/invoke/command';
 import { notify } from '@shared/services/notifications/toastHelper';
 import { HelpCard } from '@features/settings/components/HelpCard';
@@ -62,16 +67,31 @@ export const HardwareSettings: React.FC = () => {
       {/* Education: Hardware Configuration */}
       <HelpCard
         items={[
-          { type: "why", text: "Hardware devices like receipt printers, barcode scanners, and cash drawers are essential for POS and invoicing workflows in retail and hospitality environments." },
-          { type: "how", text: "Each device is configured by type (printer, scanner, scale, cash drawer) and connection method (network, USB, system driver, or serial). Test each device after adding to verify connectivity." },
-          { type: "when", text: "Configure hardware when setting up POS capabilities. Add printers for receipt/invoice printing, scanners for barcode entry, and scales for weighted items." },
-          { type: "tip", text: "Network printers (TCP/IP) are recommended for reliability. USB connections work well for single-workstation setups. Test each device after adding to verify connectivity." },
+          {
+            type: 'why',
+            text: 'Hardware devices like receipt printers, barcode scanners, and cash drawers are essential for POS and invoicing workflows in retail and hospitality environments.',
+          },
+          {
+            type: 'how',
+            text: 'Each device is configured by type (printer, scanner, scale, cash drawer) and connection method (network, USB, system driver, or serial). Test each device after adding to verify connectivity.',
+          },
+          {
+            type: 'when',
+            text: 'Configure hardware when setting up POS capabilities. Add printers for receipt/invoice printing, scanners for barcode entry, and scales for weighted items.',
+          },
+          {
+            type: 'tip',
+            text: 'Network printers (TCP/IP) are recommended for reliability. USB connections work well for single-workstation setups. Test each device after adding to verify connectivity.',
+          },
         ]}
       />
 
       <div className="grid gap-4">
         {configs.map((config) => (
-          <div key={config.id} className="border rounded-lg p-4 flex justify-between items-center bg-card">
+          <div
+            key={config.id}
+            className="border rounded-lg p-4 flex justify-between items-center bg-card"
+          >
             <div>
               <h3 className="font-semibold text-lg">{config.name}</h3>
               <p className="text-sm text-muted-foreground capitalize">
@@ -123,7 +143,9 @@ export const HardwareSettings: React.FC = () => {
               <select
                 className="w-full border rounded-md p-2 bg-background"
                 value={newConfig.deviceType}
-                onChange={(e) => setNewConfig({ ...newConfig, deviceType: e.target.value as DeviceType })}
+                onChange={(e) =>
+                  setNewConfig({ ...newConfig, deviceType: e.target.value as DeviceType })
+                }
               >
                 <option value="printer">Receipt Printer</option>
                 <option value="scanner">Barcode Scanner</option>
@@ -136,7 +158,9 @@ export const HardwareSettings: React.FC = () => {
               <select
                 className="w-full border rounded-md p-2 bg-background"
                 value={newConfig.connectionType}
-                onChange={(e) => setNewConfig({ ...newConfig, connectionType: e.target.value as ConnectionType })}
+                onChange={(e) =>
+                  setNewConfig({ ...newConfig, connectionType: e.target.value as ConnectionType })
+                }
               >
                 <option value="network">Network (TCP/IP)</option>
                 <option value="usb">USB</option>
@@ -151,10 +175,7 @@ export const HardwareSettings: React.FC = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleAdd}
-                className="flex-1 bg-primary text-white rounded-md py-2"
-              >
+              <button onClick={handleAdd} className="flex-1 bg-primary text-white rounded-md py-2">
                 Save Device
               </button>
             </div>

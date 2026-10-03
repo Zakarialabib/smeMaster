@@ -16,13 +16,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@core/*": ["src/core/*"],
-      "@features/*": ["src/features/*"],
-      "@shared/*": ["src/shared/*"],
-      "@test/*": ["src/test/*"]
+      "@/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@features/*": ["./src/features/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@test/*": ["./src/test/*"]
     }
   },
   "include": ["src"],

@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Send, Paperclip, Loader2, ChevronDown } from "lucide-react";
-import type { DbContact } from "@features/contacts/db/contacts";
-import { Button } from "@shared/components/ui/Button";
-import { SlidePanel } from "@shared/components/ui/SlidePanel";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Send, Paperclip, Loader2, ChevronDown } from 'lucide-react';
+import type { DbContact } from '@features/contacts/db/contacts';
+import { Button } from '@shared/components/ui/Button';
+import { SlidePanel } from '@shared/components/ui/SlidePanel';
 
 interface SlideOverComposerProps {
   isOpen: boolean;
@@ -26,9 +26,9 @@ export function SlideOverComposer({
   contact,
   accountId: _accountId,
 }: SlideOverComposerProps) {
-  const [to, setTo] = useState("");
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [to, setTo] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
 
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
@@ -36,11 +36,11 @@ export function SlideOverComposer({
   useEffect(() => {
     if (isOpen && contact) {
       setTo(contact.email);
-      setSubject("");
-      setBody("");
+      setSubject('');
+      setBody('');
       // Focus the subject for fast keyboard composition
       setTimeout(() => {
-        const el = document.getElementById("slide-over-subject");
+        const el = document.getElementById('slide-over-subject');
         el?.focus();
       }, 200);
     }
@@ -63,12 +63,12 @@ export function SlideOverComposer({
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         void handleSend();
       }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, handleSend]);
 
   if (!isOpen) return null;
@@ -95,9 +95,7 @@ export function SlideOverComposer({
           </button>
         </div>
         <div className="flex items-center px-4 py-2 gap-2">
-          <span className="text-xs text-text-tertiary w-12 shrink-0">
-            Subject
-          </span>
+          <span className="text-xs text-text-tertiary w-12 shrink-0">Subject</span>
           <input
             id="slide-over-subject"
             type="text"
@@ -131,7 +129,7 @@ export function SlideOverComposer({
           onClick={handleSend}
           disabled={sending || !to.trim() || !subject.trim()}
         >
-          {sending ? "Sending…" : "Send"}
+          {sending ? 'Sending…' : 'Send'}
         </Button>
         <button
           type="button"

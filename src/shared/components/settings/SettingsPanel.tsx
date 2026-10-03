@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { cn } from "@shared/utils/cn";
-import { SETTINGS_PANEL } from "@shared/styles/ui-tokens";
+import type { ReactNode } from 'react';
+import { cn } from '@shared/utils/cn';
+import { SETTINGS_PANEL } from '@shared/styles/ui-tokens';
 
 /**
  * SettingsPanel — Outer container for every settings tab.
@@ -23,13 +23,7 @@ export function SettingsPanel({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "w-full flex flex-col gap-6 overflow-y-auto",
-        SETTINGS_PANEL,
-        className,
-      )}
-    >
+    <div className={cn('w-full flex flex-col gap-6 overflow-y-auto', SETTINGS_PANEL, className)}>
       {children}
     </div>
   );

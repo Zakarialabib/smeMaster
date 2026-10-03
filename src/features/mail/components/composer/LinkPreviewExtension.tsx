@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { Node as TipTapNode, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { Plugin, PluginKey } from "prosemirror-state";
-import type { Node as ProseMirrorNode } from "prosemirror-model";
-import type { NodeViewWrapperProps } from "@tiptap/react";
-import { NodeViewWrapper } from "@tiptap/react";
-import { ExternalLink } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Node as TipTapNode, mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { Plugin, PluginKey } from 'prosemirror-state';
+import type { Node as ProseMirrorNode } from 'prosemirror-model';
+import type { NodeViewWrapperProps } from '@tiptap/react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { ExternalLink } from 'lucide-react';
 
 interface OgMetadata {
   title: string;
@@ -24,34 +24,36 @@ async function fetchOgMetadata(url: string): Promise<OgMetadata | null> {
     let html: string;
     try {
       const response = await fetch(url, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; SMEMasterMail/1.0)",
+          'User-Agent': 'Mozilla/5.0 (compatible; SMEMasterMail/1.0)',
         },
       });
       html = await response.text();
     } catch {
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
       const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error("Failed to fetch");
+      if (!response.ok) throw new Error('Failed to fetch');
       html = await response.text();
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    const doc = parser.parseFromString(html, 'text/html');
 
     const getMeta = (property: string): string | null => {
-      const el = doc.querySelector(`meta[property="${property}"]`) ??
-                 doc.querySelector(`meta[name="${property}"]`);
-      return el?.getAttribute("content") ?? null;
+      const el =
+        doc.querySelector(`meta[property="${property}"]`) ??
+        doc.querySelector(`meta[name="${property}"]`);
+      return el?.getAttribute('content') ?? null;
     };
 
-    const title = getMeta("og:title") ?? doc.querySelector("title")?.textContent ?? "";
-    const description = getMeta("og:description") ?? getMeta("description") ?? "";
-    const siteName = getMeta("og:site_name");
-    const favicon = doc.querySelector('link[rel="icon"]')?.getAttribute("href") ??
-                    doc.querySelector('link[rel="shortcut icon"]')?.getAttribute("href") ??
-                    null;
+    const title = getMeta('og:title') ?? doc.querySelector('title')?.textContent ?? '';
+    const description = getMeta('og:description') ?? getMeta('description') ?? '';
+    const siteName = getMeta('og:site_name');
+    const favicon =
+      doc.querySelector('link[rel="icon"]')?.getAttribute('href') ??
+      doc.querySelector('link[rel="shortcut icon"]')?.getAttribute('href') ??
+      null;
 
     let resolvedFavicon: string | null = null;
     if (favicon) {
@@ -100,7 +102,9 @@ function LinkPreviewCard({ node }: NodeViewWrapperProps) {
         setLoading(false);
       }
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [url]);
 
   if (loading) {
@@ -113,30 +117,29 @@ function LinkPreviewCard({ node }: NodeViewWrapperProps) {
     );
   }
 
-  if (!metadata) return <NodeViewWrapper><span /></NodeViewWrapper>;
+  if (!metadata)
+    return (
+      <NodeViewWrapper>
+        <span />
+      </NodeViewWrapper>
+    );
 
   let domain = url;
   try {
     domain = new URL(url).hostname;
-  } catch {
-  }
+  } catch {}
 
   return (
     <NodeViewWrapper>
       <div className="link-preview-card" contentEditable={false}>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="link-preview-content"
-        >
+        <a href={url} target="_blank" rel="noopener noreferrer" className="link-preview-content">
           {metadata.favicon && (
             <img
               src={metadata.favicon}
               alt=""
               className="link-preview-favicon"
               onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
+                (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           )}
@@ -157,9 +160,9 @@ function LinkPreviewCard({ node }: NodeViewWrapperProps) {
 }
 
 export const LinkPreviewExtension = TipTapNode.create({
-  name: "linkPreview",
+  name: 'linkPreview',
 
-  group: "block",
+  group: 'block',
 
   atom: true,
 
@@ -176,10 +179,7 @@ export const LinkPreviewExtension = TipTapNode.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-link-preview": "" }),
-    ];
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-link-preview': '' })];
   },
 
   addNodeView() {
@@ -189,10 +189,10 @@ export const LinkPreviewExtension = TipTapNode.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("linkPreviewDetection"),
+        key: new PluginKey('linkPreviewDetection'),
         props: {
           handlePaste: (view, event) => {
-            const text = event.clipboardData?.getData("text/plain");
+            const text = event.clipboardData?.getData('text/plain');
             if (!text) return false;
 
             const urlPattern = /^https?:\/\/[^\s]+$/;
@@ -202,7 +202,7 @@ export const LinkPreviewExtension = TipTapNode.create({
               const url = text.trim();
               try {
                 const urlObj = new URL(url);
-                if (!urlObj.hostname.includes(".")) return false;
+                if (!urlObj.hostname.includes('.')) return false;
               } catch {
                 return false;
               }
@@ -210,7 +210,7 @@ export const LinkPreviewExtension = TipTapNode.create({
               event.preventDefault();
 
               const { from } = view.state.selection;
-              const tr = view.state.tr.insertText(url + " ", from);
+              const tr = view.state.tr.insertText(url + ' ', from);
 
               const previewNode = view.state.schema.nodes.linkPreview?.create({ url });
               if (previewNode) {
@@ -238,4 +238,3 @@ export const LinkPreviewExtension = TipTapNode.create({
     ];
   },
 });
-

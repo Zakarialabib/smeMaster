@@ -8,8 +8,8 @@
  *
  * Persisted to localStorage via Zustand persist middleware.
  */
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface ColumnConfig {
   id: string;
@@ -18,16 +18,16 @@ export interface ColumnConfig {
   width?: number;
 }
 
-export type ColumnConfigKey = "email" | "contacts" | "tasks";
+export type ColumnConfigKey = 'email' | 'contacts' | 'tasks';
 
 export const DEFAULT_EMAIL_COLUMNS: ColumnConfig[] = [
-  { id: "checkbox", label: "", visible: true, width: 32 },
-  { id: "star", label: "", visible: true, width: 28 },
-  { id: "sender", label: "Sender", visible: true },
-  { id: "subject", label: "Subject", visible: true },
-  { id: "preview", label: "Preview", visible: true },
-  { id: "attachments", label: "", visible: true, width: 24 },
-  { id: "date", label: "Date", visible: true, width: 80 },
+  { id: 'checkbox', label: '', visible: true, width: 32 },
+  { id: 'star', label: '', visible: true, width: 28 },
+  { id: 'sender', label: 'Sender', visible: true },
+  { id: 'subject', label: 'Subject', visible: true },
+  { id: 'preview', label: 'Preview', visible: true },
+  { id: 'attachments', label: '', visible: true, width: 24 },
+  { id: 'date', label: 'Date', visible: true, width: 80 },
 ];
 
 /**
@@ -37,21 +37,21 @@ export const DEFAULT_EMAIL_COLUMNS: ColumnConfig[] = [
  * schema migration.
  */
 export const DEFAULT_CONTACT_COLUMNS: ColumnConfig[] = [
-  { id: "avatar", label: "", visible: true, width: 36 },
-  { id: "name", label: "Name", visible: true },
-  { id: "email", label: "Email", visible: true },
-  { id: "tags", label: "Tags", visible: true },
-  { id: "lastContacted", label: "Last Contact", visible: true, width: 110 },
+  { id: 'avatar', label: '', visible: true, width: 36 },
+  { id: 'name', label: 'Name', visible: true },
+  { id: 'email', label: 'Email', visible: true },
+  { id: 'tags', label: 'Tags', visible: true },
+  { id: 'lastContacted', label: 'Last Contact', visible: true, width: 110 },
 ];
 
 export const DEFAULT_TASK_COLUMNS: ColumnConfig[] = [
-  { id: "checkbox", label: "", visible: true, width: 32 },
-  { id: "priority", label: "", visible: true, width: 12 },
-  { id: "title", label: "Task", visible: true },
-  { id: "tags", label: "Tags", visible: true },
-  { id: "dueDate", label: "Due", visible: true, width: 80 },
-  { id: "subtasks", label: "", visible: true, width: 40 },
-  { id: "actions", label: "", visible: true, width: 60 },
+  { id: 'checkbox', label: '', visible: true, width: 32 },
+  { id: 'priority', label: '', visible: true, width: 12 },
+  { id: 'title', label: 'Task', visible: true },
+  { id: 'tags', label: 'Tags', visible: true },
+  { id: 'dueDate', label: 'Due', visible: true, width: 80 },
+  { id: 'subtasks', label: '', visible: true, width: 40 },
+  { id: 'actions', label: '', visible: true, width: 60 },
 ];
 
 const DEFAULTS: Record<ColumnConfigKey, ColumnConfig[]> = {
@@ -103,7 +103,7 @@ export const useColumnConfigStore = create<ColumnConfigState>()(
         })),
     }),
     {
-      name: "smemaster.column-config",
+      name: 'smemaster.column-config',
       version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ columnVisibility: s.columnVisibility }),

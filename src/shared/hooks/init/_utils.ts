@@ -15,6 +15,13 @@ export async function withRetry<T>(
     try {
       return await fn();
     } catch (err) {
+      // Outside a Tauri shell the backend will never appear, so retrying is
+      // pointless and floods the dev console with warn lines. Fail fast with
+      // the fallback (or rethrow) on the first attempt.
+      if (typeof err === 'object' && err !== null && 'isTauriUnavailable' in err) {
+        if (fallbackValue !== undefined) return fallbackValue;
+        throw err;
+      }
       if (attempt < delays.length) {
         console.warn(
           `[init] ${label} failed (attempt ${attempt + 1}), retrying in ${delays[attempt]}ms:`,

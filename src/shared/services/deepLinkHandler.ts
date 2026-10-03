@@ -1,32 +1,38 @@
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
-import { listen } from "@tauri-apps/api/event";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { parseMailtoUrl } from "@shared/utils/mailtoParser";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { escapeHtml } from "@shared/utils/sanitize";
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
+import { listen } from '@tauri-apps/api/event';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { isTauriEnvironment } from '@shared/services/ipc/environment';
+import { parseMailtoUrl } from '@shared/utils/mailtoParser';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { escapeHtml } from '@shared/utils/sanitize';
 
 async function handleUrl(url: string): Promise<void> {
-  if (!url.startsWith("mailto:")) return;
+  if (!url.startsWith('mailto:')) return;
 
   const fields = parseMailtoUrl(url);
 
-  const mainWindow = await WebviewWindow.getByLabel("main");
+  const mainWindow = await WebviewWindow.getByLabel('main');
   if (mainWindow) {
     await mainWindow.show();
     await mainWindow.setFocus();
   }
 
   useComposerStore.getState().openComposer({
-    mode: "new",
+    mode: 'new',
     to: fields.to,
     cc: fields.cc,
     bcc: fields.bcc,
     subject: fields.subject,
-    bodyHtml: fields.body ? `<p>${escapeHtml(fields.body)}</p>` : "",
+    bodyHtml: fields.body ? `<p>${escapeHtml(fields.body)}</p>` : '',
   });
 }
 
 export async function initDeepLinkHandler(): Promise<() => void> {
+  // Deep links (`onOpenUrl`) and single-instance args are Tauri-only APIs —
+  // outside a Tauri shell both throw the `transformCallback` TypeError. The
+  // browser dev server has no OS integration to subscribe to, so no-op.
+  if (!isTauriEnvironment()) return () => {};
+
   const cleanups: Array<() => void> = [];
 
   try {
@@ -37,20 +43,20 @@ export async function initDeepLinkHandler(): Promise<() => void> {
     });
     cleanups.push(unlistenOpenUrl);
   } catch (err) {
-    console.error("Failed to register deep link handler:", err);
+    console.error('Failed to register deep link handler:', err);
   }
 
   try {
-    const unlistenArgs = await listen<string[]>("single-instance-args", (event) => {
+    const unlistenArgs = await listen<string[]>('single-instance-args', (event) => {
       for (const arg of event.payload) {
-        if (arg.startsWith("mailto:")) {
+        if (arg.startsWith('mailto:')) {
           handleUrl(arg);
         }
       }
     });
     cleanups.push(unlistenArgs);
   } catch (err) {
-    console.error("Failed to listen for single-instance args:", err);
+    console.error('Failed to listen for single-instance args:', err);
   }
 
   return () => {

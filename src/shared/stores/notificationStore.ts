@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { createEventBusSubscription } from "@shared/stores/createEventBusSubscription";
+import { create } from 'zustand';
+import { createEventBusSubscription } from '@shared/stores/createEventBusSubscription';
 
 export interface NotificationItem {
   id: number;
@@ -18,7 +18,7 @@ interface NotificationState {
   maxItems: number;
   setMaxItems: (max: number) => void;
   /** Add a notification (pushes to front, trims to maxItems). */
-  addNotification: (n: Omit<NotificationItem, "id" | "timestamp" | "dismissed">) => void;
+  addNotification: (n: Omit<NotificationItem, 'id' | 'timestamp' | 'dismissed'>) => void;
   /** Mark a notification as dismissed. */
   dismiss: (id: number) => void;
   /** Remove a notification entirely. */
@@ -55,9 +55,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   dismiss: (id) =>
     set((s) => ({
-      notifications: s.notifications.map((n) =>
-        n.id === id ? { ...n, dismissed: true } : n,
-      ),
+      notifications: s.notifications.map((n) => (n.id === id ? { ...n, dismissed: true } : n)),
     })),
 
   remove: (id) =>
@@ -68,8 +66,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   clear: () => set({ notifications: [] }),
 
   handleEvent: (eventType, payload) => {
-    if (eventType === "notification:received") {
-      const p = payload as { title: string; body: string; thread_id?: string; data?: Record<string, unknown> };
+    if (eventType === 'notification:received') {
+      const p = payload as {
+        title: string;
+        body: string;
+        thread_id?: string;
+        data?: Record<string, unknown>;
+      };
       get().addNotification({
         title: p.title,
         body: p.body,
@@ -86,9 +89,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
  * Subscribe the notification store to its owned events.
  *   - `notification:received` → adds the push notification to the store
  */
-const notificationStoreEventSub = createEventBusSubscription("notificationStore", {
-  "notification:received": (payload) => {
-    useNotificationStore.getState().handleEvent?.("notification:received", payload);
+const notificationStoreEventSub = createEventBusSubscription('notificationStore', {
+  'notification:received': (payload) => {
+    useNotificationStore.getState().handleEvent?.('notification:received', payload);
   },
 });
 
@@ -102,6 +105,6 @@ export function initNotificationStoreEvents(): () => void {
 }
 
 // Eagerly initialise in browser environments (module-level side-effect).
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   initNotificationStoreEvents();
 }

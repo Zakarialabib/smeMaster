@@ -1,79 +1,76 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ConfirmDialog } from './ConfirmDialog';
 
-describe("ConfirmDialog", () => {
+describe('ConfirmDialog', () => {
   const baseProps = {
     isOpen: true,
     onClose: vi.fn(),
     onConfirm: vi.fn(),
-    title: "Delete item?",
-    message: "This action cannot be undone.",
+    title: 'Delete item?',
+    message: 'This action cannot be undone.',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders title and message when open", () => {
+  it('renders title and message when open', () => {
     render(<ConfirmDialog {...baseProps} />);
-    expect(screen.getByText("Delete item?")).toBeInTheDocument();
-    expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
+    expect(screen.getByText('Delete item?')).toBeInTheDocument();
+    expect(screen.getByText('This action cannot be undone.')).toBeInTheDocument();
   });
 
-  it("does not render when closed", () => {
+  it('does not render when closed', () => {
     render(<ConfirmDialog {...baseProps} isOpen={false} />);
-    expect(screen.queryByText("Delete item?")).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete item?')).not.toBeInTheDocument();
   });
 
-  it("calls onConfirm when confirm button is clicked", () => {
+  it('calls onConfirm when confirm button is clicked', () => {
     render(<ConfirmDialog {...baseProps} />);
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
     expect(baseProps.onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onClose when cancel button is clicked", () => {
+  it('calls onClose when cancel button is clicked', () => {
     render(<ConfirmDialog {...baseProps} />);
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(baseProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onClose when Escape key is pressed", () => {
+  it('calls onClose when Escape key is pressed', () => {
     render(<ConfirmDialog {...baseProps} />);
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(baseProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("uses custom confirm and cancel labels", () => {
+  it('uses custom confirm and cancel labels', () => {
     render(<ConfirmDialog {...baseProps} confirmLabel="Yes, delete" cancelLabel="No, keep" />);
-    expect(screen.getByRole("button", { name: "Yes, delete" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "No, keep" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Yes, delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'No, keep' })).toBeInTheDocument();
   });
 
-  it("applies danger variant to confirm button", () => {
+  it('applies danger variant to confirm button', () => {
     render(<ConfirmDialog {...baseProps} variant="danger" confirmLabel="Delete" />);
-    const btn = screen.getByRole("button", { name: "Delete" });
-    expect(btn.className).toContain("bg-danger");
+    const btn = screen.getByRole('button', { name: 'Delete' });
+    expect(btn.className).toContain('bg-danger');
   });
 
-  it("applies primary variant to confirm button by default", () => {
+  it('applies primary variant to confirm button by default', () => {
     render(<ConfirmDialog {...baseProps} />);
-    const btn = screen.getByRole("button", { name: "Confirm" });
-    expect(btn.className).toContain("bg-accent");
+    const btn = screen.getByRole('button', { name: 'Confirm' });
+    expect(btn.className).toContain('bg-accent');
   });
 
-  it("disables buttons when loading", () => {
+  it('disables buttons when loading', () => {
     render(<ConfirmDialog {...baseProps} loading />);
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /confirm/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /confirm/i })).toBeDisabled();
   });
 
-  it("renders ReactNode message", () => {
+  it('renders ReactNode message', () => {
     render(
-      <ConfirmDialog
-        {...baseProps}
-        message={<span data-testid="custom-msg">Rich content</span>}
-      />,
+      <ConfirmDialog {...baseProps} message={<span data-testid="custom-msg">Rich content</span>} />,
     );
-    expect(screen.getByTestId("custom-msg")).toBeInTheDocument();
+    expect(screen.getByTestId('custom-msg')).toBeInTheDocument();
   });
 });

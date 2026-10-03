@@ -1,5 +1,5 @@
-import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import type { ReactNode } from "react";
+import { PullToRefresh } from '@shared/components/ui/PullToRefresh';
+import type { ReactNode } from 'react';
 
 interface MobilePullToRefreshProps {
   /** Called when the user releases past the threshold */
@@ -29,7 +29,7 @@ export function MobilePullToRefresh({
   onRefresh,
   children,
   refreshing = false,
-  className = "",
+  className = '',
 }: MobilePullToRefreshProps) {
   return (
     <PullToRefresh

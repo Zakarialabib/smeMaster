@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "mcp-bridge-dev",
+  "description": "Dev-only capability for the Tauri MCP bridge. Grants the plugin's own permission set so an agent can drive the webview (execute JS, DOM snapshot, IPC monitor). This file is only included when the `mcp-bridge` cargo feature is on — see the feature-gated `tauri_build` capability include in build.rs — because the permission `mcp-bridge:default` does not exist when the plugin is not compiled, and referencing it unconditionally fails the build with `Permission mcp-bridge:default not found`.",
+  "windows": ["main"],
+  "platforms": ["windows"],
+  "permissions": ["mcp-bridge:default"]
+}

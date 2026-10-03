@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
-import { Plus } from "lucide-react";
-import type { DealStage, Deal } from "@shared/services/db/schema";
-import { DealCard } from "./DealCard";
+import { useCallback, useState } from 'react';
+import { Plus } from 'lucide-react';
+import type { DealStage, Deal } from '@shared/services/db/schema';
+import { DealCard } from './DealCard';
 
 export interface DealColumnProps {
   stage: DealStage;
@@ -29,7 +29,7 @@ export function DealColumn({ stage, deals, onDrop, onOpenDeal }: DealColumnProps
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
-      const dealId = e.dataTransfer.getData("text/plain");
+      const dealId = e.dataTransfer.getData('text/plain');
       if (!dealId) return;
       setIsOver(false);
       onDrop(dealId, stage.id);
@@ -43,7 +43,7 @@ export function DealColumn({ stage, deals, onDrop, onOpenDeal }: DealColumnProps
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: stage.color || "currentColor" }}
+            style={{ backgroundColor: stage.color || 'currentColor' }}
             aria-hidden="true"
           />
           <h3 className="text-sm font-semibold text-text-primary truncate">{stage.name}</h3>
@@ -63,9 +63,7 @@ export function DealColumn({ stage, deals, onDrop, onOpenDeal }: DealColumnProps
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`flex-1 overflow-y-auto rounded-2xl border p-2 space-y-2 transition-colors ${
-          isOver
-            ? "border-accent/60 bg-accent/5"
-            : "border-border-primary/70 bg-bg-secondary/40"
+          isOver ? 'border-accent/60 bg-accent/5' : 'border-border-primary/70 bg-bg-secondary/40'
         }`}
       >
         {deals.length === 0 ? (

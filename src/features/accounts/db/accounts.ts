@@ -1,4 +1,4 @@
-import { encryptValue, decryptValue, isEncrypted } from "@shared/utils/crypto";
+import { encryptValue, decryptValue, isEncrypted } from '@shared/utils/crypto';
 import {
   getAccount as dbGetAccount,
   getAccountByEmail as dbGetAccountByEmail,
@@ -7,8 +7,8 @@ import {
   updateAccount,
   deleteAccount as dbDeleteAccount,
   updateAccountLastSync,
-} from "../../../shared/services/db/db-invoke";
-import type { Account } from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
+import type { Account } from '../../../shared/services/db/db-invoke';
 
 export type DbAccount = Account & {
   caldav_url: string | null;
@@ -33,9 +33,9 @@ interface AccountMetadata {
 
 function parseAccountMetadata(account: Account): AccountMetadata {
   try {
-    const parsed = JSON.parse(account.metadata_json || "{}");
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? parsed as AccountMetadata
+    const parsed = JSON.parse(account.metadata_json || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as AccountMetadata)
       : {};
   } catch {
     return {};
@@ -50,24 +50,26 @@ async function hydrateAccount(account: Account): Promise<DbAccount> {
   const decrypted = await decryptAccountTokens({ ...account });
   const metadata = parseAccountMetadata(decrypted);
   const caldavPassword = metadata.caldav_password;
-  let decryptedCalDavPassword = typeof caldavPassword === "string" ? caldavPassword : null;
+  let decryptedCalDavPassword = typeof caldavPassword === 'string' ? caldavPassword : null;
 
   if (decryptedCalDavPassword && isEncrypted(decryptedCalDavPassword)) {
     try {
       decryptedCalDavPassword = await decryptValue(decryptedCalDavPassword);
     } catch (err) {
-      console.warn("Failed to decrypt CalDAV password, using raw value:", err);
+      console.warn('Failed to decrypt CalDAV password, using raw value:', err);
     }
   }
 
   return {
     ...decrypted,
-    caldav_url: typeof metadata.caldav_url === "string" ? metadata.caldav_url : null,
-    caldav_username: typeof metadata.caldav_username === "string" ? metadata.caldav_username : null,
+    caldav_url: typeof metadata.caldav_url === 'string' ? metadata.caldav_url : null,
+    caldav_username: typeof metadata.caldav_username === 'string' ? metadata.caldav_username : null,
     caldav_password: decryptedCalDavPassword,
-    caldav_principal_url: typeof metadata.caldav_principal_url === "string" ? metadata.caldav_principal_url : null,
-    caldav_home_url: typeof metadata.caldav_home_url === "string" ? metadata.caldav_home_url : null,
-    calendar_provider: typeof metadata.calendar_provider === "string" ? metadata.calendar_provider : null,
+    caldav_principal_url:
+      typeof metadata.caldav_principal_url === 'string' ? metadata.caldav_principal_url : null,
+    caldav_home_url: typeof metadata.caldav_home_url === 'string' ? metadata.caldav_home_url : null,
+    calendar_provider:
+      typeof metadata.calendar_provider === 'string' ? metadata.calendar_provider : null,
     accept_invalid_certs: normalizeCertFlag(metadata.accept_invalid_certs),
   };
 }
@@ -77,35 +79,35 @@ async function decryptAccountTokens(account: Account): Promise<Account> {
     try {
       account.access_token = await decryptValue(account.access_token);
     } catch (err) {
-      console.warn("Failed to decrypt access token, using raw value:", err);
+      console.warn('Failed to decrypt access token, using raw value:', err);
     }
   }
   if (account.refresh_token && isEncrypted(account.refresh_token)) {
     try {
       account.refresh_token = await decryptValue(account.refresh_token);
     } catch (err) {
-      console.warn("Failed to decrypt refresh token, using raw value:", err);
+      console.warn('Failed to decrypt refresh token, using raw value:', err);
     }
   }
   if (account.imap_password && isEncrypted(account.imap_password)) {
     try {
       account.imap_password = await decryptValue(account.imap_password);
     } catch (err) {
-      console.warn("Failed to decrypt IMAP password, using raw value:", err);
+      console.warn('Failed to decrypt IMAP password, using raw value:', err);
     }
   }
   if (account.oauth_client_secret && isEncrypted(account.oauth_client_secret)) {
     try {
       account.oauth_client_secret = await decryptValue(account.oauth_client_secret);
     } catch (err) {
-      console.warn("Failed to decrypt OAuth client secret, using raw value:", err);
+      console.warn('Failed to decrypt OAuth client secret, using raw value:', err);
     }
   }
   if (account.smtp_password && isEncrypted(account.smtp_password)) {
     try {
       account.smtp_password = await decryptValue(account.smtp_password);
     } catch (err) {
-      console.warn("Failed to decrypt SMTP password, using raw value:", err);
+      console.warn('Failed to decrypt SMTP password, using raw value:', err);
     }
   }
   return account;
@@ -121,55 +123,55 @@ export async function countAccounts(): Promise<number> {
 }
 
 export async function insertAccount(account: {
-   id?: string;
-   email: string;
-   displayName: string | null;
-   avatarUrl?: string | null;
-   accessToken: string;
-   refreshToken: string;
-   tokenExpiresAt: number;
+  id?: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl?: string | null;
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: number;
 }): Promise<DbAccount> {
-   const encAccessToken = await encryptValue(account.accessToken);
-   const encRefreshToken = await encryptValue(account.refreshToken);
-   const created = await createAccount({
+  const encAccessToken = await encryptValue(account.accessToken);
+  const encRefreshToken = await encryptValue(account.refreshToken);
+  const created = await createAccount({
     id: account.id,
     email: account.email,
     displayName: account.displayName,
     avatarUrl: account.avatarUrl ?? null,
-    provider: "gmail_api",
+    provider: 'gmail_api',
     accessToken: encAccessToken,
     refreshToken: encRefreshToken,
   });
-   await updateAccount(created.id, {
-     set: { token_expires_at: account.tokenExpiresAt },
-     unset: [],
-   });
-   return hydrateAccount({ ...created, token_expires_at: account.tokenExpiresAt });
+  await updateAccount(created.id, {
+    set: { token_expires_at: account.tokenExpiresAt },
+    unset: [],
+  });
+  return hydrateAccount({ ...created, token_expires_at: account.tokenExpiresAt });
 }
 
 export async function insertMicrosoftAccount(account: {
-   id?: string;
-   email: string;
-   displayName: string | null;
-   avatarUrl?: string | null;
-   accessToken: string;
-   refreshToken: string;
-   tokenExpiresAt: number;
+  id?: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl?: string | null;
+  accessToken: string;
+  refreshToken: string;
+  tokenExpiresAt: number;
 }): Promise<DbAccount> {
-   const encAccessToken = await encryptValue(account.accessToken);
-   const encRefreshToken = await encryptValue(account.refreshToken);
-   const created = await createAccount({
-     email: account.email,
-     displayName: account.displayName,
-     provider: "microsoft_graph",
-     accessToken: encAccessToken,
-     refreshToken: encRefreshToken,
-   });
-   await updateAccount(created.id, {
-     set: { token_expires_at: account.tokenExpiresAt },
-     unset: [],
-   });
-   return hydrateAccount({ ...created, token_expires_at: account.tokenExpiresAt });
+  const encAccessToken = await encryptValue(account.accessToken);
+  const encRefreshToken = await encryptValue(account.refreshToken);
+  const created = await createAccount({
+    email: account.email,
+    displayName: account.displayName,
+    provider: 'microsoft_graph',
+    accessToken: encAccessToken,
+    refreshToken: encRefreshToken,
+  });
+  await updateAccount(created.id, {
+    set: { token_expires_at: account.tokenExpiresAt },
+    unset: [],
+  });
+  return hydrateAccount({ ...created, token_expires_at: account.tokenExpiresAt });
 }
 
 export async function updateAccountTokens(
@@ -184,17 +186,14 @@ export async function updateAccountTokens(
   });
 }
 
-export async function updateAccountSyncState(
-  id: string,
-  historyId: string,
-): Promise<void> {
+export async function updateAccountSyncState(id: string, historyId: string): Promise<void> {
   await updateAccountLastSync(id, historyId);
 }
 
 export async function clearAccountHistoryId(id: string): Promise<void> {
   await updateAccount(id, {
     set: {},
-    unset: ["history_id"],
+    unset: ['history_id'],
   });
 }
 
@@ -239,15 +238,13 @@ export async function insertImapAccount(account: {
   acceptInvalidCerts?: boolean | null;
 }): Promise<DbAccount> {
   const encPassword = await encryptValue(account.password);
-  const encSmtpPassword = account.smtpPassword
-    ? await encryptValue(account.smtpPassword)
-    : null;
+  const encSmtpPassword = account.smtpPassword ? await encryptValue(account.smtpPassword) : null;
   const created = await createAccount({
     id: account.id,
     email: account.email,
     displayName: account.displayName,
     avatarUrl: account.avatarUrl ?? null,
-    provider: "imap",
+    provider: 'imap',
     imapHost: account.imapHost,
     imapPort: account.imapPort,
     imapSecurity: account.imapSecurity,
@@ -292,15 +289,15 @@ export async function insertCalDavAccount(account: {
     caldav_password: encPassword,
     caldav_principal_url: account.caldavPrincipalUrl ?? null,
     caldav_home_url: account.caldavHomeUrl ?? null,
-    calendar_provider: "caldav",
+    calendar_provider: 'caldav',
     accept_invalid_certs: account.acceptInvalidCerts ?? false,
   };
 
   const created = await createAccount({
     email: account.email,
     displayName: account.displayName,
-    provider: "caldav",
-    authMethod: "password",
+    provider: 'caldav',
+    authMethod: 'password',
   });
 
   await updateAccount(created.id, {
@@ -331,10 +328,13 @@ export async function updateAccountCalDav(
 
   if (fields.caldavUrl !== undefined) metadata.caldav_url = fields.caldavUrl || null;
   if (fields.caldavUsername !== undefined) metadata.caldav_username = fields.caldavUsername || null;
-  if (fields.caldavPrincipalUrl !== undefined) metadata.caldav_principal_url = fields.caldavPrincipalUrl || null;
+  if (fields.caldavPrincipalUrl !== undefined)
+    metadata.caldav_principal_url = fields.caldavPrincipalUrl || null;
   if (fields.caldavHomeUrl !== undefined) metadata.caldav_home_url = fields.caldavHomeUrl || null;
-  if (fields.calendarProvider !== undefined) metadata.calendar_provider = fields.calendarProvider || null;
-  if (fields.acceptInvalidCerts !== undefined) metadata.accept_invalid_certs = fields.acceptInvalidCerts ?? false;
+  if (fields.calendarProvider !== undefined)
+    metadata.calendar_provider = fields.calendarProvider || null;
+  if (fields.acceptInvalidCerts !== undefined)
+    metadata.accept_invalid_certs = fields.acceptInvalidCerts ?? false;
   if (fields.caldavPassword !== undefined) {
     metadata.caldav_password = fields.caldavPassword
       ? await encryptValue(fields.caldavPassword)
@@ -375,14 +375,14 @@ export async function insertOAuthImapAccount(account: {
   const created = await createAccount({
     email: account.email,
     displayName: account.displayName,
-    provider: "imap",
+    provider: 'imap',
     imapHost: account.imapHost,
     imapPort: account.imapPort,
     imapSecurity: account.imapSecurity,
     smtpHost: account.smtpHost,
     smtpPort: account.smtpPort,
     smtpSecurity: account.smtpSecurity,
-    authMethod: "oauth2",
+    authMethod: 'oauth2',
     oauthProvider: account.oauthProvider,
     oauthClientId: account.oauthClientId,
     oauthClientSecret: encClientSecret,
@@ -419,9 +419,7 @@ export async function getAccount(id: string): Promise<DbAccount | null> {
   }
 }
 
-export async function getAccountByEmail(
-  email: string,
-): Promise<DbAccount | null> {
+export async function getAccountByEmail(email: string): Promise<DbAccount | null> {
   const account = await dbGetAccountByEmail(email);
   return account ? hydrateAccount(account) : null;
 }

@@ -19,10 +19,10 @@
  * ```
  */
 
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { useInView } from "@shared/hooks/useInView";
-import { cn } from "@shared/utils/cn";
+import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useInView } from '@shared/hooks/useInView';
+import { cn } from '@shared/utils/cn';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ export function InfiniteScrollSentinel({
   className,
 }: InfiniteScrollSentinelProps) {
   const { ref, inView } = useInView({
-    rootMargin: "200px",
+    rootMargin: '200px',
   });
 
   useEffect(() => {
@@ -61,10 +61,7 @@ export function InfiniteScrollSentinel({
   return (
     <div
       ref={ref}
-      className={cn(
-        "flex justify-center py-4 text-text-tertiary text-xs",
-        className,
-      )}
+      className={cn('flex justify-center py-4 text-text-tertiary text-xs', className)}
       aria-live="polite"
       aria-busy={loading}
     >
@@ -74,9 +71,7 @@ export function InfiniteScrollSentinel({
           <span>Loading more...</span>
         </div>
       )}
-      {!hasMore && !loading && (
-        <span className="text-text-tertiary">No more items</span>
-      )}
+      {!hasMore && !loading && <span className="text-text-tertiary">No more items</span>}
     </div>
   );
 }

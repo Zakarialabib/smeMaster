@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback } from 'react';
 
 interface LongPressConfig {
   onLongPress: (e: React.TouchEvent | React.MouseEvent) => void;
@@ -10,13 +10,16 @@ export function useLongPress({ onLongPress, onClick, duration = 500 }: LongPress
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLongPress = useRef(false);
 
-  const start = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    isLongPress.current = false;
-    timerRef.current = setTimeout(() => {
-      isLongPress.current = true;
-      onLongPress(e);
-    }, duration);
-  }, [onLongPress, duration]);
+  const start = useCallback(
+    (e: React.TouchEvent | React.MouseEvent) => {
+      isLongPress.current = false;
+      timerRef.current = setTimeout(() => {
+        isLongPress.current = true;
+        onLongPress(e);
+      }, duration);
+    },
+    [onLongPress, duration],
+  );
 
   const move = useCallback(() => {
     if (timerRef.current) {

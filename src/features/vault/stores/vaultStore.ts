@@ -98,7 +98,7 @@ export interface VaultState {
   moveItem: (fromPath: string, toDir: string) => Promise<void>;
   renameItem: (oldPath: string, newName: string) => Promise<void>;
   copyItem: (sourcePath: string, destDir: string) => Promise<void>;
-  
+
   /** Check biometric availability and update store. Returns true if available. */
   checkBioStatus: () => Promise<boolean>;
 }

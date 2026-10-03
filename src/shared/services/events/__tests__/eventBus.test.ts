@@ -12,10 +12,7 @@ describe('eventBus (smeMaster in-process pub/sub + replay)', () => {
     eventBus.on('composer:open', cb);
     eventBus.emit('composer:open', { kind: 'composer:open', mode: 'reply' });
     expect(cb).toHaveBeenCalledOnce();
-    expect(cb).toHaveBeenCalledWith(
-      { kind: 'composer:open', mode: 'reply' },
-      'composer:open',
-    );
+    expect(cb).toHaveBeenCalledWith({ kind: 'composer:open', mode: 'reply' }, 'composer:open');
   });
 
   it('stops delivery after unsubscribe', () => {

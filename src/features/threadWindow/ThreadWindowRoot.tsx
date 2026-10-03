@@ -1,5 +1,5 @@
-import ThreadWindow from "@/ThreadWindow";
-import { ErrorBoundary } from "@shared/components/ui/ErrorBoundary";
+import ThreadWindow from '@/ThreadWindow';
+import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
 
 /**
  * Root component for the thread Tauri window.

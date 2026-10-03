@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-describe("ScheduleSendDialog presets", () => {
+describe('ScheduleSendDialog presets', () => {
   beforeEach(() => {
     // Fix date to Wednesday Jan 15, 2025 at 10:00 AM
     vi.useFakeTimers();
@@ -11,7 +11,7 @@ describe("ScheduleSendDialog presets", () => {
     vi.useRealTimers();
   });
 
-  it("tomorrow morning preset is next day at 9am", () => {
+  it('tomorrow morning preset is next day at 9am', () => {
     const now = new Date();
     const tomorrowMorning = new Date(now);
     tomorrowMorning.setDate(tomorrowMorning.getDate() + 1);
@@ -22,7 +22,7 @@ describe("ScheduleSendDialog presets", () => {
     expect(tomorrowMorning.getDate()).toBe(16);
   });
 
-  it("tomorrow afternoon preset is next day at 1pm", () => {
+  it('tomorrow afternoon preset is next day at 1pm', () => {
     const now = new Date();
     const tomorrowAfternoon = new Date(now);
     tomorrowAfternoon.setDate(tomorrowAfternoon.getDate() + 1);
@@ -32,7 +32,7 @@ describe("ScheduleSendDialog presets", () => {
     expect(tomorrowAfternoon.getDate()).toBe(16);
   });
 
-  it("monday morning preset is next Monday at 9am", () => {
+  it('monday morning preset is next Monday at 9am', () => {
     const now = new Date();
     const dayOfWeek = now.getDay(); // 3 (Wednesday)
     const daysUntilMonday = (1 - dayOfWeek + 7) % 7 || 7;
@@ -46,7 +46,7 @@ describe("ScheduleSendDialog presets", () => {
     expect(monday.getHours()).toBe(9);
   });
 
-  it("monday morning preset from Monday itself goes to next Monday", () => {
+  it('monday morning preset from Monday itself goes to next Monday', () => {
     // Reset to Monday
     vi.setSystemTime(new Date(2025, 0, 13, 10, 0, 0)); // Monday Jan 13
     const now = new Date();
@@ -56,9 +56,9 @@ describe("ScheduleSendDialog presets", () => {
     expect(daysUntilMonday).toBe(7); // Full week
   });
 
-  it("custom timestamp from date and time is correct", () => {
-    const customDate = "2025-02-01";
-    const customTime = "14:30";
+  it('custom timestamp from date and time is correct', () => {
+    const customDate = '2025-02-01';
+    const customTime = '14:30';
     const dt = new Date(`${customDate}T${customTime}`);
     const timestamp = Math.floor(dt.getTime() / 1000);
 

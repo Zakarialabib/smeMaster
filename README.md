@@ -33,8 +33,9 @@
 | ✍️  | **Composer**       | Signatures, attachments, aliases, undo-send, scheduled send                              |
 | 🔐  | **PGP**            | Sequoia OpenPGP integration for encrypted messages                                       |
 | 🗄️  | **Vault**          | Attachment vault and file workflows                                                      |
-| 📡  | **Deliverability** | DNS, blacklist, bounce, and sender-health tooling                                        |
+| 📡  | **Deliverability** | DNS, blacklist, bounce, and sender-health tooling                                            |
 | 🤖  | **AI**             | Provider-based assistants for categorization, writing, summaries, inbox queries          |
+| 🎙️  | **Offline speech** | On-device STT + TTS via sherpa-onnx — no API key, no network, audio never leaves the machine |
 | 🌍  | **i18n**           | English, French, Arabic, Japanese, Italian — including RTL for Arabic                    |
 
 ---
@@ -46,10 +47,10 @@ SMEMaster targets desktop (Windows · Linux · macOS) and Android, built with Ta
 | State                        | Platforms                                                          |
 | ---------------------------- | ------------------------------------------------------------------ |
 | 🚧 **In active development** | Windows, Linux, macOS (desktop) · Android (mobile)                 |
-| 🔜 **Shipping soon**         | First public builds — installers and sideload packages             |
+| 📦 **Buildable from source** | Windows installer (NSIS) · Linux · macOS · Android APK/AAB         |
 | 🗺️ **On the roadmap**        | Signed store releases, broader multi-device sync, plugin ecosystem |
 
-> No installers or binaries are published yet. The app builds and runs from source today; packaged releases are part of the v1.0 hardening pass. Watch [GitHub Releases](https://github.com/Zakarialabib/smeMaster/releases) for the first build.
+> Builds are produced from source today; signed public installers are part of the v1.0 hardening pass (code signing certificates are the remaining blocker). Watch [GitHub Releases](https://github.com/Zakarialabib/smeMaster/releases).
 
 ---
 
@@ -59,6 +60,13 @@ SMEMaster targets desktop (Windows · Linux · macOS) and Android, built with Ta
 
 **Recently shipped**
 
+- 🎙️ **Offline speech (STT + TTS)** — on-device via sherpa-onnx; STT RTF **0.033** at **99.8%** match, TTS RTF **0.573**, both verified end-to-end against the shipped binary
+- ⚙️ **AI settings reorganized** — Text Generation / Voice / Local Models, with a model catalog and resumable downloads
+- 🔌 **Sidecar lifecycle control** — Start/Stop/Refresh in Settings → Voice, with honest engine-state reporting
+- 🐛 **Startup panic fixed** — `EventBus` was read before it was managed, so the app could not start at all
+- 🐛 **Sidecar Stop fixed** — the watchdog restarted the process ~2 s after Stop, so the UI said "stopped" while it kept running
+- 🏗️ **Reproducible sidecar build** — `scripts/build-sidecar.sh` wired into every build; CI no longer ships a speech-less sidecar
+- 🧰 **Tauri MCP bridge** — dev-only; lets an agent drive the running app (this is what found the two bugs above)
 - 🎨 **Settings UI overhaul** — all 24 settings tabs beautified with premium card layout, stats rows, step-by-step setup wizards
 - 🌐 **RTL + i18n cleanup** — 164 physical-direction CSS violations fixed across 48 files; 1,685 `[TODO]` translation prefixes cleared in fr/ar/ja/it locales
 - 🚀 **Onboarding rework** — standalone page after splash; auto-skips if email accounts or demo data already exist
@@ -68,7 +76,6 @@ SMEMaster targets desktop (Windows · Linux · macOS) and Android, built with Ta
 - 🏗️ **Data layer evolution** — dead-code eliminated, offline-availability + optimistic email actions
 - 🟢 **Shared component library** — 6 reusable UI primitives + 5 stability hooks/utils
 - 🟢 **Typed UI event bus (`uiBus`)** — replaced stringly-typed `window.dispatchEvent("smemaster-*")` with a fully-typed emitter
-- 🟢 **AI sidecar test coverage** — comprehensive `aiSidecar.test.ts`
 
 **In progress**
 
@@ -76,6 +83,12 @@ SMEMaster targets desktop (Windows · Linux · macOS) and Android, built with Ta
 - Code signing certificates + auto-updater pubkey
 - 7-day dogfooding + public beta run
 - Plugin architecture & store releases
+
+**Not yet verified** — stated plainly rather than implied by a green check:
+
+- **TTS intelligibility** — machine-checked as non-silent audio of the correct rate/duration; whether it *sounds* right is a human judgement
+- **Non-English STT** — only English (Zipformer Small) is measured; other locales are model availability, not quality
+- **Live-call TTS** — RTF 0.573 + STT 0.033 approaches real time; marginal for a live call
 
 Full picture → [`docs/STATUS.md`](docs/STATUS.md).
 
@@ -100,7 +113,7 @@ smeMaster/
 └── package.json
 ```
 
-**Tech stack:** `React 19 + TypeScript` (UI) · `Rust + Tauri v2` (native runtime) · `SQLite + WAL` (persistence) · `Zustand` (state) · typed IPC contracts · event-driven cache.
+**Tech stack:** `React 19 + TypeScript 7` (UI) · `Rust + Tauri v2` (native runtime) · `SQLite + WAL` (persistence) · `Zustand` (state) · `sherpa-onnx` (on-device speech) · typed IPC contracts · event-driven cache · built with `bun` and Vite 8 (Rolldown).
 
 ---
 
@@ -108,30 +121,58 @@ smeMaster/
 
 ### Requirements
 
-- [Node.js](https://nodejs.org/) `v20+`
+- [Bun](https://bun.sh/) `1.4.2+` — the package manager and script runner (lockfile is `bun.lock`; there is no `package-lock.json`)
 - [Rust](https://www.rust-lang.org/tools/install) `1.77.2+`
 - [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 > **Windows note:** make sure `C:\msys64\ucrt64\bin` is on your `PATH`.
+>
+> ⚠️ **Building with offline speech needs ~10 GB free.** The sidecar links onnxruntime and lancedb; a full build plus the Tauri app can exceed 20 GB of `target/`.
 
 ### Run locally
 
 ```bash
 git clone https://github.com/Zakarialabib/smeMaster.git
 cd smeMaster
-npm install
-npm run tauri dev
+bun install
+bun run tauri:dev
 ```
 
 ### Useful commands
 
-| Command               | Purpose                        |
-| --------------------- | ------------------------------ |
-| `npm run dev`         | Start the Vite frontend only   |
-| `npm run test`        | Run frontend tests             |
-| `npx tsc --noEmit`    | TypeScript typecheck           |
-| `npm run tauri build` | Build the desktop app          |
-| `npm run android`     | Start Android development flow |
+| Command                       | Purpose                                              |
+| ----------------------------- | ---------------------------------------------------- |
+| `bun run dev`                 | Start the Vite frontend only                         |
+| `bun run test`                | Unit tests (`vitest --project unit`, jsdom)          |
+| `bun run typecheck`           | TypeScript 7 typecheck (`tsc --noEmit`)              |
+| `bun run lint`                | ESLint, zero warnings tolerated                      |
+| `bun run tauri:build`         | Build the desktop app (builds the sidecar first)     |
+| `bun run windows:build`       | Windows NSIS installer                               |
+| `bun run android`             | Android development flow                             |
+| `bun run sidecar:build`       | Build `ml-sidecar` with offline speech               |
+| `bun run tauri:dev:mcp`       | Dev build with the Tauri MCP bridge (port 9223)      |
+
+> **`bun`, not `npm`.** `npm install` will not honour `bun.lock`. If you need a one-off binary, use `bunx` instead of `npx`.
+
+### Offline speech (STT / TTS)
+
+The speech engine is an optional `offline-speech` feature of the `ml-sidecar` crate,
+built and installed by `scripts/build-sidecar.sh`:
+
+```bash
+bun run sidecar:build:release     # → src-tauri/binaries/ml-sidecar-<triple>.exe
+```
+
+`tauri:build`, `windows:build` and `windows:portable` all run this first, so the
+bundled app can't ship without it.
+
+⚠️ Use `--release`. A **debug** build of this crate fails to link with
+`LNK1318: Unexpected PDB error` — a PDB/filesystem limit on a ~234-object link,
+not a code error.
+
+⚠️ Without `offline-speech` the sidecar compiles and runs but answers
+`unknown method` to every speech call, which looks like a broken feature rather
+than a wrong binary. See [`docs/02-BACKEND/20-offline-stt-and-audio-summarization.md`](docs/02-BACKEND/20-offline-stt-and-audio-summarization.md).
 
 ---
 

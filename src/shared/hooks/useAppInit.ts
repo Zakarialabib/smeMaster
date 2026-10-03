@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { useSyncStore } from "@shared/stores/syncStore";
-import { triggerSync } from "@features/mail/services/gmail/syncManager";
-import { triggerQueueFlush } from "@features/mail/services/queue/queueProcessor";
+import { useEffect, useState } from 'react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { useSyncStore } from '@shared/stores/syncStore';
+import { triggerSync } from '@features/mail/services/gmail/syncManager';
+import { triggerQueueFlush } from '@features/mail/services/queue/queueProcessor';
 
-import { getSplashBridge, isAndroid } from "@shared/services/nativeBridges";
-import { startNativeEventForwarder } from "@shared/services/nativeEventForwarder";
-import { useI18nLocale } from "./init/useI18nLocale";
-import { useSettingsRestorer } from "./init/useSettingsRestorer";
-import { useKeyMapLoader } from "./init/useKeyMapLoader";
-import { useAccountsAndClients } from "./init/useAccountsAndClients";
-import { useSeedOnFirstRun } from "./init/useSeedOnFirstRun";
-import { useBackgroundServices } from "./init/useBackgroundServices";
-import { useSystemIntegrations } from "./init/useSystemIntegrations";
+import { getSplashBridge, isAndroid } from '@shared/services/nativeBridges';
+import { startNativeEventForwarder } from '@shared/services/nativeEventForwarder';
+import { useI18nLocale } from './init/useI18nLocale';
+import { useSettingsRestorer } from './init/useSettingsRestorer';
+import { useKeyMapLoader } from './init/useKeyMapLoader';
+import { useAccountsAndClients } from './init/useAccountsAndClients';
+import { useSeedOnFirstRun } from './init/useSeedOnFirstRun';
+import { useBackgroundServices } from './init/useBackgroundServices';
+import { useSystemIntegrations } from './init/useSystemIntegrations';
 
 /**
  * Hook: handles full app initialization lifecycle.
@@ -54,10 +54,10 @@ export function useAppInit() {
 
   // ── Phase 0: Rust orchestrator init listener (non-blocking) ──────
   useEffect(() => {
-    import("@tauri-apps/api/event")
+    import('@tauri-apps/api/event')
       .then(({ listen }) => {
-        listen("rust:init:complete", () => {
-          console.log("[init] Rust orchestrator init complete");
+        listen('rust:init:complete', () => {
+          console.log('[init] Rust orchestrator init complete');
         }).catch(() => {
           /* event system unavailable */
         });
@@ -80,8 +80,8 @@ export function useAppInit() {
     // presence is a reliable synchronous Android check — on desktop we skip
     // the Android-only `close_splashscreen` IPC call (it doesn't exist there).
     if (isAndroid()) {
-      import("@shared/services/db/invoke/command").then(({ invokeCommand }) => {
-        invokeCommand("close_splashscreen").catch(() => {
+      import('@shared/services/db/invoke/command').then(({ invokeCommand }) => {
+        invokeCommand('close_splashscreen').catch(() => {
           // Silently fail - this is just a safety net
         });
       });
@@ -110,11 +110,11 @@ export function useAppInit() {
     };
     const handleOffline = () => setOnline(false);
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 

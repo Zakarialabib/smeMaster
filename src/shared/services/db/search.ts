@@ -1,6 +1,6 @@
-import { executeSearchQuery } from "@shared/services/db/db-invoke";
-import { parseSearchQuery, hasSearchOperators } from "@features/mail/services/search/searchParser";
-import { buildSearchQuery } from "@features/mail/services/search/searchQueryBuilder";
+import { executeSearchQuery } from '@shared/services/db/db-invoke';
+import { parseSearchQuery, hasSearchOperators } from '@features/mail/services/search/searchParser';
+import { buildSearchQuery } from '@features/mail/services/search/searchQueryBuilder';
 
 export interface SearchResult {
   message_id: string;
@@ -15,7 +15,7 @@ export interface SearchResult {
 }
 
 export interface UnifiedSearchResult {
-  type: "message" | "file" | "task" | "contact";
+  type: 'message' | 'file' | 'task' | 'contact';
   id: string;
   title: string;
   snippet: string | null;
@@ -40,10 +40,19 @@ export async function searchMessages(
 
   if (hasSearchOperators(ftsQuery)) {
     const parsed = parseSearchQuery(ftsQuery);
-    if (parsed.freeText || parsed.from || parsed.to || parsed.subject ||
-        parsed.hasAttachment || parsed.isUnread || parsed.isRead ||
-        parsed.isStarred || parsed.before !== undefined || parsed.after !== undefined ||
-        parsed.label) {
+    if (
+      parsed.freeText ||
+      parsed.from ||
+      parsed.to ||
+      parsed.subject ||
+      parsed.hasAttachment ||
+      parsed.isUnread ||
+      parsed.isRead ||
+      parsed.isStarred ||
+      parsed.before !== undefined ||
+      parsed.after !== undefined ||
+      parsed.label
+    ) {
       const { sql, params } = buildSearchQuery(parsed, accountId, limit);
       const results = await executeSearchQuery(sql, params as unknown[]);
       return results as unknown as SearchResult[];
@@ -108,7 +117,7 @@ export async function unifiedSearch(
     try {
       return (await executeSearchQuery(sql, params)) as unknown as UnifiedSearchResult[];
     } catch (err) {
-      console.warn("[unifiedSearch] query failed:", err);
+      console.warn('[unifiedSearch] query failed:', err);
       return [];
     }
   }

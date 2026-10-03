@@ -9,23 +9,24 @@
  * @module
  */
 
-import { useEffect, useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   SettingGroup,
   SettingRow,
   ToggleRow,
   ButtonGroup,
-} from "@features/settings/components/SettingsHelpers";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { Button } from "@shared/components/ui/Button";
+} from '@features/settings/components/SettingsHelpers';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { Button } from '@shared/components/ui/Button';
 import {
   useRagStore,
   type EmbeddingSource,
   type ModelStatus,
-} from "@features/assistant/stores/ragStore";
-import { getSetting } from "@features/settings/db/settings";
-import { aiGetVectorDbPath, aiResetVectorDb } from "@shared/services/db/invoke/rag";
+} from '@features/assistant/stores/ragStore';
+import type { DownloaderProgressEvent } from '@shared/services/db/invoke/downloader';
+import { getSetting } from '@features/settings/db/settings';
+import { aiGetVectorDbPath, aiResetVectorDb } from '@shared/services/db/invoke/rag';
 import {
   BTN_GLASS,
   BTN_GLASS_PRIMARY,
@@ -34,8 +35,8 @@ import {
   BADGE_SUCCESS,
   BADGE_WARNING,
   BADGE_DANGER,
-} from "@shared/styles/ui-tokens";
-import { cn } from "@shared/utils/cn";
+} from '@shared/styles/ui-tokens';
+import { cn } from '@shared/utils/cn';
 import {
   Download,
   RotateCcw,
@@ -48,37 +49,37 @@ import {
   Trash2,
   Cpu,
   Sparkles,
-} from "lucide-react";
-import { setSetting } from "@features/settings/db/settings";
+} from 'lucide-react';
+import { setSetting } from '@features/settings/db/settings';
 
 // ── Status Dot ───────────────────────────────────────────────────────────────
 
 function StatusDot({ status }: { status: ModelStatus }) {
   const dotClass =
-    status === "loaded"
+    status === 'loaded'
       ? BADGE_SUCCESS
-      : status === "loading" || status === "downloading"
+      : status === 'loading' || status === 'downloading'
         ? BADGE_WARNING
-        : status === "error"
+        : status === 'error'
           ? BADGE_DANGER
-          : "bg-text-tertiary/30 text-text-tertiary";
+          : 'bg-text-tertiary/30 text-text-tertiary';
 
   return (
-    <span className={cn(BADGE_BASE, dotClass, "inline-flex items-center gap-1.5")}>
+    <span className={cn(BADGE_BASE, dotClass, 'inline-flex items-center gap-1.5')}>
       <span
         className={cn(
-          "w-1.5 h-1.5 rounded-full",
-          status === "loaded" && "bg-success",
-          (status === "loading" || status === "downloading") && "bg-warning animate-pulse",
-          status === "error" && "bg-danger",
-          status === "idle" && "bg-text-tertiary",
+          'w-1.5 h-1.5 rounded-full',
+          status === 'loaded' && 'bg-success',
+          (status === 'loading' || status === 'downloading') && 'bg-warning animate-pulse',
+          status === 'error' && 'bg-danger',
+          status === 'idle' && 'bg-text-tertiary',
         )}
       />
-      {status === "loaded" && "Loaded"}
-      {status === "loading" && "Loading…"}
-      {status === "downloading" && "Downloading…"}
-      {status === "error" && "Error"}
-      {status === "idle" && "Not loaded"}
+      {status === 'loaded' && 'Loaded'}
+      {status === 'loading' && 'Loading…'}
+      {status === 'downloading' && 'Downloading…'}
+      {status === 'error' && 'Error'}
+      {status === 'idle' && 'Not loaded'}
     </span>
   );
 }
@@ -86,41 +87,107 @@ function StatusDot({ status }: { status: ModelStatus }) {
 // ── Indexing Progress ────────────────────────────────────────────────────────
 
 function IndexingProgress({ status }: { status: string }) {
-  if (status === "idle") return null;
+  if (status === 'idle') return null;
 
-  const isActive = status === "indexing";
+  const isActive = status === 'indexing';
 
   return (
     <div className="mt-3 space-y-1.5">
       <div className="h-1.5 rounded-full bg-white/10 dark:bg-white/5 overflow-hidden">
         <div
           className={cn(
-            "h-full rounded-full bg-accent transition-all duration-500",
-            isActive && "w-3/4 animate-pulse",
-            status === "completed" && "w-full",
+            'h-full rounded-full bg-accent transition-all duration-500',
+            isActive && 'w-3/4 animate-pulse',
+            status === 'completed' && 'w-full',
           )}
         />
       </div>
-      <p className={cn(TEXT_HINT, "flex items-center gap-1.5")}>
+      <p className={cn(TEXT_HINT, 'flex items-center gap-1.5')}>
         {isActive && (
           <>
             <Loader2 className="w-3 h-3 animate-spin" />
             Indexing emails, attachments, and vault items…
           </>
         )}
-        {status === "completed" && (
+        {status === 'completed' && (
           <>
             <CheckCircle2 className="w-3 h-3 text-success" />
             Indexing completed
           </>
         )}
-        {status === "error" && (
+        {status === 'error' && (
           <>
             <AlertCircle className="w-3 h-3 text-danger" />
             Indexing failed
           </>
         )}
       </p>
+    </div>
+  );
+}
+
+// ── Model Download Progress ─────────────────────────────────────────────────
+
+const DOWNLOAD_ACTIVE_STATUSES = new Set(['queued', 'probing', 'downloading']);
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+/** Locale-neutral `mm:ss` (or `h:mm:ss`) countdown. */
+function formatEta(seconds: number | null): string | null {
+  if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return null;
+  const total = Math.ceil(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mmss = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return h > 0 ? `${h}:${mmss}` : mmss;
+}
+
+/** Inline progress bar below the BGE model row (no download dashboard). */
+function ModelDownloadProgress({ progress }: { progress: DownloaderProgressEvent }) {
+  const { t } = useTranslation();
+  if (!DOWNLOAD_ACTIVE_STATUSES.has(progress.status)) return null;
+
+  const pct = Math.max(0, Math.min(100, progress.progressPercentage));
+  const eta = formatEta(progress.etaSeconds);
+
+  return (
+    <div
+      className="mt-2 space-y-1.5"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(pct)}
+      aria-label={t('settings.downloadBge')}
+      data-testid="model-download-progress"
+    >
+      <div className="flex items-center justify-between gap-2 text-xs text-text-secondary">
+        <span className="truncate" title={progress.fileName}>
+          {progress.fileName}
+        </span>
+        <span className="tabular-nums shrink-0">{Math.round(pct)}%</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-white/10 dark:bg-white/5 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-accent transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className={cn(TEXT_HINT, 'flex items-center justify-between gap-2')}>
+        <span className="tabular-nums">
+          {t('settings.downloadSpeed')}: {formatBytes(progress.transferRateBytesPerSec)}/s
+        </span>
+        {eta !== null && (
+          <span className="tabular-nums">
+            {t('settings.downloadRemaining')}: {eta}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -135,6 +202,7 @@ export default function KnowledgeBaseSettings() {
     modelPath,
     tokenizerPath,
     modelError,
+    downloadProgress,
     embeddingSource,
     modelsDir,
     indexingStatus,
@@ -156,10 +224,10 @@ export default function KnowledgeBaseSettings() {
   const [kbPath, setKbPath] = useState<string | null>(null);
   const [chunkSize, setChunkSize] = useState<number>(1000);
   const [chunkOverlap, setChunkOverlap] = useState<number>(100);
-  const [splitter, setSplitter] = useState<"paragraph" | "sentence" | "token">("paragraph");
+  const [splitter, setSplitter] = useState<'paragraph' | 'sentence' | 'token'>('paragraph');
   // ── Provider / embedding-model status (provider mode) ──
-  const [aiProvider, setAiProvider] = useState<string>("claude");
-  const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>("");
+  const [aiProvider, setAiProvider] = useState<string>('claude');
+  const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>('');
 
   useEffect(() => {
     hydrate();
@@ -172,42 +240,41 @@ export default function KnowledgeBaseSettings() {
       } catch {
         /* app data dir unavailable */
       }
-      const cs = await getSetting("rag_chunk_size");
+      const cs = await getSetting('rag_chunk_size');
       if (cs) setChunkSize(Number(cs) || 1000);
-      const co = await getSetting("rag_chunk_overlap");
+      const co = await getSetting('rag_chunk_overlap');
       if (co) setChunkOverlap(Number(co) || 100);
-      const sp = await getSetting("rag_splitter");
-      if (sp === "sentence" || sp === "token" || sp === "paragraph") setSplitter(sp);
-      const provider = await getSetting("ai_provider");
+      const sp = await getSetting('rag_splitter');
+      if (sp === 'sentence' || sp === 'token' || sp === 'paragraph') setSplitter(sp);
+      const provider = await getSetting('ai_provider');
       if (provider) setAiProvider(provider);
-      const emb = await getSetting("lmstudio_embedding_model");
-      setLmstudioEmbeddingModel(emb ?? "");
+      const emb = await getSetting('lmstudio_embedding_model');
+      setLmstudioEmbeddingModel(emb ?? '');
     })();
   }, []);
 
   // ── Engine mode derivation ──
-  const isBgeMode = embeddingSource === "rust_bge";
-  const isProviderMode = embeddingSource === "provider";
-  const providerEmbedsReady = aiProvider === "lmstudio" && !!lmstudioEmbeddingModel.trim();
+  const isBgeMode = embeddingSource === 'rust_bge';
+  const isProviderMode = embeddingSource === 'provider';
+  const providerEmbedsReady = aiProvider === 'lmstudio' && !!lmstudioEmbeddingModel.trim();
 
   const canIndex =
-    indexingStatus === "indexing"
+    indexingStatus === 'indexing'
       ? false
       : isBgeMode
-        ? modelStatus === "loaded"
+        ? modelStatus === 'loaded'
         : isProviderMode
           ? providerEmbedsReady
-          : providerEmbedsReady || modelStatus === "loaded";
+          : providerEmbedsReady || modelStatus === 'loaded';
 
-  const showEmbeddingHint =
-    !isBgeMode && !providerEmbedsReady;
+  const showEmbeddingHint = !isBgeMode && !providerEmbedsReady;
 
   // ── Format relative time ──
   const formatTimeAgo = useCallback((isoString: string | null): string => {
-    if (!isoString) return "Never";
+    if (!isoString) return 'Never';
     const diff = Date.now() - new Date(isoString).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "Just now";
+    if (mins < 1) return 'Just now';
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
     if (hours < 24) return `${hours}h ago`;
@@ -218,81 +285,82 @@ export default function KnowledgeBaseSettings() {
   const openModelsFolder = useCallback(async () => {
     if (!modelsDir) return;
     try {
-      const { openUrl } = await import("@tauri-apps/plugin-opener");
-      await openUrl(`file:///${modelsDir.replace(/\\/g, "/")}`);
+      const { openUrl } = await import('@tauri-apps/plugin-opener');
+      await openUrl(`file:///${modelsDir.replace(/\\/g, '/')}`);
     } catch (err) {
-      console.warn("[KnowledgeBaseSettings] failed to open models folder", err);
+      console.warn('[KnowledgeBaseSettings] failed to open models folder', err);
     }
   }, [modelsDir]);
 
   return (
     <>
       <SettingGroup
-        title={t("settings.knowledgeBase")}
-        description={t("settings.knowledgeBaseDescription")}
+        title={t('settings.knowledgeBase')}
+        description={t('settings.knowledgeBaseDescription')}
       >
         <ToggleRow
-          label={t("settings.enableLocalRag")}
-          description={t("settings.enableLocalRagDescription")}
+          label={t('settings.enableLocalRag')}
+          description={t('settings.enableLocalRagDescription')}
           checked={enabled}
           onToggle={() => setEnabled(!enabled)}
         />
       </SettingGroup>
 
       {!enabled && (
-        <p className="text-xs text-text-tertiary">
-          {t("settings.knowledgeBaseDisabledHint")}
-        </p>
+        <p className="text-xs text-text-tertiary">{t('settings.knowledgeBaseDisabledHint')}</p>
       )}
 
       {/* ── Engine Mode Selector ── */}
       <SettingGroup
-        title={t("settings.embeddingEngine")}
-        description={t("settings.embeddingEngineDescription")}
+        title={t('settings.embeddingEngine')}
+        description={t('settings.embeddingEngineDescription')}
       >
-        <SettingRow label={t("settings.embeddingSource")} description={t("settings.embeddingSourceDescription")}>
+        <SettingRow
+          label={t('settings.embeddingSource')}
+          description={t('settings.embeddingSourceDescription')}
+        >
           <ButtonGroup
             size="sm"
-            value={(embeddingSource ?? "auto") as "auto" | "rust_bge" | "provider"}
-            onChange={(v) =>
-              setEmbeddingSource(v === "auto" ? null : (v as EmbeddingSource))
-            }
+            value={(embeddingSource ?? 'auto') as 'auto' | 'rust_bge' | 'provider'}
+            onChange={(v) => setEmbeddingSource(v === 'auto' ? null : (v as EmbeddingSource))}
             options={[
-              { value: "auto", label: t("settings.engineAuto") },
-              { value: "provider", label: t("settings.engineProvider") },
-              { value: "rust_bge", label: t("settings.engineBge") },
+              { value: 'auto', label: t('settings.engineAuto') },
+              { value: 'provider', label: t('settings.engineProvider') },
+              { value: 'rust_bge', label: t('settings.engineBge') },
             ]}
           />
         </SettingRow>
-        <p className={cn(TEXT_HINT, "mt-1")}>
+        <p className={cn(TEXT_HINT, 'mt-1')}>
           {isProviderMode
-            ? t("settings.engineProviderHint")
+            ? t('settings.engineProviderHint')
             : isBgeMode
-              ? t("settings.engineBgeHint")
-              : t("settings.engineAutoHint")}
+              ? t('settings.engineBgeHint')
+              : t('settings.engineAutoHint')}
         </p>
       </SettingGroup>
 
       {/* ── Provider embeddings status (provider / auto modes) ── */}
       {!isBgeMode && (
         <SettingGroup
-          title={t("settings.providerEmbeddings")}
-          description={t("settings.providerEmbeddingsDescription")}
+          title={t('settings.providerEmbeddings')}
+          description={t('settings.providerEmbeddingsDescription')}
         >
-          {aiProvider !== "lmstudio" && (
-            <p className={cn(TEXT_HINT, "flex items-start gap-1.5 text-warning")}>
+          {aiProvider !== 'lmstudio' && (
+            <p className={cn(TEXT_HINT, 'flex items-start gap-1.5 text-warning')}>
               <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-              {t("settings.providerEmbeddingsRequiresLmstudio")}
+              {t('settings.providerEmbeddingsRequiresLmstudio')}
             </p>
           )}
-          {aiProvider === "lmstudio" && (
+          {aiProvider === 'lmstudio' && (
             <div className="space-y-2">
-              <SettingRow label={t("settings.activeProvider")}>
-                <span className="text-sm text-text-secondary">{t("settings.providerLmstudio")}</span>
-              </SettingRow>
-              <SettingRow label={t("settings.embeddingModel")}>
+              <SettingRow label={t('settings.activeProvider')}>
                 <span className="text-sm text-text-secondary">
-                  {lmstudioEmbeddingModel.trim() || t("settings.kbNotSet")}
+                  {t('settings.providerLmstudio')}
+                </span>
+              </SettingRow>
+              <SettingRow label={t('settings.embeddingModel')}>
+                <span className="text-sm text-text-secondary">
+                  {lmstudioEmbeddingModel.trim() || t('settings.kbNotSet')}
                 </span>
               </SettingRow>
               {lmstudioEmbeddingModel.trim() && (
@@ -307,25 +375,28 @@ export default function KnowledgeBaseSettings() {
                     {embeddingTesting ? (
                       <>
                         <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
-                        {t("settings.testing")}
+                        {t('settings.testing')}
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 me-1.5" />
-                        {t("settings.testEmbedding")}
+                        {t('settings.testEmbedding')}
                       </>
                     )}
                   </Button>
                   {embeddingTest?.ok && (
                     <span className="text-xs text-success inline-flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
-                      {t("settings.embeddingDims", { dims: embeddingTest.dims ?? 0 })}
+                      {t('settings.embeddingDims', { dims: embeddingTest.dims ?? 0 })}
                     </span>
                   )}
                   {embeddingTest && !embeddingTest.ok && (
-                    <span className="text-xs text-danger inline-flex items-center gap-1" title={embeddingTest.error}>
+                    <span
+                      className="text-xs text-danger inline-flex items-center gap-1"
+                      title={embeddingTest.error}
+                    >
                       <AlertCircle className="w-3 h-3" />
-                      {t("settings.embeddingTestFailed")}
+                      {t('settings.embeddingTestFailed')}
                     </span>
                   )}
                 </div>
@@ -338,13 +409,14 @@ export default function KnowledgeBaseSettings() {
       {/* ── On-device BGE model management (BGE mode only) ── */}
       {isBgeMode && (
         <SettingGroup
-          title={t("settings.embeddingModel")}
-          description={t("settings.bgeModelDescription")}
+          title={t('settings.embeddingModel')}
+          description={t('settings.bgeModelDescription')}
         >
           <div className="space-y-2 mb-4">
-            <SettingRow label={t("settings.modelStatus")}>
+            <SettingRow label={t('settings.modelStatus')}>
               <StatusDot status={modelStatus} />
             </SettingRow>
+            {downloadProgress && <ModelDownloadProgress progress={downloadProgress} />}
             {modelPath && (
               <div className="text-xs font-mono text-text-tertiary bg-white/5 dark:bg-white/5 px-2.5 py-1.5 rounded-md border border-border-primary truncate">
                 {modelPath}
@@ -368,17 +440,17 @@ export default function KnowledgeBaseSettings() {
               size="md"
               className={BTN_GLASS}
               onClick={downloadBgeModel}
-              disabled={modelStatus === "downloading" || modelStatus === "loading"}
+              disabled={modelStatus === 'downloading' || modelStatus === 'loading'}
             >
-              {modelStatus === "downloading" ? (
+              {modelStatus === 'downloading' ? (
                 <>
                   <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
-                  {t("settings.downloading")}
+                  {t('settings.downloading')}
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4 me-1.5" />
-                  {t("settings.downloadBge")}
+                  {t('settings.downloadBge')}
                 </>
               )}
             </Button>
@@ -390,19 +462,19 @@ export default function KnowledgeBaseSettings() {
               disabled={
                 !modelPath ||
                 !tokenizerPath ||
-                modelStatus === "loading" ||
-                modelStatus === "downloading"
+                modelStatus === 'loading' ||
+                modelStatus === 'downloading'
               }
             >
-              {modelStatus === "loading" ? (
+              {modelStatus === 'loading' ? (
                 <>
                   <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
-                  {t("settings.loading")}
+                  {t('settings.loading')}
                 </>
               ) : (
                 <>
                   <BrainCircuit className="w-4 h-4 me-1.5" />
-                  {t("settings.loadModel")}
+                  {t('settings.loadModel')}
                 </>
               )}
             </Button>
@@ -413,12 +485,12 @@ export default function KnowledgeBaseSettings() {
       {/* ── Local Models Folder (BGE mode only) ── */}
       {isBgeMode && (
         <SettingGroup
-          title={t("settings.localModelsFolder")}
-          description={t("settings.localModelsFolderDescription")}
+          title={t('settings.localModelsFolder')}
+          description={t('settings.localModelsFolderDescription')}
         >
-          <SettingRow label={t("settings.kbLocation")}>
+          <SettingRow label={t('settings.kbLocation')}>
             <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-end">
-              {modelsDir ?? t("settings.loading")}
+              {modelsDir ?? t('settings.loading')}
             </span>
           </SettingRow>
           <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -430,7 +502,7 @@ export default function KnowledgeBaseSettings() {
               disabled={!modelsDir}
             >
               <FolderOpen className="w-4 h-4 me-1.5" />
-              {t("settings.openFolder")}
+              {t('settings.openFolder')}
             </Button>
             <Button
               variant="ghost"
@@ -440,7 +512,7 @@ export default function KnowledgeBaseSettings() {
               disabled={!modelPath}
             >
               <Trash2 className="w-4 h-4 me-1.5" />
-              {t("settings.removeModel")}
+              {t('settings.removeModel')}
             </Button>
           </div>
         </SettingGroup>
@@ -448,8 +520,8 @@ export default function KnowledgeBaseSettings() {
 
       {/* ── Indexing Control ── */}
       <SettingGroup
-        title={t("settings.knowledgeBaseIndexing")}
-        description={t("settings.knowledgeBaseIndexingDescription")}
+        title={t('settings.knowledgeBaseIndexing')}
+        description={t('settings.knowledgeBaseIndexingDescription')}
       >
         {indexingError && (
           <p className="text-xs text-danger flex items-center gap-1 mb-2">
@@ -460,16 +532,14 @@ export default function KnowledgeBaseSettings() {
         {showEmbeddingHint && (
           <p className="text-xs text-warning flex items-start gap-1.5 mb-2">
             <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            {aiProvider === "lmstudio"
-              ? t("settings.indexRequiresEmbeddingModel")
-              : t("settings.indexRequiresLmstudio")}
+            {aiProvider === 'lmstudio'
+              ? t('settings.indexRequiresEmbeddingModel')
+              : t('settings.indexRequiresLmstudio')}
           </p>
         )}
         <div className="space-y-2">
-          <SettingRow label={t("settings.lastIndexed")}>
-            <span className="text-sm text-text-secondary">
-              {formatTimeAgo(lastIndexedAt)}
-            </span>
+          <SettingRow label={t('settings.lastIndexed')}>
+            <span className="text-sm text-text-secondary">{formatTimeAgo(lastIndexedAt)}</span>
           </SettingRow>
 
           <IndexingProgress status={indexingStatus} />
@@ -482,15 +552,15 @@ export default function KnowledgeBaseSettings() {
               onClick={indexAll}
               disabled={!canIndex}
             >
-              {indexingStatus === "indexing" ? (
+              {indexingStatus === 'indexing' ? (
                 <>
                   <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
-                  {t("settings.indexing")}
+                  {t('settings.indexing')}
                 </>
               ) : (
                 <>
                   <Database className="w-4 h-4 me-1.5" />
-                  {t("settings.indexAllData")}
+                  {t('settings.indexAllData')}
                 </>
               )}
             </Button>
@@ -501,10 +571,10 @@ export default function KnowledgeBaseSettings() {
               size="sm"
               className="text-xs text-text-tertiary hover:text-text-secondary"
               onClick={indexAll}
-              disabled={indexingStatus === "indexing"}
+              disabled={indexingStatus === 'indexing'}
             >
               <RotateCcw className="w-3 h-3 me-1" />
-              {t("settings.reindex")}
+              {t('settings.reindex')}
             </Button>
           )}
         </div>
@@ -512,19 +582,19 @@ export default function KnowledgeBaseSettings() {
 
       {/* ── Vector Database ── */}
       <SettingGroup
-        title={t("settings.vectorDatabase")}
-        description={t("settings.vectorDatabaseDescription")}
+        title={t('settings.vectorDatabase')}
+        description={t('settings.vectorDatabaseDescription')}
       >
-        <SettingRow label={t("settings.vectorEngine")}>
-                <span className="text-sm text-text-secondary inline-flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5" />
-                  LanceDB (on-device)
-                </span>
-              </SettingRow>
-              <SettingRow label={t("settings.storageLocation")}>
-                <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-end">
-                  {kbPath ?? t("settings.kbLoading")}
-                </span>
+        <SettingRow label={t('settings.vectorEngine')}>
+          <span className="text-sm text-text-secondary inline-flex items-center gap-1.5">
+            <Cpu className="w-3.5 h-3.5" />
+            LanceDB (on-device)
+          </span>
+        </SettingRow>
+        <SettingRow label={t('settings.storageLocation')}>
+          <span className="text-xs font-mono text-text-tertiary max-w-[60%] truncate text-end">
+            {kbPath ?? t('settings.kbLoading')}
+          </span>
         </SettingRow>
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <Button
@@ -532,44 +602,42 @@ export default function KnowledgeBaseSettings() {
             size="sm"
             className="text-danger hover:text-danger"
             onClick={async () => {
-              const ok = window.confirm(
-                t("settings.clearIndexConfirm"),
-              );
+              const ok = window.confirm(t('settings.clearIndexConfirm'));
               if (!ok) return;
               try {
                 await aiResetVectorDb();
               } catch (err) {
-                console.error("[KnowledgeBaseSettings] reset failed", err);
+                console.error('[KnowledgeBaseSettings] reset failed', err);
               }
             }}
           >
             <Trash2 className="w-4 h-4 me-1.5" />
-            {t("settings.clearIndex")}
+            {t('settings.clearIndex')}
           </Button>
         </div>
       </SettingGroup>
 
       {/* ── Text Splitter / Chunking ── */}
       <SettingGroup
-        title={t("settings.textSplitter")}
-        description={t("settings.textSplitterDescription")}
+        title={t('settings.textSplitter')}
+        description={t('settings.textSplitterDescription')}
       >
-        <SettingRow label={t("settings.splitter")}>
+        <SettingRow label={t('settings.splitter')}>
           <select
             value={splitter}
             onChange={async (e) => {
               const v = e.target.value;
-              setSplitter(v as "paragraph" | "sentence" | "token");
-              await setSetting("rag_splitter", v);
+              setSplitter(v as 'paragraph' | 'sentence' | 'token');
+              await setSetting('rag_splitter', v);
             }}
             className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
           >
-            <option value="paragraph">{t("settings.splitterParagraph")}</option>
-            <option value="sentence">{t("settings.splitterSentence")}</option>
-            <option value="token">{t("settings.splitterToken")}</option>
+            <option value="paragraph">{t('settings.splitterParagraph')}</option>
+            <option value="sentence">{t('settings.splitterSentence')}</option>
+            <option value="token">{t('settings.splitterToken')}</option>
           </select>
         </SettingRow>
-        <SettingRow label={t("settings.chunkSize")}>
+        <SettingRow label={t('settings.chunkSize')}>
           <input
             type="number"
             min={100}
@@ -577,12 +645,12 @@ export default function KnowledgeBaseSettings() {
             value={chunkSize}
             onChange={(e) => setChunkSize(Number(e.target.value))}
             onBlur={async () => {
-              await setSetting("rag_chunk_size", String(chunkSize));
+              await setSetting('rag_chunk_size', String(chunkSize));
             }}
             className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
           />
         </SettingRow>
-        <SettingRow label={t("settings.chunkOverlap")}>
+        <SettingRow label={t('settings.chunkOverlap')}>
           <input
             type="number"
             min={0}
@@ -590,7 +658,7 @@ export default function KnowledgeBaseSettings() {
             value={chunkOverlap}
             onChange={(e) => setChunkOverlap(Number(e.target.value))}
             onBlur={async () => {
-              await setSetting("rag_chunk_overlap", String(chunkOverlap));
+              await setSetting('rag_chunk_overlap', String(chunkOverlap));
             }}
             className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
           />
@@ -602,16 +670,16 @@ export default function KnowledgeBaseSettings() {
         collapsible
         items={[
           {
-            type: "why",
-            text: t("settings.kbHelpWhy"),
+            type: 'why',
+            text: t('settings.kbHelpWhy'),
           },
           {
-            type: "how",
-            text: t("settings.kbHelpHow"),
+            type: 'how',
+            text: t('settings.kbHelpHow'),
           },
           {
-            type: "when",
-            text: t("settings.kbHelpWhen"),
+            type: 'when',
+            text: t('settings.kbHelpWhen'),
           },
         ]}
       />

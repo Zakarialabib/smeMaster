@@ -15,7 +15,7 @@
  *   // ^-- type inferred for both params and result
  */
 
-import type { LogEntry } from "@shared/services/logger";
+import type { LogEntry } from '@shared/services/logger';
 import type {
   Invoice,
   InvoiceItem,
@@ -29,7 +29,7 @@ import type {
   JournalEntry,
   PnlResult,
   Wallet,
-} from "@shared/services/db/schema";
+} from '@shared/services/db/schema';
 
 // Type for empty parameters to avoid ESLint "empty object" errors
 type EmptyParams = Record<string, never>;
@@ -37,8 +37,8 @@ type EmptyParams = Record<string, never>;
 // ── Subsystem lifecycle types ──────────────────────────────────────
 export interface SubsystemStatusResponse {
   name: string;
-  class: "always_on" | "lazy" | "on_demand";
-  status: "inactive" | "dormant" | "starting" | "active" | "shutting_down" | "failed";
+  class: 'always_on' | 'lazy' | 'on_demand';
+  status: 'inactive' | 'dormant' | 'starting' | 'active' | 'shutting_down' | 'failed';
   reason: string;
   uptime_secs?: number;
   error?: string;
@@ -126,7 +126,10 @@ export const TauriCommands = {
     params: { tag: '' as string, companyId: null as string | null, color: null as string | null },
     result: undefined as void,
   },
-  db_delete_task_tag: { params: { tag: '' as string, companyId: null as string | null }, result: undefined as void },
+  db_delete_task_tag: {
+    params: { tag: '' as string, companyId: null as string | null },
+    result: undefined as void,
+  },
   db_get_task_tag_by_tag: { params: { tag: '' as string }, result: null as unknown },
   db_get_tasks_for_account: {
     params: {
@@ -315,11 +318,18 @@ export const TauriCommands = {
 
   // ── Invoicing: invoices ───────────────────────────────────────────
   db_list_invoices: {
-    params: { companyId: '' as string, typeFilter: null as string | null, statusFilter: null as string | null },
+    params: {
+      companyId: '' as string,
+      typeFilter: null as string | null,
+      statusFilter: null as string | null,
+    },
     result: [] as Invoice[],
   },
   db_get_invoice: { params: { id: '' as string }, result: {} as Invoice },
-  db_get_invoice_with_items: { params: { invoiceId: '' as string }, result: {} as InvoiceWithItems },
+  db_get_invoice_with_items: {
+    params: { invoiceId: '' as string },
+    result: {} as InvoiceWithItems,
+  },
   db_create_invoice: {
     params: {
       companyId: '' as string,
@@ -375,11 +385,17 @@ export const TauriCommands = {
     result: {} as InvoiceItem,
   },
   db_remove_invoice_item: { params: { itemId: '' as string }, result: undefined as void },
-  db_update_invoice_status: { params: { id: '' as string, status: '' as string }, result: undefined as void },
+  db_update_invoice_status: {
+    params: { id: '' as string, status: '' as string },
+    result: undefined as void,
+  },
   db_calculate_invoice: { params: { invoiceId: '' as string }, result: {} as Invoice },
 
   // ── Invoicing: clients ─────────────────────────────────────────────
-  db_list_clients: { params: { companyId: '' as string, role: null as string | null }, result: [] as Client[] },
+  db_list_clients: {
+    params: { companyId: '' as string, role: null as string | null },
+    result: [] as Client[],
+  },
   db_get_client: { params: { id: '' as string }, result: {} as Client },
   db_create_client: {
     params: {
@@ -415,10 +431,16 @@ export const TauriCommands = {
     },
     result: {} as Client,
   },
-  db_delete_client: { params: { id: '' as string, hard: null as boolean | null }, result: undefined as void },
+  db_delete_client: {
+    params: { id: '' as string, hard: null as boolean | null },
+    result: undefined as void,
+  },
 
   // ── Invoicing: company settings ───────────────────────────────────
-  db_get_company_settings: { params: { companyId: '' as string }, result: null as CompanySetting | null },
+  db_get_company_settings: {
+    params: { companyId: '' as string },
+    result: null as CompanySetting | null,
+  },
   db_upsert_company_settings: {
     params: {
       companyId: '' as string,
@@ -444,7 +466,10 @@ export const TauriCommands = {
   // ── Invoicing: categories ─────────────────────────────────────────
   db_list_categories: { params: { companyId: '' as string }, result: [] as Category[] },
   db_get_category: { params: { id: '' as string }, result: {} as Category },
-  db_create_category: { params: { name: '' as string, companyId: '' as string }, result: {} as Category },
+  db_create_category: {
+    params: { name: '' as string, companyId: '' as string },
+    result: {} as Category,
+  },
   db_update_category: { params: { id: '' as string, name: '' as string }, result: {} as Category },
   db_delete_category: { params: { id: '' as string }, result: undefined as void },
 
@@ -543,8 +568,14 @@ export const TauriCommands = {
   },
 
   // ── Invoicing: documents & delivery ───────────────────────────────
-  db_generate_invoice_documents: { params: { invoiceId: '' as string }, result: ['', ''] as [string, string] },
-  db_send_invoice: { params: { invoiceId: '' as string, to: null as string | null }, result: '' as string },
+  db_generate_invoice_documents: {
+    params: { invoiceId: '' as string },
+    result: ['', ''] as [string, string],
+  },
+  db_send_invoice: {
+    params: { invoiceId: '' as string, to: null as string | null },
+    result: '' as string,
+  },
 
   // ── ERP: accounting (double-entry ledger) ─────────────────────────
   db_ensure_chart_of_accounts: { params: { companyId: '' as string }, result: undefined as void },
@@ -557,11 +588,21 @@ export const TauriCommands = {
   db_ensure_wallet: { params: { companyId: '' as string }, result: {} as Wallet },
   db_get_wallet: { params: { companyId: '' as string }, result: {} as Wallet },
   db_credit_wallet: {
-    params: { companyId: '' as string, amount: 0 as number, reference: null as string | null, description: null as string | null },
+    params: {
+      companyId: '' as string,
+      amount: 0 as number,
+      reference: null as string | null,
+      description: null as string | null,
+    },
     result: {} as Wallet,
   },
   db_debit_wallet: {
-    params: { companyId: '' as string, amount: 0 as number, reference: null as string | null, description: null as string | null },
+    params: {
+      companyId: '' as string,
+      amount: 0 as number,
+      reference: null as string | null,
+      description: null as string | null,
+    },
     result: {} as Wallet,
   },
 } as const;

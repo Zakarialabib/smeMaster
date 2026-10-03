@@ -10,14 +10,14 @@
  * without a compiled Tauri backend) so local UI work still has something to
  * render. It is never shipped to production.
  */
-import { create } from "zustand";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import type { DbStatusSnapshot, SubsystemStatusSnapshot } from "@shared/services/commands";
+import { create } from 'zustand';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import type { DbStatusSnapshot, SubsystemStatusSnapshot } from '@shared/services/commands';
 
 export interface ServiceHealth {
   id: string;
   name: string;
-  status: "running" | "degraded" | "stopped";
+  status: 'running' | 'degraded' | 'stopped';
   lastHeartbeat: number | null;
   uptimeMs: number | null;
   error?: string;
@@ -37,72 +37,72 @@ interface HealthState {
 /** Dev-only mock so local UI work has data without a compiled backend. */
 const DEV_MOCK_SERVICES: ServiceHealth[] = [
   {
-    id: "email-sync",
-    name: "Email Sync",
-    status: "running",
+    id: 'email-sync',
+    name: 'Email Sync',
+    status: 'running',
     lastHeartbeat: Date.now() - 5_000,
     uptimeMs: 4 * 3600 * 1000 + 23 * 60 * 1000,
   },
   {
-    id: "idle-watchdog",
-    name: "IDLE Watchdog",
-    status: "running",
+    id: 'idle-watchdog',
+    name: 'IDLE Watchdog',
+    status: 'running',
     lastHeartbeat: Date.now() - 12_000,
     uptimeMs: 8 * 3600 * 1000,
   },
   {
-    id: "background-sync",
-    name: "Background Sync",
-    status: "running",
+    id: 'background-sync',
+    name: 'Background Sync',
+    status: 'running',
     lastHeartbeat: Date.now() - 60_000,
     uptimeMs: 2 * 3600 * 1000 + 15 * 60 * 1000,
   },
   {
-    id: "oauth-monitor",
-    name: "OAuth Monitor",
-    status: "running",
+    id: 'oauth-monitor',
+    name: 'OAuth Monitor',
+    status: 'running',
     lastHeartbeat: Date.now() - 30_000,
     uptimeMs: 12 * 3600 * 1000,
   },
   {
-    id: "push-notifications",
-    name: "Push Notifications",
-    status: "degraded",
+    id: 'push-notifications',
+    name: 'Push Notifications',
+    status: 'degraded',
     lastHeartbeat: Date.now() - 5 * 60 * 1000,
     uptimeMs: 6 * 3600 * 1000,
-    error: "Reconnection attempt 3/5 failed",
+    error: 'Reconnection attempt 3/5 failed',
   },
   {
-    id: "calendar-sync",
-    name: "Calendar Sync",
-    status: "running",
+    id: 'calendar-sync',
+    name: 'Calendar Sync',
+    status: 'running',
     lastHeartbeat: Date.now() - 45_000,
     uptimeMs: 24 * 3600 * 1000,
   },
   {
-    id: "crdt-merger",
-    name: "CRDT Merger",
-    status: "running",
+    id: 'crdt-merger',
+    name: 'CRDT Merger',
+    status: 'running',
     lastHeartbeat: Date.now() - 2_000,
     uptimeMs: 48 * 3600 * 1000,
   },
   {
-    id: "backup-daemon",
-    name: "Backup Daemon",
-    status: "stopped",
+    id: 'backup-daemon',
+    name: 'Backup Daemon',
+    status: 'stopped',
     lastHeartbeat: Date.now() - 3600 * 1000,
     uptimeMs: null,
-    error: "Scheduled backup disabled by user",
+    error: 'Scheduled backup disabled by user',
   },
 ];
 
 function mapSubsystemToHealth(s: SubsystemStatusSnapshot): ServiceHealth {
-  const status: ServiceHealth["status"] =
-    s.status === "failed" || s.status === "shutting_down"
-      ? "stopped"
-      : s.status === "inactive" || s.status === "dormant" || s.status === "starting"
-        ? "degraded"
-        : "running";
+  const status: ServiceHealth['status'] =
+    s.status === 'failed' || s.status === 'shutting_down'
+      ? 'stopped'
+      : s.status === 'inactive' || s.status === 'dormant' || s.status === 'starting'
+        ? 'degraded'
+        : 'running';
   return {
     id: s.name,
     name: s.name,
@@ -128,7 +128,7 @@ export const useHealthStore = create<HealthState>((set) => ({
   refresh: async () => {
     set({ loading: true });
     try {
-      const snapshot = await invokeCommand<DbStatusSnapshot>("db_status_snapshot");
+      const snapshot = await invokeCommand<DbStatusSnapshot>('db_status_snapshot');
       const services = snapshot.subsystems.map(mapSubsystemToHealth);
       set({
         services,

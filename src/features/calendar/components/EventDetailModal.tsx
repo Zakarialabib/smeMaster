@@ -1,13 +1,13 @@
-import { useState, useCallback } from "react";
-import { MapPin, Clock, User, Pencil, Trash2, ListTodo, Send, Mail } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { Modal } from "@shared/components/ui/Modal";
-import { TextField } from "@shared/components/ui/TextField";
-import type { DbCalendarEvent } from "@features/calendar/db/calendarEvents";
-import type { DbCalendar } from "@features/calendar/db/calendars";
-import { getCalendarProvider } from "@features/calendar/services/providerFactory";
-import { deleteCalendarEvent as deleteCalendarEventDb } from "@features/calendar/db/calendarEvents";
-import { type IntegratedItemType } from "./EventCard";
+import { useState, useCallback } from 'react';
+import { MapPin, Clock, User, Pencil, Trash2, ListTodo, Send, Mail } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
+import { TextField } from '@shared/components/ui/TextField';
+import type { DbCalendarEvent } from '@features/calendar/db/calendarEvents';
+import type { DbCalendar } from '@features/calendar/db/calendars';
+import { getCalendarProvider } from '@features/calendar/services/providerFactory';
+import { deleteCalendarEvent as deleteCalendarEventDb } from '@features/calendar/db/calendarEvents';
+import { type IntegratedItemType } from './EventCard';
 
 interface EventDetailModalProps {
   event: DbCalendarEvent | any;
@@ -18,11 +18,18 @@ interface EventDetailModalProps {
   onUpdated: () => void;
 }
 
-export function EventDetailModal({ event, type = 'event', calendars, accountId, onClose, onUpdated }: EventDetailModalProps) {
+export function EventDetailModal({
+  event,
+  type = 'event',
+  calendars,
+  accountId,
+  onClose,
+  onUpdated,
+}: EventDetailModalProps) {
   const [editing, setEditing] = useState(false);
-  const [summary, setSummary] = useState(event.summary ?? "");
-  const [description, setDescription] = useState(event.description ?? "");
-  const [location, setLocation] = useState(event.location ?? "");
+  const [summary, setSummary] = useState(event.summary ?? '');
+  const [description, setDescription] = useState(event.description ?? '');
+  const [location, setLocation] = useState(event.location ?? '');
   const [startTime, setStartTime] = useState(toLocalISOString(new Date(event.start_time * 1000)));
   const [endTime, setEndTime] = useState(toLocalISOString(new Date(event.end_time * 1000)));
   const [saving, setSaving] = useState(false);
@@ -36,18 +43,23 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
     try {
       if (type === 'event') {
         const provider = await getCalendarProvider(accountId);
-        const calendarRemoteId = calendar?.remote_id ?? "primary";
+        const calendarRemoteId = calendar?.remote_id ?? 'primary';
         const remoteEventId = event.remote_event_id ?? event.google_event_id;
 
-        await provider.updateEvent(calendarRemoteId, remoteEventId, {
-          summary,
-          description: description || undefined,
-          location: location || undefined,
-          startTime: new Date(startTime).toISOString(),
-          endTime: new Date(endTime).toISOString(),
-        }, event.etag ?? undefined);
+        await provider.updateEvent(
+          calendarRemoteId,
+          remoteEventId,
+          {
+            summary,
+            description: description || undefined,
+            location: location || undefined,
+            startTime: new Date(startTime).toISOString(),
+            endTime: new Date(endTime).toISOString(),
+          },
+          event.etag ?? undefined,
+        );
       } else if (type === 'task') {
-        const { updateTask } = await import("@features/tasks/db/tasks");
+        const { updateTask } = await import('@features/tasks/db/tasks');
         await updateTask(event.id, {
           title: summary,
           description,
@@ -57,33 +69,44 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
 
       onUpdated();
     } catch (err) {
-      console.error("Failed to update event:", err);
+      console.error('Failed to update event:', err);
     } finally {
       setSaving(false);
     }
-  }, [accountId, calendar, event, summary, description, location, startTime, endTime, type, onUpdated]);
+  }, [
+    accountId,
+    calendar,
+    event,
+    summary,
+    description,
+    location,
+    startTime,
+    endTime,
+    type,
+    onUpdated,
+  ]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
     try {
       if (type === 'event') {
         const provider = await getCalendarProvider(accountId);
-        const calendarRemoteId = calendar?.remote_id ?? "primary";
+        const calendarRemoteId = calendar?.remote_id ?? 'primary';
         const remoteEventId = event.remote_event_id ?? event.google_event_id;
 
         await provider.deleteEvent(calendarRemoteId, remoteEventId, event.etag ?? undefined);
         await deleteCalendarEventDb(event.id);
       } else if (type === 'task') {
-        const { deleteTask } = await import("@features/tasks/db/tasks");
+        const { deleteTask } = await import('@features/tasks/db/tasks');
         await deleteTask(event.id);
       } else if (type === 'scheduled_email') {
-        const { deleteScheduledEmail } = await import("@features/mail/db/scheduledEmails");
+        const { deleteScheduledEmail } = await import('@features/mail/db/scheduledEmails');
         await deleteScheduledEmail(event.id);
       }
 
       onUpdated();
     } catch (err) {
-      console.error("Failed to delete event:", err);
+      console.error('Failed to delete event:', err);
     } finally {
       setDeleting(false);
     }
@@ -91,15 +114,17 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
 
   const formatTime = (ts: number) => {
     return new Date(ts * 1000).toLocaleString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
     });
   };
 
-  const attendees = event.attendees_json ? JSON.parse(event.attendees_json) as { email: string; displayName?: string }[] : [];
+  const attendees = event.attendees_json
+    ? (JSON.parse(event.attendees_json) as { email: string; displayName?: string }[])
+    : [];
 
   if (editing) {
     return (
@@ -151,8 +176,13 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
             <Button variant="secondary" size="md" onClick={() => setEditing(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="md" onClick={handleSave} disabled={saving || !summary.trim()}>
-              {saving ? "Saving..." : "Save"}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleSave}
+              disabled={saving || !summary.trim()}
+            >
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
@@ -171,14 +201,17 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
     if (type === 'task') return '#8b5cf6';
     if (type === 'campaign') return '#10b981';
     if (type === 'scheduled_email') return '#3b82f6';
-    return calendar?.color ?? "var(--color-accent)";
+    return calendar?.color ?? 'var(--color-accent)';
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={summary || "Detail"} width="w-full max-w-md">
+    <Modal isOpen={true} onClose={onClose} title={summary || 'Detail'} width="w-full max-w-md">
       <div className="p-4 space-y-3">
         {(calendar || type !== 'event') && (
-          <div className="flex items-center gap-2 text-xs font-medium" style={{ color: getTypeColor() }}>
+          <div
+            className="flex items-center gap-2 text-xs font-medium"
+            style={{ color: getTypeColor() }}
+          >
             {getTypeIcon() || (
               <span
                 className="w-2.5 h-2.5 rounded-full"
@@ -230,7 +263,7 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
             <div className="flex items-center gap-2">
               <span className="text-xs text-danger">Delete this {type.replace('_', ' ')}?</span>
               <Button variant="danger" size="sm" onClick={handleDelete} disabled={deleting}>
-                {deleting ? "Deleting..." : "Yes, delete"}
+                {deleting ? 'Deleting...' : 'Yes, delete'}
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setConfirmDelete(false)}>
                 Cancel
@@ -264,7 +297,6 @@ export function EventDetailModal({ event, type = 'event', calendars, accountId, 
 }
 
 function toLocalISOString(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
+  const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
-

@@ -27,23 +27,22 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: bun run typecheck
 
       - name: ESLint
-        run: npx eslint src
+        run: bun run lint
 
       - name: Frontend tests
-        run: npx vitest run --project unit --reporter=default
+        run: bun run test --project unit --reporter=default
 
       # Core app only — no ML sidecar (no protoc needed)
       - name: Rust check (core app only)
@@ -55,7 +54,7 @@ jobs:
         working-directory: src-tauri
 
       - name: Vite build
-        run: npm run build
+        run: bun run build
 
   # Separate job: build the ML sidecar (requires protoc)
   build-ml-sidecar:
@@ -78,7 +77,12 @@ jobs:
         run: choco install protoc -y --no-progress
 
       - name: Build ML sidecar
-        run: cargo build -p ml-sidecar --release --no-default-features
+      # NOTE: --features offline-speech pulls sherpa-onnx, whose build script
+      # DOWNLOADS a ~117 MB prebuilt archive. If CI ever fails here with
+      # "cannot decrypt peer's message", pre-fetch the archive and set
+      # SHERPA_ONNX_ARCHIVE_DIR (see scripts/build-sidecar.sh). Without this
+      # feature the sidecar answers "unknown method" to every speech call.
+        run: cargo build -p ml-sidecar --release --no-default-features --features offline-speech
         working-directory: src-tauri
 
       - name: Copy to binaries/

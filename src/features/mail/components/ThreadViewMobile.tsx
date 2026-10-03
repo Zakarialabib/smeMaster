@@ -1,29 +1,29 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, AlertCircle, File } from "lucide-react";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { useSelectedThreadId } from "@shared/hooks/useRouteNavigation";
-import { useThreadStore } from "@features/mail/stores/threadStore";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { PullToRefresh } from "@shared/components/ui/PullToRefresh";
-import { getMessagesForThread } from "@shared/services/db/messages";
-import { getAttachmentsForMessage, type DbAttachment } from "@shared/services/db/attachments";
-import { isImage } from "@shared/utils/fileTypeHelpers";
-import { ThreadView } from "./ThreadView";
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { ArrowLeft, Loader2, AlertCircle, File } from 'lucide-react';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { useSelectedThreadId } from '@shared/hooks/useRouteNavigation';
+import { useThreadStore } from '@features/mail/stores/threadStore';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { PullToRefresh } from '@shared/components/ui/PullToRefresh';
+import { getMessagesForThread } from '@shared/services/db/messages';
+import { getAttachmentsForMessage, type DbAttachment } from '@shared/services/db/attachments';
+import { isImage } from '@shared/utils/fileTypeHelpers';
+import { ThreadView } from './ThreadView';
 
 function getExtension(filename: string): string {
-  const dot = filename.lastIndexOf(".");
-  return dot >= 0 ? filename.slice(dot + 1).toUpperCase() : "FILE";
+  const dot = filename.lastIndexOf('.');
+  return dot >= 0 ? filename.slice(dot + 1).toUpperCase() : 'FILE';
 }
 
 export function ThreadViewMobile() {
   const { screen } = usePlatform();
   const isMobileDevice = screen.isMobile;
-  
+
   const navigate = useNavigate();
   const selectedThreadId = useSelectedThreadId();
   const selectedThread = useThreadStore((s) =>
-    selectedThreadId ? s.threadMap.get(selectedThreadId) ?? null : null,
+    selectedThreadId ? (s.threadMap.get(selectedThreadId) ?? null) : null,
   );
   const isLoadingStore = useThreadStore((s) => s.isLoading);
   const accountId = useAccountStore((s) => s.activeAccountId);
@@ -47,9 +47,7 @@ export function ThreadViewMobile() {
     getMessagesForThread(accountId, selectedThreadId)
       .then((msgs) => {
         if (cancelled) return [];
-        return Promise.all(
-          msgs.map((msg) => getAttachmentsForMessage(accountId, msg.id)),
-        );
+        return Promise.all(msgs.map((msg) => getAttachmentsForMessage(accountId, msg.id)));
       })
       .then((results) => {
         if (cancelled) return;
@@ -58,7 +56,7 @@ export function ThreadViewMobile() {
       })
       .catch((err) => {
         if (cancelled) return;
-        setAttachmentError("Failed to load attachments");
+        setAttachmentError('Failed to load attachments');
         console.error(err);
       })
       .finally(() => {
@@ -89,7 +87,7 @@ export function ThreadViewMobile() {
     (e: React.TouchEvent) => {
       const dx = e.changedTouches[0]!.clientX - touchStartXRef.current;
       if (touchStartXRef.current < 40 && dx > 80) {
-        navigate({ to: ".." });
+        navigate({ to: '..' });
       }
     },
     [navigate],
@@ -147,15 +145,15 @@ export function ThreadViewMobile() {
         {/* Mobile header with back button */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border-primary bg-sidebar-bg safe-area-top shadow-sm">
           <button
-            onClick={() => navigate({ to: ".." })}
-            className="p-2 -ml-2 active:scale-90 transition-transform duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            onClick={() => navigate({ to: '..' })}
+            className="p-2 -ms-2 active:scale-90 transition-transform duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Go back"
           >
             <ArrowLeft size={22} />
           </button>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-medium truncate">
-              {selectedThread.subject || "No subject"}
+              {selectedThread.subject || 'No subject'}
             </h2>
           </div>
         </div>
@@ -165,7 +163,10 @@ export function ThreadViewMobile() {
           <div className="px-4 py-2 border-b border-border-primary">
             <div className="flex gap-2 overflow-x-auto scrollbar-none">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="w-18 h-18 rounded-lg border border-border-primary bg-sidebar-bg animate-pulse shrink-0" />
+                <div
+                  key={i}
+                  className="w-18 h-18 rounded-lg border border-border-primary bg-sidebar-bg animate-pulse shrink-0"
+                />
               ))}
             </div>
           </div>
@@ -178,8 +179,8 @@ export function ThreadViewMobile() {
                     <div className="w-18 h-18 rounded-lg border border-border-primary overflow-hidden bg-sidebar-bg min-h-[44px] min-w-[44px]">
                       {att.local_path ? (
                         <img
-                          src={`file://${att.local_path.replace(/\\/g, "/")}`}
-                          alt={att.filename ?? "Image attachment"}
+                          src={`file://${att.local_path.replace(/\\/g, '/')}`}
+                          alt={att.filename ?? 'Image attachment'}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
@@ -187,7 +188,7 @@ export function ThreadViewMobile() {
                         <div className="w-full h-full flex flex-col items-center justify-center">
                           <File size={20} className="text-text-tertiary" />
                           <span className="text-[9px] text-text-tertiary mt-0.5 truncate max-w-[64px] px-1">
-                            {att.filename ? getExtension(att.filename) : "IMG"}
+                            {att.filename ? getExtension(att.filename) : 'IMG'}
                           </span>
                         </div>
                       )}
@@ -196,7 +197,7 @@ export function ThreadViewMobile() {
                     <div className="w-18 h-18 rounded-lg border border-border-primary bg-sidebar-bg flex flex-col items-center justify-center min-h-[44px] min-w-[44px]">
                       <File size={20} className="text-text-tertiary" />
                       <span className="text-[9px] text-text-tertiary mt-0.5 truncate max-w-[64px] px-1">
-                        {att.filename ? getExtension(att.filename) : "FILE"}
+                        {att.filename ? getExtension(att.filename) : 'FILE'}
                       </span>
                     </div>
                   )}
@@ -205,7 +206,7 @@ export function ThreadViewMobile() {
             </div>
           </div>
         ) : null}
- 
+
         {/* Thread content — reuses existing ThreadView */}
         <div className="flex-1 overflow-hidden safe-area-bottom">
           <ThreadView thread={selectedThread} />
@@ -214,6 +215,3 @@ export function ThreadViewMobile() {
     </PullToRefresh>
   );
 }
-
-
-

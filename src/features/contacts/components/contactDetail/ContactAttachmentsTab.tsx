@@ -1,8 +1,17 @@
-import { useState, useEffect } from "react";
-import { Paperclip, FileText, Image, File, Archive, AlertCircle, RefreshCw, Clock } from "lucide-react";
-import { getAttachmentsFromContact, type ContactAttachment } from "@features/contacts/db/contacts";
-import { formatRelativeDate } from "@shared/utils/date";
-import { EmptyState } from "@shared/components/ui/EmptyState";
+import { useState, useEffect } from 'react';
+import {
+  Paperclip,
+  FileText,
+  Image,
+  File,
+  Archive,
+  AlertCircle,
+  RefreshCw,
+  Clock,
+} from 'lucide-react';
+import { getAttachmentsFromContact, type ContactAttachment } from '@features/contacts/db/contacts';
+import { formatRelativeDate } from '@shared/utils/date';
+import { EmptyState } from '@shared/components/ui/EmptyState';
 
 export interface ContactAttachmentsTabProps {
   email: string;
@@ -12,14 +21,14 @@ export interface ContactAttachmentsTabProps {
 
 function getFileIcon(mimeType: string | null) {
   if (!mimeType) return File;
-  if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.startsWith("text/")) return FileText;
-  if (mimeType.includes("pdf")) return FileText;
+  if (mimeType.startsWith('image/')) return Image;
+  if (mimeType.startsWith('text/')) return FileText;
+  if (mimeType.includes('pdf')) return FileText;
   if (
-    mimeType.includes("zip") ||
-    mimeType.includes("rar") ||
-    mimeType.includes("tar") ||
-    mimeType.includes("7z")
+    mimeType.includes('zip') ||
+    mimeType.includes('rar') ||
+    mimeType.includes('tar') ||
+    mimeType.includes('7z')
   ) {
     return Archive;
   }
@@ -27,7 +36,7 @@ function getFileIcon(mimeType: string | null) {
 }
 
 function formatFileSize(bytes: number | null): string {
-  if (bytes === null || bytes === undefined) return "";
+  if (bytes === null || bytes === undefined) return '';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -39,7 +48,10 @@ function LoadingSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-5">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border-primary animate-pulse">
+        <div
+          key={i}
+          className="flex items-start gap-3 p-3 rounded-xl border border-border-primary animate-pulse"
+        >
           <div className="w-10 h-10 rounded-lg bg-bg-tertiary shrink-0" />
           <div className="flex-1 space-y-1.5">
             <div className="h-3.5 bg-bg-tertiary rounded w-3/4" />
@@ -70,7 +82,7 @@ export function ContactAttachmentsTab({ email }: ContactAttachmentsTabProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load attachments");
+          setError(err instanceof Error ? err.message : 'Failed to load attachments');
         }
       })
       .finally(() => {
@@ -98,7 +110,9 @@ export function ContactAttachmentsTab({ email }: ContactAttachmentsTabProps) {
             setError(null);
             getAttachmentsFromContact(email, 20)
               .then(setAttachments)
-              .catch((err) => setError(err instanceof Error ? err.message : "Failed to load attachments"))
+              .catch((err) =>
+                setError(err instanceof Error ? err.message : 'Failed to load attachments'),
+              )
               .finally(() => setLoading(false));
           }}
           className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
@@ -135,9 +149,7 @@ export function ContactAttachmentsTab({ email }: ContactAttachmentsTabProps) {
               <Icon size={18} className="text-accent" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">
-                {att.filename}
-              </p>
+              <p className="text-sm font-medium text-text-primary truncate">{att.filename}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 {att.size !== null && att.size !== undefined && (
                   <span className="text-[0.6rem] text-text-tertiary">

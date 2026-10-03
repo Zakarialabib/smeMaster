@@ -3,7 +3,7 @@ import {
   updateContactScore as dbUpdateContactScoreCmd,
   batchUpdateContactScores as dbBatchUpdateContactScores,
   executeSearchQuery,
-} from "@shared/services/db/db-invoke";
+} from '@shared/services/db/db-invoke';
 
 /**
  * Unified engagement scoring algorithm (A1).
@@ -55,24 +55,26 @@ export function computeUnifiedScore(input: UnifiedContactInput): number {
   // ── Email signals ──────────────────────────────────────────────────
   const recencyFactor = Math.min(1.0, 30 / Math.max(1, input.daysSinceLastContact));
   const frequencyFactor = Math.min(1.0, input.contactsLast30d / 10);
-  const replyRate = input.emailsReceived > 0
-    ? Math.min(1.0, input.repliesSent / input.emailsReceived)
-    : 0;
+  const replyRate =
+    input.emailsReceived > 0 ? Math.min(1.0, input.repliesSent / input.emailsReceived) : 0;
 
   // ── Task signals ───────────────────────────────────────────────────
-  const taskFactor = input.totalAssignedTasksLast90d > 0
-    ? Math.min(1.0, input.tasksCompletedLast90d / input.totalAssignedTasksLast90d)
-    : 0;
+  const taskFactor =
+    input.totalAssignedTasksLast90d > 0
+      ? Math.min(1.0, input.tasksCompletedLast90d / input.totalAssignedTasksLast90d)
+      : 0;
 
   // ── Campaign signals ────────────────────────────────────────────────
-  const campaignFactor = Math.min(1.0,
+  const campaignFactor = Math.min(
+    1.0,
     (input.campaignOpensLast90d * 2 + input.campaignClicksLast90d * 3) / 20,
   );
 
   // ── Calendar signals ────────────────────────────────────────────────
-  const calendarFactor = input.totalMeetingsLast90d > 0
-    ? Math.min(1.0, input.meetingsAttendedLast90d / input.totalMeetingsLast90d)
-    : 0;
+  const calendarFactor =
+    input.totalMeetingsLast90d > 0
+      ? Math.min(1.0, input.meetingsAttendedLast90d / input.totalMeetingsLast90d)
+      : 0;
 
   const score =
     WEIGHTS.emailRecency * recencyFactor +
@@ -108,9 +110,8 @@ export interface ContactEngagementInput {
 export function computeEngagementScore(input: ContactEngagementInput): number {
   const recencyFactor = Math.min(1.0, 30 / Math.max(1, input.daysSinceLastContact));
   const frequencyFactor = Math.min(1.0, input.contactsLast30d / 10);
-  const replyRate = input.emailsReceived > 0
-    ? Math.min(1.0, input.repliesSent / input.emailsReceived)
-    : 0;
+  const replyRate =
+    input.emailsReceived > 0 ? Math.min(1.0, input.repliesSent / input.emailsReceived) : 0;
   const score = 0.4 * recencyFactor + 0.3 * frequencyFactor + 0.3 * replyRate;
   return Math.min(1.0, Math.max(0, score));
 }
@@ -123,7 +124,10 @@ export async function getEngagementDataForContact(email: string): Promise<Contac
  * Fetch expanded unified engagement data for a contact from all sources.
  * Falls back gracefully if a query fails (logs warning, returns 0 for that dimension).
  */
-export async function getUnifiedDataForContact(contactId: string, email: string): Promise<UnifiedContactInput> {
+export async function getUnifiedDataForContact(
+  contactId: string,
+  email: string,
+): Promise<UnifiedContactInput> {
   const emailData = await dbGetEngagementDataForContact(email).catch(() => ({
     daysSinceLastContact: 999,
     contactsLast30d: 0,
@@ -146,7 +150,9 @@ export async function getUnifiedDataForContact(contactId: string, email: string)
       tasksCompletedLast90d = Number(taskRows[0]!.completed ?? 0);
       totalAssignedTasksLast90d = Number(taskRows[0]!.total ?? 0);
     }
-  } catch { /* query not available — silent fallback */ }
+  } catch {
+    /* query not available — silent fallback */
+  }
 
   // Query campaign engagement
   let campaignOpensLast90d = 0;
@@ -164,7 +170,9 @@ export async function getUnifiedDataForContact(contactId: string, email: string)
       campaignOpensLast90d = Number(campRows[0]!.opens ?? 0);
       campaignClicksLast90d = Number(campRows[0]!.clicks ?? 0);
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 
   // Query calendar engagement
   let meetingsAttendedLast90d = 0;
@@ -182,7 +190,9 @@ export async function getUnifiedDataForContact(contactId: string, email: string)
       meetingsAttendedLast90d = Number(calRows[0]!.attended ?? 0);
       totalMeetingsLast90d = Number(calRows[0]!.total ?? 0);
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 
   return {
     daysSinceLastContact: emailData.daysSinceLastContact,
@@ -203,10 +213,7 @@ export async function getUnifiedDataForContact(contactId: string, email: string)
  * Fetches data from all available sources and computes a weighted score.
  */
 export async function updateContactScore(contactId: string): Promise<void> {
-  const rows = await executeSearchQuery(
-    "SELECT email FROM contacts WHERE id = $1",
-    [contactId],
-  );
+  const rows = await executeSearchQuery('SELECT email FROM contacts WHERE id = $1', [contactId]);
   if (rows.length === 0) return;
 
   const email = rows[0]!.email as string;

@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { HELP_CATEGORIES, getAllCards, getCategoryById } from "@/constants/helpContent";
+import { describe, it, expect } from 'vitest';
+import { HELP_CATEGORIES, getAllCards, getCategoryById } from '@/constants/helpContent';
 
 /**
  * Tests for Help page search/filter logic and data integrity.
@@ -20,64 +20,64 @@ function filterCards(query: string) {
   });
 }
 
-describe("HelpPage search filtering", () => {
-  it("matches cards by title", () => {
-    const results = filterCards("snooze");
+describe('HelpPage search filtering', () => {
+  it('matches cards by title', () => {
+    const results = filterCards('snooze');
     expect(results).not.toBeNull();
-    expect(results!.some((c) => c.id === "snooze")).toBe(true);
+    expect(results!.some((c) => c.id === 'snooze')).toBe(true);
   });
 
-  it("matches cards by description", () => {
-    const results = filterCards("rich text editor");
+  it('matches cards by description', () => {
+    const results = filterCards('rich text editor');
     expect(results).not.toBeNull();
-    expect(results!.some((c) => c.id === "new-email")).toBe(true);
+    expect(results!.some((c) => c.id === 'new-email')).toBe(true);
   });
 
-  it("matches cards by tip text", () => {
-    const results = filterCards("drag and drop");
+  it('matches cards by tip text', () => {
+    const results = filterCards('drag and drop');
     expect(results).not.toBeNull();
-    expect(results!.some((c) => c.id === "labels")).toBe(true);
+    expect(results!.some((c) => c.id === 'labels')).toBe(true);
   });
 
-  it("empty query returns null (shows active topic)", () => {
-    expect(filterCards("")).toBeNull();
-    expect(filterCards("   ")).toBeNull();
+  it('empty query returns null (shows active topic)', () => {
+    expect(filterCards('')).toBeNull();
+    expect(filterCards('   ')).toBeNull();
   });
 
-  it("search is case-insensitive", () => {
-    const lower = filterCards("archive");
-    const upper = filterCards("ARCHIVE");
+  it('search is case-insensitive', () => {
+    const lower = filterCards('archive');
+    const upper = filterCards('ARCHIVE');
     expect(lower).not.toBeNull();
     expect(upper).not.toBeNull();
     expect(lower!.length).toBe(upper!.length);
   });
 
-  it("nonsense query returns empty array", () => {
-    const results = filterCards("xyzzyqwerty12345");
+  it('nonsense query returns empty array', () => {
+    const results = filterCards('xyzzyqwerty12345');
     expect(results).not.toBeNull();
     expect(results!.length).toBe(0);
   });
 });
 
-describe("HelpPage topic fallback", () => {
-  it("valid topic resolves to correct category", () => {
-    const cat = getCategoryById("composing");
+describe('HelpPage topic fallback', () => {
+  it('valid topic resolves to correct category', () => {
+    const cat = getCategoryById('composing');
     expect(cat).toBeDefined();
-    expect(cat!.label).toBe("Composing & Sending");
+    expect(cat!.label).toBe('Composing & Sending');
   });
 
-  it("invalid topic falls back (getCategoryById returns undefined)", () => {
-    const cat = getCategoryById("invalid-topic-slug");
+  it('invalid topic falls back (getCategoryById returns undefined)', () => {
+    const cat = getCategoryById('invalid-topic-slug');
     expect(cat).toBeUndefined();
   });
 
-  it("getting-started is a valid default topic", () => {
-    expect(getCategoryById("getting-started")).toBeDefined();
+  it('getting-started is a valid default topic', () => {
+    expect(getCategoryById('getting-started')).toBeDefined();
   });
 });
 
-describe("HelpPage card expansion", () => {
-  it("cards with tips or relatedSettingsTab are expandable", () => {
+describe('HelpPage card expansion', () => {
+  it('cards with tips or relatedSettingsTab are expandable', () => {
     const allCards = getAllCards();
     const expandable = allCards.filter(
       (c) => (c.tips && c.tips.length > 0) || c.relatedSettingsTab,
@@ -86,7 +86,7 @@ describe("HelpPage card expansion", () => {
     expect(expandable.length).toBeGreaterThan(allCards.length / 2);
   });
 
-  it("every card tip with a shortcut has non-empty shortcut text", () => {
+  it('every card tip with a shortcut has non-empty shortcut text', () => {
     const allCards = getAllCards();
     for (const card of allCards) {
       if (card.tips) {
@@ -100,32 +100,32 @@ describe("HelpPage card expansion", () => {
   });
 });
 
-describe("HelpPage categories cover all expected topics", () => {
+describe('HelpPage categories cover all expected topics', () => {
   const expectedIds = [
-    "getting-started",
-    "reading-email",
-    "composing",
-    "search-navigation",
-    "organization",
-    "productivity",
-    "ai-features",
-    "newsletters",
-    "notifications-contacts",
-    "security",
-    "calendar",
-    "tasks",
-    "appearance",
-    "accounts-system",
+    'getting-started',
+    'reading-email',
+    'composing',
+    'search-navigation',
+    'organization',
+    'productivity',
+    'ai-features',
+    'newsletters',
+    'notifications-contacts',
+    'security',
+    'calendar',
+    'tasks',
+    'appearance',
+    'accounts-system',
   ];
 
-  it("all expected category IDs exist", () => {
+  it('all expected category IDs exist', () => {
     const ids = HELP_CATEGORIES.map((c) => c.id);
     for (const expected of expectedIds) {
       expect(ids).toContain(expected);
     }
   });
 
-  it("has exactly 14 categories", () => {
+  it('has exactly 14 categories', () => {
     expect(HELP_CATEGORIES.length).toBe(19);
   });
 });

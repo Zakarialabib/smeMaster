@@ -1,23 +1,23 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
-const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const OAUTH_CALLBACK_PORT = 17248;
 
 /** Deep-link redirect URI for the custom-tab OAuth flow */
-const DEEP_LINK_REDIRECT_URI = "smemaster-auth://callback";
+const DEEP_LINK_REDIRECT_URI = 'smemaster-auth://callback';
 
 const SCOPES = [
-  "https://www.googleapis.com/auth/gmail.readonly",
-  "https://www.googleapis.com/auth/gmail.modify",
-  "https://www.googleapis.com/auth/gmail.send",
-  "https://www.googleapis.com/auth/gmail.labels",
-  "https://www.googleapis.com/auth/userinfo.email",
-  "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/calendar.events",
-].join(" ");
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/gmail.labels',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/calendar.events',
+].join(' ');
 
 interface OAuthServerResult {
   code: string;
@@ -58,19 +58,16 @@ function generateCodeVerifier(): string {
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
+  const digest = await crypto.subtle.digest('SHA-256', data);
   return base64UrlEncode(new Uint8Array(digest));
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
-  let binary = "";
+  let binary = '';
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 /**
@@ -91,9 +88,7 @@ export async function startOAuthFlow(
   clientSecret?: string,
 ): Promise<{ tokens: TokenResponse; userInfo: UserInfo }> {
   if (!clientSecret) {
-    throw new Error(
-      "Client Secret is not configured. Go to Settings → Google API to add it.",
-    );
+    throw new Error('Client Secret is not configured. Go to Settings → Google API to add it.');
   }
 
   // Primary: custom-tab flow (system browser + deep-link)
@@ -102,11 +97,11 @@ export async function startOAuthFlow(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (
-      msg.includes("deep-link") ||
-      msg.includes("scheme") ||
-      msg.includes("Failed to open browser")
+      msg.includes('deep-link') ||
+      msg.includes('scheme') ||
+      msg.includes('Failed to open browser')
     ) {
-      console.warn("[gmail-auth] Custom-tab flow failed, falling back to localhost:", msg);
+      console.warn('[gmail-auth] Custom-tab flow failed, falling back to localhost:', msg);
     } else {
       throw err;
     }
@@ -134,26 +129,26 @@ async function startOAuthFlowCustomTab(
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: DEEP_LINK_REDIRECT_URI,
-    response_type: "code",
+    response_type: 'code',
     scope: SCOPES,
     code_challenge: codeChallenge,
-    code_challenge_method: "S256",
-    access_type: "offline",
-    prompt: "consent",
+    code_challenge_method: 'S256',
+    access_type: 'offline',
+    prompt: 'consent',
     state: oauthState,
   });
 
   const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
 
   // Open browser and wait for deep-link callback (Rust handles both)
-  const result = await invokeCommand<OAuthServerResult>("start_oauth_browser", {
+  const result = await invokeCommand<OAuthServerResult>('start_oauth_browser', {
     authUrl,
     state: oauthState,
   });
 
   // Validate state (CSRF protection)
   if (result.state !== oauthState) {
-    throw new Error("OAuth state mismatch — possible CSRF attack. Please try again.");
+    throw new Error('OAuth state mismatch — possible CSRF attack. Please try again.');
   }
 
   // Exchange auth code for tokens
@@ -192,19 +187,19 @@ async function startOAuthFlowLocalhost(
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
-    response_type: "code",
+    response_type: 'code',
     scope: SCOPES,
     code_challenge: codeChallenge,
-    code_challenge_method: "S256",
-    access_type: "offline",
-    prompt: "consent",
+    code_challenge_method: 'S256',
+    access_type: 'offline',
+    prompt: 'consent',
     state: oauthState,
   });
 
   const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
 
   // Start the server (it blocks until redirect arrives) and open browser concurrently
-  const serverPromise = invokeCommand<OAuthServerResult>("start_oauth_server", {
+  const serverPromise = invokeCommand<OAuthServerResult>('start_oauth_server', {
     port: OAUTH_CALLBACK_PORT,
     state: oauthState,
   });
@@ -218,7 +213,7 @@ async function startOAuthFlowLocalhost(
 
   // Validate state parameter (CSRF protection)
   if (result.state !== oauthState) {
-    throw new Error("OAuth state mismatch — possible CSRF attack. Please try again.");
+    throw new Error('OAuth state mismatch — possible CSRF attack. Please try again.');
   }
 
   // Exchange auth code for tokens
@@ -243,7 +238,7 @@ async function exchangeCodeForTokens(
   codeVerifier: string,
   clientSecret?: string,
 ): Promise<TokenResponse> {
-  const result = await invokeCommand<TokenExchangeResult>("oauth_exchange_token", {
+  const result = await invokeCommand<TokenExchangeResult>('oauth_exchange_token', {
     tokenUrl: GOOGLE_TOKEN_URL,
     code,
     clientId,
@@ -270,7 +265,7 @@ export async function refreshAccessToken(
   clientId: string,
   clientSecret?: string,
 ): Promise<TokenResponse> {
-  const result = await invokeCommand<TokenExchangeResult>("oauth_refresh_token", {
+  const result = await invokeCommand<TokenExchangeResult>('oauth_refresh_token', {
     tokenUrl: GOOGLE_TOKEN_URL,
     refreshToken,
     clientId,
@@ -288,15 +283,12 @@ export async function refreshAccessToken(
 }
 
 async function fetchUserInfo(accessToken: string): Promise<UserInfo> {
-  const response = await fetch(
-    "https://www.googleapis.com/oauth2/v2/userinfo",
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    },
-  );
+  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch user info");
+    throw new Error('Failed to fetch user info');
   }
 
   return response.json();

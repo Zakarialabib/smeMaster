@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { emojiCategories, recentEmojis } from "./emojiData";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { emojiCategories, recentEmojis } from './emojiData';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -7,7 +7,7 @@ interface EmojiPickerProps {
 }
 
 export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
-  const [activeTab, setActiveTab] = useState<string>("Frequently Used");
+  const [activeTab, setActiveTab] = useState<string>('Frequently Used');
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,25 +16,28 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  const handleSelect = useCallback((emoji: string) => {
-    if (!recentEmojis.includes(emoji)) {
-      recentEmojis.unshift(emoji);
-      if (recentEmojis.length > 20) recentEmojis.length = 20;
-    }
-    onSelect(emoji);
-    onClose();
-  }, [onSelect, onClose]);
+  const handleSelect = useCallback(
+    (emoji: string) => {
+      if (!recentEmojis.includes(emoji)) {
+        recentEmojis.unshift(emoji);
+        if (recentEmojis.length > 20) recentEmojis.length = 20;
+      }
+      onSelect(emoji);
+      onClose();
+    },
+    [onSelect, onClose],
+  );
 
-  const currentCategory = emojiCategories.find((c) => c.name === activeTab)
-    ?? emojiCategories[0];
+  const currentCategory = emojiCategories.find((c) => c.name === activeTab) ?? emojiCategories[0];
 
-  const allEmojis = activeTab === "Frequently Used" && recentEmojis.length > 0
-    ? recentEmojis
-    : (currentCategory?.emojis ?? []);
+  const allEmojis =
+    activeTab === 'Frequently Used' && recentEmojis.length > 0
+      ? recentEmojis
+      : (currentCategory?.emojis ?? []);
 
   return (
     <div
@@ -50,20 +53,18 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             title={cat.name}
             className={`px-1.5 py-0.5 text-[0.625rem] rounded whitespace-nowrap transition-colors ${
               activeTab === cat.name
-                ? "bg-accent/10 text-accent font-medium"
-                : "text-text-tertiary hover:text-text-secondary"
+                ? 'bg-accent/10 text-accent font-medium'
+                : 'text-text-tertiary hover:text-text-secondary'
             }`}
           >
-            {cat.name === "Frequently Used" ? "🕐" : cat.emojis[0]}
+            {cat.name === 'Frequently Used' ? '🕐' : cat.emojis[0]}
           </button>
         ))}
       </div>
 
       <div className="p-2 max-h-48 overflow-y-auto">
         {allEmojis.length === 0 ? (
-          <p className="text-xs text-text-tertiary text-center py-4">
-            No recent emojis yet
-          </p>
+          <p className="text-xs text-text-tertiary text-center py-4">No recent emojis yet</p>
         ) : (
           <div className="grid grid-cols-8 gap-0.5">
             {allEmojis.map((emoji, i) => (

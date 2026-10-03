@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Play, SkipForward, RotateCcw, X, Check } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import type { TemplateDemo as TemplateDemoType } from "@features/mail/constants/templateDemos";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Play, SkipForward, RotateCcw, X, Check } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import type { TemplateDemo as TemplateDemoType } from '@features/mail/constants/templateDemos';
 
 interface TemplatePickerInfo {
   id: string;
@@ -16,11 +16,11 @@ interface TemplateDemoProps {
 }
 
 function useTypewriter(text: string, speed = 30): string {
-  const [displayed, setDisplayed] = useState("");
+  const [displayed, setDisplayed] = useState('');
   const indexRef = useRef(0);
 
   useEffect(() => {
-    setDisplayed("");
+    setDisplayed('');
     indexRef.current = 0;
     if (!text) return;
     const interval = setInterval(() => {
@@ -88,10 +88,8 @@ export function TemplateDemo({ demo, onClose, onSelect, pickerTemplate }: Templa
   }, []);
 
   const screen = demo.screens[currentStep];
-  const typedAction = useTypewriter(screen?.simulatedAction ?? "", 25);
-  const progress = completed
-    ? 100
-    : ((currentStep + 1) / demo.screens.length) * 100;
+  const typedAction = useTypewriter(screen?.simulatedAction ?? '', 25);
+  const progress = completed ? 100 : ((currentStep + 1) / demo.screens.length) * 100;
 
   if (!screen) return null;
 
@@ -124,10 +122,10 @@ export function TemplateDemo({ demo, onClose, onSelect, pickerTemplate }: Templa
               key={idx}
               className={`h-1 flex-1 rounded-full transition-all duration-500 ${
                 idx === currentStep
-                  ? "bg-accent"
+                  ? 'bg-accent'
                   : idx < currentStep
-                    ? "bg-accent/40"
-                    : "bg-bg-tertiary"
+                    ? 'bg-accent/40'
+                    : 'bg-bg-tertiary'
               }`}
             />
           ))}
@@ -148,7 +146,10 @@ export function TemplateDemo({ demo, onClose, onSelect, pickerTemplate }: Templa
         <div className="bg-bg-tertiary rounded-xl p-4 mb-6 border border-border-secondary min-h-[48px]">
           <div className="flex items-start gap-2">
             <span className="text-xs text-text-tertiary font-medium shrink-0 mt-0.5">→</span>
-            <p className="text-sm text-text-primary font-mono">{typedAction}<span className="animate-pulse">|</span></p>
+            <p className="text-sm text-text-primary font-mono">
+              {typedAction}
+              <span className="animate-pulse">|</span>
+            </p>
           </div>
         </div>
 
@@ -170,7 +171,7 @@ export function TemplateDemo({ demo, onClose, onSelect, pickerTemplate }: Templa
               </Button>
             ) : (
               <Button variant="secondary" size="sm" onClick={handlePauseToggle}>
-                {paused ? "Resume" : "Pause"}
+                {paused ? 'Resume' : 'Pause'}
               </Button>
             )}
             {!completed && (
@@ -195,7 +196,7 @@ export function TemplateDemo({ demo, onClose, onSelect, pickerTemplate }: Templa
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={onClose}>
-              {completed ? "Close" : "Exit"}
+              {completed ? 'Close' : 'Exit'}
             </Button>
           </div>
         </div>

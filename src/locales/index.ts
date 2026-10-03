@@ -5,5 +5,5 @@ export {
   LOCALE_NAMES,
   LOCALE_DIRS,
   i18n,
-} from "./i18n";
-export type { SupportedLocale } from "./i18n";
+} from './i18n';
+export type { SupportedLocale } from './i18n';

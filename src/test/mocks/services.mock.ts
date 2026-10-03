@@ -1,9 +1,7 @@
-import { vi } from "vitest";
-import type { GmailClient } from "@features/mail/services/gmail/client";
+import { vi } from 'vitest';
+import type { GmailClient } from '@features/mail/services/gmail/client';
 
-export function createMockGmailClient(
-  overrides: Record<string, unknown> = {},
-): GmailClient {
+export function createMockGmailClient(overrides: Record<string, unknown> = {}): GmailClient {
   return {
     listLabels: vi.fn(),
     createLabel: vi.fn(),
@@ -27,9 +25,7 @@ export function createMockGmailClient(
   } as unknown as GmailClient;
 }
 
-export function createMockEmailProvider(
-  overrides: Record<string, unknown> = {},
-) {
+export function createMockEmailProvider(overrides: Record<string, unknown> = {}) {
   return {
     archive: vi.fn(() => Promise.resolve()),
     trash: vi.fn(() => Promise.resolve()),
@@ -40,16 +36,16 @@ export function createMockEmailProvider(
     moveToFolder: vi.fn(() => Promise.resolve()),
     addLabel: vi.fn(() => Promise.resolve()),
     removeLabel: vi.fn(() => Promise.resolve()),
-    sendMessage: vi.fn(() => Promise.resolve({ id: "msg-1" })),
-    createDraft: vi.fn(() => Promise.resolve({ draftId: "d-1" })),
-    updateDraft: vi.fn(() => Promise.resolve({ draftId: "d-1" })),
+    sendMessage: vi.fn(() => Promise.resolve({ id: 'msg-1' })),
+    createDraft: vi.fn(() => Promise.resolve({ draftId: 'd-1' })),
+    updateDraft: vi.fn(() => Promise.resolve({ draftId: 'd-1' })),
     deleteDraft: vi.fn(() => Promise.resolve()),
-    fetchRawMessage: vi.fn(() => Promise.resolve("")),
+    fetchRawMessage: vi.fn(() => Promise.resolve('')),
     ...overrides,
   };
 }
 
-export function createMockAiProvider(response = "ai response") {
+export function createMockAiProvider(response = 'ai response') {
   return {
     complete: vi.fn(() => Promise.resolve(response)),
     testConnection: vi.fn(() => Promise.resolve(true)),
@@ -75,6 +71,6 @@ export function createMockFetchResponse(
     status,
     headers: new Headers(overrides.headers ?? {}),
     json: () => Promise.resolve(overrides.data ?? {}),
-    text: () => Promise.resolve(overrides.text ?? ""),
+    text: () => Promise.resolve(overrides.text ?? ''),
   } as unknown as Response;
 }

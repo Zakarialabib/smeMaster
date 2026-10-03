@@ -6,7 +6,7 @@
   deleteContactGroup as dbDeleteContactGroup,
   getContactCountForGroup as dbGetContactCountForGroup,
   getContactGroupMembers as dbGetContactGroupMembers,
-} from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
 
 export interface DbContactGroup {
   id: string;

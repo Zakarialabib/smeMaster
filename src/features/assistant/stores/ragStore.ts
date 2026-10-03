@@ -7,9 +7,10 @@
  * @module
  */
 
-import { create } from "zustand";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
+import { create } from 'zustand';
+import type { UnlistenFn } from '@tauri-apps/api/event';
+import { safeListen } from '@shared/services/ipc';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 import {
   aiDownloadModel,
   aiLoadEmbeddingModel,
@@ -20,30 +21,32 @@ import {
   aiDeleteModel,
   aiGetEmailChunks,
   aiInsertProviderVectors,
-} from "@shared/services/db/invoke/rag";
+} from '@shared/services/db/invoke/rag';
 import {
-  getProviderEmbedding,
-} from "@shared/services/ai/embeddingService";
-import { RAG_ANSWER_SYSTEM_PROMPT } from "@shared/services/ai/prompts";
-import { TestEmbeddingResult } from "@/shared/services/ai/types";
+  downloaderListJobs,
+  type DownloaderProgressEvent,
+} from '@shared/services/db/invoke/downloader';
+import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
+import { RAG_ANSWER_SYSTEM_PROMPT } from '@shared/services/ai/prompts';
+import { TestEmbeddingResult } from '@/shared/services/ai/types';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const RAG_ENABLED_KEY = "smemaster.rag.enabled";
-const RAG_MODEL_PATH_KEY = "smemaster.rag.modelPath";
-const RAG_TOKENIZER_PATH_KEY = "smemaster.rag.tokenizerPath";
-const RAG_LAST_INDEXED_KEY = "smemaster.rag.lastIndexedAt";
-const RAG_EMBEDDING_SOURCE_KEY = "smemaster.rag.embeddingSource";
+const RAG_ENABLED_KEY = 'smemaster.rag.enabled';
+const RAG_MODEL_PATH_KEY = 'smemaster.rag.modelPath';
+const RAG_TOKENIZER_PATH_KEY = 'smemaster.rag.tokenizerPath';
+const RAG_LAST_INDEXED_KEY = 'smemaster.rag.lastIndexedAt';
+const RAG_EMBEDDING_SOURCE_KEY = 'smemaster.rag.embeddingSource';
 
-const BGE_REPO_ID = "BAAI/bge-small-en-v1.5";
-const BGE_MODEL_FILE = "model.safetensors";
-const BGE_TOKENIZER_FILE = "tokenizer.json";
+const BGE_REPO_ID = 'BAAI/bge-small-en-v1.5';
+const BGE_MODEL_FILE = 'model.safetensors';
+const BGE_TOKENIZER_FILE = 'tokenizer.json';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type ModelStatus = "idle" | "downloading" | "loading" | "loaded" | "error";
-export type IndexingStatus = "idle" | "indexing" | "completed" | "error";
-export type EmbeddingSource = "rust_bge" | "provider" | null;
+export type ModelStatus = 'idle' | 'downloading' | 'loading' | 'loaded' | 'error';
+export type IndexingStatus = 'idle' | 'indexing' | 'completed' | 'error';
+export type EmbeddingSource = 'rust_bge' | 'provider' | null;
 
 export interface RagConversationEntry {
   id: string;
@@ -64,6 +67,8 @@ export interface RagState {
   modelPath: string | null;
   tokenizerPath: string | null;
   modelError: string | null;
+  /** Live progress of the BGE model download (`downloader:progress`). */
+  downloadProgress: DownloaderProgressEvent | null;
   embeddingSource: EmbeddingSource;
   modelsDir: string | null;
 
@@ -102,6 +107,9 @@ export interface RagState {
 
 let entryCounter = 0;
 
+/** True while `downloadBgeModel` awaits the backend (guards listener re-entry). */
+let downloadRunning = false;
+
 function nextEntryId(): string {
   entryCounter += 1;
   return `rag-entry-${entryCounter}-${Date.now()}`;
@@ -112,13 +120,14 @@ function nextEntryId(): string {
 export const useRagStore = create<RagState>((set, get) => ({
   // ── Initial state ──
   enabled: false,
-  modelStatus: "idle",
+  modelStatus: 'idle',
   modelPath: null,
   tokenizerPath: null,
   modelError: null,
+  downloadProgress: null,
   embeddingSource: null,
   modelsDir: null,
-  indexingStatus: "idle",
+  indexingStatus: 'idle',
   lastIndexedAt: null,
   indexingError: null,
   conversation: [],
@@ -139,17 +148,17 @@ export const useRagStore = create<RagState>((set, get) => ({
       const lastIndexedAt = await tauriStoreStorage.getItem(RAG_LAST_INDEXED_KEY);
       const embeddingSourceRaw = await tauriStoreStorage.getItem(RAG_EMBEDDING_SOURCE_KEY);
       const embeddingSource: EmbeddingSource | null =
-        embeddingSourceRaw === "rust_bge" || embeddingSourceRaw === "provider"
+        embeddingSourceRaw === 'rust_bge' || embeddingSourceRaw === 'provider'
           ? (embeddingSourceRaw as EmbeddingSource)
           : null;
 
       set({
-        enabled: enabled === "true",
+        enabled: enabled === 'true',
         modelPath: modelPath ?? null,
         tokenizerPath: tokenizerPath ?? null,
         lastIndexedAt: lastIndexedAt ?? null,
         embeddingSource,
-        modelStatus: modelPath ? "loaded" : "idle",
+        modelStatus: modelPath ? 'loaded' : 'idle',
         _hydrated: true,
       });
 
@@ -160,41 +169,82 @@ export const useRagStore = create<RagState>((set, get) => ({
     }
 
     // Listen for Tauri indexing events
-    const unlistenStart = await listen<unknown>("ai:indexing_started", () => {
-      set({ indexingStatus: "indexing", indexingError: null });
+    const unlistenStart = await safeListen<unknown>('ai:indexing_started', () => {
+      set({ indexingStatus: 'indexing', indexingError: null });
     });
 
-    const unlistenComplete = await listen<unknown>("ai:indexing_completed", () => {
+    const unlistenComplete = await safeListen<unknown>('ai:indexing_completed', () => {
       const now = new Date().toISOString();
-      set({ indexingStatus: "completed", lastIndexedAt: now });
+      set({ indexingStatus: 'completed', lastIndexedAt: now });
       void tauriStoreStorage.setItem(RAG_LAST_INDEXED_KEY, now);
     });
 
-    // Store cleanup function on window for teardown
-    if (typeof window !== "undefined") {
+    // Live model-download progress (resumable Rust downloader)
+    const unlistenDownload = await safeListen<DownloaderProgressEvent>(
+      'downloader:progress',
+      (event) => {
+        const ev = event.payload;
+        if (!ev?.jobId) return; // boot-recovery ping — no job attached
+        set({ downloadProgress: ev });
+        if (ev.status === 'failed' || ev.status === 'cancelled') {
+          // Only relevant after a webview reload (an awaited download gets
+          // its error via the rejected `aiDownloadModel` promise instead).
+          if (!downloadRunning && get().modelStatus === 'downloading') {
+            set({ modelStatus: 'error', modelError: ev.error ?? 'Download failed' });
+          }
+        } else if (
+          ev.status === 'completed' &&
+          !downloadRunning &&
+          get().modelStatus === 'downloading'
+        ) {
+          // Webview reloaded mid-download: the Rust engine finished the job,
+          // but no promise is awaiting — the cache-hit path completes state.
+          void get().downloadBgeModel();
+        }
+      },
+    );
+
+    // Store cleanup functions on window for teardown
+    if (typeof window !== 'undefined') {
       const win = window as unknown as Record<string, unknown>;
-      const unlisteners = win.__rag_unlisteners as UnlistenFn[] | undefined;
-      if (!unlisteners) {
-        win.__rag_unlisteners = [unlistenStart, unlistenComplete];
-      }
+      const unlisteners = (win.__rag_unlisteners as UnlistenFn[] | undefined) ?? [];
+      unlisteners.push(unlistenStart, unlistenComplete, unlistenDownload);
+      win.__rag_unlisteners = unlisteners;
     }
+
+    // Rehydrate an in-flight download — the Rust engine keeps running
+    // through webview reloads, so the bar must come back too.
+    void (async () => {
+      try {
+        const jobs = await downloaderListJobs('ai_model');
+        const active = jobs.find(
+          (j) => j.status === 'downloading' || j.status === 'probing' || j.status === 'queued',
+        );
+        if (active && get().modelStatus !== 'loaded') {
+          set({ downloadProgress: active, modelStatus: 'downloading' });
+        }
+      } catch {
+        /* backend not ready — the next download click retries */
+      }
+    })();
   },
 
   // ── Toggle RAG enabled ──
   setEnabled: async (val: boolean) => {
     set({ enabled: val });
-    await tauriStoreStorage.setItem(RAG_ENABLED_KEY, val ? "true" : "false");
+    await tauriStoreStorage.setItem(RAG_ENABLED_KEY, val ? 'true' : 'false');
   },
 
   // ── Download BGE-Small model ──
   downloadBgeModel: async () => {
-    set({ modelStatus: "downloading", modelError: null });
+    set({ modelStatus: 'downloading', modelError: null, downloadProgress: null });
+    downloadRunning = true;
     try {
       const modelPath = await aiDownloadModel(BGE_REPO_ID, BGE_MODEL_FILE);
       const tokenizerPath = await aiDownloadModel(BGE_REPO_ID, BGE_TOKENIZER_FILE);
 
       set({
-        modelStatus: "idle",
+        modelStatus: 'idle',
         modelPath,
         tokenizerPath,
       });
@@ -203,7 +253,9 @@ export const useRagStore = create<RagState>((set, get) => ({
       await tauriStoreStorage.setItem(RAG_TOKENIZER_PATH_KEY, tokenizerPath);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      set({ modelStatus: "error", modelError: msg });
+      set({ modelStatus: 'error', modelError: msg });
+    } finally {
+      downloadRunning = false;
     }
   },
 
@@ -211,58 +263,58 @@ export const useRagStore = create<RagState>((set, get) => ({
   loadEmbeddingModel: async () => {
     const { modelPath, tokenizerPath } = get();
     if (!modelPath || !tokenizerPath) {
-      set({ modelStatus: "error", modelError: "Model not downloaded yet" });
+      set({ modelStatus: 'error', modelError: 'Model not downloaded yet' });
       return;
     }
 
-    set({ modelStatus: "loading", modelError: null });
+    set({ modelStatus: 'loading', modelError: null });
     try {
       await aiLoadEmbeddingModel(modelPath, tokenizerPath);
-      set({ modelStatus: "loaded" });
+      set({ modelStatus: 'loaded' });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      set({ modelStatus: "error", modelError: msg });
+      set({ modelStatus: 'error', modelError: msg });
     }
   },
 
   // ── Trigger indexing ──
   indexAll: async () => {
-    set({ indexingStatus: "indexing", indexingError: null });
+    set({ indexingStatus: 'indexing', indexingError: null });
     try {
       const source = get().embeddingSource;
 
-      if (source === "rust_bge") {
+      if (source === 'rust_bge') {
         // Explicit local engine (BGE-small). Rust embeds + indexes.
         await aiIndexEmails();
-        set({ indexingStatus: "completed" });
+        set({ indexingStatus: 'completed' });
         return;
       }
 
       // Provider embeddings (LM Studio / Ollama / OpenAI-compatible):
       // fetch chunked docs from Rust, embed each with the active provider,
       // and send the vectors back. No BGE-small download required.
-      const { isAiAvailable } = await import("@shared/services/ai/providerManager");
+      const { isAiAvailable } = await import('@shared/services/ai/providerManager');
       if (!(await isAiAvailable())) {
         throw new Error(
-          "No AI provider is configured for embeddings. Add a Local AI provider (LM Studio / Ollama) with an embeddings endpoint, or switch the embedding source to Local BGE-small.",
+          'No AI provider is configured for embeddings. Add a Local AI provider (LM Studio / Ollama) with an embeddings endpoint, or switch the embedding source to Local BGE-small.',
         );
       }
 
       const chunks = await aiGetEmailChunks();
       if (chunks.length === 0) {
-        set({ indexingStatus: "completed" });
+        set({ indexingStatus: 'completed' });
         return;
       }
 
       const vectors: number[][] = [];
       for (const chunk of chunks) {
         const emb = await getProviderEmbedding(chunk.text);
-        if (emb) vectors.push(emb.vector);
+        if (emb) vectors.push(emb.vectors[0] ?? []);
         else vectors.push([]);
       }
       const valid = vectors.filter((v) => v.length > 0);
       if (valid.length === 0) {
-        throw new Error("The active provider did not return any embeddings.");
+        throw new Error('The active provider did not return any embeddings.');
       }
 
       await aiInsertProviderVectors(
@@ -270,10 +322,10 @@ export const useRagStore = create<RagState>((set, get) => ({
         chunks.map((c) => c.id),
         chunks.map((c) => c.text),
       );
-      set({ indexingStatus: "completed" });
+      set({ indexingStatus: 'completed' });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      set({ indexingStatus: "error", indexingError: msg });
+      set({ indexingStatus: 'error', indexingError: msg });
     }
   },
 
@@ -288,28 +340,28 @@ export const useRagStore = create<RagState>((set, get) => ({
 
       const source = get().embeddingSource;
 
-      if (source === "rust_bge") {
+      if (source === 'rust_bge') {
         // Explicit local engine
-        set({ embeddingSource: "rust_bge" });
+        set({ embeddingSource: 'rust_bge' });
         response = await aiQueryRag(query);
-      } else if (source === "provider") {
+      } else if (source === 'provider') {
         // Explicit provider embeddings (LM Studio / Ollama / OpenAI-compatible)
         const providerEmbedding = await getProviderEmbedding(query);
         if (!providerEmbedding) {
           throw new Error(
-            "No AI provider with embeddings support is configured. Add a Custom (LM Studio) provider with an embeddings endpoint, or switch the embedding source to Local BGE-small.",
+            'No AI provider with embeddings support is configured. Add a Custom (LM Studio) provider with an embeddings endpoint, or switch the embedding source to Local BGE-small.',
           );
         }
-        set({ embeddingSource: "provider" });
-        response = await aiSearchByVector(providerEmbedding.vector, query);
+        set({ embeddingSource: 'provider' });
+        response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
       } else {
         // Auto: prefer provider, fall back to local BGE-small
         const providerEmbedding = await getProviderEmbedding(query);
         if (providerEmbedding) {
-          set({ embeddingSource: "provider" });
-          response = await aiSearchByVector(providerEmbedding.vector, query);
+          set({ embeddingSource: 'provider' });
+          response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
         } else {
-          set({ embeddingSource: "rust_bge" });
+          set({ embeddingSource: 'rust_bge' });
           response = await aiQueryRag(query);
         }
       }
@@ -319,8 +371,8 @@ export const useRagStore = create<RagState>((set, get) => ({
       // raw retrieved context when no provider is configured.
       let answer: string | undefined;
       try {
-        const { isAiAvailable } = await import("@shared/services/ai/providerManager");
-        const { callAi } = await import("@shared/services/ai/aiService");
+        const { isAiAvailable } = await import('@shared/services/ai/providerManager');
+        const { callAi } = await import('@shared/services/ai/aiService');
         if (await isAiAvailable()) {
           answer = await callAi(RAG_ANSWER_SYSTEM_PROMPT, response);
         }
@@ -349,14 +401,14 @@ export const useRagStore = create<RagState>((set, get) => ({
   // ── Set embedding source (local BGE vs provider vs auto) ──
   setEmbeddingSource: async (val) => {
     set({ embeddingSource: val });
-    await tauriStoreStorage.setItem(RAG_EMBEDDING_SOURCE_KEY, val ?? "auto");
+    await tauriStoreStorage.setItem(RAG_EMBEDDING_SOURCE_KEY, val ?? 'auto');
   },
 
   // ── Validate the configured LM Studio embedding model ──
   testEmbedding: async () => {
     set({ embeddingTesting: true, embeddingTest: null });
     try {
-      const { testLMStudioEmbedding } = await import("@shared/services/ai/providerManager");
+      const { testLMStudioEmbedding } = await import('@shared/services/ai/providerManager');
       const result = await testLMStudioEmbedding();
       set({ embeddingTest: result });
       return result;
@@ -386,7 +438,13 @@ export const useRagStore = create<RagState>((set, get) => ({
   removeModel: async () => {
     try {
       await aiDeleteModel(BGE_REPO_ID);
-      set({ modelPath: null, tokenizerPath: null, modelStatus: "idle", modelError: null });
+      set({
+        modelPath: null,
+        tokenizerPath: null,
+        modelStatus: 'idle',
+        modelError: null,
+        downloadProgress: null,
+      });
       await tauriStoreStorage.removeItem(RAG_MODEL_PATH_KEY);
       await tauriStoreStorage.removeItem(RAG_TOKENIZER_PATH_KEY);
     } catch (err) {
@@ -403,7 +461,7 @@ export const useRagStore = create<RagState>((set, get) => ({
 
 // ── Auto-hydrate on import (for module-level access) ──────────────────────────
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   const store = useRagStore.getState();
   if (!store._hydrated) {
     void store.hydrate();

@@ -1,30 +1,30 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import * as warmingDb from "@features/deliverability/db/warming";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import * as warmingDb from '@features/deliverability/db/warming';
 
-vi.mock("@features/deliverability/db/warming", () => ({
+vi.mock('@features/deliverability/db/warming', () => ({
   getWarmingPlan: vi.fn(),
   upsertWarmingPlan: vi.fn(),
   logWarmingVolume: vi.fn(),
 }));
 
-describe("warmingService", () => {
+describe('warmingService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe("getDailyLimit", () => {
-    it("returns Infinity when warming is disabled", async () => {
+  describe('getDailyLimit', () => {
+    it('returns Infinity when warming is disabled', async () => {
       vi.mocked(warmingDb.getWarmingPlan).mockResolvedValue(null);
 
-      const { getDailyLimit } = await import("@features/deliverability/services/warmingService");
-      const result = await getDailyLimit("acc-1");
+      const { getDailyLimit } = await import('@features/deliverability/services/warmingService');
+      const result = await getDailyLimit('acc-1');
       expect(result).toBe(Infinity);
     });
 
-    it("returns current_volume when warming is enabled", async () => {
+    it('returns current_volume when warming is enabled', async () => {
       vi.mocked(warmingDb.getWarmingPlan).mockResolvedValue({
-        id: "w1",
-        account_id: "acc-1",
+        id: 'w1',
+        account_id: 'acc-1',
         enabled: 1,
         start_volume: 10,
         current_volume: 25,
@@ -34,26 +34,27 @@ describe("warmingService", () => {
         updated_at: Math.floor(Date.now() / 1000),
       });
 
-      const { getDailyLimit } = await import("@features/deliverability/services/warmingService");
-      const result = await getDailyLimit("acc-1");
+      const { getDailyLimit } = await import('@features/deliverability/services/warmingService');
+      const result = await getDailyLimit('acc-1');
       expect(result).toBe(25);
     });
   });
 
-  describe("getWarmingProgress", () => {
-    it("returns null when no plan exists", async () => {
+  describe('getWarmingProgress', () => {
+    it('returns null when no plan exists', async () => {
       vi.mocked(warmingDb.getWarmingPlan).mockResolvedValue(null);
 
-      const { getWarmingProgress } = await import("@features/deliverability/services/warmingService");
-      const result = await getWarmingProgress("acc-1");
+      const { getWarmingProgress } =
+        await import('@features/deliverability/services/warmingService');
+      const result = await getWarmingProgress('acc-1');
       expect(result).toBeNull();
     });
 
-    it("computes progress correctly", async () => {
+    it('computes progress correctly', async () => {
       const createdAt = Math.floor(Date.now() / 1000) - 86400 * 7;
       vi.mocked(warmingDb.getWarmingPlan).mockResolvedValue({
-        id: "w1",
-        account_id: "acc-1",
+        id: 'w1',
+        account_id: 'acc-1',
         enabled: 1,
         start_volume: 10,
         current_volume: 55,
@@ -63,8 +64,9 @@ describe("warmingService", () => {
         updated_at: Math.floor(Date.now() / 1000),
       });
 
-      const { getWarmingProgress } = await import("@features/deliverability/services/warmingService");
-      const result = await getWarmingProgress("acc-1");
+      const { getWarmingProgress } =
+        await import('@features/deliverability/services/warmingService');
+      const result = await getWarmingProgress('acc-1');
       expect(result).not.toBeNull();
       expect(result!.currentVolume).toBe(55);
       expect(result!.targetVolume).toBe(100);
@@ -73,14 +75,14 @@ describe("warmingService", () => {
     });
   });
 
-  describe("enableWarming", () => {
-    it("creates a new plan with defaults", async () => {
+  describe('enableWarming', () => {
+    it('creates a new plan with defaults', async () => {
       vi.mocked(warmingDb.getWarmingPlan).mockResolvedValue(null);
 
-      const { enableWarming } = await import("@features/deliverability/services/warmingService");
-      await enableWarming("acc-1");
+      const { enableWarming } = await import('@features/deliverability/services/warmingService');
+      await enableWarming('acc-1');
 
-      expect(warmingDb.upsertWarmingPlan).toHaveBeenCalledWith("acc-1", {
+      expect(warmingDb.upsertWarmingPlan).toHaveBeenCalledWith('acc-1', {
         enabled: 1,
         start_volume: 10,
         current_volume: 10,

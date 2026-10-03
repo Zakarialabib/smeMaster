@@ -218,7 +218,7 @@ references — this spec CONSOLIDATES and grounds them in source, not duplicates
 - `docs/navigation-redesign/IA-RECOMMENDATION.md` — email-first rail order (Mail→CRM→
   Marketing→Automation→Finance→Plan→Vault→AI), desktop rail model, mobile 5-tab+Hub,
   8 cross-wiring "steal this" patterns, 10 pitfalls. **Adopt its ordering.**
-- `docs/plans/SETTINGS-IA-PROPOSAL.md` — settings group tree, search/palette, tiering,
+- Settings group tree, search/palette, tiering — implemented; see `SettingsTabRegistry.ts`.
   global-vs-per-account, mobile renderer. Mirrors `37-settings-redesign-spec.md`.
 
 ### 7.1 Three source-verified facts folded in (not in prior docs)

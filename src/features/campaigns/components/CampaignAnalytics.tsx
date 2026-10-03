@@ -186,7 +186,7 @@ export function CampaignAnalytics({
             color={COLORS.danger}
           />
         </div>
-        <div className="flex items-center gap-2 ml-3">
+        <div className="flex items-center gap-2 ms-3">
           {!isMobileDevice && (
             <button
               onClick={() => setExpanded((v) => !v)}
@@ -317,7 +317,7 @@ export function CampaignAnalytics({
                     style={{ backgroundColor: d.color }}
                   />
                   <span className="text-text-secondary">{d.name}</span>
-                  <span className="ml-auto text-text-primary font-medium">{d.value}</span>
+                  <span className="ms-auto text-text-primary font-medium">{d.value}</span>
                 </div>
               ))}
             </div>
@@ -368,13 +368,13 @@ export function CampaignAnalytics({
             <FlaskConical size={16} className="text-accent" />
             <h4 className="text-sm font-medium text-text-primary">{t('campaign.abTestResults')}</h4>
             {abVariantStats.significant && abVariantStats.winner && (
-              <span className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-success/10 text-success text-xs rounded-full">
+              <span className="flex items-center gap-1 ms-2 px-2 py-0.5 bg-success/10 text-success text-xs rounded-full">
                 <Trophy size={12} />
                 {t('campaign.winner')}: {abVariantStats.winner}
               </span>
             )}
             {abVariantStats.pValue !== null && (
-              <span className="ml-auto text-xs text-text-tertiary">
+              <span className="ms-auto text-xs text-text-tertiary">
                 p = {abVariantStats.pValue.toFixed(4)}
                 {abVariantStats.significant
                   ? t('campaign.significant')
@@ -446,8 +446,8 @@ export function CampaignAnalytics({
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-text-tertiary text-xs">
-                  <th className="text-left py-1 pr-2">{t('campaign.url')}</th>
-                  <th className="text-right py-1 w-20">{t('campaign.clicks')}</th>
+                  <th className="text-start py-1 pe-2">{t('campaign.url')}</th>
+                  <th className="text-end py-1 w-20">{t('campaign.clicks')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -455,10 +455,10 @@ export function CampaignAnalytics({
                   .slice(0, expanded && !isMobileDevice ? 10 : 5)
                   .map((link, i) => (
                     <tr key={i} className="border-t border-border-primary">
-                      <td className="py-1.5 pr-2 text-text-primary truncate max-w-[400px]">
+                      <td className="py-1.5 pe-2 text-text-primary truncate max-w-[400px]">
                         {link.url}
                       </td>
-                      <td className="py-1.5 text-right text-text-primary font-medium">
+                      <td className="py-1.5 text-end text-text-primary font-medium">
                         {link.clicks}
                       </td>
                     </tr>

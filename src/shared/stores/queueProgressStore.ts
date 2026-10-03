@@ -1,9 +1,9 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface QueueProgress {
   operationId: string;
   operationType: string;
-  status: "queued" | "processing" | "completed" | "failed";
+  status: 'queued' | 'processing' | 'completed' | 'failed';
   message?: string;
 }
 
@@ -12,7 +12,12 @@ interface QueueProgressStore {
   completedCount: number;
   failedCount: number;
   totalCount: number;
-  setProgress: (opId: string, opType: string, status: QueueProgress["status"], message?: string) => void;
+  setProgress: (
+    opId: string,
+    opType: string,
+    status: QueueProgress['status'],
+    message?: string,
+  ) => void;
   clearProgress: () => void;
   startBatch: (total: number) => void;
 }
@@ -32,10 +37,12 @@ export const useQueueProgressStore = create<QueueProgressStore>((set) => ({
           : [entry, ...state.activeProgress].slice(0, 10);
       return {
         activeProgress,
-        completedCount: status === "completed" ? state.completedCount + 1 : state.completedCount,
-        failedCount: status === "failed" ? state.failedCount + 1 : state.failedCount,
+        completedCount: status === 'completed' ? state.completedCount + 1 : state.completedCount,
+        failedCount: status === 'failed' ? state.failedCount + 1 : state.failedCount,
       };
     }),
-  clearProgress: () => set({ activeProgress: [], completedCount: 0, failedCount: 0, totalCount: 0 }),
-  startBatch: (total) => set({ activeProgress: [], completedCount: 0, failedCount: 0, totalCount: total }),
+  clearProgress: () =>
+    set({ activeProgress: [], completedCount: 0, failedCount: 0, totalCount: 0 }),
+  startBatch: (total) =>
+    set({ activeProgress: [], completedCount: 0, failedCount: 0, totalCount: total }),
 }));

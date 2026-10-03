@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from "react";
-import { CheckCircle2, Circle, Zap } from "lucide-react";
-import { ONBOARDING_STEPS, DEFAULT_TOOLS, type OnboardingData } from "./types";
-import { WelcomeStep } from "./steps/WelcomeStep";
-import { ToolsStep } from "./steps/ToolsStep";
-import { AccountSetupStep } from "./steps/AccountSetupStep";
-import { CompletionStep } from "./steps/CompletionStep";
-import { useOnboarding } from "./hooks/useOnboarding";
-import { seedDemoPreset, finalizeOnboarding } from "@shared/services/db/invoke/onboarding";
-import { useTranslation } from "react-i18next";
+import { useState, useCallback, useEffect } from 'react';
+import { CheckCircle2, Circle, Zap } from 'lucide-react';
+import { ONBOARDING_STEPS, DEFAULT_TOOLS, type OnboardingData } from './types';
+import { WelcomeStep } from './steps/WelcomeStep';
+import { ToolsStep } from './steps/ToolsStep';
+import { AccountSetupStep } from './steps/AccountSetupStep';
+import { CompletionStep } from './steps/CompletionStep';
+import { useOnboarding } from './hooks/useOnboarding';
+import { seedDemoPreset, finalizeOnboarding } from '@shared/services/db/invoke/onboarding';
+import { useTranslation } from 'react-i18next';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -15,11 +15,11 @@ interface OnboardingScreenProps {
 }
 
 const DEFAULT_DATA: OnboardingData = {
-  businessName: "My Business",
+  businessName: 'My Business',
   tools: DEFAULT_TOOLS,
   demoPreset: null,
   accountSkipped: true,
-  theme: "system",
+  theme: 'system',
   emailConnected: false,
   acknowledgedPro: false,
   step: 0,
@@ -29,19 +29,21 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
   const { t } = useTranslation();
   const [step, setStep] = useState(() => {
     try {
-      const saved = sessionStorage.getItem("smemaster.onboarding.step");
+      const saved = sessionStorage.getItem('smemaster.onboarding.step');
       if (saved) {
         const n = Number(saved);
         if (n >= 0 && n < ONBOARDING_STEPS.length) return n;
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     return 0;
   });
   const [data, setData] = useState<OnboardingData>({ ...DEFAULT_DATA });
   const { completeOnboarding } = useOnboarding();
 
   useEffect(() => {
-    sessionStorage.setItem("smemaster.onboarding.step", String(step));
+    sessionStorage.setItem('smemaster.onboarding.step', String(step));
     onProgress?.(step);
   }, [step, onProgress]);
 
@@ -52,8 +54,8 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
         setStep(detail.step);
       }
     };
-    window.addEventListener("smemaster-restore-onboarding", handler);
-    return () => window.removeEventListener("smemaster-restore-onboarding", handler);
+    window.addEventListener('smemaster-restore-onboarding', handler);
+    return () => window.removeEventListener('smemaster-restore-onboarding', handler);
   }, []);
 
   const handleNext = useCallback((partial: Partial<OnboardingData>) => {
@@ -68,10 +70,10 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
   const handleExpressMode = useCallback(async () => {
     setData((prev) => ({
       ...prev,
-      businessName: "My Business",
+      businessName: 'My Business',
       tools: { mail: true, crm: true, campaigns: false, calendar: false, ai: false },
     }));
-    sessionStorage.removeItem("smemaster.onboarding.step");
+    sessionStorage.removeItem('smemaster.onboarding.step');
     try {
       await completeOnboarding();
     } catch {
@@ -81,9 +83,9 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
   }, [completeOnboarding, onComplete]);
 
   const handleSkipToDemos = useCallback(async () => {
-    sessionStorage.removeItem("smemaster.onboarding.step");
+    sessionStorage.removeItem('smemaster.onboarding.step');
     try {
-      await seedDemoPreset("solo_freelancer", data.businessName || "SME Master Demo", data.theme);
+      await seedDemoPreset('solo_freelancer', data.businessName || 'SME Master Demo', data.theme);
     } catch {
       /* backend seeding may be unavailable (browser/dev server) */
     }
@@ -96,11 +98,11 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
   }, [completeOnboarding, onComplete, data.businessName, data.theme]);
 
   const handleFinalize = useCallback(async () => {
-    sessionStorage.removeItem("smemaster.onboarding.step");
+    sessionStorage.removeItem('smemaster.onboarding.step');
     try {
       await finalizeOnboarding({
-        businessName: data.businessName || "My Business",
-        theme: data.theme || "system",
+        businessName: data.businessName || 'My Business',
+        theme: data.theme || 'system',
         enableMail: data.tools.mail,
         enableCrm: data.tools.crm,
         enableCampaigns: data.tools.campaigns,
@@ -120,7 +122,10 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
       <div className="relative w-full max-w-3xl overflow-hidden frost-surface rounded-[--frost-radius-lg] border border-[var(--color-border-primary)]">
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-accent) 6%, transparent) 0%, transparent 50%)" }}
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-accent) 6%, transparent) 0%, transparent 50%)',
+          }}
         />
 
         <div className="relative px-6 py-5 md:px-10 md:py-6 border-b border-[var(--color-border-primary)]/60">
@@ -131,7 +136,9 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
               </div>
               <div>
                 <p className="text-sm font-bold tracking-tight">SMEMaster</p>
-                <p className="text-[11px] text-muted-foreground -mt-0.5">{t("onboarding.setupWizard")}</p>
+                <p className="text-[11px] text-muted-foreground -mt-0.5">
+                  {t('onboarding.setupWizard')}
+                </p>
               </div>
             </div>
 
@@ -141,7 +148,7 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
               className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-accent/25 bg-accent/[0.04] px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/[0.07] transition-all duration-200"
             >
               <Zap className="h-3.5 w-3.5" />
-              {t("onboarding.quickStart")}
+              {t('onboarding.quickStart')}
             </button>
           </div>
 
@@ -171,11 +178,7 @@ export function OnboardingScreen({ onComplete, onProgress }: OnboardingScreenPro
             />
           )}
           {step === 3 && (
-            <CompletionStep
-              data={data}
-              onComplete={handleFinalize}
-              onBack={handleBack}
-            />
+            <CompletionStep data={data} onComplete={handleFinalize} onBack={handleBack} />
           )}
         </div>
       </div>
@@ -193,14 +196,16 @@ function Stepper({ step }: { step: number }) {
         return (
           <div key={s.id} className="flex items-center gap-2 flex-1">
             <div className="flex items-center gap-2">
-              <div className={[
-                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-300",
-                isPast
-                  ? "border-accent bg-accent text-accent-foreground"
-                  : isActive
-                    ? "border-accent bg-background text-accent"
-                    : "border-border text-transparent",
-              ].join(" ")}>
+              <div
+                className={[
+                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-300',
+                  isPast
+                    ? 'border-accent bg-accent text-accent-foreground'
+                    : isActive
+                      ? 'border-accent bg-background text-accent'
+                      : 'border-border text-transparent',
+                ].join(' ')}
+              >
                 {isPast ? (
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 ) : isActive ? (
@@ -210,10 +215,16 @@ function Stepper({ step }: { step: number }) {
                 )}
               </div>
               <div className="leading-none">
-                <p className={[
-                  "text-[11px] font-semibold transition-colors duration-300",
-                  isActive ? "text-foreground" : isPast ? "text-foreground/80" : "text-muted-foreground",
-                ].join(" ")}>
+                <p
+                  className={[
+                    'text-[11px] font-semibold transition-colors duration-300',
+                    isActive
+                      ? 'text-foreground'
+                      : isPast
+                        ? 'text-foreground/80'
+                        : 'text-muted-foreground',
+                  ].join(' ')}
+                >
                   {t(`onboarding.steps.${s.id}`)}
                 </p>
                 <p className="text-[10px] text-muted-foreground/70">
@@ -221,9 +232,7 @@ function Stepper({ step }: { step: number }) {
                 </p>
               </div>
             </div>
-            {i < ONBOARDING_STEPS.length - 1 && (
-              <div className="mx-2 h-px flex-1 bg-border/70" />
-            )}
+            {i < ONBOARDING_STEPS.length - 1 && <div className="mx-2 h-px flex-1 bg-border/70" />}
           </div>
         );
       })}

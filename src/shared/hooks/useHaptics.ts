@@ -1,9 +1,9 @@
-import { useCallback } from "react";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { getHapticsBridge } from "@shared/services/nativeBridges";
-import type { HapticIntensity } from "@/types/native-bridges";
+import { useCallback } from 'react';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { getHapticsBridge } from '@shared/services/nativeBridges';
+import type { HapticIntensity } from '@/types/native-bridges';
 
-export type HapticType = "light" | "medium" | "heavy" | "success" | "error";
+export type HapticType = 'light' | 'medium' | 'heavy' | 'success' | 'error';
 
 /**
  * Standalone haptic helper — works outside React components.
@@ -27,7 +27,7 @@ export function triggerHaptic(type: HapticType): void {
     if (bridge?.performHaptic) {
       // Only simple intensities are sent to the native bridge;
       // patterns ("success" / "error") fall through to navigator.vibrate()
-      const simpleTypes: HapticIntensity[] = ["light", "medium", "heavy"];
+      const simpleTypes: HapticIntensity[] = ['light', 'medium', 'heavy'];
       if (simpleTypes.includes(type as HapticIntensity)) {
         bridge.performHaptic(type as HapticIntensity);
         return;
@@ -35,19 +35,19 @@ export function triggerHaptic(type: HapticType): void {
     }
     // WebView fallback vibration patterns
     switch (type) {
-      case "light":
+      case 'light':
         navigator.vibrate?.(10);
         break;
-      case "medium":
+      case 'medium':
         navigator.vibrate?.(25);
         break;
-      case "heavy":
+      case 'heavy':
         navigator.vibrate?.(50);
         break;
-      case "success":
+      case 'success':
         navigator.vibrate?.([15, 50, 15]);
         break;
-      case "error":
+      case 'error':
         navigator.vibrate?.([40, 30, 40]);
         break;
     }
@@ -83,11 +83,11 @@ export function useHaptics() {
     [isMobile],
   );
 
-  const light = useCallback(() => performHaptic("light"), [performHaptic]);
-  const medium = useCallback(() => performHaptic("medium"), [performHaptic]);
-  const heavy = useCallback(() => performHaptic("heavy"), [performHaptic]);
-  const success = useCallback(() => performHaptic("success"), [performHaptic]);
-  const error = useCallback(() => performHaptic("error"), [performHaptic]);
+  const light = useCallback(() => performHaptic('light'), [performHaptic]);
+  const medium = useCallback(() => performHaptic('medium'), [performHaptic]);
+  const heavy = useCallback(() => performHaptic('heavy'), [performHaptic]);
+  const success = useCallback(() => performHaptic('success'), [performHaptic]);
+  const error = useCallback(() => performHaptic('error'), [performHaptic]);
 
   return { light, medium, heavy, success, error, performHaptic };
 }

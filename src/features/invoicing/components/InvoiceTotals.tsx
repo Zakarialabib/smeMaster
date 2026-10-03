@@ -12,7 +12,14 @@ interface Props {
 }
 
 export default function InvoiceTotals({
-  subtotal, taxTotal, discount, total, currency, paid, balance, showPaid,
+  subtotal,
+  taxTotal,
+  discount,
+  total,
+  currency,
+  paid,
+  balance,
+  showPaid,
 }: Props) {
   const rows: { label: string; value: number; emphasis?: boolean; muted?: boolean }[] = [
     { label: 'Subtotal', value: subtotal },
@@ -26,7 +33,7 @@ export default function InvoiceTotals({
   }
 
   return (
-    <div className="w-full sm:w-72 ml-auto space-y-2.5">
+    <div className="w-full sm:w-72 ms-auto space-y-2.5">
       {rows.map((r) => (
         <div
           key={r.label}
@@ -36,7 +43,11 @@ export default function InvoiceTotals({
         >
           <span
             className={`text-sm ${
-              r.emphasis ? 'font-bold text-text-primary' : r.muted ? 'text-text-tertiary' : 'text-text-secondary'
+              r.emphasis
+                ? 'font-bold text-text-primary'
+                : r.muted
+                  ? 'text-text-tertiary'
+                  : 'text-text-secondary'
             }`}
           >
             {r.label}

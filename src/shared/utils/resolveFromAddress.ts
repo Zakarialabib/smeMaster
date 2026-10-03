@@ -1,4 +1,4 @@
-﻿import type { SendAsAlias } from "@features/mail/db/sendAsAliases";
+﻿import type { SendAsAlias } from '@features/mail/db/sendAsAliases';
 
 /**
  * Resolve which send-as alias to use as the "From" address.
@@ -20,13 +20,13 @@ export function resolveFromAddress(
   // Collect all addresses from To and CC into a normalized set
   const recipientEmails = new Set<string>();
   if (toAddresses) {
-    for (const addr of toAddresses.split(",")) {
+    for (const addr of toAddresses.split(',')) {
       const trimmed = addr.trim().toLowerCase();
       if (trimmed) recipientEmails.add(trimmed);
     }
   }
   if (ccAddresses) {
-    for (const addr of ccAddresses.split(",")) {
+    for (const addr of ccAddresses.split(',')) {
       const trimmed = addr.trim().toLowerCase();
       if (trimmed) recipientEmails.add(trimmed);
     }
@@ -34,9 +34,7 @@ export function resolveFromAddress(
 
   // Check if any alias matches a recipient address
   if (recipientEmails.size > 0) {
-    const match = aliases.find((a) =>
-      recipientEmails.has(a.email.toLowerCase()),
-    );
+    const match = aliases.find((a) => recipientEmails.has(a.email.toLowerCase()));
     if (match) return match;
   }
 
@@ -51,4 +49,3 @@ export function resolveFromAddress(
   // Last resort: return first alias
   return aliases[0] ?? null;
 }
-

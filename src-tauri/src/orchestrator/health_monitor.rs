@@ -348,4 +348,62 @@ mod tests {
         assert_eq!(health_label(&HealthStatus::Failed("x".into())), "Failed");
         assert_eq!(health_label(&HealthStatus::Unknown), "Unknown");
     }
+
+    /*
+     * The two fixtures above existed and were never used, so the compiler
+     * flagged them dead. Rather than delete them or silence the warning, this
+     * is the test they were written for: a service that REPORTS its own health
+     * is what the monitor aggregates, so exercising the trait directly is the
+     * smallest honest use of them.
+     */
+
+    #[tokio::test]
+    async fn test_a_healthy_service_reports_healthy() {
+        let svc = HealthyService;
+        assert_eq!(svc.name(), "healthy");
+        assert!(svc.init().await.is_ok());
+        assert!(svc.start().await.is_ok());
+        assert!(matches!(svc.health_check().await, HealthStatus::Healthy));
+        assert!(svc.is_critical());
+        assert!(svc.stop().await.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_a_degraded_service_carries_the_reason() {
+        // The reason string is the whole point of Degraded — a monitor that
+        // reports "Degraded" with no reason tells an operator nothing to act on.
+        let svc = DegradedService;
+        assert_eq!(svc.name(), "degraded");
+        match svc.health_check().await {
+            HealthStatus::Degraded(reason) => assert_eq!(reason, "test"),
+            other => panic!("expected Degraded, got {other:?}"),
+        }
+        assert!(svc.is_critical());
+    }
+
+    #[tokio::test]
+    async fn test_health_label_renders_a_degraded_reason() {
+        let svc = DegradedService;
+        let label = health_label(&svc.health_check().await);
+        assert_eq!(label, "Degraded");
+
+        /*
+         * KNOWN GAP, found while writing this test: `health_label` matches
+         * `HealthStatus::Degraded(_)` and DISCARDS the reason, so an operator
+         * reading a log sees "Degraded" with nothing to act on — which is the
+         * one thing a Degraded status is supposed to convey.
+         *
+         * Asserting today's behaviour so the gap is recorded rather than
+         * silently "fixed" by a test that happens to pass:
+         *   - `health_check()` DOES return the reason (asserted above)
+         *   - `health_label()` does NOT surface it (asserted here)
+         *
+         * Changing the log format is an operator-visible decision, so it is
+         * flagged rather than done unilaterally. See BUILD-LOG.md.
+         */
+        assert_eq!(
+            label, "Degraded",
+            "health_label drops the reason — see the KNOWN GAP comment above"
+        );
+    }
 }

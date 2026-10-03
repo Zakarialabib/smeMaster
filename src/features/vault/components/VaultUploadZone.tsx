@@ -1,15 +1,12 @@
-import { useCallback, useState, useRef } from "react";
-import { Upload } from "lucide-react";
+import { useCallback, useState, useRef } from 'react';
+import { Upload } from 'lucide-react';
 
 interface VaultUploadZoneProps {
   onUpload: (sourcePath: string, fileName: string) => void;
   className?: string;
 }
 
-export function VaultUploadZone({
-  onUpload,
-  className = "",
-}: VaultUploadZoneProps) {
+export function VaultUploadZone({ onUpload, className = '' }: VaultUploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const dragCounterRef = useRef(0);
 
@@ -49,7 +46,7 @@ export function VaultUploadZone({
       if (files.length > 0) {
         // In a Tauri context, the dropped file has a path property
         const file = files[0];
-        if (file && "path" in file) {
+        if (file && 'path' in file) {
           const sourcePath = (file as File & { path: string }).path;
           const fileName = file.name;
           onUpload(sourcePath, fileName);
@@ -69,8 +66,8 @@ export function VaultUploadZone({
         flex items-center justify-center p-4 rounded-lg border-2 border-dashed transition-all
         ${
           isDragging
-            ? "border-accent bg-accent/5 scale-[1.01]"
-            : "border-border-secondary hover:border-accent/30"
+            ? 'border-accent bg-accent/5 scale-[1.01]'
+            : 'border-border-secondary hover:border-accent/30'
         }
         ${className}
       `}
@@ -80,15 +77,11 @@ export function VaultUploadZone({
       <div className="flex flex-col items-center gap-2 text-center">
         <Upload
           size={24}
-          className={`transition-colors ${
-            isDragging ? "text-accent" : "text-text-tertiary"
-          }`}
+          className={`transition-colors ${isDragging ? 'text-accent' : 'text-text-tertiary'}`}
           aria-hidden="true"
         />
         <p className="text-xs text-text-tertiary">
-          {isDragging
-            ? "Drop to upload"
-            : "Drag & drop files here"}
+          {isDragging ? 'Drop to upload' : 'Drag & drop files here'}
         </p>
       </div>
     </div>

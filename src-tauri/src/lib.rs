@@ -15,9 +15,11 @@ mod update_tracker;
 use commands::IdleRegistry;
 use imap::session::SessionPoolManager;
 mod contacts;
+mod agent;
 mod deliverability;
 mod device;
 mod dns;
+pub mod downloader;
 mod events;
 mod export;
 mod imap;
@@ -182,6 +184,20 @@ pub fn run() {
     {
         builder = builder.plugin(native_events::init());
     }
+
+    // ── MCP bridge (dev tooling) ──────────────────────────────────────
+    // Lets the `tauri-mcp` MCP server drive this app: webview JS execution,
+    // DOM inspection, screenshots, IPC monitoring. Without it the frontend can
+    // only be type-checked, never exercised.
+    //
+    // Double-gated on purpose: the cargo feature (opt-in, opens a WebSocket
+    // listener) AND `debug_assertions`, so a release build cannot expose it
+    // even if someone leaves the feature enabled.
+    #[cfg(all(feature = "mcp-bridge", debug_assertions))]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+        log::info!("[mcp-bridge] Dev bridge enabled (tauri-mcp can drive this app)");
+    }
     
     // NOTE: invoke_handler is registered ONCE via commands::register below.
     // All #[tauri::command] functions (including the lib.rs-level ones) are
@@ -194,6 +210,7 @@ pub fn run() {
     builder = pgp::register(builder);
     builder = vault::register(builder);
     builder = export::register(builder);
+    builder = agent::register(builder);
     builder = deliverability::register(builder);
     builder = pairing::register(builder);
     builder = device::register(builder);
@@ -208,6 +225,19 @@ pub fn run() {
     builder = builder.setup(|app| {
         // ── Record app start time as early as possible for accurate uptime
         crate::commands::db::set_app_start_time();
+
+        // ═════════════════════════════════════════════════════════════
+        // EventBus – single source of truth for Rust→React events
+        // ═════════════════════════════════════════════════════════════
+        // Managed FIRST, before anything can call `app.state::<EventBus>()`.
+        // It used to be managed ~200 lines below, after the change tracker had
+        // already requested it — so `state()` panicked with
+        // "state() called before manage() for EventBus" and the app never
+        // reached the window. Ordering here is load-bearing: everything below
+        // (change tracker, sync monitor, subsystem lifecycle, AppState) reads
+        // this state.
+        let (event_bus, bus_rx) = events::EventBus::new(10_000);
+        app.manage(event_bus);
 
         // ── Database pool – created synchronously (fast, <50ms). ─────
         // Migration runs in background (non‑blocking) to avoid ANR.
@@ -354,6 +384,16 @@ pub fn run() {
         // ── Post-migration health check runs inside spawn_orchestrator ──
         app.manage(pool.clone());
 
+        // ── Resumable chunked downloader (AI models + generic assets).
+        //    Registered early so `ai_download_model` and the 7
+        //    `downloader_*` commands resolve state immediately; boot
+        //    recovery of interrupted jobs runs later, inside
+        //    spawn_orchestrator AFTER migrations create the tables.
+        app.manage(crate::downloader::DownloaderState::new(
+            app.handle(),
+            pool.clone(),
+        ));
+
         // ── DataCacheService: in-memory cache layer ──
         // Registered here (early, before spawn_orchestrator) so IPC commands
         // can access it immediately — they don't need to wait for the async
@@ -395,11 +435,8 @@ pub fn run() {
 
         // NOTE: rust:init:complete + migration is handled in AppLifecycle::spawn_orchestrator
 
-        // ═════════════════════════════════════════════════════════════
-        // EventBus – single source of truth for Rust→React events
-        // ═════════════════════════════════════════════════════════════
-        let (event_bus, bus_rx) = events::EventBus::new(10_000);
-        app.manage(event_bus);
+        // (EventBus is created and managed at the TOP of this closure — see the
+        // note there. It must precede the change tracker, which reads it.)
 
         // SyncMonitorService observes the EventBus
         let sync_monitor = std::sync::Arc::new(orchestrator::SyncMonitorService::new());
@@ -437,6 +474,11 @@ pub fn run() {
         // do not exist when the feature is off.
         #[cfg(feature = "local-ai")]
         app.manage(crate::commands::ai::AiState::new(app.handle().clone()));
+
+        // Agent (voice + WhatsApp) console. Holds the bearer token for
+        // agent-core calls so the token is never a #[tauri::command] argument —
+        // a token that crosses the IPC boundary is one the frontend can log.
+        app.manage(agent::client::AgentAuth::default());
 
         // Bridge: EventBus → WebView `core-event`
         orchestrator::init::AppLifecycle::spawn_event_bridge(app.handle(), bus_rx);

@@ -1,4 +1,4 @@
-export type SpinnerSize = "sm" | "md" | "lg";
+export type SpinnerSize = 'sm' | 'md' | 'lg';
 
 export interface SpinnerProps {
   size?: SpinnerSize;
@@ -11,7 +11,7 @@ const sizeMap: Record<SpinnerSize, number> = {
   lg: 28,
 };
 
-export function Spinner({ size = "md", className = "" }: SpinnerProps) {
+export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   const px = sizeMap[size];
 
   return (
@@ -24,14 +24,7 @@ export function Spinner({ size = "md", className = "" }: SpinnerProps) {
       aria-label="placeholders.loading"
       role="status"
     >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-        opacity="0.25"
-      />
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
       <path
         d="M12 2a10 10 0 0 1 10 10"
         stroke="currentColor"
@@ -41,4 +34,3 @@ export function Spinner({ size = "md", className = "" }: SpinnerProps) {
     </svg>
   );
 }
-

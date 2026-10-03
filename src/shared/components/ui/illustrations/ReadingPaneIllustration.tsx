@@ -26,9 +26,33 @@ export function ReadingPaneIllustration({ size = 140, className }: Props) {
       />
       {/* Letter lines */}
       <rect x="48" y="40" width="44" height="3" rx="1.5" fill="var(--color-accent)" opacity="0.3" />
-      <rect x="48" y="48" width="34" height="2.5" rx="1.25" fill="var(--color-border-primary)" opacity="0.5" />
-      <rect x="48" y="55" width="38" height="2.5" rx="1.25" fill="var(--color-border-primary)" opacity="0.35" />
-      <rect x="48" y="62" width="26" height="2.5" rx="1.25" fill="var(--color-border-primary)" opacity="0.2" />
+      <rect
+        x="48"
+        y="48"
+        width="34"
+        height="2.5"
+        rx="1.25"
+        fill="var(--color-border-primary)"
+        opacity="0.5"
+      />
+      <rect
+        x="48"
+        y="55"
+        width="38"
+        height="2.5"
+        rx="1.25"
+        fill="var(--color-border-primary)"
+        opacity="0.35"
+      />
+      <rect
+        x="48"
+        y="62"
+        width="26"
+        height="2.5"
+        rx="1.25"
+        fill="var(--color-border-primary)"
+        opacity="0.2"
+      />
       {/* Envelope body */}
       <path
         d="M22 60 L70 90 L118 60 L118 105 C118 108.314 115.314 111 112 111 L28 111 C24.686 111 22 108.314 22 105 Z"
@@ -54,20 +78,8 @@ export function ReadingPaneIllustration({ size = 140, className }: Props) {
         strokeLinejoin="round"
       />
       {/* Small seal / decoration */}
-      <circle
-        cx="70"
-        cy="95"
-        r="6"
-        fill="var(--color-accent)"
-        opacity="0.15"
-      />
-      <circle
-        cx="70"
-        cy="95"
-        r="3.5"
-        fill="var(--color-accent)"
-        opacity="0.25"
-      />
+      <circle cx="70" cy="95" r="6" fill="var(--color-accent)" opacity="0.15" />
+      <circle cx="70" cy="95" r="3.5" fill="var(--color-accent)" opacity="0.25" />
     </svg>
   );
 }

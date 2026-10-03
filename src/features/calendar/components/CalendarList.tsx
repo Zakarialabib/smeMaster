@@ -1,4 +1,4 @@
-﻿import type { DbCalendar } from "@features/calendar/db/calendars";
+﻿import type { DbCalendar } from '@features/calendar/db/calendars';
 
 interface CalendarListProps {
   calendars: DbCalendar[];
@@ -25,23 +25,29 @@ export function CalendarList({ calendars, onVisibilityChange }: CalendarListProp
             />
             <span
               className={`w-3 h-3 rounded-sm border-2 flex items-center justify-center shrink-0 transition-colors ${
-                cal.is_visible
-                  ? "border-transparent"
-                  : "border-border-primary bg-transparent"
+                cal.is_visible ? 'border-transparent' : 'border-border-primary bg-transparent'
               }`}
-              style={cal.is_visible ? { backgroundColor: cal.color ?? "var(--color-accent)" } : undefined}
+              style={
+                cal.is_visible ? { backgroundColor: cal.color ?? 'var(--color-accent)' } : undefined
+              }
             >
               {!!cal.is_visible && (
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                  <path d="M1.5 4L3 5.5L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M1.5 4L3 5.5L6.5 2"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               )}
             </span>
             <span className="text-sm text-text-primary truncate">
-              {cal.display_name ?? "Calendar"}
+              {cal.display_name ?? 'Calendar'}
             </span>
             {!!cal.is_primary && (
-              <span className="text-[0.6rem] text-text-tertiary ml-auto shrink-0">Primary</span>
+              <span className="text-[0.6rem] text-text-tertiary ms-auto shrink-0">Primary</span>
             )}
           </label>
         ))}
@@ -49,4 +55,3 @@ export function CalendarList({ calendars, onVisibilityChange }: CalendarListProp
     </div>
   );
 }
-

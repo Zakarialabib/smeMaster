@@ -6,9 +6,9 @@
  * @module
  */
 
-import { type FormEvent, type KeyboardEvent, useRef, useEffect } from "react";
-import { Search, Loader2 } from "lucide-react";
-import { cn } from "@shared/utils/cn";
+import { type FormEvent, type KeyboardEvent, useRef, useEffect } from 'react';
+import { Search, Loader2 } from 'lucide-react';
+import { cn } from '@shared/utils/cn';
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ export function RagSearchBar({
   onChange,
   onSubmit,
   disabled = false,
-  placeholder = "Ask anything about your emails, files, and vault…",
+  placeholder = 'Ask anything about your emails, files, and vault…',
   className,
 }: RagSearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,14 +52,14 @@ export function RagSearchBar({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className={cn("relative w-full", className)}>
+    <form onSubmit={handleSubmit} className={cn('relative w-full', className)}>
       {/* Search icon */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
         {disabled ? (
@@ -80,16 +80,16 @@ export function RagSearchBar({
         disabled={disabled}
         aria-label="Search your knowledge base"
         className={cn(
-          "w-full h-12 pl-12 pr-4",
-          "text-text-primary text-base",
-          "bg-white/80 dark:bg-white/8",
-          "backdrop-blur-[--glass-blur-heavy]",
-          "border border-white/30 dark:border-white/10",
-          "rounded-[--frost-radius]",
-          "placeholder:text-text-tertiary",
-          "focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30",
-          "transition-all duration-200",
-          disabled && "opacity-60 cursor-not-allowed",
+          'w-full h-12 pl-12 pr-4',
+          'text-text-primary text-base',
+          'bg-white/80 dark:bg-white/8',
+          'backdrop-blur-[--glass-blur-heavy]',
+          'border border-white/30 dark:border-white/10',
+          'rounded-[--frost-radius]',
+          'placeholder:text-text-tertiary',
+          'focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30',
+          'transition-all duration-200',
+          disabled && 'opacity-60 cursor-not-allowed',
         )}
       />
     </form>

@@ -1,15 +1,15 @@
-﻿import { getActiveProvider } from "./providerManager";
-import { AiError } from "./errors";
-import { getAiCache, setAiCache, deleteAiCache } from "@features/mail/db/aiCache";
+﻿import { getActiveProvider } from './providerManager';
+import { AiError } from './errors';
+import { getAiCache, setAiCache, deleteAiCache } from '@features/mail/db/aiCache';
 import {
   getWritingStyleProfile,
   upsertWritingStyleProfile,
   deleteWritingStyleProfile,
-} from "@features/mail/db/writingStyleProfiles";
-import { getRecentSentMessages, type DbMessage } from "@shared/services/db/messages";
-import { getAccount } from "@features/accounts/db/accounts";
-import { getSetting } from "@features/settings/db/settings";
-import { WRITING_STYLE_ANALYSIS_PROMPT, AUTO_DRAFT_REPLY_PROMPT } from "./prompts";
+} from '@features/mail/db/writingStyleProfiles';
+import { getRecentSentMessages, type DbMessage } from '@shared/services/db/messages';
+import { getAccount } from '@features/accounts/db/accounts';
+import { getSetting } from '@features/settings/db/settings';
+import { WRITING_STYLE_ANALYSIS_PROMPT, AUTO_DRAFT_REPLY_PROMPT } from './prompts';
 
 async function callAi(systemPrompt: string, userContent: string): Promise<string> {
   try {
@@ -18,13 +18,13 @@ async function callAi(systemPrompt: string, userContent: string): Promise<string
   } catch (err) {
     if (err instanceof AiError) throw err;
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes("401") || message.includes("authentication")) {
-      throw new AiError("AUTH_ERROR", "Invalid API key");
+    if (message.includes('401') || message.includes('authentication')) {
+      throw new AiError('AUTH_ERROR', 'Invalid API key');
     }
-    if (message.includes("429") || message.includes("rate")) {
-      throw new AiError("RATE_LIMITED", "Rate limited â€” please try again shortly");
+    if (message.includes('429') || message.includes('rate')) {
+      throw new AiError('RATE_LIMITED', 'Rate limited â€” please try again shortly');
     }
-    throw new AiError("NETWORK_ERROR", message);
+    throw new AiError('NETWORK_ERROR', message);
   }
 }
 
@@ -34,10 +34,10 @@ async function callAi(systemPrompt: string, userContent: string): Promise<string
 export async function analyzeWritingStyle(samples: DbMessage[]): Promise<string> {
   const formatted = samples
     .map((msg) => {
-      const body = (msg.body_text ?? msg.snippet ?? "").trim().slice(0, 1000);
+      const body = (msg.body_text ?? msg.snippet ?? '').trim().slice(0, 1000);
       return `--- Sample ---\n${body}`;
     })
-    .join("\n\n");
+    .join('\n\n');
 
   return callAi(WRITING_STYLE_ANALYSIS_PROMPT, formatted.slice(0, 8000));
 }
@@ -46,8 +46,8 @@ export async function analyzeWritingStyle(samples: DbMessage[]): Promise<string>
  * Get existing style profile or create one by analyzing recent sent emails.
  */
 export async function getOrCreateStyleProfile(accountId: string): Promise<string | null> {
-  const styleEnabled = await getSetting("ai_writing_style_enabled");
-  if (styleEnabled === "false") return null;
+  const styleEnabled = await getSetting('ai_writing_style_enabled');
+  if (styleEnabled === 'false') return null;
 
   // Check for cached profile
   const existing = await getWritingStyleProfile(accountId);
@@ -80,19 +80,19 @@ function formatThreadForDraft(messages: DbMessage[]): string {
     .map((msg) => {
       const from = msg.from_name
         ? `${msg.from_name} <${msg.from_address}>`
-        : (msg.from_address ?? "Unknown");
-      const date = new Date(msg.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
+        : (msg.from_address ?? 'Unknown');
+      const date = new Date(msg.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
       });
-      const body = (msg.body_text ?? msg.snippet ?? "").trim();
+      const body = (msg.body_text ?? msg.snippet ?? '').trim();
       return `From: ${from}\nDate: ${date}\n\n${body}`;
     })
-    .join("\n---\n");
+    .join('\n---\n');
 }
 
-export type AutoDraftMode = "reply" | "replyAll";
+export type AutoDraftMode = 'reply' | 'replyAll';
 
 /**
  * Generate an auto-draft reply for a thread.
@@ -114,16 +114,15 @@ export async function generateAutoDraft(
   const styleProfile = await getOrCreateStyleProfile(accountId);
 
   // Build the prompt
-  const subject = messages[0]?.subject ?? "No subject";
+  const subject = messages[0]?.subject ?? 'No subject';
   const threadContent = formatThreadForDraft(messages);
-  const styleSection = styleProfile
-    ? `\n\nUser's writing style:\n${styleProfile}`
-    : "";
+  const styleSection = styleProfile ? `\n\nUser's writing style:\n${styleProfile}` : '';
 
-  const userContent = `<email_content>Subject: ${subject}\n\n${threadContent}</email_content>${styleSection}`.slice(
-    0,
-    6000,
-  );
+  const userContent =
+    `<email_content>Subject: ${subject}\n\n${threadContent}</email_content>${styleSection}`.slice(
+      0,
+      6000,
+    );
 
   const draft = await callAi(AUTO_DRAFT_REPLY_PROMPT, userContent);
 
@@ -150,8 +149,8 @@ export async function regenerateAutoDraft(
  * Check if auto-draft is available (AI configured + setting enabled).
  */
 export async function isAutoDraftEnabled(): Promise<boolean> {
-  const enabled = await getSetting("ai_auto_draft_enabled");
-  if (enabled === "false") return false;
+  const enabled = await getSetting('ai_auto_draft_enabled');
+  if (enabled === 'false') return false;
 
   try {
     const provider = await getActiveProvider();
@@ -160,4 +159,3 @@ export async function isAutoDraftEnabled(): Promise<boolean> {
     return false;
   }
 }
-

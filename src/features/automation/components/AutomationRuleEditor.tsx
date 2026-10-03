@@ -1,19 +1,16 @@
-import { useCallback } from "react";
-import { Save, X } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { AutomationTriggerPicker } from "./AutomationTriggerPicker";
-import { AutomationActionPicker } from "./AutomationActionPicker";
-import { useAutomationStore } from "@features/automation/stores/automationStore";
+import { useCallback } from 'react';
+import { Save, X } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { AutomationTriggerPicker } from './AutomationTriggerPicker';
+import { AutomationActionPicker } from './AutomationActionPicker';
+import { useAutomationStore } from '@features/automation/stores/automationStore';
 
 interface AutomationRuleEditorProps {
   accountId: string;
   onSaveSuccess?: () => void;
 }
 
-export function AutomationRuleEditor({
-  accountId,
-  onSaveSuccess,
-}: AutomationRuleEditorProps) {
+export function AutomationRuleEditor({ accountId, onSaveSuccess }: AutomationRuleEditorProps) {
   const editor = useAutomationStore((s) => s.editor);
   const setEditorField = useAutomationStore((s) => s.setEditorField);
   const closeEditor = useAutomationStore((s) => s.closeEditor);
@@ -25,8 +22,8 @@ export function AutomationRuleEditor({
 
   const handleTriggerChange = useCallback(
     (event: string, conditions: string) => {
-      setEditorField("triggerEvent", event);
-      setEditorField("triggerConditions", conditions);
+      setEditorField('triggerEvent', event);
+      setEditorField('triggerConditions', conditions);
     },
     [setEditorField],
   );
@@ -40,7 +37,7 @@ export function AutomationRuleEditor({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         closeEditor();
       }
     },
@@ -52,11 +49,11 @@ export function AutomationRuleEditor({
       className="rounded-xl border border-border-primary bg-bg-secondary p-4 space-y-3"
       onKeyDown={handleKeyDown}
       role="form"
-      aria-label={isEditing ? "Edit automation rule" : "Create automation rule"}
+      aria-label={isEditing ? 'Edit automation rule' : 'Create automation rule'}
     >
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-text-primary">
-          {isEditing ? "Edit Rule" : "New Rule"}
+          {isEditing ? 'Edit Rule' : 'New Rule'}
         </h3>
         <button
           type="button"
@@ -80,7 +77,7 @@ export function AutomationRuleEditor({
       <input
         type="text"
         value={editor.name}
-        onChange={(e) => setEditorField("name", e.target.value)}
+        onChange={(e) => setEditorField('name', e.target.value)}
         placeholder="Rule name (e.g. Auto-archive newsletters)"
         className="w-full bg-bg-tertiary text-text-primary text-sm px-3 py-1.5 rounded border border-border-primary outline-none focus:border-accent transition-colors"
         autoFocus
@@ -94,7 +91,7 @@ export function AutomationRuleEditor({
 
       <AutomationActionPicker
         actions={editor.actions}
-        onChange={(actions) => setEditorField("actions", actions)}
+        onChange={(actions) => setEditorField('actions', actions)}
       />
 
       <div className="flex items-center gap-2 pt-1">
@@ -106,7 +103,7 @@ export function AutomationRuleEditor({
           disabled={!editor.name.trim() || loading}
           loading={loading}
         >
-          {isEditing ? "Update Rule" : "Save Rule"}
+          {isEditing ? 'Update Rule' : 'Save Rule'}
         </Button>
         <Button variant="secondary" size="sm" onClick={closeEditor}>
           Cancel

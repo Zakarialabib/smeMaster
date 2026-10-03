@@ -1,21 +1,21 @@
-import { type InputHTMLAttributes, forwardRef } from "react";
-import { INPUT_BASE } from "@shared/styles/ui-tokens";
+import { type InputHTMLAttributes, forwardRef } from 'react';
+import { INPUT_BASE } from '@shared/styles/ui-tokens';
 
-interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
+interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
-  size?: "sm" | "md";
+  size?: 'sm' | 'md';
   error?: string;
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { label, size = "sm", error, className = "", id, ...rest },
+  { label, size = 'sm', error, className = '', id, ...rest },
   ref,
 ) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
   const sizes = {
-    sm: "px-3 py-1.5 text-sm min-h-[44px]",
-    md: "px-3 py-2 text-sm min-h-[44px]",
+    sm: 'px-3 py-1.5 text-sm min-h-[44px]',
+    md: 'px-3 py-2 text-sm min-h-[44px]',
   };
 
   return (
@@ -28,7 +28,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
       <input
         ref={ref}
         id={inputId}
-        className={`${INPUT_BASE} ${sizes[size]} ${error ? "border-danger focus:ring-danger" : ""}`}
+        className={`${INPUT_BASE} ${sizes[size]} ${error ? 'border-danger focus:ring-danger' : ''}`}
         {...rest}
       />
       {error && <p className="text-xs text-danger mt-1">{error}</p>}

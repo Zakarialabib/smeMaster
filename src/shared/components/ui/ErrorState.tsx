@@ -1,5 +1,5 @@
-import { AlertCircle, RefreshCw } from "lucide-react";
-import { Button } from "./Button";
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from './Button';
 
 export interface ErrorStateProps {
   /** Human-readable title. Default: "Something went wrong" */
@@ -26,16 +26,17 @@ export interface ErrorStateProps {
  * - Compact: Smaller padding, smaller text, suitable for inline/widget use
  */
 export function ErrorState({
-  title = "Something went wrong",
+  title = 'Something went wrong',
   message,
   error,
   onRetry,
-  retryLabel = "Try again",
-  className = "",
+  retryLabel = 'Try again',
+  className = '',
   compact = false,
 }: ErrorStateProps) {
-  const errorMessage = message
-    ?? (typeof error === "string" ? error : error instanceof Error ? error.message : undefined);
+  const errorMessage =
+    message ??
+    (typeof error === 'string' ? error : error instanceof Error ? error.message : undefined);
 
   if (compact) {
     return (
@@ -69,9 +70,7 @@ export function ErrorState({
     >
       <AlertCircle size={48} strokeWidth={1} className="text-danger/40 mb-3" />
       <p className="text-sm font-medium text-text-primary">{title}</p>
-      {errorMessage && (
-        <p className="text-xs text-text-tertiary mt-1.5 max-w-sm">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-xs text-text-tertiary mt-1.5 max-w-sm">{errorMessage}</p>}
       {onRetry && (
         <Button
           variant="primary"

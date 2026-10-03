@@ -1,28 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
-import { Trash2, Pencil, ChevronDown, Eye, Edit3, Copy, Check } from "lucide-react";
-import { Button } from "@shared/components/ui/Button";
-import { EditorToolbar } from "@features/mail/components/composer/EditorToolbar";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { useState, useEffect, useCallback } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
+import { Trash2, Pencil, ChevronDown, Eye, Edit3, Copy, Check } from 'lucide-react';
+import { Button } from '@shared/components/ui/Button';
+import { EditorToolbar } from '@features/mail/components/composer/EditorToolbar';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
   getTemplatesForAccount,
   insertTemplate,
   updateTemplate,
   deleteTemplate,
   type DbTemplate,
-} from "@features/mail/db/templates";
-import { TEMPLATE_VARIABLES } from "@shared/utils/templateVariables";
+} from '@features/mail/db/templates';
+import { TEMPLATE_VARIABLES } from '@shared/utils/templateVariables';
 
 export function TemplateEditor() {
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const [templates, setTemplates] = useState<DbTemplate[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [shortcut, setShortcut] = useState("");
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [shortcut, setShortcut] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -31,12 +31,13 @@ export function TemplateEditor() {
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: { openOnClick: false } }),
       Image.configure({ inline: true, allowBase64: true }),
-      Placeholder.configure({ placeholder: "Write your template..." }),
+      Placeholder.configure({ placeholder: 'Write your template...' }),
     ],
-    content: "",
+    content: '',
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs",
+        class:
+          'prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none text-text-primary text-xs',
       },
     },
   });
@@ -53,14 +54,14 @@ export function TemplateEditor() {
   }, [activeAccountId]);
 
   const resetForm = useCallback(() => {
-    setName("");
-    setSubject("");
-    setShortcut("");
+    setName('');
+    setSubject('');
+    setShortcut('');
     setEditingId(null);
     setShowForm(false);
     setPreviewMode(false);
     setCopied(false);
-    editor?.commands.setContent("");
+    editor?.commands.setContent('');
   }, [editor]);
 
   const handleSave = useCallback(async () => {
@@ -89,32 +90,38 @@ export function TemplateEditor() {
     await loadTemplates();
   }, [activeAccountId, editor, name, subject, shortcut, editingId, resetForm, loadTemplates]);
 
-  const handleEdit = useCallback((tmpl: DbTemplate) => {
-    setEditingId(tmpl.id);
-    setName(tmpl.name);
-    setSubject(tmpl.subject ?? "");
-    setShortcut(tmpl.shortcut ?? "");
-    setShowForm(true);
-    setPreviewMode(false);
-    setCopied(false);
-    editor?.commands.setContent(tmpl.body_html);
-  }, [editor]);
+  const handleEdit = useCallback(
+    (tmpl: DbTemplate) => {
+      setEditingId(tmpl.id);
+      setName(tmpl.name);
+      setSubject(tmpl.subject ?? '');
+      setShortcut(tmpl.shortcut ?? '');
+      setShowForm(true);
+      setPreviewMode(false);
+      setCopied(false);
+      editor?.commands.setContent(tmpl.body_html);
+    },
+    [editor],
+  );
 
-  const handleDelete = useCallback(async (id: string) => {
-    await deleteTemplate(id);
-    if (editingId === id) resetForm();
-    await loadTemplates();
-  }, [editingId, resetForm, loadTemplates]);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteTemplate(id);
+      if (editingId === id) resetForm();
+      await loadTemplates();
+    },
+    [editingId, resetForm, loadTemplates],
+  );
 
   const handleCopyHtml = useCallback(async () => {
-    const html = editor?.getHTML() ?? "";
-    const { copyToClipboard } = await import("@shared/hooks/useClipboard");
+    const html = editor?.getHTML() ?? '';
+    const { copyToClipboard } = await import('@shared/hooks/useClipboard');
     await copyToClipboard(html);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [editor]);
 
-  const templateHtml = editor?.getHTML() ?? "";
+  const templateHtml = editor?.getHTML() ?? '';
 
   return (
     <div className="space-y-3">
@@ -187,9 +194,13 @@ export function TemplateEditor() {
                 iconOnly
                 icon={previewMode ? <Edit3 size={14} /> : <Eye size={14} />}
                 onClick={() => setPreviewMode(!previewMode)}
-                className={previewMode ? "text-accent bg-accent/10" : "text-text-tertiary hover:text-text-primary"}
-                title={previewMode ? "Edit template" : "Preview template"}
-                aria-label={previewMode ? "Edit template" : "Preview template"}
+                className={
+                  previewMode
+                    ? 'text-accent bg-accent/10'
+                    : 'text-text-tertiary hover:text-text-primary'
+                }
+                title={previewMode ? 'Edit template' : 'Preview template'}
+                aria-label={previewMode ? 'Edit template' : 'Preview template'}
               />
             </div>
             {previewMode ? (
@@ -207,7 +218,7 @@ export function TemplateEditor() {
                   icon={copied ? <Check size={12} /> : <Copy size={12} />}
                   onClick={handleCopyHtml}
                 >
-                  {copied ? "Copied!" : `Use "${name || "Untitled"}" template � copy HTML`}
+                  {copied ? 'Copied!' : `Use "${name || 'Untitled'}" template � copy HTML`}
                 </Button>
               </div>
             ) : (
@@ -227,27 +238,16 @@ export function TemplateEditor() {
             className="w-full px-3 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary outline-none focus:border-accent"
           />
           <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={!name.trim()}
-            >
-              {editingId ? "Update" : "Save"}
+            <Button variant="primary" onClick={handleSave} disabled={!name.trim()}>
+              {editingId ? 'Update' : 'Save'}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={resetForm}
-            >
+            <Button variant="secondary" onClick={resetForm}>
               Cancel
             </Button>
           </div>
         </div>
       ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowForm(true)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
           + Add template
         </Button>
       )}
@@ -264,7 +264,12 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
         variant="ghost"
         size="sm"
         onClick={() => setOpen(!open)}
-        icon={<ChevronDown size={12} className={open ? "rotate-180 transition-transform" : "transition-transform"} />}
+        icon={
+          <ChevronDown
+            size={12}
+            className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+          />
+        }
         className="text-accent hover:text-accent-hover"
       >
         Insert variable
@@ -290,4 +295,3 @@ function InsertVariableDropdown({ onInsert }: { onInsert: (variable: string) => 
     </div>
   );
 }
-

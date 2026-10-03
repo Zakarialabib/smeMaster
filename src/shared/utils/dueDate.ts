@@ -7,7 +7,7 @@
  * All functions are pure and side-effect free; no React, no i18n.
  */
 
-export type DueBucket = "overdue" | "today" | "tomorrow" | "this-week" | "later";
+export type DueBucket = 'overdue' | 'today' | 'tomorrow' | 'this-week' | 'later';
 
 /**
  * Whole-day diff between today (local midnight) and the date (local midnight).
@@ -27,12 +27,12 @@ export function getDayDiff(timestamp: number): number {
 export function formatDueDate(timestamp: number): string {
   const diff = getDayDiff(timestamp);
   if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
   if (diff <= 7) return `${diff}d`;
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -44,9 +44,9 @@ export function formatDueDate(timestamp: number): string {
  */
 export function getDueDateColor(timestamp: number): string {
   const diff = getDayDiff(timestamp);
-  if (diff < 0) return "text-red-500 bg-red-500/10";
-  if (diff <= 1) return "text-amber-500 bg-amber-500/10";
-  return "text-text-tertiary bg-bg-tertiary";
+  if (diff < 0) return 'text-red-500 bg-red-500/10';
+  if (diff <= 1) return 'text-amber-500 bg-amber-500/10';
+  return 'text-text-tertiary bg-bg-tertiary';
 }
 
 /**
@@ -54,9 +54,9 @@ export function getDueDateColor(timestamp: number): string {
  */
 export function bucketDueDateLabel(timestamp: number): DueBucket {
   const diff = getDayDiff(timestamp);
-  if (diff < 0) return "overdue";
-  if (diff === 0) return "today";
-  if (diff === 1) return "tomorrow";
-  if (diff <= 7) return "this-week";
-  return "later";
+  if (diff < 0) return 'overdue';
+  if (diff === 0) return 'today';
+  if (diff === 1) return 'tomorrow';
+  if (diff <= 7) return 'this-week';
+  return 'later';
 }

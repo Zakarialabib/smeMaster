@@ -13,4 +13,4 @@ export {
   getUserFriendlyErrorMessage,
   type DbResult,
   type SafeDbOptions,
-} from "@shared/services/error/safeDbOperation";
+} from '@shared/services/error/safeDbOperation';

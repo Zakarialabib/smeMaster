@@ -56,16 +56,18 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
               >
                 <Package size={14} /> From catalog <ChevronDown size={12} />
               </button>
-              <div className="absolute right-0 z-30 mt-1 w-64 max-h-72 overflow-auto rounded-xl border border-border-primary bg-bg-elevated backdrop-blur-2xl shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity p-1.5">
+              <div className="absolute inset-inline-end-0 z-30 mt-1 w-64 max-h-72 overflow-auto rounded-xl border border-border-primary bg-bg-elevated backdrop-blur-2xl shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity p-1.5">
                 {catalog.map((it) => (
                   <button
                     key={it.id}
                     type="button"
                     onClick={() => addFromCatalog(it)}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-bg-hover/60 flex items-center justify-between gap-2"
+                    className="w-full text-start px-3 py-2 rounded-lg hover:bg-bg-hover/60 flex items-center justify-between gap-2"
                   >
                     <span className="text-sm text-text-primary truncate">{it.name}</span>
-                    <span className="text-[11px] text-text-tertiary shrink-0">{formatMoney(it.sell_price, { currency })}</span>
+                    <span className="text-[11px] text-text-tertiary shrink-0">
+                      {formatMoney(it.sell_price, { currency })}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -86,12 +88,12 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-tertiary text-[11px] uppercase tracking-wide">
-              <th className="px-5 py-2.5 font-semibold text-left">Description</th>
+              <th className="px-5 py-2.5 font-semibold text-start">Description</th>
               <th className="px-3 py-2.5 font-semibold w-20 text-center">Qty</th>
-              <th className="px-3 py-2.5 font-semibold w-24 text-left">Unit</th>
-              <th className="px-3 py-2.5 font-semibold w-32 text-right">Unit Price</th>
+              <th className="px-3 py-2.5 font-semibold w-24 text-start">Unit</th>
+              <th className="px-3 py-2.5 font-semibold w-32 text-end">Unit Price</th>
               <th className="px-3 py-2.5 font-semibold w-24 text-center">Tax</th>
-              <th className="px-3 py-2.5 font-semibold w-32 text-right">Amount</th>
+              <th className="px-3 py-2.5 font-semibold w-32 text-end">Amount</th>
               <th className="w-10" />
             </tr>
           </thead>
@@ -130,8 +132,10 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
                       min={0}
                       step="0.01"
                       value={it.unitPrice}
-                      onChange={(e) => update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })}
-                      className="w-full glass-input rounded-lg px-2 py-1.5 text-right text-text-primary tabular-nums"
+                      onChange={(e) =>
+                        update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })
+                      }
+                      className="w-full glass-input rounded-lg px-2 py-1.5 text-end text-text-primary tabular-nums"
                     />
                   </td>
                   <td className="px-3 py-2.5">
@@ -141,14 +145,16 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
                       className="w-full glass-input rounded-lg px-2 py-1.5 text-center text-text-primary text-xs"
                     >
                       {TAX_RATES.map((r) => (
-                        <option key={r} value={r}>{r}%</option>
+                        <option key={r} value={r}>
+                          {r}%
+                        </option>
                       ))}
                     </select>
                   </td>
-                  <td className="px-3 py-2.5 text-right font-semibold text-text-primary tabular-nums">
+                  <td className="px-3 py-2.5 text-end font-semibold text-text-primary tabular-nums">
                     {formatMoney(lineTotal, { currency })}
                   </td>
-                  <td className="px-2 py-2.5 text-right">
+                  <td className="px-2 py-2.5 text-end">
                     <button
                       type="button"
                       onClick={() => remove(idx)}
@@ -194,18 +200,43 @@ export default function LineItemsEditor({ items, onChange, catalog, currency }: 
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <Field label="Qty">
-                  <input type="number" min={0} value={it.qty} onChange={(e) => update(idx, { qty: Math.max(0, Number(e.target.value)) })} className="glass-input rounded-lg px-2 py-1.5 text-center w-full" />
+                  <input
+                    type="number"
+                    min={0}
+                    value={it.qty}
+                    onChange={(e) => update(idx, { qty: Math.max(0, Number(e.target.value)) })}
+                    className="glass-input rounded-lg px-2 py-1.5 text-center w-full"
+                  />
                 </Field>
                 <Field label="Price">
-                  <input type="number" min={0} step="0.01" value={it.unitPrice} onChange={(e) => update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })} className="glass-input rounded-lg px-2 py-1.5 text-right w-full" />
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={it.unitPrice}
+                    onChange={(e) =>
+                      update(idx, { unitPrice: Math.max(0, Number(e.target.value)) })
+                    }
+                    className="glass-input rounded-lg px-2 py-1.5 text-end w-full"
+                  />
                 </Field>
                 <Field label="Tax">
-                  <select value={it.taxRate} onChange={(e) => update(idx, { taxRate: Number(e.target.value) })} className="glass-input rounded-lg px-2 py-1.5 w-full text-center">
-                    {TAX_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
+                  <select
+                    value={it.taxRate}
+                    onChange={(e) => update(idx, { taxRate: Number(e.target.value) })}
+                    className="glass-input rounded-lg px-2 py-1.5 w-full text-center"
+                  >
+                    {TAX_RATES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}%
+                      </option>
+                    ))}
                   </select>
                 </Field>
               </div>
-              <p className="text-right text-sm font-semibold text-text-primary">{formatMoney(lineTotal, { currency })}</p>
+              <p className="text-end text-sm font-semibold text-text-primary">
+                {formatMoney(lineTotal, { currency })}
+              </p>
             </div>
           );
         })}

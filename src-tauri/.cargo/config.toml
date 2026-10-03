@@ -57,7 +57,21 @@ AR_x86_64_linux_android = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\2
 # https://github.com/protocolbuffers/protobuf/releases, replace the contents
 # of `tools/protoc/`, and bump the version comment below.
 # protoc v25.1 (pinned 2026-07-21) — works with lancedb 0.6 / arrow 51
-PROTOC = { value = "C:/laragon/www/smeMaster/src-tauri/tools/protoc/bin/protoc.exe", force = true }
+#
+# BROKEN SINCE 2026-09-28: the vendored binary at tools/protoc/bin/protoc.exe is
+# NOT in the repository — src-tauri/tools/ does not exist on a fresh clone. Every
+# build touching lance/arrow/parquet therefore fails with "Could not find
+# `protoc`" before it reaches any of our code. The path below is a lie on a fresh
+# clone.
+#
+# The WinGet protoc (libprotoc 35.0) is the working one on this machine, so PROTOC
+# now points there. On CI the workflows override PROTOC via the environment
+# (`force = true` makes this file yield to them), so CI is unaffected.
+#
+# TODO(owner): either vendor src-tauri/tools/protoc/ properly, or delete this
+# file's PROTOC line and require protoc on PATH. A build that silently depends
+# on one developer's WinGet state is a build that works on exactly one machine.
+PROTOC = { value = "C:/Users/user/AppData/Local/Microsoft/WinGet/Packages/Google.Protobuf_Microsoft.Winget.Source_8wekyb3d8bbwe/bin/protoc.exe", force = true }
 
 [target.aarch64-linux-android]
 linker = "C:\\Users\\user\\AppData\\Local\\Android\\Sdk\\ndk\\27.3.13750724\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android24-clang.cmd"

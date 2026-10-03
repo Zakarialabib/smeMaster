@@ -1,5 +1,9 @@
-﻿import { getSetting as dbGetSetting, setSetting as dbSetSetting, executeSearchQuery } from "@/shared/services/db/db-invoke";
-import { encryptValue, decryptValue, isEncrypted } from "@shared/utils/crypto";
+﻿import {
+  getSetting as dbGetSetting,
+  setSetting as dbSetSetting,
+  executeSearchQuery,
+} from '@/shared/services/db/db-invoke';
+import { encryptValue, decryptValue, isEncrypted } from '@shared/utils/crypto';
 
 export async function getSetting(key: string): Promise<string | null> {
   return dbGetSetting(key);
@@ -10,7 +14,10 @@ export async function setSetting(key: string, value: string): Promise<void> {
 }
 
 export async function getAllSettings(): Promise<Record<string, string>> {
-  const rows = await executeSearchQuery("SELECT key, value FROM settings", []) as { key: string; value: string }[];
+  const rows = (await executeSearchQuery('SELECT key, value FROM settings', [])) as {
+    key: string;
+    value: string;
+  }[];
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
 }
 
@@ -43,15 +50,15 @@ export async function setSecureSetting(key: string, value: string): Promise<void
 
 export async function getQueuePaused(): Promise<boolean> {
   try {
-    const value = await getSetting("queue_paused");
-    return value === "true";
+    const value = await getSetting('queue_paused');
+    return value === 'true';
   } catch {
     return false;
   }
 }
 
 export async function setQueuePaused(paused: boolean): Promise<void> {
-  await setSetting("queue_paused", paused ? "true" : "false");
+  await setSetting('queue_paused', paused ? 'true' : 'false');
 }
 
 /* ── Undo-send duration preference ──────────────────────────────────────── */
@@ -68,11 +75,9 @@ export const DEFAULT_UNDO_SEND_DURATION: UndoSendDuration = 10;
  * `undo_send_delay` when the global setting has not been set, and to
  * {@link DEFAULT_UNDO_SEND_DURATION} when neither is available or unparseable.
  */
-export async function getUndoSendDuration(
-  accountId?: string | null,
-): Promise<UndoSendDuration> {
-  const raw = await getSetting("undo_send_delay_seconds");
-  if (raw != null && raw.trim() !== "") {
+export async function getUndoSendDuration(accountId?: string | null): Promise<UndoSendDuration> {
+  const raw = await getSetting('undo_send_delay_seconds');
+  if (raw != null && raw.trim() !== '') {
     const n = Number.parseInt(raw, 10);
     if (Number.isFinite(n) && (UNDO_SEND_DURATIONS as readonly number[]).includes(n)) {
       return n as UndoSendDuration;
@@ -81,17 +86,13 @@ export async function getUndoSendDuration(
 
   if (accountId) {
     try {
-      const { listComposerPresets } = await import(
-        "@shared/services/db/invoke/comms"
-      );
+      const { listComposerPresets } = await import('@shared/services/db/invoke/comms');
       const presets = await listComposerPresets(accountId);
       const fallback = presets.find((p) => p.is_default === 1) ?? presets[0];
       if (fallback && Number.isFinite(fallback.undo_send_delay)) {
         const n = fallback.undo_send_delay;
         return (
-          (UNDO_SEND_DURATIONS as readonly number[]).includes(n)
-            ? n
-            : DEFAULT_UNDO_SEND_DURATION
+          (UNDO_SEND_DURATIONS as readonly number[]).includes(n) ? n : DEFAULT_UNDO_SEND_DURATION
         ) as UndoSendDuration;
       }
     } catch {
@@ -106,18 +107,16 @@ export async function getUndoSendDuration(
  * Persist the global undo-send duration preference (seconds).
  * Clamped to the allowed set.
  */
-export async function setUndoSendDuration(
-  seconds: number,
-): Promise<UndoSendDuration> {
+export async function setUndoSendDuration(seconds: number): Promise<UndoSendDuration> {
   const clamped = (UNDO_SEND_DURATIONS as readonly number[]).includes(seconds)
     ? (seconds as UndoSendDuration)
     : DEFAULT_UNDO_SEND_DURATION;
-  await setSetting("undo_send_delay_seconds", String(clamped));
+  await setSetting('undo_send_delay_seconds', String(clamped));
   return clamped;
 }
 
 /** Queue schedule preset identifier */
-export type QueueSchedulePreset = "fast" | "normal" | "gentle" | "business-hours" | "custom";
+export type QueueSchedulePreset = 'fast' | 'normal' | 'gentle' | 'business-hours' | 'custom';
 
 export interface QueueSchedule {
   preset: QueueSchedulePreset;
@@ -130,18 +129,23 @@ export interface QueueSchedule {
 }
 
 const DEFAULT_SCHEDULE: QueueSchedule = {
-  preset: "normal",
+  preset: 'normal',
   intervalMs: 30_000,
   businessHoursOnly: false,
   minSendGapMs: 0,
 };
 
 const PRESETS: Record<QueueSchedulePreset, QueueSchedule> = {
-  fast: { preset: "fast", intervalMs: 10_000, businessHoursOnly: false, minSendGapMs: 500 },
-  normal: { preset: "normal", intervalMs: 30_000, businessHoursOnly: false, minSendGapMs: 2_000 },
-  gentle: { preset: "gentle", intervalMs: 120_000, businessHoursOnly: false, minSendGapMs: 10_000 },
-  "business-hours": { preset: "business-hours", intervalMs: 60_000, businessHoursOnly: true, minSendGapMs: 5_000 },
-  custom: { preset: "custom", intervalMs: 30_000, businessHoursOnly: false, minSendGapMs: 0 },
+  fast: { preset: 'fast', intervalMs: 10_000, businessHoursOnly: false, minSendGapMs: 500 },
+  normal: { preset: 'normal', intervalMs: 30_000, businessHoursOnly: false, minSendGapMs: 2_000 },
+  gentle: { preset: 'gentle', intervalMs: 120_000, businessHoursOnly: false, minSendGapMs: 10_000 },
+  'business-hours': {
+    preset: 'business-hours',
+    intervalMs: 60_000,
+    businessHoursOnly: true,
+    minSendGapMs: 5_000,
+  },
+  custom: { preset: 'custom', intervalMs: 30_000, businessHoursOnly: false, minSendGapMs: 0 },
 };
 
 export function getQueueSchedulePresets(): Record<QueueSchedulePreset, QueueSchedule> {
@@ -150,7 +154,7 @@ export function getQueueSchedulePresets(): Record<QueueSchedulePreset, QueueSche
 
 export async function getQueueSchedule(): Promise<QueueSchedule> {
   try {
-    const raw = await getSetting("queue_schedule");
+    const raw = await getSetting('queue_schedule');
     if (!raw) return DEFAULT_SCHEDULE;
     return { ...DEFAULT_SCHEDULE, ...JSON.parse(raw) };
   } catch {
@@ -159,5 +163,5 @@ export async function getQueueSchedule(): Promise<QueueSchedule> {
 }
 
 export async function setQueueSchedule(schedule: QueueSchedule): Promise<void> {
-  await setSetting("queue_schedule", JSON.stringify(schedule));
+  await setSetting('queue_schedule', JSON.stringify(schedule));
 }

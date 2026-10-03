@@ -574,12 +574,39 @@ impl Service for WorkflowExecutorService {
 ///
 /// Gated behind `local-ai` so the core app never depends on candle/lancedb.
 #[cfg(feature = "local-ai")]
-pub struct MlSidecarService {
-    handle: tauri::AppHandle,
+/// Generic over `R: Runtime` so it can be constructed with
+/// `AppHandle<MockRuntime>` in unit tests. Hardcoding `AppHandle` (i.e. `Wry`)
+/// made this struct impossible to test at all — the four sidecar tests were
+/// written against an `AppHandle::mock()` that does not exist, and could not
+/// have worked even with the right feature enabled.
+pub struct MlSidecarService<R: tauri::Runtime = tauri::Wry> {
+    handle: tauri::AppHandle<R>,
     child: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
-    stdin_writer: tokio::sync::Mutex<Option<tauri_plugin_shell::process::CommandStdin>>,
-    running: std::sync::atomic::AtomicBool,
-    healthy: std::sync::atomic::AtomicBool,
+    // NOTE: there is deliberately no `stdin_writer` field any more.
+    //
+    // tauri-plugin-shell 2.3 merged the separate `CommandStdin` handle back into
+    // `CommandChild::write(&mut self, &[u8])`. The old code kept the child and a
+    // second stdin handle in two mutexes, which was only possible when the crate
+    // handed out a `stdin()` that returned an independent writer. Keeping two
+    // mutexes over one pipe was also a latent deadlock: `send_request` held the
+    // writer lock across a 30s await for the response.
+    //
+    // One mutex over the child, and the lock is released as soon as the bytes
+    // are written — not held across the response wait.
+    // Arc, matching the other three services in this file: the reader task
+    // writes these and `is_running()`/`is_healthy()` read them, so they must be
+    // shared rather than copied.
+    running: Arc<std::sync::atomic::AtomicBool>,
+    healthy: Arc<std::sync::atomic::AtomicBool>,
+    /// Whether the sidecar SHOULD be running — the user's intent, as distinct
+    /// from `running` (the observed process state).
+    ///
+    /// Without this, `stop()` was silently undone: it set `running=false`, and
+    /// `health_check()` reads that as "crashed" and restarts via the watchdog
+    /// ~2s later. The user pressed Stop, saw "stopped", and the process came
+    /// back — a lie in the UI. The watchdog now only restarts when this is true,
+    /// so an unexpected crash still recovers but a deliberate stop sticks.
+    desired_running: Arc<std::sync::atomic::AtomicBool>,
     /// Maps JSON-RPC request IDs to oneshot senders for response matching.
     pending: Arc<dashmap::DashMap<u64, tokio::sync::oneshot::Sender<anyhow::Result<serde_json::Value>>>>,
     /// Monotonically increasing request ID counter.
@@ -591,7 +618,7 @@ pub struct MlSidecarService {
     metrics: Arc<SidecarMetrics>,
     /// Sidecar-reported version (from `ping`), for gap #5 independent-update
     /// negotiation. `None` until the first successful ping.
-    version: std::sync::RwLock<Option<String>>,
+    version: Arc<std::sync::RwLock<Option<String>>>,
     /// Broadcast channel for JSON-RPC notifications (streaming progress, gap #3).
     /// The reader task forwards any stdout line that is a notification (no "id")
     /// here; subscribers (e.g. a streaming embed/generate call) receive them.
@@ -655,24 +682,27 @@ impl SidecarMetrics {
 }
 
 #[cfg(feature = "local-ai")]
-impl MlSidecarService {
+impl<R: tauri::Runtime> MlSidecarService<R> {
     /// Create a new MlSidecarService.
     ///
     /// `memory_limit_mb`: Optional RSS limit. When the sidecar process exceeds
     /// this value (in MB), `health_check` reports `Degraded`.
-    pub fn new(handle: tauri::AppHandle, memory_limit_mb: Option<u64>) -> Self {
+    pub fn new(handle: tauri::AppHandle<R>, memory_limit_mb: Option<u64>) -> Self {
         let (notification_tx, _) = tokio::sync::broadcast::channel(128);
         Self {
             handle,
             child: tokio::sync::Mutex::new(None),
-            stdin_writer: tokio::sync::Mutex::new(None),
-            running: std::sync::atomic::AtomicBool::new(false),
-            healthy: std::sync::atomic::AtomicBool::new(false),
+            running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            healthy: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            // Not desired until someone starts it — matches the OnDemand
+            // registration, and stops the watchdog from resurrecting a sidecar
+            // the user never asked for.
+            desired_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             pending: Arc::new(dashmap::DashMap::new()),
             next_id: std::sync::atomic::AtomicU64::new(1),
             memory_limit_mb,
             metrics: Arc::new(SidecarMetrics::new()),
-            version: std::sync::RwLock::new(None),
+            version: Arc::new(std::sync::RwLock::new(None)),
             notification_tx,
         }
     }
@@ -692,6 +722,17 @@ impl MlSidecarService {
         self.healthy.load(Ordering::Acquire)
     }
 
+    /// The version the sidecar reported at `ping`/init time, if it has reported
+    /// one yet (gap #5, independent-update support).
+    ///
+    /// This accessor existed only as the private `version` field before
+    /// `commands/ai.rs` called `svc.version()`. A method is the right shape
+    /// here: the lock and the `Option` stay inside this module, so a caller
+    /// cannot lock it wrong.
+    pub fn version(&self) -> Option<String> {
+        self.version.read().ok().and_then(|g| g.clone())
+    }
+
     /// Send a JSON-RPC request to the sidecar and await the response.
     ///
     /// Uses a unique request ID + oneshot channel for synchronous-style IPC.
@@ -702,8 +743,8 @@ impl MlSidecarService {
     /// in the shared `SidecarMetrics` struct.
     pub async fn send_request(&self, method: &str, params: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let start = std::time::Instant::now();
-        let mut writer_guard = self.stdin_writer.lock().await;
-        let writer = writer_guard.as_mut()
+        let mut child_guard = self.child.lock().await;
+        let child = child_guard.as_mut()
             .ok_or_else(|| {
                 self.metrics.record_error();
                 anyhow::anyhow!("Sidecar not running")
@@ -723,38 +764,48 @@ impl MlSidecarService {
         });
 
         let line = serde_json::to_string(&request)?;
-        writer.write_all(format!("{line}\n").as_bytes()).await
+        // `write` is SYNC in tauri-plugin-shell 2.3 and takes `&mut self`. The
+        // lock is dropped at the end of this block, well before the 30s wait
+        // below — holding it across the response would serialise every caller
+        // behind the slowest one.
+        let write_result = child
+            .write(format!("{line}\n").as_bytes())
             .map_err(|e| {
                 self.pending.remove(&id);
                 self.metrics.record_error();
                 anyhow::anyhow!("Failed to write to sidecar stdin: {e}")
-            })?;
+            });
+        drop(child_guard);
+        write_result?;
 
-        // Flush to ensure the sidecar receives it immediately
-        writer.flush().await.map_err(|e| {
-            self.pending.remove(&id);
-            self.metrics.record_error();
-            anyhow::anyhow!("Failed to flush sidecar stdin: {e}")
-        })?;
-
-        // Await the response with a 30-second timeout
-        let result = match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
-            Ok(Ok(result)) => {
-                self.healthy.store(true, Ordering::Release);
-                Ok(result)
-            }
-            Ok(Err(e)) => {
-                self.healthy.store(false, Ordering::Release);
-                self.metrics.record_error();
-                Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
-            }
-            Err(_elapsed) => {
-                self.pending.remove(&id);
-                self.healthy.store(false, Ordering::Release);
-                self.metrics.record_error();
-                Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
-            }
-        };
+        // Await the response with a 30-second timeout.
+        //
+        // The oneshot carries `anyhow::Result<Value>`, so the received value is
+        // `Result<anyhow::Result<Value>, RecvError>` — TWO layers. The inner
+        // `Ok(Ok(v))` arm must return `v` directly, not `Ok(v)`, or the match
+        // yields `Result<Result<Value, _>, _>` and the `?` below tries to
+        // unwrap the outer one. That double-wrap was a real pre-existing bug:
+        // a sidecar-level error was being reported as a nested Result instead
+        // of propagating.
+        let result: anyhow::Result<serde_json::Value> =
+            match tokio::time::timeout(std::time::Duration::from_secs(30), rx).await {
+                Ok(Ok(result)) => {
+                    self.healthy.store(true, Ordering::Release);
+                    // `result` is already the inner Result — hand it straight on.
+                    result
+                }
+                Ok(Err(e)) => {
+                    self.healthy.store(false, Ordering::Release);
+                    self.metrics.record_error();
+                    Err(anyhow::anyhow!("Sidecar request '{method}' failed: {e}"))
+                }
+                Err(_elapsed) => {
+                    self.pending.remove(&id);
+                    self.healthy.store(false, Ordering::Release);
+                    self.metrics.record_error();
+                    Err(anyhow::anyhow!("Sidecar request '{method}' timed out after 30s"))
+                }
+            };
 
         // Record success metrics (errors already recorded above)
         if result.is_ok() {
@@ -773,17 +824,27 @@ impl MlSidecarService {
         let (mut rx, child) = sidecar.spawn()
             .map_err(|e| anyhow::anyhow!("Failed to spawn ml-sidecar: {e}"))?;
 
-        *self.child.lock().await = Some(child.clone());
+        // `CommandChild` is not `Clone` in tauri-plugin-shell 2.3 — the child
+        // owns its stdin pipe, so there is exactly one handle to it.
+        *self.child.lock().await = Some(child);
 
         // ── Shared state for the reader task ──────────────────────────
         let pending = self.pending.clone();
-        let healthy_flag = self.healthy.clone();
-        let running_flag = self.running.clone();
+        // `running`/`healthy` on this struct were bare `AtomicBool`, and the code
+        // called `.clone()` on them — which is Copy-not-Clone and never compiled.
+        //
+        // Both are now `Arc<AtomicBool>`, matching the other three services in
+        // THIS FILE (lines 89/158/419 already do exactly this). That is the fix:
+        // the reader task genuinely needs to write the same flags the service
+        // reads, so they must be shared, and a copied AtomicBool would be written
+        // by the task and never observed again.
+        let healthy_flag = Arc::clone(&self.healthy);
+        let running_flag = Arc::clone(&self.running);
         let restart_fn = self.make_restart_fn();
         // Gap #3: broadcast channel for JSON-RPC notifications (no "id").
         let notification_tx = self.notification_tx.clone();
         // Gap #5: sidecar version from ping, populated lazily.
-        let version_writer = self.version.clone();
+        let version_writer = Arc::clone(&self.version);
 
         tauri::async_runtime::spawn(async move {
             use tauri_plugin_shell::process::CommandEvent;
@@ -834,10 +895,25 @@ impl MlSidecarService {
                             payload.code, payload.signal);
                         running_flag.store(false, Ordering::Release);
                         healthy_flag.store(false, Ordering::Release);
-                        // Drain all pending requests with error
-                        for item in pending.iter() {
-                            let (_, tx) = item.pair();
-                            let _ = tx.send(Err(anyhow::anyhow!("Sidecar terminated unexpectedly")));
+                        // Drain all pending requests with error.
+                        //
+                        // `DashMap::iter()` yields (&K, &V) — a REFERENCE to the
+                        // sender, not an owned one. `oneshot::Sender::send`
+                        // consumes `self`, so it cannot be called through that
+                        // reference. Previously the code did `if let Some((_,
+                        // tx)) = pending.remove(&id)`, which DID yield an owned
+                        // value. Restoring that: remove each entry to take
+                        // ownership, then send.
+                        //
+                        // Collecting the ids first avoids holding a DashMap
+                        // shard lock while calling into the channel.
+                        let pending_ids: Vec<u64> = pending.iter().map(|item| *item.key()).collect();
+                        for id in pending_ids {
+                            if let Some((_, tx)) = pending.remove(&id) {
+                                let _ = tx.send(Err(anyhow::anyhow!(
+                                    "Sidecar terminated unexpectedly"
+                                )));
+                            }
                         }
                         pending.clear();
                         // Watchdog: auto-restart after 2 seconds
@@ -857,10 +933,6 @@ impl MlSidecarService {
             }
         });
 
-        // Store stdin writer for IPC
-        if let Some(stdin) = child.stdin() {
-            *self.stdin_writer.lock().await = Some(stdin);
-        }
 
         // Send init with app data dir — the sidecar needs this to know
         // where to store models, vector DB, etc. This is a notification
@@ -871,7 +943,7 @@ impl MlSidecarService {
             });
             // Use a fresh write (not send_request) since the pending map
             // and reader task are both set up and ready.
-            if let Some(writer) = self.stdin_writer.lock().await.as_mut() {
+            if let Some(child) = self.child.lock().await.as_mut() {
                 let init_req = serde_json::json!({
                     "jsonrpc": "2.0",
                     "id": 0u64,
@@ -879,8 +951,10 @@ impl MlSidecarService {
                     "params": init_params,
                 });
                 let line = serde_json::to_string(&init_req).unwrap_or_default();
-                let _ = writer.write_all(format!("{line}\n").as_bytes()).await;
-                let _ = writer.flush().await;
+                // `CommandChild::write` writes straight to the pipe; there is no
+                // separate writer to flush. The old `.flush().await` referred to
+                // a `CommandStdin` handle that tauri-plugin-shell 2.3 removed.
+                let _ = child.write(format!("{line}\n").as_bytes());
             }
         }
 
@@ -986,6 +1060,13 @@ impl MlSidecarService {
             let h = handle.clone();
             Box::pin(async move {
                 if let Some(svc) = h.try_state::<Arc<MlSidecarService>>() {
+                    // Respect a deliberate stop: the reader task fires this on
+                    // process exit, which is exactly what stop() causes. Without
+                    // the intent check, Stop was undone ~2s later.
+                    if !svc.desired_running.load(std::sync::atomic::Ordering::Acquire) {
+                        log::info!("[ml-sidecar] Watchdog: not restarting (stopped by request)");
+                        return;
+                    }
                     log::info!("[ml-sidecar] Watchdog: executing restart...");
                     if let Err(e) = svc.restart().await {
                         log::error!("[ml-sidecar] Watchdog restart failed: {e}");
@@ -1005,10 +1086,12 @@ impl MlSidecarService {
         }
 
         // Kill the old child
-        if let Some(mut old_child) = self.child.lock().await.take() {
-            let _ = old_child.kill().await;
+        // `kill(self)` takes the child BY VALUE and is sync in 2.3 — the child
+        // is consumed, which is why `.take()` is required and why this cannot
+        // be `.await`ed.
+        if let Some(old_child) = self.child.lock().await.take() {
+            let _ = old_child.kill();
         }
-        *self.stdin_writer.lock().await = None;
         self.running.store(false, Ordering::Release);
         self.healthy.store(false, Ordering::Release);
 
@@ -1019,13 +1102,16 @@ impl MlSidecarService {
 
 #[cfg(feature = "local-ai")]
 #[async_trait]
-impl Service for MlSidecarService {
+impl<R: tauri::Runtime> Service for MlSidecarService<R> {
     fn name(&self) -> &'static str { "ml-sidecar" }
     fn priority(&self) -> u32 { 50 }
     fn is_critical(&self) -> bool { false }
 
     async fn init(&self) -> anyhow::Result<()> {
         log::info!("[ml-sidecar] Initializing service...");
+        // An explicit start IS the intent to keep it running, so the watchdog
+        // may recover it from here on.
+        self.desired_running.store(true, std::sync::atomic::Ordering::Release);
         match self.spawn_sidecar().await {
             Ok(()) => {
                 // Verify with a ping after spawn
@@ -1055,6 +1141,10 @@ impl Service for MlSidecarService {
 
     async fn stop(&self) -> anyhow::Result<()> {
         log::info!("[ml-sidecar] Stopping sidecar...");
+        // Record the INTENT first. `running=false` alone is indistinguishable
+        // from a crash, so the watchdog would restart it ~2s later and the UI's
+        // "stopped" would be a lie (verified live before this flag existed).
+        self.desired_running.store(false, std::sync::atomic::Ordering::Release);
         self.running.store(false, std::sync::atomic::Ordering::Release);
         self.healthy.store(false, std::sync::atomic::Ordering::Release);
 
@@ -1062,10 +1152,9 @@ impl Service for MlSidecarService {
         let _ = self.send_request("shutdown", serde_json::json!({})).await;
 
         // Kill the child process
-        if let Some(mut child) = self.child.lock().await.take() {
-            let _ = child.kill().await;
+        if let Some(child) = self.child.lock().await.take() {
+            let _ = child.kill();
         }
-        *self.stdin_writer.lock().await = None;
 
         log::info!("[ml-sidecar] Stopped");
         Ok(())
@@ -1073,11 +1162,22 @@ impl Service for MlSidecarService {
 
     async fn health_check(&self) -> HealthStatus {
         if !self.running.load(std::sync::atomic::Ordering::Acquire) {
+            // Distinguish "crashed" from "deliberately stopped". Without this
+            // check a user-initiated stop is resurrected by the watchdog.
+            if !self.desired_running.load(std::sync::atomic::Ordering::Acquire) {
+                return super::HealthStatus::Degraded(
+                    "ml-sidecar stopped by request".to_string(),
+                );
+            }
             log::info!("[ml-sidecar] Health check: not running, attempting restart...");
             match self.restart().await {
                 Ok(()) => {
                     self.healthy.store(true, Ordering::Release);
-                    super::HealthStatus::Healthy
+                    // `return` is required: without it this arm evaluates to
+                    // `HealthStatus` while the other arm `return`s early, so the
+                    // match's value type is inferred as `()` and the function's
+                    // `-> HealthStatus` no longer matches. Return the value.
+                    return super::HealthStatus::Healthy;
                 }
                 Err(e) => {
                     return super::HealthStatus::Degraded(format!("ml-sidecar crashed and restart failed: {e}"));
@@ -1192,6 +1292,58 @@ impl SidecarClient {
             "path": path,
         })).await?;
         Ok(resp.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string())
+    }
+
+    // ── Offline speech (feature `offline-speech` on ml-sidecar) ───────────
+    // These forward to the sidecar's `load_stt_model` / `transcribe` /
+    // `load_tts_voice` / `synthesize` methods. They are plain `send_request`
+    // calls, so they compile regardless of whether the sidecar binary was built
+    // with `offline-speech` — a sidecar built without it answers with a
+    // "unknown method" error, which surfaces as a normal `Err` here rather than
+    // a build failure. That is deliberate: the Tauri app must not require the
+    // 117 MB sherpa-onnx archive just to compile.
+
+    /// Load an offline STT model. `model_dir` must contain encoder/decoder/
+    /// joiner/tokens (transducer layout).
+    pub async fn load_stt_model(&self, model_dir: &str, num_threads: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("load_stt_model", serde_json::json!({
+            "model_dir": model_dir,
+            "num_threads": num_threads,
+        })).await
+    }
+
+    /// Transcribe 16 kHz mono f32 samples.
+    pub async fn transcribe(&self, samples: Vec<f32>, sample_rate: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("transcribe", serde_json::json!({
+            "samples": samples,
+            "sample_rate": sample_rate,
+        })).await
+    }
+
+    pub async fn unload_stt_model(&self) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("unload_stt_model", serde_json::json!({})).await
+    }
+
+    /// Load an offline TTS voice (VITS/Piper layout: model.onnx, tokens.txt,
+    /// espeak-ng-data/).
+    pub async fn load_tts_voice(&self, model_dir: &str, num_threads: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("load_tts_voice", serde_json::json!({
+            "model_dir": model_dir,
+            "num_threads": num_threads,
+        })).await
+    }
+
+    /// Synthesise speech. Returns raw mono f32 samples + sample_rate.
+    pub async fn synthesize(&self, text: &str, speed: f32, speaker_id: i32) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("synthesize", serde_json::json!({
+            "text": text,
+            "speed": speed,
+            "speaker_id": speaker_id,
+        })).await
+    }
+
+    pub async fn unload_tts_voice(&self) -> anyhow::Result<serde_json::Value> {
+        self.service.send_request("unload_tts_voice", serde_json::json!({})).await
     }
 
     /// Fetch the sidecar's own aggregate metrics (`metrics` JSON-RPC method).
@@ -1677,7 +1829,11 @@ mod tests {
     #[test]
     fn test_sidecar_service_version_captured_from_response() {
         // Simulate the reader task parsing a successful ping/init JSON-RPC response
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        // `AppHandle::mock()` does not exist in Tauri 2.11 — the real entry
+        // point is `tauri::test::mock_app().handle()`, which needs the `test`
+        // feature (a dev-dependency in Cargo.toml, so it never reaches a
+        // shipped binary). The previous spelling never compiled.
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let response_text =
             r#"{"jsonrpc":"2.0","id":7,"result":{"version":"9.9","pong":true}}"#;
 
@@ -1700,7 +1856,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_broadcasts_notification_to_subscribers() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let mut rx = service.notification_tx.subscribe();
 
         // Simulate the reader task receiving a notification (no "id")
@@ -1727,7 +1883,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_multiple_subscribers_receive_broadcast() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         let mut rx1 = service.notification_tx.subscribe();
         let mut rx2 = service.notification_tx.subscribe();
 
@@ -1753,7 +1909,7 @@ mod tests {
     #[cfg(feature = "local-ai")]
     #[test]
     fn test_sidecar_service_version_not_set_by_default() {
-        let service = super::MlSidecarService::new(tauri::AppHandle::mock(), None);
+        let service = super::MlSidecarService::new(tauri::test::mock_app().handle().clone(), None);
         assert!(service.version.read().unwrap().is_none());
     }
 }

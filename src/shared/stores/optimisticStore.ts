@@ -1,4 +1,4 @@
-import { useSyncStore } from "@/stores/shared";
+import { useSyncStore } from '@/stores/shared';
 
 export interface OptimisticOp<T = unknown> {
   id: string;
@@ -15,7 +15,7 @@ export interface OptimisticOp<T = unknown> {
   onError?: (error: Error) => void;
 }
 
-type OpStatus = "pending" | "executing" | "committed" | "rolled_back";
+type OpStatus = 'pending' | 'executing' | 'committed' | 'rolled_back';
 
 interface TrackedOp {
   op: OptimisticOp;
@@ -37,13 +37,13 @@ class OptimisticStore {
     const id = op.id || `op_${++this.counter}`;
 
     // Track the operation
-    this.ops.set(id, { op, status: "pending", startedAt: Date.now() });
+    this.ops.set(id, { op, status: 'pending', startedAt: Date.now() });
     this.updatePendingCount();
 
     // Phase 1: Apply optimistic state
     try {
       op.apply();
-      this.ops.get(id)!.status = "executing";
+      this.ops.get(id)!.status = 'executing';
     } catch (applyErr) {
       this.ops.delete(id);
       this.updatePendingCount();
@@ -54,7 +54,7 @@ class OptimisticStore {
     try {
       const result = await op.execute();
       const tracked = this.ops.get(id);
-      if (tracked) tracked.status = "committed";
+      if (tracked) tracked.status = 'committed';
 
       // Phase 3: Commit (e.g., update with server response)
       if (op.commit) {
@@ -76,11 +76,11 @@ class OptimisticStore {
         op.rollback();
         const tracked = this.ops.get(id);
         if (tracked) {
-          tracked.status = "rolled_back";
+          tracked.status = 'rolled_back';
           tracked.error = error.message;
         }
       } catch (rollbackErr) {
-        console.error("Rollback failed:", rollbackErr);
+        console.error('Rollback failed:', rollbackErr);
       }
 
       // Call error handler
@@ -117,9 +117,7 @@ class OptimisticStore {
 
   retryFailed(description: string): void {
     const failed = Array.from(this.ops.entries()).find(
-      ([_, tracked]) =>
-        tracked.status === "rolled_back" &&
-        tracked.op.description === description,
+      ([_, tracked]) => tracked.status === 'rolled_back' && tracked.op.description === description,
     );
     if (failed) {
       const [id] = failed;

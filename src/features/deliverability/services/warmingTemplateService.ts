@@ -1,5 +1,5 @@
-﻿import { getTemplatesByType, type DbTemplate } from "@features/mail/db/templates";
-import { renderTemplate } from "@features/mail/services/templates/renderPipeline";
+﻿import { getTemplatesByType, type DbTemplate } from '@features/mail/db/templates';
+import { renderTemplate } from '@features/mail/services/templates/renderPipeline';
 
 export async function getWarmingTemplateForDay(
   accountId: string,
@@ -23,4 +23,3 @@ export async function renderWarmingEmail(
   );
   return { bodyHtml: rendered.bodyHtml, subject: rendered.subject };
 }
-

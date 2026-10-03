@@ -1,4 +1,4 @@
-export { useShortcutStore } from "./stores/shortcutStore";
+export { useShortcutStore } from './stores/shortcutStore';
 
 export {
   getSetting,
@@ -6,11 +6,8 @@ export {
   getAllSettings,
   getSecureSetting,
   setSecureSetting,
-} from "./db/settings";
+} from './db/settings';
 
-export type {
-  QuickStep,
-  QuickStepAction,
-} from "./services/quickSteps/types";
+export type { QuickStep, QuickStepAction } from './services/quickSteps/types';
 
-export { executeQuickStep } from "./services/quickSteps/executor";
+export { executeQuickStep } from './services/quickSteps/executor';

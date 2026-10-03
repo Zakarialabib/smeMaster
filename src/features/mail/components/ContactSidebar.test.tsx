@@ -1,19 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { ContactSidebar } from "./ContactSidebar";
-import type { DbContact, ContactAttachment, SameDomainContact } from "@features/contacts/db/contacts";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { ContactSidebar } from './ContactSidebar';
+import type {
+  DbContact,
+  ContactAttachment,
+  SameDomainContact,
+} from '@features/contacts/db/contacts';
 
 const mockContact: DbContact = {
-  id: "c-1",
-  email: "alice@company.com",
-  display_name: "Alice Smith",
+  id: 'c-1',
+  email: 'alice@company.com',
+  display_name: 'Alice Smith',
   avatar_url: null,
   frequency: 10,
   last_contacted_at: Date.now(),
-  notes: "Important client",
+  notes: 'Important client',
 };
 
-vi.mock("@features/contacts/db/contacts", () => ({
+vi.mock('@features/contacts/db/contacts', () => ({
   getContactByEmail: vi.fn(() => Promise.resolve(null)),
   getContactStats: vi.fn(() =>
     Promise.resolve({ emailCount: 5, firstEmail: 1700000000000, lastEmail: 1700100000000 }),
@@ -27,28 +31,28 @@ vi.mock("@features/contacts/db/contacts", () => ({
   getLatestAuthResult: vi.fn(() => Promise.resolve(null)),
 }));
 
-vi.mock("@features/settings/db/notificationVips", () => ({
+vi.mock('@features/settings/db/notificationVips', () => ({
   isVipSender: vi.fn(() => Promise.resolve(false)),
   addVipSender: vi.fn(() => Promise.resolve()),
   removeVipSender: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("@features/contacts/services/gravatar", () => ({
+vi.mock('@features/contacts/services/gravatar', () => ({
   fetchAndCacheGravatarUrl: vi.fn(() => Promise.resolve(null)),
 }));
 
-vi.mock("@shared/services/db/threads", () => ({
+vi.mock('@shared/services/db/threads', () => ({
   getThreadById: vi.fn(),
   getThreadLabelIds: vi.fn(),
 }));
 
-vi.mock("@/router/navigate", () => ({
+vi.mock('@/router/navigate', () => ({
   navigateToThread: vi.fn(),
 }));
 
-vi.mock("@shared/utils/fileTypeHelpers", () => ({
+vi.mock('@shared/utils/fileTypeHelpers', () => ({
   formatFileSize: vi.fn((bytes: number) => `${bytes} B`),
-  getFileIcon: vi.fn(() => "\u{1F4CE}"),
+  getFileIcon: vi.fn(() => '\u{1F4CE}'),
 }));
 
 // Import mocked modules to configure per-test
@@ -57,28 +61,28 @@ import {
   getAttachmentsFromContact,
   getContactsFromSameDomain,
   getLatestAuthResult,
-} from "@features/contacts/db/contacts";
-import { isVipSender } from "@features/settings/db/notificationVips";
+} from '@features/contacts/db/contacts';
+import { isVipSender } from '@features/settings/db/notificationVips';
 
 const defaultProps = {
-  email: "alice@company.com",
-  name: "Alice Smith",
-  accountId: "acc-1",
+  email: 'alice@company.com',
+  name: 'Alice Smith',
+  accountId: 'acc-1',
   onClose: vi.fn(),
 };
 
-describe("ContactSidebar", () => {
+describe('ContactSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders quick action buttons (compose, copy, VIP)", async () => {
+  it('renders quick action buttons (compose, copy, VIP)', async () => {
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getAllByTitle("Send email")).toHaveLength(1);
-      expect(screen.getAllByTitle("Copy email")).toHaveLength(2);
-      expect(screen.getAllByTitle("Mark as VIP")).toHaveLength(1);
+      expect(screen.getAllByTitle('Send email')).toHaveLength(1);
+      expect(screen.getAllByTitle('Copy email')).toHaveLength(2);
+      expect(screen.getAllByTitle('Mark as VIP')).toHaveLength(1);
     });
   });
 
@@ -88,7 +92,7 @@ describe("ContactSidebar", () => {
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add to Contacts")).toBeInTheDocument();
+      expect(screen.getByText('Add to Contacts')).toBeInTheDocument();
     });
   });
 
@@ -98,62 +102,62 @@ describe("ContactSidebar", () => {
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Edit name")).toBeInTheDocument();
+      expect(screen.getByText('Edit name')).toBeInTheDocument();
     });
   });
 
-  it("renders Notes section toggle when contact exists", async () => {
+  it('renders Notes section toggle when contact exists', async () => {
     vi.mocked(getContactByEmail).mockResolvedValueOnce(mockContact);
 
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Notes")).toBeInTheDocument();
+      expect(screen.getByText('Notes')).toBeInTheDocument();
     });
 
     // Notes textarea should not be visible initially
-    expect(screen.queryByPlaceholderText("Add a note...")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Add a note...')).not.toBeInTheDocument();
 
     // Click to expand
-    fireEvent.click(screen.getByText("Notes"));
+    fireEvent.click(screen.getByText('Notes'));
 
-    expect(screen.getByPlaceholderText("Add a note...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Add a note...')).toBeInTheDocument();
   });
 
-  it("renders attachments section when data present", async () => {
+  it('renders attachments section when data present', async () => {
     const mockAttachments: ContactAttachment[] = [
-      { filename: "report.pdf", mime_type: "application/pdf", size: 1024, date: 1700000000000 },
+      { filename: 'report.pdf', mime_type: 'application/pdf', size: 1024, date: 1700000000000 },
     ];
     vi.mocked(getAttachmentsFromContact).mockResolvedValueOnce(mockAttachments);
 
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Shared Files")).toBeInTheDocument();
-      expect(screen.getByText("report.pdf")).toBeInTheDocument();
+      expect(screen.getByText('Shared Files')).toBeInTheDocument();
+      expect(screen.getByText('report.pdf')).toBeInTheDocument();
     });
   });
 
-  it("renders same-domain contacts section when data present", async () => {
+  it('renders same-domain contacts section when data present', async () => {
     const mockDomainContacts: SameDomainContact[] = [
-      { email: "bob@company.com", display_name: "Bob Jones", avatar_url: null },
+      { email: 'bob@company.com', display_name: 'Bob Jones', avatar_url: null },
     ];
     vi.mocked(getContactsFromSameDomain).mockResolvedValueOnce(mockDomainContacts);
 
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Bob Jones")).toBeInTheDocument();
-      expect(screen.getByText("bob@company.com")).toBeInTheDocument();
+      expect(screen.getByText('Bob Jones')).toBeInTheDocument();
+      expect(screen.getByText('bob@company.com')).toBeInTheDocument();
     });
   });
 
-  it("renders AuthBadge next to name when auth results present", async () => {
+  it('renders AuthBadge next to name when auth results present', async () => {
     const authJson = JSON.stringify({
-      spf: { result: "pass", detail: null },
-      dkim: { result: "pass", detail: null },
-      dmarc: { result: "pass", detail: null },
-      aggregate: "pass",
+      spf: { result: 'pass', detail: null },
+      dkim: { result: 'pass', detail: null },
+      dmarc: { result: 'pass', detail: null },
+      aggregate: 'pass',
     });
     vi.mocked(getLatestAuthResult).mockResolvedValueOnce(authJson);
 
@@ -165,26 +169,25 @@ describe("ContactSidebar", () => {
     });
   });
 
-  it("shows VIP star as filled when sender is VIP", async () => {
+  it('shows VIP star as filled when sender is VIP', async () => {
     vi.mocked(isVipSender).mockResolvedValueOnce(true);
 
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByTitle("Remove VIP")).toBeInTheDocument();
+      expect(screen.getByTitle('Remove VIP')).toBeInTheDocument();
     });
   });
 
-  it("does not show Notes section when contact does not exist", async () => {
+  it('does not show Notes section when contact does not exist', async () => {
     vi.mocked(getContactByEmail).mockResolvedValueOnce(null);
 
     render(<ContactSidebar {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Add to Contacts")).toBeInTheDocument();
+      expect(screen.getByText('Add to Contacts')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText("Notes")).not.toBeInTheDocument();
+    expect(screen.queryByText('Notes')).not.toBeInTheDocument();
   });
 });
-

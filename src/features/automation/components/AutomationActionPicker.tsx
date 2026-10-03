@@ -1,5 +1,5 @@
-import { Trash2, Plus } from "lucide-react";
-import type { AutomationAction } from "@features/automation/stores/automationStore";
+import { Trash2, Plus } from 'lucide-react';
+import type { AutomationAction } from '@features/automation/stores/automationStore';
 
 interface AutomationActionPickerProps {
   actions: AutomationAction[];
@@ -7,36 +7,28 @@ interface AutomationActionPickerProps {
 }
 
 const ACTION_TYPES = [
-  { value: "apply_label", label: "Apply Label" },
-  { value: "send_template", label: "Send Template" },
-  { value: "create_task", label: "Create Task" },
-  { value: "mark_read", label: "Mark Read" },
-  { value: "archive", label: "Archive" },
-  { value: "star", label: "Star" },
-  { value: "forward_to", label: "Forward To" },
-  { value: "send_notification", label: "Send Notification" },
+  { value: 'apply_label', label: 'Apply Label' },
+  { value: 'send_template', label: 'Send Template' },
+  { value: 'create_task', label: 'Create Task' },
+  { value: 'mark_read', label: 'Mark Read' },
+  { value: 'archive', label: 'Archive' },
+  { value: 'star', label: 'Star' },
+  { value: 'forward_to', label: 'Forward To' },
+  { value: 'send_notification', label: 'Send Notification' },
 ];
 
-export function AutomationActionPicker({
-  actions,
-  onChange,
-}: AutomationActionPickerProps) {
+export function AutomationActionPicker({ actions, onChange }: AutomationActionPickerProps) {
   const addAction = (type: string) => {
     const action: AutomationAction = { type };
-    if (type === "apply_label") action.labelId = "";
-    if (type === "send_template") action.templateId = "";
-    if (type === "create_task") action.title = "";
-    if (type === "forward_to") action.email = "";
+    if (type === 'apply_label') action.labelId = '';
+    if (type === 'send_template') action.templateId = '';
+    if (type === 'create_task') action.title = '';
+    if (type === 'forward_to') action.email = '';
     onChange([...actions, action]);
   };
 
-  const updateAction = (
-    index: number,
-    update: Partial<AutomationAction>,
-  ) => {
-    const next = actions.map((a, i) =>
-      i === index ? { ...a, ...update } : a,
-    );
+  const updateAction = (index: number, update: Partial<AutomationAction>) => {
+    const next = actions.map((a, i) => (i === index ? { ...a, ...update } : a));
     onChange(next);
   };
 
@@ -44,35 +36,28 @@ export function AutomationActionPicker({
     onChange(actions.filter((_, i) => i !== index));
   };
 
-  const unusedTypes = ACTION_TYPES.filter(
-    (t) => !actions.some((a) => a.type === t.value),
-  );
+  const unusedTypes = ACTION_TYPES.filter((t) => !actions.some((a) => a.type === t.value));
 
   return (
     <div className="space-y-2">
-      <div className="text-xs font-medium text-text-secondary mb-1">
-        Actions
-      </div>
+      <div className="text-xs font-medium text-text-secondary mb-1">Actions</div>
       {actions.length === 0 && (
         <p className="text-xs text-text-tertiary italic">
           No actions configured. Add an action below.
         </p>
       )}
       {actions.map((action, index) => (
-        <div
-          key={index}
-          className="flex items-start gap-2 py-1.5 px-2 bg-bg-tertiary rounded-md"
-        >
+        <div key={index} className="flex items-start gap-2 py-1.5 px-2 bg-bg-tertiary rounded-md">
           <div className="flex-1 min-w-0 space-y-1">
             <select
               value={action.type}
               onChange={(e) => {
                 const newType = e.target.value;
                 const newAction: AutomationAction = { type: newType };
-                if (newType === "apply_label") newAction.labelId = "";
-                if (newType === "send_template") newAction.templateId = "";
-                if (newType === "create_task") newAction.title = "";
-                if (newType === "forward_to") newAction.email = "";
+                if (newType === 'apply_label') newAction.labelId = '';
+                if (newType === 'send_template') newAction.templateId = '';
+                if (newType === 'create_task') newAction.title = '';
+                if (newType === 'forward_to') newAction.email = '';
                 updateAction(index, newAction);
               }}
               className="w-full bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
@@ -84,47 +69,39 @@ export function AutomationActionPicker({
               ))}
             </select>
 
-            {action.type === "apply_label" && (
+            {action.type === 'apply_label' && (
               <input
                 type="text"
-                value={(action.labelId as string) ?? ""}
-                onChange={(e) =>
-                  updateAction(index, { labelId: e.target.value })
-                }
+                value={(action.labelId as string) ?? ''}
+                onChange={(e) => updateAction(index, { labelId: e.target.value })}
                 placeholder="Label ID"
                 className="w-full bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
               />
             )}
-            {action.type === "send_template" && (
+            {action.type === 'send_template' && (
               <input
                 type="text"
-                value={(action.templateId as string) ?? ""}
-                onChange={(e) =>
-                  updateAction(index, { templateId: e.target.value })
-                }
+                value={(action.templateId as string) ?? ''}
+                onChange={(e) => updateAction(index, { templateId: e.target.value })}
                 placeholder="Template ID"
                 className="w-full bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
               />
             )}
-            {action.type === "create_task" && (
+            {action.type === 'create_task' && (
               <div className="space-y-1">
                 <input
                   type="text"
-                  value={(action.title as string) ?? ""}
-                  onChange={(e) =>
-                    updateAction(index, { title: e.target.value })
-                  }
+                  value={(action.title as string) ?? ''}
+                  onChange={(e) => updateAction(index, { title: e.target.value })}
                   placeholder="Task title"
                   className="w-full bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
                 />
                 <div className="flex items-center gap-2">
-                  <span className="text-[0.625rem] text-text-tertiary">
-                    Due in
-                  </span>
+                  <span className="text-[0.625rem] text-text-tertiary">Due in</span>
                   <input
                     type="number"
                     min={0}
-                    value={(action.dueDays as number) ?? ""}
+                    value={(action.dueDays as number) ?? ''}
                     onChange={(e) =>
                       updateAction(index, {
                         dueDays: Number(e.target.value),
@@ -133,19 +110,15 @@ export function AutomationActionPicker({
                     placeholder="days"
                     className="w-16 bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
                   />
-                  <span className="text-[0.625rem] text-text-tertiary">
-                    days
-                  </span>
+                  <span className="text-[0.625rem] text-text-tertiary">days</span>
                 </div>
               </div>
             )}
-            {action.type === "forward_to" && (
+            {action.type === 'forward_to' && (
               <input
                 type="email"
-                value={(action.email as string) ?? ""}
-                onChange={(e) =>
-                  updateAction(index, { email: e.target.value })
-                }
+                value={(action.email as string) ?? ''}
+                onChange={(e) => updateAction(index, { email: e.target.value })}
                 placeholder="forward@example.com"
                 className="w-full bg-bg-secondary text-text-primary text-xs px-2 py-1 rounded border border-border-primary outline-none focus:border-accent"
               />
@@ -167,7 +140,7 @@ export function AutomationActionPicker({
             value=""
             onChange={(e) => {
               if (e.target.value) addAction(e.target.value);
-              e.target.value = "";
+              e.target.value = '';
             }}
             className="w-full bg-bg-tertiary text-text-primary text-xs px-2 py-1.5 rounded border border-border-primary appearance-none cursor-pointer"
           >

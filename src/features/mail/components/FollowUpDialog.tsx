@@ -1,4 +1,4 @@
-import { DateTimePickerDialog } from "@shared/components/ui/DateTimePickerDialog";
+import { DateTimePickerDialog } from '@shared/components/ui/DateTimePickerDialog';
 
 interface FollowUpDialogProps {
   isOpen?: boolean;
@@ -30,10 +30,10 @@ function getFollowUpPresets(): { label: string; timestamp: number }[] {
   oneWeek.setHours(9, 0, 0, 0);
 
   return [
-    { label: "In 1 day", timestamp: Math.floor(oneDay.getTime() / 1000) },
-    { label: "In 2 days", timestamp: Math.floor(twoDays.getTime() / 1000) },
-    { label: "In 3 days", timestamp: Math.floor(threeDays.getTime() / 1000) },
-    { label: "In 1 week", timestamp: Math.floor(oneWeek.getTime() / 1000) },
+    { label: 'In 1 day', timestamp: Math.floor(oneDay.getTime() / 1000) },
+    { label: 'In 2 days', timestamp: Math.floor(twoDays.getTime() / 1000) },
+    { label: 'In 3 days', timestamp: Math.floor(threeDays.getTime() / 1000) },
+    { label: 'In 1 week', timestamp: Math.floor(oneWeek.getTime() / 1000) },
   ];
 }
 

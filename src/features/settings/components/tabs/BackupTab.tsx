@@ -1,16 +1,26 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { HardDrive, Save, FolderOpen, Monitor, Plus, Trash2, RotateCcw, FileText, AlertCircle } from "lucide-react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { open } from "@tauri-apps/plugin-dialog";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { Button } from "@shared/components/ui/Button";
-import { ConfirmDialog } from "@shared/components/ui/ConfirmDialog";
-import { usePlatform } from "@shared/hooks/usePlatform";
-import { Toggle } from "@shared/components/ui/Toggle";
-import { SettingGroup } from "@features/settings/components/SettingsHelpers";
-import { HelpCard } from "@features/settings/components/HelpCard";
-import { INPUT_BASE } from "@shared/styles/ui-tokens";
+import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  HardDrive,
+  Save,
+  FolderOpen,
+  Monitor,
+  Plus,
+  Trash2,
+  RotateCcw,
+  FileText,
+  AlertCircle,
+} from 'lucide-react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { open } from '@tauri-apps/plugin-dialog';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { Button } from '@shared/components/ui/Button';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
+import { usePlatform } from '@shared/hooks/usePlatform';
+import { Toggle } from '@shared/components/ui/Toggle';
+import { SettingGroup } from '@features/settings/components/SettingsHelpers';
+import { HelpCard } from '@features/settings/components/HelpCard';
+import { INPUT_BASE } from '@shared/styles/ui-tokens';
 
 interface BackupConfig {
   enabled: boolean;
@@ -20,12 +30,12 @@ interface BackupConfig {
 }
 
 const INTERVAL_PRESETS = [
-  { label: "Every 6 hours", value: 21600 },
-  { label: "Every 12 hours", value: 43200 },
-  { label: "Daily (24h)", value: 86400 },
-  { label: "Every 2 days", value: 172800 },
-  { label: "Weekly", value: 604800 },
-  { label: "Custom", value: 0 },
+  { label: 'Every 6 hours', value: 21600 },
+  { label: 'Every 12 hours', value: 43200 },
+  { label: 'Daily (24h)', value: 86400 },
+  { label: 'Every 2 days', value: 172800 },
+  { label: 'Weekly', value: 604800 },
+  { label: 'Custom', value: 0 },
 ];
 
 function formatInterval(secs: number): string {
@@ -42,7 +52,7 @@ export default function BackupTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [customInterval, setCustomInterval] = useState("");
+  const [customInterval, setCustomInterval] = useState('');
 
   // Backup list state
   const [backupFiles, setBackupFiles] = useState<string[]>([]);
@@ -62,7 +72,7 @@ export default function BackupTab() {
 
   async function loadConfig() {
     try {
-      const cfg = await invokeCommand<BackupConfig>("get_backup_config");
+      const cfg = await invokeCommand<BackupConfig>('get_backup_config');
       setConfig(cfg);
       if (cfg.interval_secs > 0 && !INTERVAL_PRESETS.some((p) => p.value === cfg.interval_secs)) {
         setCustomInterval(String(cfg.interval_secs));
@@ -82,7 +92,9 @@ export default function BackupTab() {
     }
     setLoadingBackups(true);
     try {
-      const files = await invokeCommand<string[]>("list_backups", { directory: config.destination_path });
+      const files = await invokeCommand<string[]>('list_backups', {
+        directory: config.destination_path,
+      });
       setBackupFiles(files);
     } catch {
       // Silently fail — directory may not exist yet
@@ -102,8 +114,8 @@ export default function BackupTab() {
     if (!config || !platform.desktop) return;
     setSaving(true);
     try {
-      await invokeCommand("set_backup_config", { newConfig: config });
-      notify("Backup", "Backup settings saved successfully.");
+      await invokeCommand('set_backup_config', { newConfig: config });
+      notify('Backup', 'Backup settings saved successfully.');
     } catch (e) {
       setError(`Failed to save: ${e}`);
     } finally {
@@ -114,9 +126,12 @@ export default function BackupTab() {
   async function handleToggle() {
     if (!config || !platform.desktop) return;
     try {
-      await invokeCommand("toggle_backup", { enabled: !config.enabled });
+      await invokeCommand('toggle_backup', { enabled: !config.enabled });
       setConfig({ ...config, enabled: !config.enabled });
-      notify("Backup", !config.enabled ? "Backup scheduler enabled." : "Backup scheduler disabled.");
+      notify(
+        'Backup',
+        !config.enabled ? 'Backup scheduler enabled.' : 'Backup scheduler disabled.',
+      );
     } catch (e) {
       setError(`Failed to toggle: ${e}`);
     }
@@ -128,7 +143,7 @@ export default function BackupTab() {
       const selected = await open({
         directory: true,
         multiple: false,
-        title: "Select Backup Directory",
+        title: 'Select Backup Directory',
       });
       if (selected) {
         setConfig({ ...config!, destination_path: selected as string });
@@ -145,7 +160,7 @@ export default function BackupTab() {
       return;
     }
     setConfig({ ...config, interval_secs: value });
-    setCustomInterval("");
+    setCustomInterval('');
   }
 
   function handleCustomIntervalChange(val: string) {
@@ -163,8 +178,8 @@ export default function BackupTab() {
     setCreatingBackup(true);
     setError(null);
     try {
-      await invokeCommand<string>("create_backup", { destinationDir: config.destination_path });
-      notify("Backup", "Backup created successfully.");
+      await invokeCommand<string>('create_backup', { destinationDir: config.destination_path });
+      notify('Backup', 'Backup created successfully.');
       await loadBackupFiles();
     } catch (e) {
       setError(`Failed to create backup: ${e}`);
@@ -177,9 +192,9 @@ export default function BackupTab() {
     if (!deleteTarget || !platform.desktop) return;
     try {
       // Use Rust-side delete_file or just notify — we'll use the filesystem API
-      const { remove } = await import("@tauri-apps/plugin-fs");
+      const { remove } = await import('@tauri-apps/plugin-fs');
       await remove(deleteTarget);
-      notify("Backup", "Backup file deleted.");
+      notify('Backup', 'Backup file deleted.');
       setDeleteTarget(null);
       await loadBackupFiles();
     } catch (e) {
@@ -192,7 +207,7 @@ export default function BackupTab() {
     setRestoring(true);
     setError(null);
     try {
-      await invokeCommand("restore_backup", { backupPath: restoreTarget });
+      await invokeCommand('restore_backup', { backupPath: restoreTarget });
       // App will restart after this, so no need to update state
     } catch (e) {
       setError(`Failed to restore backup: ${e}`);
@@ -203,7 +218,7 @@ export default function BackupTab() {
   // ── Extract filename from path ──────────────────────────────
 
   function getFileName(path: string): string {
-    const parts = path.replace(/\\/g, "/").split("/");
+    const parts = path.replace(/\\/g, '/').split('/');
     return parts[parts.length - 1] ?? path;
   }
 
@@ -222,9 +237,7 @@ export default function BackupTab() {
   if (!config) {
     return (
       <SettingGroup title={t('settings.backup')}>
-        <div className="py-4 text-sm text-danger">
-          {error || "Backup config not available"}
-        </div>
+        <div className="py-4 text-sm text-danger">{error || 'Backup config not available'}</div>
       </SettingGroup>
     );
   }
@@ -261,13 +274,13 @@ export default function BackupTab() {
         <div
           className={`px-3 py-2 rounded-lg text-xs border ${
             config.enabled
-              ? "bg-accent/5 border-accent/20 text-accent"
-              : "bg-bg-secondary border-border-primary text-text-tertiary"
+              ? 'bg-accent/5 border-accent/20 text-accent'
+              : 'bg-bg-secondary border-border-primary text-text-tertiary'
           }`}
         >
           {config.enabled
             ? `Backup runs every ${formatInterval(config.interval_secs)} · Retains ${config.retention_count} files`
-            : "Backup scheduler is disabled. Enable to start automatic backups."}
+            : 'Backup scheduler is disabled. Enable to start automatic backups.'}
         </div>
 
         {/* Interval */}
@@ -279,7 +292,9 @@ export default function BackupTab() {
             className={INPUT_BASE}
           >
             {INTERVAL_PRESETS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
             ))}
           </select>
           {selectedPreset?.value === 0 && (
@@ -302,7 +317,10 @@ export default function BackupTab() {
             max={30}
             value={config.retention_count}
             onChange={(e) =>
-              setConfig({ ...config, retention_count: Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)) })
+              setConfig({
+                ...config,
+                retention_count: Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)),
+              })
             }
             className={INPUT_BASE}
           />
@@ -317,7 +335,7 @@ export default function BackupTab() {
           <div className="flex gap-2">
             <input
               type="text"
-              value={config.destination_path ?? ""}
+              value={config.destination_path ?? ''}
               onChange={(e) => setConfig({ ...config, destination_path: e.target.value || null })}
               placeholder="Leave empty for default location"
               className={INPUT_BASE}
@@ -344,7 +362,7 @@ export default function BackupTab() {
             disabled={saving}
             icon={<Save size={14} />}
           >
-            {saving ? "Saving..." : "Save Settings"}
+            {saving ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>
 
@@ -370,12 +388,13 @@ export default function BackupTab() {
             disabled={creatingBackup || !config.destination_path}
             icon={creatingBackup ? undefined : <Plus size={14} />}
           >
-            {creatingBackup ? "Creating..." : "Generate Backup"}
+            {creatingBackup ? 'Creating...' : 'Generate Backup'}
           </Button>
         </div>
 
         <p className="text-xs text-text-tertiary">
-          Create a manual backup at any time. Backups saved to the destination directory can be restored or deleted below.
+          Create a manual backup at any time. Backups saved to the destination directory can be
+          restored or deleted below.
         </p>
 
         {!config.destination_path && (
@@ -440,7 +459,7 @@ export default function BackupTab() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteBackup}
         title="Delete Backup"
-        message={`Are you sure you want to delete "${deleteTarget ? getFileName(deleteTarget) : ""}"? This cannot be undone.`}
+        message={`Are you sure you want to delete "${deleteTarget ? getFileName(deleteTarget) : ''}"? This cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
       />
@@ -451,7 +470,7 @@ export default function BackupTab() {
         onClose={() => setRestoreTarget(null)}
         onConfirm={handleRestoreBackup}
         title="Restore Backup"
-        message={`Restore "${restoreTarget ? getFileName(restoreTarget) : ""}"? The application will restart after the restore completes.`}
+        message={`Restore "${restoreTarget ? getFileName(restoreTarget) : ''}"? The application will restart after the restore completes.`}
         confirmLabel="Restore"
         variant="primary"
         loading={restoring}
@@ -459,10 +478,22 @@ export default function BackupTab() {
 
       <HelpCard
         items={[
-          { type: "why", text: "Backups protect your email database, settings, and templates from data loss — essential before major updates or when troubleshooting." },
-          { type: "how", text: "Automatic backups run on a configurable schedule. Manual backups can be created at any time. Restore from a backup to recover from corruption or roll back changes." },
-          { type: "when", text: "Schedule regular backups (daily or weekly) for production use. Create a manual backup before updating the app or making significant configuration changes." },
-          { type: "tip", text: "Store backups on a different drive or cloud-synced folder for redundancy. Retention settings automatically clean up old files." },
+          {
+            type: 'why',
+            text: 'Backups protect your email database, settings, and templates from data loss — essential before major updates or when troubleshooting.',
+          },
+          {
+            type: 'how',
+            text: 'Automatic backups run on a configurable schedule. Manual backups can be created at any time. Restore from a backup to recover from corruption or roll back changes.',
+          },
+          {
+            type: 'when',
+            text: 'Schedule regular backups (daily or weekly) for production use. Create a manual backup before updating the app or making significant configuration changes.',
+          },
+          {
+            type: 'tip',
+            text: 'Store backups on a different drive or cloud-synced folder for redundancy. Retention settings automatically clean up old files.',
+          },
         ]}
       />
     </SettingGroup>

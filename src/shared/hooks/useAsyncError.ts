@@ -37,7 +37,7 @@ export const useAsyncError = (): UseAsyncErrorReturn => {
       const error: AsyncError = {
         message: err instanceof Error ? err.message : t('common.unknownError'),
         code: err instanceof Error ? err.name : 'UNKNOWN_ERROR',
-        details: err
+        details: err,
       };
       setError(error);
       throw error;
@@ -48,6 +48,6 @@ export const useAsyncError = (): UseAsyncErrorReturn => {
     error,
     setError,
     clearError,
-    withErrorHandling
+    withErrorHandling,
   };
 };

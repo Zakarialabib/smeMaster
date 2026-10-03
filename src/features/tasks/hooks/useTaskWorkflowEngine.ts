@@ -1,12 +1,11 @@
-import { useEffect, useRef } from "react";
-import { checkTaskWorkflows, checkTaskReminders } from "../services/taskWorkflowEngine";
-import { useTaskStore } from "../stores/taskStore";
+import { useEffect, useRef } from 'react';
+import { checkTaskWorkflows, checkTaskReminders } from '../services/taskWorkflowEngine';
+import { useTaskStore } from '../stores/taskStore';
 
 const POLL_INTERVAL_MS = 60_000;
 
 const isTauri = (): boolean =>
-  typeof window !== "undefined" &&
-  ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+  typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
 
 /**
  * Polls the task workflow and reminder engines every 60s while the app
@@ -31,7 +30,7 @@ export function useTaskWorkflowEngine() {
       try {
         await Promise.all([checkTaskWorkflows(), checkTaskReminders()]);
       } catch (err) {
-        console.error("[useTaskWorkflowEngine] check failed:", err);
+        console.error('[useTaskWorkflowEngine] check failed:', err);
       }
     };
 
@@ -50,7 +49,7 @@ export function useTaskWorkflowEngine() {
     };
 
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState === 'visible') {
         startPolling();
       } else {
         stopPolling();
@@ -64,10 +63,10 @@ export function useTaskWorkflowEngine() {
       stopPolling();
     }
 
-    document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
       stopPolling();
     };
   }, [remindersEnabled]);

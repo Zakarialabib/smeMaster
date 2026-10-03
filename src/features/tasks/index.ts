@@ -1,8 +1,4 @@
-export type {
-  DbTask,
-  DbTaskTag,
-  TaskPriority,
-} from "./db/tasks";
+export type { DbTask, DbTaskTag, TaskPriority } from './db/tasks';
 
 export type {
   TaskGroupBy,
@@ -13,26 +9,20 @@ export type {
   TaskDateFilter,
   TaskFilterPriority,
   TaskViewPrefs,
-} from "./hooks/useTaskViewPrefs";
+} from './hooks/useTaskViewPrefs';
 
-export { useTaskStore } from "./stores/taskStore";
-export { useTaskViewPrefs } from "./hooks/useTaskViewPrefs";
+export { useTaskStore } from './stores/taskStore';
+export { useTaskViewPrefs } from './hooks/useTaskViewPrefs';
 
-export type {
-  RecurrenceRule,
-} from "./services/taskManager";
+export type { RecurrenceRule } from './services/taskManager';
 
 export {
   parseRecurrenceRule,
   calculateNextOccurrence,
   handleRecurringTaskCompletion,
-} from "./services/taskManager";
+} from './services/taskManager';
 
-export {
-  safeDbOperation,
-  type DbResult,
-  type SafeDbOptions,
-} from "./services/errorHandler";
+export { safeDbOperation, type DbResult, type SafeDbOptions } from './services/errorHandler';
 
 export {
   getTasksForAccount,
@@ -49,4 +39,4 @@ export {
   getTaskTags,
   upsertTaskTag,
   deleteTaskTag,
-} from "./db/tasks";
+} from './db/tasks';

@@ -8,6 +8,16 @@
 
 SMEMaster uses a **sidecar process architecture** for all on-device ML/AI workloads: embeddings, vector search (RAG), document parsing, and model management. The sidecar is a **separate OS process** (`ml-sidecar`) that communicates with the main app over **stdin/stdout JSON-RPC 2.0**.
 
+> **⚠️ Two different "sidecars" — do not conflate them.**
+> `ml-sidecar` (this document) is a **Tauri-managed child process**: spawned by
+> `MlSidecarService`, supervised by the watchdog, bundled via `externalBin`, workspace member
+> `crates/ml-sidecar`. It runs **on the user's machine**.
+> `services/agent-core/` (voice agent) is a **network sidecar**: Python/FastAPI, 24/7 on our
+> VPS, **not** a Cargo workspace member and **not** supervised by Tauri. It shares only the
+> _contract shape_ (health/watchdog semantics) with `ml-sidecar`. See
+> [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D1 — adding `agent-core`
+> to `Cargo.toml` `members` or wrapping it in a Tauri child process is explicitly forbidden.
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Main Process (smemaster)                           │
@@ -179,24 +189,24 @@ Notifications carry no `id`. The main app reader task forwards them via a broadc
 
 ### Methods
 
-| Method                 | Params                  | Returns                     | Description                          |
-| ---------------------- | ----------------------- | --------------------------- | ------------------------------------ |
-| `init`                 | `{ app_data_dir }`      | `{ status, version }`       | Initialize with app data directory   |
-| `ping`                 | `{}`                    | `{ pong, ts, version }`     | Health check                         |
-| `shutdown`             | `{}`                    | —                           | Graceful exit (process exits with 0) |
-| `load_embedding_model` | `{ repo_id }`           | `{ status, dimension }`     | Download + load embedding model      |
-| `unload_model`         | `{}`                    | `{ status }`                | Free model memory                    |
-| `list_models`          | `{}`                    | `{ models: [...] }`         | Registry of loaded models            |
-| `embed`                | `{ texts: [str] }`      | `{ embeddings, dimension }` | Compute text embeddings              |
-| `embed_batch`          | `{ batches: [[str]] }`  | `{ results: [...] }`        | Batch embedding with progress notes  |
-| `ensure_vector_db`     | `{ db_path }`           | `{ status }`                | Open/create LanceDB database         |
-| `index_vectors`        | `{ vectors, metadata }` | `{ indexed }`               | Insert vectors into index            |
-| `query_rag`            | `{ query, top_k }`      | `{ results }`               | Vector search + return context       |
-| `parse_document`       | `{ path }`              | `{ text }`                  | Extract text from docx/pdf/xlsx      |
-| `load_generation_model`| `{ repo_id }`           | `{ status }`                | Register a generation model handle   |
-| `generate`             | `{ prompt, max_tokens }`| `{ text }`                  | Run generation + stream progress     |
-| `memory_usage`         | `{}`                    | `{ rss_mb, model_loaded, pid }` | Sidecar self-memory report     |
-| `metrics`              | `{}`                    | `{ embed_count, ..., rss_mb }`| Sidecar self-metrics                |
+| Method                  | Params                   | Returns                         | Description                          |
+| ----------------------- | ------------------------ | ------------------------------- | ------------------------------------ |
+| `init`                  | `{ app_data_dir }`       | `{ status, version }`           | Initialize with app data directory   |
+| `ping`                  | `{}`                     | `{ pong, ts, version }`         | Health check                         |
+| `shutdown`              | `{}`                     | —                               | Graceful exit (process exits with 0) |
+| `load_embedding_model`  | `{ repo_id }`            | `{ status, dimension }`         | Download + load embedding model      |
+| `unload_model`          | `{}`                     | `{ status }`                    | Free model memory                    |
+| `list_models`           | `{}`                     | `{ models: [...] }`             | Registry of loaded models            |
+| `embed`                 | `{ texts: [str] }`       | `{ embeddings, dimension }`     | Compute text embeddings              |
+| `embed_batch`           | `{ batches: [[str]] }`   | `{ results: [...] }`            | Batch embedding with progress notes  |
+| `ensure_vector_db`      | `{ db_path }`            | `{ status }`                    | Open/create LanceDB database         |
+| `index_vectors`         | `{ vectors, metadata }`  | `{ indexed }`                   | Insert vectors into index            |
+| `query_rag`             | `{ query, top_k }`       | `{ results }`                   | Vector search + return context       |
+| `parse_document`        | `{ path }`               | `{ text }`                      | Extract text from docx/pdf/xlsx      |
+| `load_generation_model` | `{ repo_id }`            | `{ status }`                    | Register a generation model handle   |
+| `generate`              | `{ prompt, max_tokens }` | `{ text }`                      | Run generation + stream progress     |
+| `memory_usage`          | `{}`                     | `{ rss_mb, model_loaded, pid }` | Sidecar self-memory report           |
+| `metrics`               | `{}`                     | `{ embed_count, ..., rss_mb }`  | Sidecar self-metrics                 |
 
 ## Lifecycle
 
@@ -249,18 +259,39 @@ Auto-restart
 
 ### Build
 
+**Use the script.** It builds the sidecar AND installs it with the triple-suffixed
+name Tauri resolves, so a bundled app can never ship without it:
+
 ```bash
-# Build only the sidecar
-cargo build -p ml-sidecar --release
+bun run sidecar:build:release     # → src-tauri/binaries/ml-sidecar-<triple>.exe
+# or directly:
+SHERPA_ONNX_ARCHIVE_DIR=<dir> scripts/build-sidecar.sh --release
+```
 
-# The binary lands at:
-#   src-tauri/target/release/ml-sidecar.exe  (Windows)
-#   src-tauri/target/release/ml-sidecar      (Linux/macOS)
+`tauri:build`, `windows:build` and `windows:portable` all run
+`sidecar:build:release` first, so the bundling prerequisite cannot be forgotten.
 
-# Copy to binaries/ for Tauri bundling:
+⚠️ **`--release` is the supported path on Windows.** A debug build of this crate
+links ~234 objects and emits a PDB large enough to fail MSVC with
+`LNK1318: Unexpected PDB error; FILE_SYSTEM (3)`. That is a PDB/filesystem limit,
+not a code error, and it only shows up once the disk is tight.
+
+⚠️ **`offline-speech` is ON by default in the script.** Without it the sidecar
+compiles and runs but answers `unknown method` to `load_stt_model` /
+`load_tts_voice` / `synthesize` — which looks like a broken feature rather than a
+wrong binary. Pass `--no-speech` only if you deliberately want a smaller build.
+
+⚠️ **Disk.** A full Rust build of this workspace needs ~10 GB free. The sidecar
+alone is ~98 MB release / ~157 MB debug; the intermediate `app_lib.lib` can reach
+5 GB.
+
+#### Manual equivalent (if you must)
+
+```bash
+cargo build -p ml-sidecar --release --features offline-speech
 mkdir -p src-tauri/binaries
-cp src-tauri/target/release/ml-sidecar* src-tauri/binaries/
-# Tauri expects: src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe
+cp src-tauri/target/release/ml-sidecar* \
+   src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe
 ```
 
 ### CI Integration

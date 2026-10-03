@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SMEMaster — Voice Console (prototype)</title>
+    <!--
+      DESIGN ARTIFACT, NOT PRODUCT CODE.
+      Tokens below are copied verbatim from src/styles/globals.css (@theme) in
+      the parent repo, so the prototype renders in the real app's design language
+      rather than an approximation. No new colours are introduced.
+    -->
+    <style>
+      :root {
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --radius-2xl: 24px;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f7f8fa;
+        --bg-tertiary: #f0f1f3;
+        --bg-hover: #eef0f3;
+        --bg-selected: rgba(11, 87, 208, 0.12);
+        --text-primary: #1c1b1f;
+        --text-secondary: #49454f;
+        --text-tertiary: #7a7680;
+        --border-primary: #e4e6ea;
+        --border-secondary: #eceef1;
+        --accent: #0b57d0;
+        --accent-hover: #0842a0;
+        --accent-light: #d3e3fd;
+        --accent-subtle: rgba(11, 87, 208, 0.08);
+        --ai: #9333ea;
+        --ai-subtle: rgba(147, 51, 234, 0.08);
+        --danger: #e11d48;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --success: #059669;
+        --success-light: #d1fae5;
+        --info: #0284c7;
+        --info-light: #e0f2fe;
+        --glass-blur: 14px;
+        --elevation-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --elevation-md: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+        --elevation-lg: 0 4px 16px rgba(16, 24, 40, 0.08);
+        --color-frost-bg: rgba(255, 255, 255, 0.72);
+        --frost-border: 1px solid var(--border-primary);
+        --frost-highlight: var(--elevation-sm);
+      }
+      * { box-sizing: border-box; }
+      html, body, #root { height: 100%; }
+      body {
+        margin: 0;
+        font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--text-primary);
+        background:
+          radial-gradient(1200px 600px at 88% -10%, rgba(11, 87, 208, 0.10), transparent 60%),
+          radial-gradient(900px 500px at 4% 110%, rgba(147, 51, 234, 0.07), transparent 60%),
+          var(--bg-secondary);
+        -webkit-font-smoothing: antialiased;
+      }
+      .frost-surface {
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        background: var(--color-frost-bg);
+        border: var(--frost-border);
+        box-shadow: var(--frost-highlight);
+      }
+      /* Focus ring — mirrors .settings-focus-ring in globals.css. Never bespoke. */
+      .focus-ring:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 1px var(--accent);
+        border-color: var(--accent);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+      }
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-thumb { background: var(--border-primary); border-radius: 999px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

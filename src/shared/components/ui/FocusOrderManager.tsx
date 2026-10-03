@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface FocusRegionProps {
   /** Machine-readable ID (used for `aria-labelledby` if no label). */
@@ -10,7 +10,7 @@ interface FocusRegionProps {
   /** Optional heading level (1-6) rendered before children. */
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   /** Tag to use for the container. Defaults to "section". */
-  as?: "section" | "div" | "article" | "nav" | "aside";
+  as?: 'section' | 'div' | 'article' | 'nav' | 'aside';
 }
 
 /**
@@ -35,22 +35,17 @@ export function FocusRegion({
   id,
   label,
   children,
-  className = "",
+  className = '',
   headingLevel,
-  as: Tag = "section",
+  as: Tag = 'section',
 }: FocusRegionProps) {
   return (
-    <Tag
-      id={id}
-      role="region"
-      aria-label={label}
-      className={className}
-    >
+    <Tag id={id} role="region" aria-label={label} className={className}>
       {headingLevel && (
         <h2
           className="sr-only"
           data-focus-region-heading
-          style={{ "--region-label": label } as React.CSSProperties}
+          style={{ '--region-label': label } as React.CSSProperties}
         >
           {label}
         </h2>
@@ -67,7 +62,7 @@ interface FocusOrderManagerProps {
     label: string;
     children: ReactNode;
     headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
-    as?: "section" | "div" | "article" | "nav" | "aside";
+    as?: 'section' | 'div' | 'article' | 'nav' | 'aside';
   }>;
   className?: string;
 }
@@ -93,10 +88,7 @@ interface FocusOrderManagerProps {
  * />
  * ```
  */
-export function FocusOrderManager({
-  regions,
-  className = "",
-}: FocusOrderManagerProps) {
+export function FocusOrderManager({ regions, className = '' }: FocusOrderManagerProps) {
   return (
     <div className={className}>
       {regions.map((region, index) => (

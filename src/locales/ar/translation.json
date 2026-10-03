@@ -249,15 +249,15 @@
     "all": "All",
     "unread": "Unread",
     "read": "Read",
-    "toggleSelectAll": "[TODO] email.toggleSelectAll",
-    "markReadSelected": "[TODO] email.markReadSelected",
-    "markUnreadSelected": "[TODO] email.markUnreadSelected",
-    "addLabelSelected": "[TODO] email.addLabelSelected",
-    "noLabels": "[TODO] email.noLabels",
-    "moveToSelected": "[TODO] email.moveToSelected",
-    "focused": "[TODO] email.focused",
-    "allMail": "[TODO] email.allMail",
-    "loading": "[TODO] email.loading"
+    "toggleSelectAll": "تحديد الكل / لا شيء",
+    "markReadSelected": "تحديد كمروئ",
+    "markUnreadSelected": "تحديد كغير مقروء",
+    "addLabelSelected": "إضافة تسمية",
+    "noLabels": "لا توجد تسميات",
+    "moveToSelected": "نقل إلى المجلد",
+    "focused": "رئيسي",
+    "allMail": "كل الرسائل",
+    "loading": "جارٍ التحميل..."
   },
   "actionBar": {
     "reply": "رد",
@@ -544,8 +544,8 @@
         "desc": "Bulk email campaigns, mail merge, A/B testing, and campaign analytics"
       },
       "pgp": {
-        "name": "[TODO] PGP Encryption",
-        "desc": "[TODO] End-to-end encryption with Sequoia OpenPGP key management"
+        "name": "تشفير PGP",
+        "desc": "تشفير منتهي إلى منتهي مع إدارة مفاتيح OpenPGP Sequoia"
       },
       "compliance": {
         "name": "Compliance",
@@ -701,6 +701,8 @@
     "providerClaude": "Claude (Anthropic)",
     "providerOpenai": "OpenAI",
     "providerGemini": "Gemini (Google)",
+    "providerMistral": "Mistral AI",
+    "providerByteplus": "BytePlus (ByteDance)",
     "providerOllama": "ذكاء اصطناعي محلي (Ollama / LMStudio)",
     "providerCopilot": "GitHub Copilot",
     "usesModel": "يستخدم {{model}}.",
@@ -718,9 +720,13 @@
     "openaiApiKey": "مفتاح API من OpenAI",
     "githubPat": "رمز الوصول الشخصي من GitHub",
     "googleAiApiKey": "مفتاح API من Google AI",
+    "mistralApiKey": "مفتاح API من Mistral",
+    "byteplusApiKey": "مفتاح API من BytePlus",
     "claudeKeyPlaceholder": "sk-ant-...",
     "copilotKeyPlaceholder": "ghp_...",
     "geminiKeyPlaceholder": "AI...",
+    "mistralKeyPlaceholder": "mistral-...",
+    "byteplusKeyPlaceholder": "ark-...",
     "enableAiFeaturesDescription": "المفتاح الرئيسي لجميع وظائف الذكاء الاصطناعي",
     "autoCategorizeDescription": "استخدام الذكاء الاصطناعي لتحسين التصنيف القائم على القواعد",
     "autoSummarizeDescription": "عرض ملخصات الذكاء الاصطناعي للمحادثات متعددة الرسائل",
@@ -1079,7 +1085,7 @@
     "composing": {
       "setupGuide": "Setup Guide",
       "step": "Step",
-      "of": "[TODO] of",
+      "of": "من",
       "why": "A consistent composing setup saves time and keeps your brand voice uniform.",
       "how": "Set your default editor, signatures, quick replies, and pre-send checklist in Composing.",
       "when": "Review these when adding a new signature or changing your writing style."
@@ -1189,7 +1195,9 @@
       "hardware": "Hardware monitoring and diagnostics",
       "queue": "Offline operations and sync queue",
       "featureFlags": "Preview and toggle experimental features",
-      "about": "Version, license, and credits"
+      "about": "Version, license, and credits",
+      "voice": "موفرو الصوت والمحركات المحلية",
+      "localModels": "تنزيل وإدارة النماذج المحلية"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1276,9 +1284,9 @@
         "when": "Configure when sending to regulated regions or lists."
       },
       "pgp": {
-        "why": "[TODO] PGP gives true end-to-end privacy for sensitive mail.",
+        "why": "يوفر PGP خصوصية حقيقية من النهاية إلى النهاية للرسائل الحساسة.",
         "how": "Generate or import a key pair, then share your public key.",
-        "when": "[TODO] Set up PGP before exchanging confidential messages."
+        "when": "قم بإعداد PGP قبل تبادل الرسائل السرية."
       },
       "presend": {
         "why": "A pre-send checklist catches mistakes before they ship.",
@@ -1326,18 +1334,22 @@
       "when": "When"
     },
     "cacheTab": {
-      "overview": "[TODO] settings.cacheTab.overview",
-      "enabled": "[TODO] settings.cacheTab.enabled",
-      "enabledDesc": "[TODO] settings.cacheTab.enabledDesc",
-      "lastSync": "[TODO] settings.cacheTab.lastSync",
-      "lastSyncDesc": "[TODO] settings.cacheTab.lastSyncDesc",
-      "domains": "[TODO] settings.cacheTab.domains",
-      "actions": "[TODO] settings.cacheTab.actions",
-      "runBenchmark": "[TODO] settings.cacheTab.runBenchmark",
-      "clearCaches": "[TODO] settings.cacheTab.clearCaches",
-      "actionsHint": "[TODO] settings.cacheTab.actionsHint"
+      "overview": "نظرة عامة على الذاكرة المخبأة",
+      "enabled": "ذاكرة التخزين المؤقت للبيانات مفعلة",
+      "enabledDesc": "طبقة ذاكرة TTL في الذاكرة (جهات اتصال، حسابات، تسميات، محادثات).",
+      "lastSync": "آخر مزامنة",
+      "lastSyncDesc": "آخر محاولة مزامنة في الخلية الخلوية (من مراقب المزامنة).",
+      "domains": "نطاقات التخزين",
+      "actions": "Actions",
+      "runBenchmark": "Run Benchmark",
+      "clearCaches": "Clear Caches",
+      "actionsHint": "Benchmark measures read latency through the cache/DB path. Clearing caches forces a fresh reload from the database on next access."
     },
-    "undoSendQuickPick": "[TODO] Quick pick"
+    "undoSendQuickPick": "اختيار سريع",
+    "pairingTitle": "settings.pairingTitle",
+    "featuresTitle": "settings.featuresTitle",
+    "contentQualityTitle": "settings.contentQualityTitle",
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon"
   },
   "search": {
     "typeACommand": "اكتب أمراً...",
@@ -1364,21 +1376,21 @@
     "tryDifferentKeywords": "Try different keywords",
     "navigate": "Navigate",
     "select": "Select",
-    "goToCalendar": "[TODO] search.goToCalendar",
-    "goToCampaigns": "[TODO] search.goToCampaigns",
-    "goToPeople": "[TODO] search.goToPeople",
-    "goToAutomation": "[TODO] search.goToAutomation",
-    "goToDashboard": "[TODO] search.goToDashboard",
-    "goToSettingsInbox": "[TODO] search.goToSettingsInbox",
-    "goToSettingsComposing": "[TODO] search.goToSettingsComposing",
-    "searchMail": "[TODO] search.searchMail",
-    "reloadMail": "[TODO] search.reloadMail",
-    "toggleFocused": "[TODO] search.toggleFocused",
-    "toggleSplitInbox": "[TODO] search.toggleSplitInbox",
-    "snoozeThread": "[TODO] search.snoozeThread",
-    "starThread": "[TODO] search.starThread",
-    "archiveThread": "[TODO] search.archiveThread",
-    "markReadThread": "[TODO] search.markReadThread",
+    "goToCalendar": "Go to Calendar",
+    "goToCampaigns": "Go to Campaigns",
+    "goToPeople": "Go to People / Contacts",
+    "goToAutomation": "Go to Automation",
+    "goToDashboard": "Go to Dashboard",
+    "goToSettingsInbox": "Open Settings › Inbox",
+    "goToSettingsComposing": "Open Settings › Composing",
+    "searchMail": "Search Mail",
+    "reloadMail": "Reload Mail",
+    "toggleFocused": "Toggle Focused Inbox",
+    "toggleSplitInbox": "Toggle Split / Unified Inbox",
+    "snoozeThread": "Snooze Selected Thread",
+    "starThread": "Star Selected Thread",
+    "archiveThread": "Archive Selected Thread",
+    "markReadThread": "Mark Selected Thread as Read",
     "templateDesc": "أنشئ قوالب بريد إلكتروني قابلة لإعادة الاستخدام مع عناصر نائبة للرسائل المتسقة."
   },
   "empty": {
@@ -1609,7 +1621,8 @@
       "leftColumn": "Left column",
       "rightColumn": "Right column",
       "gap": "Gap",
-      "lineHeight": "Line height"
+      "lineHeight": "Line height",
+      "fromVaultComingSoon": "Attach from Vault is coming soon"
     },
     "campaigns": "الحملات",
     "newCampaign": "حملة جديدة",
@@ -1847,8 +1860,8 @@
     "recurringLower": "متكرر",
     "editPreset": "Edit preset",
     "newPreset": "New preset",
-    "naturalLanguage": "[TODO] Or type a time (e.g. “tomorrow 9am”, “friday”, “in 3 hours”)",
-    "nlPlaceholder": "[TODO] tomorrow 9am"
+    "naturalLanguage": "أو اكتب وقتًا (مثلاً: «غدًا الساعة 9، الجمعة، خلال 3 ساعات»)",
+    "nlPlaceholder": "غدًا الساعة 9"
   },
   "compliance": {
     "violations": "مخالفات",
@@ -1898,7 +1911,14 @@
     "refresh": "Refresh",
     "updatedSeconds": "تم التحديث منذ {{count}} ثانية",
     "updatedMinutes": "تم التحديث منذ {{count}} دقيقة",
-    "updatedHours": "تم التحديث منذ {{count}} ساعة"
+    "updatedHours": "تم التحديث منذ {{count}} ساعة",
+    "cards": {
+      "openSection": "Open section"
+    },
+    "sections": {
+      "consoleTitle": "Sections",
+      "consoleDescription": "Jump straight into a section — each card shows live stats and a quick overview."
+    }
   },
   "addAccount": {
     "easySetup": "إعداد سهل (IMAP + كلمة مرور التطبيق)",
@@ -2134,61 +2154,61 @@
   "Loading": {
     "": {
       "": {
-        "": "[TODO] Loading..."
+        "": "Loading..."
       }
     }
   },
   "Add a description": {
     "": {
       "": {
-        "": "[TODO] Add a description..."
+        "": "Add a description..."
       }
     }
   },
   "No actions configured": {
     " Add an action to run when this trigger fires": {
-      "": "[TODO] No actions configured. Add an action to run when this trigger fires."
+      "": "No actions configured. Add an action to run when this trigger fires."
     }
   },
   "Select a template": {
     "": {
       "": {
-        "": "[TODO] Select a template..."
+        "": "Select a template..."
       }
     }
   },
   "Notification text": {
     "": {
       "": {
-        "": "[TODO] Notification text..."
+        "": "Notification text..."
       }
     }
   },
   "Task title preset": {
     "": {
       "": {
-        "": "[TODO] Task title preset..."
+        "": "Task title preset..."
       }
     }
   },
   "Saving": {
     "": {
       "": {
-        "": "[TODO] Saving..."
+        "": "Saving..."
       }
     }
   },
   "Deleting": {
     "": {
       "": {
-        "": "[TODO] Deleting..."
+        "": "Deleting..."
       }
     }
   },
   "Search contacts": {
     "": {
       "": {
-        "": "[TODO] Search contacts..."
+        "": "Search contacts..."
       }
     }
   },
@@ -2326,5 +2346,12 @@
     "promotions": "ترويجي",
     "social": "اجتماعي",
     "newsletters": "نشرات بريدية"
+  },
+  "commands": {
+    "refresh": "commands.refresh"
+  },
+  "columns": {
+    "title": "Columns",
+    "reset": "Reset to defaults"
   }
 }

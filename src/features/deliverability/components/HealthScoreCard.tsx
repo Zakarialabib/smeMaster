@@ -1,5 +1,5 @@
-import { Shield } from "lucide-react";
-import { getScoreVariant } from "@shared/utils/scoreVariant";
+import { Shield } from 'lucide-react';
+import { getScoreVariant } from '@shared/utils/scoreVariant';
 
 interface Props {
   domain: string;
@@ -33,7 +33,7 @@ export function HealthScoreCard({ domain, score, onCheck }: Props) {
       <div className="flex items-end gap-3">
         <span className={`text-4xl font-bold leading-none ${v.color}`}>
           {score}
-          <span className="text-sm font-normal text-text-tertiary ml-0.5">/100</span>
+          <span className="text-sm font-normal text-text-tertiary ms-0.5">/100</span>
         </span>
         <div className="flex items-center gap-1.5 pb-1">
           <Icon size={14} className={v.color} />

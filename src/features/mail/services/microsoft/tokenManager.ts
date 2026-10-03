@@ -1,9 +1,9 @@
-import { MicrosoftGraphClient } from "./client";
-import { startMicrosoftOAuthFlow } from "./auth";
-import { getAllAccounts, getAccount, updateAccountAllTokens } from "@features/accounts/db/accounts";
-import { getSetting, getSecureSetting } from "@features/settings/db/settings";
-import { getCurrentUnixTimestamp } from "@shared/utils/timestamp";
-import { normalizeEmail } from "@shared/utils/emailUtils";
+import { MicrosoftGraphClient } from './client';
+import { startMicrosoftOAuthFlow } from './auth';
+import { getAllAccounts, getAccount, updateAccountAllTokens } from '@features/accounts/db/accounts';
+import { getSetting, getSecureSetting } from '@features/settings/db/settings';
+import { getCurrentUnixTimestamp } from '@shared/utils/timestamp';
+import { normalizeEmail } from '@shared/utils/emailUtils';
 
 // In-memory cache of active MicrosoftGraphClient instances per account
 const clients = new Map<string, MicrosoftGraphClient>();
@@ -11,9 +11,7 @@ const clients = new Map<string, MicrosoftGraphClient>();
 /**
  * Get or create a MicrosoftGraphClient for the given account.
  */
-export async function getMicrosoftGraphClient(
-  accountId: string,
-): Promise<MicrosoftGraphClient> {
+export async function getMicrosoftGraphClient(accountId: string): Promise<MicrosoftGraphClient> {
   const existing = clients.get(accountId);
   if (existing) return existing;
 
@@ -27,11 +25,16 @@ export async function getMicrosoftGraphClient(
     throw new Error(`Account ${accountId} has no tokens`);
   }
 
-  const client = new MicrosoftGraphClient(accountId, clientId, {
-    accessToken: account.access_token,
-    refreshToken: account.refresh_token,
-    expiresAt: account.token_expires_at ?? 0,
-  }, clientSecret);
+  const client = new MicrosoftGraphClient(
+    accountId,
+    clientId,
+    {
+      accessToken: account.access_token,
+      refreshToken: account.refresh_token,
+      expiresAt: account.token_expires_at ?? 0,
+    },
+    clientSecret,
+  );
 
   clients.set(accountId, client);
   return client;
@@ -48,9 +51,9 @@ export function removeMicrosoftClient(accountId: string): void {
  * Get the Microsoft OAuth client ID from settings.
  */
 export async function getMicrosoftClientId(): Promise<string> {
-  const clientId = await getSetting("microsoft_client_id");
+  const clientId = await getSetting('microsoft_client_id');
   if (!clientId) {
-    throw new Error("Microsoft Client ID not configured. Go to Settings to set it up.");
+    throw new Error('Microsoft Client ID not configured. Go to Settings to set it up.');
   }
   return clientId;
 }
@@ -59,7 +62,7 @@ export async function getMicrosoftClientId(): Promise<string> {
  * Get the Microsoft OAuth client secret from settings (optional, for Web app clients).
  */
 export async function getMicrosoftClientSecret(): Promise<string | undefined> {
-  const clientSecret = await getSecureSetting("microsoft_client_secret");
+  const clientSecret = await getSecureSetting('microsoft_client_secret');
   return clientSecret ?? undefined;
 }
 
@@ -68,17 +71,27 @@ export async function getMicrosoftClientSecret(): Promise<string | undefined> {
  */
 export async function initializeMicrosoftClients(): Promise<void> {
   const accounts = await getAllAccounts();
-  const clientId = await getSetting("microsoft_client_id");
+  const clientId = await getSetting('microsoft_client_id');
   if (!clientId) return;
-  const clientSecret = (await getSecureSetting("microsoft_client_secret")) ?? undefined;
+  const clientSecret = (await getSecureSetting('microsoft_client_secret')) ?? undefined;
 
   for (const account of accounts) {
-    if (account.provider === "microsoft_graph" && account.is_active && account.access_token && account.refresh_token) {
-      const client = new MicrosoftGraphClient(account.id, clientId, {
-        accessToken: account.access_token,
-        refreshToken: account.refresh_token,
-        expiresAt: account.token_expires_at ?? 0,
-      }, clientSecret);
+    if (
+      account.provider === 'microsoft_graph' &&
+      account.is_active &&
+      account.access_token &&
+      account.refresh_token
+    ) {
+      const client = new MicrosoftGraphClient(
+        account.id,
+        clientId,
+        {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          expiresAt: account.token_expires_at ?? 0,
+        },
+        clientSecret,
+      );
       clients.set(account.id, client);
     }
   }
@@ -108,7 +121,7 @@ export async function reauthorizeMicrosoftAccount(
 
   if (!tokens.refresh_token) {
     throw new Error(
-      "Microsoft did not return a refresh token. Please revoke app access at https://myaccount.microsoft.com/permissions and try again.",
+      'Microsoft did not return a refresh token. Please revoke app access at https://myaccount.microsoft.com/permissions and try again.',
     );
   }
 
@@ -117,10 +130,15 @@ export async function reauthorizeMicrosoftAccount(
 
   // Evict stale client and create a fresh one
   clients.delete(accountId);
-  const client = new MicrosoftGraphClient(accountId, clientId, {
-    accessToken: tokens.access_token,
-    refreshToken: tokens.refresh_token,
-    expiresAt,
-  }, clientSecret);
+  const client = new MicrosoftGraphClient(
+    accountId,
+    clientId,
+    {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt,
+    },
+    clientSecret,
+  );
   clients.set(accountId, client);
 }

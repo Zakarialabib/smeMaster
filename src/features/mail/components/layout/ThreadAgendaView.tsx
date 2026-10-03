@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
-import { Calendar, ChevronDown, ChevronUp, Inbox } from "lucide-react";
-import { ThreadCard } from "@features/mail/components/ThreadCard";
-import type { Thread } from "@features/mail/stores/threadStore";
-import type { ThreadViewProps } from "./ThreadViewTypes";
+import { useMemo, useState } from 'react';
+import { Calendar, ChevronDown, ChevronUp, Inbox } from 'lucide-react';
+import { ThreadCard } from '@features/mail/components/ThreadCard';
+import type { Thread } from '@features/mail/stores/threadStore';
+import type { ThreadViewProps } from './ThreadViewTypes';
 
-type AgendaGroupKey = "today" | "yesterday" | "thisWeek" | "older";
+type AgendaGroupKey = 'today' | 'yesterday' | 'thisWeek' | 'older';
 
 interface AgendaGroup {
   key: AgendaGroupKey;
@@ -19,11 +19,7 @@ function daysBetween(thread: Thread, today: Date): number {
     threadDate.getMonth(),
     threadDate.getDate(),
   );
-  const todayStart = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   return Math.floor((todayStart.getTime() - threadStart.getTime()) / 86400000);
 }
 
@@ -45,10 +41,10 @@ function groupThreads(threads: Thread[]): AgendaGroup[] {
   });
 
   const labels: Record<AgendaGroupKey, string> = {
-    today: "Today",
-    yesterday: "Yesterday",
-    thisWeek: "This Week",
-    older: "Older",
+    today: 'Today',
+    yesterday: 'Yesterday',
+    thisWeek: 'This Week',
+    older: 'Older',
   };
 
   return (Object.keys(groups) as AgendaGroupKey[])
@@ -65,9 +61,7 @@ export function ThreadAgendaView({
   followUpThreadIds,
   showCategoryBadges,
 }: ThreadViewProps) {
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    () => new Set(["older"]),
-  );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set(['older']));
   const groups = useMemo(() => groupThreads(threads), [threads]);
 
   if (groups.length === 0) {
@@ -85,10 +79,7 @@ export function ThreadAgendaView({
         const isCollapsed = collapsedGroups.has(group.key);
 
         return (
-          <section
-            key={group.key}
-            className="border-b border-border-secondary last:border-b-0"
-          >
+          <section key={group.key} className="border-b border-border-secondary last:border-b-0">
             <button
               type="button"
               onClick={() =>
@@ -103,7 +94,7 @@ export function ThreadAgendaView({
               aria-expanded={!isCollapsed}
             >
               <Calendar size={14} className="shrink-0 text-accent" />
-              <span className="flex-1 text-left text-xs font-semibold uppercase text-text-tertiary">
+              <span className="flex-1 text-start text-xs font-semibold uppercase text-text-tertiary">
                 {group.label}
               </span>
               <span className="rounded-full bg-bg-tertiary px-1.5 py-0.5 text-[0.625rem] font-medium text-text-tertiary">
@@ -138,5 +129,3 @@ export function ThreadAgendaView({
     </div>
   );
 }
-
-

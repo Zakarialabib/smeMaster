@@ -1,4 +1,4 @@
-import { useMatches } from "@tanstack/react-router";
+import { useMatches } from '@tanstack/react-router';
 
 /**
  * Safely call useMatches — returns [] when no router context is available
@@ -19,35 +19,41 @@ function useMatchesSafe() {
 export function useActiveLabel(): string {
   const matches = useMatchesSafe();
   for (const match of matches) {
-    if (match.routeId === "/mail/$label" || match.routeId === "/mail/$label/thread/$threadId") {
+    if (match.routeId === '/mail/$label' || match.routeId === '/mail/$label/thread/$threadId') {
       return (match.params as { label: string }).label;
     }
-    if (match.routeId === "/label/$labelId" || match.routeId === "/label/$labelId/thread/$threadId") {
+    if (
+      match.routeId === '/label/$labelId' ||
+      match.routeId === '/label/$labelId/thread/$threadId'
+    ) {
       return (match.params as { labelId: string }).labelId;
     }
-    if (match.routeId === "/smart-folder/$folderId" || match.routeId === "/smart-folder/$folderId/thread/$threadId") {
+    if (
+      match.routeId === '/smart-folder/$folderId' ||
+      match.routeId === '/smart-folder/$folderId/thread/$threadId'
+    ) {
       return `smart-folder:${(match.params as { folderId: string }).folderId}`;
     }
-    if (match.routeId === "/settings/$tab" || match.routeId === "/settings") {
-      return "settings";
+    if (match.routeId === '/settings/$tab' || match.routeId === '/settings') {
+      return 'settings';
     }
-    if (match.routeId === "/calendar") {
-      return "calendar";
+    if (match.routeId === '/calendar') {
+      return 'calendar';
     }
-    if (match.routeId === "/help/$topic" || match.routeId === "/help") {
-      return "help";
+    if (match.routeId === '/help/$topic' || match.routeId === '/help') {
+      return 'help';
     }
-    if (match.routeId === "/dashboard") {
-      return "dashboard";
+    if (match.routeId === '/dashboard') {
+      return 'dashboard';
     }
-    if (match.routeId === "/automation") {
-      return "automation";
+    if (match.routeId === '/automation') {
+      return 'automation';
     }
-    if (match.routeId === "/people" || match.routeId === "/people/$contactId") {
-      return "people";
+    if (match.routeId === '/people' || match.routeId === '/people/$contactId') {
+      return 'people';
     }
   }
-  return "inbox";
+  return 'inbox';
 }
 
 /**
@@ -57,8 +63,8 @@ export function useSelectedThreadId(): string | null {
   const matches = useMatchesSafe();
   for (const match of matches) {
     const params = match.params as Record<string, string>;
-    if (params["threadId"]) {
-      return params["threadId"];
+    if (params['threadId']) {
+      return params['threadId'];
     }
   }
   return null;
@@ -71,11 +77,11 @@ export function useActiveCategory(): string {
   const matches = useMatchesSafe();
   for (const match of matches) {
     const search = (match as { search?: Record<string, unknown> }).search;
-    if (search && typeof search["category"] === "string") {
-      return search["category"];
+    if (search && typeof search['category'] === 'string') {
+      return search['category'];
     }
   }
-  return "Primary";
+  return 'Primary';
 }
 
 /**
@@ -85,9 +91,9 @@ export function useSearchQuery(): string {
   const matches = useMatchesSafe();
   for (const match of matches) {
     const search = (match as { search?: Record<string, unknown> }).search;
-    if (search && typeof search["q"] === "string") {
-      return search["q"];
+    if (search && typeof search['q'] === 'string') {
+      return search['q'];
     }
   }
-  return "";
+  return '';
 }

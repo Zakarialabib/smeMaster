@@ -1,17 +1,14 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   getSmartFolders,
   insertSmartFolder,
   updateSmartFolder as updateSmartFolderDb,
   deleteSmartFolder as deleteSmartFolderDb,
   type DbSmartFolder,
-} from "@features/mail/db/smartFolders";
-import { getSmartFolderUnreadCount } from "@features/mail/services/search/smartFolderQuery";
-import {
-  createAsyncActions,
-  initialAsyncState,
-} from "@shared/stores/createAsyncStore";
-import { executeSearchQuery } from "@shared/services/db/db-invoke";
+} from '@features/mail/db/smartFolders';
+import { getSmartFolderUnreadCount } from '@features/mail/services/search/smartFolderQuery';
+import { createAsyncActions, initialAsyncState } from '@shared/stores/createAsyncStore';
+import { executeSearchQuery } from '@shared/services/db/db-invoke';
 export interface SmartFolder {
   id: string;
   accountId: string | null;
@@ -83,7 +80,7 @@ export const useSmartFolderStore = create<SmartFolderState>((set, get) => {
             accountId: accountId ?? null,
             name,
             query,
-            icon: icon ?? "Search",
+            icon: icon ?? 'Search',
             color: color ?? null,
             isDefault: false,
             sortOrder: folders.length,
@@ -114,11 +111,8 @@ export const useSmartFolderStore = create<SmartFolderState>((set, get) => {
       const counts: Record<string, number> = {};
       for (const folder of folders) {
         try {
-          const { sql, params } = getSmartFolderUnreadCount(
-            folder.query,
-            accountId,
-          );
-          const rows = await executeSearchQuery(sql, params) as { count: number }[];
+          const { sql, params } = getSmartFolderUnreadCount(folder.query, accountId);
+          const rows = (await executeSearchQuery(sql, params)) as { count: number }[];
           counts[folder.id] = rows[0]?.count ?? 0;
         } catch {
           counts[folder.id] = 0;

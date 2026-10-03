@@ -1,9 +1,3 @@
-export type {
-  Campaign,
-  CampaignStat,
-} from "./stores/campaignStore";
+export type { Campaign, CampaignStat } from './stores/campaignStore';
 
-export {
-  createCampaign,
-  sendCampaign,
-} from "./services/campaignService";
+export { createCampaign, sendCampaign } from './services/campaignService';

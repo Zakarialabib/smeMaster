@@ -1,4 +1,8 @@
-﻿import { interpolateVariables, interpolateVariablesSync, evaluateConditionalBlocks } from "@shared/utils/templateVariables";
+﻿import {
+  interpolateVariables,
+  interpolateVariablesSync,
+  evaluateConditionalBlocks,
+} from '@shared/utils/templateVariables';
 
 export type TemplateOutputMode = 'email_html' | 'email_text' | 'voice_script' | 'preview';
 
@@ -24,23 +28,23 @@ export interface RenderedTemplate {
 
 function convertHtmlToVoiceScript(html: string): string {
   let text = html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<\/div>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
+    .replace(/&nbsp;/g, ' ')
     .trim();
 
   text = text
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/CTA:/gi, "\n\n[ACTION REQUIRED]: ")
-    .replace(/(?:https?:\/\/[^\s]+)/g, (_url) => " [link] ");
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/CTA:/gi, '\n\n[ACTION REQUIRED]: ')
+    .replace(/(?:https?:\/\/[^\s]+)/g, (_url) => ' [link] ');
 
   return text;
 }

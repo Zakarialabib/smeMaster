@@ -1,6 +1,13 @@
-import { useTranslation } from "react-i18next";
-import { Type, Image as ImageIcon, Link2, MousePointerClick, Minus, StretchVertical } from "lucide-react";
-import { useCampaignComposerStore } from "../../../stores/campaignComposerStore";
+import { useTranslation } from 'react-i18next';
+import {
+  Type,
+  Image as ImageIcon,
+  Link2,
+  MousePointerClick,
+  Minus,
+  StretchVertical,
+} from 'lucide-react';
+import { useCampaignComposerStore } from '../../../stores/campaignComposerStore';
 import type {
   EmailBlock,
   HeadingBlock,
@@ -12,15 +19,15 @@ import type {
   CardBlock,
   ColumnsBlock,
   Padding,
-} from "../types";
-import { TypographyConfig, Field } from "./TypographyConfig";
-import { ColorConfig } from "./ColorConfig";
-import { AlignmentConfig } from "./AlignmentConfig";
-import { LinkConfig } from "./LinkConfig";
-import { cn } from "@shared/utils/cn";
+} from '../types';
+import { TypographyConfig, Field } from './TypographyConfig';
+import { ColorConfig } from './ColorConfig';
+import { AlignmentConfig } from './AlignmentConfig';
+import { LinkConfig } from './LinkConfig';
+import { cn } from '@shared/utils/cn';
 
 const inputCls =
-  "w-full rounded border border-border-primary bg-bg-tertiary px-2 py-1.5 text-sm text-text-primary outline-none focus:border-accent";
+  'w-full rounded border border-border-primary bg-bg-tertiary px-2 py-1.5 text-sm text-text-primary outline-none focus:border-accent';
 
 function ContentField({
   label,
@@ -37,7 +44,7 @@ function ContentField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className={cn(inputCls, "resize-y")}
+        className={cn(inputCls, 'resize-y')}
       />
     </Field>
   );
@@ -49,7 +56,7 @@ function SliderField({
   min,
   max,
   step = 1,
-  suffix = "",
+  suffix = '',
   onChange,
 }: {
   label: string;
@@ -72,7 +79,7 @@ function SliderField({
           onChange={(e) => onChange(Number(e.target.value))}
           className="flex-1 accent-accent"
         />
-        <span className="w-12 text-right text-xs text-text-tertiary">
+        <span className="w-12 text-end text-xs text-text-tertiary">
           {value}
           {suffix}
         </span>
@@ -81,22 +88,16 @@ function SliderField({
   );
 }
 
-function PadField({
-  value,
-  onChange,
-}: {
-  value: Padding;
-  onChange: (p: Padding) => void;
-}) {
+function PadField({ value, onChange }: { value: Padding; onChange: (p: Padding) => void }) {
   const { t } = useTranslation();
   const set = (k: keyof Padding, v: number) => onChange({ ...value, [k]: v });
   return (
-    <Field label={t("campaign.editor.padding")}>
+    <Field label={t('campaign.editor.padding')}>
       <div className="grid grid-cols-2 gap-2">
-        {(["top", "bottom", "left", "right"] as const).map((k) => (
+        {(['top', 'bottom', 'left', 'right'] as const).map((k) => (
           <label key={k} className="text-xs text-text-tertiary">
             <span className="mb-0.5 block">
-              {t("campaign.editor.padding")} · {k.charAt(0).toUpperCase()}
+              {t('campaign.editor.padding')} · {k.charAt(0).toUpperCase()}
             </span>
             <input
               type="number"
@@ -117,11 +118,11 @@ function HeadingConfig({ block }: { block: HeadingBlock }) {
   return (
     <>
       <ContentField
-        label={t("campaign.editor.heading")}
+        label={t('campaign.editor.heading')}
         value={block.content}
         onChange={(v) => update(block.id, { content: v })}
       />
-      <Field label={t("campaign.editor.heading", "Level")}>
+      <Field label={t('campaign.editor.heading', 'Level')}>
         <div className="flex gap-1">
           {([1, 2, 3] as const).map((lvl) => (
             <button
@@ -130,10 +131,10 @@ function HeadingConfig({ block }: { block: HeadingBlock }) {
               aria-pressed={block.level === lvl}
               onClick={() => update(block.id, { level: lvl })}
               className={cn(
-                "flex-1 rounded border py-1.5 text-sm transition-colors",
+                'flex-1 rounded border py-1.5 text-sm transition-colors',
                 block.level === lvl
-                  ? "border-accent bg-bg-tertiary text-accent"
-                  : "border-border-primary text-text-secondary hover:text-text-primary",
+                  ? 'border-accent bg-bg-tertiary text-accent'
+                  : 'border-border-primary text-text-secondary hover:text-text-primary',
               )}
             >
               H{lvl}
@@ -155,7 +156,7 @@ function ParagraphConfig({ block }: { block: ParagraphBlock }) {
   return (
     <>
       <ContentField
-        label={t("campaign.editor.paragraph")}
+        label={t('campaign.editor.paragraph')}
         value={block.content}
         onChange={(v) => update(block.id, { content: v })}
       />
@@ -172,7 +173,7 @@ function ImageConfig({ block }: { block: ImageBlock }) {
   const update = useCampaignComposerStore((s) => s.updateBlock);
   return (
     <>
-      <Field label={t("campaign.editor.imageAlt")}>
+      <Field label={t('campaign.editor.imageAlt')}>
         <input
           type="text"
           value={block.alt}
@@ -185,7 +186,7 @@ function ImageConfig({ block }: { block: ImageBlock }) {
         onChange={(v) => update(block.id, { alignment: v })}
       />
       <SliderField
-        label={t("campaign.editor.width")}
+        label={t('campaign.editor.width')}
         value={block.width}
         min={40}
         max={600}
@@ -193,31 +194,25 @@ function ImageConfig({ block }: { block: ImageBlock }) {
         onChange={(v) => update(block.id, { width: v })}
       />
       <SliderField
-        label={t("campaign.editor.borderRadius")}
+        label={t('campaign.editor.borderRadius')}
         value={block.borderRadius}
         min={0}
         max={40}
         suffix="px"
         onChange={(v) => update(block.id, { borderRadius: v })}
       />
-      <LinkConfig
-        value={block.linkUrl}
-        onChange={(v) => update(block.id, { linkUrl: v })}
-      />
-      <PadField
-        value={block.padding}
-        onChange={(p) => update(block.id, { padding: p })}
-      />
+      <LinkConfig value={block.linkUrl} onChange={(v) => update(block.id, { linkUrl: v })} />
+      <PadField value={block.padding} onChange={(p) => update(block.id, { padding: p })} />
       {/* "From Vault" picker has no vault integration yet; kept visible but disabled to communicate intent. */}
       <button
         type="button"
         disabled
-        title={t("campaign.editor.fromVaultComingSoon")}
+        title={t('campaign.editor.fromVaultComingSoon')}
         aria-disabled="true"
         className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded border border-dashed border-border-primary py-2 text-xs text-text-tertiary opacity-60"
       >
         <ImageIcon size={14} />
-        {t("campaign.editor.fromVault")}
+        {t('campaign.editor.fromVault')}
       </button>
     </>
   );
@@ -228,7 +223,7 @@ function ButtonConfig({ block }: { block: ButtonBlock }) {
   const update = useCampaignComposerStore((s) => s.updateBlock);
   return (
     <>
-      <Field label={t("campaign.editor.button")}>
+      <Field label={t('campaign.editor.button')}>
         <input
           type="text"
           value={block.text}
@@ -236,10 +231,7 @@ function ButtonConfig({ block }: { block: ButtonBlock }) {
           className={inputCls}
         />
       </Field>
-      <LinkConfig
-        value={block.url}
-        onChange={(v) => update(block.id, { url: v })}
-      />
+      <LinkConfig value={block.url} onChange={(v) => update(block.id, { url: v })} />
       <ColorConfig
         label="bgColor"
         value={block.backgroundColor}
@@ -254,24 +246,24 @@ function ButtonConfig({ block }: { block: ButtonBlock }) {
         value={block.alignment}
         onChange={(v) => update(block.id, { alignment: v })}
       />
-      <Field label={t("campaign.editor.fullWidth")}>
+      <Field label={t('campaign.editor.fullWidth')}>
         <button
           type="button"
           aria-pressed={block.fullWidth}
           onClick={() => update(block.id, { fullWidth: !block.fullWidth })}
           className={cn(
-            "flex w-full items-center justify-center gap-2 rounded border py-1.5 text-sm transition-colors",
+            'flex w-full items-center justify-center gap-2 rounded border py-1.5 text-sm transition-colors',
             block.fullWidth
-              ? "border-accent bg-bg-tertiary text-accent"
-              : "border-border-primary text-text-secondary hover:text-text-primary",
+              ? 'border-accent bg-bg-tertiary text-accent'
+              : 'border-border-primary text-text-secondary hover:text-text-primary',
           )}
         >
           <StretchVertical size={14} />
-          {t("campaign.editor.fullWidth")}
+          {t('campaign.editor.fullWidth')}
         </button>
       </Field>
       <SliderField
-        label={t("campaign.editor.borderRadius")}
+        label={t('campaign.editor.borderRadius')}
         value={block.borderRadius}
         min={0}
         max={40}
@@ -280,13 +272,10 @@ function ButtonConfig({ block }: { block: ButtonBlock }) {
       />
       <TypographyConfig
         value={block.typography}
-        include={["fontSize", "fontWeight", "fontFamily"]}
+        include={['fontSize', 'fontWeight', 'fontFamily']}
         onChange={(tp) => update(block.id, { typography: { ...block.typography, ...tp } })}
       />
-      <PadField
-        value={block.padding}
-        onChange={(p) => update(block.id, { padding: p })}
-      />
+      <PadField value={block.padding} onChange={(p) => update(block.id, { padding: p })} />
     </>
   );
 }
@@ -302,7 +291,7 @@ function DividerConfig({ block }: { block: DividerBlock }) {
         onChange={(v) => update(block.id, { color: v })}
       />
       <SliderField
-        label={t("campaign.editor.thickness")}
+        label={t('campaign.editor.thickness')}
         value={block.thickness}
         min={1}
         max={20}
@@ -310,17 +299,14 @@ function DividerConfig({ block }: { block: DividerBlock }) {
         onChange={(v) => update(block.id, { thickness: v })}
       />
       <SliderField
-        label={t("campaign.editor.width")}
+        label={t('campaign.editor.width')}
         value={block.width}
         min={0}
         max={100}
         suffix="%"
         onChange={(v) => update(block.id, { width: v })}
       />
-      <PadField
-        value={block.padding}
-        onChange={(p) => update(block.id, { padding: p })}
-      />
+      <PadField value={block.padding} onChange={(p) => update(block.id, { padding: p })} />
     </>
   );
 }
@@ -330,7 +316,7 @@ function SpacerConfig({ block }: { block: SpacerBlock }) {
   const update = useCampaignComposerStore((s) => s.updateBlock);
   return (
     <SliderField
-      label={t("campaign.editor.height")}
+      label={t('campaign.editor.height')}
       value={block.height}
       min={4}
       max={200}
@@ -340,23 +326,23 @@ function SpacerConfig({ block }: { block: SpacerBlock }) {
   );
 }
 
-function BlockIcon({ type }: { type: EmailBlock["type"] }) {
+function BlockIcon({ type }: { type: EmailBlock['type'] }) {
   switch (type) {
-    case "heading":
+    case 'heading':
       return <Type size={16} />;
-    case "paragraph":
+    case 'paragraph':
       return <Type size={16} />;
-    case "image":
+    case 'image':
       return <ImageIcon size={16} />;
-    case "button":
+    case 'button':
       return <MousePointerClick size={16} />;
-    case "divider":
+    case 'divider':
       return <Minus size={16} />;
-    case "spacer":
+    case 'spacer':
       return <StretchVertical size={16} />;
-    case "card":
+    case 'card':
       return <MousePointerClick size={16} />;
-    case "columns":
+    case 'columns':
       return <Link2 size={16} />;
     default:
       return <Link2 size={16} />;
@@ -369,15 +355,37 @@ function CardConfig({ block }: { block: CardBlock }) {
     useCampaignComposerStore.getState().updateBlock(block.id, c);
   return (
     <>
-      <ContentField label={t("campaign.editor.cardTitle")} value={block.title} onChange={(title) => update({ title })} />
-      <ContentField label={t("campaign.editor.cardBody")} value={block.body} onChange={(body) => update({ body })} />
-      <Field label={t("campaign.editor.cardButton")}>
-        <input className={inputCls} value={block.buttonText} onChange={(e) => update({ buttonText: e.target.value })} />
+      <ContentField
+        label={t('campaign.editor.cardTitle')}
+        value={block.title}
+        onChange={(title) => update({ title })}
+      />
+      <ContentField
+        label={t('campaign.editor.cardBody')}
+        value={block.body}
+        onChange={(body) => update({ body })}
+      />
+      <Field label={t('campaign.editor.cardButton')}>
+        <input
+          className={inputCls}
+          value={block.buttonText}
+          onChange={(e) => update({ buttonText: e.target.value })}
+        />
       </Field>
       <LinkConfig value={block.buttonUrl} onChange={(buttonUrl) => update({ buttonUrl })} />
-      <ColorConfig value={block.backgroundColor} onChange={(backgroundColor) => update({ backgroundColor })} />
+      <ColorConfig
+        value={block.backgroundColor}
+        onChange={(backgroundColor) => update({ backgroundColor })}
+      />
       <AlignmentConfig value={block.alignment} onChange={(alignment) => update({ alignment })} />
-      <SliderField label={t("campaign.editor.borderRadius")} value={block.borderRadius} min={0} max={32} suffix="px" onChange={(borderRadius) => update({ borderRadius })} />
+      <SliderField
+        label={t('campaign.editor.borderRadius')}
+        value={block.borderRadius}
+        min={0}
+        max={32}
+        suffix="px"
+        onChange={(borderRadius) => update({ borderRadius })}
+      />
       <PadField value={block.padding} onChange={(padding) => update({ padding })} />
     </>
   );
@@ -389,9 +397,26 @@ function ColumnsConfig({ block }: { block: ColumnsBlock }) {
     useCampaignComposerStore.getState().updateBlock(block.id, c);
   return (
     <>
-      <ColorConfig value={block.backgroundColor} onChange={(backgroundColor) => update({ backgroundColor })} />
-      <SliderField label={t("campaign.editor.borderRadius")} value={block.borderRadius} min={0} max={32} suffix="px" onChange={(borderRadius) => update({ borderRadius })} />
-      <SliderField label={t("campaign.editor.gap")} value={block.gap} min={0} max={48} suffix="px" onChange={(gap) => update({ gap })} />
+      <ColorConfig
+        value={block.backgroundColor}
+        onChange={(backgroundColor) => update({ backgroundColor })}
+      />
+      <SliderField
+        label={t('campaign.editor.borderRadius')}
+        value={block.borderRadius}
+        min={0}
+        max={32}
+        suffix="px"
+        onChange={(borderRadius) => update({ borderRadius })}
+      />
+      <SliderField
+        label={t('campaign.editor.gap')}
+        value={block.gap}
+        min={0}
+        max={48}
+        suffix="px"
+        onChange={(gap) => update({ gap })}
+      />
       <PadField value={block.padding} onChange={(padding) => update({ padding })} />
     </>
   );
@@ -400,15 +425,13 @@ function ColumnsConfig({ block }: { block: ColumnsBlock }) {
 export function BlockConfigPanel() {
   const { t } = useTranslation();
   const configOpenBlockId = useCampaignComposerStore((s) => s.configOpenBlockId);
-  const block = useCampaignComposerStore((s) =>
-    s.blocks.find((b) => b.id === s.configOpenBlockId),
-  );
+  const block = useCampaignComposerStore((s) => s.blocks.find((b) => b.id === s.configOpenBlockId));
 
   if (!configOpenBlockId || !block) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
         <BlockIcon type="paragraph" />
-        <p className="text-sm text-text-tertiary">{t("campaign.editor.configure")}</p>
+        <p className="text-sm text-text-tertiary">{t('campaign.editor.configure')}</p>
       </div>
     );
   }
@@ -417,18 +440,16 @@ export function BlockConfigPanel() {
     <div className="flex flex-col gap-1 p-3">
       <div className="mb-2 flex items-center gap-2 text-text-secondary">
         <BlockIcon type={block.type} />
-        <span className="text-sm font-medium capitalize">
-          {t(`campaign.editor.${block.type}`)}
-        </span>
+        <span className="text-sm font-medium capitalize">{t(`campaign.editor.${block.type}`)}</span>
       </div>
-      {block.type === "heading" && <HeadingConfig block={block} />}
-      {block.type === "paragraph" && <ParagraphConfig block={block} />}
-      {block.type === "image" && <ImageConfig block={block} />}
-      {block.type === "button" && <ButtonConfig block={block} />}
-      {block.type === "divider" && <DividerConfig block={block} />}
-      {block.type === "spacer" && <SpacerConfig block={block} />}
-      {block.type === "card" && <CardConfig block={block} />}
-      {block.type === "columns" && <ColumnsConfig block={block} />}
+      {block.type === 'heading' && <HeadingConfig block={block} />}
+      {block.type === 'paragraph' && <ParagraphConfig block={block} />}
+      {block.type === 'image' && <ImageConfig block={block} />}
+      {block.type === 'button' && <ButtonConfig block={block} />}
+      {block.type === 'divider' && <DividerConfig block={block} />}
+      {block.type === 'spacer' && <SpacerConfig block={block} />}
+      {block.type === 'card' && <CardConfig block={block} />}
+      {block.type === 'columns' && <ColumnsConfig block={block} />}
     </div>
   );
 }

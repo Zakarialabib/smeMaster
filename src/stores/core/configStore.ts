@@ -1,18 +1,18 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import type { ColorThemeId } from "@/constants/themes";
-import type { SupportedLocale } from "@/locales";
-import { LOCALE_DIRS } from "@/locales";
-import { tauriStoreStorage } from "@shared/services/storage/tauriStoreStorage";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { ColorThemeId } from '@/constants/themes';
+import type { SupportedLocale } from '@/locales';
+import { LOCALE_DIRS } from '@/locales';
+import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 
-export type ThemeMode = "light" | "dark" | "system";
-export type FontScale = "small" | "default" | "large" | "xlarge";
-export type ReadingPanePosition = "right" | "bottom" | "hidden";
-export type ReadFilter = "all" | "read" | "unread";
-export type EmailDensity = "compact" | "default" | "spacious";
-export type DefaultReplyMode = "reply" | "replyAll";
-export type MarkAsReadBehavior = "instant" | "2s" | "manual";
-export type InboxViewMode = "unified" | "split";
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type FontScale = 'small' | 'default' | 'large' | 'xlarge';
+export type ReadingPanePosition = 'right' | 'bottom' | 'hidden';
+export type ReadFilter = 'all' | 'read' | 'unread';
+export type EmailDensity = 'compact' | 'default' | 'spacious';
+export type DefaultReplyMode = 'reply' | 'replyAll';
+export type MarkAsReadBehavior = 'instant' | '2s' | 'manual';
+export type InboxViewMode = 'unified' | 'split';
 
 export interface SidebarNavItem {
   id: string;
@@ -46,7 +46,7 @@ interface ConfigState {
 
   // Locale
   locale: SupportedLocale;
-  textDirection: "ltr" | "rtl";
+  textDirection: 'ltr' | 'rtl';
   aiLanguage: string;
 
   // Advanced mode
@@ -85,28 +85,28 @@ export const useConfigStore = create<ConfigState>()(
   persist(
     (set) => ({
       // Theme defaults
-      theme: "system",
-      colorTheme: "indigo" as ColorThemeId,
-      fontScale: "default",
+      theme: 'system',
+      colorTheme: 'indigo' as ColorThemeId,
+      fontScale: 'default',
       reduceMotion: false,
       highContrast: false,
 
       // Layout defaults
-      readingPanePosition: "right" as ReadingPanePosition,
-      readFilter: "all" as ReadFilter,
+      readingPanePosition: 'right' as ReadingPanePosition,
+      readFilter: 'all' as ReadFilter,
       emailListWidth: 320,
-      emailDensity: "default" as EmailDensity,
-      defaultReplyMode: "reply" as DefaultReplyMode,
-      markAsReadBehavior: "instant" as MarkAsReadBehavior,
+      emailDensity: 'default' as EmailDensity,
+      defaultReplyMode: 'reply' as DefaultReplyMode,
+      markAsReadBehavior: 'instant' as MarkAsReadBehavior,
       sendAndArchive: false,
-      inboxViewMode: "unified" as InboxViewMode,
+      inboxViewMode: 'unified' as InboxViewMode,
       focusedInbox: false,
       sidebarNavConfig: null,
 
       // Locale defaults
-      locale: "en" as SupportedLocale,
-      textDirection: "ltr",
-      aiLanguage: "auto",
+      locale: 'en' as SupportedLocale,
+      textDirection: 'ltr',
+      aiLanguage: 'auto',
 
       // Advanced mode
       advancedMode: false,
@@ -135,7 +135,7 @@ export const useConfigStore = create<ConfigState>()(
 
       // Locale actions
       setLocale: (locale) => {
-        const textDirection = LOCALE_DIRS[locale] ?? "ltr";
+        const textDirection = LOCALE_DIRS[locale] ?? 'ltr';
         set({ locale, textDirection });
       },
       setAiLanguage: (aiLanguage) => set({ aiLanguage }),
@@ -146,94 +146,112 @@ export const useConfigStore = create<ConfigState>()(
       // Hydration — load from SQLite settings table, override persisted defaults
       hydrate: async () => {
         try {
-          const { getSetting } = await import("@features/settings/db/settings");
-          const { COLOR_THEMES } = await import("@/constants/themes");
-          
-          const savedTheme = await getSetting("theme");
-          if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+          const { getSetting } = await import('@features/settings/db/settings');
+          const { COLOR_THEMES } = await import('@/constants/themes');
+
+          const savedTheme = await getSetting('theme');
+          if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
             set({ theme: savedTheme });
           }
 
-          const savedFontScale = await getSetting("font_size");
-          if (savedFontScale === "small" || savedFontScale === "default" || savedFontScale === "large" || savedFontScale === "xlarge") {
+          const savedFontScale = await getSetting('font_size');
+          if (
+            savedFontScale === 'small' ||
+            savedFontScale === 'default' ||
+            savedFontScale === 'large' ||
+            savedFontScale === 'xlarge'
+          ) {
             set({ fontScale: savedFontScale });
           }
 
-          const savedColorTheme = await getSetting("color_theme");
-          if (savedColorTheme && COLOR_THEMES.some((t: { id: string }) => t.id === savedColorTheme)) {
+          const savedColorTheme = await getSetting('color_theme');
+          if (
+            savedColorTheme &&
+            COLOR_THEMES.some((t: { id: string }) => t.id === savedColorTheme)
+          ) {
             set({ colorTheme: savedColorTheme as ColorThemeId });
           }
 
-          const savedReduceMotion = await getSetting("reduce_motion");
-          if (savedReduceMotion === "true") set({ reduceMotion: true });
+          const savedReduceMotion = await getSetting('reduce_motion');
+          if (savedReduceMotion === 'true') set({ reduceMotion: true });
 
-          const savedHighContrast = await getSetting("high_contrast");
-          if (savedHighContrast === "true") set({ highContrast: true });
+          const savedHighContrast = await getSetting('high_contrast');
+          if (savedHighContrast === 'true') set({ highContrast: true });
 
-          const savedPanePos = await getSetting("reading_pane_position");
-          if (savedPanePos === "right" || savedPanePos === "bottom" || savedPanePos === "hidden") {
+          const savedPanePos = await getSetting('reading_pane_position');
+          if (savedPanePos === 'right' || savedPanePos === 'bottom' || savedPanePos === 'hidden') {
             set({ readingPanePosition: savedPanePos });
           }
 
-          const savedReadFilter = await getSetting("read_filter");
-          if (savedReadFilter === "all" || savedReadFilter === "read" || savedReadFilter === "unread") {
+          const savedReadFilter = await getSetting('read_filter');
+          if (
+            savedReadFilter === 'all' ||
+            savedReadFilter === 'read' ||
+            savedReadFilter === 'unread'
+          ) {
             set({ readFilter: savedReadFilter });
           }
 
-          const savedListWidth = await getSetting("email_list_width");
+          const savedListWidth = await getSetting('email_list_width');
           if (savedListWidth) {
             const w = parseInt(savedListWidth, 10);
             if (w >= 240 && w <= 800) set({ emailListWidth: w });
           }
 
-          const savedDensity = await getSetting("email_density");
-          if (savedDensity === "compact" || savedDensity === "default" || savedDensity === "spacious") {
+          const savedDensity = await getSetting('email_density');
+          if (
+            savedDensity === 'compact' ||
+            savedDensity === 'default' ||
+            savedDensity === 'spacious'
+          ) {
             set({ emailDensity: savedDensity });
           }
 
-          const savedReplyMode = await getSetting("default_reply_mode");
-          if (savedReplyMode === "reply" || savedReplyMode === "replyAll") {
+          const savedReplyMode = await getSetting('default_reply_mode');
+          if (savedReplyMode === 'reply' || savedReplyMode === 'replyAll') {
             set({ defaultReplyMode: savedReplyMode });
           }
 
-          const savedMarkRead = await getSetting("mark_as_read_behavior");
-          if (savedMarkRead === "instant" || savedMarkRead === "2s" || savedMarkRead === "manual") {
+          const savedMarkRead = await getSetting('mark_as_read_behavior');
+          if (savedMarkRead === 'instant' || savedMarkRead === '2s' || savedMarkRead === 'manual') {
             set({ markAsReadBehavior: savedMarkRead });
           }
 
-          const savedSendArchive = await getSetting("send_and_archive");
-          if (savedSendArchive === "true") set({ sendAndArchive: true });
+          const savedSendArchive = await getSetting('send_and_archive');
+          if (savedSendArchive === 'true') set({ sendAndArchive: true });
 
-          const savedViewMode = await getSetting("inbox_view_mode");
-          if (savedViewMode === "unified" || savedViewMode === "split") {
+          const savedViewMode = await getSetting('inbox_view_mode');
+          if (savedViewMode === 'unified' || savedViewMode === 'split') {
             set({ inboxViewMode: savedViewMode });
           }
 
-          const savedFocused = await getSetting("focused_inbox");
-          if (savedFocused === "true") set({ focusedInbox: true });
-          else if (savedFocused === "false") set({ focusedInbox: false });
+          const savedFocused = await getSetting('focused_inbox');
+          if (savedFocused === 'true') set({ focusedInbox: true });
+          else if (savedFocused === 'false') set({ focusedInbox: false });
 
-          const savedNavConfig = await getSetting("sidebar_nav_config");
+          const savedNavConfig = await getSetting('sidebar_nav_config');
           if (savedNavConfig) {
             try {
               const parsed = JSON.parse(savedNavConfig);
               if (Array.isArray(parsed)) set({ sidebarNavConfig: parsed });
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
 
-          const savedLocale = await getSetting("locale");
+          const savedLocale = await getSetting('locale');
           if (savedLocale) {
-            const textDirection = LOCALE_DIRS[savedLocale as SupportedLocale] ?? "ltr";
+            const textDirection = LOCALE_DIRS[savedLocale as SupportedLocale] ?? 'ltr';
             set({ locale: savedLocale as SupportedLocale, textDirection });
           }
 
-          const savedAiLang = await getSetting("ai_language");
+          const savedAiLang = await getSetting('ai_language');
           if (savedAiLang) set({ aiLanguage: savedAiLang });
 
-          const savedAdvanced = await getSetting("advanced_settings_mode");
-          if (savedAdvanced === "true") set({ advancedMode: true });
+          const savedAdvanced = await getSetting('advanced_settings_mode');
+          if (savedAdvanced === 'true') set({ advancedMode: true });
         } catch (e) {
-          console.warn("[configStore] Hydration failed, using defaults:", e);
+          console.warn('[configStore] Hydration failed, using defaults:', e);
         } finally {
           set({ isHydrated: true });
         }
@@ -245,7 +263,7 @@ export const useConfigStore = create<ConfigState>()(
       },
     }),
     {
-      name: "smemaster.config",
+      name: 'smemaster.config',
       storage: createJSONStorage(() => tauriStoreStorage),
       partialize: (state) => ({
         theme: state.theme,
@@ -271,6 +289,6 @@ export const useConfigStore = create<ConfigState>()(
       onRehydrateStorage: () => (state) => {
         if (state) state.isHydrated = true;
       },
-    }
-  )
+    },
+  ),
 );

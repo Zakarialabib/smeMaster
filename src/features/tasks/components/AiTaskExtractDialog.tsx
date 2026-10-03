@@ -7,32 +7,32 @@
  *
  * @spec §3.9
  */
-import { useState, useMemo, useCallback } from "react";
-import { Sparkles, X, Edit3, Check, Trash2 } from "lucide-react";
-import type { DbMessage } from "@shared/services/db/messages";
-import type { TaskPriority } from "@features/tasks/db/tasks";
-import { Modal } from "@shared/components/ui/Modal";
-import { EmptyState } from "@shared/components/ui/EmptyState";
-import type { AiTaskSuggestion } from "@features/tasks/stores/taskStore";
+import { useState, useMemo, useCallback } from 'react';
+import { Sparkles, X, Edit3, Check, Trash2 } from 'lucide-react';
+import type { DbMessage } from '@shared/services/db/messages';
+import type { TaskPriority } from '@features/tasks/db/tasks';
+import { Modal } from '@shared/components/ui/Modal';
+import { EmptyState } from '@shared/components/ui/EmptyState';
+import type { AiTaskSuggestion } from '@features/tasks/stores/taskStore';
 
 /**
  * Priority labels for display
  */
 const PRIORITY_LABELS: Record<string, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "None",
+  urgent: 'Urgent',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  none: 'None',
 };
 
 /**
  * Confidence level helper
  */
 function getConfidenceColor(confidence: number): string {
-  if (confidence >= 0.9) return "text-success";
-  if (confidence >= 0.7) return "text-warning";
-  return "text-text-tertiary";
+  if (confidence >= 0.9) return 'text-success';
+  if (confidence >= 0.7) return 'text-warning';
+  return 'text-text-tertiary';
 }
 
 /**
@@ -102,10 +102,10 @@ export function AiTaskExtractDialog({
       .slice(0, 10) // Limit to 10 messages
       .map((msg) => {
         // Simple extraction: use subject as task title
-        const title = msg.subject?.trim() ?? "Untitled task";
+        const title = msg.subject?.trim() ?? 'Untitled task';
         return {
           title: title.length > 100 ? `${title.slice(0, 97)}...` : title,
-          priority: "medium" as TaskPriority,
+          priority: 'medium' as TaskPriority,
           dueDate: null,
         };
       });
@@ -113,22 +113,19 @@ export function AiTaskExtractDialog({
 
   // For suggestion mode: track local editing state
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editText, setEditText] = useState("");
-  const [localSuggestions, setLocalSuggestions] = useState<AiTaskSuggestion[]>(() =>
-    externalSuggestions ?? [],
+  const [editText, setEditText] = useState('');
+  const [localSuggestions, setLocalSuggestions] = useState<AiTaskSuggestion[]>(
+    () => externalSuggestions ?? [],
   );
   const [acceptedIds, setAcceptedIds] = useState<Set<string>>(new Set());
 
   // Sync external suggestions
   const displaySuggestions = externalSuggestions ?? localSuggestions;
 
-  const handleEditStart = useCallback(
-    (id: string, currentTitle: string) => {
-      setEditingId(id);
-      setEditText(currentTitle);
-    },
-    [],
-  );
+  const handleEditStart = useCallback((id: string, currentTitle: string) => {
+    setEditingId(id);
+    setEditText(currentTitle);
+  }, []);
 
   const handleEditSave = useCallback(
     (id: string) => {
@@ -140,7 +137,7 @@ export function AiTaskExtractDialog({
         );
       }
       setEditingId(null);
-      setEditText("");
+      setEditText('');
     },
     [editText, onExternalEdit],
   );
@@ -188,13 +185,13 @@ export function AiTaskExtractDialog({
             Suggested tasks extracted from this email thread:
           </p>
 
-{extractedTasks.length === 0 ? (
-             <EmptyState
-               icon={Sparkles}
-               title="No tasks detected"
-               subtitle="Could not find actionable tasks in this thread"
-             />
-           ) : (
+          {extractedTasks.length === 0 ? (
+            <EmptyState
+              icon={Sparkles}
+              title="No tasks detected"
+              subtitle="Could not find actionable tasks in this thread"
+            />
+          ) : (
             <div className="space-y-2">
               {extractedTasks.map((task, idx) => (
                 <div
@@ -202,9 +199,7 @@ export function AiTaskExtractDialog({
                   className="flex items-start gap-3 p-3 rounded-lg border border-border-primary bg-bg-secondary"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-text-primary font-medium truncate">
-                      {task.title}
-                    </p>
+                    <p className="text-sm text-text-primary font-medium truncate">{task.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[0.6875rem] text-text-tertiary">
                         Priority: {PRIORITY_LABELS[task.priority] ?? task.priority}
@@ -243,17 +238,17 @@ export function AiTaskExtractDialog({
       <div className="p-4 space-y-4">
         <p className="text-xs text-text-secondary">
           AI detected {displaySuggestions.length} task
-          {displaySuggestions.length !== 1 ? "s" : ""} in your recent emails. Review and accept
-          the ones you want to add.
+          {displaySuggestions.length !== 1 ? 's' : ''} in your recent emails. Review and accept the
+          ones you want to add.
         </p>
 
-{displaySuggestions.length === 0 ? (
-           <EmptyState
-             icon={Sparkles}
-             title="No suggestions remaining"
-             subtitle="All suggestions have been reviewed"
-           />
-         ) : (
+        {displaySuggestions.length === 0 ? (
+          <EmptyState
+            icon={Sparkles}
+            title="No suggestions remaining"
+            subtitle="All suggestions have been reviewed"
+          />
+        ) : (
           <div className="space-y-3 max-h-[50vh] overflow-y-auto">
             {displaySuggestions.map((suggestion) => {
               const isEditing = editingId === suggestion.id;
@@ -266,8 +261,8 @@ export function AiTaskExtractDialog({
                     relative p-4 rounded-lg border transition-all
                     ${
                       isAccepted
-                        ? "border-success/40 bg-success/5"
-                        : "border-border-primary bg-bg-secondary"
+                        ? 'border-success/40 bg-success/5'
+                        : 'border-border-primary bg-bg-secondary'
                     }
                   `}
                 >
@@ -279,11 +274,11 @@ export function AiTaskExtractDialog({
                         mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors
                         ${
                           isAccepted
-                            ? "bg-success border-success text-white"
-                            : "border-text-tertiary hover:border-accent"
+                            ? 'bg-success border-success text-white'
+                            : 'border-text-tertiary hover:border-accent'
                         }
                       `}
-                      aria-label={isAccepted ? "Deselect task" : "Select task"}
+                      aria-label={isAccepted ? 'Deselect task' : 'Select task'}
                     >
                       {isAccepted && <Check size={12} strokeWidth={3} />}
                     </button>
@@ -298,8 +293,8 @@ export function AiTaskExtractDialog({
                             className="flex-1 text-sm px-2 py-1 rounded border border-accent bg-bg-primary text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                             autoFocus
                             onKeyDown={(e) => {
-                              if (e.key === "Enter") handleEditSave(suggestion.id);
-                              if (e.key === "Escape") setEditingId(null);
+                              if (e.key === 'Enter') handleEditSave(suggestion.id);
+                              if (e.key === 'Escape') setEditingId(null);
                             }}
                           />
                           <button
@@ -321,8 +316,8 @@ export function AiTaskExtractDialog({
                         <p
                           className={`
                             text-sm font-medium truncate cursor-pointer hover:text-accent transition-colors
-                            ${isAccepted ? "text-text-primary" : "text-text-primary"}
-                            ${isAccepted ? "" : ""}
+                            ${isAccepted ? 'text-text-primary' : 'text-text-primary'}
+                            ${isAccepted ? '' : ''}
                           `}
                           onClick={() => handleEditStart(suggestion.id, suggestion.title)}
                           title="Click to edit"
@@ -402,12 +397,12 @@ export function AiTaskExtractDialog({
                 px-4 py-2 text-xs font-medium rounded-md transition-colors
                 ${
                   displaySuggestions.length === 0
-                    ? "text-text-tertiary bg-bg-tertiary cursor-not-allowed"
-                    : "text-white bg-accent hover:bg-accent-hover"
+                    ? 'text-text-tertiary bg-bg-tertiary cursor-not-allowed'
+                    : 'text-white bg-accent hover:bg-accent-hover'
                 }
               `}
             >
-              Accept {allAccepted ? "All" : someAccepted ? "Selected" : "All"} (
+              Accept {allAccepted ? 'All' : someAccepted ? 'Selected' : 'All'} (
               {someAccepted ? acceptedIds.size : displaySuggestions.length})
             </button>
           </div>
@@ -416,4 +411,3 @@ export function AiTaskExtractDialog({
     </Modal>
   );
 }
-

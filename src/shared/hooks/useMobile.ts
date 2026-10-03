@@ -9,5 +9,5 @@
  * import { useMobile, useScreenInfo } from "@shared/hooks/usePlatform";
  * ```
  */
-export { useMobile, useScreenInfo } from "./usePlatform";
-export type { ScreenInfo, ScreenCategory, ScreenAspect } from "./usePlatform";
+export { useMobile, useScreenInfo } from './usePlatform';
+export type { ScreenInfo, ScreenCategory, ScreenAspect } from './usePlatform';

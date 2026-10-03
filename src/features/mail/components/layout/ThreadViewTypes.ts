@@ -1,4 +1,4 @@
-import type { Thread } from "@features/mail/stores/threadStore";
+import type { Thread } from '@features/mail/stores/threadStore';
 
 export interface ThreadViewProps {
   threads: Thread[];
@@ -9,4 +9,3 @@ export interface ThreadViewProps {
   followUpThreadIds: Set<string>;
   showCategoryBadges: boolean;
 }
-

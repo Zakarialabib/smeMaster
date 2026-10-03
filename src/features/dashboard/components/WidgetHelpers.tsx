@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { isTauriEnvironment, TauriUnavailableError } from "@shared/services/ipc";
+import type { ReactNode } from 'react';
+import { isTauriEnvironment, TauriUnavailableError } from '@shared/services/ipc';
 
 /** Title bar for dashboard widgets. */
 export function WidgetHeader({ icon, title }: { icon: ReactNode; title: string }) {
@@ -31,7 +31,7 @@ export function WidgetSkeleton() {
  */
 export function WidgetError({ message }: { message: string }) {
   const devMode = !isTauriEnvironment();
-  const isBackendMissing = message.includes("Tauri backend is not available");
+  const isBackendMissing = message.includes('Tauri backend is not available');
 
   if (devMode || isBackendMissing) {
     return (
@@ -41,9 +41,7 @@ export function WidgetError({ message }: { message: string }) {
     );
   }
 
-  return (
-    <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{message}</div>
-  );
+  return <div className="text-xs text-danger bg-danger/5 rounded-lg p-3">{message}</div>;
 }
 
 /** Type guard helper re-exported for callers that want to branch on the error. */

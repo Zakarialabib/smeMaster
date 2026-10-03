@@ -1,5 +1,5 @@
-import { memo, useCallback } from "react";
-import type { Deal } from "@shared/services/db/schema";
+import { memo, useCallback } from 'react';
+import type { Deal } from '@shared/services/db/schema';
 
 export interface DealCardProps {
   deal: Deal;
@@ -7,24 +7,24 @@ export interface DealCardProps {
   onOpen?: (id: string) => void;
 }
 
-const formatMoney = (amountMinor: number, currency = "USD") => {
+const formatMoney = (amountMinor: number, currency = 'USD') => {
   const value = amountMinor / 100;
   try {
     return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
+      style: 'currency',
+      currency: currency || 'USD',
       maximumFractionDigits: 0,
     }).format(value);
   } catch {
-    return `${currency ?? "USD"} ${value.toFixed(0)}`;
+    return `${currency ?? 'USD'} ${value.toFixed(0)}`;
   }
 };
 
 export const DealCard = memo(function DealCard({ deal, stageColor, onOpen }: DealCardProps) {
   const handleDragStart = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
-      e.dataTransfer.setData("text/plain", deal.id);
-      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData('text/plain', deal.id);
+      e.dataTransfer.effectAllowed = 'move';
     },
     [deal.id],
   );

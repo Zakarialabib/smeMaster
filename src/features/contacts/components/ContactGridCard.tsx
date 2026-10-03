@@ -1,8 +1,8 @@
-import type { DbContact } from "@features/contacts/db/contacts";
-import type { Density } from "@features/contacts/hooks/useViewPrefs";
-import { ContactAvatar } from "@features/contacts/components/ContactAvatar";
-import { ContactActions } from "@features/contacts/components/ContactActions";
-import { formatRelativeDate } from "@shared/utils/date";
+import type { DbContact } from '@features/contacts/db/contacts';
+import type { Density } from '@features/contacts/hooks/useViewPrefs';
+import { ContactAvatar } from '@features/contacts/components/ContactAvatar';
+import { ContactActions } from '@features/contacts/components/ContactActions';
+import { formatRelativeDate } from '@shared/utils/date';
 
 interface ContactGridCardProps {
   contact: DbContact;
@@ -27,15 +27,15 @@ const DENSITY_AVA: Record<Density, 32 | 40 | 48> = {
 };
 
 const DENSITY_PADDING: Record<Density, string> = {
-  compact: "p-2",
-  normal: "p-3",
-  comfortable: "p-4",
+  compact: 'p-2',
+  normal: 'p-3',
+  comfortable: 'p-4',
 };
 
 const DENSITY_NAME: Record<Density, string> = {
-  compact: "text-xs",
-  normal: "text-sm",
-  comfortable: "text-base",
+  compact: 'text-xs',
+  normal: 'text-sm',
+  comfortable: 'text-base',
 };
 
 /**
@@ -63,15 +63,15 @@ export function ContactGridCard({
     <div
       className={`group relative flex flex-col ${DENSITY_PADDING[density]} rounded-lg border transition-all cursor-pointer ${
         selected
-          ? "border-accent bg-accent/5 shadow-sm"
-          : "border-border-primary bg-bg-primary/40 hover:border-accent/40 hover:bg-bg-hover"
+          ? 'border-accent bg-accent/5 shadow-sm'
+          : 'border-border-primary bg-bg-primary/40 hover:border-accent/40 hover:bg-bg-hover'
       }`}
       onClick={onClick}
       role="button"
       tabIndex={0}
       aria-pressed={selected}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onClick();
         }
@@ -125,7 +125,7 @@ export function ContactGridCard({
         <span className="text-[0.625rem] text-text-tertiary shrink-0">
           {contact.last_contacted_at
             ? `Last: ${formatRelativeDate(contact.last_contacted_at)}`
-            : "Never contacted"}
+            : 'Never contacted'}
         </span>
         <div onClick={(e) => e.stopPropagation()}>
           <ContactActions

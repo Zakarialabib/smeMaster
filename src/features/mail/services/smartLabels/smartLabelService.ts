@@ -1,8 +1,8 @@
-import { getEnabledSmartLabelRules } from "@features/mail/db/smartLabelRules";
-import { messageMatchesFilter } from "@features/mail/services/filters/filterEngine";
-import { classifyThreadsBySmartLabels } from "@shared/services/ai/aiService";
-import type { FilterCriteria } from "@features/mail/db/filters";
-import type { ParsedMessage } from "@features/mail/services/gmail/messageParser";
+import { getEnabledSmartLabelRules } from '@features/mail/db/smartLabelRules';
+import { messageMatchesFilter } from '@features/mail/services/filters/filterEngine';
+import { classifyThreadsBySmartLabels } from '@shared/services/ai/aiService';
+import type { FilterCriteria } from '@features/mail/db/filters';
+import type { ParsedMessage } from '@features/mail/services/gmail/messageParser';
 
 export interface SmartLabelMatch {
   threadId: string;
@@ -69,15 +69,13 @@ export async function matchSmartLabels(
   for (const [threadId, msg] of threadMap) {
     // Include thread if any label rule hasn't been matched by criteria for this thread
     const matchedLabels = criteriaMatches.get(threadId);
-    const allLabelsMatched = allRulesForAi.every(
-      (r) => matchedLabels?.has(r.labelId),
-    );
+    const allLabelsMatched = allRulesForAi.every((r) => matchedLabels?.has(r.labelId));
     if (!allLabelsMatched) {
       threadsForAi.push({
         id: threadId,
-        subject: msg.subject ?? "",
+        subject: msg.subject ?? '',
         snippet: msg.snippet,
-        fromAddress: msg.fromAddress ?? "",
+        fromAddress: msg.fromAddress ?? '',
       });
     }
   }
@@ -99,7 +97,7 @@ export async function matchSmartLabels(
         }
       }
     } catch (err) {
-      console.error("Smart label AI classification failed:", err);
+      console.error('Smart label AI classification failed:', err);
       // Continue with criteria-only matches
     }
   }
@@ -112,4 +110,3 @@ export async function matchSmartLabels(
 
   return results;
 }
-

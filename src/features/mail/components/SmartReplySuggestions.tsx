@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { Sparkles, RefreshCw, Wand2, Loader2, Check, X } from "lucide-react";
-import { isAiAvailable } from "@shared/services/ai/providerManager";
-import { generateSmartReplies, polishDraft } from "@shared/services/ai/aiService";
-import { useComposerStore } from "@features/mail/stores/composerStore";
-import { useFeatureFlagStore } from "@features/settings/stores/featureFlagStore";
-import { CenteredLoader } from "@shared/components/ui/CenteredLoader";
-import { useRefreshableAiCache } from "@features/mail/hooks/useRefreshableAiCache";
-import type { DbMessage } from "@shared/services/db/messages";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Sparkles, RefreshCw, Wand2, Loader2, Check, X } from 'lucide-react';
+import { isAiAvailable } from '@shared/services/ai/providerManager';
+import { generateSmartReplies, polishDraft } from '@shared/services/ai/aiService';
+import { useComposerStore } from '@features/mail/stores/composerStore';
+import { useFeatureFlagStore } from '@features/settings/stores/featureFlagStore';
+import { CenteredLoader } from '@shared/components/ui/CenteredLoader';
+import { useRefreshableAiCache } from '@features/mail/hooks/useRefreshableAiCache';
+import type { DbMessage } from '@shared/services/db/messages';
 
 interface SmartReplySuggestionsProps {
   threadId: string;
@@ -16,15 +16,21 @@ interface SmartReplySuggestionsProps {
   onApplyPolish?: (text: string) => void;
 }
 
-export function SmartReplySuggestions({ threadId, accountId, messages, noReply, onApplyPolish }: SmartReplySuggestionsProps) {
+export function SmartReplySuggestions({
+  threadId,
+  accountId,
+  messages,
+  noReply,
+  onApplyPolish,
+}: SmartReplySuggestionsProps) {
   const [polishMode, setPolishMode] = useState(false);
-  const [draftText, setDraftText] = useState("");
-  const [polishedText, setPolishedText] = useState("");
+  const [draftText, setDraftText] = useState('');
+  const [polishedText, setPolishedText] = useState('');
   const [polishing, setPolishing] = useState(false);
   const [available, setAvailable] = useState(false);
   const checkedRef = useRef(false);
   const openComposer = useComposerStore((s) => s.openComposer);
-  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess("ai", 0) === "locked");
+  const isAiLocked = useFeatureFlagStore((s) => s.getFeatureAccess('ai', 0) === 'locked');
 
   useEffect(() => {
     if (checkedRef.current) return;
@@ -42,13 +48,13 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
   } = useRefreshableAiCache<string[]>({
     accountId,
     threadId,
-    cacheType: "smart_replies",
+    cacheType: 'smart_replies',
     fetcher: (a, t) => generateSmartReplies(t, a, messages),
   });
 
   // Preserve the original console.error behavior for smart-reply errors.
   useEffect(() => {
-    if (error) console.error("Failed to generate smart replies:", error);
+    if (error) console.error('Failed to generate smart replies:', error);
   }, [error]);
 
   // Auto-load when available.
@@ -57,31 +63,34 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
     load();
   }, [available, messages.length, replies, loadingRef, load]);
 
-  const handleReplyClick = useCallback((replyText: string) => {
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage) return;
+  const handleReplyClick = useCallback(
+    (replyText: string) => {
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage) return;
 
-    const replyTo = lastMessage.reply_to ?? lastMessage.from_address;
-    openComposer({
-      mode: "reply",
-      to: replyTo ? [replyTo] : [],
-      subject: `Re: ${lastMessage.subject ?? ""}`,
-      bodyHtml: `<p>${replyText}</p>`,
-      threadId: lastMessage.thread_id,
-      inReplyToMessageId: lastMessage.id,
-    });
-  }, [messages, openComposer]);
+      const replyTo = lastMessage.reply_to ?? lastMessage.from_address;
+      openComposer({
+        mode: 'reply',
+        to: replyTo ? [replyTo] : [],
+        subject: `Re: ${lastMessage.subject ?? ''}`,
+        bodyHtml: `<p>${replyText}</p>`,
+        threadId: lastMessage.thread_id,
+        inReplyToMessageId: lastMessage.id,
+      });
+    },
+    [messages, openComposer],
+  );
 
   const handlePolish = useCallback(async () => {
     if (!draftText.trim() || polishing) return;
     setPolishing(true);
-    setPolishedText("");
+    setPolishedText('');
     try {
       const result = await polishDraft(draftText);
       setPolishedText(result);
     } catch (err) {
-      console.error("Failed to polish draft:", err);
-      setPolishedText("Failed to polish. Please try again.");
+      console.error('Failed to polish draft:', err);
+      setPolishedText('Failed to polish. Please try again.');
     } finally {
       setPolishing(false);
     }
@@ -96,7 +105,11 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
         <Sparkles size={14} className="text-accent shrink-0" />
         <span className="text-xs font-medium text-accent flex-1">Quick Replies</span>
         <button
-          onClick={() => { setPolishMode(true); setPolishedText(""); setDraftText(""); }}
+          onClick={() => {
+            setPolishMode(true);
+            setPolishedText('');
+            setDraftText('');
+          }}
           className="p-0.5 text-text-tertiary hover:text-accent transition-colors"
           title="Polish Reply"
         >
@@ -107,7 +120,7 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
           className="p-0.5 text-text-tertiary hover:text-accent transition-colors"
           title="Refresh suggestions"
         >
-          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
       {polishMode ? (
@@ -125,15 +138,15 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
               disabled={!draftText.trim() || polishing}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {polishing ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Wand2 size={12} />
-              )}
-              {polishing ? "Polishing..." : "Polish"}
+              {polishing ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+              {polishing ? 'Polishing...' : 'Polish'}
             </button>
             <button
-              onClick={() => { setPolishMode(false); setPolishedText(""); setDraftText(""); }}
+              onClick={() => {
+                setPolishMode(false);
+                setPolishedText('');
+                setDraftText('');
+              }}
               className="px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
             >
               Cancel
@@ -147,8 +160,8 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
                   onClick={() => {
                     onApplyPolish?.(polishedText);
                     setPolishMode(false);
-                    setPolishedText("");
-                    setDraftText("");
+                    setPolishedText('');
+                    setDraftText('');
                   }}
                   className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
                 >
@@ -156,7 +169,10 @@ export function SmartReplySuggestions({ threadId, accountId, messages, noReply, 
                   Apply
                 </button>
                 <button
-                  onClick={() => { setPolishedText(""); setDraftText(""); }}
+                  onClick={() => {
+                    setPolishedText('');
+                    setDraftText('');
+                  }}
                   className="flex items-center gap-1 px-3 py-1.5 text-xs text-text-secondary border border-border-primary rounded-md hover:text-text-primary transition-colors"
                 >
                   <X size={12} />

@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Globe,
   Server,
@@ -20,51 +20,54 @@ import {
   TrendingDown,
   History,
   Monitor,
-} from "lucide-react";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
-import { checkBlacklists, getBlacklistHistory } from "@features/deliverability/services/blacklistService";
-import type { BlacklistCheckResult } from "@features/deliverability/services/blacklistService";
-import type { BlacklistCheckRow } from "@features/deliverability/db/blacklistCache";
-import { cn } from "@shared/utils/cn";
+} from 'lucide-react';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
+import {
+  checkBlacklists,
+  getBlacklistHistory,
+} from '@features/deliverability/services/blacklistService';
+import type { BlacklistCheckResult } from '@features/deliverability/services/blacklistService';
+import type { BlacklistCheckRow } from '@features/deliverability/db/blacklistCache';
+import { cn } from '@shared/utils/cn';
 
 // --- Type Config ---
 const TYPE_CONFIG = {
-  ip: { icon: Server, label: "IP Address", placeholder: "192.168.1.1" },
-  domain: { icon: Globe, label: "Domain", placeholder: "example.com" },
+  ip: { icon: Server, label: 'IP Address', placeholder: '192.168.1.1' },
+  domain: { icon: Globe, label: 'Domain', placeholder: 'example.com' },
 };
 
 // --- Status Config ---
 const STATUS_CONFIG = {
   listed: {
     icon: ShieldAlert,
-    color: "text-danger",
-    bg: "bg-danger/5",
-    border: "border-danger/20",
-    badge: "bg-danger text-white",
-    label: "Listed",
+    color: 'text-danger',
+    bg: 'bg-danger/5',
+    border: 'border-danger/20',
+    badge: 'bg-danger text-white',
+    label: 'Listed',
   },
   clean: {
     icon: ShieldCheck,
-    color: "text-success",
-    bg: "bg-success/5",
-    border: "border-success/20",
-    badge: "bg-success text-white",
-    label: "Clean",
+    color: 'text-success',
+    bg: 'bg-success/5',
+    border: 'border-success/20',
+    badge: 'bg-success text-white',
+    label: 'Clean',
   },
   noResponse: {
     icon: HelpCircle,
-    color: "text-text-tertiary",
-    bg: "bg-bg-tertiary",
-    border: "border-border",
-    badge: "bg-bg-tertiary text-text-tertiary border border-border",
-    label: "No Response",
+    color: 'text-text-tertiary',
+    bg: 'bg-bg-tertiary',
+    border: 'border-border',
+    badge: 'bg-bg-tertiary text-text-tertiary border border-border',
+    label: 'No Response',
   },
 };
 
 // --- Copy Helper ---
 const copyToClipboard = async (text: string) => {
   try {
-    const { copyToClipboard: clip } = await import("@shared/hooks/useClipboard");
+    const { copyToClipboard: clip } = await import('@shared/hooks/useClipboard');
     await clip(text);
     return true;
   } catch {
@@ -97,14 +100,14 @@ const ResultCard = ({ result }: { result: BlacklistCheckResult }) => {
   return (
     <div
       className={cn(
-        "group relative rounded-xl border p-3 transition-all hover:shadow-sm",
+        'group relative rounded-xl border p-3 transition-all hover:shadow-sm',
         status.bg,
-        status.border
+        status.border,
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className={cn("p-1.5 rounded-lg bg-white/50 shrink-0", status.color)}>
+          <div className={cn('p-1.5 rounded-lg bg-white/50 shrink-0', status.color)}>
             <status.icon size={14} />
           </div>
           <div className="min-w-0">
@@ -114,8 +117,8 @@ const ResultCard = ({ result }: { result: BlacklistCheckResult }) => {
               </span>
               <span
                 className={cn(
-                  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider",
-                  status.badge
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider',
+                  status.badge,
                 )}
               >
                 {status.label}
@@ -179,8 +182,8 @@ const HistoryRow = ({ row }: { row: BlacklistCheckRow }) => {
     <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-bg-primary border border-border/50 hover:border-border transition-colors">
       <div
         className={cn(
-          "p-1.5 rounded-lg shrink-0",
-          isListed ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
+          'p-1.5 rounded-lg shrink-0',
+          isListed ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success',
         )}
       >
         {isListed ? <Ban size={12} /> : <ShieldCheck size={12} />}
@@ -191,16 +194,16 @@ const HistoryRow = ({ row }: { row: BlacklistCheckRow }) => {
       </div>
       <span
         className={cn(
-          "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
-          isListed ? "text-danger bg-danger/10" : "text-success bg-success/10"
+          'text-[10px] font-bold uppercase px-1.5 py-0.5 rounded',
+          isListed ? 'text-danger bg-danger/10' : 'text-success bg-success/10',
         )}
       >
-        {isListed ? "Listed" : "Clean"}
+        {isListed ? 'Listed' : 'Clean'}
       </span>
       <span className="text-[10px] text-text-tertiary font-mono shrink-0">
         {new Date(row.checked_at * 1000).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
+          month: 'short',
+          day: 'numeric',
         })}
       </span>
     </div>
@@ -210,15 +213,15 @@ const HistoryRow = ({ row }: { row: BlacklistCheckRow }) => {
 export function BlacklistChecker() {
   const { t } = useTranslation();
   const accounts = useAccountStore((s) => s.accounts);
-  const [selectedAccountId, setSelectedAccountId] = useState("");
-  const [target, setTarget] = useState("");
-  const [checkType, setCheckType] = useState<"ip" | "domain">("ip");
+  const [selectedAccountId, setSelectedAccountId] = useState('');
+  const [target, setTarget] = useState('');
+  const [checkType, setCheckType] = useState<'ip' | 'domain'>('ip');
   const [results, setResults] = useState<BlacklistCheckResult[] | null>(null);
   const [history, setHistory] = useState<BlacklistCheckRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<"results" | "history" | null>("results");
-  const [filterStatus, setFilterStatus] = useState<"all" | "listed" | "clean">("all");
+  const [expandedSection, setExpandedSection] = useState<'results' | 'history' | null>('results');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'listed' | 'clean'>('all');
 
   const loadHistory = useCallback(async () => {
     if (!selectedAccountId) return;
@@ -245,10 +248,10 @@ export function BlacklistChecker() {
 
   const filteredResults = results
     ? results.filter((r) => {
-      if (filterStatus === "listed") return r.listed;
-      if (filterStatus === "clean") return !r.listed && r.responded;
-      return true;
-    })
+        if (filterStatus === 'listed') return r.listed;
+        if (filterStatus === 'clean') return !r.listed && r.responded;
+        return true;
+      })
     : null;
 
   const listedCount = results?.filter((r) => r.listed).length || 0;
@@ -273,7 +276,7 @@ export function BlacklistChecker() {
                 setResults(null);
               }}
             >
-              <option value="">{t("settings.selectAccount") || "Select account..."}</option>
+              <option value="">{t('settings.selectAccount') || 'Select account...'}</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.email}
@@ -285,7 +288,7 @@ export function BlacklistChecker() {
 
           {/* Type Toggle */}
           <div className="inline-flex rounded-xl border border-border p-0.5 bg-bg-tertiary/50 shrink-0">
-            {(["ip", "domain"] as const).map((type) => {
+            {(['ip', 'domain'] as const).map((type) => {
               const config = TYPE_CONFIG[type];
               return (
                 <button
@@ -295,10 +298,10 @@ export function BlacklistChecker() {
                     setResults(null);
                   }}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all",
+                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all',
                     checkType === type
-                      ? "bg-accent text-white shadow-sm"
-                      : "text-text-secondary hover:text-text-primary"
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary',
                   )}
                 >
                   <config.icon size={13} />
@@ -318,7 +321,7 @@ export function BlacklistChecker() {
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleCheck();
+                if (e.key === 'Enter') handleCheck();
               }}
             />
           </div>
@@ -329,12 +332,8 @@ export function BlacklistChecker() {
             disabled={loading || !target.trim() || !selectedAccountId}
             className="flex items-center justify-center gap-2 px-6 py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 shrink-0"
           >
-            {loading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Search size={16} />
-            )}
-            {loading ? t("common.checking") : t("settings.blacklist.checkNow")}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+            {loading ? t('common.checking') : t('settings.blacklist.checkNow')}
           </button>
         </div>
       </div>
@@ -344,11 +343,11 @@ export function BlacklistChecker() {
         <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
           {/* Header */}
           <div
-            onClick={() => setExpandedSection((s) => (s === "results" ? null : "results"))}
+            onClick={() => setExpandedSection((s) => (s === 'results' ? null : 'results'))}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                setExpandedSection((s) => (s === "results" ? null : "results"));
+                setExpandedSection((s) => (s === 'results' ? null : 'results'));
               }
             }}
             role="button"
@@ -358,8 +357,8 @@ export function BlacklistChecker() {
             <div className="flex items-center gap-2.5">
               <div
                 className={cn(
-                  "p-1.5 rounded-lg",
-                  listedCount > 0 ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
+                  'p-1.5 rounded-lg',
+                  listedCount > 0 ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success',
                 )}
               >
                 {listedCount > 0 ? <ShieldAlert size={16} /> : <ShieldCheck size={16} />}
@@ -367,40 +366,41 @@ export function BlacklistChecker() {
               <div className="text-start">
                 <h3 className="text-sm font-bold text-text-primary">
                   {listedCount > 0
-                    ? `${listedCount} ${listedCount === 1 ? "listing" : "listings"} detected`
-                    : "All clear — no listings found"}
+                    ? `${listedCount} ${listedCount === 1 ? 'listing' : 'listings'} detected`
+                    : 'All clear ï¿½ no listings found'}
                 </h3>
                 <p className="text-[10px] text-text-tertiary">
-                  {results.length} DNSBLs checked · {cleanCount} clean · {noResponseCount} no response
+                  {results.length} DNSBLs checked ï¿½ {cleanCount} clean ï¿½ {noResponseCount} no
+                  response
                 </p>
               </div>
             </div>
             <ChevronDown
               size={16}
               className={cn(
-                "text-text-tertiary transition-transform",
-                expandedSection === "results" && "rotate-180"
+                'text-text-tertiary transition-transform',
+                expandedSection === 'results' && 'rotate-180',
               )}
             />
           </div>
 
-          {expandedSection === "results" && (
+          {expandedSection === 'results' && (
             <div className="px-4 pb-4 space-y-3">
               {/* Filter Tabs */}
               <div className="flex items-center gap-1 p-1 bg-bg-primary rounded-xl border border-border w-fit">
                 {[
-                  { key: "all", label: "All", count: results.length },
-                  { key: "listed", label: "Listed", count: listedCount },
-                  { key: "clean", label: "Clean", count: cleanCount },
+                  { key: 'all', label: 'All', count: results.length },
+                  { key: 'listed', label: 'Listed', count: listedCount },
+                  { key: 'clean', label: 'Clean', count: cleanCount },
                 ].map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setFilterStatus(tab.key as typeof filterStatus)}
                     className={cn(
-                      "px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+                      'px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all',
                       filterStatus === tab.key
-                        ? "bg-accent text-white shadow-sm"
-                        : "text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary"
+                        ? 'bg-accent text-white shadow-sm'
+                        : 'text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary',
                     )}
                   >
                     {tab.label} ({tab.count})
@@ -433,24 +433,24 @@ export function BlacklistChecker() {
             <h3 className="text-sm font-bold text-text-primary">Automated Monitoring</h3>
           </div>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-bg-tertiary text-text-tertiary border border-border">
-            Placeholder — needs backend
+            Placeholder ï¿½ needs backend
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             {
-              label: "Daily automated scans",
-              desc: "Check all monitored IPs/domains every 24h",
+              label: 'Daily automated scans',
+              desc: 'Check all monitored IPs/domains every 24h',
               icon: Clock,
             },
             {
-              label: "Instant Slack alerts",
-              desc: "Notify team when listing detected",
+              label: 'Instant Slack alerts',
+              desc: 'Notify team when listing detected',
               icon: Bell,
             },
             {
-              label: "Escalation workflow",
-              desc: "Auto-create delist tickets",
+              label: 'Escalation workflow',
+              desc: 'Auto-create delist tickets',
               icon: TrendingDown,
             },
           ].map((item) => (
@@ -477,11 +477,11 @@ export function BlacklistChecker() {
       {/* -- History Section --- */}
       <div className="rounded-2xl border border-border/50 bg-bg-tertiary/20 overflow-hidden">
         <div
-          onClick={() => setExpandedSection((s) => (s === "history" ? null : "history"))}
+          onClick={() => setExpandedSection((s) => (s === 'history' ? null : 'history'))}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              setExpandedSection((s) => (s === "history" ? null : "history"));
+              setExpandedSection((s) => (s === 'history' ? null : 'history'));
             }
           }}
           role="button"
@@ -494,10 +494,10 @@ export function BlacklistChecker() {
             </div>
             <div className="text-start">
               <h3 className="text-sm font-bold text-text-primary">
-                {t("settings.blacklist.history") || "Check History"}
+                {t('settings.blacklist.history') || 'Check History'}
               </h3>
               <p className="text-[10px] text-text-tertiary">
-                {history.length} {history.length === 1 ? "record" : "records"} stored
+                {history.length} {history.length === 1 ? 'record' : 'records'} stored
               </p>
             </div>
           </div>
@@ -508,7 +508,7 @@ export function BlacklistChecker() {
                 loadHistory();
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.stopPropagation();
                   loadHistory();
                 }
@@ -517,20 +517,20 @@ export function BlacklistChecker() {
               tabIndex={0}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-text-secondary hover:text-text-primary bg-bg-primary rounded-lg border border-border hover:border-border-secondary transition-colors cursor-pointer"
             >
-              <RefreshCw size={10} className={cn(historyLoading && "animate-spin")} />
-              {t("common.refresh")}
+              <RefreshCw size={10} className={cn(historyLoading && 'animate-spin')} />
+              {t('common.refresh')}
             </span>
             <ChevronDown
               size={16}
               className={cn(
-                "text-text-tertiary transition-transform",
-                expandedSection === "history" && "rotate-180"
+                'text-text-tertiary transition-transform',
+                expandedSection === 'history' && 'rotate-180',
               )}
             />
           </div>
         </div>
 
-        {expandedSection === "history" && (
+        {expandedSection === 'history' && (
           <div className="px-4 pb-4 space-y-2">
             {historyLoading && (
               <div className="flex items-center justify-center py-8 gap-3">
@@ -546,7 +546,7 @@ export function BlacklistChecker() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-text-tertiary">
-                    {t("settings.blacklist.noHistory") || "No check history"}
+                    {t('settings.blacklist.noHistory') || 'No check history'}
                   </p>
                   <p className="text-xs text-text-tertiary mt-1 max-w-[280px]">
                     Run your first blacklist check above. History is stored per account.

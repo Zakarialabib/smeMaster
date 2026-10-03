@@ -189,6 +189,6 @@ This keeps the UI consistent and the duplication low.
 
 ## Related
 
-- [Reuse Patterns](../../05-DEVELOPMENT/05-reuse-patterns.md) — broader refactor catalog
+- [Reuse Patterns](../05-DEVELOPMENT/05-reuse-patterns.md) — broader refactor catalog
 - [Event Bus (uiBus)](07-event-bus.md) — `uiBus` event contract
 - [State Management](02-state-management.md) — where state lives

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { invokeCommand } from "@shared/services/db/invoke/command";
-import { Modal } from "@shared/components/ui/Modal";
-import { Button } from "@shared/components/ui/Button";
-import { notify } from "@shared/services/notifications/toastHelper";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { invokeCommand } from '@shared/services/db/invoke/command';
+import { Modal } from '@shared/components/ui/Modal';
+import { Button } from '@shared/components/ui/Button';
+import { notify } from '@shared/services/notifications/toastHelper';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DataWipeDialogProps {
   isOpen: boolean;
@@ -11,35 +11,35 @@ interface DataWipeDialogProps {
   onWipeComplete?: () => void;
 }
 
-const CONFIRM_TEXT = "DELETE";
+const CONFIRM_TEXT = 'DELETE';
 
 export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDialogProps) {
-  const [typedText, setTypedText] = useState("");
-  const [step, setStep] = useState<"confirm" | "wiping" | "done" | "error">("confirm");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [typedText, setTypedText] = useState('');
+  const [step, setStep] = useState<'confirm' | 'wiping' | 'done' | 'error'>('confirm');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const isConfirmed = typedText === CONFIRM_TEXT;
 
   const handleWipe = async () => {
     if (!isConfirmed) return;
-    setStep("wiping");
-    setErrorMsg("");
+    setStep('wiping');
+    setErrorMsg('');
     try {
-      await invokeCommand("db_wipe_all_data");
-      setStep("done");
-      notify("Data Wipe", "All data has been permanently deleted. The app will restart.");
+      await invokeCommand('db_wipe_all_data');
+      setStep('done');
+      notify('Data Wipe', 'All data has been permanently deleted. The app will restart.');
       onWipeComplete?.();
     } catch (err) {
-      setStep("error");
+      setStep('error');
       setErrorMsg(String(err));
-      notify("Data Wipe", `Failed to wipe data: ${err}`);
+      notify('Data Wipe', `Failed to wipe data: ${err}`);
     }
   };
 
   const handleClose = () => {
-    setTypedText("");
-    setStep("confirm");
-    setErrorMsg("");
+    setTypedText('');
+    setStep('confirm');
+    setErrorMsg('');
     onClose();
   };
 
@@ -48,44 +48,51 @@ export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDial
     // `db_reset_and_reseed` ensures the fresh DB has the default company,
     // pipelines, tasks, and invoices instead of an empty database.
     try {
-      localStorage.removeItem("smemaster.onboarding.done");
+      localStorage.removeItem('smemaster.onboarding.done');
     } catch {
       /* ignore */
     }
-    setStep("wiping");
-    setErrorMsg("");
-    invokeCommand<{ seeded: number }>("db_reset_and_reseed")
+    setStep('wiping');
+    setErrorMsg('');
+    invokeCommand<{ seeded: number }>('db_reset_and_reseed')
       .then((result) => {
-        setStep("done");
-        notify("Data Wipe", `All data deleted and re-seeded (${result.seeded} rows). The app will now reload.`);
+        setStep('done');
+        notify(
+          'Data Wipe',
+          `All data deleted and re-seeded (${result.seeded} rows). The app will now reload.`,
+        );
         setTimeout(() => window.location.reload(), 400);
       })
       .catch((err) => {
-        setStep("error");
+        setStep('error');
         setErrorMsg(String(err));
-        notify("Data Wipe", `Reset failed: ${err}`);
+        notify('Data Wipe', `Reset failed: ${err}`);
       });
   };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Delete All Data" size="md">
       <div className="p-5 space-y-4">
-        {step === "confirm" && (
+        {step === 'confirm' && (
           <>
             {/* Warning banner */}
             <div className="flex items-start gap-3 p-3 bg-danger/10 border border-danger/20 rounded-lg">
               <AlertTriangle size={20} className="text-danger shrink-0 mt-0.5" />
               <div className="text-sm text-text-primary">
-                <strong className="text-danger">Warning:</strong> This will permanently
-                delete all your data including emails, contacts, campaigns, tasks, and
-                calendar entries. This action <strong>cannot be undone</strong>.
+                <strong className="text-danger">Warning:</strong> This will permanently delete all
+                your data including emails, contacts, campaigns, tasks, and calendar entries. This
+                action <strong>cannot be undone</strong>.
               </div>
             </div>
 
             {/* Confirmation input */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-text-secondary">
-                Type <code className="px-1.5 py-0.5 bg-bg-tertiary rounded text-accent font-mono text-xs">{CONFIRM_TEXT}</code> to confirm:
+                Type{' '}
+                <code className="px-1.5 py-0.5 bg-bg-tertiary rounded text-accent font-mono text-xs">
+                  {CONFIRM_TEXT}
+                </code>{' '}
+                to confirm:
               </label>
               <input
                 type="text"
@@ -102,30 +109,32 @@ export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDial
               <Button variant="secondary" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                variant="danger"
-                onClick={handleWipe}
-                disabled={!isConfirmed}
-              >
+              <Button variant="danger" onClick={handleWipe} disabled={!isConfirmed}>
                 Delete Everything
               </Button>
             </div>
           </>
         )}
 
-        {step === "wiping" && (
+        {step === 'wiping' && (
           <div className="flex flex-col items-center gap-4 py-8">
             <Loader2 size={32} className="animate-spin text-danger" />
-            <p className="text-sm text-text-secondary">
-              Permanently deleting all data...
-            </p>
+            <p className="text-sm text-text-secondary">Permanently deleting all data...</p>
           </div>
         )}
 
-        {step === "done" && (
+        {step === 'done' && (
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-success"
+              >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
@@ -138,10 +147,18 @@ export function DataWipeDialog({ isOpen, onClose, onWipeComplete }: DataWipeDial
           </div>
         )}
 
-        {step === "error" && (
+        {step === 'error' && (
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="w-12 h-12 rounded-full bg-danger/20 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-danger">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-danger"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="15" y1="9" x2="9" y2="15" />
                 <line x1="9" y1="9" x2="15" y2="15" />

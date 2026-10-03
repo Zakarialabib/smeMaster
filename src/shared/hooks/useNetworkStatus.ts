@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useSyncStore } from "@shared/stores/syncStore";
+import { useState, useEffect } from 'react';
+import { useSyncStore } from '@shared/stores/syncStore';
 
 interface NetworkStatus {
   isOnline: boolean;
@@ -27,15 +27,15 @@ export function useNetworkStatus(): NetworkStatus {
       setOnline(false);
     };
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     // Initial state
     setOnline(navigator.onLine);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [setOnline]);
 

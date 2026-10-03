@@ -16,6 +16,31 @@ This is a Tauri v2 desktop app — so you need both Node.js and Rust installed. 
   - **Windows:** Download `protoc-<version>-win64.zip` from [protobuf releases](https://github.com/protocolbuffers/protobuf/releases), extract `bin/protoc.exe` to a directory in your `PATH`.
   - **Linux:** `sudo apt install protobuf-compiler` (or `brew install protobuf` on macOS).
   - **macOS:** `brew install protobuf`.
+  - ⚠️ **This is a live trap on this host (2026-09-28).** `.cargo/config.toml` pointed `PROTOC`
+    at a vendored binary that is **not in the repo** (`src-tauri/tools/protoc/` does not
+    exist). If you see `Could not find protoc`, install it on `PATH` — don't hunt for the
+    vendored copy. Also: `tauri.conf.json` declares `externalBin: ['binaries/ml-sidecar']`,
+    so **the main crate will not compile until `ml-sidecar` is built and copied to
+    `src-tauri/binaries/`** (see `../01-ARCHITECTURE/07-sidecar-architecture.md` →
+    "Building the Sidecar").
+
+## ⚠️ Toolchain warning — read before running cargo (this host)
+
+`cargo`/`rustc` via `~/.cargo/bin` (the rustup proxies) currently **fail** with
+_"rustc.exe is not applicable to the toolchain"_. The toolchain's real binaries work.
+Use this until rustup is repaired:
+
+```bash
+TC=/c/Users/user/.rustup/toolchains/stable-x86_64-pc-windows-msvc
+export RUSTC=$TC/bin/rustc.exe
+$TC/bin/cargo.exe check --workspace -j1
+```
+
+Also: `cargo test` binaries **link but do not launch** here (`STATUS_ENTRYPOINT_NOT_FOUND
+0xc0000139`) — a Windows DLL/UCRT mismatch, not a code defect. Do not report Rust tests as
+passing on this host; they should run in CI. Full detail, including disk-space requirements
+(free 15+ G before any `cargo build`): **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)**
+— read it FIRST when picking work up.
 
 ## Commands you'll actually use
 
@@ -50,6 +75,11 @@ cargo check
 cargo build --no-default-features -F rustls-tls        # core app only
 cargo test --no-default-features -F rustls-tls         # tests without ML deps
 ```
+
+> ⚠️ **Gate on the summary line, not the exit code.** On this host both `vitest` and
+> `python -m pytest` have been observed to **false-green** (exit 0 with failures). Read the
+> `passed`/`failed` counts. `cargo test` here fails to _launch_ (see the toolchain warning
+> above) — see [`02-testing.md`](02-testing.md).
 
 ## Demo / Mailtrap
 
@@ -95,6 +125,26 @@ Push a tag `v*` to trigger the release pipeline:
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
+```
+
+## The voice agent's second dev loop (`services/agent-core/`)
+
+SMEMaster has a **second runtime** — a Python FastAPI service for the voice/messaging
+agent. It is **not** started by `npm run tauri dev` and is not a Cargo workspace member
+(see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D1).
+
+| You want to…                                                           | Read                                                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Run `agent-core` in dev mode (uvicorn on `:8788`, the two live checks) | **[`../voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md)**                                        |
+| Know the build status, toolchain breakage, and what is _not_ verified  | **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** — read FIRST                               |
+| Pick up a gated piece of voice work                                    | [`../voice/dev/AGENT-PROMPTS.md`](../voice/dev/AGENT-PROMPTS.md)                                        |
+| Understand the phase sequence                                          | [`../voice/dev/BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
+
+```bash
+# agent-core dev mode (NOT part of `npm run tauri dev`)
+cd services/agent-core
+.venv/Scripts/python.exe -m uvicorn agent_core.api:app \
+  --host 127.0.0.1 --port 8788 --reload --log-level info
 ```
 
 ## Source reconciliation (2026-07-19)

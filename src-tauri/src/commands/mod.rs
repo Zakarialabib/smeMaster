@@ -109,6 +109,13 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             #[cfg(desktop)]
             system_desktop::open_devtools,
 
+            // === agent (voice + WhatsApp console) ===
+            // The desktop holds no provider key and sends no tenant id; the
+            // bearer token is read from the auth store, not from an argument.
+            crate::agent::client::agent_health,
+            crate::agent::client::agent_ops_snapshot,
+            crate::agent::client::agent_provider_health,
+            crate::agent::client::agent_create_session,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,
@@ -227,6 +234,15 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::vault::ops::db_delete_vault_items_by_account,
             crate::vault::ops::db_count_vault_items,
 
+            // === downloader (7 commands) — resumable model/generic downloads ===
+            crate::downloader::commands::downloader_create_job,
+            crate::downloader::commands::downloader_get_job,
+            crate::downloader::commands::downloader_list_jobs,
+            crate::downloader::commands::downloader_pause_job,
+            crate::downloader::commands::downloader_resume_job,
+            crate::downloader::commands::downloader_cancel_job,
+            crate::downloader::commands::downloader_clear_finished,
+
             // === commands::ai (20 commands, all gated behind local-ai) ===
             #[cfg(feature = "local-ai")]
             ai::ai_download_model,
@@ -274,6 +290,28 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_get_sidecar_metrics,
             #[cfg(feature = "local-ai")]
             ai::ai_list_sidecar_models,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_transcribe_audio,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_stt_model,
+            #[cfg(feature = "local-ai")]
+            ai::ai_load_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_synthesize_speech,
+            #[cfg(feature = "local-ai")]
+            ai::ai_unload_tts_voice,
+            #[cfg(feature = "local-ai")]
+            ai::ai_sidecar_control_status,
+            #[cfg(feature = "local-ai")]
+            ai::ai_start_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_stop_sidecar,
+            #[cfg(feature = "local-ai")]
+            ai::ai_prepare_model_dir,
+            #[cfg(feature = "local-ai")]
+            ai::ai_remove_model_dir,
 
             // === commands::calendar (15 commands) ===
             calendar::db_list_calendars,

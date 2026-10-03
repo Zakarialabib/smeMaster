@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { listen } from "@tauri-apps/api/event";
-import { X, Mail, Undo2 } from "lucide-react";
-import { uiBus } from "@shared/services/events/uiBus";
+import { useState, useEffect, useCallback } from 'react';
+import { safeListen } from '@shared/services/ipc';
+import { X, Mail, Undo2 } from 'lucide-react';
+import { uiBus } from '@shared/services/events/uiBus';
 
 interface PushNotification {
   title: string;
@@ -28,34 +28,47 @@ export function NotificationToast() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const handleUndo = useCallback((toast: UndoableToast) => {
-    toast.onUndo?.();
-    removeToast(toast.id);
-  }, [removeToast]);
+  const handleUndo = useCallback(
+    (toast: UndoableToast) => {
+      toast.onUndo?.();
+      removeToast(toast.id);
+    },
+    [removeToast],
+  );
 
   useEffect(() => {
-    const unlisten = listen<PushNotification & { undoLabel?: string }>("notification:received", (event) => {
-      const payload = event.payload;
-      const newToast: UndoableToast = {
-        id: ++toastId,
-        notification: payload,
-        dismissed: false,
-        undoLabel: payload.undoLabel,
-      };
-      setToasts((prev) => [...prev.slice(-4), newToast]);
+    const unlisten = safeListen<PushNotification & { undoLabel?: string }>(
+      'notification:received',
+      (event) => {
+        const payload = event.payload;
+        const newToast: UndoableToast = {
+          id: ++toastId,
+          notification: payload,
+          dismissed: false,
+          undoLabel: payload.undoLabel,
+        };
+        setToasts((prev) => [...prev.slice(-4), newToast]);
 
-      setTimeout(() => {
-        removeToast(newToast.id);
-      }, 5000);
-    });
+        setTimeout(() => {
+          removeToast(newToast.id);
+        }, 5000);
+      },
+    );
 
-    return () => { unlisten.then((fn) => fn()); };
+    return () => {
+      unlisten.then((fn) => fn());
+    };
   }, [removeToast]);
 
   if (toasts.length === 0) return null;
 
   return (
-    <div role="status" aria-live="polite" aria-atomic="true" className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0 z-9999 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-full pointer-events-none">
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="fixed top-4 inset-inline-start-0 inset-inline-end-0 mx-auto sm:inset-inline-start-auto sm:inset-inline-end-4 sm:mx-0 z-9999 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] sm:w-full pointer-events-none"
+    >
       {toasts.map((toast) => (
         <div
           key={toast.id}
@@ -64,7 +77,9 @@ export function NotificationToast() {
         >
           <Mail size={16} className="text-accent mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-text-primary truncate">{toast.notification.title}</p>
+            <p className="text-sm font-semibold text-text-primary truncate">
+              {toast.notification.title}
+            </p>
             <p className="text-xs text-text-tertiary line-clamp-2">{toast.notification.body}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
@@ -101,9 +116,9 @@ export function emitUndoableToast(
   onUndo: () => void,
 ): void {
   try {
-    const { emit } = require("@tauri-apps/api/event");
-    emit("notification:received", { title, body, thread_id: undefined, undoLabel, onUndo });
+    const { emit } = require('@tauri-apps/api/event');
+    emit('notification:received', { title, body, thread_id: undefined, undoLabel, onUndo });
   } catch {
-    uiBus.emit("toast:show", { message: title });
+    uiBus.emit('toast:show', { message: title });
   }
 }

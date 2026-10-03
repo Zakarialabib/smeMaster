@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { updateContactNotes } from "@features/contacts/db/contacts";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { updateContactNotes } from '@features/contacts/db/contacts';
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ export interface UseContactNotesReturn {
  */
 export function useContactNotes(
   email: string,
-  initialNotes: string = "",
+  initialNotes: string = '',
   debounceMs: number = 1000,
 ): UseContactNotesReturn {
   const [notes, setNotes] = useState(initialNotes);

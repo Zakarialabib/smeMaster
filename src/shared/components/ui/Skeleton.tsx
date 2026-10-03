@@ -19,8 +19,8 @@
  * ```
  */
 
-import { memo, type HTMLAttributes } from "react";
-import { cn } from "@shared/utils/cn";
+import { memo, type HTMLAttributes } from 'react';
+import { cn } from '@shared/utils/cn';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -66,13 +66,10 @@ export interface SkeletonBlockProps {
  * Base skeleton placeholder — a pulse-animated block.
  * Use as a building block for custom skeletons.
  */
-export const Skeleton = memo(function Skeleton({
-  className,
-  ...rest
-}: SkeletonProps) {
+export const Skeleton = memo(function Skeleton({ className, ...rest }: SkeletonProps) {
   return (
     <div
-      className={cn("animate-pulse bg-bg-tertiary rounded-md", className)}
+      className={cn('animate-pulse bg-bg-tertiary rounded-md', className)}
       aria-hidden="true"
       {...rest}
     />
@@ -86,15 +83,10 @@ export const Skeleton = memo(function Skeleton({
  * Width defaults to 100%; use `width` prop to control.
  */
 export const SkeletonLine = memo(function SkeletonLine({
-  width = "100%",
+  width = '100%',
   className,
 }: SkeletonLineProps) {
-  return (
-    <Skeleton
-      className={cn("h-3.5", className)}
-      style={{ width }}
-    />
-  );
+  return <Skeleton className={cn('h-3.5', className)} style={{ width }} />;
 });
 
 // ─── SkeletonBlock ─────────────────────────────────────────────────────────
@@ -102,12 +94,8 @@ export const SkeletonLine = memo(function SkeletonLine({
 /**
  * A rectangular block skeleton. Height defaults to h-16; override with className.
  */
-export const SkeletonBlock = memo(function SkeletonBlock({
-  className,
-}: SkeletonBlockProps) {
-  return (
-    <Skeleton className={cn("h-16 w-full", className)} />
-  );
+export const SkeletonBlock = memo(function SkeletonBlock({ className }: SkeletonBlockProps) {
+  return <Skeleton className={cn('h-16 w-full', className)} />;
 });
 
 // ─── SkeletonCard ──────────────────────────────────────────────────────────
@@ -115,11 +103,14 @@ export const SkeletonBlock = memo(function SkeletonBlock({
 /**
  * Card-shaped skeleton — a rounded rectangle resembling a card/panel.
  */
-export const SkeletonCard = memo(function SkeletonCard({
-  className,
-}: SkeletonCardProps) {
+export const SkeletonCard = memo(function SkeletonCard({ className }: SkeletonCardProps) {
   return (
-    <div className={cn("bg-bg-secondary rounded-xl border border-border-primary p-4 animate-pulse", className)}>
+    <div
+      className={cn(
+        'bg-bg-secondary rounded-xl border border-border-primary p-4 animate-pulse',
+        className,
+      )}
+    >
       {/* Header area */}
       <div className="flex items-center gap-3 mb-4">
         <Skeleton className="w-10 h-10 rounded-full shrink-0" />
@@ -154,16 +145,13 @@ export const SkeletonTable = memo(function SkeletonTable({
   className,
 }: SkeletonTableProps) {
   return (
-    <div className={cn("animate-pulse", className)} role="status" aria-label="Loading table">
+    <div className={cn('animate-pulse', className)} role="status" aria-label="Loading table">
       {/* Header row */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border-primary">
         {Array.from({ length: columns }).map((_, colIdx) => (
           <Skeleton
             key={`header-${colIdx}`}
-            className={cn(
-              "h-3.5",
-              colIdx === 0 ? "w-1/4" : "w-1/6",
-            )}
+            className={cn('h-3.5', colIdx === 0 ? 'w-1/4' : 'w-1/6')}
           />
         ))}
       </div>
@@ -176,10 +164,7 @@ export const SkeletonTable = memo(function SkeletonTable({
           {Array.from({ length: columns }).map((_, colIdx) => (
             <Skeleton
               key={`cell-${rowIdx}-${colIdx}`}
-              className={cn(
-                "h-3",
-                colIdx === 0 ? "w-1/4" : "w-1/6",
-              )}
+              className={cn('h-3', colIdx === 0 ? 'w-1/4' : 'w-1/6')}
             />
           ))}
         </div>
@@ -194,11 +179,13 @@ export const SkeletonTable = memo(function SkeletonTable({
  * Full-page skeleton — renders a heading area + content grid.
  * Ideal for page-level loading states.
  */
-export const SkeletonPage = memo(function SkeletonPage({
-  className,
-}: SkeletonPageProps) {
+export const SkeletonPage = memo(function SkeletonPage({ className }: SkeletonPageProps) {
   return (
-    <div className={cn("flex-1 overflow-y-auto p-3 sm:p-6", className)} role="status" aria-label="Loading page">
+    <div
+      className={cn('flex-1 overflow-y-auto p-3 sm:p-6', className)}
+      role="status"
+      aria-label="Loading page"
+    >
       {/* Heading area */}
       <div className="mb-6 space-y-2">
         <Skeleton className="h-7 w-48 sm:h-8" />
@@ -239,7 +226,11 @@ export const ThreadCardSkeleton = memo(function ThreadCardSkeleton() {
   );
 });
 
-export const EmailListSkeleton = memo(function EmailListSkeleton({ count = 8 }: { count?: number }) {
+export const EmailListSkeleton = memo(function EmailListSkeleton({
+  count = 8,
+}: {
+  count?: number;
+}) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (

@@ -1,24 +1,24 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { SmartLabelEditor } from "./SmartLabelEditor";
-import { useAccountStore } from "@features/accounts/stores/accountStore";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { SmartLabelEditor } from './SmartLabelEditor';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 
-vi.mock("@shared/services/db/labels", () => ({
+vi.mock('@shared/services/db/labels', () => ({
   getLabelsForAccount: vi.fn(() =>
     Promise.resolve([
-      { id: "label-work", name: "Work", type: "user", account_id: "acc1" },
-      { id: "label-personal", name: "Personal", type: "user", account_id: "acc1" },
-      { id: "INBOX", name: "Inbox", type: "system", account_id: "acc1" },
+      { id: 'label-work', name: 'Work', type: 'user', account_id: 'acc1' },
+      { id: 'label-personal', name: 'Personal', type: 'user', account_id: 'acc1' },
+      { id: 'INBOX', name: 'Inbox', type: 'system', account_id: 'acc1' },
     ]),
   ),
 }));
 
 const mockGetRules = vi.fn(() => Promise.resolve([]));
-const mockInsertRule = vi.fn(() => Promise.resolve("new-id"));
+const mockInsertRule = vi.fn(() => Promise.resolve('new-id'));
 const mockUpdateRule = vi.fn(() => Promise.resolve());
 const mockDeleteRule = vi.fn(() => Promise.resolve());
 
-vi.mock("@features/mail/db/smartLabelRules", () => ({
+vi.mock('@features/mail/db/smartLabelRules', () => ({
   getSmartLabelRulesForAccount: (...args: unknown[]) => mockGetRules(...args),
   insertSmartLabelRule: (...args: unknown[]) => mockInsertRule(...args),
   updateSmartLabelRule: (...args: unknown[]) => mockUpdateRule(...args),
@@ -27,57 +27,65 @@ vi.mock("@features/mail/db/smartLabelRules", () => ({
 
 const mockBackfill = vi.fn(() => Promise.resolve(5));
 
-vi.mock("@features/mail/services/smartLabels/backfillService", () => ({
+vi.mock('@features/mail/services/smartLabels/backfillService', () => ({
   backfillSmartLabels: (...args: unknown[]) => mockBackfill(...args),
 }));
 
-describe("SmartLabelEditor", () => {
+describe('SmartLabelEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAccountStore.setState({
-      accounts: [{ id: "acc1", email: "test@test.com", displayName: "Test", avatarUrl: null, isActive: true }],
-      activeAccountId: "acc1",
+      accounts: [
+        {
+          id: 'acc1',
+          email: 'test@test.com',
+          displayName: 'Test',
+          avatarUrl: null,
+          isActive: true,
+        },
+      ],
+      activeAccountId: 'acc1',
     });
     mockGetRules.mockResolvedValue([]);
   });
 
-  it("renders add button", async () => {
+  it('renders add button', async () => {
     render(<SmartLabelEditor />);
     await waitFor(() => {
-      expect(screen.getByText("+ Add smart label")).toBeInTheDocument();
+      expect(screen.getByText('+ Add smart label')).toBeInTheDocument();
     });
   });
 
-  it("shows form when + Add smart label is clicked", async () => {
+  it('shows form when + Add smart label is clicked', async () => {
     render(<SmartLabelEditor />);
-    await waitFor(() => screen.getByText("+ Add smart label"));
+    await waitFor(() => screen.getByText('+ Add smart label'));
 
-    fireEvent.click(screen.getByText("+ Add smart label"));
+    fireEvent.click(screen.getByText('+ Add smart label'));
 
-    expect(screen.getByText("Label")).toBeInTheDocument();
-    expect(screen.getByText("AI Description")).toBeInTheDocument();
-    expect(screen.getByText("Save")).toBeInTheDocument();
-    expect(screen.getByText("Cancel")).toBeInTheDocument();
+    expect(screen.getByText('Label')).toBeInTheDocument();
+    expect(screen.getByText('AI Description')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it("hides form when Cancel is clicked", async () => {
+  it('hides form when Cancel is clicked', async () => {
     render(<SmartLabelEditor />);
-    await waitFor(() => screen.getByText("+ Add smart label"));
+    await waitFor(() => screen.getByText('+ Add smart label'));
 
-    fireEvent.click(screen.getByText("+ Add smart label"));
-    expect(screen.getByText("AI Description")).toBeInTheDocument();
+    fireEvent.click(screen.getByText('+ Add smart label'));
+    expect(screen.getByText('AI Description')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("Cancel"));
-    expect(screen.queryByText("AI Description")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(screen.queryByText('AI Description')).not.toBeInTheDocument();
   });
 
-  it("renders existing rules", async () => {
+  it('renders existing rules', async () => {
     mockGetRules.mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc1",
-        label_id: "label-work",
-        ai_description: "Work-related emails",
+        id: 'r1',
+        account_id: 'acc1',
+        label_id: 'label-work',
+        ai_description: 'Work-related emails',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
@@ -88,18 +96,18 @@ describe("SmartLabelEditor", () => {
     render(<SmartLabelEditor />);
 
     await waitFor(() => {
-      expect(screen.getByText("Work")).toBeInTheDocument();
-      expect(screen.getByText("Work-related emails")).toBeInTheDocument();
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('Work-related emails')).toBeInTheDocument();
     });
   });
 
-  it("shows disabled badge for disabled rules", async () => {
+  it('shows disabled badge for disabled rules', async () => {
     mockGetRules.mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc1",
-        label_id: "label-work",
-        ai_description: "Work emails",
+        id: 'r1',
+        account_id: 'acc1',
+        label_id: 'label-work',
+        ai_description: 'Work emails',
         criteria_json: null,
         is_enabled: 0,
         sort_order: 0,
@@ -110,43 +118,43 @@ describe("SmartLabelEditor", () => {
     render(<SmartLabelEditor />);
 
     await waitFor(() => {
-      expect(screen.getByText("Disabled")).toBeInTheDocument();
+      expect(screen.getByText('Disabled')).toBeInTheDocument();
     });
   });
 
-  it("calls insertSmartLabelRule on save", async () => {
+  it('calls insertSmartLabelRule on save', async () => {
     render(<SmartLabelEditor />);
-    await waitFor(() => screen.getByText("+ Add smart label"));
+    await waitFor(() => screen.getByText('+ Add smart label'));
 
-    fireEvent.click(screen.getByText("+ Add smart label"));
+    fireEvent.click(screen.getByText('+ Add smart label'));
 
     // Select label
-    const select = screen.getByRole("combobox");
-    fireEvent.change(select, { target: { value: "label-work" } });
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'label-work' } });
 
     // Enter description
-    const textarea = screen.getByPlaceholderText("e.g., Job applications and career opportunities");
-    fireEvent.change(textarea, { target: { value: "Work-related emails" } });
+    const textarea = screen.getByPlaceholderText('e.g., Job applications and career opportunities');
+    fireEvent.change(textarea, { target: { value: 'Work-related emails' } });
 
-    fireEvent.click(screen.getByText("Save"));
+    fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
       expect(mockInsertRule).toHaveBeenCalledWith({
-        accountId: "acc1",
-        labelId: "label-work",
-        aiDescription: "Work-related emails",
+        accountId: 'acc1',
+        labelId: 'label-work',
+        aiDescription: 'Work-related emails',
         criteria: undefined,
       });
     });
   });
 
-  it("shows backfill button when rules exist", async () => {
+  it('shows backfill button when rules exist', async () => {
     mockGetRules.mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc1",
-        label_id: "label-work",
-        ai_description: "Work emails",
+        id: 'r1',
+        account_id: 'acc1',
+        label_id: 'label-work',
+        ai_description: 'Work emails',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
@@ -157,17 +165,17 @@ describe("SmartLabelEditor", () => {
     render(<SmartLabelEditor />);
 
     await waitFor(() => {
-      expect(screen.getByText("Apply to existing emails")).toBeInTheDocument();
+      expect(screen.getByText('Apply to existing emails')).toBeInTheDocument();
     });
   });
 
-  it("triggers backfill and shows result", async () => {
+  it('triggers backfill and shows result', async () => {
     mockGetRules.mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc1",
-        label_id: "label-work",
-        ai_description: "Work emails",
+        id: 'r1',
+        account_id: 'acc1',
+        label_id: 'label-work',
+        ai_description: 'Work emails',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
@@ -177,47 +185,47 @@ describe("SmartLabelEditor", () => {
 
     render(<SmartLabelEditor />);
 
-    await waitFor(() => screen.getByText("Apply to existing emails"));
+    await waitFor(() => screen.getByText('Apply to existing emails'));
 
-    fireEvent.click(screen.getByText("Apply to existing emails"));
+    fireEvent.click(screen.getByText('Apply to existing emails'));
 
     await waitFor(() => {
-      expect(mockBackfill).toHaveBeenCalledWith("acc1");
-      expect(screen.getByText("Applied 5 labels to existing emails.")).toBeInTheDocument();
+      expect(mockBackfill).toHaveBeenCalledWith('acc1');
+      expect(screen.getByText('Applied 5 labels to existing emails.')).toBeInTheDocument();
     });
   });
 
-  it("only shows user labels in dropdown (filters out system labels)", async () => {
+  it('only shows user labels in dropdown (filters out system labels)', async () => {
     render(<SmartLabelEditor />);
-    await waitFor(() => screen.getByText("+ Add smart label"));
+    await waitFor(() => screen.getByText('+ Add smart label'));
 
-    fireEvent.click(screen.getByText("+ Add smart label"));
+    fireEvent.click(screen.getByText('+ Add smart label'));
 
-    const options = screen.getAllByRole("option");
+    const options = screen.getAllByRole('option');
     const optionTexts = options.map((o) => o.textContent);
-    expect(optionTexts).toContain("Work");
-    expect(optionTexts).toContain("Personal");
-    expect(optionTexts).not.toContain("Inbox");
+    expect(optionTexts).toContain('Work');
+    expect(optionTexts).toContain('Personal');
+    expect(optionTexts).not.toContain('Inbox');
   });
 
-  it("shows optional criteria section when toggled", async () => {
+  it('shows optional criteria section when toggled', async () => {
     render(<SmartLabelEditor />);
-    await waitFor(() => screen.getByText("+ Add smart label"));
+    await waitFor(() => screen.getByText('+ Add smart label'));
 
-    fireEvent.click(screen.getByText("+ Add smart label"));
-    fireEvent.click(screen.getByText("Optional filter criteria"));
+    fireEvent.click(screen.getByText('+ Add smart label'));
+    fireEvent.click(screen.getByText('Optional filter criteria'));
 
-    expect(screen.getByPlaceholderText("From contains...")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Subject contains...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('From contains...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Subject contains...')).toBeInTheDocument();
   });
 
-  it("deletes a rule", async () => {
+  it('deletes a rule', async () => {
     mockGetRules.mockResolvedValue([
       {
-        id: "r1",
-        account_id: "acc1",
-        label_id: "label-work",
-        ai_description: "Work emails",
+        id: 'r1',
+        account_id: 'acc1',
+        label_id: 'label-work',
+        ai_description: 'Work emails',
         criteria_json: null,
         is_enabled: 1,
         sort_order: 0,
@@ -227,16 +235,15 @@ describe("SmartLabelEditor", () => {
 
     render(<SmartLabelEditor />);
 
-    await waitFor(() => screen.getByText("Work"));
+    await waitFor(() => screen.getByText('Work'));
 
     // Click the delete button (last button in the row, with hover:text-danger class)
-    const dangerButtons = document.querySelectorAll("button.p-1.text-text-tertiary");
+    const dangerButtons = document.querySelectorAll('button.p-1.text-text-tertiary');
     const deleteBtn = dangerButtons[dangerButtons.length - 1];
     if (deleteBtn) fireEvent.click(deleteBtn);
 
     await waitFor(() => {
-      expect(mockDeleteRule).toHaveBeenCalledWith("r1");
+      expect(mockDeleteRule).toHaveBeenCalledWith('r1');
     });
   });
 });
-

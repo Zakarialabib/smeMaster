@@ -4,10 +4,22 @@ export interface CrudSliceOptions {
 }
 
 export function createCrudSlice(options: CrudSliceOptions): {
-  withCreate: <R>(mutate: () => Promise<R>, reload: () => Promise<void>, onError?: string) => Promise<R | undefined>;
-  withDelete: <R>(mutate: () => Promise<R>, reload: () => Promise<void>, onError?: string) => Promise<R | undefined>;
+  withCreate: <R>(
+    mutate: () => Promise<R>,
+    reload: () => Promise<void>,
+    onError?: string,
+  ) => Promise<R | undefined>;
+  withDelete: <R>(
+    mutate: () => Promise<R>,
+    reload: () => Promise<void>,
+    onError?: string,
+  ) => Promise<R | undefined>;
 } {
-  const wrapMutation = async <R>(mutate: () => Promise<R>, reload: () => Promise<void>, onError?: string): Promise<R | undefined> => {
+  const wrapMutation = async <R>(
+    mutate: () => Promise<R>,
+    reload: () => Promise<void>,
+    onError?: string,
+  ): Promise<R | undefined> => {
     options.setLoading(true);
     options.setError(null);
     try {

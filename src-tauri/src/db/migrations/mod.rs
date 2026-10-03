@@ -50,6 +50,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("030_sender_credentials", include_str!("030_sender_credentials.sql")),
     ("031_thread_importance_score", include_str!("031_thread_importance_score.sql")),
     ("032_deals_pipeline", include_str!("032_deals_pipeline.sql")),
+    ("033_downloader", include_str!("033_downloader.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────

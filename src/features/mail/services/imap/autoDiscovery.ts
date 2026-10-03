@@ -1,5 +1,5 @@
-export type SecurityType = "ssl" | "starttls" | "none";
-export type AuthMethod = "password" | "oauth2";
+export type SecurityType = 'ssl' | 'starttls' | 'none';
+export type AuthMethod = 'password' | 'oauth2';
 
 export interface ServerSettings {
   imapHost: string;
@@ -24,135 +24,135 @@ interface WellKnownProvider {
 const wellKnownProviders: WellKnownProvider[] = [
   {
     domains: [
-      "outlook.com",
-      "hotmail.com",
-      "live.com",
-      "msn.com",
-      "outlook.co.uk",
-      "hotmail.co.uk",
-      "office365.com",
-      "microsoft.com",
+      'outlook.com',
+      'hotmail.com',
+      'live.com',
+      'msn.com',
+      'outlook.co.uk',
+      'hotmail.co.uk',
+      'office365.com',
+      'microsoft.com',
     ],
     settings: {
-      imapHost: "outlook.office365.com",
+      imapHost: 'outlook.office365.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.office365.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.office365.com',
       smtpPort: 587,
-      smtpSecurity: "starttls",
+      smtpSecurity: 'starttls',
     },
-    authMethods: ["oauth2"],
-    oauthProviderId: "microsoft",
+    authMethods: ['oauth2'],
+    oauthProviderId: 'microsoft',
   },
   {
-    domains: ["yahoo.com", "yahoo.co.uk", "yahoo.co.jp", "ymail.com"],
+    domains: ['yahoo.com', 'yahoo.co.uk', 'yahoo.co.jp', 'ymail.com'],
     settings: {
-      imapHost: "imap.mail.yahoo.com",
+      imapHost: 'imap.mail.yahoo.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.mail.yahoo.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.mail.yahoo.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["oauth2", "password"],
-    oauthProviderId: "yahoo",
+    authMethods: ['oauth2', 'password'],
+    oauthProviderId: 'yahoo',
   },
   {
-    domains: ["icloud.com", "me.com", "mac.com"],
+    domains: ['icloud.com', 'me.com', 'mac.com'],
     settings: {
-      imapHost: "imap.mail.me.com",
+      imapHost: 'imap.mail.me.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.mail.me.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.mail.me.com',
       smtpPort: 587,
-      smtpSecurity: "starttls",
+      smtpSecurity: 'starttls',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["aol.com"],
+    domains: ['aol.com'],
     settings: {
-      imapHost: "imap.aol.com",
+      imapHost: 'imap.aol.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.aol.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.aol.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["zoho.com", "zohomail.com"],
+    domains: ['zoho.com', 'zohomail.com'],
     settings: {
-      imapHost: "imap.zoho.com",
+      imapHost: 'imap.zoho.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.zoho.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.zoho.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["fastmail.com", "fastmail.fm"],
+    domains: ['fastmail.com', 'fastmail.fm'],
     settings: {
-      imapHost: "imap.fastmail.com",
+      imapHost: 'imap.fastmail.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.fastmail.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.fastmail.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["protonmail.com", "proton.me", "pm.me"],
+    domains: ['protonmail.com', 'proton.me', 'pm.me'],
     settings: {
-      imapHost: "127.0.0.1",
+      imapHost: '127.0.0.1',
       imapPort: 1143,
-      imapSecurity: "starttls",
-      smtpHost: "127.0.0.1",
+      imapSecurity: 'starttls',
+      smtpHost: '127.0.0.1',
       smtpPort: 1025,
-      smtpSecurity: "starttls",
+      smtpSecurity: 'starttls',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
     acceptInvalidCerts: true,
   },
   {
-    domains: ["gmx.com", "gmx.net", "gmx.de"],
+    domains: ['gmx.com', 'gmx.net', 'gmx.de'],
     settings: {
-      imapHost: "imap.gmx.com",
+      imapHost: 'imap.gmx.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "mail.gmx.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'mail.gmx.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["mail.ru", "inbox.ru", "list.ru", "bk.ru"],
+    domains: ['mail.ru', 'inbox.ru', 'list.ru', 'bk.ru'],
     settings: {
-      imapHost: "imap.mail.ru",
+      imapHost: 'imap.mail.ru',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "smtp.mail.ru",
+      imapSecurity: 'ssl',
+      smtpHost: 'smtp.mail.ru',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
   {
-    domains: ["mailo.com", "net-c.com", "netc.fr"],
+    domains: ['mailo.com', 'net-c.com', 'netc.fr'],
     settings: {
-      imapHost: "mail.mailo.com",
+      imapHost: 'mail.mailo.com',
       imapPort: 993,
-      imapSecurity: "ssl",
-      smtpHost: "mail.mailo.com",
+      imapSecurity: 'ssl',
+      smtpHost: 'mail.mailo.com',
       smtpPort: 465,
-      smtpSecurity: "ssl",
+      smtpSecurity: 'ssl',
     },
-    authMethods: ["password"],
+    authMethods: ['password'],
   },
 ];
 
@@ -162,7 +162,7 @@ const wellKnownProviders: WellKnownProvider[] = [
  */
 export function extractDomain(email: string): string | null {
   const trimmed = email.trim().toLowerCase();
-  const atIndex = trimmed.lastIndexOf("@");
+  const atIndex = trimmed.lastIndexOf('@');
   if (atIndex < 1 || atIndex === trimmed.length - 1) return null;
   return trimmed.slice(atIndex + 1);
 }
@@ -178,9 +178,7 @@ export interface WellKnownProviderResult {
  * Look up a well-known provider by domain.
  * Returns the provider settings and auth info, or null if not found.
  */
-export function findWellKnownProvider(
-  domain: string,
-): WellKnownProviderResult | null {
+export function findWellKnownProvider(domain: string): WellKnownProviderResult | null {
   const lower = domain.toLowerCase();
   for (const provider of wellKnownProviders) {
     if (provider.domains.includes(lower)) {
@@ -202,10 +200,10 @@ export function guessServerSettings(domain: string): ServerSettings {
   return {
     imapHost: `imap.${domain}`,
     imapPort: 993,
-    imapSecurity: "ssl",
+    imapSecurity: 'ssl',
     smtpHost: `smtp.${domain}`,
     smtpPort: 587,
-    smtpSecurity: "starttls",
+    smtpSecurity: 'starttls',
   };
 }
 
@@ -223,7 +221,7 @@ export function discoverSettings(email: string): WellKnownProviderResult | null 
 
   return {
     settings: guessServerSettings(domain),
-    authMethods: ["password"],
+    authMethods: ['password'],
   };
 }
 
@@ -232,11 +230,11 @@ export function discoverSettings(email: string): WellKnownProviderResult | null 
  */
 export function getDefaultSmtpPort(security: SecurityType): number {
   switch (security) {
-    case "ssl":
+    case 'ssl':
       return 465;
-    case "starttls":
+    case 'starttls':
       return 587;
-    case "none":
+    case 'none':
       return 25;
   }
 }
@@ -246,11 +244,11 @@ export function getDefaultSmtpPort(security: SecurityType): number {
  */
 export function getDefaultImapPort(security: SecurityType): number {
   switch (security) {
-    case "ssl":
+    case 'ssl':
       return 993;
-    case "starttls":
+    case 'starttls':
       return 143;
-    case "none":
+    case 'none':
       return 143;
   }
 }

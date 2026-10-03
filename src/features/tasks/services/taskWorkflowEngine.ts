@@ -1,12 +1,12 @@
-import { emit } from "@tauri-apps/api/event";
-import { type Task } from "@shared/services/db/schema";
-import { getTemplateById, createScheduledEmail } from "@shared/services/db/db-invoke";
-import { listTasks, updateTask, insertTask } from "@features/tasks/db/tasks";
+import { emit } from '@tauri-apps/api/event';
+import { type Task } from '@shared/services/db/schema';
+import { getTemplateById, createScheduledEmail } from '@shared/services/db/db-invoke';
+import { listTasks, updateTask, insertTask } from '@features/tasks/db/tasks';
 
 // ── Config types (stored as JSON in workflow_config_json / reminder_config_json) ──
 
-export type WorkflowTrigger = "on_complete" | "on_due" | "on_overdue" | "none";
-export type WorkflowActionType = "send_email" | "create_notification" | "create_task";
+export type WorkflowTrigger = 'on_complete' | 'on_due' | 'on_overdue' | 'none';
+export type WorkflowActionType = 'send_email' | 'create_notification' | 'create_task';
 
 export interface WorkflowActionConfig {
   type: WorkflowActionType;
@@ -20,8 +20,8 @@ export interface WorkflowConfig {
   actions: WorkflowActionConfig[];
 }
 
-export type RemindBeforeUnit = "minutes" | "hours" | "days";
-export type ReminderNotificationType = "os" | "email" | "both";
+export type RemindBeforeUnit = 'minutes' | 'hours' | 'days';
+export type ReminderNotificationType = 'os' | 'email' | 'both';
 
 export interface ReminderConfig {
   enabled: boolean;
@@ -67,22 +67,22 @@ export async function checkTaskWorkflows(): Promise<void> {
   // Fetch all incomplete tasks (from all accounts) and then filter for those with workflow config set
   const allTasks = await listTasks(null, false); // accountId null = all accounts, isCompleted false = incomplete
   const tasks = allTasks
-    .filter(task => task.workflow_config_json !== null)
+    .filter((task) => task.workflow_config_json !== null)
     .sort((a, b) => (a.due_date || 0) - (b.due_date || 0)); // sort by due_date ascending, treating null as 0
 
   for (const task of tasks) {
     const config = parseWorkflowConfig(task);
-    if (!config || config.trigger === "none") continue;
+    if (!config || config.trigger === 'none') continue;
 
     let shouldTrigger = false;
 
     switch (config.trigger) {
-      case "on_overdue":
+      case 'on_overdue':
         if (task.due_date && task.due_date < now) {
           shouldTrigger = true;
         }
         break;
-      case "on_due":
+      case 'on_due':
         if (task.due_date) {
           const dueDate = new Date(task.due_date * 1000);
           const today = new Date();
@@ -93,7 +93,7 @@ export async function checkTaskWorkflows(): Promise<void> {
           }
         }
         break;
-      case "on_complete":
+      case 'on_complete':
         // This trigger is handled on explicit completion (see below)
         break;
     }
@@ -113,7 +113,7 @@ export async function checkTaskWorkflows(): Promise<void> {
  */
 export async function checkTaskOnCompleteWorkflow(task: Task): Promise<void> {
   const config = parseWorkflowConfig(task);
-  if (!config || config.trigger !== "on_complete") return;
+  if (!config || config.trigger !== 'on_complete') return;
 
   await executeActions(task, config);
 
@@ -121,29 +121,23 @@ export async function checkTaskOnCompleteWorkflow(task: Task): Promise<void> {
   await updateTask(task.id, { workflowConfigJson: null });
 }
 
-async function executeActions(
-  task: Task,
-  config: WorkflowConfig,
-): Promise<void> {
+async function executeActions(task: Task, config: WorkflowConfig): Promise<void> {
   for (const action of config.actions) {
     switch (action.type) {
-      case "send_email":
+      case 'send_email':
         await executeSendEmail(task, action);
         break;
-      case "create_notification":
+      case 'create_notification':
         await executeCreateNotification(task, action);
         break;
-      case "create_task":
+      case 'create_task':
         await executeCreateTask(task, action);
         break;
     }
   }
 }
 
-async function executeSendEmail(
-  task: Task,
-  action: WorkflowActionConfig,
-): Promise<void> {
+async function executeSendEmail(task: Task, action: WorkflowActionConfig): Promise<void> {
   if (!action.templateId) return;
 
   const template = await getTemplateById(action.templateId);
@@ -155,7 +149,7 @@ async function executeSendEmail(
   const now = Math.floor(Date.now() / 1000);
   await createScheduledEmail({
     accountId: companyId,
-    toAddresses: "",
+    toAddresses: '',
     ccAddresses: null,
     bccAddresses: null,
     subject: template.subject ?? task.title,
@@ -165,40 +159,34 @@ async function executeSendEmail(
     scheduledAt: now,
     signatureId: null,
     attachmentPaths: null,
-    status: "pending",
+    status: 'pending',
   });
 }
 
-async function executeCreateNotification(
-  task: Task,
-  action: WorkflowActionConfig,
-): Promise<void> {
+async function executeCreateNotification(task: Task, action: WorkflowActionConfig): Promise<void> {
   const text = action.notificationText ?? `Task "${task.title}" workflow triggered`;
-  await emit("notification:received", {
-    title: "Task Workflow",
+  await emit('notification:received', {
+    title: 'Task Workflow',
     body: text,
     data: { taskId: task.id },
   });
 }
 
-async function executeCreateTask(
-  task: Task,
-  action: WorkflowActionConfig,
-): Promise<void> {
+async function executeCreateTask(task: Task, action: WorkflowActionConfig): Promise<void> {
   const title = action.taskTitlePreset ?? `Follow-up: ${task.title}`;
   const now = Math.floor(Date.now() / 1000);
   await insertTask({
     accountId: task.company_id,
     title,
     description: null,
-    priority: "medium",
+    priority: 'medium',
     dueDate: task.due_date ? task.due_date + 86400 : now + 86400,
     parentId: task.id,
     contactId: task.contact_id,
     threadId: task.thread_id,
     threadAccountId: task.thread_account_id,
     recurrenceRule: null,
-    tagsJson: "[]",
+    tagsJson: '[]',
     workflowConfigJson: null,
     reminderConfigJson: null,
   });
@@ -213,7 +201,7 @@ export async function checkTaskReminders(): Promise<void> {
   const allTasks = await listTasks(null, false); // accountId null = all accounts, isCompleted false = incomplete
   // Filter: must have reminder_config_json set and due_date set
   const tasks = allTasks
-    .filter(task => task.reminder_config_json !== null && task.due_date !== null)
+    .filter((task) => task.reminder_config_json !== null && task.due_date !== null)
     .sort((a, b) => (a.due_date || 0) - (b.due_date || 0)); // sort by due_date ascending
 
   for (const task of tasks) {
@@ -226,8 +214,8 @@ export async function checkTaskReminders(): Promise<void> {
     // Fire reminder if the reminder time has passed and we haven't already
     // (we track this by checking a simple heuristic: reminder time <= now)
     if (reminderTime <= now) {
-      await emit("notification:received", {
-        title: "Task Reminder",
+      await emit('notification:received', {
+        title: 'Task Reminder',
         body: `"${task.title}" is due soon`,
         data: { taskId: task.id },
       });

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Mail, Globe, Shield, CheckCircle, ArrowLeft, Sparkles, X } from "lucide-react";
-import { GlassPanel } from "@shared/components/ui/glass-panel";
-import { AddAccount } from "@features/accounts/components/AddAccount";
-import { useTranslation } from "react-i18next";
+import { useState } from 'react';
+import { Mail, Globe, Shield, CheckCircle, ArrowLeft, Sparkles, X } from 'lucide-react';
+import { GlassPanel } from '@shared/components/ui/glass-panel';
+import { AddAccount } from '@features/accounts/components/AddAccount';
+import { useTranslation } from 'react-i18next';
 
 interface AccountSetupStepProps {
   onNext: (data: { accountSkipped: boolean; emailConnected: boolean }) => void;
@@ -11,9 +11,19 @@ interface AccountSetupStepProps {
 }
 
 const PROVIDER_BUTTONS = [
-  { icon: Globe, label: "Gmail / Google Workspace", desc: "OAuth 2.0 with auto-sync", provider: "gmail" },
-  { icon: Shield, label: "Microsoft Outlook / Office365", desc: "OAuth or app password", provider: "outlook" },
-  { icon: Mail, label: "Other (IMAP / SMTP)", desc: "Manual configuration", provider: "imap" },
+  {
+    icon: Globe,
+    label: 'Gmail / Google Workspace',
+    desc: 'OAuth 2.0 with auto-sync',
+    provider: 'gmail',
+  },
+  {
+    icon: Shield,
+    label: 'Microsoft Outlook / Office365',
+    desc: 'OAuth or app password',
+    provider: 'outlook',
+  },
+  { icon: Mail, label: 'Other (IMAP / SMTP)', desc: 'Manual configuration', provider: 'imap' },
 ];
 
 export function AccountSetupStep({ onNext, onBack, mailSelected = false }: AccountSetupStepProps) {
@@ -46,16 +56,16 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/20">
             <CheckCircle className="h-7 w-7 text-green-500" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight">{t("onboarding.connectedTitle")}</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t('onboarding.connectedTitle')}</h2>
           <p className="text-muted-foreground text-sm">
-            {t("onboarding.connectedDesc", { count: accountCount })}
+            {t('onboarding.connectedDesc', { count: accountCount })}
           </p>
         </div>
 
         <GlassPanel variant="card" className="p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span>{t("onboarding.connectedNote")}</span>
+            <span>{t('onboarding.connectedNote')}</span>
           </div>
         </GlassPanel>
 
@@ -65,14 +75,14 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
             onClick={onBack}
             className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> {t("onboarding.back")}
+            <ArrowLeft className="h-3.5 w-3.5" /> {t('onboarding.back')}
           </button>
           <button
             type="button"
             onClick={handleContinueConnected}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
+            className="ms-auto inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-all duration-200"
           >
-            {t("onboarding.continue")}
+            {t('onboarding.continue')}
           </button>
         </div>
       </div>
@@ -82,13 +92,13 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
   return (
     <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       <div className="text-center space-y-1.5">
-        <h2 className="text-xl font-bold tracking-tight">{t("onboarding.connectTitle")}</h2>
-        <p className="text-muted-foreground text-sm">{t("onboarding.connectDesc")}</p>
+        <h2 className="text-xl font-bold tracking-tight">{t('onboarding.connectTitle')}</h2>
+        <p className="text-muted-foreground text-sm">{t('onboarding.connectDesc')}</p>
       </div>
 
       <div className="space-y-2">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-          {t("onboarding.providerLabel")}
+          {t('onboarding.providerLabel')}
         </p>
         <div className="grid gap-2">
           {PROVIDER_BUTTONS.map((p, i) => {
@@ -100,7 +110,7 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
                 onClick={handleConnect}
                 className="flex items-center gap-3.5 rounded-xl border border-border/60 bg-background/50 hover:border-accent/30 px-4 py-3 text-start transition-all duration-200 group"
                 style={{
-                  animation: "slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both",
+                  animation: 'slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both',
                   animationDelay: `${i * 60}ms`,
                 }}
               >
@@ -109,7 +119,9 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t(`onboarding.providers.${p.provider}`)}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">{t(`onboarding.providers.${p.provider}Desc`)}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    {t(`onboarding.providers.${p.provider}Desc`)}
+                  </p>
                 </div>
               </button>
             );
@@ -120,7 +132,9 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
       {mailSelected && (
         <GlassPanel variant="card" className="p-3 flex items-start gap-2.5">
           <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground leading-relaxed">{t("onboarding.mailReminder")}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t('onboarding.mailReminder')}
+          </p>
         </GlassPanel>
       )}
 
@@ -130,7 +144,7 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
           onClick={handleSkip}
           className="text-xs text-muted-foreground/60 hover:text-muted-foreground underline underline-offset-2 decoration-muted-foreground/20 hover:decoration-muted-foreground/40 transition-colors duration-200"
         >
-          {t("onboarding.skipForNow")}
+          {t('onboarding.skipForNow')}
         </button>
       </div>
 
@@ -140,14 +154,14 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
           onClick={onBack}
           className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> {t("onboarding.back")}
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('onboarding.back')}
         </button>
       </div>
 
       {showAddAccount && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          style={{ animation: "fadeIn 200ms ease-out both" }}
+          style={{ animation: 'fadeIn 200ms ease-out both' }}
         >
           <div className="relative rounded-2xl border border-border bg-card p-6 shadow-2xl w-full max-w-md">
             <button
@@ -157,10 +171,7 @@ export function AccountSetupStep({ onNext, onBack, mailSelected = false }: Accou
             >
               <X className="h-4 w-4" />
             </button>
-            <AddAccount
-              onSuccess={handleAccountSuccess}
-              onClose={() => setShowAddAccount(false)}
-            />
+            <AddAccount onSuccess={handleAccountSuccess} onClose={() => setShowAddAccount(false)} />
           </div>
         </div>
       )}

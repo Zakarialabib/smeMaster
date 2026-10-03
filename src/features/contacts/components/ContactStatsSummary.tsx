@@ -1,7 +1,7 @@
-import { Mail, Clock } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { formatRelativeDate } from "@shared/utils/date";
-import type { ContactStats } from "@features/contacts/db/contacts";
+import { Mail, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { formatRelativeDate } from '@shared/utils/date';
+import type { ContactStats } from '@features/contacts/db/contacts';
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 

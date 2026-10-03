@@ -2,7 +2,7 @@
   listSegments,
   upsertContactSegment as dbUpsertContactSegment,
   deleteContactSegment as dbDeleteContactSegment,
-} from "../../../shared/services/db/db-invoke";
+} from '../../../shared/services/db/db-invoke';
 
 export interface DbContactSegment {
   id: string;

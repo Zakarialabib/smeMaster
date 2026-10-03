@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from 'react';
 
 export interface UseFocusTrapOptions {
   /** Whether the trap is active */
@@ -12,14 +12,14 @@ export interface UseFocusTrapOptions {
 }
 
 const FOCUSABLE_SELECTORS = [
-  "button:not([disabled])",
-  "a[href]",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
+  'button:not([disabled])',
+  'a[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
   '[contenteditable="true"]',
-].join(",");
+].join(',');
 
 /**
  * Traps keyboard focus within a container element.
@@ -28,12 +28,7 @@ const FOCUSABLE_SELECTORS = [
 export function useFocusTrap<T extends HTMLElement = HTMLElement>(
   options: UseFocusTrapOptions = {},
 ): RefObject<T> {
-  const {
-    enabled = true,
-    autoFocus = true,
-    restoreFocus = true,
-    onEscape,
-  } = options;
+  const { enabled = true, autoFocus = true, restoreFocus = true, onEscape } = options;
 
   const containerRef = useRef<T | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -47,9 +42,9 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
     const getFocusable = (): HTMLElement[] => {
-      return Array.from(
-        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
-      ).filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
+      return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter(
+        (el) => !el.hasAttribute('disabled') && el.tabIndex !== -1,
+      );
     };
 
     // Focus the first focusable element
@@ -59,24 +54,24 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
       if (first) {
         first.focus();
       } else {
-        container.setAttribute("tabindex", "-1");
+        container.setAttribute('tabindex', '-1');
         container.focus();
       }
     }
 
     // Set ARIA attributes
-    if (!container.getAttribute("role")) container.setAttribute("role", "dialog");
-    container.setAttribute("aria-modal", "true");
+    if (!container.getAttribute('role')) container.setAttribute('role', 'dialog');
+    container.setAttribute('aria-modal', 'true');
 
     function handleKeyDown(e: KeyboardEvent) {
       const current = containerRef.current;
       if (!current) return;
-      if (e.key === "Escape" && onEscape) {
+      if (e.key === 'Escape' && onEscape) {
         e.preventDefault();
         onEscape();
         return;
       }
-      if (e.key !== "Tab") return;
+      if (e.key !== 'Tab') return;
 
       const focusable = getFocusable();
       if (focusable.length === 0) {
@@ -106,9 +101,9 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
       }
     }
 
-    container.addEventListener("keydown", handleKeyDown);
+    container.addEventListener('keydown', handleKeyDown);
     return () => {
-      container.removeEventListener("keydown", handleKeyDown);
+      container.removeEventListener('keydown', handleKeyDown);
       if (restoreFocus && previouslyFocusedRef.current) {
         previouslyFocusedRef.current.focus();
       }

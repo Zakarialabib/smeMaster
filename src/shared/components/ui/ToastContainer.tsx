@@ -1,15 +1,15 @@
-import { useToastStore } from "@shared/stores/toastStore";
+import { useToastStore } from '@shared/stores/toastStore';
 
 const TYPE_STYLES = {
-  success: "bg-success/15 border-success/30 text-success",
-  error: "bg-danger/15 border-danger/30 text-danger",
-  info: "bg-accent/15 border-accent/30 text-accent",
+  success: 'bg-success/15 border-success/30 text-success',
+  error: 'bg-danger/15 border-danger/30 text-danger',
+  info: 'bg-accent/15 border-accent/30 text-accent',
 };
 
 const ICONS = {
-  success: "✓",
-  error: "✕",
-  info: "ⓘ",
+  success: '✓',
+  error: '✕',
+  info: 'ⓘ',
 };
 
 export function ToastContainer() {

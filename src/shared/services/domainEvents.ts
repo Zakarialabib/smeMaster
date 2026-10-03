@@ -1,4 +1,4 @@
-import { invokeCommand } from "@shared/services/db/invoke/command";
+import { invokeCommand } from '@shared/services/db/invoke/command';
 
 /**
  * Emit an EmailReceived event to the Rust EventBus.
@@ -10,9 +10,9 @@ export async function emitEmailReceived(
   fromAddress: string,
   date: number,
 ): Promise<void> {
-  return invokeCommand<void>("emit_domain_event", {
+  return invokeCommand<void>('emit_domain_event', {
     event: {
-      kind: "email:received",
+      kind: 'email:received',
       account_id: accountId,
       message_id: messageId,
       from_address: fromAddress,
@@ -26,9 +26,9 @@ export async function emitEmailReceived(
  * Called after a contact is successfully updated.
  */
 export async function emitContactUpdated(contactId: string): Promise<void> {
-  return invokeCommand<void>("emit_domain_event", {
+  return invokeCommand<void>('emit_domain_event', {
     event: {
-      kind: "contact:updated",
+      kind: 'contact:updated',
       contact_id: contactId,
     },
   });
@@ -39,9 +39,9 @@ export async function emitContactUpdated(contactId: string): Promise<void> {
  * Called after a task is successfully completed.
  */
 export async function emitTaskCompleted(taskId: string): Promise<void> {
-  return invokeCommand<void>("emit_domain_event", {
+  return invokeCommand<void>('emit_domain_event', {
     event: {
-      kind: "task:completed",
+      kind: 'task:completed',
       task_id: taskId,
     },
   });

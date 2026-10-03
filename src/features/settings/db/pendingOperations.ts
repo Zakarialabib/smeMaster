@@ -1,6 +1,16 @@
-import { upsertPendingOperation, deletePendingOperation as dbDeletePendingOperation } from "@/shared/services/db/db-invoke";
-import { executeSearchQuery, updateOperationStatus as dbUpdateOperationStatus, incrementRetry as dbIncrementRetry, deletePendingOpsByIds, clearFailedOperations as dbClearFailedOperations, retryFailedOperations as dbRetryFailedOperations } from "@/shared/services/db/db-invoke";
-import type { PendingOperation } from "@/shared/services/db/db-invoke";
+import {
+  upsertPendingOperation,
+  deletePendingOperation as dbDeletePendingOperation,
+} from '@/shared/services/db/db-invoke';
+import {
+  executeSearchQuery,
+  updateOperationStatus as dbUpdateOperationStatus,
+  incrementRetry as dbIncrementRetry,
+  deletePendingOpsByIds,
+  clearFailedOperations as dbClearFailedOperations,
+  retryFailedOperations as dbRetryFailedOperations,
+} from '@/shared/services/db/db-invoke';
+import type { PendingOperation } from '@/shared/services/db/db-invoke';
 
 export type { PendingOperation };
 
@@ -62,17 +72,18 @@ export async function deleteOperation(id: string): Promise<void> {
 const BACKOFF_SCHEDULE = [60, 300, 900, 3600];
 
 export async function incrementRetry(id: string): Promise<void> {
-  const rows = await executeSearchQuery(
+  const rows = (await executeSearchQuery(
     `SELECT retry_count, max_retries FROM pending_operations WHERE id = $1`,
     [id],
-  ) as unknown as { retry_count: number; max_retries: number }[];
+  )) as unknown as { retry_count: number; max_retries: number }[];
   const op = rows[0];
   if (!op) return;
 
   const newCount = op.retry_count + 1;
   const isFailed = newCount >= op.max_retries;
   const nextRetryAt = !isFailed
-    ? Math.floor(Date.now() / 1000) + BACKOFF_SCHEDULE[Math.min(newCount - 1, BACKOFF_SCHEDULE.length - 1)]!
+    ? Math.floor(Date.now() / 1000) +
+      BACKOFF_SCHEDULE[Math.min(newCount - 1, BACKOFF_SCHEDULE.length - 1)]!
     : undefined;
 
   await dbIncrementRetry(id, newCount, isFailed, nextRetryAt);
@@ -80,31 +91,31 @@ export async function incrementRetry(id: string): Promise<void> {
 
 export async function getPendingOpsCount(accountId?: string): Promise<number> {
   if (accountId) {
-    const rows = await executeSearchQuery(
+    const rows = (await executeSearchQuery(
       `SELECT COUNT(*) as count FROM pending_operations WHERE account_id = $1 AND status = 'pending'`,
       [accountId],
-    ) as unknown as { count: number }[];
+    )) as unknown as { count: number }[];
     return rows[0]?.count ?? 0;
   }
-  const rows = await executeSearchQuery(
+  const rows = (await executeSearchQuery(
     `SELECT COUNT(*) as count FROM pending_operations WHERE status = 'pending'`,
     [],
-  ) as unknown as { count: number }[];
+  )) as unknown as { count: number }[];
   return rows[0]?.count ?? 0;
 }
 
 export async function getFailedOpsCount(accountId?: string): Promise<number> {
   if (accountId) {
-    const rows = await executeSearchQuery(
+    const rows = (await executeSearchQuery(
       `SELECT COUNT(*) as count FROM pending_operations WHERE account_id = $1 AND status = 'failed'`,
       [accountId],
-    ) as unknown as { count: number }[];
+    )) as unknown as { count: number }[];
     return rows[0]?.count ?? 0;
   }
-  const rows = await executeSearchQuery(
+  const rows = (await executeSearchQuery(
     `SELECT COUNT(*) as count FROM pending_operations WHERE status = 'failed'`,
     [],
-  ) as unknown as { count: number }[];
+  )) as unknown as { count: number }[];
   return rows[0]?.count ?? 0;
 }
 
@@ -121,10 +132,9 @@ export async function getPendingOpsForResource(
 }
 
 export async function getPendingOperationById(id: string): Promise<PendingOperation | null> {
-  const rows = await executeSearchQuery(
-    "SELECT * FROM pending_operations WHERE id = $1",
-    [id],
-  ) as unknown as PendingOperation[];
+  const rows = (await executeSearchQuery('SELECT * FROM pending_operations WHERE id = $1', [
+    id,
+  ])) as unknown as PendingOperation[];
   return rows[0] ?? null;
 }
 
@@ -132,13 +142,13 @@ export async function compactQueue(accountId?: string): Promise<number> {
   const params: unknown[] = [];
   let whereClause = "WHERE status = 'pending'";
   if (accountId) {
-    whereClause += " AND account_id = $1";
+    whereClause += ' AND account_id = $1';
     params.push(accountId);
   }
-  const ops = await executeSearchQuery(
+  const ops = (await executeSearchQuery(
     `SELECT * FROM pending_operations ${whereClause} ORDER BY created_at ASC`,
     params,
-  ) as unknown as PendingOperation[];
+  )) as unknown as PendingOperation[];
 
   const byResource = new Map<string, PendingOperation[]>();
   for (const op of ops) {
@@ -151,30 +161,24 @@ export async function compactQueue(accountId?: string): Promise<number> {
   const toDelete: string[] = [];
 
   for (const [, resourceOps] of byResource) {
-    for (const toggleType of ["star", "markRead"]) {
-      const toggleOps = resourceOps.filter(
-        (o) => o.operation_type === toggleType,
-      );
+    for (const toggleType of ['star', 'markRead']) {
+      const toggleOps = resourceOps.filter((o) => o.operation_type === toggleType);
       while (toggleOps.length >= 2) {
         const a = toggleOps.shift()!;
         const b = toggleOps.shift()!;
         const paramsA = JSON.parse(a.params);
         const paramsB = JSON.parse(b.params);
         if (
-          (toggleType === "star" && paramsA.starred !== paramsB.starred) ||
-          (toggleType === "markRead" && paramsA.read !== paramsB.read)
+          (toggleType === 'star' && paramsA.starred !== paramsB.starred) ||
+          (toggleType === 'markRead' && paramsA.read !== paramsB.read)
         ) {
           toDelete.push(a.id, b.id);
         }
       }
     }
 
-    const addLabelOps = resourceOps.filter(
-      (o) => o.operation_type === "addLabel",
-    );
-    const removeLabelOps = resourceOps.filter(
-      (o) => o.operation_type === "removeLabel",
-    );
+    const addLabelOps = resourceOps.filter((o) => o.operation_type === 'addLabel');
+    const removeLabelOps = resourceOps.filter((o) => o.operation_type === 'removeLabel');
     for (const addOp of addLabelOps) {
       const addParams = JSON.parse(addOp.params);
       const matchIdx = removeLabelOps.findIndex((r) => {
@@ -187,9 +191,7 @@ export async function compactQueue(accountId?: string): Promise<number> {
       }
     }
 
-    const moveOps = resourceOps.filter(
-      (o) => o.operation_type === "moveToFolder",
-    );
+    const moveOps = resourceOps.filter((o) => o.operation_type === 'moveToFolder');
     if (moveOps.length > 1) {
       for (let i = 0; i < moveOps.length - 1; i++) {
         toDelete.push(moveOps[i]!.id);

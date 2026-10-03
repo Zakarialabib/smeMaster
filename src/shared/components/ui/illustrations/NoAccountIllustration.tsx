@@ -23,13 +23,7 @@ export function NoAccountIllustration({ size = 140, className }: Props) {
         strokeWidth="1.5"
       />
       {/* Head */}
-      <circle
-        cx="65"
-        cy="52"
-        r="12"
-        fill="var(--color-accent)"
-        opacity="0.2"
-      />
+      <circle cx="65" cy="52" r="12" fill="var(--color-accent)" opacity="0.2" />
       {/* Body / shoulders */}
       <path
         d="M43 88 C43 74 55 66 65 66 C75 66 87 74 87 88"
@@ -37,20 +31,8 @@ export function NoAccountIllustration({ size = 140, className }: Props) {
         opacity="0.15"
       />
       {/* Plus badge */}
-      <circle
-        cx="95"
-        cy="40"
-        r="16"
-        fill="var(--color-accent)"
-        opacity="0.15"
-      />
-      <circle
-        cx="95"
-        cy="40"
-        r="12"
-        fill="var(--color-accent)"
-        opacity="0.25"
-      />
+      <circle cx="95" cy="40" r="16" fill="var(--color-accent)" opacity="0.15" />
+      <circle cx="95" cy="40" r="12" fill="var(--color-accent)" opacity="0.25" />
       {/* Plus sign */}
       <line
         x1="89"
