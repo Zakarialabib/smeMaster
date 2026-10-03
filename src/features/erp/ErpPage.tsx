@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { PageScaffold } from '@shared/components/layout';
+import { CardTabBar, type CardTabItem } from '@shared/components/ui/CardTabBar';
 import {
   Calculator,
   LayoutDashboard,
@@ -19,6 +21,7 @@ import RbacRoles from './RbacRoles';
 import CompanyManagementView from './CompanyManagementView';
 import { useCompanyStore, getActiveCompany, companyInitials } from './companyStore';
 import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
+import type { ErpTabId } from '@/router/routeTree';
 import type { Item } from '@shared/services/db/schema';
 import {
   listItems,
@@ -27,21 +30,35 @@ import {
   getWallet,
 } from '@shared/services/db/invoke/invoicing';
 
-type TabId = 'overview' | 'stock' | 'accounting' | 'reports' | 'wallet' | 'roles' | 'company';
-
-const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'stock', label: 'Stock', icon: Package },
-  { id: 'accounting', label: 'Accounting', icon: BookOpen },
-  { id: 'reports', label: 'Reports', icon: FileBarChart },
-  { id: 'wallet', label: 'Cash', icon: Wallet },
-  { id: 'roles', label: 'Roles', icon: ShieldCheck },
-  { id: 'company', label: 'Company', icon: Calculator },
+const TAB_DEFS: { id: ErpTabId; icon: typeof LayoutDashboard }[] = [
+  { id: 'overview', icon: LayoutDashboard },
+  { id: 'stock', icon: Package },
+  { id: 'accounting', icon: BookOpen },
+  { id: 'reports', icon: FileBarChart },
+  { id: 'wallet', icon: Wallet },
+  { id: 'roles', icon: ShieldCheck },
+  { id: 'company', icon: Calculator },
 ];
 
 export default function ErpPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<TabId>('overview');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Active tab lives in the URL (?tab=stock) so refresh/deep links agree.
+  const param = new URLSearchParams(location.searchStr).get('tab');
+  const tab: ErpTabId = TAB_DEFS.some((d) => d.id === param) ? (param as ErpTabId) : 'overview';
+
+  const tabs: CardTabItem<ErpTabId>[] = TAB_DEFS.map(({ id, icon }) => ({
+    id,
+    label: t(`erp.tabs.${id}`),
+    icon,
+  }));
+
+  const handleTabChange = (next: ErpTabId) => {
+    if (next === tab) return;
+    navigate({ to: '/erp', search: (prev) => ({ ...prev, tab: next }) });
+  };
 
   const companies = useCompanyStore((s) => s.companies);
   const activeCompanyId = useCompanyStore((s) => s.activeCompanyId);
@@ -69,36 +86,19 @@ export default function ErpPage() {
       toolbar={
         <div className="flex items-center justify-between gap-4 w-full">
           <CompanySwitcher />
-          <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-            {TABS.map((tDef) => {
-              const Icon = tDef.icon;
-              const active = tab === tDef.id;
-              return (
-                <button
-                  key={tDef.id}
-                  type="button"
-                  onClick={() => setTab(tDef.id)}
-                  className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                    active
-                      ? 'bg-accent/10 text-accent'
-                      : 'text-text-secondary hover:bg-bg-hover/60 hover:text-text-primary'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {tDef.label}
-                  {active && (
-                    <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full bg-accent" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+          <CardTabBar
+            tabs={tabs}
+            activeTab={tab}
+            onTabChange={handleTabChange}
+            ariaLabel={t('erp.title')}
+            className="flex-1 min-w-0 max-w-3xl ms-auto"
+          />
         </div>
       }
     >
       {/* Tab content */}
       <main className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto" id={`tabpanel-${tab}`} role="tabpanel">
           {tab === 'overview' && <OverviewTab />}
           {tab === 'stock' && <StockView />}
           {tab === 'accounting' && <JournalView />}

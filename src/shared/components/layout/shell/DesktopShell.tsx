@@ -25,7 +25,7 @@ export interface DesktopShellProps {
 export function DesktopShell({ syncing, licenseBanner }: DesktopShellProps) {
   const location = useLocation();
   const activeNavId = getActiveNavFromPath(location.pathname);
-  const activeSubItemId = getActiveSubItem(location.pathname);
+  const activeSubItemId = getActiveSubItem(location.pathname, location.searchStr);
   const sidebarCollapsed = useLayoutStore((s) => s.sidebarCollapsed);
   // Icon rail always visible. Mail panel only expands on mail pages.
   // All other pages (settings, help, tasks, calendar) show icon rail only.

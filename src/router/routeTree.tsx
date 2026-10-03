@@ -131,12 +131,47 @@ function validateMailSearch(search: Record<string, unknown>): MailSearch {
   return result;
 }
 
+// /tasks — Schedule (Tasks + Calendar) tab, optional view deep link.
+type ScheduleSearch = {
+  tab?: 'tasks' | 'calendar';
+  view?: string;
+};
+
+function validateScheduleSearch(search: Record<string, unknown>): ScheduleSearch {
+  const result: ScheduleSearch = {};
+  const tab = search['tab'];
+  if (tab === 'tasks' || tab === 'calendar') result.tab = tab;
+  const view = search['view'];
+  if (typeof view === 'string' && view) result.view = view;
+  return result;
+}
+
+// /erp — active console tab (single source of truth for the 7 tab ids).
+export const ERP_TAB_IDS = [
+  'overview',
+  'stock',
+  'accounting',
+  'reports',
+  'wallet',
+  'roles',
+  'company',
+] as const;
+export type ErpTabId = (typeof ERP_TAB_IDS)[number];
+
+function validateErpSearch(search: Record<string, unknown>): { tab?: ErpTabId } {
+  const tab = search['tab'];
+  if (typeof tab === 'string' && (ERP_TAB_IDS as readonly string[]).includes(tab)) {
+    return { tab: tab as ErpTabId };
+  }
+  return {};
+}
+
 // ---------- Root (shell: TitleBar, Sidebar, overlays) ----------
 export const rootRoute = createRootRoute({
   component: App,
 });
 
-// ---------- / (index) â†’ redirect to /mail/inbox ----------
+// ---------- / (index) → redirect to /dashboard ----------
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
@@ -263,15 +298,20 @@ const SchedulePageWrapper = createPageWrapper('Schedule', SchedulePage as LazyCo
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'tasks',
+  validateSearch: validateScheduleSearch,
   component: SchedulePageWrapper,
 });
 
-// ---------- /calendar → redirect to /tasks ----------
+// ---------- /calendar → redirect to /tasks (keeps ?view=, opens Calendar tab) ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'calendar',
-  beforeLoad: () => {
-    throw redirect({ to: '/tasks' });
+  beforeLoad: ({ location }) => {
+    const view = new URLSearchParams(location.searchStr).get('view');
+    throw redirect({
+      to: '/tasks',
+      search: { tab: 'calendar', ...(view ? { view } : {}) },
+    });
   },
 });
 
@@ -326,6 +366,7 @@ const ErpPageWrapper = createPageWrapper('Erp', ErpPage as LazyComponent);
 export const erpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'erp',
+  validateSearch: validateErpSearch,
   component: ErpPageWrapper,
 });
 

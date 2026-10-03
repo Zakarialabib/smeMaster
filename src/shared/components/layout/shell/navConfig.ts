@@ -21,7 +21,11 @@ import {
   Calculator,
   ListChecks,
   CalendarDays,
+  CalendarRange,
   Bot,
+  Store,
+  ShoppingCart,
+  FileText,
 } from 'lucide-react';
 import { navigateToLabel, navigateToSettings, navigateToHelp } from '@/router/navigate';
 import { router } from '@/router';
@@ -110,7 +114,14 @@ export const NAV_GROUPS: NavRailGroup[] = [
     id: 'dashboard',
     label: 'nav.dashboard',
     icon: LayoutDashboard,
+    items: [],
+  },
+  {
+    id: 'sell',
+    label: 'nav.sell',
+    icon: Store,
     items: [
+      { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
       { id: 'invoicing', label: 'nav.invoicing', icon: ReceiptText, path: '/invoicing' },
       { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
     ],
@@ -140,35 +151,25 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Users,
     label: 'nav.crm',
     items: [
-      { id: 'contacts', label: 'nav.crm', icon: Users },
-      { id: 'deals', label: 'nav.deals', icon: ReceiptText, path: '/people?tab=deals' },
+      { id: 'contacts', label: 'nav.contacts', icon: Users, path: '/people' },
+      { id: 'deals', label: 'nav.deals', icon: FileText, path: '/people?tab=deals' },
     ],
   },
   {
     id: 'tasks',
     icon: ListChecks,
-    label: 'nav.tasks',
+    label: 'nav.schedule',
     items: [
       { id: 'today', label: 'nav.tasksToday', icon: ListChecks, path: '/tasks' },
-      {
-        id: 'upcoming',
-        label: 'nav.tasksUpcoming',
-        icon: CalendarDays,
-        path: '/tasks?view=upcoming',
-      },
-    ],
-  },
-  {
-    id: 'calendar',
-    icon: CalendarDays,
-    label: 'nav.calendar',
-    items: [
-      { id: 'month', label: 'nav.calendarMonth', icon: CalendarDays, path: '/calendar' },
+      { id: 'upcoming', label: 'nav.tasksUpcoming', icon: Clock, path: '/tasks?view=upcoming' },
+      // ── divider ──
+      { id: '__divider__', label: '', icon: undefined },
+      { id: 'month', label: 'nav.calendarMonth', icon: CalendarDays, path: '/tasks?tab=calendar' },
       {
         id: 'agenda',
         label: 'nav.calendarAgenda',
-        icon: ListChecks,
-        path: '/calendar?view=agenda',
+        icon: CalendarRange,
+        path: '/tasks?tab=calendar&view=agenda',
       },
     ],
   },
@@ -222,12 +223,12 @@ export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
   mail: ['ai-tasks', 'today', 'hot-leads'],
   crm: ['hot-leads', 'ai-summary', 'upcoming'],
   tasks: ['today', 'upcoming', 'ai-tasks'],
-  calendar: ['upcoming', 'today', 'hot-leads'],
   automation: ['ai-summary', 'recent'],
   vault: ['recent'],
   'ai-assistant': ['ai-summary', 'recent'],
   'agent-console': ['ai-summary', 'recent'],
   dashboard: ['today', 'upcoming', 'hot-leads'],
+  sell: ['today', 'upcoming', 'hot-leads'],
   settings: ['recent'],
   help: ['recent'],
 };
@@ -238,12 +239,12 @@ export const INSIGHT_TITLE: Record<string, string> = {
   mail: 'Today',
   crm: 'Relationships',
   tasks: 'My day',
-  calendar: 'Upcoming',
   automation: 'Activity',
   vault: 'Recent',
   'ai-assistant': 'AI',
   'agent-console': 'Agent',
   dashboard: 'Overview',
+  sell: 'Sales',
   settings: 'Recent',
   help: 'Recent',
 };
@@ -265,7 +266,7 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/people')) return 'crm';
   if (pathname.startsWith('/crm')) return 'crm';
   if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/calendar')) return 'calendar';
+  if (pathname.startsWith('/calendar')) return 'tasks';
   if (pathname.startsWith('/automation')) return 'automation';
   if (pathname.startsWith('/workflows')) return 'automation';
   if (pathname.startsWith('/vault')) return 'vault';
@@ -274,16 +275,19 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/attachments')) return 'mail';
   if (pathname.startsWith('/unified')) return 'unified';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
-  if (pathname.startsWith('/invoicing')) return 'dashboard';
-  if (pathname.startsWith('/erp')) return 'dashboard';
+  if (pathname.startsWith('/invoicing')) return 'sell';
+  if (pathname.startsWith('/erp')) return 'sell';
   if (pathname.startsWith('/ai-assistant')) return 'ai-assistant';
   if (pathname.startsWith('/agent-console')) return 'agent-console';
-  if (pathname.startsWith('/pos')) return 'mail';
+  if (pathname.startsWith('/pos')) return 'sell';
   return 'mail';
 }
 
-export function getActiveSubItem(pathname: string): string | null {
+export function getActiveSubItem(pathname: string, searchStr = ''): string | null {
   if (pathname === '/' || pathname === '') return 'inbox';
+
+  const search = new URLSearchParams(searchStr);
+  const view = search.get('view');
 
   const mailMatch = pathname.match(/^\/mail\/([^/]+)/);
   if (mailMatch) return mailMatch[1]!;
@@ -296,7 +300,7 @@ export function getActiveSubItem(pathname: string): string | null {
   const settingsMatch = pathname.match(/^\/settings\/([^/]+)/);
   if (settingsMatch) return settingsMatch[1]!;
 
-  if (pathname.startsWith('/people')) return 'contacts';
+  if (pathname.startsWith('/people')) return search.get('tab') === 'deals' ? 'deals' : 'contacts';
   if (pathname.startsWith('/crm')) return 'contacts';
   if (pathname.startsWith('/attachments')) return 'attachments';
 
@@ -308,11 +312,15 @@ export function getActiveSubItem(pathname: string): string | null {
   if (helpMatch) return helpMatch[1]!;
   if (pathname.startsWith('/help')) return 'help-center';
 
-  if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/calendar')) return 'calendar';
+  if (pathname.startsWith('/tasks')) {
+    if (search.get('tab') === 'calendar') return view === 'agenda' ? 'agenda' : 'month';
+    return view === 'upcoming' ? 'upcoming' : 'today';
+  }
+  // Legacy /calendar deep links (redirected to /tasks?tab=calendar).
+  if (pathname.startsWith('/calendar')) return view === 'agenda' ? 'agenda' : 'month';
   if (pathname.startsWith('/ai-assistant')) return null;
   if (pathname.startsWith('/agent-console')) return null;
-  if (pathname.startsWith('/pos')) return null;
+  if (pathname.startsWith('/pos')) return 'pos';
 
   return null;
 }
@@ -323,6 +331,20 @@ export function getSubItemsForGroup(groupId: string): NavRailSubItem[] {
 }
 
 // ─── Navigation handlers ──────────────────────────────────────────────────────
+
+/**
+ * Navigate to a sub-item `path` like `/people?tab=deals` — splits off the
+ * query string and passes it as typed search params instead of raw text.
+ */
+function navigateToItemPath(path: string): void {
+  const [pathname, query] = path.split('?');
+  if (!pathname) return;
+  if (!query) {
+    router.navigate({ to: pathname });
+    return;
+  }
+  router.navigate({ to: pathname, search: Object.fromEntries(new URLSearchParams(query)) });
+}
 
 export function handleNavSelect(id: string): void {
   switch (id) {
@@ -335,11 +357,11 @@ export function handleNavSelect(id: string): void {
     case 'help':
       navigateToHelp();
       break;
-    case 'calendar':
-      router.navigate({ to: '/calendar' });
-      break;
     case 'tasks':
       router.navigate({ to: '/tasks' });
+      break;
+    case 'sell':
+      router.navigate({ to: '/pos' });
       break;
     case 'automation':
       navigateToLabel('automation');
@@ -376,6 +398,14 @@ export function handleNavSelect(id: string): void {
 }
 
 export function handleSubItemSelect(groupId: string, subItemId: string): void {
+  // Sub-items with a `path` (dashboard, crm, tasks, sell, …) navigate there.
+  const item = NAV_GROUPS.find((g) => g.id === groupId)?.items.find((i) => i.id === subItemId);
+  if (item?.path) {
+    navigateToItemPath(item.path);
+    return;
+  }
+
+  // Path-less groups resolve through their dedicated helpers.
   switch (groupId) {
     case 'mail':
       navigateToLabel(subItemId);
@@ -383,16 +413,14 @@ export function handleSubItemSelect(groupId: string, subItemId: string): void {
     case 'settings':
       navigateToSettings(subItemId);
       break;
-    case 'crm':
-    case 'people':
-      navigateToLabel(subItemId);
-      break;
     case 'help':
       if (subItemId === 'about') {
         navigateToSettings('about');
       } else {
         navigateToHelp();
       }
+      break;
+    default:
       break;
   }
 }

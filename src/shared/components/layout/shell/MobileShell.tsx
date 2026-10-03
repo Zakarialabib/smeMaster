@@ -105,7 +105,7 @@ function TabletLandscapeShell({
 }) {
   const location = useLocation();
   const activeNavId = getActiveNavFromPath(location.pathname);
-  const activeSubItemId = getActiveSubItem(location.pathname);
+  const activeSubItemId = getActiveSubItem(location.pathname, location.searchStr);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden text-text-primary">
