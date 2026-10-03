@@ -1087,6 +1087,55 @@ type TauriCommands = {
     };
     result: Wallet;
   };
+
+  // ── Agents ────────────────────────────────────────────────────────────
+  db_list_agents: { params: void; result: any[] };
+  db_get_agent: { params: { agentId: string }; result: any | null };
+  db_create_agent: {
+    params: {
+      agent: {
+        name: string;
+        description?: string;
+        provider: string;
+        model: string;
+        scope: Record<string, any>;
+        tools: string[];
+        channels: string[];
+        budget: Record<string, any>;
+      };
+    };
+    result: any;
+  };
+  db_update_agent: {
+    params: { agentId: string; patch: Record<string, any> };
+    result: any;
+  };
+  db_delete_agent: { params: { agentId: string }; result: void };
+  db_agent_scope_check: {
+    params: { agentId: string; request: Record<string, any> };
+    result: { ok: boolean; reason?: string };
+  };
+  db_seed_builtin_agents: { params: void; result: any[] };
+  db_record_ai_activity: {
+    params: {
+      agentId: string;
+      activity: {
+        type: string;
+        channel: string;
+        detail: string;
+        durationMs?: number;
+        costTokens?: number;
+        costUsd?: number;
+        success: boolean;
+        error?: string;
+      };
+    };
+    result: any;
+  };
+  db_list_ai_activity: {
+    params: { agentId: string; limit?: number };
+    result: any[];
+  };
 };
 
 // ==========================================================================

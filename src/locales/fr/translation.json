@@ -1368,7 +1368,32 @@
     "pairingTitle": "settings.pairingTitle",
     "featuresTitle": "settings.featuresTitle",
     "contentQualityTitle": "settings.contentQualityTitle",
-    "pairNewDeviceComingSoon": "Device pairing setup is coming soon"
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon",
+    "agents": {
+      "loading": "Loading agents...",
+      "description": "Create and configure AI agents with role, scope, tools, and channels.",
+      "seed": "Seed Built-in",
+      "add": "Add Agent",
+      "confirmDelete": "Delete this agent? This cannot be undone.",
+      "scopeOk": "Scope check passed",
+      "scopeDenied": "Scope check denied",
+      "empty": "No agents yet. Create one or seed built-in agents.",
+      "edit": "Edit Agent",
+      "name": "Name",
+      "namePlaceholder": "e.g. Inbox Assistant",
+      "descriptionPlaceholder": "What does this agent do?",
+      "provider": "Provider",
+      "model": "Model",
+      "modelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "mailbox": "Mailbox Scope",
+      "mailboxPlaceholder": "e.g. inbox (empty = all)",
+      "tools": "Tools",
+      "channels": "Channels",
+      "active": "Active",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save"
+    }
   },
   "search": {
     "typeACommand": "Tapez une commande...",
