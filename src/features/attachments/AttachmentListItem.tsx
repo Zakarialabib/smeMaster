@@ -67,7 +67,7 @@ export function AttachmentListItem({
           <button
             onClick={onPreview}
             className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
-            title={t('attachments.preview')}
+            title={t('common.preview')}
           >
             <Eye size={14} />
           </button>

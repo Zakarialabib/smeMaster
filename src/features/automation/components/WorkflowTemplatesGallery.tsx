@@ -102,7 +102,7 @@ export function WorkflowTemplatesGallery({
                 : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
-            {t('automation.templatesAutomation', 'Automation')}
+            {t('common.automation', 'Automation')}
           </button>
           <button
             type="button"

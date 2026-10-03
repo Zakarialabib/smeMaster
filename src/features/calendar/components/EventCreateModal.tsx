@@ -107,7 +107,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
             }`}
           >
             <Mail size={14} />
-            {t('calendar.email')}
+            {t('common.email')}
           </button>
         </div>
       </div>
@@ -118,8 +118,8 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
             type === 'event'
               ? t('calendar.eventTitle')
               : type === 'task'
-                ? t('tasks.title')
-                : t('mail.subject')
+                ? t('common.tasks')
+                : t('common.subject')
           }
           type="text"
           value={summaryField.value}
@@ -137,9 +137,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
 
         {type === 'event' && calendars && calendars.length > 0 && (
           <div>
-            <label className="text-xs text-text-secondary block mb-1">
-              {t('calendar.calendar')}
-            </label>
+            <label className="text-xs text-text-secondary block mb-1">{t('common.calendar')}</label>
             <div className="flex flex-wrap gap-2">
               {calendars.map((cal) => {
                 const isSelected = cal.id === calendarId;
@@ -160,7 +158,7 @@ export function EventCreateModal({ calendars, onClose, onCreate }: EventCreateMo
                       style={{ backgroundColor: calColor }}
                     />
                     <span className="truncate max-w-[100px]">
-                      {cal.display_name ?? t('calendar.calendar')}
+                      {cal.display_name ?? t('common.calendar')}
                     </span>
                     {cal.is_primary && (
                       <span className="text-[0.5rem] uppercase tracking-wider text-text-tertiary ms-0.5">

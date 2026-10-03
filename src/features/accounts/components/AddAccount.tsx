@@ -407,7 +407,7 @@ export function AddAccount({ onClose, onSuccess }: AddAccountProps) {
                 'Your account has been connected. SMEMaster will now sync your emails.'}
             </p>
             <Button variant="primary" size="md" onClick={onClose}>
-              {t('addAccount.done') || 'Done'}
+              {t('common.done') || 'Done'}
             </Button>
           </div>
         </div>
