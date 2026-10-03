@@ -15,7 +15,6 @@ import {
   aiDownloadModel,
   aiLoadEmbeddingModel,
   aiIndexEmails,
-  aiQueryRag,
   aiQueryRagHybrid,
   aiSearchByVector,
   aiGetModelsDir,

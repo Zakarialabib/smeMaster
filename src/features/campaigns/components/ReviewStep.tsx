@@ -79,7 +79,7 @@ export function ReviewStep({
         <div className="flex justify-between items-center">
           <span className="text-text-tertiary">{t('campaign.tracking')}</span>
           <span className={`text-sm ${trackingEnabled ? 'text-success' : 'text-text-tertiary'}`}>
-            {trackingEnabled ? t('campaign.enabled') : t('common.disabled')}
+            {trackingEnabled ? t('common.enabled') : t('common.disabled')}
           </span>
         </div>
         {abEnabled && (

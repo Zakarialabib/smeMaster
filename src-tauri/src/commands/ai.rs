@@ -210,6 +210,7 @@ pub async fn ai_index_emails(
 #[tauri::command]
 pub async fn ai_query_rag(
     app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
     query: String,
 ) -> CmdResult<String> {
@@ -233,6 +234,7 @@ pub async fn ai_query_rag(
 #[tauri::command]
 pub async fn ai_search_by_vector(
     app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
     embedding: Vec<f32>,
     query: String,
@@ -260,7 +262,7 @@ pub async fn ai_search_by_vector(
 /// Returns an augmented prompt string with context + query.
 #[tauri::command]
 pub async fn ai_query_rag_hybrid(
-    app_handle: AppHandle,
+    _app_handle: AppHandle,
     pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
     query: String,

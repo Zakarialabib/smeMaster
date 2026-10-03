@@ -146,7 +146,7 @@ impl RagSystem {
         let mut scores: HashMap<String, f64> = HashMap::new();
 
         // BM25 results: rank by position (FTS5 returns in rank order)
-        for (rank, (id, text)) in bm25_rows.iter().enumerate() {
+        for (rank, (_id, text)) in bm25_rows.iter().enumerate() {
             let rrf_score = 1.0 / (k + rank as f64 + 1.0);
             *scores.entry(text.clone()).or_insert(0.0) += rrf_score;
         }

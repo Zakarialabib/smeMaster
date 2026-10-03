@@ -139,7 +139,7 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     tier: 'pro',
     basicLimit: { max: 0, unit: 'AI features' },
     proLimit: null,
-    group: 'settings.featureGroups.aiAutomation',
+    group: 'common.aiAutomation',
     isCore: false,
   },
   {
@@ -150,7 +150,7 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     tier: 'basic',
     basicLimit: { max: 5, unit: 'rules' },
     proLimit: null,
-    group: 'settings.featureGroups.aiAutomation',
+    group: 'common.aiAutomation',
     isCore: false,
   },
   {
@@ -161,7 +161,7 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     tier: 'pro',
     basicLimit: { max: 0, unit: 'workflows' },
     proLimit: null,
-    group: 'settings.featureGroups.aiAutomation',
+    group: 'common.aiAutomation',
     isCore: false,
   },
   {
@@ -172,7 +172,7 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     tier: 'pro',
     basicLimit: { max: 0, unit: 'campaigns' },
     proLimit: null,
-    group: 'settings.featureGroups.aiAutomation',
+    group: 'common.aiAutomation',
     isCore: false,
   },
 
@@ -336,7 +336,7 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
     tier: 'pro',
     basicLimit: { max: 0, unit: 'RAG indexes' },
     proLimit: null,
-    group: 'settings.featureGroups.aiAutomation',
+    group: 'common.aiAutomation',
     isCore: false,
   },
   {

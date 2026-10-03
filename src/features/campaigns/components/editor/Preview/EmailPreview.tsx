@@ -24,7 +24,7 @@ export function EmailPreview() {
       <div className="flex h-full flex-col">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
-            {t('campaign.editor.preview')}
+            {t('common.preview')}
           </span>
           <WidthToggle value={width} onChange={setWidth} />
         </div>
@@ -39,7 +39,7 @@ export function EmailPreview() {
     <div className="flex h-full flex-col">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
-          {t('campaign.editor.preview')}
+          {t('common.preview')}
         </span>
         <WidthToggle value={width} onChange={setWidth} />
       </div>
@@ -51,7 +51,7 @@ export function EmailPreview() {
           style={{ width: frameWidth, maxWidth: '100%' }}
         >
           <iframe
-            title={t('campaign.editor.preview')}
+            title={t('common.preview')}
             srcDoc={html}
             className="h-full w-full border-0 bg-white"
             sandbox=""

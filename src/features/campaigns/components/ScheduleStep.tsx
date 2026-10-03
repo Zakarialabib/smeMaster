@@ -62,7 +62,7 @@ export function ScheduleStep({
             ) : (
               <span className="flex items-center justify-center gap-1">
                 <Repeat size={14} />
-                {t('campaign.recurring')}
+                {t('common.recurring')}
               </span>
             )}
           </button>

@@ -65,6 +65,20 @@ export async function aiQueryRag(query: string): Promise<string> {
 }
 
 /**
+ * Perform a hybrid RAG search (BM25 + vector + RRF) and return an
+ * augmented prompt.
+ *
+ * The backend runs SQLite FTS5 (BM25) and LanceDB (vector) in parallel,
+ * then merges results with Reciprocal Rank Fusion.
+ *
+ * @param query - Natural language question or search phrase
+ * @returns Augmented prompt string with context + query
+ */
+export async function aiQueryRagHybrid(query: string): Promise<string> {
+  return invokeCommand<string>('ai_query_rag_hybrid', { query });
+}
+
+/**
  * Search the knowledge base using a pre-computed embedding vector.
  *
  * Skips the local embedding step — use this when the embedding was generated

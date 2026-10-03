@@ -78,7 +78,9 @@ export function ColumnPicker({ configKey, compact = false }: ColumnPickerProps) 
                 onChange={() => toggleColumn(configKey, col.id)}
                 className="accent-[var(--color-accent)]"
               />
-              <span>{col.label || t(`columns.ids.${col.id}`)}</span>
+              <span>
+                {col.label || t(`columns.ids.${col.id}`, { defaultValue: t(`common.${col.id}`) })}
+              </span>
             </label>
           ))}
 

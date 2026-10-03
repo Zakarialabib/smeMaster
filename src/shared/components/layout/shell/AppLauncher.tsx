@@ -23,7 +23,7 @@ const DEFAULT_APPS: AppTile[] = [
   { id: 'crm', label: 'nav.crm', icon: <UsersIcon />, route: '/people', color: 'bg-emerald-500' },
   {
     id: 'tasks',
-    label: 'tasks.tasks',
+    label: 'common.tasks',
     icon: <CheckSquareIcon />,
     route: '/tasks',
     color: 'bg-amber-500',
@@ -31,21 +31,21 @@ const DEFAULT_APPS: AppTile[] = [
   },
   {
     id: 'calendar',
-    label: 'calendar.calendar',
+    label: 'common.calendar',
     icon: <CalendarIcon />,
     route: '/calendar',
     color: 'bg-violet-500',
   },
   {
     id: 'campaigns',
-    label: 'campaign.campaigns',
+    label: 'common.campaigns',
     icon: <MegaphoneIcon />,
     route: '/campaigns',
     color: 'bg-rose-500',
   },
   {
     id: 'settings',
-    label: 'nav.settings',
+    label: 'common.settings',
     icon: <SettingsIcon />,
     route: '/settings',
     color: 'bg-gray-500',

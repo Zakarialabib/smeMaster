@@ -35,7 +35,7 @@ export function AlignButtons({
       icon: <AlignCenter size={16} />,
       label: t('campaign.editor.center'),
     },
-    { v: 'right', icon: <AlignRight size={16} />, label: t('campaign.editor.right') },
+    { v: 'right', icon: <AlignRight size={16} />, label: t('common.right') },
   ];
   return (
     <div className="flex gap-1">

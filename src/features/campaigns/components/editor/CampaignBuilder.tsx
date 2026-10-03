@@ -111,7 +111,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border-primary bg-bg-secondary/40 shrink-0">
         <button
           onClick={store.undo}
-          title={t('campaign.editor.undo')}
+          title={t('common.undo')}
           className="p-1.5 rounded-md text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
         >
           <Undo2 size={16} />
@@ -127,16 +127,16 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
         <input
           value={store.subject}
           onChange={(e) => store.setSubject(e.target.value)}
-          placeholder={t('campaign.editor.subject')}
+          placeholder={t('common.subject')}
           className="flex-1 px-2 py-1.5 bg-bg-tertiary border border-border-primary rounded text-sm text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent transition-colors"
         />
         <div className="w-px h-5 bg-border-secondary mx-1" />
         <button
           onClick={() => setShowPreview((v) => !v)}
           className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs transition-colors ${showPreview ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:bg-bg-tertiary'}`}
-          title={t('campaign.editor.preview')}
+          title={t('common.preview')}
         >
-          <Eye size={14} /> {t('campaign.editor.preview')}
+          <Eye size={14} /> {t('common.preview')}
         </button>
         <button
           onClick={() => setShowAi((v) => !v)}
@@ -176,7 +176,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
                 onChange={(e) => store.setAbEnabled(e.target.checked)}
                 className="accent-accent"
               />
-              {t('campaign.enabled')}
+              {t('common.enabled')}
             </label>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -245,7 +245,7 @@ export function CampaignBuilder({ onSaveTemplate }: CampaignBuilderProps) {
                 <div className="mt-6">
                   <div className="flex items-center gap-2 text-sm text-text-secondary mb-3">
                     <GalleryHorizontal size={16} className="text-accent" />
-                    {t('campaign.editor.gallery')}
+                    {t('common.templates')}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {templates.map((tmpl) => (

@@ -106,7 +106,7 @@ export function CampaignList({ accountId }: CampaignListProps) {
 
   const header = (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary">
-      <h2 className="text-lg font-semibold text-text-primary">{t('campaign.campaigns')}</h2>
+      <h2 className="text-lg font-semibold text-text-primary">{t('common.campaigns')}</h2>
       <button
         onClick={() => setShowComposer(true)}
         className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-sm rounded-lg transition-colors"

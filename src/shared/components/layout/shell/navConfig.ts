@@ -62,12 +62,12 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
   { id: 'inbox', label: 'nav.inbox', icon: Inbox },
   { id: 'starred', label: 'nav.starred', icon: Star },
   { id: 'snoozed', label: 'nav.snoozed', icon: Clock },
-  { id: 'sent', label: 'nav.sent', icon: Send },
+  { id: 'sent', label: 'common.sent', icon: Send },
   { id: 'drafts', label: 'nav.drafts', icon: FileEdit },
   { id: 'trash', label: 'nav.trash', icon: Trash2 },
   { id: 'spam', label: 'nav.spam', icon: Ban },
   { id: 'all', label: 'nav.allMail', icon: Mail },
-  { id: 'attachments', label: 'nav.attachments', icon: Paperclip },
+  { id: 'attachments', label: 'common.attachments', icon: Paperclip },
   { id: 'smart-folders', label: 'nav.smartFolders', icon: FolderSearch },
   { id: 'labels', label: 'nav.labels', icon: Tag },
 ];
@@ -77,7 +77,7 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
 const SETTINGS_NAV_LABELS: Record<string, string> = {
   pairing: 'settings.devicePairing',
   'deliverability-dashboard': 'settings.tabGroupDeliverability',
-  developer: 'settings.tabGroupDeveloper',
+  developer: 'common.developer',
   about: 'nav.about',
 };
 
@@ -116,7 +116,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Store,
     items: [
       { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
-      { id: 'invoicing', label: 'nav.invoicing', icon: ReceiptText, path: '/invoicing' },
+      { id: 'invoicing', label: 'common.invoicing', icon: ReceiptText, path: '/invoicing' },
       { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
     ],
   },
@@ -128,14 +128,14 @@ export const NAV_GROUPS: NavRailGroup[] = [
       { id: 'inbox', label: 'nav.inbox', icon: Inbox },
       { id: 'starred', label: 'nav.starred', icon: Star },
       { id: 'snoozed', label: 'nav.snoozed', icon: Clock },
-      { id: 'sent', label: 'nav.sent', icon: Send },
+      { id: 'sent', label: 'common.sent', icon: Send },
       { id: 'drafts', label: 'nav.drafts', icon: FileEdit },
       { id: 'trash', label: 'nav.trash', icon: Trash2 },
       { id: 'spam', label: 'nav.spam', icon: Ban },
       { id: 'all', label: 'nav.allMail', icon: Mail },
       // ── divider ──
       { id: '__divider__', label: '', icon: undefined },
-      { id: 'attachments', label: 'nav.attachments', icon: Paperclip },
+      { id: 'attachments', label: 'common.attachments', icon: Paperclip },
       { id: 'smart-folders', label: 'nav.smartFolders', icon: FolderSearch },
       { id: 'labels', label: 'nav.labels', icon: Tag },
     ],
@@ -145,16 +145,16 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Users,
     label: 'nav.crm',
     items: [
-      { id: 'contacts', label: 'nav.contacts', icon: Users, path: '/people' },
+      { id: 'contacts', label: 'common.contacts', icon: Users, path: '/people' },
       { id: 'deals', label: 'nav.deals', icon: FileText, path: '/people?tab=deals' },
     ],
   },
   {
     id: 'tasks',
     icon: ListChecks,
-    label: 'nav.schedule',
+    label: 'common.schedule',
     items: [
-      { id: 'today', label: 'nav.tasksToday', icon: ListChecks, path: '/tasks' },
+      { id: 'today', label: 'common.today', icon: ListChecks, path: '/tasks' },
       { id: 'upcoming', label: 'nav.tasksUpcoming', icon: Clock, path: '/tasks?view=upcoming' },
       // ── divider ──
       { id: '__divider__', label: '', icon: undefined },
@@ -170,7 +170,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
   {
     id: 'automation',
     icon: GitBranch,
-    label: 'nav.automation',
+    label: 'common.automation',
     items: [],
   },
   {
@@ -194,7 +194,7 @@ export const NAV_GROUPS: NavRailGroup[] = [
   {
     id: 'settings',
     icon: Settings,
-    label: 'nav.settings',
+    label: 'common.settings',
     items: buildSettingsItems(),
   },
   {

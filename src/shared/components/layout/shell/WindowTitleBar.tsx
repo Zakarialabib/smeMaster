@@ -41,25 +41,25 @@ const ROUTE_KEYS: Record<string, string> = {
   '/mail': 'nav.mail',
   '/people': 'nav.crm',
   '/crm': 'nav.crm',
-  '/campaigns': 'campaign.campaigns',
+  '/campaigns': 'common.campaigns',
   '/calendar': 'nav.productivity',
   '/tasks': 'nav.productivity',
-  '/settings/general': 'nav.settings',
-  '/settings': 'nav.settings',
+  '/settings/general': 'common.settings',
+  '/settings': 'common.settings',
   '/vault': 'nav.vault',
-  '/automation': 'nav.automation',
+  '/automation': 'common.automation',
   '/ai-assistant': 'nav.aiAssistant',
-  '/invoicing': 'nav.invoicing',
+  '/invoicing': 'common.invoicing',
   '/erp': 'nav.erp',
   '/pos': 'nav.pos',
-  '/attachments': 'nav.attachments',
+  '/attachments': 'common.attachments',
   '/help': 'nav.help',
 };
 
 function getBreadcrumb(pathname: string, t: (key: string) => string): string {
   if (ROUTE_KEYS[pathname]) return t(ROUTE_KEYS[pathname]);
   if (pathname.startsWith('/mail/')) return t('nav.mail');
-  if (pathname.startsWith('/settings/')) return t('nav.settings');
+  if (pathname.startsWith('/settings/')) return t('common.settings');
   if (pathname.startsWith('/help/')) return t('nav.help');
   if (pathname.startsWith('/label/')) return t('nav.label');
   return 'SMEMaster';
