@@ -105,7 +105,7 @@ describe('AiWarmupGenerateModal', () => {
 
   it('calls state.reset and parent onClose when the prompt-step cancel button is clicked', () => {
     const { onClose } = setup();
-    fireEvent.click(screen.getByText('modals.aiWarmup.cancel'));
+    fireEvent.click(screen.getByText('common.cancel'));
     expect(h.reset).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });

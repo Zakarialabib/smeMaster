@@ -82,7 +82,7 @@ export default function BundleSettings() {
                 <Toggle
                   checked={rule?.delivery ?? false}
                   onChange={() => saveRule(cat, { delivery: !(rule?.delivery ?? false) })}
-                  label={t('settings.schedule')}
+                  label={t('common.schedule')}
                   size="sm"
                 />
               </div>

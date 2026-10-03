@@ -214,7 +214,7 @@ export default function SyncOfflineSection() {
                     size="sm"
                     className="text-accent"
                   >
-                    {t('settings.retry')}
+                    {t('common.retry')}
                   </Button>
                   <Button
                     onClick={handleClearFailed}
@@ -223,7 +223,7 @@ export default function SyncOfflineSection() {
                     size="sm"
                     className="text-danger"
                   >
-                    {t('settings.clear')}
+                    {t('common.clear')}
                   </Button>
                 </>
               )}

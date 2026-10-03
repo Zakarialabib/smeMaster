@@ -194,7 +194,7 @@ function SnoozePresetForm({ preset, onSave, onCancel }: SnoozePresetFormProps) {
             />
             <div>
               <span className="text-sm font-medium text-text-primary block leading-tight">
-                {t('campaign.recurring')}
+                {t('common.recurring')}
               </span>
               <span className="text-[10px] text-text-tertiary">
                 Automatically re-snooze on the same schedule

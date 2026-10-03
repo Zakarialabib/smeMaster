@@ -475,7 +475,7 @@ export function FilterEditor() {
 
           <div>
             <div className="text-xs font-medium text-text-secondary mb-1.5">
-              {t('filter.actions')}
+              {t('common.actions')}
             </div>
             <div className="space-y-1.5">
               {labels.length > 0 && (
@@ -486,7 +486,7 @@ export function FilterEditor() {
                     onChange={(e) => setActionLabel(e.target.value)}
                     className="flex-1 bg-bg-tertiary text-text-primary text-xs px-2 py-1 rounded border border-border-primary"
                   >
-                    <option value="">{t('filter.none')}</option>
+                    <option value="">{t('common.none')}</option>
                     {labels.map((l) => (
                       <option key={l.id} value={l.id}>
                         {l.name}

@@ -295,7 +295,7 @@ export default function TemplatesTab() {
 
       {/* ── Template Manager (full CRUD) ── */}
       {hasAccount && (
-        <SettingGroup title={t('search.templates')}>
+        <SettingGroup title={t('common.templates')}>
           <TemplateManager key={refreshKey} />
           <HelpCard
             items={[

@@ -94,7 +94,7 @@ function StatusBadge({ access }: { access: FeatureUsage['access'] }) {
     locked: 'bg-danger/10 text-danger border-danger/20',
   };
   const labels: Record<string, string> = {
-    enabled: t('settings.featureStatusEnabled'),
+    enabled: t('common.enabled'),
     limited: t('settings.featureStatusLimited'),
     locked: t('settings.proOnly'),
   };
@@ -396,7 +396,7 @@ export default function FeatureFlagsTab() {
           <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
             <span className="w-2 h-2 rounded-full bg-success" />
             {FEATURE_FLAGS.filter((f) => store.getFeatureAccess(f.id, 0) === 'enabled').length}{' '}
-            {t('settings.featureStatusEnabled').toLowerCase()}
+            {t('common.enabled').toLowerCase()}
           </div>
           <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
             <span className="w-2 h-2 rounded-full bg-warning" />

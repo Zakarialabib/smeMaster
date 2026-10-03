@@ -356,7 +356,7 @@ function AgentModal({
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('settings.agents.name')}</label>
+            <label className="mb-1 block text-sm font-medium">{t('common.name')}</label>
             <TextField
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -449,7 +449,7 @@ function AgentModal({
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" onClick={onCancel} disabled={saving}>
-            {t('settings.agents.cancel')}
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={saving || !name}>
             {saving ? t('settings.agents.saving') : t('settings.agents.save')}

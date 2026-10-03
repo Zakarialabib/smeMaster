@@ -186,7 +186,7 @@ export default function CacheTab() {
       </SettingGroup>
 
       {/* ── Actions ──────────────────────────────────────────────── */}
-      <SettingGroup title={t('settings.cacheTab.actions') ?? 'Actions'}>
+      <SettingGroup title={t('common.actions') ?? 'Actions'}>
         <div className="flex flex-wrap gap-3 px-1 py-2">
           <Button variant="secondary" onClick={handleBenchmark} disabled={busy !== null}>
             {busy === 'benchmark' ? (

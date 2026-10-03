@@ -124,7 +124,7 @@ export function AiTemplateGenerateModal({
               onClick={handleClose}
               className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiTemplate.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -148,7 +148,7 @@ export function AiTemplateGenerateModal({
             <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border-secondary bg-bg-tertiary/50">
               <Eye size={12} className="text-text-tertiary" />
               <span className="text-[0.625rem] text-text-tertiary font-medium">
-                {t('modals.aiTemplate.preview')}
+                {t('common.preview')}
               </span>
             </div>
             <div className="max-h-[300px] overflow-y-auto">
@@ -203,14 +203,14 @@ export function AiTemplateGenerateModal({
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ms-auto"
             >
               <Sparkles size={12} />
-              {t('modals.aiTemplate.regenerate')}
+              {t('common.regenerate')}
             </button>
             <button
               type="button"
               onClick={handleClose}
               className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiTemplate.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>

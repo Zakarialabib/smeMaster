@@ -196,7 +196,7 @@ export const tabGroups: SettingsGroup[] = [
     ],
   },
   {
-    label: 'settings.groups.aiAutomation.label',
+    label: 'common.aiAutomation',
     icon: Sparkles,
     description: 'Text generation providers, on-device voice, and local models',
     tabs: [
@@ -276,7 +276,7 @@ export const tabGroups: SettingsGroup[] = [
     ],
   },
   {
-    label: 'settings.groups.developer.label',
+    label: 'common.developer',
     icon: Code2,
     description: 'System info, logs, updates, demo data, and feature flags',
     tabs: [
@@ -562,8 +562,8 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
     pgp: t('settings.tabs.pgp'),
     'mail-rules': t('settings.tabs.mailRules'),
     presend: t('settings.tabs.presend'),
-    calendar: t('settings.tabs.calendar'),
-    developer: t('settings.tabs.developer'),
+    calendar: t('common.calendar'),
+    developer: t('common.developer'),
     queue: t('settings.tabs.queue'),
     'account-cleaning': t('settings.tabs.accountCleaning'),
     license: t('settings.tabs.license'),

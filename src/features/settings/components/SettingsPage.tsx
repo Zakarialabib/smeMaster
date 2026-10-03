@@ -269,7 +269,7 @@ export function SettingsPage() {
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-base font-semibold text-text-primary shrink-0">
-              {activeTab ? labelFor(activeTab) : t('search.settings')}
+              {activeTab ? labelFor(activeTab) : t('common.settings')}
             </h1>
           </>
         )}
@@ -372,7 +372,7 @@ export function SettingsPage() {
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Settings size={40} className="text-accent/40 mb-4" />
                 <h2 className="text-lg font-semibold text-text-primary mb-2">
-                  {t('search.settings')}
+                  {t('common.settings')}
                 </h2>
                 <p className="text-sm text-text-tertiary max-w-md">
                   Select a setting from the sidebar to configure your preferences. Use the search

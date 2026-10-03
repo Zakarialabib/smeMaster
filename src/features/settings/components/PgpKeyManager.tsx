@@ -431,13 +431,13 @@ export function PgpKeyManager() {
         <div className="space-y-3 p-4">
           <div className="grid grid-cols-2 gap-3">
             <TextField
-              label={t('pgp.nameLabel')}
+              label={t('common.name')}
               placeholder="Alice"
               value={genForm.name}
               onChange={(e) => setGenForm((f) => ({ ...f, name: e.target.value }))}
             />
             <TextField
-              label={t('pgp.emailLabel')}
+              label={t('common.email')}
               placeholder="alice@example.com"
               value={genForm.email}
               onChange={(e) => setGenForm((f) => ({ ...f, email: e.target.value }))}
@@ -483,14 +483,14 @@ export function PgpKeyManager() {
 
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setShowGenerate(false)}>
-              {t('pgp.cancel')}
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
               onClick={handleGenerate}
               disabled={!canGenerate || generating}
             >
-              {generating ? t('pgp.generateProgress') : t('pgp.confirmGenerate')}
+              {generating ? t('pgp.generateProgress') : t('common.generate')}
             </Button>
           </div>
         </div>
@@ -576,7 +576,7 @@ export function PgpKeyManager() {
                 setImportPreview(null);
               }}
             >
-              {t('pgp.cancel')}
+              {t('common.cancel')}
             </Button>
             {!importPreview ? (
               <Button
