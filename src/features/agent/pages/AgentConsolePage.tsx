@@ -18,6 +18,7 @@ import { OpsDigest } from '../components/OpsDigest';
 import { AgentCard, AgentBadge, AgentEmpty, AgentResource } from '../components/States';
 import { useUnacknowledgedP1, useReachable } from '../stores';
 import { agentApi } from '../api/client';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { useAgentResource } from '../api/useAgentResource';
 import type { CallListItem, CallOutcome } from '../types/commands';
 
@@ -192,6 +193,11 @@ function LiveTab() {
           <p className="text-sm text-text-tertiary">
             Transcript will appear here as the call progresses.
           </p>
+          <VoiceButton
+            mode="output"
+            text="Transcript will appear here as the call progresses."
+            size="sm"
+          />
         </div>
       </div>
     </AgentCard>
