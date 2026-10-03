@@ -9,6 +9,7 @@ pub mod compliance;
 pub mod contacts;
 pub mod core;
 pub mod crm;
+pub mod agents;
 pub mod deals;
 pub mod db;
 pub mod deliverability;
@@ -1010,6 +1011,15 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             workflows::db_count_workflow_execution_logs,
 
             // === Deals / Pipeline (CRM sales) ===
+            agents::db_list_agents,
+            agents::db_get_agent,
+            agents::db_create_agent,
+            agents::db_update_agent,
+            agents::db_delete_agent,
+            agents::db_agent_scope_check,
+            agents::db_record_ai_activity,
+            agents::db_list_ai_activity,
+            agents::db_seed_builtin_agents,
             deals::db_create_deal,
             deals::db_update_deal,
             deals::db_delete_deal,

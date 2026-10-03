@@ -277,24 +277,43 @@ type, one seed — and everything else depends on it.
 
 ---
 
-## 9. Decisions needed
+## 9. Decisions — LOCKED 2026-10-03
 
-These gate S1. Everything else can proceed without them.
+Recorded here because they gate S1 and the reasoning matters more than the answer.
 
-1. **Is `Agent` the right unifying noun?** (vs. "Assistant", "Bot", "Worker") — it collides
-   slightly with the P3 *"The Agent"* persona, which is the AI itself. Keep `Agent` for the
-   record and `Persona` for the human-role vocabulary? *(Recommend: yes — `Agent` = the thing,
-   `persona` = a field on it.)*
-2. **Do desktop agents and the voice receptionist share one `agents` table**, or does the voice
-   agent stay config-in-`agent-core` with a read-only mirror in the desktop? *(Recommend: one
-   table, Rust-owned; `agent-core` reads it.)*
-3. **Scope enforcement — service layer or Rust?** *(Recommend: service layer — it is where the
-   routing already lives, and Rust has no business knowing about knowledge tiers.)*
-4. **Does Activity store per-call rows in SQLite from day one**, or aggregate? *(Recommend: rows
-   — the invoicing module already expects line items, and aggregation is a view.)*
-5. **Kill the prototype, or keep it as the click-test ground?** BUILD-PLAN calls it the visual
-   source of truth; it is also ~5,000 lines of duplicate UI. *(Recommend: keep until S4 ports its
-   last surface, then freeze — not delete.)*
+1. **`Agent` is the unifying noun.** ✅ `Agent = role + knowledge scope + tools + model
+   policy + channels`. The receptionist becomes one instance, not the special case.
+   *`persona` stays a separate field* — it is the P1–P6 human-role vocabulary; `role` is the
+   agent's own job instruction. Two axes, not one.
+2. **One shared `agents` table, Rust-owned, that `agent-core` reads.** ✅ Single source of
+   truth. The desktop is the owner; the voice channel is a consumer, not a second config.
+3. **Scope enforcement in the service layer.** ✅ Rust owns the *grant* (the column and the
+   pure check functions); TS owns the *check call*, because that is where `taskRouter` and the
+   capability guards already live. Rust has no business knowing about knowledge tiers.
+4. **Activity stores per-call rows from day one.** ✅ `ai_activity` is a row per call, not an
+   aggregate — the invoicing module already expects line items, and aggregation is a view.
+5. **Keep the prototype as the click-test ground** until S4 ports its last surface, then
+   freeze. Not deleted.
+
+### What was built from these decisions (S1)
+
+| Artifact | Path |
+| --- | --- |
+| Migration | `src-tauri/src/db/migrations/034_agents.sql` — `agents` + `ai_activity` |
+| Query layer | `src-tauri/src/db/tables/ai/agents.rs` |
+| Commands | `src-tauri/src/commands/agents.rs` — 9 commands |
+
+**Scope enforcement is the load-bearing part**, and it is tested:
+
+- `scope_grants_tool` / `scope_grants_tier` return a `ScopeDecision`, never a bare bool — a
+  denial carries its reason so the caller records it in `ai_activity` with `outcome = 'denied'`.
+  **A refusal is visible, never a silent empty result.**
+- **T3 is never grantable, even if the column says so.** That is the consent decision enforced
+  in code rather than asked for in a comment. Tested.
+- **A malformed grant fails closed** — garbage in the column means no access, not all access. Tested.
+- **Unknown names are rejected at the write** — a typo like `"visison"` fails loudly instead of
+  storing a grant that silently never matches. Tested.
+- Builtin agents refuse deletion; disable instead. Tested.
 
 ---
 
