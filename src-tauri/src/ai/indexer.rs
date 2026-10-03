@@ -253,7 +253,7 @@ impl Indexer {
     }
 
     pub async fn index_all_contacts(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
-        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts WHERE deleted_at IS NULL")
+        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts")
             .fetch_all(&self.pool)
             .await?;
 
@@ -432,6 +432,78 @@ impl Indexer {
                         out.push((item.id.clone(), chunk));
                     }
                 }
+            }
+        }
+
+        Ok(out)
+    }
+
+    /// Return all chunked contact documents (id, text) — without embedding.
+    pub async fn get_contact_chunks(&self) -> Result<Vec<(String, String)>> {
+        let cfg = self.load_chunk_config().await;
+        let mut out: Vec<(String, String)> = Vec::new();
+
+        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts")
+            .fetch_all(&self.pool)
+            .await?;
+        for contact in contacts {
+            let tags: Vec<String> = sqlx::query_scalar(
+                "SELECT ct.name FROM contact_tags ct \
+                 INNER JOIN contact_tag_pivot ctp ON ctp.tag_id = ct.id \
+                 WHERE ctp.contact_id = ?",
+            )
+            .bind(&contact.id)
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+
+            let text = format!(
+                "Name: {}\nEmail: {}\nNotes: {}\nTags: {}\nType: {}",
+                contact.display_name.as_deref().unwrap_or(""),
+                contact.email,
+                contact.notes.as_deref().unwrap_or(""),
+                tags.join(", "),
+                contact.health_status,
+            );
+            if text.trim().is_empty() { continue; }
+            for chunk in split_text(&text, &cfg) {
+                out.push((contact.id.clone(), chunk));
+            }
+        }
+
+        Ok(out)
+    }
+
+    /// Return all chunked deal documents (id, text) — without embedding.
+    pub async fn get_deal_chunks(&self) -> Result<Vec<(String, String)>> {
+        let cfg = self.load_chunk_config().await;
+        let mut out: Vec<(String, String)> = Vec::new();
+
+        let deals = sqlx::query_as::<_, Deal>("SELECT * FROM deals")
+            .fetch_all(&self.pool)
+            .await?;
+        for deal in deals {
+            let stage_name: Option<String> = sqlx::query_scalar(
+                "SELECT name FROM deal_stages WHERE id = ?",
+            )
+            .bind(&deal.stage_id)
+            .fetch_one(&self.pool)
+            .await
+            .ok();
+
+            let amount = deal.amount_minor as f64 / 100.0;
+            let text = format!(
+                "Title: {}\nAmount: {} {}\nStage: {}\nStatus: {}\nNotes: {}",
+                deal.title,
+                amount,
+                deal.currency,
+                stage_name.as_deref().unwrap_or(""),
+                deal.status,
+                deal.notes.as_deref().unwrap_or(""),
+            );
+            if text.trim().is_empty() { continue; }
+            for chunk in split_text(&text, &cfg) {
+                out.push((deal.id.clone(), chunk));
             }
         }
 

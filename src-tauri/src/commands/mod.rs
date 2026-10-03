@@ -266,6 +266,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_reset_vector_db,
             #[cfg(feature = "local-ai")]
             ai::ai_get_email_chunks,
+            ai::ai_get_contact_chunks,
+            ai::ai_get_deal_chunks,
             #[cfg(feature = "local-ai")]
             ai::ai_insert_provider_vectors,
             #[cfg(feature = "local-ai")]

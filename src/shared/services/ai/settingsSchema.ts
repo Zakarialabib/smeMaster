@@ -97,6 +97,7 @@ export const AI_SETTINGS_SCHEMA = {
   rag_chunk_size: { type: 'number', secure: false, description: 'RAG chunk size' },
   rag_chunk_overlap: { type: 'number', secure: false, description: 'RAG chunk overlap' },
   rag_splitter: { type: 'string', secure: false, description: 'RAG splitter type' },
+  rag_index_scope: { type: 'json', secure: false, description: 'RAG index source toggles' },
 
   // Task routing (NEW - Phase 2)
   ai_task_routes: { type: 'json', secure: false, description: 'User task routing overrides' },
