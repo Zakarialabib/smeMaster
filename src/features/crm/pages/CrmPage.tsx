@@ -1,18 +1,8 @@
-import { useState, lazy, Suspense, Component, type ReactNode } from 'react';
-import { toast } from '@shared/stores/toastStore';
+import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { SkeletonPage } from '@shared/components/ui/Skeleton';
 import { CardTabBar, type CardTabItem } from '@shared/components/ui';
-import {
-  Users,
-  ListChecks,
-  CalendarDays,
-  ReceiptText,
-  Plus,
-  RefreshCw,
-  AlertCircle,
-  FileText,
-  Sparkles,
-} from 'lucide-react';
+import { useLocation, useNavigate } from '@tanstack/react-router';
+import { Users, ReceiptText, Plus, RefreshCw, AlertCircle, FileText, Sparkles } from 'lucide-react';
 
 // ── Error Boundary for tab content ────────────────────────────────────────
 class TabErrorBoundary extends Component<
@@ -56,12 +46,11 @@ class TabErrorBoundary extends Component<
 }
 
 // ── Tab configuration ────────────────────────────────────────────────────
+// Tasks and Calendar live on the Schedule page — not duplicated here.
 const TABS: CardTabItem[] = [
   { id: 'contacts', label: 'Contacts', icon: Users },
   { id: 'deals', label: 'Deals', icon: FileText },
   { id: 'relationships', label: 'Relationships', icon: Sparkles },
-  { id: 'tasks', label: 'Tasks', icon: ListChecks },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays },
   { id: 'invoices', label: 'Invoices', icon: ReceiptText },
 ];
 
@@ -69,18 +58,6 @@ const TABS: CardTabItem[] = [
 const ContactsContent = lazy(() =>
   import('@features/contacts/pages/ContactsPage').then((m) => ({
     default: m.ContactsPage,
-  })),
-);
-
-const TasksContent = lazy(() =>
-  import('@features/tasks/components/TasksPage').then((m) => ({
-    default: m.TasksPage,
-  })),
-);
-
-const CalendarContent = lazy(() =>
-  import('@features/calendar/components/CalendarPage').then((m) => ({
-    default: m.CalendarPage,
   })),
 );
 
@@ -104,8 +81,6 @@ const RelationshipsContent = lazy(() =>
 
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
   contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
-  tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
-  calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   deals: DealsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   relationships: RelationshipsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
@@ -113,20 +88,17 @@ const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentTy
 
 // ── Main Component ───────────────────────────────────────────────────────
 export function CrmPage() {
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    try {
-      const search = new URLSearchParams(window.location.search);
-      const tab = search.get('tab');
-      if (tab && TABS.some((t) => t.id === tab)) return tab;
-    } catch {
-      // ignore URL parsing in non-browser environments
-    }
-    return 'contacts';
-  });
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // URL-synced tab (?tab=deals) — hash-aware via location.searchStr so the
+  // rail flyout, refresh and deep links all agree on the active tab.
+  const param = new URLSearchParams(location.searchStr).get('tab');
+  const activeTab = param && TABS.some((t) => t.id === param) ? param : 'contacts';
 
   const handleTabChange = (id: string) => {
-    toast.info(`Switching to ${TABS.find((t) => t.id === id)?.label ?? id}...`);
-    setActiveTab(id);
+    if (id === activeTab) return;
+    navigate({ to: '/people', search: (prev) => ({ ...prev, tab: id }) });
   };
 
   const TabContent = TAB_COMPONENTS[activeTab];

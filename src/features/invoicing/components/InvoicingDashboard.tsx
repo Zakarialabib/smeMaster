@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useLocation, Outlet } from '@tanstack/react-router';
 import {
   ReceiptText,
   Plus,
@@ -95,6 +95,13 @@ export default function InvoicingDashboard() {
   };
 
   const isLoading = listLoading && !loadError;
+
+  // Child routes (/invoicing/new, /invoicing/edit/$invoiceId) render the
+  // InvoiceEditor in place of the dashboard content.
+  const location = useLocation();
+  if (location.pathname !== '/invoicing') {
+    return <Outlet />;
+  }
 
   return (
     <PageScaffold

@@ -105,12 +105,6 @@ function buildSettingsItems(): NavRailSubItem[] {
 
 export const NAV_GROUPS: NavRailGroup[] = [
   {
-    id: 'unified',
-    icon: LayoutDashboard,
-    label: 'nav.unified',
-    items: [],
-  },
-  {
     id: 'dashboard',
     label: 'nav.dashboard',
     icon: LayoutDashboard,
@@ -219,7 +213,6 @@ export type InsightWidget =
   'ai-tasks' | 'today' | 'hot-leads' | 'upcoming' | 'recent' | 'ai-summary';
 
 export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
-  unified: ['ai-tasks', 'today', 'hot-leads', 'upcoming'],
   mail: ['ai-tasks', 'today', 'hot-leads'],
   crm: ['hot-leads', 'ai-summary', 'upcoming'],
   tasks: ['today', 'upcoming', 'ai-tasks'],
@@ -235,7 +228,6 @@ export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
 
 /** Default insight rail title per section. */
 export const INSIGHT_TITLE: Record<string, string> = {
-  unified: 'Insights',
   mail: 'Today',
   crm: 'Relationships',
   tasks: 'My day',
@@ -375,9 +367,6 @@ export function handleNavSelect(id: string): void {
     case 'crm':
     case 'people':
       router.navigate({ to: '/people' });
-      break;
-    case 'unified':
-      router.navigate({ to: '/unified' });
       break;
     case 'dashboard':
       router.navigate({ to: '/dashboard' });

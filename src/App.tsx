@@ -36,7 +36,7 @@ import { router } from './router';
 import { getSelectedThreadId } from './router/navigate';
 import { useThreadStore } from './features/mail/stores/threadStore';
 import BiometricLockScreen from '@features/accounts/components/mobile/BiometricLockScreen';
-import { useLocalStorage } from '@shared/hooks/useLocalStorage';
+import { usePersistentStorage } from '@shared/hooks/usePersistentStorage';
 import { useSyncEvents } from '@shared/hooks/useSyncEvents';
 import { usePushNotifications } from '@shared/hooks/usePushNotifications';
 import { useTaskWorkflowEngine } from '@features/tasks/hooks/useTaskWorkflowEngine';
@@ -306,7 +306,10 @@ export default function App() {
   }, []);
 
   // ── Onboarding: persist & restore progress ─────────────────────────────────
-  const [onboardingDone, setOnboardingDone] = useLocalStorage('smemaster.onboarding.done', false);
+  const { value: onboardingDone, setValue: setOnboardingDone } = usePersistentStorage(
+    'smemaster.onboarding.done',
+    false,
+  );
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [hasData, setHasData] = useState<boolean | null>(null); // null = loading, true = accounts/demo exist
   const { isSystemInitialized } = useOnboarding();
