@@ -86,7 +86,13 @@ function StatusDot({ status }: { status: ModelStatus }) {
 
 // ── Indexing Progress ────────────────────────────────────────────────────────
 
-function IndexingProgress({ status }: { status: string }) {
+function IndexingProgress({
+  status,
+  progress,
+}: {
+  status: string;
+  progress: { source: string; current: number; total: number } | null;
+}) {
   if (status === 'idle') return null;
 
   const isActive = status === 'indexing';
@@ -106,7 +112,9 @@ function IndexingProgress({ status }: { status: string }) {
         {isActive && (
           <>
             <Loader2 className="w-3 h-3 animate-spin" />
-            Indexing emails, attachments, and vault items…
+            {progress
+              ? `Indexing ${progress.source}: ${progress.current}/${progress.total}…`
+              : 'Indexing…'}
           </>
         )}
         {status === 'completed' && (
@@ -207,6 +215,7 @@ export default function KnowledgeBaseSettings() {
   const indexingStatus = useRagStore((s) => s.indexingStatus);
   const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
   const indexingError = useRagStore((s) => s.indexingError);
+  const indexingProgress = useRagStore((s) => s.indexingProgress);
   const embeddingTest = useRagStore((s) => s.embeddingTest);
   const embeddingTesting = useRagStore((s) => s.embeddingTesting);
   const hydrate = useRagStore((s) => s.hydrate);
@@ -223,6 +232,14 @@ export default function KnowledgeBaseSettings() {
   const [chunkSize, setChunkSize] = useState<number>(1000);
   const [chunkOverlap, setChunkOverlap] = useState<number>(100);
   const [splitter, setSplitter] = useState<'paragraph' | 'sentence' | 'token'>('paragraph');
+  // ── Index scope ──
+  const [scope, setScope] = useState({
+    emails: true,
+    attachments: true,
+    vault: true,
+    contacts: true,
+    deals: true,
+  });
   // ── Provider / embedding-model status (provider mode) ──
   const [aiProvider, setAiProvider] = useState<string>('claude');
   const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>('');
@@ -248,6 +265,21 @@ export default function KnowledgeBaseSettings() {
       if (provider) setAiProvider(provider);
       const emb = await getSetting('lmstudio_embedding_model');
       setLmstudioEmbeddingModel(emb ?? '');
+      const scopeRaw = await getSetting('rag_index_scope');
+      if (scopeRaw) {
+        try {
+          const parsed = JSON.parse(scopeRaw);
+          setScope({
+            emails: parsed.emails !== false,
+            attachments: parsed.attachments !== false,
+            vault: parsed.vault !== false,
+            contacts: parsed.contacts !== false,
+            deals: parsed.deals !== false,
+          });
+        } catch {
+          /* use defaults */
+        }
+      }
     })();
   }, []);
 
@@ -516,6 +548,31 @@ export default function KnowledgeBaseSettings() {
         </SettingGroup>
       )}
 
+      {/* ── Indexing Scope ── */}
+      <SettingGroup
+        title={t('settings.indexScope')}
+        description={t('settings.indexScopeDescription')}
+      >
+        {[
+          { key: 'emails' as const, label: t('settings.scopeEmails') },
+          { key: 'attachments' as const, label: t('settings.scopeAttachments') },
+          { key: 'vault' as const, label: t('settings.scopeVault') },
+          { key: 'contacts' as const, label: t('settings.scopeContacts') },
+          { key: 'deals' as const, label: t('settings.scopeDeals') },
+        ].map(({ key, label }) => (
+          <ToggleRow
+            key={key}
+            label={label}
+            checked={scope[key]}
+            onToggle={async () => {
+              const next = { ...scope, [key]: !scope[key] };
+              setScope(next);
+              await setSetting('rag_index_scope', JSON.stringify(next));
+            }}
+          />
+        ))}
+      </SettingGroup>
+
       {/* ── Indexing Control ── */}
       <SettingGroup
         title={t('settings.knowledgeBaseIndexing')}
@@ -540,7 +597,7 @@ export default function KnowledgeBaseSettings() {
             <span className="text-sm text-text-secondary">{formatTimeAgo(lastIndexedAt)}</span>
           </SettingRow>
 
-          <IndexingProgress status={indexingStatus} />
+          <IndexingProgress status={indexingStatus} progress={indexingProgress} />
 
           <div className="pt-1">
             <Button

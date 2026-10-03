@@ -20,6 +20,8 @@ import {
   aiGetModelsDir,
   aiDeleteModel,
   aiGetEmailChunks,
+  aiGetContactChunks,
+  aiGetDealChunks,
   aiInsertProviderVectors,
 } from '@shared/services/db/invoke/rag';
 import {
@@ -79,6 +81,7 @@ export interface RagState {
   indexingStatus: IndexingStatus;
   lastIndexedAt: string | null;
   indexingError: string | null;
+  indexingProgress: { source: string; current: number; total: number } | null;
 
   // ── Search ──
   conversation: RagConversationEntry[];
@@ -136,6 +139,7 @@ export const useRagStore = create<RagState>((set, get) => ({
   indexingStatus: 'idle',
   lastIndexedAt: null,
   indexingError: null,
+  indexingProgress: null,
   conversation: [],
   isSearching: false,
   searchError: null,
@@ -181,9 +185,16 @@ export const useRagStore = create<RagState>((set, get) => ({
 
     const unlistenComplete = await safeListen<unknown>('ai:indexing_completed', () => {
       const now = new Date().toISOString();
-      set({ indexingStatus: 'completed', lastIndexedAt: now });
+      set({ indexingStatus: 'completed', lastIndexedAt: now, indexingProgress: null });
       void tauriStoreStorage.setItem(RAG_LAST_INDEXED_KEY, now);
     });
+
+    const unlistenProgress = await safeListen<{ source: string; current: number; total: number }>(
+      'ai:indexing_progress',
+      (event) => {
+        set({ indexingProgress: event.payload });
+      },
+    );
 
     // Live model-download progress (resumable Rust downloader)
     const unlistenDownload = await safeListen<DownloaderProgressEvent>(
@@ -214,7 +225,7 @@ export const useRagStore = create<RagState>((set, get) => ({
     if (typeof window !== 'undefined') {
       const win = window as unknown as Record<string, unknown>;
       const unlisteners = (win.__rag_unlisteners as UnlistenFn[] | undefined) ?? [];
-      unlisteners.push(unlistenStart, unlistenComplete, unlistenDownload);
+      unlisteners.push(unlistenStart, unlistenComplete, unlistenProgress, unlistenDownload);
       win.__rag_unlisteners = unlisteners;
     }
 
@@ -356,7 +367,10 @@ export const useRagStore = create<RagState>((set, get) => ({
         );
       }
 
-      const chunks = await aiGetEmailChunks();
+      const emailChunks = await aiGetEmailChunks();
+      const contactChunks = await aiGetContactChunks();
+      const dealChunks = await aiGetDealChunks();
+      const chunks = [...emailChunks, ...contactChunks, ...dealChunks];
       if (chunks.length === 0) {
         set({ indexingStatus: 'completed' });
         return;
