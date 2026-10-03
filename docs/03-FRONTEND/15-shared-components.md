@@ -129,18 +129,6 @@ this over scattering `window.addEventListener` calls.
 
 ## Stability Hooks & Utils
 
-### `useAsyncData.ts`
-
-Standardized async fetch with `data / isLoading / error / refetch`. Kills the
-boilerplate `useEffect + try/catch + setState` pattern.
-
-```ts
-const { data, isLoading, error, refetch } = useAsyncData(
-  () => fetchThreads(accountId),
-  [accountId],
-);
-```
-
 ### `useAsyncError.ts`
 
 Normalizes thrown values (strings, `Error`, unknown) into `{ message }` for
@@ -150,15 +138,23 @@ consistent display.
 
 Boolean loading-state manager with `start / stop / toggle / isLoading`.
 
-### `usePersistentState.ts`
+### `usePersistentStorage.ts`
 
-`useState` mirror persisted to `localStorage` (default) or `sessionStorage`,
-with cross-tab sync via the `storage` event. Gracefully no-ops if storage is
-unavailable (e.g. private mode).
+Durable cross-platform persisted state: `tauri-plugin-store` on Tauri (survives
+Android cache clears, included in user-data backups) with a transparent
+`localStorage` fallback in browser/tests. Returns `{ value, setValue,
+setValueAsync, remove, loading }`.
 
 ```ts
-const [theme, setTheme] = usePersistentState<'light' | 'dark'>('ui-theme', 'light');
+const { value: theme, setValue: setTheme } = usePersistentStorage<'light' | 'dark'>(
+  'ui-theme',
+  'light',
+);
 ```
+
+> **Removed 2026-10-03** (zero importers): `useAsyncData.ts`,
+> `usePersistentState.ts` — use store selectors (`createAsyncStore` slices)
+> for async data and `usePersistentStorage` for prefs.
 
 ### `retryLogic.ts`
 

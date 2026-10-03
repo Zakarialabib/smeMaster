@@ -6,14 +6,14 @@
 
 ## Current State (shipped)
 
-| Area            | Implementation                                                           |
-| --------------- | ------------------------------------------------------------------------ |
-| **UI**          | `src/features/onboarding/OnboardingScreen.tsx` (4-step modal)            |
-| **State**       | `src/features/onboarding/hooks/useOnboarding.ts`                         |
-| **Persistence** | `useLocalStorage("smemaster.onboarding.done")` + Rust `onboarding.json`  |
-| **Navigation**  | ArrowLeft/ArrowRight keyboard support                                    |
-| **Entry**       | `App.tsx` via `showOnboarding` flag; auto-open AddAccount if no accounts |
-| **Tests**       | `src/features/onboarding/__tests__/OnboardingScreen.test.tsx`            |
+| Area            | Implementation                                                               |
+| --------------- | ---------------------------------------------------------------------------- |
+| **UI**          | `src/features/onboarding/OnboardingScreen.tsx` (4-step modal)                |
+| **State**       | `src/features/onboarding/hooks/useOnboarding.ts`                             |
+| **Persistence** | `usePersistentStorage("smemaster.onboarding.done")` + Rust `onboarding.json` |
+| **Navigation**  | ArrowLeft/ArrowRight keyboard support                                        |
+| **Entry**       | `App.tsx` via `showOnboarding` flag; auto-open AddAccount if no accounts     |
+| **Tests**       | `src/features/onboarding/__tests__/OnboardingScreen.test.tsx`                |
 
 Works. The reboot is polish, not rescue.
 

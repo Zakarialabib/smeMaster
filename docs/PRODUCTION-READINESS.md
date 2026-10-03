@@ -223,7 +223,7 @@
 
 - [x] 4-step modal wizard (`OnboardingScreen.tsx` + `useOnboarding.ts`)
 - [x] Keyboard navigation (ArrowLeft/ArrowRight)
-- [x] State persisted: `useLocalStorage("smemaster.onboarding.done")` + Rust `onboarding.json`
+- [x] State persisted: `usePersistentStorage("smemaster.onboarding.done")` + Rust `onboarding.json`
 - [x] Auto-open AddAccount if no accounts configured
 - [x] Visible in App.tsx via `showOnboarding` flag
 - [ ] Could be expanded to 5 steps per spec (Welcome → Account → Import → PGP → Tour)

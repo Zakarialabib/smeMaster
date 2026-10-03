@@ -111,14 +111,14 @@ const useMyStore = createAsyncStore<MyState, { fetchItems: () => Promise<Item[]>
 
 **The fix:** `src-tauri/src/db/common.rs` extracts these into reusable, behavior-preserving helpers (SQL strings and error messages are unchanged — pure refactor):
 
-| Helper                                         | Replaces                                   | Notes                                      |
+| Helper | Replaces | Notes |
 | ---------------------------------------------- | ------------------------------------------ | ------------------------------------------ | ---------------------------- | ------------------------------------------------- |
-| `fetch_or_not_found(opt, id, entity)`          | `.ok_or_else(                              |                                            | NotFound(...))`on`get_by_id` | sync; emits `"{entity} with id '{id}' not found"` |
-| `delete_or_not_found(pool, sql, id, entity)`   | `rows_affected == 0 → NotFound`            | async; SQL passed through `AssertSqlSafe`  |
-| `count_rows(pool, sql, bind)`                  | `SELECT COUNT(*)` queries                  | `bind` closure adds positional binds       |
-| `build_sort_clause(allowed, default, sort_by)` | inline `match sort_by { … }` blocks        | whitelists `ORDER BY` columns              |
+| `fetch_or_not_found(opt, id, entity)` | `.ok_or_else(                              |                                            | NotFound(...))`on`get_by_id` | sync; emits `"{entity} with id '{id}' not found"` |
+| `delete_or_not_found(pool, sql, id, entity)` | `rows_affected == 0 → NotFound` | async; SQL passed through `AssertSqlSafe` |
+| `count_rows(pool, sql, bind)` | `SELECT COUNT(*)` queries | `bind` closure adds positional binds |
+| `build_sort_clause(allowed, default, sort_by)` | inline `match sort_by { … }` blocks | whitelists `ORDER BY` columns |
 | `apply_field_updates(pool, table, id, fields)` | per-table dynamic `update_fields` builders | generic `SET` / `NULL` / `updated_at` bump |
-| `like_pattern(q)`                              | `format!("%{q}%")`                         | `LIKE` wildcard helper                     |
+| `like_pattern(q)` | `format!("%{q}%")` | `LIKE` wildcard helper |
 
 **Adoption rule:** helpers are adopted only where the existing code is an exact match (same SQL + same message). `DELETE`/`UPDATE`-not-found paths that use a `?`-bound id are left inline, because `delete_or_not_found` embeds the id in the SQL string and downgrading a parameterized statement to an interpolated one would change SQL form. Custom `NotFound` messages that don't match the `"{entity} with id '{id}' not found"` shape are also left inline. All six helpers have `#[cfg(test)]` coverage in `common.rs`.
 
@@ -215,13 +215,14 @@ src-tauri/src/db/common.rs                   ← fetch_or_not_found, delete_or_n
 
 ### Stability hooks & utils — `src/shared/hooks`, `src/shared/utils/`
 
-| Export                  | Purpose                                                                            |
-| ----------------------- | ---------------------------------------------------------------------------------- |
-| `useAsyncData.ts`       | Standardized async fetch with `data/isLoading/error/refetch`                       |
-| `useAsyncError.ts`      | Normalizes thrown values into `{ message }` for display                            |
-| `useLoading.ts`         | Boolean loading-state manager with `start/stop/toggle`                             |
-| `usePersistentState.ts` | `useState` mirror persisted to `localStorage`/`sessionStorage` with cross-tab sync |
-| `retryLogic.ts`         | `withRetry(fn, opts)` — exponential backoff, configurable retry conditions, jitter |
+| Export                    | Purpose                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `useAsyncError.ts`        | Normalizes thrown values into `{ message }` for display                               |
+| `useLoading.ts`           | Boolean loading-state manager with `start/stop/toggle`                                |
+| `usePersistentStorage.ts` | Durable cross-platform persisted state (`tauri-plugin-store` + localStorage fallback) |
+| `retryLogic.ts`           | `withRetry(fn, opts)` — exponential backoff, configurable retry conditions, jitter    |
+
+> Removed 2026-10-03 (dead code): `useAsyncData.ts`, `usePersistentState.ts`, `useAsyncResource.ts`, `useAccountScopedLoader.ts`, `useLongPress.ts` — zero importers.
 
 **Adoption rule:** Before adding a new spinner/dialog/retry block in a feature, check this library. If the primitive is missing, add it here (typed, strict, no `any`) rather than inlining it in the feature.
 
