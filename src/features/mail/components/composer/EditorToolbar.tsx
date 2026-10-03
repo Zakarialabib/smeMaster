@@ -15,7 +15,6 @@ import {
   Rows3,
   Trash2,
   ReceiptText,
-  Mic,
 } from 'lucide-react';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import {
@@ -28,13 +27,13 @@ import { EmojiPicker } from './EmojiPicker';
 import { InvoiceSelectionModal } from '../../../invoicing/components/InvoiceSelectionModal';
 import { Invoice } from '../../../invoicing/types';
 import { formatMoney, formatDate } from '../../../invoicing/utils/format';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 
 interface EditorToolbarProps {
   editor: Editor | null;
   onToggleAiAssist?: () => void;
   aiAssistOpen?: boolean;
   onToggleTemplatePicker?: () => void;
-  onVoiceModalOpen?: () => void;
 }
 
 export function EditorToolbar({
@@ -42,7 +41,6 @@ export function EditorToolbar({
   onToggleAiAssist,
   aiAssistOpen,
   onToggleTemplatePicker,
-  onVoiceModalOpen,
 }: EditorToolbarProps) {
   const { t } = useTranslation();
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -272,15 +270,15 @@ export function EditorToolbar({
 
       <div className="w-px h-4 bg-border-primary mx-1" />
 
-      {/* Voice compose */}
-      <button
-        type="button"
-        onClick={onVoiceModalOpen}
-        title={t('composer.voiceCompose')}
-        className="p-1 rounded hover:bg-bg-hover transition-colors text-text-secondary hover:text-accent"
-      >
-        <Mic size={14} />
-      </button>
+      {/* Voice compose — inline in toolbar */}
+      <VoiceButton
+        mode="input"
+        size="sm"
+        onTranscript={(text) => {
+          editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
+          useComposerStore.getState().setBodyHtml(editor.getHTML());
+        }}
+      />
 
       <div className="w-px h-4 bg-border-primary mx-1" />
 

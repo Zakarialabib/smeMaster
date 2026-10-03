@@ -324,9 +324,9 @@ Phase 1 (Pre-Release Polish)
 Phase 2 (Desktop Power User) ✅
   └─ 2.8 column config — ORPHANED: store has no UI
 
-Phase 3 (Accessibility & i18n)
-  ├─ 3.1 RTL remediation ← independent, 421 violations
-  └─ 3.5 Translation tools ✅ → ja/it key debt 🔶
+Phase 3 (Accessibility & i18n) ✅
+  ├─ 3.1 RTL remediation ✅ — 0 violations (fixed 2026-10-01)
+  └─ 3.5 Translation tools ✅ → ja/it key debt ✅ (resolved 2026-10-01)
 
 Phase 6 (Mobile Extended) — all independent, all not started
 
@@ -376,9 +376,9 @@ Preserved for context; the tables above are authoritative.
 ## Related Documents
 
 - [Production Readiness](../PRODUCTION-READINESS.md) — 10 gates with evidence (1, 3, 9 in progress)
-- [STATUS.md](../STATUS.md) — project status ⚠️ its metrics table is stale; trust `00-INDEX.md`
+- [STATUS.md](../STATUS.md) — project status (metrics table re-verified 2026-10-03)
 - [UI/UX Super-App Spec](../03-FRONTEND/14-navigation-ia-spec.md) — desktop & mobile UI/UX gaps
-- [RTL Audit](../03-FRONTEND/10-rtl-audit.md) — remediation plan for the 421 violations
+- [RTL Audit](../03-FRONTEND/10-rtl-audit.md) — remediation plan (all violations fixed 2026-10-01)
 - [Composer Architecture](../04-FEATURES/34-mail-composer.md) — composer gaps (Phase 7.5)
 - [Voice README](../voice/README.md) — voice engagement entry point
 
@@ -387,9 +387,9 @@ Preserved for context; the tables above are authoritative.
 Greps run this date; see **Ground truth** above for the table. Superseded claims fixed in this
 revision: 831→841→868 commands · 34→32→34 migrations · 43→44→47 stores · 915→969→999 Rust tests ·
 "ColumnPicker.tsx exists"→was no, built 2026-09-30 (`ColumnPicker.tsx` + EmailList/TasksPage mounts) · "OnboardingWizard.tsx exists"→renamed `OnboardingScreen.tsx` ·
-"packaging.yml"→`build.yml` · "RTL audit not written"→written, 421 violations remain ·
+"packaging.yml"→`build.yml` · "RTL audit not written"→written; **superseded 2026-10-01: 0 violations remain** ·
 "No code written" (voice)→Phases A–B closed, C in progress · widget count 8→10 ·
-ja/it TODO 215/211→51/51. The 2026-07-19 reconciliation block below this line is **archive**:
+ja/it TODO 215/211→51/51; **superseded 2026-10-01: 0 TODO tags remain**. The 2026-07-19 reconciliation block below this line is **archive**:
 
 - ~~831 commands / 3,344 TS tests / 34 migrations / 43 stores~~ — all superseded by the
   2026-09-30 numbers above.
