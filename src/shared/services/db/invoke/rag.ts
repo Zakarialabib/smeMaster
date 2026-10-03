@@ -139,22 +139,6 @@ export async function aiInsertProviderVectors(
   });
 }
 
-/**
- * Fetch every chunked contact document (id + text) — without embedding.
- * Used by the provider-embedding indexing path.
- */
-export async function aiGetContactChunks(): Promise<{ id: string; text: string }[]> {
-  return invokeCommand<{ id: string; text: string }[]>('ai_get_contact_chunks');
-}
-
-/**
- * Fetch every chunked deal document (id + text) — without embedding.
- * Used by the provider-embedding indexing path.
- */
-export async function aiGetDealChunks(): Promise<{ id: string; text: string }[]> {
-  return invokeCommand<{ id: string; text: string }[]>('ai_get_deal_chunks');
-}
-
 // ── Sidecar observability (gaps #1, #3, #5, #7, #9) ────────────────────────
 
 /** Sidecar runtime status: enabled, running, healthy, version. */
