@@ -44,6 +44,33 @@ Current repo-level numbers are tracked in `README.md`, `STATUS.md`, and `00-INDE
    ("⚠️ Rust test binary will not launch on THIS host") and the toolchain warning in
    [`01-quickstart.md`](01-quickstart.md).
 
+#### Workaround — verify pure logic with a standalone binary
+
+`cargo test` being unable to launch does **not** mean pure Rust logic is unverifiable. A plain
+`rustc` binary **does** run on this host (verified — `rustc --edition 2021 x.rs -o x.exe && ./x.exe`
+prints and exits 0). So for functions with no DB, no async and no Tauri — parsers, scope checks,
+calculators, state machines — extract them into a standalone harness and gate on its verdict:
+
+```bash
+bun run verify:agent-scope      # scripts/verify/agent-scope.sh
+```
+
+That script mirrors the `#[cfg(test)]` assertions in `db/tables/ai/agents.rs` and reports
+**14 passed, 0 failed**. **If you change such a rule, change both copies** — the `cargo test`
+version for CI, the standalone one so it is actually observed here.
+
+Two traps when writing one:
+
+- **Output path must be relative.** rustc is a native Windows binary and MSYS path conversion is
+  disabled here, so `-o /tmp/x.exe` is passed through literally and the link fails with
+  unresolved externals. Use `-o x.exe`.
+- **Do not gate on a bare `/failed/`.** A passing run prints `14 passed, 0 failed`, which matches.
+  Anchor on the verdict line and a non-zero failure count (`[1-9][0-9]* failed`). This bit the
+  first version of the script — it reported FAILED on a fully passing run.
+
+> **This is a workaround, not a substitute.** It covers pure logic only. Anything touching the DB,
+  async or Tauri still needs a real `cargo test` run in CI on a properly provisioned host.
+
 Use `cargo check --workspace`, never `cargo check -p <crate>`: the workspace inherits the
 app's full default features and compiles code `-p` skips.
 

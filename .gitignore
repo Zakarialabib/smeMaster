@@ -113,3 +113,6 @@ wireframes/005-unified-inbox-stitch/index.html
 wireframes/006-email-list-stitch/index.html
 wireframes/themes/stitch-tokens.css
 wireframes/themes/tokens.css
+# Standalone rustc verification harness output (scripts/verify/)
+scope-verify-bin
+scope-verify-bin.*
