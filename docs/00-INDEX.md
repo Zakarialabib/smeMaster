@@ -1,8 +1,8 @@
 # SMEMaster Docs
 
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 32 migrations (001–032, re-verified 2026-09-30) · **Tests:** ~3,529 TS + 969 Rust (via `npm run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 841 (777 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-09-30) · **Stores:** 44 Zustand store modules (non-test, checker-verified 2026-09-30 via `scripts/check-ground-truth.mjs`)
+> **Version:** 1.0.0-rc · **DB:** 34 migrations (001–034, re-verified 2026-10-03) · **Tests:** 314 TS test files + 999 Rust tests (via `bun run test` / `cargo test`)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 868 (804 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-10-03) · **Stores:** 47 Zustand store modules (non-test, checker-verified 2026-10-03 via `scripts/check-ground-truth.mjs`)
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
@@ -184,9 +184,6 @@ are done, retrieval eval and real providers remain.
 | [Mockups](voice/design/mockups/) 🆕                                                    | 10 HTML mockups on the **real** design tokens (06–10 render degraded states)      |
 | **Cross-cutting**                                                                      |                                                                                   |
 | **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕   | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1**     |
-| [OSS Landscape](06-ROADMAP/15-voice-agent-oss-landscape.md) 🆕                         | Layer-by-layer OSS-vs-gated verdict, licence check, adapted scores                |
-| [WhatsApp Landscape](06-ROADMAP/16-voice-agent-whatsapp-oss-landscape.md) 🆕           | WhatsApp/BSP integration options — webview shells are not integrations            |
-| [Topology Decision](06-ROADMAP/17-voice-agent-topology-decision.md) 🆕                 | What runs where, and where the provider keys live                                 |
 | [Glossary](glossary/glossary-voice-agent.md) 🆕                                        | Terms as used in this repo (spaces, gates, metrics, channel)                      |
 
 **New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)

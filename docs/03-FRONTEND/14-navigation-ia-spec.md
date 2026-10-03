@@ -36,9 +36,8 @@ automation, vault, ai-assistant, settings, help`. Email is #2 behind Dashboard; 
 ## 1. Target Desktop NavRail (icon rail + hover flyout) — EMAIL-FIRST
 
 Order reflects the owner's priority. Icon rail holds 8 main groups + Settings/Help pinned
-bottom (matches `NavRail` bottomIds pattern). **Reference implementation (tsc-clean, 37/37
-nav tests pass): `docs/navigation-redesign/proposed-navConfig.ts`** — drop-in replacement
-for `navConfig.ts`. This section mirrors it.
+bottom (matches `NavRail` bottomIds pattern). This section mirrors the proposed config
+from the original navigation redesign analysis (now removed).
 
 | #   | Group                                     | Icon (FIX)                     | Flyout / sub-items                                                                                  | Notes                                                                        |
 | --- | ----------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -67,8 +66,8 @@ follow-ups (Plan), and manages money (Finance). Vault/AI are utilities → lowes
 > to `/mail/inbox`. Route renames (Dashboard→Finance, Campaigns→Marketing) are a follow-up
 > N-chunk, not required for the email-first win.
 
-> **Reference implementation:** `docs/navigation-redesign/proposed-navConfig.ts` — drop-in replacement
-> for `navConfig.ts`. This section mirrors it.
+> **Reference implementation:** The proposed config from the original navigation redesign
+> analysis (folder removed). This section mirrors it.
 
 ---
 
@@ -188,12 +187,10 @@ Owner priority implies content emphasis:
 
 ## 6. Implementation Chunks (after approval)
 
-Reference drop-in: `docs/navigation-redesign/proposed-navConfig.ts` (tsc-clean, 37/37 tests).
+Reference drop-in: The proposed config from the original navigation redesign analysis
+(tsc-clean, 37/37 tests — folder removed, preserved in git history).
 Adopt in two passes — **Pass A is low-risk and delivers the email-first win without any
 route changes**; Pass B is the route-rename polish.
-
-> **Note:** The `docs/navigation-redesign/` folder has been removed. The proposed config
-> is preserved in git history.
 
 **Pass A — nav-only (no route changes; reuses existing paths)**
 
@@ -276,7 +273,7 @@ rail bloat >8; palette-as-graveyard; siloed Contacts vs Mail; mail-rules hidden 
 
 Verified against `src/shared/components/layout/shell/navConfig.ts`,
 `src/router/routeTree.tsx`, `src/features/settings/components/SettingsTabRegistry.ts`,
-and `docs/navigation-redesign/proposed-navConfig.ts`.
+and the original proposed config (folder removed).
 
 - **§7.1 #2 (Bot icon) — WRONG, now resolved in source.** `navConfig.ts` does **not** import
   or use `Bot` for either group; automation uses `GitBranch` and ai-assistant uses `Sparkles`.
@@ -292,5 +289,5 @@ and `docs/navigation-redesign/proposed-navConfig.ts`.
   `redirect({ to: "/dashboard" })`.
 - **`10-rtl-audit.md` MISSING — confirmed.** It is referenced as MISSING in `00-INDEX` and
   does not exist under `docs/03-FRONTEND/` (not created during this audit).
-- Proposed reference files `docs/navigation-redesign/proposed-navConfig.ts` and
-  `proposed-mobile-nav.ts` both still exist.
+- Proposed reference files from the original navigation redesign analysis have been removed
+  (preserved in git history).
