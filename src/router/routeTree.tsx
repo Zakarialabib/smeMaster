@@ -66,6 +66,11 @@ const AiAssistantPage = lazy(() =>
     default: m.AiAssistantPage,
   })),
 );
+const AgentConsolePage = lazy(() =>
+  import('@features/agent/pages/AgentConsolePage').then((m) => ({
+    default: m.AgentConsolePage,
+  })),
+);
 const MobileDashboardPage = lazy(() =>
   import('@features/dashboard/pages/MobileDashboardPage').then((m) => ({
     default: m.MobileDashboardPage,
@@ -352,12 +357,23 @@ export const workflowsRoute = createRoute({
 });
 
 const AiAssistantPageWrapper = createPageWrapper('AiAssistant', AiAssistantPage as LazyComponent);
+const AgentConsolePageWrapper = createPageWrapper(
+  'AgentConsole',
+  AgentConsolePage as LazyComponent,
+);
 
 // ---------- /ai-assistant ----------
 export const aiAssistantRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'ai-assistant',
   component: AiAssistantPageWrapper,
+});
+
+// ---------- /agent-console ----------
+export const agentConsoleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'agent-console',
+  component: AgentConsolePageWrapper,
 });
 
 // ---------- /dashboard ----------
@@ -491,6 +507,7 @@ export const routeTree = rootRoute.addChildren([
   invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
   erpRoute,
   aiAssistantRoute,
+  agentConsoleRoute,
   dashboardRoute,
   mobileDashboardRoute,
   unifiedRoute,

@@ -38,7 +38,8 @@
     "trash": "سلة المهملات",
     "spam": "الرسائل غير المرغوبة",
     "allMail": "كل البريد",
-    "attachments": "المرفقات"
+    "attachments": "المرفقات",
+    "agentConsole": "واجهة الوكيل"
   },
   "onboarding": {
     "setupWizard": "معالج الإعداد",

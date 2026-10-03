@@ -41,7 +41,8 @@
     "allMail": "All Mail",
     "attachments": "Attachments",
     "nMore": "{{count}} more",
-    "nPending": "{{count}} pending"
+    "nPending": "{{count}} pending",
+    "agentConsole": "Agent Console"
   },
   "onboarding": {
     "setupWizard": "Setup wizard",

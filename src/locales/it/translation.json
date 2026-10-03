@@ -38,7 +38,8 @@
     "trash": "Cestino",
     "spam": "Spam",
     "allMail": "Tutti i messaggi",
-    "attachments": "Allegati"
+    "attachments": "Allegati",
+    "agentConsole": "Console Agente"
   },
   "onboarding": {
     "setupWizard": "Configurazione guidata",

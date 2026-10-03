@@ -38,7 +38,8 @@
     "trash": "Corbeille",
     "spam": "Spam",
     "allMail": "Tous les messages",
-    "attachments": "Pièces jointes"
+    "attachments": "Pièces jointes",
+    "agentConsole": "Console Agent"
   },
   "onboarding": {
     "setupWizard": "Assistant de configuration",

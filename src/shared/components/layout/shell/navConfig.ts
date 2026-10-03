@@ -21,6 +21,7 @@ import {
   Calculator,
   ListChecks,
   CalendarDays,
+  Bot,
 } from 'lucide-react';
 import { navigateToLabel, navigateToSettings, navigateToHelp } from '@/router/navigate';
 import { router } from '@/router';
@@ -190,6 +191,12 @@ export const NAV_GROUPS: NavRailGroup[] = [
     items: [],
   },
   {
+    id: 'agent-console',
+    icon: Bot,
+    label: 'nav.agentConsole',
+    items: [],
+  },
+  {
     id: 'settings',
     icon: Settings,
     label: 'nav.settings',
@@ -219,6 +226,7 @@ export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
   automation: ['ai-summary', 'recent'],
   vault: ['recent'],
   'ai-assistant': ['ai-summary', 'recent'],
+  'agent-console': ['ai-summary', 'recent'],
   dashboard: ['today', 'upcoming', 'hot-leads'],
   settings: ['recent'],
   help: ['recent'],
@@ -234,6 +242,7 @@ export const INSIGHT_TITLE: Record<string, string> = {
   automation: 'Activity',
   vault: 'Recent',
   'ai-assistant': 'AI',
+  'agent-console': 'Agent',
   dashboard: 'Overview',
   settings: 'Recent',
   help: 'Recent',
@@ -268,6 +277,7 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/invoicing')) return 'dashboard';
   if (pathname.startsWith('/erp')) return 'dashboard';
   if (pathname.startsWith('/ai-assistant')) return 'ai-assistant';
+  if (pathname.startsWith('/agent-console')) return 'agent-console';
   if (pathname.startsWith('/pos')) return 'mail';
   return 'mail';
 }
@@ -301,6 +311,7 @@ export function getActiveSubItem(pathname: string): string | null {
   if (pathname.startsWith('/tasks')) return 'tasks';
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/ai-assistant')) return null;
+  if (pathname.startsWith('/agent-console')) return null;
   if (pathname.startsWith('/pos')) return null;
 
   return null;
@@ -351,6 +362,9 @@ export function handleNavSelect(id: string): void {
       break;
     case 'ai-assistant':
       router.navigate({ to: '/ai-assistant' });
+      break;
+    case 'agent-console':
+      router.navigate({ to: '/agent-console' });
       break;
     case 'pos':
       router.navigate({ to: '/pos' });

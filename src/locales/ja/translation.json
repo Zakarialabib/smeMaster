@@ -38,7 +38,8 @@
     "trash": "ゴミ箱",
     "spam": "スパム",
     "allMail": "すべてのメール",
-    "attachments": "添付ファイル"
+    "attachments": "添付ファイル",
+    "agentConsole": "エージェントコンソール"
   },
   "onboarding": {
     "setupWizard": "セットアップウィザード",
