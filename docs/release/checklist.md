@@ -21,8 +21,8 @@ document (e.g. PRODUCTION-READINESS.md for security).
 ## 2. Security
 
 - [ ] **Dependency audit** shows zero exploitable **HIGH** or **MEDIUM**
-      vulnerabilities. Run `npm audit` and `cargo audit`. Suppressions must
-      be listed in `SECURITY-AUDIT.md` with justification and expiry.
+      vulnerabilities. Run `bun audit` and `cargo audit`. Suppressions must
+      be listed in [PRODUCTION-READINESS.md](../PRODUCTION-READINESS.md) with justification and expiry.
 - [ ] Code signing certificates are **valid** and not within 14 days of
       expiry.
 - [ ] Auto-updater public key in `tauri.conf.json` matches the private key

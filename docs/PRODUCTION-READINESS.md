@@ -6,18 +6,18 @@
 
 ## Status Summary
 
-| Gate | Name               | Status                         | Owner    |
-| ---- | ------------------ | ------------------------------ | -------- |
-| 0    | Stop Conditions    | ✅ PASS                        | Security |
-| 1    | Stability          | 🟢 PASS (automated tests added)  | Infra    |
-| 2    | Performance        | ✅ PASS                        | Backend  |
-| 3    | Distribution       | 🔶 IN PROGRESS (certs, pubkey) | Release  |
-| 4    | Data Safety        | ✅ PASS                        | Backend  |
-| 5    | User Experience    | ✅ PASS                        | Frontend |
-| 6    | Observability      | ✅ PASS                        | Backend  |
-| 7    | Documentation      | ✅ PASS                        | Docs     |
-| 8    | Legal & Compliance | ✅ PASS                        | Release  |
-| 9    | Final Validation   | 🔶 IN PROGRESS (dogfood, beta) | All      |
+| Gate | Name               | Status                          | Owner    |
+| ---- | ------------------ | ------------------------------- | -------- |
+| 0    | Stop Conditions    | ✅ PASS                         | Security |
+| 1    | Stability          | 🟢 PASS (automated tests added) | Infra    |
+| 2    | Performance        | ✅ PASS                         | Backend  |
+| 3    | Distribution       | 🔶 IN PROGRESS (certs, pubkey)  | Release  |
+| 4    | Data Safety        | ✅ PASS                         | Backend  |
+| 5    | User Experience    | ✅ PASS                         | Frontend |
+| 6    | Observability      | ✅ PASS                         | Backend  |
+| 7    | Documentation      | ✅ PASS                         | Docs     |
+| 8    | Legal & Compliance | ✅ PASS                         | Release  |
+| 9    | Final Validation   | 🔶 IN PROGRESS (dogfood, beta)  | All      |
 
 **Overall: 8 PASS, 2 IN PROGRESS, 0 FAIL.** Gate 1 upgraded from IN PROGRESS to PASS via automated test suite. Remaining blockers are human/manual (certificates, beta testing).
 
@@ -34,7 +34,7 @@
 - [x] `db_execute_insert` is gated — wrapped in `#[cfg(debug_assertions)]`
 - [x] High-risk commands documented
 
-**Full evidence:** [`../SECURITY-AUDIT.md`](../SECURITY-AUDIT.md)
+**Full evidence:** See Gate 0 section above.
 
 ### 0.2 Credential Storage
 
@@ -142,7 +142,7 @@
 
 ### 3.1 Code Signing (DEFERRED — post-v1.0.0)
 
-> **v1.0.0 decision (see `../SECURITY-AUDIT.md`):** ships **Windows (MSI/NSIS) + Android (APK)** only, **unsigned**, no updater. macOS/Linux targets are removed for v1.0.0. The items below are future-state, not v1.0.0 scope.
+> **v1.0.0 decision:** ships **Windows (MSI/NSIS) + Android (APK)** only, **unsigned**, no updater. macOS/Linux targets are removed for v1.0.0. The items below are future-state, not v1.0.0 scope.
 
 - [ ] macOS: Apple Developer certificate + notarization (purchase required) — future
 - [ ] Windows: EV code signing certificate (purchase required) — future
@@ -413,7 +413,7 @@ WEEK 4: v1.0.0 ship
 
 ## Companion Documents
 
-- **Security audit detail:** [`../SECURITY-AUDIT.md`](../SECURITY-AUDIT.md)
+- **Security audit detail:** See Gate 0 section above.
 - **Pre-release checklist:** [release/checklist.md](release/checklist.md)
 - **Code signing guide:** [release/signing.md](release/signing.md)
 - **User documentation:** [user-guide/](user-guide/)

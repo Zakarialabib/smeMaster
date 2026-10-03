@@ -58,4 +58,3 @@ When adding or changing IPC:
 
 - `../02-BACKEND/06-commands-reference.md`
 - `../01-ARCHITECTURE/03-data-model.md`
-- `../05-DEVELOPMENT/04-agent-guide.md`
