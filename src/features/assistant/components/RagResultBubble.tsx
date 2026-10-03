@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { User, Bot, ChevronDown } from 'lucide-react';
 import { cn } from '@shared/utils/cn';
+import { VoiceButton } from './VoiceButton';
 
 // ── Props ───────────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
                 {primary}
               </p>
             </div>
+            <VoiceButton mode="output" text={primary} size="sm" />
           </div>
           {hasSources && (
             <button

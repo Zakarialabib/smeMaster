@@ -16,6 +16,7 @@ import { RagSearchBar } from '@features/assistant/components/RagSearchBar';
 import { RagResultBubble } from '@features/assistant/components/RagResultBubble';
 import { RagEmptyState } from '@features/assistant/components/RagEmptyState';
 import { RagSkeleton } from '@features/assistant/components/RagSkeleton';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { GlassPanel } from '@shared/components/ui/glass-panel';
 import { Button } from '@shared/components/ui/Button';
 import { cn } from '@shared/utils/cn';
@@ -190,12 +191,24 @@ export function AiAssistantPage() {
         )}
       >
         <div className="max-w-3xl mx-auto">
-          <RagSearchBar
-            value={query}
-            onChange={setQuery}
-            onSubmit={handleSubmit}
-            disabled={isSearching || showModelWarning}
-          />
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <RagSearchBar
+                value={query}
+                onChange={setQuery}
+                onSubmit={handleSubmit}
+                disabled={isSearching || showModelWarning}
+              />
+            </div>
+            <VoiceButton
+              mode="input"
+              onTranscript={(text) => {
+                setQuery(text);
+                handleSubmit(text);
+              }}
+              disabled={isSearching || showModelWarning}
+            />
+          </div>
           <p className={cn(TEXT_HINT, 'mt-1.5 text-center')}>
             Powered by on-device embeddings (LM Studio / BGE-small) + LanceDB semantic search
           </p>
