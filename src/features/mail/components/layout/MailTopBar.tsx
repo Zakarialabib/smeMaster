@@ -119,7 +119,7 @@ export function MailTopBar({
                 {f === 'all'
                   ? t('email.all')
                   : f === 'unread'
-                    ? t('email.unread')
+                    ? t('common.unread')
                     : t('email.read')}
               </button>
             ))}

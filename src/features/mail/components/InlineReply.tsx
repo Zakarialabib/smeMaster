@@ -425,7 +425,7 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
                 className="flex items-center gap-1 px-2 py-1 text-xs text-text-tertiary hover:text-accent transition-colors disabled:opacity-50"
               >
                 <RotateCcw size={11} />
-                {t('composer.regenerate')}
+                {t('common.regenerate')}
               </button>
               <button
                 onClick={handleClearDraft}

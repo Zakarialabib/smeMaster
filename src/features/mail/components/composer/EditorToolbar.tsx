@@ -426,7 +426,7 @@ export function EditorToolbar({
           className="px-1.5 py-1 text-xs rounded hover:bg-bg-hover transition-colors flex items-center gap-1 text-text-secondary"
         >
           <FileText size={12} />
-          {t('composer.templates')}
+          {t('common.templates')}
         </button>
       )}
 
@@ -506,7 +506,7 @@ export function EditorToolbar({
         />
       )}
 
-      {btn(t('composer.undo'), false, () => editor.chain().focus().undo().run())}
+      {btn(t('common.undo'), false, () => editor.chain().focus().undo().run())}
       {btn(t('composer.redo'), false, () => editor.chain().focus().redo().run())}
       {/* Format preview bar */}
       <FormatPreviewBar editor={editor} />

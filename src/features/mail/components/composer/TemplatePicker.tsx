@@ -74,7 +74,7 @@ export function TemplatePicker({
           title={t('composer.insertTemplate') + ' (Ctrl+Shift+T)'}
         >
           <FileText size={12} />
-          {t('composer.templates')}
+          {t('common.templates')}
         </button>
       )}
 
