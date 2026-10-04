@@ -1690,6 +1690,7 @@ export async function upsertPendingOperation(op: UpsertPendingOperationRequest):
     status: undefined as string | undefined,
     maxRetries: undefined as number | undefined,
     campaignId: op.campaignId ?? null,
+    holdUntil: op.holdUntil ?? null,
   });
 }
 

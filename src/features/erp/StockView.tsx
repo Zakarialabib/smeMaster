@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Package, AlertTriangle, Layers, Wallet, Pencil, X, Check, RefreshCw } from 'lucide-react';
+import { Package, AlertTriangle, Layers, Wallet, Pencil, Check, RefreshCw } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 import { formatMoney } from '@features/invoicing/utils/format';
 import { useCompanyStore, getActiveCompany } from './companyStore';
 import { InfoBanner, StatCard, SectionCard, LiveBadge } from './erpShared';
@@ -258,27 +259,26 @@ function AdjustStockModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-bg-tertiary flex items-center justify-center text-text-secondary shrink-0">
-              <Package size={18} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-text-primary truncate">{item.name}</h3>
-              <p className="text-[11px] text-text-tertiary font-mono">{item.sku ?? '—'}</p>
-            </div>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={item.name}
+      size="sm"
+      renderHeader={
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border-primary">
+          <div className="w-10 h-10 rounded-xl bg-bg-tertiary flex items-center justify-center text-text-secondary shrink-0">
+            <Package size={18} />
           </div>
-          <Button variant="ghost" size="xs" iconOnly icon={<X size={16} />} onClick={onClose} />
+          <div className="min-w-0">
+            <h3 id="modal-title" className="text-sm font-semibold text-text-primary truncate">
+              {item.name}
+            </h3>
+            <p className="text-[11px] text-text-tertiary font-mono">{item.sku ?? '—'}</p>
+          </div>
         </div>
-
+      }
+    >
+      <div className="p-5">
         <label className="block">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
             New quantity on hand
@@ -306,6 +306,6 @@ function AdjustStockModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

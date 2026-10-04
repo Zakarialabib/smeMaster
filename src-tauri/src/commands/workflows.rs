@@ -488,10 +488,11 @@ pub async fn db_upsert_pending_operation(
     status: Option<String>,
     max_retries: Option<i64>,
     campaign_id: Option<String>,
+    hold_until: Option<i64>,
 ) -> CmdResult<String> {
     let now = chrono::Utc::now().timestamp();
     sqlx::query(
-        "INSERT INTO pending_operations (id, company_id, operation_type, resource_id, params, status, retry_count, max_retries, campaign_id, created_at) VALUES (?,?,?,?,?,?,0,?,?,?) ON CONFLICT(id) DO UPDATE SET status=excluded.status, params=excluded.params"
+        "INSERT INTO pending_operations (id, company_id, operation_type, resource_id, params, status, retry_count, max_retries, campaign_id, hold_until, created_at) VALUES (?,?,?,?,?,?,0,?,?,?,?) ON CONFLICT(id) DO UPDATE SET status=excluded.status, params=excluded.params, hold_until=excluded.hold_until"
     )
     .bind(&id)
     .bind(&company_id)
@@ -501,6 +502,7 @@ pub async fn db_upsert_pending_operation(
     .bind(status.as_deref().unwrap_or("pending"))
     .bind(max_retries.unwrap_or(10))
     .bind(&campaign_id)
+    .bind(hold_until)
     .bind(now)
     .execute(&*pool)
     .await

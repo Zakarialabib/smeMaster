@@ -19,6 +19,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 import { useInvoicingStore } from '../stores/invoicingStore';
 import {
   ACTIVE_COMPANY_ID,
@@ -748,48 +749,43 @@ function DocumentPreviewModal({
   path: string;
   onClose: () => void;
 }) {
+  const title = type === 'pdf' ? 'PDF Document' : 'PEPPOL / UBL 2.1 XML';
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6"
-      onClick={onClose}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={title}
+      size="2xl"
+      renderHeader={
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border-primary bg-bg-secondary">
+          {type === 'pdf' ? (
+            <FileText size={18} className="text-accent" />
+          ) : (
+            <FileCode size={18} className="text-warning" />
+          )}
+          <div className="min-w-0">
+            <h3 id="modal-title" className="text-sm font-semibold text-text-primary">
+              {title}
+            </h3>
+            <p className="text-xs text-text-tertiary truncate">{path || 'Generated document'}</p>
+          </div>
+        </div>
+      }
     >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-3xl h-[80vh] flex flex-col overflow-hidden backdrop-blur-2xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-primary bg-bg-secondary">
-          <div className="flex items-center gap-3">
-            {type === 'pdf' ? (
-              <FileText className="text-accent" />
-            ) : (
-              <FileCode className="text-warning" />
-            )}
-            <div>
-              <h3 className="font-bold text-text-primary">
-                {type === 'pdf' ? 'PDF Document' : 'PEPPOL / UBL 2.1 XML'}
-              </h3>
-              <p className="text-xs text-text-tertiary truncate max-w-md">
-                {path || 'Generated document'}
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" icon={<X size={18} />} onClick={onClose} />
+      <div className="bg-bg-tertiary flex flex-col items-center justify-center text-text-tertiary gap-2 p-8 text-center min-h-[50vh]">
+        <div className="w-16 h-16 rounded-2xl bg-bg-secondary flex items-center justify-center">
+          {type === 'pdf' ? (
+            <FileText size={30} className="text-accent" />
+          ) : (
+            <FileCode size={30} className="text-warning" />
+          )}
         </div>
-        <div className="flex-1 bg-bg-tertiary flex flex-col items-center justify-center text-text-tertiary gap-2 p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-bg-secondary flex items-center justify-center">
-            {type === 'pdf' ? (
-              <FileText size={30} className="text-accent" />
-            ) : (
-              <FileCode size={30} className="text-warning" />
-            )}
-          </div>
-          <p className="font-medium text-text-secondary">Document ready</p>
-          <p className="text-sm max-w-sm">
-            In the live desktop app this panel renders the generated{' '}
-            {type === 'pdf' ? 'PDF' : 'XML'} from <code className="text-text-primary">{path}</code>.
-          </p>
-        </div>
+        <p className="font-medium text-text-secondary">Document ready</p>
+        <p className="text-sm max-w-sm">
+          In the live desktop app this panel renders the generated {type === 'pdf' ? 'PDF' : 'XML'}{' '}
+          from <code className="text-text-primary">{path}</code>.
+        </p>
       </div>
-    </div>
+    </Modal>
   );
 }

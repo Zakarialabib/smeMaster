@@ -5,7 +5,6 @@ import {
   ArrowUpRight,
   Plus,
   Minus,
-  X,
   Check,
   RefreshCw,
   Landmark,
@@ -15,6 +14,7 @@ import {
   ArrowRightLeft,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 import { formatMoney, formatDate } from '@features/invoicing/utils/format';
 import { useCompanyStore, getActiveCompany } from './companyStore';
 import { SectionCard, LiveBadge } from './erpShared';
@@ -413,34 +413,33 @@ function WalletActionModal({
     return getActiveCompany(companies, id)?.id ?? id;
   }
 
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-bg-primary rounded-t-3xl sm:rounded-2xl border border-border-primary w-full sm:max-w-md p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-3 mb-5">
-          <div className="flex items-center gap-3 min-w-0">
-            <span
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 ${
-                isTopup ? 'bg-success' : 'bg-accent'
-              }`}
-            >
-              {isTopup ? <Plus size={20} /> : <Minus size={20} />}
-            </span>
-            <div className="min-w-0">
-              <h3 className="font-bold text-text-primary">
-                {isTopup ? 'Top up wallet' : 'Withdraw from wallet'}
-              </h3>
-              <p className="text-[11px] text-text-tertiary truncate">{companyName}</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="xs" iconOnly icon={<X size={16} />} onClick={onClose} />
-        </div>
+  const title = isTopup ? 'Top up wallet' : 'Withdraw from wallet';
 
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={title}
+      size="sm"
+      renderHeader={
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border-primary">
+          <span
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 ${
+              isTopup ? 'bg-success' : 'bg-accent'
+            }`}
+          >
+            {isTopup ? <Plus size={20} /> : <Minus size={20} />}
+          </span>
+          <div className="min-w-0">
+            <h3 id="modal-title" className="text-sm font-semibold text-text-primary">
+              {title}
+            </h3>
+            <p className="text-[11px] text-text-tertiary truncate">{companyName}</p>
+          </div>
+        </div>
+      }
+    >
+      <div className="p-5">
         <label className="block">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
             Amount ({currency})
@@ -510,6 +509,6 @@ function WalletActionModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
