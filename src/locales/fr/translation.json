@@ -1361,7 +1361,8 @@
       "active": "Active",
       "saving": "Saving...",
       "save": "Save"
-    }
+    },
+    "searchLimit": "Limite de résultats de recherche"
   },
   "search": {
     "typeACommand": "Tapez une commande...",

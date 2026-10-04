@@ -1361,7 +1361,8 @@
       "active": "Active",
       "saving": "Saving...",
       "save": "Save"
-    }
+    },
+    "searchLimit": "حد نتائج البحث"
   },
   "search": {
     "typeACommand": "اكتب أمراً...",

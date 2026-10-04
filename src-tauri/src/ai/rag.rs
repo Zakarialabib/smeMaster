@@ -8,6 +8,7 @@ use futures::StreamExt;
 use tokio::sync::Mutex;
 use sqlx::SqlitePool;
 use std::collections::HashMap;
+use crate::db::tables::core::settings;
 
 pub struct RagSystem {
     vector_db: Arc<VectorDb>,
@@ -51,8 +52,15 @@ impl RagSystem {
         Ok(contexts)
     }
 
+    /// Read the search limit from settings, defaulting to 3.
+    async fn load_search_limit(&self) -> usize {
+        let raw = settings::get(&self.pool, "rag_search_limit").await.ok().flatten();
+        raw.and_then(|v| v.parse::<usize>().ok()).filter(|&n| n > 0).unwrap_or(3)
+    }
+
     pub async fn generate_augmented_prompt(&self, query: &str) -> Result<String> {
-        let contexts = self.search(query, 384, 3).await?;
+        let limit = self.load_search_limit().await;
+        let contexts = self.search(query, 384, limit).await?;
         let context_str = contexts.join("\n---\n");
 
         let prompt = format!(

@@ -99,6 +99,7 @@ export const AI_SETTINGS_SCHEMA = {
   rag_splitter: { type: 'string', secure: false, description: 'RAG splitter type' },
   rag_index_scope: { type: 'json', secure: false, description: 'RAG index source toggles' },
   rag_embedding_model: { type: 'string', secure: false, description: 'Local embedding model id' },
+  rag_search_limit: { type: 'number', secure: false, description: 'RAG search result limit' },
 
   // Task routing (NEW - Phase 2)
   ai_task_routes: { type: 'json', secure: false, description: 'User task routing overrides' },

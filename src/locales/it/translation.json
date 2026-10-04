@@ -1360,7 +1360,8 @@
       "active": "Active",
       "saving": "Saving...",
       "save": "Save"
-    }
+    },
+    "searchLimit": "Limite risultati di ricerca"
   },
   "addAccount": {
     "easySetup": "Configurazione facile (IMAP + password app)",

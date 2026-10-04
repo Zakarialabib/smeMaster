@@ -1283,7 +1283,8 @@
       "active": "Active",
       "saving": "Saving...",
       "save": "Save"
-    }
+    },
+    "searchLimit": "Search results limit"
   },
   "addAccount": {
     "easySetup": "Easy Setup (IMAP + App Password)",

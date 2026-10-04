@@ -51,7 +51,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { setSetting } from '@features/settings/db/settings';
-import { getLocalModelsByKind, formatBytes as formatModelBytes } from '@shared/services/ai/localModelCatalog';
+import {
+  getLocalModelsByKind,
+  formatBytes as formatModelBytes,
+} from '@shared/services/ai/localModelCatalog';
 
 // ── Status Dot ───────────────────────────────────────────────────────────────
 
@@ -246,6 +249,7 @@ export default function KnowledgeBaseSettings() {
   const [embeddingModelId, setEmbeddingModelId] = useState('bge-small-en-v1.5');
   const [embeddingModelChanged, setEmbeddingModelChanged] = useState(false);
   const embeddingModels = getLocalModelsByKind('embedding');
+  const [searchLimit, setSearchLimit] = useState(3);
   // ── Provider / embedding-model status (provider mode) ──
   const [aiProvider, setAiProvider] = useState<string>('claude');
   const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>('');
@@ -288,6 +292,8 @@ export default function KnowledgeBaseSettings() {
       }
       const embModel = await getSetting('rag_embedding_model');
       if (embModel) setEmbeddingModelId(embModel);
+      const sl = await getSetting('rag_search_limit');
+      if (sl) setSearchLimit(Number(sl) || 3);
     })();
   }, []);
 
@@ -474,10 +480,29 @@ export default function KnowledgeBaseSettings() {
               </select>
             </SettingRow>
             {embeddingModelChanged && (
-              <p className="text-xs text-warning flex items-center gap-1">
-                <AlertCircle className="w-3 h-3 shrink-0" />
-                {t('settings.embeddingModelChanged')}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-warning flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  {t('settings.embeddingModelChanged')}
+                </p>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  className={BTN_GLASS}
+                  onClick={async () => {
+                    setEmbeddingModelChanged(false);
+                    await indexAll();
+                  }}
+                  disabled={indexingStatus === 'indexing'}
+                >
+                  {indexingStatus === 'indexing' ? (
+                    <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-3 h-3 me-1" />
+                  )}
+                  {t('settings.reindex')}
+                </Button>
+              </div>
             )}
             {downloadProgress && <ModelDownloadProgress progress={downloadProgress} />}
             {modelPath && (
@@ -747,6 +772,20 @@ export default function KnowledgeBaseSettings() {
             onChange={(e) => setChunkOverlap(Number(e.target.value))}
             onBlur={async () => {
               await setSetting('rag_chunk_overlap', String(chunkOverlap));
+            }}
+            className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+          />
+        </SettingRow>
+        <SettingRow label={t('settings.searchLimit')}>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            step={1}
+            value={searchLimit}
+            onChange={(e) => setSearchLimit(Number(e.target.value))}
+            onBlur={async () => {
+              await setSetting('rag_search_limit', String(searchLimit));
             }}
             className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
           />

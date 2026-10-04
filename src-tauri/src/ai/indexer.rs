@@ -634,6 +634,9 @@ impl Indexer {
     /// The table dimension is taken from the first vector's length, so LM Studio
     /// / Ollama models of any width (384 / 768 / 1536, …) each get their
     /// own `knowledge_base_{dim}` table.
+    ///
+    /// Also writes to FTS5 (`knowledge_base_fts`) for hybrid search support
+    /// in provider mode.
     pub async fn index_provider_vectors(
         &self,
         vectors: Vec<Vec<f32>>,
@@ -688,6 +691,16 @@ impl Indexer {
         let reader: Box<dyn arrow::array::RecordBatchReader + Send> =
             Box::new(RecordBatchIterator::new(vec![Ok(batch)], schema));
         table.add(reader).execute().await?;
+
+        // Write to FTS5 for hybrid search (BM25 + vector + RRF)
+        for i in 0..count {
+            sqlx::query("INSERT INTO knowledge_base_fts(id, text) VALUES (?, ?)")
+                .bind(&ids[i])
+                .bind(&texts[i])
+                .execute(&self.pool)
+                .await?;
+        }
+
         Ok(count)
     }
 }

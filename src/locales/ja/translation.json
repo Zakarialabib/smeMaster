@@ -1360,7 +1360,8 @@
       "active": "Active",
       "saving": "Saving...",
       "save": "Save"
-    }
+    },
+    "searchLimit": "検索結果の制限"
   },
   "addAccount": {
     "easySetup": "簡単セットアップ IMAP + アプリパスワード ",

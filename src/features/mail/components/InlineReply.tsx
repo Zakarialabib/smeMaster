@@ -27,6 +27,7 @@ import { useUndoSend } from '@features/mail/hooks/useUndoSend';
 import type { DbMessage } from '@shared/services/db/messages';
 import type { Thread } from '@features/mail/stores/threadStore';
 import { uiBus } from '@shared/services/events/uiBus';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 
 type ReplyMode = 'reply' | 'replyAll' | 'forward';
 
@@ -395,6 +396,16 @@ export function InlineReply({ thread, messages, accountId, noReply, onSent }: In
             </div>
           </div>
         )}
+        <div className="absolute bottom-2 right-2">
+          <VoiceButton
+            mode="input"
+            onTranscript={(text) => {
+              editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
+            }}
+            disabled={autoDraft.loading}
+            size="sm"
+          />
+        </div>
       </div>
 
       {/* Quick Replies */}
