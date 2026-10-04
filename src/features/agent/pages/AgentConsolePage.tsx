@@ -1,228 +1,166 @@
 /**
- * Agent Console — the operator surface for the voice agent.
+ * Agent Console — the operator surface for agentic AI automation.
  *
- * This page was ported from the prototype in Phase A but never wired into the
- * router. It is the first user-visible surface for the agent system.
+ * Focus: AI agents that automate email and social channels.
+ * The voice call system is dropped — too many hard dependencies
+ * (SIP, telephony, realtime audio). Instead, agentic AI handles
+ * email triage, drafting, sending, and social media management.
  *
- * Layout: top-nav sections (Ops · Calls · Live · Config) with an AI callout
- * per section, following the unified design system.
+ * Layout: top-nav sections (Ops · Automations · Config) with an AI
+ * callout per section, following the unified design system.
  *
  * @module
  */
 
-import { useState, useCallback, useMemo } from 'react';
-import { Activity, Phone, PhoneOff, Settings, CheckCircle2, Volume2 } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Activity, Settings, Bot } from 'lucide-react';
 import { cn } from '@shared/utils/cn';
-import { BTN_BASE, BTN_GHOST } from '@shared/styles/ui-tokens';
+import { BTN_BASE, BTN_GLASS_PRIMARY } from '@shared/styles/ui-tokens';
 import { OpsDigest } from '../components/OpsDigest';
-import { AgentCard, AgentBadge, AgentEmpty, AgentResource } from '../components/States';
+import { AgentCard, AgentBadge } from '../components/States';
 import { useUnacknowledgedP1, useReachable } from '../stores';
-import { VoiceButton } from '@features/assistant/components/VoiceButton';
-import { useAgentResource } from '../api/useAgentResource';
-import { dbListThreads } from '@shared/services/db/invoke/core';
-import { useAccountStore } from '@features/accounts/stores/accountStore';
-import type { CallListItem, CallOutcome } from '../types/commands';
+import { setSetting } from '@features/settings/db/settings';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type ConsoleTab = 'ops' | 'calls' | 'live' | 'config';
+type ConsoleTab = 'ops' | 'automations' | 'config';
 
 const TABS: { id: ConsoleTab; label: string; icon: typeof Activity }[] = [
   { id: 'ops', label: 'Ops', icon: Activity },
-  { id: 'calls', label: 'Calls', icon: Phone },
-  { id: 'live', label: 'Live', icon: Volume2 },
+  { id: 'automations', label: 'Automations', icon: Bot },
   { id: 'config', label: 'Config', icon: Settings },
 ];
 
-// ── Call list tab ────────────────────────────────────────────────────────────
+// ── Automations tab ──────────────────────────────────────────────────────────
 
-const OUTCOME_TONE: Record<CallOutcome, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  contained: 'success',
-  transferred: 'warning',
-  voicemail: 'neutral',
-  abandoned: 'danger',
-};
-
-function CallRow({ call }: { call: CallListItem }) {
-  const tone = OUTCOME_TONE[call.outcome];
-  return (
-    <li className="flex items-center justify-between gap-3 border-b border-border-primary/60 py-3 last:border-b-0">
-      <div className="flex items-center gap-3 min-w-0">
-        <AgentBadge tone={tone}>{call.outcome}</AgentBadge>
-        <div className="min-w-0">
-          <p className="text-sm text-text-primary truncate">{call.callerMasked}</p>
-          <p className="text-xs text-text-tertiary">
-            {call.channel} ·{' '}
-            {new Date(call.startedAt).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-            {call.durationSec > 0 &&
-              ` · ${Math.floor(call.durationSec / 60)}m ${call.durationSec % 60}s`}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {call.flagged && <AgentBadge tone="ai">{call.flagged}</AgentBadge>}
-        {call.costEur !== null && (
-          <span className="text-xs text-text-secondary tabular-nums">
-            €{call.costEur.toFixed(3)}
-          </span>
-        )}
-      </div>
-    </li>
-  );
+interface AutomationRule {
+  id: string;
+  name: string;
+  channel: 'email' | 'social';
+  trigger: string;
+  action: string;
+  enabled: boolean;
+  lastRun: string | null;
+  runCount: number;
 }
 
-function CallsTab() {
-  const [range, setRange] = useState<'7d' | '30d' | 'all'>('30d');
-  const [outcome, setOutcome] = useState<'all' | CallOutcome>('all');
-  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+const DEFAULT_AUTOMATIONS: AutomationRule[] = [
+  {
+    id: 'auto-triage',
+    name: 'Email Triage',
+    channel: 'email',
+    trigger: 'New email received',
+    action: 'Categorize + summarize + flag urgent',
+    enabled: true,
+    lastRun: null,
+    runCount: 0,
+  },
+  {
+    id: 'auto-draft',
+    name: 'Smart Draft Replies',
+    channel: 'email',
+    trigger: 'Email from known contact',
+    action: 'Generate draft reply with context',
+    enabled: true,
+    lastRun: null,
+    runCount: 0,
+  },
+  {
+    id: 'auto-followup',
+    name: 'Follow-up Reminders',
+    channel: 'email',
+    trigger: 'No reply after 48h',
+    action: 'Create task + suggest follow-up',
+    enabled: false,
+    lastRun: null,
+    runCount: 0,
+  },
+  {
+    id: 'auto-social',
+    name: 'Social Media Monitor',
+    channel: 'social',
+    trigger: 'Brand mention detected',
+    action: 'Summarize + suggest response',
+    enabled: false,
+    lastRun: null,
+    runCount: 0,
+  },
+];
 
-  // Fetch threads from the local database as a call list.
-  // Maps Thread → CallListItem shape for the UI.
-  const fetcher = useCallback(async () => {
-    if (!activeAccountId) return [] as CallListItem[];
+function AutomationsTab() {
+  const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_AUTOMATIONS);
+  const [saving, setSaving] = useState(false);
+
+  const toggleRule = useCallback((id: string) => {
+    setRules((prev) => prev.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)));
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
     try {
-      const threads = await dbListThreads(activeAccountId, 100, 0);
-      const now = Date.now();
-      const rangeMs = range === '7d' ? 7 * 86400_000 : range === '30d' ? 30 * 86400_000 : 0;
-
-      return threads
-        .filter((t) => {
-          if (rangeMs === 0) return true;
-          const ts = t.last_message_at ?? 0;
-          return now - ts * 1000 < rangeMs;
-        })
-        .map((t) => ({
-          id: t.id,
-          callerMasked: t.subject ?? '(no subject)',
-          channel: 'voice' as const,
-          startedAt: new Date((t.last_message_at ?? 0) * 1000).toISOString(),
-          durationSec: t.message_count * 30,
-          outcome: 'contained' as CallOutcome,
-          state: 'closed' as const,
-          flagged: t.is_important ? 'important' : null,
-          costEur: null,
-          containment: true,
-        }));
+      await setSetting('agent_automation_rules', JSON.stringify(rules));
     } catch {
-      return [] as CallListItem[];
+      /* ignore */
+    } finally {
+      setSaving(false);
     }
-  }, [activeAccountId, range]);
+  }, [rules]);
 
-  const { state, refresh } = useAgentResource(fetcher, [range], { pollMs: 30_000 });
-
-  const filtered = useMemo(() => {
-    if (state.kind !== 'ready') return [];
-    return state.data.filter((c) => outcome === 'all' || c.outcome === outcome);
-  }, [state, outcome]);
+  const enabledCount = rules.filter((r) => r.enabled).length;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        {(['7d', '30d', 'all'] as const).map((r) => (
-          <button
-            key={r}
-            type="button"
-            className={cn(BTN_BASE, BTN_GHOST, range === r && 'bg-accent/15 text-accent')}
-            onClick={() => setRange(r)}
-          >
-            {r === '7d' ? '7 days' : r === '30d' ? '30 days' : 'All'}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <select
-          className={cn(BTN_BASE, BTN_GHOST, 'appearance-none pr-8')}
-          value={outcome}
-          onChange={(e) => setOutcome(e.target.value as 'all' | CallOutcome)}
-        >
-          <option value="all">All outcomes</option>
-          <option value="contained">Contained</option>
-          <option value="transferred">Transferred</option>
-          <option value="voicemail">Voicemail</option>
-          <option value="abandoned">Abandoned</option>
-        </select>
-      </div>
-
-      <AgentResource
-        state={state}
-        onRetry={refresh}
-        isEmpty={() => filtered.length === 0}
-        empty={<AgentEmpty label="No calls in this range" />}
-      >
-        {() => (
-          <AgentCard title={`Calls (${filtered.length})`}>
-            <ul>
-              {filtered.map((c) => (
-                <CallRow key={c.id} call={c} />
-              ))}
-            </ul>
-          </AgentCard>
-        )}
-      </AgentResource>
-    </div>
-  );
-}
-
-// ── Live call tab ────────────────────────────────────────────────────────────
-
-function LiveTab() {
-  const reachable = useReachable();
-  const [activeCall, setActiveCall] = useState<CallListItem | null>(null);
-
-  if (!reachable) {
-    return (
-      <AgentCard title="Live call">
-        <div className="flex flex-col items-center gap-3 py-8 text-text-tertiary">
-          <PhoneOff size={32} aria-hidden />
-          <p className="text-sm">The agent is not reachable. No live calls can be displayed.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-text-secondary">
+            {enabledCount} of {rules.length} automations active
+          </p>
         </div>
-      </AgentCard>
-    );
-  }
-
-  if (!activeCall) {
-    return (
-      <AgentCard title="Live call">
-        <div className="flex flex-col items-center gap-3 py-8 text-text-tertiary">
-          <Phone size={32} aria-hidden />
-          <p className="text-sm">No active call. Inbound calls will appear here in real time.</p>
-        </div>
-      </AgentCard>
-    );
-  }
-
-  return (
-    <AgentCard
-      title={`Live call — ${activeCall.callerMasked}`}
-      action={
         <button
           type="button"
-          className={cn(BTN_BASE, BTN_GHOST)}
-          onClick={() => setActiveCall(null)}
+          className={cn(BTN_BASE, BTN_GLASS_PRIMARY)}
+          onClick={handleSave}
+          disabled={saving}
         >
-          <PhoneOff size={14} aria-hidden /> End
+          {saving ? 'Saving…' : 'Save'}
         </button>
-      }
-    >
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <AgentBadge tone="success">live</AgentBadge>
-          <span className="text-sm text-text-secondary">{activeCall.channel}</span>
-        </div>
-        <div className="rounded-[--radius] border border-border-primary bg-bg-secondary p-4">
-          <p className="text-sm text-text-tertiary">
-            Transcript will appear here as the call progresses.
-          </p>
-          <VoiceButton
-            mode="output"
-            text="Transcript will appear here as the call progresses."
-            size="sm"
-          />
-        </div>
       </div>
-    </AgentCard>
+
+      <div className="space-y-3">
+        {rules.map((rule) => (
+          <AgentCard
+            key={rule.id}
+            title={rule.name}
+            action={
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rule.enabled}
+                  onChange={() => toggleRule(rule.id)}
+                  className="accent-[var(--color-accent)]"
+                />
+                <span className="text-xs text-text-secondary">{rule.enabled ? 'On' : 'Off'}</span>
+              </label>
+            }
+          >
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <AgentBadge tone={rule.channel === 'email' ? 'accent' : 'ai'}>
+                  {rule.channel}
+                </AgentBadge>
+                <span className="text-xs text-text-tertiary">{rule.trigger}</span>
+              </div>
+              <p className="text-sm text-text-secondary">{rule.action}</p>
+              {rule.lastRun && (
+                <p className="text-xs text-text-tertiary">
+                  Last run: {new Date(rule.lastRun).toLocaleString()}
+                </p>
+              )}
+            </div>
+          </AgentCard>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -230,25 +168,24 @@ function LiveTab() {
 
 function ConfigTab() {
   const [tier, setTier] = useState<'standard' | 'selfhosted' | 'premium'>('standard');
-  const [afterHours, setAfterHours] = useState<'take_message' | 'transfer' | 'announce_only'>(
-    'take_message',
-  );
-  const [disclosure, setDisclosure] = useState(true);
-  const [transferTarget, setTransferTarget] = useState('');
+  const [autoDraft, setAutoDraft] = useState(true);
+  const [autoCategorize, setAutoCategorize] = useState(true);
+  const [autoSummarize, setAutoSummarize] = useState(true);
+  const [smartReplies, setSmartReplies] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
-    setSaved(false);
     try {
-      // TODO: wire to agent_set_provider_tier when the Rust layer is ready.
-      await new Promise((r) => setTimeout(r, 500));
-      setSaved(true);
+      await setSetting('agent_tier', tier);
+      await setSetting('ai_auto_draft_enabled', String(autoDraft));
+      await setSetting('ai_auto_categorize', String(autoCategorize));
+      await setSetting('ai_auto_summarize', String(autoSummarize));
+      await setSetting('ai_smart_replies_enabled', String(smartReplies));
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [tier, autoDraft, autoCategorize, autoSummarize, smartReplies]);
 
   return (
     <div className="space-y-4">
@@ -270,63 +207,25 @@ function ConfigTab() {
         </div>
       </AgentCard>
 
-      <AgentCard title="After-hours behaviour">
-        <div className="space-y-2">
-          {(
-            [
-              { value: 'take_message', label: 'Take a message' },
-              { value: 'transfer', label: 'Transfer to human' },
-              { value: 'announce_only', label: 'Announce only' },
-            ] as const
-          ).map((opt) => (
-            <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
+      <AgentCard title="Email automations">
+        <div className="space-y-3">
+          {[
+            { label: 'Auto-draft replies', value: autoDraft, set: setAutoDraft },
+            { label: 'Auto-categorize threads', value: autoCategorize, set: setAutoCategorize },
+            { label: 'Auto-summarize threads', value: autoSummarize, set: setAutoSummarize },
+            { label: 'Smart reply suggestions', value: smartReplies, set: setSmartReplies },
+          ].map((opt) => (
+            <label key={opt.label} className="flex items-center gap-3 cursor-pointer">
               <input
-                type="radio"
-                name="afterHours"
-                value={opt.value}
-                checked={afterHours === opt.value}
-                onChange={() => setAfterHours(opt.value)}
+                type="checkbox"
+                checked={opt.value}
+                onChange={(e) => opt.set(e.target.checked)}
                 className="accent-[var(--color-accent)]"
               />
               <span className="text-sm text-text-primary">{opt.label}</span>
             </label>
           ))}
         </div>
-      </AgentCard>
-
-      <AgentCard title="AI disclosure">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={disclosure}
-            onChange={(e) => setDisclosure(e.target.checked)}
-            className="accent-[var(--color-accent)]"
-          />
-          <span className="text-sm text-text-primary">
-            Speak the AI disclosure line on every call
-          </span>
-        </label>
-        {!disclosure && (
-          <p className="mt-2 text-xs text-warning">
-            The AI disclosure line is spoken on 100% of calls — switching it off breaks a pilot
-            criterion.
-          </p>
-        )}
-      </AgentCard>
-
-      <AgentCard title="Transfer target">
-        <input
-          type="tel"
-          value={transferTarget}
-          onChange={(e) => setTransferTarget(e.target.value)}
-          placeholder="+33 6 12 34 56 78"
-          className={cn(BTN_BASE, BTN_GHOST, 'w-full')}
-        />
-        {transferTarget && (
-          <p className="mt-2 text-xs text-text-tertiary">
-            Calls will be transferred to this number when after-hours mode is "transfer".
-          </p>
-        )}
       </AgentCard>
 
       <div className="flex items-center gap-3">
@@ -338,11 +237,6 @@ function ConfigTab() {
         >
           {saving ? 'Saving…' : 'Save configuration'}
         </button>
-        {saved && (
-          <span className="text-sm text-success flex items-center gap-1">
-            <CheckCircle2 size={14} aria-hidden /> Saved
-          </span>
-        )}
       </div>
     </div>
   );
@@ -361,7 +255,7 @@ export function AgentConsolePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-text-primary">Agent Console</h1>
-          <p className="text-sm text-text-secondary">Monitor and configure your AI voice agent</p>
+          <p className="text-sm text-text-secondary">AI automation for email and social channels</p>
         </div>
         <div className="flex items-center gap-2">
           {!reachable && <AgentBadge tone="danger">offline</AgentBadge>}
@@ -401,8 +295,7 @@ export function AgentConsolePage() {
       {/* Tab content */}
       <div>
         {activeTab === 'ops' && <OpsDigest />}
-        {activeTab === 'calls' && <CallsTab />}
-        {activeTab === 'live' && <LiveTab />}
+        {activeTab === 'automations' && <AutomationsTab />}
         {activeTab === 'config' && <ConfigTab />}
       </div>
     </div>
