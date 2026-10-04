@@ -17,9 +17,10 @@ import { BTN_BASE, BTN_GHOST } from '@shared/styles/ui-tokens';
 import { OpsDigest } from '../components/OpsDigest';
 import { AgentCard, AgentBadge, AgentEmpty, AgentResource } from '../components/States';
 import { useUnacknowledgedP1, useReachable } from '../stores';
-import { agentApi } from '../api/client';
 import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { useAgentResource } from '../api/useAgentResource';
+import { dbListThreads } from '@shared/services/db/invoke/core';
+import { useAccountStore } from '@features/accounts/stores/accountStore';
 import type { CallListItem, CallOutcome } from '../types/commands';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -76,18 +77,39 @@ function CallRow({ call }: { call: CallListItem }) {
 function CallsTab() {
   const [range, setRange] = useState<'7d' | '30d' | 'all'>('30d');
   const [outcome, setOutcome] = useState<'all' | CallOutcome>('all');
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
-  // The call list is not implemented server-side yet; this keeps the shape honest.
+  // Fetch threads from the local database as a call list.
+  // Maps Thread → CallListItem shape for the UI.
   const fetcher = useCallback(async () => {
+    if (!activeAccountId) return [] as CallListItem[];
     try {
-      await agentApi.opsSnapshot();
-      // Derive a minimal call list from the snapshot for now.
-      // TODO: replace with GET /calls when the server implements it.
-      return [] as CallListItem[];
+      const threads = await dbListThreads(activeAccountId, 100, 0);
+      const now = Date.now();
+      const rangeMs = range === '7d' ? 7 * 86400_000 : range === '30d' ? 30 * 86400_000 : 0;
+
+      return threads
+        .filter((t) => {
+          if (rangeMs === 0) return true;
+          const ts = t.last_message_at ?? 0;
+          return now - ts * 1000 < rangeMs;
+        })
+        .map((t) => ({
+          id: t.id,
+          callerMasked: t.subject ?? '(no subject)',
+          channel: 'voice' as const,
+          startedAt: new Date((t.last_message_at ?? 0) * 1000).toISOString(),
+          durationSec: t.message_count * 30,
+          outcome: 'contained' as CallOutcome,
+          state: 'closed' as const,
+          flagged: t.is_important ? 'important' : null,
+          costEur: null,
+          containment: true,
+        }));
     } catch {
       return [] as CallListItem[];
     }
-  }, []);
+  }, [activeAccountId, range]);
 
   const { state, refresh } = useAgentResource(fetcher, [range], { pollMs: 30_000 });
 

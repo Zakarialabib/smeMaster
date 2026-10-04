@@ -14,6 +14,7 @@ import { getSetting } from '@features/settings/db/settings';
 import { getAllowlistedSenders } from '@features/deliverability/db/imageAllowlist';
 import { VolumeX, Volume2 } from 'lucide-react';
 import { speakWithBrowser } from '@shared/services/ai/voiceService';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { escapeHtml, sanitizeHtml } from '@shared/utils/sanitize';
 import { isNoReplyAddress } from '@shared/utils/noReply';
 import { ThreadSummary } from './ThreadSummary';
@@ -483,6 +484,25 @@ export function ThreadView({ thread }: ThreadViewProps) {
             >
               <Volume2 size={isMobileDevice ? 14 : 16} />
             </button>
+            <VoiceButton
+              mode="input"
+              onTranscript={(text) => {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage) {
+                  useComposerStore.getState().openComposer({
+                    mode: 'reply',
+                    to:
+                      (lastMessage.reply_to ?? lastMessage.from_address)
+                        ? [lastMessage.reply_to ?? lastMessage.from_address!]
+                        : [],
+                    subject: `Re: ${lastMessage.subject ?? ''}`,
+                    bodyHtml: `<p>${text}</p>`,
+                  });
+                }
+              }}
+              disabled={messages.length === 0}
+              size="sm"
+            />
           </h1>
           <div className={`text-text-tertiary mt-1 ${isMobileDevice ? 'text-xs' : 'text-xs'}`}>
             {t('thread.nMessagesInThread', { n: messages.length })}

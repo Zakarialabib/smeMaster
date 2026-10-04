@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, X, Send, ExternalLink, Download } from 'lucide-react';
-import { askMyInbox, type AskInboxResult } from '@shared/services/ai/askInbox';
+import { askMyInboxStreaming, type AskInboxResult } from '@shared/services/ai/askInbox';
 import type { AiProvider } from '@shared/services/ai/types';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import { navigateToLabel } from '@/router/navigate';
@@ -19,6 +19,8 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AskInboxResult | null>(null);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const [provider, setProvider] = useState('claude');
   const [model, setModel] = useState('claude-sonnet-5-5');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,8 +65,18 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
     if (!question.trim() || !activeAccountId || loading) return;
     setLoading(true);
     setResult(null);
+    setStreamingAnswer('');
+    setIsStreaming(true);
     try {
-      const res = await askMyInbox(question.trim(), activeAccountId, provider as AiProvider, model);
+      const res = await askMyInboxStreaming(
+        question.trim(),
+        activeAccountId,
+        (chunk) => {
+          setStreamingAnswer((prev) => prev + chunk);
+        },
+        provider as AiProvider,
+        model,
+      );
       setResult(res);
     } catch (err) {
       console.error('Ask inbox failed:', err);
@@ -74,6 +86,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
       });
     } finally {
       setLoading(false);
+      setIsStreaming(false);
     }
   }, [question, activeAccountId, loading, provider, model]);
 
@@ -162,14 +175,25 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto">
-          {loading && (
+          {loading && !isStreaming && (
             <div className="flex items-center gap-2 px-4 py-6 text-text-tertiary justify-center">
               <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
               <span className="text-sm">Searching your inbox...</span>
             </div>
           )}
 
-          {result && (
+          {isStreaming && (
+            <div className="p-4 space-y-4">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                  {streamingAnswer}
+                  <span className="inline-block w-2 h-4 ml-0.5 bg-accent animate-pulse align-text-bottom" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {result && !isStreaming && (
             <div className="p-4 space-y-4">
               {/* Answer */}
               <div className="flex items-start gap-2">
