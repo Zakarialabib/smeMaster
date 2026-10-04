@@ -22,13 +22,15 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, Request, WebSocket
 from fastapi.responses import JSONResponse
 
 from .contracts import (
     DISCLOSURE_FR,
     AlertEvidence,
     CallState,
+    ConfigResponse,
+    ConfigUpdate,
     ErrorBody,
     ErrorResponse,
     MetaFrame,
@@ -320,3 +322,66 @@ async def providers_registry() -> dict[str, Any]:
         "chain": {seam.value: list(DEV_CONFIG.chain_for(seam)) for seam in Seam},
         "fixture_data": True,
     }
+
+
+# ── GET /config · PUT /config ────────────────────────────────────────────────
+#
+# First endpoint group in the merged C+D batch (DECISIONS-2026-10-03.md §1).
+# Config is a singleton row (id=1) in agent_config. GET returns the current
+# state; PUT replaces it wholesale. Only known fields are written; unknown keys
+# are silently dropped.
+#
+# Never in this payload: credentials (they live in `.env` on the server) and
+# persona data (§3.4). `configured` flags in `channels` are derived from .env
+# at read time, never stored.
+
+
+def _config_store(request: Request) -> Any:
+    """Get the ConfigStore from app.state, or 500 if storage isn't wired."""
+    store = getattr(request.app.state, "config_store", None)
+    if store is None:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": {
+                    "code": "storage_unavailable",
+                    "message": "config store not initialized",
+                    "retryable": True,
+                    "at": _now(),
+                }
+            },
+        )
+    return store
+
+
+@router.get("/config", response_model=ConfigResponse)
+async def get_config(request: Request) -> ConfigResponse:
+    """Return the current agent configuration."""
+    store = _config_store(request)
+    data = store.get()
+    return ConfigResponse.model_validate(data)
+
+
+@router.put("/config", response_model=ConfigResponse)
+async def put_config(body: ConfigUpdate, request: Request) -> ConfigResponse:
+    """Replace the config. Only known fields are written.
+
+    Unknown keys are silently dropped — a PUT that accepts arbitrary keys is a
+    PUT that can corrupt state.
+    """
+    store = _config_store(request)
+    updates = body.model_dump(exclude_unset=True, by_alias=True)
+    # Convert camelCase keys to snake_case for the store
+    snake = { _camel_to_snake(k): v for k, v in updates.items() }
+    result = store.put(snake)
+    return ConfigResponse.model_validate(result)
+
+
+def _camel_to_snake(name: str) -> str:
+    """Convert camelCase to snake_case for DB column names."""
+    out = []
+    for i, ch in enumerate(name):
+        if ch.isupper() and i > 0:
+            out.append("_")
+        out.append(ch.lower())
+    return "".join(out)

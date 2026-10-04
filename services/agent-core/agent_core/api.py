@@ -1,20 +1,23 @@
-"""FastAPI app — Phase A skeleton.
+"""FastAPI app — Phase A skeleton + Phase C+D batch wiring.
 
-Deliberately thin. Phase A proves the process starts, `/healthz` answers with the
-contract shape, and the package imports cleanly. **No provider calls, no
-database, no channels** — those are Phase B and later.
+Phase A proved the process starts. Phase B added the provider seams. The
+merged C+D batch (DECISIONS-2026-10-03.md) adds storage and config endpoints.
 
 What is real here and must stay real:
 - the `error` envelope, because the console branches on `error.code`
 - the `caller_override` guard, because a test endpoint that can place calls is a
   different product
 - the CORS/host posture, already narrow, so tightening later is a no-op
+- the storage layer, because config endpoints need somewhere to write
 """
 
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
@@ -23,14 +26,32 @@ from fastapi.responses import JSONResponse
 
 from .api_v1 import router as v1_router
 from .contracts import ErrorBody, ErrorResponse, Health
+from .storage import ConfigStore, apply_migrations
 
 VERSION = "0.1.0"
 _STARTED_AT = datetime.now(UTC).isoformat()
+
+# Storage paths — env-overridable for tests, default to a data/ dir next to
+# the package so `uv run uvicorn agent_core.api:app` just works.
+_DB_PATH = Path(os.getenv("AGENT_CORE_DB_PATH", Path(__file__).parent.parent / "data" / "agent.db"))
+_MIGRATIONS_DIR = Path(__file__).parent.parent / "migrations"
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Apply migrations at startup, then hand the store to the router."""
+    applied = apply_migrations(_DB_PATH, _MIGRATIONS_DIR)
+    if applied:
+        print(f"Applied migrations: {', '.join(applied)}")
+    app.state.config_store = ConfigStore(_DB_PATH)
+    yield
+
 
 app = FastAPI(
     title="agent-core",
     version=VERSION,
     description="Voice & messaging agent runtime. FR/EN. Inbound voice + WhatsApp.",
+    lifespan=lifespan,
     # The docs route is internal; the console never reads it.
     docs_url=None if os.getenv("AGENT_CORE_ENV") == "production" else "/docs",
     redoc_url=None,

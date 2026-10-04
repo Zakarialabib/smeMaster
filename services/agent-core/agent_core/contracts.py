@@ -17,7 +17,7 @@ Two rules that are not stylistic:
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -347,7 +347,82 @@ class MeteringRollup(Camel):
     totals: CostTotals
 
 
-# ── Errors ──────────────────────────────────────────────────────────────────
+# ── Config ───────────────────────────────────────────────────────────────────
+
+
+class ConsentVariant(StrEnum):
+    """Consent model variants.
+
+    `announce_first` is the only variant that ships in v1. The others are
+    schema-ready for when the client picks a variant (decision #4).
+    """
+    ANNOUNCE_FIRST = "announce_first"
+    RECORD_WITH_CONSENT = "record_with_consent"
+    NO_RECORDING = "no_recording"
+
+
+class Channel(StrEnum):
+    """Selectable channels. The customer chooses from config."""
+    BAILEYS = "baileys"
+    TWILIO = "twilio"
+    OFFICIAL = "official"
+    NONE = "none"
+
+
+class ChannelCapability(Camel):
+    """Per-channel capability flags.
+
+    `configured` is DERIVED from .env on the server — the client may enable a
+    channel, but the flag never claims a channel that has no credentials
+    behind it.
+    """
+    enabled: bool
+    configured: bool
+
+
+class ConfigResponse(Camel):
+    """`GET /config` — the current agent configuration.
+
+    Never contains credentials (they live in `.env` on the server) and never
+    contains persona data (DECISIONS-2026-10-03.md §3.4).
+    """
+    provider_mix: dict[str, str] = Field(default_factory=dict)
+    consent_variant: ConsentVariant = ConsentVariant.ANNOUNCE_FIRST
+    bilingual: bool = True
+    channel: Channel = Channel.NONE
+    channels: dict[str, ChannelCapability] = Field(default_factory=dict)
+    cost_sim: dict[str, Any] = Field(default_factory=lambda: {"inputs": {}, "unverified": True})
+    hours: dict[str, list[str]] = Field(default_factory=lambda: {"mon-fri": ["09:00", "18:00"]})
+    tz: str = "Europe/Paris"
+    transfer_target: E164 | None = None
+    tier: ProviderTier = ProviderTier.STANDARD
+    knowledge_scope: list[str] = Field(default_factory=list)
+    after_hours_mode: AfterHoursMode = AfterHoursMode.TAKE_MESSAGE
+    updated_at: str | None = None
+
+
+class ConfigUpdate(Camel):
+    """`PUT /config` — partial update. Only known fields are written."""
+    provider_mix: dict[str, str] | None = None
+    consent_variant: ConsentVariant | None = None
+    bilingual: bool | None = None
+    channel: Channel | None = None
+    channels: dict[str, ChannelCapability] | None = None
+    cost_sim: dict[str, Any] | None = None
+    hours: dict[str, list[str]] | None = None
+    tz: str | None = None
+    transfer_target: E164 | None = None
+    tier: ProviderTier | None = None
+    knowledge_scope: list[str] | None = None
+    after_hours_mode: AfterHoursMode | None = None
+
+
+# Rebuild models that use forward references or Any
+ConfigResponse.model_rebuild()
+ConfigUpdate.model_rebuild()
+
+
+# ── Errors ───────────────────────────────────────────────────────────────────
 
 
 class ErrorBody(Camel):
