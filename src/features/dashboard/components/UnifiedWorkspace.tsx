@@ -10,6 +10,7 @@ import {
   Sparkles,
   ArrowRight,
   Loader2,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   useLiveThreads,
@@ -23,6 +24,7 @@ import { useLiveQuery } from '@shared/hooks/useLiveQuery';
 import { invokeCommand } from '@shared/services/db/invoke/command';
 import { Avatar } from '@shared/components/ui/Avatar';
 import { AiSuggestionBanner } from '@shared/components/ui/AiSuggestionBanner';
+import { WidgetHeader } from './WidgetHelpers';
 import { formatRelativeDate } from '@shared/utils/date';
 import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
 import {
@@ -244,14 +246,14 @@ export function UnifiedWorkspace() {
 
   return (
     <section aria-label="Unified workspace" className="flex min-h-0 flex-col">
-      {/* Header: title + on-demand AI check */}
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-text-primary">Unified Workspace</h2>
+      {/* Header: shared widget title + on-demand AI check */}
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <WidgetHeader icon={<LayoutDashboard size={16} />} title="Unified Workspace" />
         <button
           type="button"
           onClick={runAiCheck}
           disabled={checking}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ai transition-colors hover:bg-ai/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai disabled:opacity-50"
+          className="-mt-3 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ai transition-colors hover:bg-ai/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai disabled:opacity-50"
         >
           {checking ? (
             <Loader2 size={14} className="animate-spin" aria-hidden="true" />

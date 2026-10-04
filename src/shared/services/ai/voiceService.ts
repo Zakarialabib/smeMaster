@@ -131,6 +131,33 @@ async function synthesizeWithOpenAI(
   return response.blob();
 }
 
+async function synthesizeWithElevenLabs(
+  text: string,
+  config: VoiceConfig,
+  options?: TtsOptions,
+): Promise<Blob> {
+  const voiceId = options?.voice ?? config.ttsVoice;
+  const response = await fetch(`${config.baseUrl}/v1/text-to-speech/${voiceId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'xi-api-key': config.apiKey,
+    },
+    body: JSON.stringify({
+      text,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.5, similarity_boost: 0.5 },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ElevenLabs TTS error (${response.status}): ${errorText}`);
+  }
+
+  return response.blob();
+}
+
 async function transcribeWithOpenAI(
   audio: Blob,
   config: VoiceConfig,
@@ -154,6 +181,35 @@ async function transcribeWithOpenAI(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`STT error (${response.status}): ${errorText}`);
+  }
+
+  const data = (await response.json()) as { text?: string };
+  return data.text ?? '';
+}
+
+async function transcribeWithElevenLabs(
+  audio: Blob,
+  config: VoiceConfig,
+  options?: SttOptions,
+): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', audio, 'audio.webm');
+  formData.append('model_id', options?.model ?? 'scribe_v1');
+  if (options?.language) {
+    formData.append('language_code', options.language);
+  }
+
+  const response = await fetch(`${config.baseUrl}/v1/speech-to-text`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': config.apiKey,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ElevenLabs STT error (${response.status}): ${errorText}`);
   }
 
   const data = (await response.json()) as { text?: string };
@@ -295,6 +351,72 @@ async function decodeToMonoF32(
   }
 }
 
+/**
+ * Transcribe using the browser's Web Speech API (SpeechRecognition).
+ *
+ * Note: The Web Speech API captures from the microphone, not from an audio
+ * Blob. The `audio` parameter is accepted for interface compatibility but
+ * is not used — the user speaks into their mic during recognition.
+ */
+async function transcribeWithBrowser(
+  _audio: Blob,
+  _config: VoiceConfig,
+  options?: SttOptions,
+): Promise<string> {
+  // Web Speech API types are not in the default TS lib — declare minimal types
+  type SpeechRecognitionLike = {
+    lang: string;
+    interimResults: boolean;
+    maxAlternatives: number;
+    onresult:
+      | ((event: {
+          results: { [index: number]: { [index: number]: { transcript: string } } };
+        }) => void)
+      | null;
+    onerror: ((event: { error: string }) => void) | null;
+    onend: (() => void) | null;
+    start: () => void;
+    stop: () => void;
+  };
+
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  };
+
+  const SpeechRecognition = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    throw new Error('Browser STT is not supported in this environment');
+  }
+
+  return new Promise((resolve, reject) => {
+    const recognition = new SpeechRecognition();
+    recognition.lang = options?.language ?? 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript ?? '';
+      resolve(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      reject(new Error(`Browser STT error: ${event.error}`));
+    };
+
+    recognition.onend = () => {
+      resolve('');
+    };
+
+    recognition.start();
+
+    setTimeout(() => {
+      recognition.stop();
+    }, 30000);
+  });
+}
+
 // ── Unified Voice Interface ────────────────────────────────────────────────
 
 export async function synthesizeSpeech(
@@ -313,8 +435,7 @@ export async function synthesizeSpeech(
     case 'lmstudio':
       return synthesizeWithOpenAI(text, config, options);
     case 'elevenlabs':
-      // TODO: Implement ElevenLabs TTS
-      throw new Error('ElevenLabs TTS not yet implemented');
+      return synthesizeWithElevenLabs(text, config, options);
     case 'offline':
       // On-device sherpa-onnx via ml-sidecar. No key, no network.
       return synthesizeWithOffline(text, config, options);
@@ -332,15 +453,13 @@ export async function transcribeSpeech(
 
   switch (config.provider) {
     case 'browser':
-      // TODO: Implement browser STT using Web Speech API
-      throw new Error('Browser STT not yet implemented');
+      return transcribeWithBrowser(audio, config, options);
     case 'openai':
     case 'custom':
     case 'lmstudio':
       return transcribeWithOpenAI(audio, config, options);
     case 'elevenlabs':
-      // TODO: Implement ElevenLabs STT
-      throw new Error('ElevenLabs STT not yet implemented');
+      return transcribeWithElevenLabs(audio, config, options);
     case 'offline':
       // On-device sherpa-onnx via ml-sidecar. No key, no network.
       return transcribeWithOffline(audio, config);
@@ -370,16 +489,16 @@ export function getVoiceCapabilities(config: VoiceConfig): {
 } {
   switch (config.provider) {
     case 'browser':
-      // TTS: real (window.speechSynthesis). STT: throws — not implemented.
-      return { stt: false, tts: isBrowserVoiceSupported() };
+      // TTS: real (window.speechSynthesis). STT: real (Web Speech API).
+      return { stt: true, tts: isBrowserVoiceSupported() };
     case 'openai':
     case 'custom':
     case 'lmstudio':
       // All three route through the OpenAI-compatible fetch path.
       return { stt: true, tts: true };
     case 'elevenlabs':
-      // Both directions throw ("not yet implemented") — do not advertise them.
-      return { stt: false, tts: false };
+      // Both directions are implemented via ElevenLabs API.
+      return { stt: true, tts: true };
 
     case 'offline':
       // Both directions are implemented (sherpa-onnx via ml-sidecar).

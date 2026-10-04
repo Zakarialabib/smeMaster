@@ -160,7 +160,8 @@
   "thread": {
     "unknownSender": "غير معروف",
     "noSubject": "(بدون موضوع)",
-    "muted": "مكتوم"
+    "muted": "مكتوم",
+    "readAloud": "قراءة بصوت عالٍ"
   },
   "email": {
     "selectAll": "تحديد الكل",
@@ -1005,7 +1006,6 @@
     "scopeVault": "مستودع الوثائق",
     "scopeContacts": "جهات الاتصال",
     "scopeDeals": "الصفقات",
-    "embeddingModel": "نموذج التضمين",
     "embeddingModelChanged": "تم تغيير النموذج — يلزم إعادة الفهرسة لتطبيق التغييرات.",
     "indexRequiresEmbeddingModel": "حمّل نموذج تضمين في LM Studio وأدخل اسمه في المزود والنماذج لتمكين الفهرسة.",
     "indexRequiresLmstudio": "اختر مزود LM Studio في المزود والنماذج لاستخدام تضمين المزود.",

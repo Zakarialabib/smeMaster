@@ -160,7 +160,8 @@
   "thread": {
     "unknownSender": "不明な送信者",
     "noSubject": " 件名なし ",
-    "muted": "ミュート"
+    "muted": "ミュート",
+    "readAloud": "音声で読み上げ"
   },
   "email": {
     "selectAll": "すべて選択",
@@ -954,7 +955,7 @@
     "statusReady": "Ready",
     "statusNotSet": "Not set",
     "statusLoading": "Checking…",
-    "embeddingModel": "Embedding Model",
+    "embeddingModel": "埋め込みモデル",
     "embeddingModelPlaceholder": "e.g. text-embedding-nomic-embed-text-v1.5",
     "embeddingModelSelect": "Detected models…",
     "embeddingModelHint": "Load a dedicated embedding model in LM Studio (separate from the chat model) and enter its exact name. Use Test embedding to confirm it returns vectors.",
@@ -1000,7 +1001,6 @@
     "scopeVault": "保管庫ドキュメント",
     "scopeContacts": "連絡先",
     "scopeDeals": "取引",
-    "embeddingModel": "埋め込みモデル",
     "embeddingModelChanged": "モデルが変更されました — 変更を反映するには再インデックスが必要です。",
     "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
     "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",

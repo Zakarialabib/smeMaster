@@ -168,7 +168,8 @@
     "unknownSender": "Unknown",
     "noSubject": "(No subject)",
     "muted": "Muted",
-    "nMessagesInThread": "{{count}} messages in thread"
+    "nMessagesInThread": "{{count}} messages in thread",
+    "readAloud": "Read aloud"
   },
   "email": {
     "nAttachments": "{{n}} attachment",
@@ -681,7 +682,6 @@
     "scopeVault": "Vault Documents",
     "scopeContacts": "Contacts",
     "scopeDeals": "Deals",
-    "embeddingModel": "Embedding Model",
     "embeddingModelChanged": "Model changed — re-index required for changes to take effect.",
     "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
     "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",
