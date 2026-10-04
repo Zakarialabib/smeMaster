@@ -57,13 +57,15 @@ export async function setDefaultComplianceProfile(id: string): Promise<void> {
 
 export async function insertComplianceCheck(check: {
   id: string;
-  accountId: string;
+  companyId: string;
   emailDraftId: string | null;
   campaignId: string | null;
   profileIds: string;
   score: number;
   violationsJson: string;
 }): Promise<void> {
+  // Rust takes `check: InsertComplianceCheckRequest` (camelCase serde) whose
+  // scope is `companyId` — compliance_checks.company_id is a companies FK.
   return invokeCommand<void>('db_insert_compliance_check', { check });
 }
 

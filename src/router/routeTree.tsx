@@ -469,19 +469,13 @@ export const mobileDashboardRoute = createRoute({
   component: MobileDashboardWrapper,
 });
 
-// ---------- /unified (Unified Inbox — SMEMaster) ----------
-const UnifiedInboxPage = lazy(() =>
-  import('@features/unified/UnifiedInbox').then((m) => ({
-    default: m.UnifiedInbox,
-  })),
-);
-
-const UnifiedInboxWrapper = createPageWrapper('UnifiedInbox', UnifiedInboxPage as LazyComponent);
-
+// ---------- /unified (merged into /dashboard — UnifiedWorkspace widget) ----------
 export const unifiedRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'unified',
-  component: UnifiedInboxWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: '/dashboard' });
+  },
 });
 
 // ---------- /pos ----------

@@ -1,5 +1,6 @@
 import { getActiveProvider, getProviderClient } from './providerManager';
-import type { AiProvider } from './types';
+import type { AiProvider, AiCompletionRequest } from './types';
+import { isStreamingCapable } from './capabilities';
 import { getAiCache, setAiCache } from '@features/mail/db/aiCache';
 import { getSetting } from '@features/settings/db/settings';
 import { AiError } from './errors';
@@ -138,6 +139,93 @@ export async function callAi(
       retryableStatuses: [429, 500, 502, 503, 504],
     },
   );
+}
+
+/**
+ * Stream an AI completion token-by-token.
+ *
+ * Returns an `AsyncIterable<string>` that yields text chunks as they arrive
+ * from the provider. Falls back to a single-chunk yield of the full response
+ * when the active provider does not support streaming.
+ *
+ * @param systemPrompt - System prompt for the AI
+ * @param userContent - User message content
+ * @param provider - Optional explicit provider (defaults to active)
+ * @param model - Optional explicit model
+ * @returns Async iterable of text chunks
+ */
+export async function* streamAi(
+  systemPrompt: string,
+  userContent: string,
+  provider?: AiProvider,
+  model?: string,
+): AsyncIterable<string> {
+  const client = provider ? await getProviderClient(provider, model) : await getActiveProvider();
+
+  if (isStreamingCapable(client)) {
+    const req: AiCompletionRequest = { systemPrompt, userContent };
+    for await (const chunk of client.streamComplete(req)) {
+      if (chunk) yield chunk;
+    }
+    return;
+  }
+
+  // Fallback: non-streaming provider — yield the full response as one chunk
+  const full = await client.complete({ systemPrompt, userContent });
+  if (full) yield full;
+}
+
+/**
+ * Stream an AI completion with retry on transient failures.
+ *
+ * Unlike `streamAi()`, this wraps the streaming call in the same retry
+ * logic as `callAi()` — useful for long-running streams that may fail
+ * mid-generation.
+ */
+export async function* streamAiWithRetry(
+  systemPrompt: string,
+  userContent: string,
+  provider?: AiProvider,
+  model?: string,
+): AsyncIterable<string> {
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const client = provider
+        ? await getProviderClient(provider, model)
+        : await getActiveProvider();
+
+      if (isStreamingCapable(client)) {
+        const req: AiCompletionRequest = { systemPrompt, userContent };
+        for await (const chunk of client.streamComplete(req)) {
+          if (chunk) yield chunk;
+        }
+        return;
+      }
+
+      // Non-streaming fallback
+      const full = await client.complete({ systemPrompt, userContent });
+      if (full) yield full;
+      return;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      const message = lastError.message;
+      const isRetryable =
+        message.includes('429') ||
+        message.includes('rate') ||
+        message.includes('500') ||
+        message.includes('502') ||
+        message.includes('503') ||
+        message.includes('504');
+      if (!isRetryable || attempt === maxRetries - 1) throw lastError;
+      const delay = Math.min(1000 * 2 ** attempt, 10000);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+
+  throw lastError ?? new Error('streamAiWithRetry: unknown error');
 }
 
 function formatMessageForSummary(msg: DbMessage): string {

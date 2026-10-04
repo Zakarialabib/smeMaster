@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Trash2, Settings, AlertCircle } from 'lucide-react';
+import { Trash2, Settings, AlertCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useRagStore } from '@features/assistant/stores/ragStore';
 import { RagSearchBar } from '@features/assistant/components/RagSearchBar';
@@ -22,6 +22,7 @@ import { GlassPanel } from '@shared/components/ui/glass-panel';
 import { Button } from '@shared/components/ui/Button';
 import { cn } from '@shared/utils/cn';
 import { TEXT_HINT } from '@shared/styles/ui-tokens';
+import { useAiReadiness } from '@features/assistant/hooks/useAiReadiness';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -33,8 +34,11 @@ export function AiAssistantPage() {
   const searchError = useRagStore((s) => s.searchError);
   const modelStatus = useRagStore((s) => s.modelStatus);
   const downloadProgress = useRagStore((s) => s.downloadProgress);
-  const search = useRagStore((s) => s.search);
+  const search = useRagStore((s) => s.searchStreaming);
   const clearHistory = useRagStore((s) => s.clearHistory);
+  const streamingEntryId = useRagStore((s) => s.streamingEntryId);
+  const streamingAnswer = useRagStore((s) => s.streamingAnswer);
+  const { readiness } = useAiReadiness(10000);
   const hydrate = useRagStore((s) => s.hydrate);
   const pauseDownload = useRagStore((s) => s.pauseDownload);
   const resumeDownload = useRagStore((s) => s.resumeDownload);
@@ -149,6 +153,37 @@ export function AiAssistantPage() {
         </div>
       )}
 
+      {/* ── AI Readiness Bar ── */}
+      {readiness && (
+        <div className="mx-4 sm:mx-6 mt-2 px-3 py-2 frost-surface rounded-[--frost-radius-sm] border border-border-primary flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider">
+              AI Services
+            </span>
+            <div className="flex items-center gap-2 flex-1 flex-wrap">
+              {(['llm', 'embedding', 'tts', 'stt'] as const).map((kind) => {
+                const svc = readiness.services[kind];
+                return (
+                  <span
+                    key={kind}
+                    className="inline-flex items-center gap-1 text-[10px] text-text-secondary"
+                    title={svc.detail}
+                  >
+                    {svc.status === 'ready' && <CheckCircle2 className="w-3 h-3 text-success" />}
+                    {svc.status === 'unavailable' && <XCircle className="w-3 h-3 text-danger" />}
+                    {svc.status === 'loading' && (
+                      <Loader2 className="w-3 h-3 text-warning animate-spin" />
+                    )}
+                    {svc.status === 'partial' && <AlertCircle className="w-3 h-3 text-warning" />}
+                    {svc.label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Download progress ── */}
       {(modelStatus === 'downloading' || modelStatus === 'paused') && (
         <div className="mx-4 sm:mx-6 mt-2 px-4 py-3 frost-surface rounded-[--frost-radius-sm] border border-border-primary flex-shrink-0">
@@ -169,7 +204,12 @@ export function AiAssistantPage() {
 
         <div className="max-w-3xl mx-auto space-y-4">
           {conversation.map((entry) => (
-            <RagResultBubble key={entry.id} entry={entry} />
+            <RagResultBubble
+              key={entry.id}
+              entry={entry}
+              isStreaming={streamingEntryId === entry.id}
+              streamingAnswer={streamingEntryId === entry.id ? streamingAnswer : undefined}
+            />
           ))}
 
           {/* Loading skeleton */}

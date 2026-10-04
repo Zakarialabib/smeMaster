@@ -22,6 +22,7 @@ import {
   isStructuredOutputCapable,
   isToolCallingCapable,
   isReasoningCapable,
+  isStreamingCapable,
   type AiCapability,
 } from './capabilities';
 
@@ -168,6 +169,25 @@ export async function getActiveProvider(): Promise<AiProviderClient> {
 
   cachedProvider = { name: providerName, key: cacheKey, client };
   return client;
+}
+
+/**
+ * Get a streaming-capable client for the active provider.
+ *
+ * Returns the provider client if it supports `streamComplete`, otherwise
+ * throws an `AiError` with a clear message. Use this before calling
+ * `streamAi()` to fail fast with a user-friendly error.
+ */
+export async function streamActiveProvider(): Promise<AiProviderClient> {
+  const client = await getActiveProvider();
+  if (isStreamingCapable(client)) {
+    return client;
+  }
+  const name = await getActiveProviderName();
+  throw new AiError(
+    'STREAMING_UNSUPPORTED',
+    `${name} does not support streaming. Switch to a provider that supports it (OpenAI, Claude, Gemini, etc.).`,
+  );
 }
 
 export async function isAiAvailable(): Promise<boolean> {

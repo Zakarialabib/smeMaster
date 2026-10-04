@@ -1,6 +1,7 @@
 import { executeSearchQuery } from '@shared/services/db/db-invoke';
 import { parseSearchQuery, hasSearchOperators } from '@features/mail/services/search/searchParser';
 import { buildSearchQuery } from '@features/mail/services/search/searchQueryBuilder';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
 
 export interface SearchResult {
   message_id: string;
@@ -106,9 +107,15 @@ export async function unifiedSearch(
   query: string,
   accountId?: string,
   limit = 50,
+  companyId: string = ACTIVE_COMPANY_ID,
 ): Promise<UnifiedSearchResult[]> {
   const ftsQuery = query.trim();
   if (!ftsQuery) return [];
+
+  // Scope note: messages/contacts are mail-account scoped (`accountId`);
+  // vault files and tasks are COMPANY-scoped (`company_id` FK). Earlier
+  // revisions compared the mail account id against `company_id`, so those
+  // blocks always returned empty. They now bind the company scope.
 
   const results: UnifiedSearchResult[] = [];
 
@@ -163,7 +170,7 @@ export async function unifiedSearch(
     results.push(...messageResults);
   }
 
-  // 2. Search vault files via contact_files_fts
+  // 2. Search vault files via contact_files_fts (company-scoped)
   if (accountId) {
     const fileResults = await searchBlock(
       `SELECT
@@ -180,7 +187,7 @@ export async function unifiedSearch(
        WHERE fts MATCH $1 AND cf.company_id = $2
        ORDER BY cf.created_at DESC
        LIMIT $3`,
-      [ftsQuery, accountId, Math.ceil(limit * 0.25)],
+      [ftsQuery, companyId, Math.ceil(limit * 0.25)],
     );
     results.push(...fileResults);
   } else {
@@ -196,15 +203,15 @@ export async function unifiedSearch(
         json_object('category', cf.category, 'size', cf.size, 'mime_type', cf.mime_type, 'starred', cf.starred) as metadata
        FROM contact_files_fts fts
        JOIN contact_files cf ON cf.rowid = fts.rowid
-       WHERE fts MATCH $1
+       WHERE fts MATCH $1 AND cf.company_id = $2
        ORDER BY cf.created_at DESC
-       LIMIT $2`,
-      [ftsQuery, Math.ceil(limit * 0.25)],
+       LIMIT $3`,
+      [ftsQuery, companyId, Math.ceil(limit * 0.25)],
     );
     results.push(...fileResults);
   }
 
-  // 3. Search tasks
+  // 3. Search tasks (company-scoped)
   const taskPattern = `%${ftsQuery}%`;
   if (accountId) {
     const taskResults = await searchBlock(
@@ -221,7 +228,7 @@ export async function unifiedSearch(
         WHERE (t.title LIKE $1 OR t.description LIKE $1) AND t.company_id = $2
        ORDER BY date DESC
        LIMIT $3`,
-      [taskPattern, accountId, Math.ceil(limit * 0.15)],
+      [taskPattern, companyId, Math.ceil(limit * 0.15)],
     );
     results.push(...taskResults);
   } else {
@@ -236,10 +243,10 @@ export async function unifiedSearch(
         t.company_id as account_id,
         json_object('is_completed', t.is_completed, 'priority', t.priority, 'due_date', t.due_date) as metadata
        FROM tasks t
-       WHERE t.title LIKE $1 OR t.description LIKE $1
+       WHERE (t.title LIKE $1 OR t.description LIKE $1) AND t.company_id = $2
        ORDER BY date DESC
-       LIMIT $2`,
-      [taskPattern, Math.ceil(limit * 0.15)],
+       LIMIT $3`,
+      [taskPattern, companyId, Math.ceil(limit * 0.15)],
     );
     results.push(...taskResults);
   }

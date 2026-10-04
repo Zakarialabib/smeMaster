@@ -60,15 +60,30 @@ export async function createInvoice(req: {
 
 export async function updateInvoice(id: string, fields: Record<string, unknown>): Promise<void> {
   // Rust `db_update_invoice` takes individual Option params (no `fields` blob).
-  // `issue_date` maps to Rust `date`; `document_type`/`invoice_number` are not
+  // Wire format is camelCase (see CommandRegistry): `date` is the issue date,
+  // `dueDate`/`clientId` are camelCase. Snake_case aliases are accepted for
+  // backward compatibility. `document_type`/`invoice_number` are not
   // server-updatable yet (backend gap, tracked in STATUS.md).
   return invokeCommand<void>('db_update_invoice', {
     id,
+    status: (fields.status ?? null) as string | null | undefined,
     notes: (fields.notes ?? null) as string | null | undefined,
-    date: (fields.issue_date ?? null) as number | null | undefined,
-    due_date: (fields.due_date ?? null) as number | null | undefined,
+    date: (fields.date ?? fields.issueDate ?? fields.issue_date ?? null) as
+      number | null | undefined,
+    dueDate: (fields.dueDate ?? fields.due_date ?? null) as number | null | undefined,
     currency: fields.currency as string | undefined,
-    client_id: (fields.client_id ?? null) as string | null | undefined,
+    clientId: (fields.clientId ?? fields.client_id ?? null) as string | null | undefined,
+    items: (fields.items ?? null) as
+      | Array<{
+          description: string;
+          qty: number;
+          unit?: string | null;
+          unitPrice: number;
+          taxRate: number;
+          sortOrder: number;
+        }>
+      | null
+      | undefined,
   });
 }
 
@@ -97,15 +112,19 @@ export async function addInvoiceItem(
 }
 
 export async function removeInvoiceItem(invoiceId: string, itemId: string): Promise<void> {
-  return invokeCommand<void>('db_remove_invoice_item', { invoiceId, itemId });
+  // Rust `db_remove_invoice_item` takes only `itemId` (it resolves the parent
+  // invoice itself). `invoiceId` is kept in the signature for caller
+  // compatibility but is not sent over the wire.
+  void invoiceId;
+  return invokeCommand<void>('db_remove_invoice_item', { itemId });
 }
 
 export async function updateInvoiceStatus(id: string, status: string): Promise<void> {
   return invokeCommand<void>('db_update_invoice_status', { id, status });
 }
 
-export async function listClients(companyId: string): Promise<Client[]> {
-  return invokeCommand<Client[]>('db_list_clients', { companyId });
+export async function listClients(companyId: string, role?: string | null): Promise<Client[]> {
+  return invokeCommand<Client[]>('db_list_clients', { companyId, role: role ?? null });
 }
 
 export async function getClient(id: string): Promise<Client> {
@@ -131,11 +150,27 @@ export async function createClient(data: {
 
 export async function updateClient(id: string, fields: Record<string, unknown>): Promise<void> {
   // Rust `db_update_client` takes individual Option params (no `fields` blob).
-  return invokeCommand<void>('db_update_client', { id, ...fields });
+  // Wire format is camelCase (see CommandRegistry); snake_case aliases are
+  // accepted for backward compatibility.
+  return invokeCommand<void>('db_update_client', {
+    id,
+    name: (fields.name ?? null) as string | null | undefined,
+    email: (fields.email ?? null) as string | null | undefined,
+    phone: (fields.phone ?? null) as string | null | undefined,
+    address: (fields.address ?? null) as string | null | undefined,
+    city: (fields.city ?? null) as string | null | undefined,
+    country: (fields.country ?? null) as string | null | undefined,
+    taxId: (fields.taxId ?? fields.tax_id ?? null) as string | null | undefined,
+    role: (fields.role ?? null) as string | null | undefined,
+    creditLimit: (fields.creditLimit ?? fields.credit_limit ?? null) as number | null | undefined,
+    paymentTerms: (fields.paymentTerms ?? fields.payment_terms ?? null) as
+      number | null | undefined,
+    notes: (fields.notes ?? null) as string | null | undefined,
+  });
 }
 
-export async function deleteClient(id: string): Promise<void> {
-  return invokeCommand<void>('db_delete_client', { id });
+export async function deleteClient(id: string, hard?: boolean | null): Promise<void> {
+  return invokeCommand<void>('db_delete_client', { id, hard: hard ?? null });
 }
 
 // ── Company Settings ──────────────────────────────────────────────────
@@ -148,7 +183,34 @@ export async function upsertCompanySettings(
   companyId: string,
   fields: Record<string, unknown>,
 ): Promise<CompanySetting> {
-  return invokeCommand<CompanySetting>('db_upsert_company_settings', { companyId, ...fields });
+  // Wire format is camelCase (see CommandRegistry); snake_case aliases are
+  // accepted for backward compatibility.
+  return invokeCommand<CompanySetting>('db_upsert_company_settings', {
+    companyId,
+    defaultCurrency: (fields.defaultCurrency ?? fields.default_currency ?? null) as
+      string | null | undefined,
+    defaultTaxRate: (fields.defaultTaxRate ?? fields.default_tax_rate ?? null) as
+      number | null | undefined,
+    invoicePrefix: (fields.invoicePrefix ?? fields.invoice_prefix ?? null) as
+      string | null | undefined,
+    invoiceSuffix: (fields.invoiceSuffix ?? fields.invoice_suffix ?? null) as
+      string | null | undefined,
+    quotePrefix: (fields.quotePrefix ?? fields.quote_prefix ?? null) as string | null | undefined,
+    defaultTemplateId: (fields.defaultTemplateId ?? fields.default_template_id ?? null) as
+      string | null | undefined,
+    logoUrl: (fields.logoUrl ?? fields.logo_url ?? null) as string | null | undefined,
+    signatureText: (fields.signatureText ?? fields.signature_text ?? null) as
+      string | null | undefined,
+    bankDetails: (fields.bankDetails ?? fields.bank_details ?? null) as string | null | undefined,
+    termsDefault: (fields.termsDefault ?? fields.terms_default ?? null) as
+      string | null | undefined,
+    themeColor: (fields.themeColor ?? fields.theme_color ?? null) as string | null | undefined,
+    unitsEnabled: (fields.unitsEnabled ?? fields.units_enabled ?? null) as
+      string | null | undefined,
+    taxPosition: (fields.taxPosition ?? fields.tax_position ?? null) as string | null | undefined,
+    decimalPlaces: (fields.decimalPlaces ?? fields.decimal_places ?? null) as
+      number | null | undefined,
+  });
 }
 
 export async function deleteCompanySettings(companyId: string): Promise<void> {
@@ -193,45 +255,58 @@ export async function createItem(data: {
   sku?: string | null;
   categoryId?: string | null;
   unit?: string;
+  buyPrice?: number;
   sellPrice?: number;
+  stockQty?: number;
+  stockAlert?: number;
   taxRate?: number;
   barcode?: string | null;
+  imageUrl?: string | null;
 }): Promise<Item> {
-  // Rust `db_create_item` expects `item_type` (not `type`) and requires
-  // buy_price / stock_qty / stock_alert. The UI only collects sell price,
-  // so stock fields default to 0 here (backend gap, tracked in STATUS.md).
+  // Wire format is camelCase (see CommandRegistry): `type` maps to `itemType`.
+  // `categoryId` is accepted for caller compatibility but has no backend column
+  // yet, so it is not sent (backend gap). Stock fields default to 0 — the UI
+  // only collects the sell price.
+  void data.categoryId;
   return invokeCommand<Item>('db_create_item', {
     name: data.name,
     description: data.description ?? null,
-    item_type: data.type ?? 'product',
+    itemType: data.type ?? 'product',
     sku: data.sku ?? null,
     unit: data.unit ?? 'unit',
-    buy_price: 0,
-    sell_price: data.sellPrice ?? 0,
-    stock_qty: 0,
-    stock_alert: 0,
-    tax_rate: data.taxRate ?? 0,
+    buyPrice: data.buyPrice ?? 0,
+    sellPrice: data.sellPrice ?? 0,
+    stockQty: data.stockQty ?? 0,
+    stockAlert: data.stockAlert ?? 0,
+    taxRate: data.taxRate ?? 0,
     barcode: data.barcode ?? null,
-    company_id: data.companyId,
+    imageUrl: data.imageUrl ?? null,
+    companyId: data.companyId,
   });
 }
 
 export async function updateItem(id: string, fields: Record<string, unknown>): Promise<void> {
   // Rust `db_update_item` takes individual Option params (no `fields` blob).
-  // `type` maps to Rust `item_type`.
+  // Wire format is camelCase (see CommandRegistry): `type`/`item_type` map to
+  // `itemType`. Snake_case aliases are accepted for backward compatibility.
+  // Unknown keys (`companyId`, `categoryId`) are not sent — they are not
+  // server-updatable.
   return invokeCommand<void>('db_update_item', {
     id,
-    name: fields.name as string | undefined,
+    name: (fields.name ?? null) as string | null | undefined,
     description: (fields.description ?? null) as string | null | undefined,
-    item_type: fields.type as string | undefined,
+    itemType: (fields.itemType ?? fields.type ?? fields.item_type ?? null) as
+      string | null | undefined,
     sku: (fields.sku ?? null) as string | null | undefined,
-    unit: fields.unit as string | undefined,
-    buy_price: fields.buyPrice as number | undefined,
-    sell_price: fields.sellPrice as number | undefined,
-    stock_qty: fields.stockQty as number | undefined,
-    stock_alert: fields.stockAlert as number | undefined,
-    tax_rate: fields.taxRate as number | undefined,
+    unit: (fields.unit ?? null) as string | null | undefined,
+    buyPrice: (fields.buyPrice ?? fields.buy_price ?? null) as number | null | undefined,
+    sellPrice: (fields.sellPrice ?? fields.sell_price ?? null) as number | null | undefined,
+    stockQty: (fields.stockQty ?? fields.stock_qty ?? null) as number | null | undefined,
+    stockAlert: (fields.stockAlert ?? fields.stock_alert ?? null) as number | null | undefined,
+    taxRate: (fields.taxRate ?? fields.tax_rate ?? null) as number | null | undefined,
     barcode: (fields.barcode ?? null) as string | null | undefined,
+    imageUrl: (fields.imageUrl ?? fields.image_url ?? null) as string | null | undefined,
+    active: (fields.active ?? null) as number | null | undefined,
   });
 }
 
@@ -249,66 +324,97 @@ export async function listCompanies(): Promise<Company[]> {
 
 export async function createCompany(data: {
   name: string;
-  legal_name?: string | null;
+  legalName?: string | null;
   email?: string | null;
   phone?: string | null;
-  address_line1?: string | null;
-  address_line2?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
   city?: string | null;
   state?: string | null;
-  postal_code?: string | null;
+  postalCode?: string | null;
   country?: string | null;
   website?: string | null;
   industry?: string | null;
   timezone?: string;
+  logoUrl?: string | null;
   ice?: string | null;
-  tax_id?: string | null;
+  taxId?: string | null;
   rc?: string | null;
   cnss?: string | null;
 }): Promise<Company> {
+  // Wire format is camelCase (see CommandRegistry). Previously this sent
+  // snake_case keys which Tauri silently dropped, so address/legal identifiers
+  // were never saved.
   const {
     name,
-    legal_name = null,
+    legalName = null,
     email = null,
     phone = null,
-    address_line1 = null,
-    address_line2 = null,
+    addressLine1 = null,
+    addressLine2 = null,
     city = null,
     state = null,
-    postal_code = null,
+    postalCode = null,
     country = null,
     website = null,
     industry = null,
     timezone = 'Africa/Casablanca',
+    logoUrl = null,
     ice = null,
-    tax_id = null,
+    taxId = null,
     rc = null,
     cnss = null,
   } = data;
   return invokeCommand<Company>('db_create_company', {
     name,
-    legal_name,
+    legalName,
     email,
     phone,
-    address_line1,
-    address_line2,
+    addressLine1,
+    addressLine2,
     city,
     state,
-    postal_code,
+    postalCode,
     country,
     website,
     industry,
     timezone,
+    logoUrl,
     ice,
-    tax_id,
+    taxId,
     rc,
     cnss,
   });
 }
 
 export async function updateCompany(id: string, fields: Record<string, unknown>): Promise<void> {
-  // Rust `db_update_company` takes `company_id` (not `id`) + individual Option params.
-  return invokeCommand<void>('db_update_company', { company_id: id, ...fields });
+  // Rust `db_update_company` takes `companyId` + individual Option params.
+  // Wire format is camelCase (see CommandRegistry); snake_case aliases are
+  // accepted for backward compatibility (BusinessProfilePanel and other forms
+  // mirror the snake_case DB row shape).
+  return invokeCommand<void>('db_update_company', {
+    companyId: id,
+    name: (fields.name ?? null) as string | null | undefined,
+    legalName: (fields.legalName ?? fields.legal_name ?? null) as string | null | undefined,
+    email: (fields.email ?? null) as string | null | undefined,
+    phone: (fields.phone ?? null) as string | null | undefined,
+    addressLine1: (fields.addressLine1 ?? fields.address_line1 ?? null) as
+      string | null | undefined,
+    addressLine2: (fields.addressLine2 ?? fields.address_line2 ?? null) as
+      string | null | undefined,
+    city: (fields.city ?? null) as string | null | undefined,
+    state: (fields.state ?? null) as string | null | undefined,
+    postalCode: (fields.postalCode ?? fields.postal_code ?? null) as string | null | undefined,
+    country: (fields.country ?? null) as string | null | undefined,
+    website: (fields.website ?? null) as string | null | undefined,
+    industry: (fields.industry ?? null) as string | null | undefined,
+    timezone: (fields.timezone ?? null) as string | null | undefined,
+    logoUrl: (fields.logoUrl ?? fields.logo_url ?? null) as string | null | undefined,
+    ice: (fields.ice ?? null) as string | null | undefined,
+    taxId: (fields.taxId ?? fields.tax_id ?? null) as string | null | undefined,
+    rc: (fields.rc ?? null) as string | null | undefined,
+    cnss: (fields.cnss ?? null) as string | null | undefined,
+  });
 }
 
 export async function generateInvoiceDocuments(invoiceId: string): Promise<[string, string]> {

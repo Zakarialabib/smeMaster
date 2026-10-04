@@ -44,10 +44,14 @@ export function useLiveMessages(folderId: string) {
   });
 }
 
-export function useLiveThreads() {
-  return useLiveQuery<Thread[]>(() => invokeCommand<Thread[]>('db_list_threads'), {
-    watch: ['threads', 'messages'],
-  });
+export function useLiveThreads(accountId: string | null, limit = 50, offset = 0) {
+  return useLiveQuery<Thread[]>(
+    () => invokeCommand<Thread[]>('db_list_threads', { accountId, limit, offset }),
+    {
+      watch: ['threads', 'messages'],
+      enabled: !!accountId,
+    },
+  );
 }
 
 export function useLiveUnreadCount() {
@@ -56,23 +60,39 @@ export function useLiveUnreadCount() {
   });
 }
 
-export function useLiveContacts() {
-  return useLiveQuery<Contact[]>(() => invokeCommand<Contact[]>('db_list_contacts'), {
-    watch: ['contacts', 'contact_tags', 'contact_groups', 'contact_labels'],
-  });
+export function useLiveContacts(limit = 200, offset = 0, sortBy?: string, searchQuery?: string) {
+  return useLiveQuery<Contact[]>(
+    () =>
+      invokeCommand<Contact[]>('db_list_contacts', {
+        limit,
+        offset,
+        sortBy: sortBy ?? null,
+        searchQuery: searchQuery ?? null,
+      }),
+    {
+      watch: ['contacts', 'contact_tags', 'contact_groups', 'contact_labels'],
+    },
+  );
 }
 
 export function useLiveContact(id: string | null) {
   return useLiveQuery<Contact | null>(
-    () => (id ? invokeCommand<Contact | null>('db_get_contact', { id }) : Promise.resolve(null)),
+    () =>
+      id
+        ? invokeCommand<Contact | null>('db_get_contact', { contactId: id })
+        : Promise.resolve(null),
     { watch: ['contacts', 'contact_tags'], enabled: !!id },
   );
 }
 
-export function useLiveCampaigns() {
-  return useLiveQuery<Campaign[]>(() => invokeCommand<Campaign[]>('db_list_campaigns'), {
-    watch: ['campaigns', 'campaign_recipients', 'campaign_sends', 'campaign_analytics'],
-  });
+export function useLiveCampaigns(companyId: string | null) {
+  return useLiveQuery<Campaign[]>(
+    () => invokeCommand<Campaign[]>('db_list_campaigns', { companyId }),
+    {
+      watch: ['campaigns', 'campaign_recipients', 'campaign_sends', 'campaign_analytics'],
+      enabled: !!companyId,
+    },
+  );
 }
 
 export function useLiveCampaign(id: string | null) {

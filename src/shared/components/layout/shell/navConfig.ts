@@ -265,7 +265,6 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/settings')) return 'settings';
   if (pathname.startsWith('/help')) return 'help';
   if (pathname.startsWith('/attachments')) return 'mail';
-  if (pathname.startsWith('/unified')) return 'unified';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
   if (pathname.startsWith('/invoicing')) return 'sell';
   if (pathname.startsWith('/erp')) return 'sell';

@@ -34,6 +34,7 @@ import {
 import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
 import { RAG_ANSWER_SYSTEM_PROMPT } from '@shared/services/ai/prompts';
 import { TestEmbeddingResult } from '@/shared/services/ai/types';
+import { streamAi } from '@shared/services/ai/aiService';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,10 @@ export interface RagState {
   conversation: RagConversationEntry[];
   isSearching: boolean;
   searchError: string | null;
+  /** ID of the entry currently being streamed (null when not streaming) */
+  streamingEntryId: string | null;
+  /** Partial answer text while streaming */
+  streamingAnswer: string;
 
   // ── Embedding endpoint validation ──
   embeddingTest: TestEmbeddingResult | null;
@@ -108,6 +113,7 @@ export interface RagState {
   loadEmbeddingModel: () => Promise<void>;
   indexAll: () => Promise<void>;
   search: (query: string) => Promise<void>;
+  searchStreaming: (query: string) => Promise<void>;
   testEmbedding: () => Promise<TestEmbeddingResult | null>;
   clearHistory: () => void;
 }
@@ -143,6 +149,8 @@ export const useRagStore = create<RagState>((set, get) => ({
   conversation: [],
   isSearching: false,
   searchError: null,
+  streamingEntryId: null,
+  streamingAnswer: '',
   embeddingTest: null,
   embeddingTesting: false,
   _hydrated: false,
@@ -465,6 +473,86 @@ export const useRagStore = create<RagState>((set, get) => ({
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       set({ isSearching: false, searchError: msg });
+    }
+  },
+
+  // ── Streaming Search ──
+  searchStreaming: async (query: string) => {
+    if (!query.trim()) return;
+
+    set({ isSearching: true, searchError: null, streamingAnswer: '' });
+
+    try {
+      let response: string;
+
+      const source = get().embeddingSource;
+
+      if (source === 'rust_bge') {
+        set({ embeddingSource: 'rust_bge' });
+        response = await aiQueryRagHybrid(query);
+      } else if (source === 'provider') {
+        const providerEmbedding = await getProviderEmbedding(query);
+        if (!providerEmbedding) {
+          throw new Error(
+            'No AI provider with embeddings support is configured. Add a Custom (LM Studio) provider with an embeddings endpoint, or switch the embedding source to Local BGE-small.',
+          );
+        }
+        set({ embeddingSource: 'provider' });
+        response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
+      } else {
+        const providerEmbedding = await getProviderEmbedding(query);
+        if (providerEmbedding) {
+          set({ embeddingSource: 'provider' });
+          response = await aiSearchByVector(providerEmbedding.vectors[0] ?? [], query);
+        } else {
+          set({ embeddingSource: 'rust_bge' });
+          response = await aiQueryRagHybrid(query);
+        }
+      }
+
+      // Create a placeholder entry for streaming
+      const entryId = nextEntryId();
+      const entry: RagConversationEntry = {
+        id: entryId,
+        query: query.trim(),
+        response,
+        answer: '',
+        timestamp: Date.now(),
+      };
+
+      set((s) => ({
+        conversation: [...s.conversation, entry],
+        streamingEntryId: entryId,
+        streamingAnswer: '',
+      }));
+
+      // Stream the AI answer token by token
+      const { isAiAvailable } = await import('@shared/services/ai/providerManager');
+      let accumulated = '';
+      if (await isAiAvailable()) {
+        for await (const chunk of streamAi(RAG_ANSWER_SYSTEM_PROMPT, response)) {
+          accumulated += chunk;
+          set({ streamingAnswer: accumulated });
+        }
+      }
+
+      // Finalize: set the complete answer
+      set((s) => ({
+        conversation: s.conversation.map((e) =>
+          e.id === entryId ? { ...e, answer: accumulated || undefined } : e,
+        ),
+        isSearching: false,
+        streamingEntryId: null,
+        streamingAnswer: '',
+      }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      set({
+        isSearching: false,
+        searchError: msg,
+        streamingEntryId: null,
+        streamingAnswer: '',
+      });
     }
   },
 

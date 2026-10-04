@@ -1198,7 +1198,7 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
         const opData = ((args?.op ?? args) as Record<string, unknown>) ?? {};
         const opId = (opData.id as string) ?? uuid();
         await db.execute(
-          `INSERT OR REPLACE INTO pending_operations (id, account_id, operation_type, resource_id, params, status, campaign_id, retry_count, max_retries, created_at)
+          `INSERT OR REPLACE INTO pending_operations (id, company_id, operation_type, resource_id, params, status, campaign_id, retry_count, max_retries, created_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, unixepoch())`,
           [
             opId,
@@ -1221,8 +1221,8 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
       }
 
       case 'db_list_pending_operations': {
-        return db.select<any[]>('SELECT * FROM pending_operations WHERE account_id = $1', [
-          args?.accountId,
+        return db.select<any[]>('SELECT * FROM pending_operations WHERE company_id = $1', [
+          args?.companyId,
         ]);
       }
 

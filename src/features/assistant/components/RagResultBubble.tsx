@@ -30,6 +30,10 @@ export interface RagBubbleEntry {
 
 export interface RagResultBubbleProps {
   entry: RagBubbleEntry;
+  /** Whether this entry is currently streaming a response */
+  isStreaming?: boolean;
+  /** Partial answer text while streaming */
+  streamingAnswer?: string;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -44,10 +48,10 @@ function formatTime(ts: number): string {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function RagResultBubble({ entry }: RagResultBubbleProps) {
+export function RagResultBubble({ entry, isStreaming, streamingAnswer }: RagResultBubbleProps) {
   const [showSources, setShowSources] = useState(false);
-  const primary = entry.answer ?? entry.response;
-  const hasSources = !!entry.answer && !!entry.response;
+  const primary = isStreaming ? (streamingAnswer ?? '') : (entry.answer ?? entry.response);
+  const hasSources = !isStreaming && !!entry.answer && !!entry.response;
 
   return (
     <div className="space-y-3 animate-[fadeIn_200ms_ease-out]">
@@ -94,9 +98,12 @@ export function RagResultBubble({ entry }: RagResultBubbleProps) {
             <div className="flex-1 min-w-0">
               <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap break-words">
                 {primary}
+                {isStreaming && (
+                  <span className="inline-block w-2 h-4 ml-0.5 bg-accent animate-pulse align-text-bottom" />
+                )}
               </p>
             </div>
-            <VoiceButton mode="output" text={primary} size="sm" />
+            {!isStreaming && <VoiceButton mode="output" text={primary} size="sm" />}
           </div>
           {hasSources && (
             <button
