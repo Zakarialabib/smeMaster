@@ -173,7 +173,7 @@ export async function unifiedSearch(
         null as snippet,
         cf.created_at as date,
         0 as rank,
-        cf.account_id,
+        cf.company_id as account_id,
         json_object('category', cf.category, 'size', cf.size, 'mime_type', cf.mime_type, 'starred', cf.starred) as metadata
        FROM contact_files_fts fts
        JOIN contact_files cf ON cf.rowid = fts.rowid
@@ -192,7 +192,7 @@ export async function unifiedSearch(
         null as snippet,
         cf.created_at as date,
         0 as rank,
-        cf.account_id,
+        cf.company_id as account_id,
         json_object('category', cf.category, 'size', cf.size, 'mime_type', cf.mime_type, 'starred', cf.starred) as metadata
        FROM contact_files_fts fts
        JOIN contact_files cf ON cf.rowid = fts.rowid

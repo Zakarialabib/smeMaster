@@ -49,7 +49,7 @@ const TRACKED_TABLES: &[&str] = &[
     "signatures",
     "templates",
     "vault_items",
-    "deliverability_configs",
+    "deliverability_config",
     "workflow_rules",
     "follow_up_reminders",
 ];
@@ -110,7 +110,7 @@ async fn snapshot_counts(pool: &SqlitePool) -> Result<CountSnapshot, sqlx::Error
     count_table!(signatures);
     count_table!(templates);
     count_table!(vault_items);
-    count_table!(deliverability_configs);
+    count_table!(deliverability_config);
     count_table!(workflow_rules);
     count_table!(follow_up_reminders);
 
