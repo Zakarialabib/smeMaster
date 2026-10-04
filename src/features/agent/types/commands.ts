@@ -29,6 +29,25 @@ export type CallOutcome = 'contained' | 'transferred' | 'voicemail' | 'abandoned
 export type CallState =
   'idle' | 'connecting' | 'greeting' | 'listening' | 'thinking' | 'speaking' | 'closing' | 'wrapup';
 
+/**
+ * The state a STORED call row holds — distinct from the live `CallState`.
+ *
+ * `0002_calls.sql`'s CHECK is authoritative for a persisted row and includes
+ * terminal/edge states the live enum has no reason to carry. The two disagreed
+ * from Phase B until the first real persistence landed (batch step 3);
+ * reconciled in the Python contract rather than by loosening either side.
+ */
+export type StoredCallState =
+  | 'ringing'
+  | 'greeting'
+  | 'listening'
+  | 'thinking'
+  | 'speaking'
+  | 'transferring'
+  | 'after_hours'
+  | 'voicemail'
+  | 'closed';
+
 export type Severity = 'P1' | 'P2' | 'P3';
 
 export type ProviderTier = 'budget' | 'standard' | 'premium' | 'selfhosted';
@@ -203,6 +222,42 @@ export interface OpsSnapshot {
   lastSeenAt: string | null;
 }
 
+/* ── Config ───────────────────────────────────────────────────────────────── */
+
+export type ConsentVariant = 'announce_first' | 'record_with_consent' | 'no_recording';
+
+/** Selectable channels. The customer chooses from config. */
+export type Channel = 'baileys' | 'twilio' | 'official' | 'none';
+
+export interface ChannelCapability {
+  enabled: boolean;
+  /** DERIVED from .env on the server — never claims a channel with no
+   *  credentials behind it. */
+  configured: boolean;
+}
+
+export interface ConfigResponse {
+  providerMix: Record<string, string>;
+  consentVariant: ConsentVariant;
+  bilingual: boolean;
+  channel: Channel;
+  channels: Record<string, ChannelCapability>;
+  /** Every rate inside is UNVERIFIED until the vendor RFQ returns. */
+  costSim: Record<string, unknown>;
+  hours: Record<string, string[]>;
+  tz: string;
+  transferTarget: E164 | null;
+  tier: ProviderTier;
+  knowledgeScope: string[];
+  afterHoursMode: AfterHoursMode;
+  updatedAt: string | null;
+}
+
+/** Partial update — only the fields present are written. */
+export type ConfigUpdate = Partial<Omit<ConfigResponse, 'updatedAt' | 'transferTarget'>> & {
+  transferTarget?: E164 | null;
+};
+
 /* ── Call list ────────────────────────────────────────────────────────────── */
 
 /** One row in the call log. `callerMasked` is masked **by default** — the full
@@ -211,7 +266,7 @@ export interface CallListItem {
   id: string;
   channel: CallChannel;
   outcome: CallOutcome;
-  state: CallState;
+  state: StoredCallState;
   /** ISO 8601 UTC. Format for display at the edge, never in the store. */
   startedAt: string;
   durationSec: number;
@@ -221,6 +276,74 @@ export interface CallListItem {
   /** `null` for WhatsApp service conversations — they cost €0 by policy. */
   costEur: number | null;
   containment: boolean;
+  /** §5 #2: the agent listened but did not speak. */
+  shadowMode?: boolean;
+  /** §5 #16: spam likelihood 0..1. `null` means "not scored", not "not spam". */
+  spamScore?: number | null;
+  /** §5 #3: was the WhatsApp summary delivered? */
+  summarySent?: boolean;
+  /** §5 #20: which knowledge scope version answered this call. */
+  scopeVersion?: number | null;
+  /** §5 #11: caller emotion at end of call. */
+  callerEmotion?: string | null;
+}
+
+/** `GET /calls` — newest first. `reachable` is not optional: an empty list and
+ *  an unreachable server must not look the same. */
+export interface CallListResponse {
+  items: CallListItem[];
+  total: number;
+  reachable: boolean;
+}
+
+/** One transcript turn. TRANSCRIPT ONLY — there is no audio type anywhere. */
+export interface TurnItem {
+  idx: number;
+  role: 'caller' | 'agent';
+  text: string;
+  final: boolean;
+  vadMs: number | null;
+  sttMs: number | null;
+  llmMs: number | null;
+  ttsMs: number | null;
+  turnGapMs: number | null;
+  /** §5 #20: retrieval hits + scope provenance for "why did it say that?". */
+  provenance: Record<string, unknown> | null;
+  emotionTag: string | null;
+  guardrailFired: string | null;
+  language: string | null;
+  at: string;
+}
+
+/** `GET /calls/{id}` — the call plus its transcript, for replay. */
+export interface CallDetail {
+  call: CallListItem;
+  turns: TurnItem[];
+  containmentReason: string | null;
+  summary: string | null;
+}
+
+/* ── Alerts (ops) ─────────────────────────────────────────────────────────── */
+
+export interface AlertItem {
+  id: string;
+  severity: Severity;
+  rule: string;
+  oneLiner: string;
+  decision: string;
+  evidence: AlertEvidence;
+  /** The calls this alert refers to — the drill-down needs a target. */
+  callIds: string[];
+  acknowledgedAt: string | null;
+  acknowledgedBy: string | null;
+  thresholdIsProvisional: boolean;
+  createdAt: string;
+}
+
+export interface AlertListResponse {
+  items: AlertItem[];
+  total: number;
+  reachable: boolean;
 }
 
 /* ── WebSocket ────────────────────────────────────────────────────────────── */

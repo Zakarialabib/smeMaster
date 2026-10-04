@@ -1,6 +1,11 @@
 import type {
+  AlertListResponse,
+  CallDetail,
   CallListItem,
+  CallListResponse,
   CallOutcome,
+  ConfigResponse,
+  ConfigUpdate,
   OpsSnapshot,
   ProviderHealth,
   SessionRequest,
@@ -121,7 +126,24 @@ export const agentApi = {
    */
   createSession: (body: SessionRequest) =>
     request<SessionResponse>('/session', { method: 'POST', body: JSON.stringify(body) }),
+
+  /** The call log, newest first. Masked numbers by default. */
+  listCalls: (limit = 50, offset = 0) =>
+    request<CallListResponse>(`/calls?limit=${limit}&offset=${offset}`),
+
+  /** One call plus its transcript — the replay surface. */
+  getCall: (callId: string) => request<CallDetail>(`/calls/${encodeURIComponent(callId)}`),
+
+  /** The ops alert list; `severity` filters to P1/P2/P3. */
+  listAlerts: (severity?: 'P1' | 'P2' | 'P3') =>
+    request<AlertListResponse>(severity ? `/alerts?severity=${severity}` : '/alerts'),
+
+  /** The current agent configuration. Never contains credentials. */
+  getConfig: () => request<ConfigResponse>('/config'),
+
+  /** Partial update. Unknown keys are dropped server-side. */
+  updateConfig: (body: ConfigUpdate) =>
+    request<ConfigResponse>('/config', { method: 'PUT', body: JSON.stringify(body) }),
 };
 
-/** The call list is not implemented server-side yet; this keeps the shape honest. */
 export type { CallListItem, CallOutcome };

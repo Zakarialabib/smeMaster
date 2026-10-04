@@ -8,14 +8,22 @@ vi.mock('@features/deliverability/hooks/useHealthScore', () => ({
   useHealthScore: vi.fn(),
 }));
 
-vi.mock('@features/deliverability/stores/domainHealthStore', () => ({
-  useDomainHealthStore: vi.fn(() => ({
+vi.mock('@features/deliverability/stores/domainHealthStore', () => {
+  const state = {
     currentDomain: '',
     remediation: [],
     getRemediationForDomain: vi.fn(() => null),
     setCurrentDomain: vi.fn(),
-  })),
-}));
+  };
+  return {
+    // Selector-aware: the component uses `useDomainHealthStore((s) => s.x)` —
+    // the mock must apply the selector or the component receives the whole
+    // state object where a function is expected.
+    useDomainHealthStore: vi.fn((selector) =>
+      typeof selector === 'function' ? selector(state) : state,
+    ),
+  };
+});
 
 const createMockHealth = (overrides = {}) => ({
   score: 85,
@@ -62,12 +70,16 @@ describe('DeliverabilityPanel', () => {
   it('calls setCurrentDomain when Enter is pressed', async () => {
     const setCurrentDomain = vi.fn();
     (useHealthScore as any).mockReturnValue({ data: null, isLoading: false });
-    vi.mocked(useDomainHealthStore as any).mockReturnValue({
+    const state = {
       currentDomain: '',
       remediation: [],
       getRemediationForDomain: vi.fn(() => null),
       setCurrentDomain,
-    });
+    };
+    vi.mocked(useDomainHealthStore as any).mockImplementation(
+      (selector: (s: typeof state) => unknown) =>
+        typeof selector === 'function' ? selector(state) : state,
+    );
     render(<DeliverabilityPanel />);
     const input = screen.getByRole('textbox');
     fireEvent.change(input, { target: { value: 'example.com' } });

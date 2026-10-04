@@ -72,13 +72,56 @@ describe.skipIf(!live)('agentApi against a live agent-core', () => {
     // inert because SessionRequest inherited BaseModel. This is the test that
     // would have caught it.
     const err = await agentApi
-      .createSession({ channel: 'voice', purpose: 'live', callerOverride: '+33612345678' })
+      .createSession({ channel: 'voice', purpose: 'live', callerOverride: '+336****5678' })
       .catch((e: unknown) => e as AgentClientError);
 
     expect(err).toBeInstanceOf(AgentClientError);
     expect((err as AgentClientError).status).toBe(403);
     expect((err as AgentClientError).code).toBe('caller_override_not_allowed');
     expect((err as AgentClientError).isUnreachable).toBe(false);
+  });
+
+  it('reads the call log with the shape the Calls tab expects', async () => {
+    const page = await agentApi.listCalls();
+    expect(Object.keys(page).sort()).toEqual(['items', 'reachable', 'total']);
+    expect(Array.isArray(page.items)).toBe(true);
+    // Empty is a legitimate answer, but reachability must still be reported —
+    // that is what stops "no calls" standing in for "agent is down".
+    expect(typeof page.reachable).toBe('boolean');
+  });
+
+  it('never returns an unmasked number in the call log', async () => {
+    const page = await agentApi.listCalls();
+    for (const item of page.items) {
+      expect(item.callerMasked).toMatch(/\*|x{2,}|•/i);
+    }
+  });
+
+  it('404s a missing call as a typed error, not a crash', async () => {
+    const err = (await agentApi.getCall('nope').catch((e: unknown) => e)) as AgentClientError;
+    expect(err).toBeInstanceOf(AgentClientError);
+    expect(err.status).toBe(404);
+    expect(err.code).toBe('call_not_found');
+  });
+
+  it('reads the alert list', async () => {
+    const page = await agentApi.listAlerts();
+    expect(Object.keys(page).sort()).toEqual(['items', 'reachable', 'total']);
+    expect(typeof page.reachable).toBe('boolean');
+  });
+
+  it('filters alerts by severity', async () => {
+    const p1 = await agentApi.listAlerts('P1');
+    for (const a of p1.items) expect(a.severity).toBe('P1');
+  });
+
+  it('reads and writes config', async () => {
+    const before = await agentApi.getConfig();
+    expect(typeof before.consentVariant).toBe('string');
+    const after = await agentApi.updateConfig({ tier: 'premium' });
+    expect(after.tier).toBe('premium');
+    // Restore, so a repeated run is not order-dependent.
+    await agentApi.updateConfig({ tier: before.tier });
   });
 });
 
