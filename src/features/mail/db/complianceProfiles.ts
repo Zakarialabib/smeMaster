@@ -73,16 +73,18 @@ export async function setDefaultProfile(id: string): Promise<void> {
 }
 
 export async function insertCheck(
-  accountId: string,
+  companyId: string,
   emailDraftId: string | null,
   campaignId: string | null,
   profileIds: string,
   score: number,
   violationsJson: string,
 ): Promise<void> {
+  // compliance_checks is company-scoped (company_id FK) — callers pass the
+  // active company, not the mail account.
   return dbInsertCheck({
-    id: `${accountId}_${Date.now()}`,
-    accountId,
+    id: `${companyId}_${Date.now()}`,
+    companyId,
     emailDraftId,
     campaignId,
     profileIds,

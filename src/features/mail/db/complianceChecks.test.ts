@@ -24,19 +24,19 @@ describe('complianceChecks service', () => {
   describe('getRecentChecks', () => {
     it('calls executeSearchQuery with correct SQL and params', async () => {
       mockInvoke.mockResolvedValue([]);
-      await getRecentChecks('acc-1');
+      await getRecentChecks('company-1');
       expect(mockInvoke).toHaveBeenCalledWith('db_execute_search_query', {
-        sql: 'SELECT * FROM compliance_checks WHERE account_id = $1 ORDER BY checked_at DESC LIMIT $2',
-        params: ['acc-1', 10],
+        sql: 'SELECT * FROM compliance_checks WHERE company_id = $1 ORDER BY checked_at DESC LIMIT $2',
+        params: ['company-1', 10],
       });
     });
 
     it('uses custom limit', async () => {
       mockInvoke.mockResolvedValue([]);
-      await getRecentChecks('acc-1', 25);
+      await getRecentChecks('company-1', 25);
       expect(mockInvoke).toHaveBeenCalledWith('db_execute_search_query', {
         sql: expect.any(String),
-        params: ['acc-1', 25],
+        params: ['company-1', 25],
       });
     });
 
@@ -44,7 +44,7 @@ describe('complianceChecks service', () => {
       const checks = [
         {
           id: 'chk-1',
-          account_id: 'acc-1',
+          company_id: 'company-1',
           email_draft_id: 'draft-1',
           campaign_id: null,
           profile_ids: 'cp-1',
@@ -54,7 +54,7 @@ describe('complianceChecks service', () => {
         },
       ];
       mockInvoke.mockResolvedValue(checks);
-      const result = await getRecentChecks('acc-1');
+      const result = await getRecentChecks('company-1');
       expect(result).toEqual(checks);
     });
   });

@@ -51,6 +51,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { setSetting } from '@features/settings/db/settings';
+import { getLocalModelsByKind, formatBytes as formatModelBytes } from '@shared/services/ai/localModelCatalog';
 
 // ── Status Dot ───────────────────────────────────────────────────────────────
 
@@ -226,6 +227,7 @@ export default function KnowledgeBaseSettings() {
   const downloadBgeModel = useRagStore((s) => s.downloadBgeModel);
   const loadEmbeddingModel = useRagStore((s) => s.loadEmbeddingModel);
   const indexAll = useRagStore((s) => s.indexAll);
+  const selectEmbeddingModel = useRagStore((s) => s.setEmbeddingModelId);
   const testEmbedding = useRagStore((s) => s.testEmbedding);
   // ── Vector DB + chunking (local UI state) ──
   const [kbPath, setKbPath] = useState<string | null>(null);
@@ -240,6 +242,10 @@ export default function KnowledgeBaseSettings() {
     contacts: true,
     deals: true,
   });
+  // ── Embedding model selection ──
+  const [embeddingModelId, setEmbeddingModelId] = useState('bge-small-en-v1.5');
+  const [embeddingModelChanged, setEmbeddingModelChanged] = useState(false);
+  const embeddingModels = getLocalModelsByKind('embedding');
   // ── Provider / embedding-model status (provider mode) ──
   const [aiProvider, setAiProvider] = useState<string>('claude');
   const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>('');
@@ -280,6 +286,8 @@ export default function KnowledgeBaseSettings() {
           /* use defaults */
         }
       }
+      const embModel = await getSetting('rag_embedding_model');
+      if (embModel) setEmbeddingModelId(embModel);
     })();
   }, []);
 
@@ -446,6 +454,31 @@ export default function KnowledgeBaseSettings() {
             <SettingRow label={t('settings.modelStatus')}>
               <StatusDot status={modelStatus} />
             </SettingRow>
+            <SettingRow label={t('settings.embeddingModel')}>
+              <select
+                value={embeddingModelId}
+                onChange={async (e) => {
+                  const v = e.target.value;
+                  setEmbeddingModelId(v);
+                  setEmbeddingModelChanged(true);
+                  await setSetting('rag_embedding_model', v);
+                  await selectEmbeddingModel(v);
+                }}
+                className="w-64 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
+              >
+                {embeddingModels.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} ({formatModelBytes(m.totalBytes)})
+                  </option>
+                ))}
+              </select>
+            </SettingRow>
+            {embeddingModelChanged && (
+              <p className="text-xs text-warning flex items-center gap-1">
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                {t('settings.embeddingModelChanged')}
+              </p>
+            )}
             {downloadProgress && <ModelDownloadProgress progress={downloadProgress} />}
             {modelPath && (
               <div className="text-xs font-mono text-text-tertiary bg-white/5 dark:bg-white/5 px-2.5 py-1.5 rounded-md border border-border-primary truncate">
