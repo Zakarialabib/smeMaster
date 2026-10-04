@@ -28,6 +28,11 @@ from fastapi.responses import JSONResponse
 from .contracts import (
     DISCLOSURE_FR,
     AlertEvidence,
+    AlertItem,
+    AlertListResponse,
+    CallDetail,
+    CallListItem,
+    CallListResponse,
     CallState,
     ConfigResponse,
     ConfigUpdate,
@@ -44,6 +49,7 @@ from .contracts import (
     StagesFrame,
     StateFrame,
     TranscriptDelta,
+    TurnItem,
     VoiceLocale,
 )
 from .providers import ChainResult, ProviderConfig, Seam, run_chain
@@ -343,12 +349,10 @@ def _config_store(request: Request) -> Any:
         raise HTTPException(
             status_code=500,
             detail={
-                "error": {
-                    "code": "storage_unavailable",
-                    "message": "config store not initialized",
-                    "retryable": True,
-                    "at": _now(),
-                }
+                "code": "storage_unavailable",
+                "message": "config store not initialized",
+                "retryable": True,
+                "at": _now(),
             },
         )
     return store
@@ -385,3 +389,84 @@ def _camel_to_snake(name: str) -> str:
             out.append("_")
         out.append(ch.lower())
     return "".join(out)
+
+
+# ── GET /calls · GET /calls/{id} · GET /alerts ───────────────────────────────
+#
+# Batch step 3: the endpoints the Calls / Live / Ops tabs read. Migrations
+# landed with them (0006_turns_alerts.sql). Real rows from the real schema —
+# the console builds against a server, not against fixtures.
+#
+# There is no `POST /calls` and no write route: calls are created by channels
+# (batch step 4), not by a client. A client that could create a call could
+# fabricate a contained call, which is the pilot's headline metric.
+
+
+def _call_store(request: Request) -> Any:
+    store = getattr(request.app.state, "call_store", None)
+    if store is None:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "storage_unavailable",
+                "message": "call store not initialized",
+                "retryable": True,
+                "at": _now(),
+            },
+        )
+    return store
+
+
+@router.get("/calls", response_model=CallListResponse)
+async def list_calls(
+    request: Request, limit: int = 50, offset: int = 0
+) -> CallListResponse:
+    """The call log, newest first. Masked numbers by default."""
+    store = _call_store(request)
+    items, total = store.list_calls(limit=limit, offset=offset)
+    return CallListResponse(
+        items=[CallListItem.model_validate(i) for i in items],
+        total=total,
+        reachable=True,
+    )
+
+
+@router.get("/calls/{call_id}", response_model=CallDetail)
+async def get_call(call_id: str, request: Request) -> CallDetail:
+    """One call plus its transcript — the replay surface.
+
+    `provenance` on each turn is what answers "why did it say that?".
+    """
+    store = _call_store(request)
+    call = store.get_call(call_id)
+    if call is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "call_not_found",
+                "message": f"no call with id {call_id}",
+                "retryable": False,
+                "at": _now(),
+            },
+        )
+    turns = store.get_turns(call_id)
+    return CallDetail(
+        call=CallListItem.model_validate(call),
+        turns=[TurnItem.model_validate(t) for t in turns],
+        containment_reason=call.get("containmentReason"),
+        summary=call.get("summary"),
+    )
+
+
+@router.get("/alerts", response_model=AlertListResponse)
+async def list_alerts(
+    request: Request, severity: str | None = None, limit: int = 50
+) -> AlertListResponse:
+    """The ops alert list. `severity` filters to P1/P2/P3."""
+    store = _call_store(request)
+    items, total = store.list_alerts(severity=severity, limit=limit)
+    return AlertListResponse(
+        items=[AlertItem.model_validate(i) for i in items],
+        total=total,
+        reachable=True,
+    )

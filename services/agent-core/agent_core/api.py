@@ -26,7 +26,7 @@ from fastapi.responses import JSONResponse
 
 from .api_v1 import router as v1_router
 from .contracts import ErrorBody, ErrorResponse, Health
-from .storage import ConfigStore, apply_migrations
+from .storage import CallStore, ConfigStore, apply_migrations
 
 VERSION = "0.1.0"
 _STARTED_AT = datetime.now(UTC).isoformat()
@@ -44,6 +44,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     if applied:
         print(f"Applied migrations: {', '.join(applied)}")
     app.state.config_store = ConfigStore(_DB_PATH)
+    app.state.call_store = CallStore(_DB_PATH)
     yield
 
 

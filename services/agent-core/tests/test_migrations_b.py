@@ -38,13 +38,14 @@ def strip_comments(sql_text: str) -> str:
 
 
 class TestMigrationSet:
-    def test_the_five_migrations_exist_and_are_ordered(self) -> None:
+    def test_the_six_migrations_exist_and_are_ordered(self) -> None:
         assert ALL_MIGRATIONS == [
             "0001_tenants.sql",
             "0002_calls.sql",
             "0003_metering.sql",
             "0004_knowledge.sql",
             "0005_config.sql",
+            "0006_turns_alerts.sql",
         ]
 
     def test_each_migration_creates_its_table_idempotently(self) -> None:

@@ -263,6 +263,153 @@ class ConfigStore:
         }
 
 
+# ── Call log · transcript · alerts (read side) ───────────────────────────────
+#
+# These are read models. Writes happen when channels land (batch step 4); for
+# now the endpoints serve real rows from the real schema, which is what makes
+# the console buildable against a server rather than against fixtures.
+
+
+class CallStore:
+    """Read access to calls, turns, and alerts."""
+
+    def __init__(self, db_path: Path) -> None:
+        self._db_path = db_path
+
+    def list_calls(self, limit: int = 50, offset: int = 0) -> tuple[list[dict[str, Any]], int]:
+        """Newest first. Returns (items, total)."""
+        conn = _connect(self._db_path)
+        try:
+            total = conn.execute("SELECT COUNT(*) AS n FROM calls").fetchone()["n"]
+            rows = conn.execute(
+                "SELECT * FROM calls ORDER BY started_at DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+            return [self._call_row(r) for r in rows], total
+        finally:
+            conn.close()
+
+    def get_call(self, call_id: str) -> dict[str, Any] | None:
+        conn = _connect(self._db_path)
+        try:
+            row = conn.execute("SELECT * FROM calls WHERE id = ?", (call_id,)).fetchone()
+            return self._call_row(row) if row else None
+        finally:
+            conn.close()
+
+    def get_turns(self, call_id: str) -> list[dict[str, Any]]:
+        conn = _connect(self._db_path)
+        try:
+            rows = conn.execute(
+                "SELECT * FROM turns WHERE call_id = ? ORDER BY idx ASC", (call_id,)
+            ).fetchall()
+            return [self._turn_row(r) for r in rows]
+        finally:
+            conn.close()
+
+    def list_alerts(
+        self, severity: str | None = None, limit: int = 50
+    ) -> tuple[list[dict[str, Any]], int]:
+        conn = _connect(self._db_path)
+        try:
+            if severity:
+                total = conn.execute(
+                    "SELECT COUNT(*) AS n FROM alerts WHERE severity = ?", (severity,)
+                ).fetchone()["n"]
+                rows = conn.execute(
+                    "SELECT * FROM alerts WHERE severity = ? "
+                    "ORDER BY created_at DESC LIMIT ?",
+                    (severity, limit),
+                ).fetchall()
+            else:
+                total = conn.execute("SELECT COUNT(*) AS n FROM alerts").fetchone()["n"]
+                rows = conn.execute(
+                    "SELECT * FROM alerts ORDER BY created_at DESC LIMIT ?", (limit,)
+                ).fetchall()
+            return [self._alert_row(r) for r in rows], total
+        finally:
+            conn.close()
+
+    # ── row → wire ──────────────────────────────────────────────────────────
+
+    def _call_row(self, row: sqlite3.Row) -> dict[str, Any]:
+        started = row["started_at"]
+        closed = row["closed_at"]
+        duration = 0
+        if started and closed:
+            duration = max(0, int(_parse_ts(closed) - _parse_ts(started)))
+        return {
+            "id": row["id"],
+            "channel": row["channel"],
+            "outcome": row["outcome"] or "abandoned",
+            "state": row["state"],
+            "startedAt": started,
+            "durationSec": duration,
+            "callerMasked": row["caller_masked"],
+            "flagged": row["flagged"],
+            "costEur": row["cost_eur"],
+            "containment": bool(row["contained"]),
+            "shadowMode": bool(row["shadow_mode"]) if row["shadow_mode"] is not None else False,
+            "spamScore": row["spam_score"],
+            "summarySent": bool(row["summary_sent"]) if row["summary_sent"] is not None else False,
+            "scopeVersion": row["scope_version"],
+            "containmentReason": row["containment_reason"],
+            "summary": row["summary"],
+        }
+
+    def _turn_row(self, row: sqlite3.Row) -> dict[str, Any]:
+        return {
+            "idx": row["idx"],
+            "role": row["role"],
+            "text": row["text"],
+            "final": bool(row["final"]),
+            "vadMs": row["vad_ms"],
+            "sttMs": row["stt_ms"],
+            "llmMs": row["llm_ms"],
+            "ttsMs": row["tts_ms"],
+            "turnGapMs": row["turn_gap_ms"],
+            "provenance": json.loads(row["provenance"]) if row["provenance"] else None,
+            "emotionTag": row["emotion_tag"],
+            "guardrailFired": row["guardrail_fired"],
+            "language": row["language"],
+            "at": row["at"],
+        }
+
+    def _alert_row(self, row: sqlite3.Row) -> dict[str, Any]:
+        return {
+            "id": row["id"],
+            "severity": row["severity"],
+            "rule": row["rule"],
+            "oneLiner": row["one_liner"],
+            "decision": row["decision"],
+            "evidence": json.loads(row["evidence"]),
+            "callIds": json.loads(row["call_ids"]) if row["call_ids"] else [],
+            "acknowledgedAt": row["acknowledged_at"],
+            "acknowledgedBy": row["acknowledged_by"],
+            "thresholdIsProvisional": bool(row["threshold_is_provisional"]),
+            "createdAt": row["created_at"],
+        }
+
+
+def _parse_ts(value: str) -> float:
+    """Parse an ISO 8601 timestamp to epoch seconds, tolerantly.
+
+    The stored format varies (PG now(), Python isoformat, SQLite strftime), so
+    this normalises the trailing Z and lets `fromisoformat` do the rest.
+    """
+    from datetime import datetime as _dt
+
+    text = value.strip().replace("Z", "+00:00")
+    try:
+        return _dt.fromisoformat(text).timestamp()
+    except ValueError:
+        # Last resort: SQLite's strftime format with milliseconds
+        try:
+            return _dt.strptime(text, "%Y-%m-%dT%H:%M:%S.%f").timestamp()
+        except ValueError:
+            return 0.0
+
+
 def _jsonify(value: Any) -> str:
     """Encode a value for storage in a TEXT column.
 

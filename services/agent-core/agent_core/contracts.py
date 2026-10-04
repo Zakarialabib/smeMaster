@@ -49,6 +49,31 @@ class CallState(StrEnum):
     WRAPUP = "wrapup"
 
 
+class StoredCallState(StrEnum):
+    """The state a *stored* call row can hold.
+
+    Distinct from `CallState`, which is the LIVE lifecycle carried in frames.
+    `0002_calls.sql`'s CHECK is the authoritative set for a persisted row and
+    includes terminal and edge states the live enum has no reason to carry
+    (`closed`, `voicemail`, `after_hours`, `transferring`, `ringing`).
+
+    These two disagreed from Phase B until the first real persistence landed
+    (batch step 3) — the migration was written in B4, the contract in B2, and
+    nothing had ever run one against the other. Reconciled here rather than by
+    loosening either.
+    """
+
+    RINGING = "ringing"
+    GREETING = "greeting"
+    LISTENING = "listening"
+    THINKING = "thinking"
+    SPEAKING = "speaking"
+    TRANSFERRING = "transferring"
+    AFTER_HOURS = "after_hours"
+    VOICEMAIL = "voicemail"
+    CLOSED = "closed"
+
+
 class Severity(StrEnum):
     P1 = "P1"
     P2 = "P2"
@@ -417,9 +442,106 @@ class ConfigUpdate(Camel):
     after_hours_mode: AfterHoursMode | None = None
 
 
+# ── Call log · transcript · replay ───────────────────────────────────────────
+
+
+class CallListItem(Camel):
+    """One row in the call log.
+
+    `caller_masked` is masked BY DEFAULT — the full number is a deliberate
+    extra step, not a rendering accident.
+    """
+
+    id: str
+    channel: CallChannel
+    outcome: CallOutcome
+    state: StoredCallState
+    started_at: str
+    duration_sec: int
+    caller_masked: str
+    flagged: str | None = None
+    #: NULL for WhatsApp service conversations — they cost EUR 0 by policy.
+    cost_eur: float | None = None
+    containment: bool
+    #: §5 #2: the agent listened but did not speak.
+    shadow_mode: bool = False
+    #: §5 #16: spam likelihood 0..1. None means "not scored", not "not spam".
+    spam_score: float | None = None
+    summary_sent: bool = False
+    scope_version: int | None = None
+    caller_emotion: str | None = None
+    language: str | None = None
+
+
+class CallListResponse(Camel):
+    """`GET /calls` — newest first, paginated.
+
+    `reachable` is not optional for the same reason it is on the ops snapshot:
+    an empty list and an unreachable server must not look the same.
+    """
+
+    items: list[CallListItem]
+    total: int
+    reachable: bool = True
+
+
+class TurnItem(Camel):
+    """One transcript turn. TRANSCRIPT ONLY — no audio, ever."""
+
+    idx: int
+    role: Literal["caller", "agent"]
+    text: str
+    final: bool = True
+    vad_ms: int | None = None
+    stt_ms: int | None = None
+    llm_ms: int | None = None
+    tts_ms: int | None = None
+    turn_gap_ms: int | None = None
+    #: §5 #20: retrieval hits + scope provenance for "why did it say that?".
+    provenance: dict[str, Any] | None = None
+    emotion_tag: str | None = None
+    guardrail_fired: str | None = None
+    language: str | None = None
+    at: str
+
+
+class CallDetail(Camel):
+    """`GET /calls/{id}` — the call plus its transcript, for replay."""
+
+    call: CallListItem
+    turns: list[TurnItem]
+    containment_reason: str | None = None
+    summary: str | None = None
+
+
+class AlertItem(Camel):
+    """One ops alert."""
+
+    id: str
+    severity: Severity
+    rule: str
+    one_liner: str
+    decision: str
+    evidence: AlertEvidence
+    #: The calls this alert refers to — the drill-down needs a target.
+    call_ids: list[str] = Field(default_factory=list)
+    acknowledged_at: str | None = None
+    acknowledged_by: str | None = None
+    threshold_is_provisional: bool = True
+    created_at: str
+
+
+class AlertListResponse(Camel):
+    items: list[AlertItem]
+    total: int
+    reachable: bool = True
+
+
 # Rebuild models that use forward references or Any
 ConfigResponse.model_rebuild()
 ConfigUpdate.model_rebuild()
+CallDetail.model_rebuild()
+AlertItem.model_rebuild()
 
 
 # ── Errors ───────────────────────────────────────────────────────────────────
