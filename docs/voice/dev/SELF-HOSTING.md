@@ -2,6 +2,10 @@
 
 > **Status:** Gate 0 design. Self-hosted inference is a **Gate 5** candidate gated on measurement.
 > Training is **not v1** — this document defines it so it cannot be started by accident.
+> **Re-baselined 2026-10-03:** no decision here changed — but the consent model §4 leans on is now
+> **decided** ([`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §3.8: no audio recording,
+> announce-first, schema-enforced), which makes
+> §4's audio blocker a standing v1 fact rather than a provisional recommendation.
 > **Scope note:** the "no AI" rule in our product roadmap covers the **SME Master SaaS product**.
 > This is a separate client engagement where AI *is* the deliverable. More AI (training) is still
 > this engagement, not the product.
@@ -111,12 +115,15 @@ the toolchain** — record the base model's licence per artefact, and get counse
 
 ## 4. The blocker nobody mentions: v1 retains no audio
 
-`CALL-FLOW.md` §2 recommends **no audio recording at all** — transcripts only, announce-first
-disclosure. The client questionnaire asks them to sign that.
+`CALL-FLOW.md` §2 is **decided as of 2026-10-03** (DECISIONS §3.8): **no audio recording at all** —
+transcripts only, announce-first disclosure, enforced by the schema (`turns` has no audio column)
+and implemented in the merged Phase C+D batch. The client questionnaire still asks them to sign the
+model, and the final consent copy variant (A/B/C) is still client-owned — that blocks the pilot,
+not the build.
 
 **An acoustic ASR fine-tune needs audio.** So:
 
-> **Training an ASR model on the client's calls requires retaining call audio — which the signed
+> **Training an ASR model on the client's calls requires retaining call audio — which the decided
 > consent model forbids.** These two decisions are not in conflict today only because nobody has
 > tried to do both.
 

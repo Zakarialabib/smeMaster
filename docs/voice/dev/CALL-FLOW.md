@@ -1,25 +1,38 @@
 # Call Flow — Inbound Voice Agent (FR/EN, v1)
 
-> **Status:** DRAFT — the consent model and emergency policy below are BLOCKING for Gate 4.
+> **Status:** ✅ **re-baselined 2026-10-03 — no longer DRAFT, no longer blocking Gate 4.**
+> The two former blockers (consent model §2, emergency policy §6) are **decided** per
+> [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §3.8 and are implemented **in the merged
+> Phase C+D batch (step 5), not at Gate 4**: announce-first disclosure, **no audio recording**
+> (schema enforces it — `turns` has no audio column), emergency policy + transfer ladder now.
+> Dev calls exercise the same disclosure path the pilot needs.
+> Still open, and **client-owned — blocks the pilot, not the build**: the consent copy variant
+> A/B/C final text (DECISIONS §9) and counsel verification of the two regulatory items in §2.
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
-> **Written:** 2026-09-28
+> **Written:** 2026-09-28 · **Updated:** 2026-10-03
 
-## 0. Blocking items in this document
+## 0. The two items that were blocking — both decided 2026-10-03
 
-Two decisions here change the architecture and must be made **before** the call path
-is built, not after:
+This section said two decisions had to be made **before** the call path was built. They were, at
+the grilling session of 2026-10-03 (DECISIONS §3.8):
 
-1. **Recording consent** (§2) — a client decision, and the recommended option removes
-   the audio-retention problem entirely.
-2. **Emergency policy** (§6) — a product decision with a safety dimension.
+1. **Recording consent** (§2) — decided: **v1 records no audio at all.** Transcripts only,
+   announce-first AI disclosure — the RECOMMENDED option was adopted, and the audio-retention
+   problem it removed is gone by construction (there is no audio path to retain).
+2. **Emergency policy** (§6) — decided: the script is a **line in the system prompt**, not a
+   runtime toggle — implemented now, together with the transfer ladder (§4).
 
-Everything else here is engineering and can proceed once those two are settled.
+Everything else here is engineering and can proceed. The batch sequence puts **full consent
+implementation at step 5 of the merged Phase C+D batch** (before Config UI) — dev calls exercise
+the same disclosure path the pilot needs. What is *not* settled is copy-level: the client still
+picks the consent variant text (A/B/C, DECISIONS §9) and counsel must still verify the two
+regulatory items in §2 — those gate the **pilot launch**, not the build.
 
 ## 1. Call states
 
 ```
 IDLE
- └─ inbound call arrives (Telnyx media stream)
+ └─ inbound call arrives (carrier media stream — FreeSWITCH loopback in dev, Twilio trial beyond)
      ↓
 CONNECTING        ← carrier handshake, number → tenant lookup
      ↓ if unknown number:      UNKNOWN_CALLER → polite message → hangup (log it)
@@ -45,14 +58,17 @@ WRAPUP            ← transcript stored, metering event written, transcript stre
      ↓ IDLE
 ```
 
-## 2. Recording and consent — DECISION REQUIRED
+## 2. Recording and consent — DECIDED 2026-10-03 (v1 records no audio)
 
-**Recommendation: v1 records no audio at all.** Transcripts only, announce-first
-AI disclosure.
+**Decision: v1 records no audio at all.** Transcripts only, announce-first AI disclosure —
+the RECOMMENDED row below, adopted at the re-baseline (DECISIONS §3.8) and enforced by the
+schema: **`turns` has no audio column.** Implemented in the Phase C+D batch (step 5).
+The only client-owned piece left is which consent **copy variant** (A/B/C) ships — that blocks
+the pilot launch, not the build (DECISIONS §9).
 
 | Option | Legal surface | Architecture impact | Verdict |
 |---|---|---|---|
-| **No audio recording; transcripts only + announce-first disclosure** | RGPD applies to transcripts (legitimate interest, bounded retention, registre de traitement). CNIL call-recording regime **not triggered**. | None. No audio storage path at all. | **RECOMMENDED** |
+| **No audio recording; transcripts only + announce-first disclosure** | RGPD applies to transcripts (legitimate interest, bounded retention, registre de traitement). CNIL call-recording regime **not triggered**. | None. No audio storage path at all. | **RECOMMENDED — ✅ adopted 2026-10-03 (DECISIONS §3.8)** |
 | Announce-first + recording + opt-out | CNIL call-recording regime: information notice + right to object. | Audio retention pipeline, storage, DPA update, retention job. | Phase 2 if client insists |
 | Silent recording | Near-certain non-compliance for AI-processed consumer calls | — | **REJECT** |
 
@@ -65,10 +81,10 @@ This single line does three jobs: satisfies AI-transparency disclosure, delivers
 access-to-a-human right, and gives the caller a deterministic escape hatch that does
 not depend on the LLM deciding to transfer.
 
-### Regulatory items to verify with counsel at Gate 0
+### Regulatory items to verify with counsel
 
-⚠️ **Both are unverified as of 2026-09-28.** The client is FR-facing; do not rely on
-this document as legal advice.
+⚠️ **Both are unverified as of 2026-09-28 — still unverified 2026-10-03.** The client is
+FR-facing; do not rely on this document as legal advice. They gate the pilot, not the build.
 
 - **EU AI Act Art. 50** — transparency obligations for AI interacting with people.
   Verify the application date and the exact disclosure requirement.
@@ -129,7 +145,8 @@ AFTER_HOURS  ─┬─ voicemail detected → §5.1 summary → WhatsApp to owne
 A missed call that produces a WhatsApp message the owner reads on their phone is the
 single feature a client notices most, and it may be nearly free.
 
-⚠️ **UNVERIFIED — and internally contradictory as written (2026-09-28).** The €0 claim
+⚠️ **UNVERIFIED — and internally contradictory as written (2026-09-28). Still open 2026-10-03 —
+the RFQ is outstanding.** The €0 claim
 above rests on the conversation being *user-initiated*. Here **we** message the owner,
 so on a cold first contact it is a **business-initiated** message and needs an approved
 template, which is **priced** — the opposite of €0. `COST-MODEL.md` §4 explicitly puts
@@ -148,7 +165,7 @@ voicemail audio → STT (ElevenLabs Scribe, batch) → FR/EN summary via LLM
 Content of the message: caller name/number if spoken, reason for calling, callback
 urgency, best callback window, one-line summary. No audio is retained (§2).
 
-## 6. Emergency policy — DECISION REQUIRED
+## 6. Emergency policy — DECIDED 2026-10-03 (implemented in the C+D batch)
 
 > « Cet assistant ne traite pas les urgences. En cas d'urgence, composez le 15, le
 > 17 ou le 112. Je vous mets en relation. »
@@ -158,6 +175,11 @@ reassures one.** On detecting distress, urgency keywords, or a self-harm signal 
 stops the scripted flow and transfers or advises the emergency number. This is a
 product decision the client signs off on, and it is a line in the system prompt, not
 a runtime toggle.
+
+**Re-baseline 2026-10-03 (DECISIONS §3.8):** this is no longer "DECISION REQUIRED" — the
+policy (and the §4 transfer ladder) is implemented **now**, in batch step 5, not deferred to
+Gate 4. Client sign-off of the final wording remains a pilot-launch item alongside the consent
+copy variant.
 
 ## 7. Language handling
 

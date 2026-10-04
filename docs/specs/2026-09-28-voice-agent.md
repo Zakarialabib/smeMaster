@@ -11,6 +11,11 @@
 > [`OPS-ASSISTANT.md`](../voice/dev/OPS-ASSISTANT.md) (ops-assistant design + dev work matrix)
 > **Build sequence:** [`BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) (phases, skeletons, verification) ·
 > **Prototype → product:** [`PROTOTYPE-HANDOVER.md`](../voice/dev/PROTOTYPE-HANDOVER.md)
+>
+> **Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md.** Re-baseline
+> addenda: §4 (channel + telephony runtime), §5.0 (Phase C+D merged batch), §6, §8.
+> The Status line above is the 2026-09-28 snapshot — `services/agent-core/` has existed
+> since 2026-09-30 (Phases A–B closed, server on `:8788` — dated note in ADR-001).
 
 ---
 
@@ -101,6 +106,14 @@ SMEMaster Tauri (Rust core + React 19 console)        OUR EU VPS
 └──────────────────────────────────────┘            └────────────────────────────────────┘
 ```
 
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+>
+> The diagram's channel labels are the 2026-09-28 defaults. Decided 2026-10-03: the
+> telephony runtime is **FreeSWITCH** (loopback acceptance → Twilio trial), **not
+> Telnyx**, and channels are **multi-select from config** (`baileys` / `twilio` /
+> `official` / `none`) — all real, trial/free tiers only, customer chooses
+> (DECISIONS §3.6–3.7).
+
 ### 4.1 Why a sidecar, and where it lives
 
 The agent is a **24/7 server workload**. Inside the desktop process it would only
@@ -145,6 +158,34 @@ resolves (`vocodedev/vocode-core`, MIT, 3.8k★) but its last push is **2024-11-
 ## 5. Gates
 
 Serial where gates touch shared files. G0 is the only gate that can start now.
+
+### 5.0 Re-baseline — Phase C+D merged into one batch (2026-10-03)
+
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+
+The gate definitions below remain the **ownership + verification** reference, but the
+start-order they imply is superseded for the next batch. The console phase (old
+Phase C) and the channels phase (old Phase D) are **one merged, backend-first batch**,
+**strictly single-writer** (BUILD-LOG hotspot incident 2026-09-30 — two agents swept
+the same uncommitted files).
+
+**Batch order (decided, in order — DECISIONS §1):**
+
+1. Config endpoints + `agent-core` config tables first (BACKEND.md §13/14 schema, minus Postgres).
+2. Remaining endpoints — calls, alerts, shadow, spam, replay; migrations land **with** their endpoints, not before.
+3. Real channels: FreeSWITCH loopback → Twilio trial → Baileys → official WA API.
+4. Full CALL-FLOW consent — announce-first disclosure, no audio recording, emergency policy + transfer ladder (resolves the two DRAFT items that blocked Gate 4).
+5. Config UI complete — review existing Settings+Config → extend Config with the cost simulator (every `UNVERIFIED` flag preserved) → Settings voice/local-model tabs fed from Config.
+6. Later phase: Ops/Calls/Live parity UI (endpoints already built in the batch).
+
+**What this changes in the gates below:** Gate 3 (console) no longer precedes channel
+work — UI follows the endpoints it renders. Gate 2's Baileys "dev sandbox only" framing
+is superseded (Baileys is a real selectable channel, DECISIONS §3.6). Gate 4's Telnyx
+runtime becomes FreeSWITCH + Twilio trial (DECISIONS §3.7). Storage: `agent-core` gets
+its own up/down SQL migrations, SQLite in dev, PG-shaped — config tables first
+(DECISIONS §3.3). Auth stays a Gate 1 item: new endpoints ship open on loopback until
+then (DECISIONS §3.9). Effort for the merged batch: **10–14+ days**, serial 2–4+ weeks
+under single-writer — not the 3–4 days once estimated for console wiring.
 
 ### GATE 0 — Spec + client packet (1–2 days, no code) ✅ _this pass_
 
@@ -192,6 +233,14 @@ in every format. Then a live sandbox round-trip visible in the transcript.
 **Production rule:** a traffic run under production config must show **zero**
 Baileys connections.
 
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+>
+> Superseded in part: Baileys is now a **real, selectable production channel** — the
+> customer may choose `baileys` from config (DECISIONS §3.6), contained by running it
+> against a dedicated test WhatsApp number, never a client's or our main number. The
+> "zero Baileys under production config" rule above held only while Baileys was a
+> sandbox-only stand-in. The `normalize_e164()` + allowlist security rule is unchanged.
+
 ### GATE 3 — Console + Rust IPC bridge (4–5 days)
 
 **Owns:** `src/features/agent/` (mirroring the existing `src/features/assistant/`
@@ -221,6 +270,14 @@ orchestrator, and consent all collide here. Slack in this gate is the most likel
 cause of a slipped date.
 **Verify:** a real inbound FR call, with the four latency numbers pasted and
 `answer_latency` p95 < 2s, `turn_gap` p50 < 1.0s.
+
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+>
+> Runtime re-decided: **FreeSWITCH** (loopback → Twilio trial), not Telnyx (§3.7), and
+> the full CALL-FLOW consent implementation — announce-first disclosure, no audio
+> recording, emergency policy + transfer ladder — lands **in the merged §5.0 batch**,
+> not at this gate's tail (§3.8). The consent DRAFT items that blocked this gate are
+> resolved by that decision.
 
 ### GATE 5 — Metering + provider tiers (1–2 days)
 
@@ -255,6 +312,14 @@ operational commitment).
 **Verify:** Gate 2's suite passes **unchanged** against the BSP implementation, and
 a sandbox traffic run shows zero Baileys connections under production config.
 
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+>
+> Two changes: (1) Meta business verification is now **per-client (CH/FR/BE)** —
+> started when each client starts, with step-by-step guidance from us — not an
+> internal action run in parallel with Gate 1 (see §8); we build on dev accounts
+> meanwhile, zero company-card spend. (2) The "zero Baileys under production config"
+> check no longer holds when the customer selects `baileys` (DECISIONS §3.6).
+
 ## 6. Blocking decisions — nothing past Gate 0 starts without these
 
 | #   | Decision                                                                 | Owner   | Status |
@@ -268,6 +333,14 @@ a sandbox traffic run shows zero Baileys connections under production config.
 | 7   | Regulatory dates verified with counsel (AI Act Art. 50; French 2025 law) | counsel | ☐      |
 
 Items 5–7 are ours or the vendors'; **1–4 are the client's and gate everything.**
+
+> Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+>
+> Re-scoped: items 1–4 **block the pilot, not the build** (DECISIONS §5). The build
+> proceeds on the docs' recommended defaults, flagged as assumptions, and the four
+> questionnaire answers are still outstanding. Item 4's *model* is decided —
+> announce-first disclosure, no audio recording (DECISIONS §3.8); only the final
+> consent copy A/B/C text remains a client answer (DECISIONS §9).
 
 ## 7. Out of scope for v1
 
@@ -288,8 +361,17 @@ voice · supervisor barge-in on a live call.
   Signing one number is how a pilot becomes a 4× loss.
 - **Fixed costs dominate below ~2,000 min/month**, so flat-fee pricing is
   arithmetic, not preference.
-- **Meta onboarding is the schedule risk** and sits outside our control. Start
-  Gate 7's approval work in parallel with Gate 1, not after it.
+- **Meta onboarding is the schedule risk** and sits outside our control. ~~Start
+  Gate 7's approval work in parallel with Gate 1, not after it.~~
+
+  > Updated 2026-10-03 — see docs/voice/dev/DECISIONS-2026-10-03.md
+  >
+  > Superseded: Meta business verification and ARCEP number porting are **per-client
+  > (CH/FR/BE)**, started **when each client starts**, with step-by-step guidance from
+  > us — no longer an internal action to start immediately and no longer something
+  > that gates the pilot schedule from our side (DECISIONS §5, §7). We build on dev
+  > accounts meanwhile; no company-card spend this batch. The risk still exists, but
+  > it now sits on each client's timeline, tracked per country.
 - **Telephony (Gate 4) is one writer for 5–7 days** with everything colliding there.
 - **The regulatory items are unverified** and the client is FR-facing. This is the
   one risk on this list that cannot be fixed by engineering.

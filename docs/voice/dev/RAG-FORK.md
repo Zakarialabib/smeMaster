@@ -2,6 +2,11 @@
 
 > **Status:** **DECIDED 2026-09-28 — Option A** (server-side pgvector + `bge-m3`).
 > One client-owned guardrail still open: agent knowledge scope. See §Decision record.
+> **Re-confirmed 2026-10-03** — the re-baseline does not reopen this decision. Storage context
+> from [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §3.3: agent-core gets **its own
+> up/down SQL files** (SQLite in dev, **PG-shaped**), config tables first — so **pgvector still
+> arrives with the Gate 1 Postgres swap**, and everything Option A needs stays on that path.
+> The knowledge-scope guardrail now **blocks the pilot, not the build** (DECISIONS §5).
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 
 ## The problem
@@ -195,6 +200,11 @@ ingestion endpoint against a curated KB shape and treat "the full mail/contact c
 out of scope until the client says otherwise — that keeps the privacy story clean (Q6)
 and keeps `bge-m3` cheap. Recorded as Open item 2 in
 [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md).
+
+**Re-confirmed 2026-10-03** (DECISIONS): Option A unchanged; the retrieval eval
+(`tests/rag/retrieval_eval.py`, hit@3 ≥ 0.9) is **still unbuilt** and gates the final
+bge-m3-vs-arctic embedder choice; embedding impl + HNSW index follow the Gate 1 Postgres
+swap (config tables land first in the C+D batch, per §3.3).
 
 Once the knowledge scope is confirmed, tick the spec's Gate 0 checklist item and this
 file is closed. Do not start Gate 1 with the knowledge scope assumed.

@@ -9,28 +9,47 @@
 > implementation of every surface below. **Where it and this document disagree, the prototype wins:**
 > it was written later and is interactive, so it settles layout and copy questions this document can
 > only describe. Port map in [`../dev/PROTOTYPE-HANDOVER.md`](../dev/PROTOTYPE-HANDOVER.md).
+>
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1) — routes → tabs.** The console is
+> the **tabbed `AgentConsolePage` at `/agent-console`** with four tabs **Ops · Calls · Live ·
+> Config**. Every `/…` path below (headings, matrix, region tables) is a **legacy/prototype
+> label**, not a routing plan; **detail views are nested routes only when needed**. The ASCII
+> wireframes themselves are unchanged — layout is still correct, the *navigation* around it
+> is tabs. Review notes for §13 gaps and §14 opportunities are at the foot of each table.
 
 ## 0. Coverage matrix
 
-| # | Surface | Route | Source of truth | Mockup |
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1).** The **Route** column below
+> lists **prototype/mockup labels** — they are *not* nine top-level routes. The implemented
+> surface is `/agent-console` with tabs **Ops · Calls · Live · Config**; rows 9 and 10 are
+> **Config-tab sections**, and rows 4 and 7 (call detail, alert detail) are **nested routes
+> only when a shareable URL is needed**. Mockup filenames are unchanged (those files are
+> untouched design artifacts).
+
+| # | Surface | Route (legacy label → tab) | Source of truth | Mockup |
 |---|---|---|---|---|
-| 1 | Console shell + nav | — | `UX.md` §4, `navConfig.ts` (`NAV_GROUPS`) | `01-call-log.html` |
-| 2 | Call log | `/calls` | `UX.md` §5.1, `PILOT-CRITERIA.md` | `01-call-log.html` |
-| 3 | Live monitor | `/calls/live/:id` | `CALL-FLOW.md` §1, §3, §8 | `02-live-call.html` |
-| 4 | Call detail | `/calls/:id` | `CALL-FLOW.md` §3, §4, §5 | `03-call-detail.html` |
-| 5 | Digest | `/ops` | `OPS-ASSISTANT.md` §2, §5 | `04-ops-digest.html` |
-| 6 | Alert list | `/ops/alerts` | `OPS-ASSISTANT.md` §3 | `04-ops-digest.html` |
-| 7 | Alert detail | `/ops/alerts/:id` | `OPS-ASSISTANT.md` §3, §5 | `05-alert-detail.html` |
-| 8 | Agent config | `/agent/config` | `CALL-FLOW.md` §5–7 | `06-agent-config.html` |
-| 9 | Knowledge scope | `/agent/knowledge` | `RAG-FORK.md` §Recommendation | `07-knowledge.html` |
-| 10 | Cost | `/agent/cost` | `COST-MODEL.md` §1–3 | `08-cost.html` |
+| 1 | Console shell + nav | — (shell + tab bar) | `UX.md` §4, `navConfig.ts` (`NAV_GROUPS`) | `01-call-log.html` |
+| 2 | Call log | `/calls` → **Calls tab** | `UX.md` §5.1, `PILOT-CRITERIA.md` | `01-call-log.html` |
+| 3 | Live monitor | `/calls/live/:id` → **Live tab** | `CALL-FLOW.md` §1, §3, §8 | `02-live-call.html` |
+| 4 | Call detail | `/calls/:id` → nested route | `CALL-FLOW.md` §3, §4, §5 | `03-call-detail.html` |
+| 5 | Digest | `/ops` → **Ops tab** (default) | `OPS-ASSISTANT.md` §2, §5 | `04-ops-digest.html` |
+| 6 | Alert list | `/ops/alerts` → **Ops tab** | `OPS-ASSISTANT.md` §3 | `04-ops-digest.html` |
+| 7 | Alert detail | `/ops/alerts/:id` → nested route | `OPS-ASSISTANT.md` §3, §5 | `05-alert-detail.html` |
+| 8 | Agent config | `/agent/config` → **Config tab** | `CALL-FLOW.md` §5–7 | `06-agent-config.html` |
+| 9 | Knowledge scope | `/agent/knowledge` → **Config tab** section | `RAG-FORK.md` §Recommendation | `07-knowledge.html` |
+| 10 | Cost | `/agent/cost` → **Config tab** cost simulator | `COST-MODEL.md` §1–3 | `08-cost.html` |
 | 11 | Mobile variants | all | `UX.md` §11 | `09-mobile-digest.html` (width IS the viewport) |
 
 ### Cross-cutting invariants (constant across every surface)
 
-- **Shell:** the console uses a **horizontal top nav of sections** (Calls · Live · Ops · Config ·
-  Cost), not a second left rail — matching the app's unified-page convention. The rail below is
-  the *app's* nav, and `Calls` is one group in it.
+- **Shell:** the console uses a **horizontal tab bar, not a second left rail** — matching the
+  app's unified-page convention. The rail below is the *app's* nav, and the console is one
+  group in it (`agent-console`).
+  > **Updated 2026-10-03:** the tab bar is **Ops · Calls · Live · Config** (four tabs, Ops
+  > default). **Cost is not a tab** — it is the cost simulator **inside Config** (batch step
+  > 6, `dev/DECISIONS-2026-10-03.md` §3.1 + §1). The ASCII blocks below still draw the older
+  > five-item row `[ Calls ] [ Live ] [ Ops ] [ Config ] [ Cost ]`; read it as *layout only* —
+  > the labels and their order are superseded.
 - **Page chrome:** `PageHeader` → toolbar/filters → body, the app's shared pattern.
 - **AI content** (summaries, proposed decisions, judgements) is always visually separated:
   purple surface, `AiSuggestionBanner`. Facts are neutral.
@@ -52,7 +71,7 @@
 
 ---
 
-## 1–2. Console shell + Call log (`/calls`)
+## 1–2. Console shell + Call log (Calls tab — legacy `/calls`)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -77,10 +96,12 @@
 | `● N live` pill | filter to live calls only |
 | Range / outcome / flagged filters | re-query (server-side, paged) |
 | AI banner `review` / `dismiss` | open the 3 flagged calls / hide the insight |
-| Row | → `/calls/:id`; the `●` live marker → `/calls/live/:id` |
+| Row | → call detail (nested route; legacy `/calls/:id`); the `●` live marker → **Live tab** (legacy `/calls/live/:id`) |
 | Caller cell | show masked E.164; full number on detail only |
 
-**Entry:** nav. **Exit:** row → detail. **Gating:** none (tenant-scoped by token).
+**Entry:** Calls tab (app rail → console). **Exit:** row → detail. **Gating:** none
+(tenant-scoped by token; auth itself is **deferred to Gate 1** — open on loopback,
+`dev/DECISIONS-2026-10-03.md` §3.9).
 
 **Notes:** `Outcome` vocabulary is the `CALL-FLOW.md` §1 set — `contained`, `→ transferred`,
 `voicemail → sent`, `abandoned`, `unknown_caller`. Reusing those words is what makes containment
@@ -88,7 +109,7 @@ countable.
 
 ---
 
-## 3. Live monitor (`/calls/live/:id`)
+## 3. Live monitor (Live tab — legacy `/calls/live/:id`)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -120,12 +141,14 @@ countable.
 | Metric readout | shows the bar and pass/fail vs the pilot target |
 | Read-only note | static |
 
-**Entry:** log row ● marker, or an alert. **Exit:** back to log.
+**Entry:** Live tab, a log row's ● marker, or an alert. **Exit:** back to the Calls tab.
 **Gating:** available to owner + operator. **Barge-in is deliberately absent** — see `UX.md` §12.
+**Consent:** the announce-first disclosure line is spoken on every dev call too — the same
+path the pilot needs (updated 2026-10-03, `dev/DECISIONS-2026-10-03.md` §3.8).
 
 ---
 
-## 4. Call detail (`/calls/:id`)
+## 4. Call detail (nested route — legacy `/calls/:id`)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -156,12 +179,14 @@ countable.
 | `DISCLOSURE spoken ✔` | transcript-derived, and it **says so** |
 | Transcript | read-only |
 
-**Entry:** any call row. **Exit:** back. **Gating:** the summary and transcript may be
-owner-restricted — see Open question 3 in `UX.md`.
+**Entry:** any call row. **Exit:** back to the Calls tab (a nested route, not a tab).
+**Gating:** the summary and transcript may be owner-restricted — see Open question 3 in `UX.md`.
+**No audio, by schema:** `turns` has no audio column (updated 2026-10-03), so the disclosure
+audit stays transcript-derived and no play control may ever appear.
 
 ---
 
-## 5–6. Digest + Alert list (`/ops`)
+## 5–6. Digest + Alert list (Ops tab — legacy `/ops`)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -197,7 +222,7 @@ for detail, never for meaning (`UX.md` §6.3).
 
 ---
 
-## 7. Alert detail (`/ops/alerts/:id`)
+## 7. Alert detail (nested route — legacy `/ops/alerts/:id`)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -232,7 +257,7 @@ the fold, no scroll.
 
 ---
 
-## 8. Agent config (`/agent/config`)
+## 8. Agent config (Config tab — legacy `/agent/config`)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -275,10 +300,18 @@ the fold, no scroll.
 | Tier radio | `agent_set_provider_tier`; budget tier disabled **with a reason shown inline**, never silently |
 | Behaviour block | read-only notice, not a disabled-looking form |
 
-**Entry:** console nav. **Exit:** cost, knowledge.
+**Entry:** Config tab (app rail → console). **Exit:** its Knowledge / Cost sections.
 **Gating:** no provider credentials in the desktop — tier selection sends an identifier, never a key
 (`ADR-001` D1). A tenant id is never read from the client; it comes from the token.
 **Save is a P1-shaped action with no undo:** confirm before writing, then show what changed.
+
+> **Updated 2026-10-03 — regions the ASCII above does not draw yet** (`dev/DECISIONS-2026-10-03.md`
+> §3.2, §3.4, §1): **channel selection + per-channel enablement** (baileys / twilio / official /
+> none, each with a *capability flag* that reports what is really configured — never a fake
+> success), the **consent copy variant**, the **bilingual toggle**, and the **cost simulator**
+> (carrying every `UNVERIFIED` flag from `client/COST-MODEL.md`). Credentials are **never** a
+> field here: they live in `.env` on the server, and Settings' Keys tab is a read-only display
+> in v1. Persona data is never in config either — surfaces render no persona widgets (`UX.md` §1).
 
 **Gaps ⚠️**
 - **G7** — the alert-matrix "never" column (never auto-change the greeting, never rewrite prompts)
@@ -300,7 +333,7 @@ the fold, no scroll.
 
 ---
 
-## 9. Knowledge scope (`/agent/knowledge`)
+## 9. Knowledge scope (Config tab section — legacy `/agent/knowledge`)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -338,7 +371,7 @@ the fold, no scroll.
 | `Publish` | applies the scope; **see G8, ownership is unresolved** |
 | Footer note | states the duration and that service is not interrupted |
 
-**Entry:** console nav. **Exit:** config, cost.
+**Entry:** Config tab → Knowledge section (a panel, not a route). **Exit:** the rest of Config.
 **Gating:** the scope is per-tenant and server-side. The desktop sends a **scope change**, never
 content — ingestion is `agent-core`'s operation, not the desktop's.
 
@@ -363,7 +396,7 @@ content — ingestion is `agent-core`'s operation, not the desktop's.
 
 ---
 
-## 10. Cost (`/agent/cost`)
+## 10. Cost (Config tab cost simulator — legacy `/agent/cost`)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -406,9 +439,16 @@ content — ingestion is `agent-core`'s operation, not the desktop's.
 | `show which` | the > +20% calls, per `OPS-ASSISTANT.md` §3 "cost per minute > +20%" |
 | UNVERIFIED notice | **required** — mirrors the marker in `COST-MODEL.md` §0 |
 
-**Entry:** console nav. **Exit:** call log, filtered.
+**Entry:** Config tab → cost simulator (a section, not a route). **Exit:** Calls tab, filtered.
 **Gating:** metering is read-only in the console. Nothing here changes a tier or a rate — a
 price change is a commercial act, not a UI toggle.
+
+> **Updated 2026-10-03:** whether the **metering endpoints** ship in this batch or at Gate 5 is
+> still open (`dev/DECISIONS-2026-10-03.md` §9). Until they exist, this surface must render the
+> mockup-06 **capability-unavailable** pattern — **no fixture-faked numbers**
+> (`dev/DECISIONS-2026-10-03.md` §4 parity bar).
+> The **cost simulator inputs** are Config and are in the batch regardless; the `UNVERIFIED`
+> marker (G6) is preserved verbatim from `COST-MODEL.md`.
 
 **Gaps ⚠️**
 - **G6** — the `€0.19/min signed` figure is **unverified vendor pricing** and must carry the same
@@ -518,7 +558,7 @@ Rendered explicitly, per `UX.md` §7 — these are build items, not polish:
 
 | # | Surface | Gap |
 |---|---|---|
-| G1 | Whole console | **No console code exists** — everything here is source-derived design, not verified UI |
+| G1 | Whole console | **Corrected 2026-10-03:** the shell now exists — `AgentConsolePage` at `/agent-console` (tabs Ops · Calls · Live · Config, one page file). It is still **partial**: the Calls tab returns an empty list until `GET /calls` exists (backend-first, no fixture-faking), so most per-surface layouts below remain source-derived, not screenshot-verified |
 | G2 | Live monitor | `CALL-FLOW.md` §8 says the operator "can watch but cannot barge in". The UI must state this; without it, an operator will look for the control and assume it is broken |
 | G3 | Digest | The **P2/P3 thresholds in the alert matrix are placeholders** (`OPS-ASSISTANT.md` §3). Rendering them as facts tells the operator a guess is a measurement |
 | G4 | Alert detail | Escalation for an unacknowledged P1 is **undecided** (`UX.md` Open Q1) — `Acknowledge` currently has no defined consequence |
@@ -535,6 +575,19 @@ Rendered explicitly, per `UX.md` §7 — these are build items, not polish:
 | G15 | Cost | **The sparkline has no accessible detail without JS** — decoration until the table can group by day (§10) |
 | G16 | Mobile | **"agent-core unreachable" and "no calls yet" look alike at 390 px** — both are a mostly-empty list (§11) |
 | G17 | Mobile | **Thumb reach is asserted, not measured** — no voice surface has been checked on a real device (§11) |
+| G18 | Config (new) | **Channel selection + capability flags has no wireframe.** The re-baseline adds channel choice (baileys / twilio / official / none) with per-channel *configured* flags to the Config tab, and §8's ASCII does not draw it. It must never show a channel as working when no credential exists behind it (§8 note, `dev/DECISIONS-2026-10-03.md` §3.6) |
+| G19 | Cost (new) | **Metering-endpoint status is undecided** (in-batch or Gate 5 — `dev/DECISIONS-2026-10-03.md` §9), so §10's table may have no real data. The gap is the *absence of a decision*, not a layout: without it the screen risks being filled with fixture numbers, which the parity bar forbids |
+
+> **§13 reviewed 2026-10-03 (see `dev/DECISIONS-2026-10-03.md`).**
+> - **G1 corrected** — the tabbed shell exists now (see its row).
+> - **Nothing else is invalidated.** G3/G4/G5/G6/G8 stay open because their blockers
+>   (pilot data, client escalation, counsel, the vendor RFQ, knowledge-publish ownership)
+>   are unchanged; G9 (mockups 01–05 degraded states) is explicitly *tracked, not
+>   forgotten* in `dev/DECISIONS-2026-10-03.md` §7.
+> - **Route-shaped gaps re-scoped to tabs** — every `/…` reference above now means a tab
+>   panel or a nested detail view (§0).
+> - **G18/G19 are new** and come from the re-baseline itself (channel selection; the
+>   undecided metering-endpoint status).
 
 ## 14. Potential UX improvements (💡 — not defects)
 
@@ -553,3 +606,16 @@ Rendered explicitly, per `UX.md` §7 — these are build items, not polish:
 | U11 | Cost | **A next-month projection at the current trend**, explicitly marked as a projection, with the fixed/variable split — fixed costs dominate below ~2,000 min/month (§10) |
 | U12 | Mobile | **A P1 count on the app badge** so a P1 raised while the owner is elsewhere is visible without opening the console. P1 **only** — everything else waits for the digest, or the badge becomes noise (§11) |
 | U13 | Mobile | **Swipe-to-acknowledge on a P1**, single gesture with undo — acknowledging on a phone should not require aiming at a 32 px button (§11) |
+
+> **§14 reviewed 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §4).**
+> - **No opportunity is invalidated** by the re-baseline — but every one of them is
+>   **backend-first**: an innovation ships **only after its endpoint exists**, and where the
+>   capability is absent the UI shows the mockup-06 *capability unavailable* pattern rather
+>   than a fixture that pretends (`dev/DECISIONS-2026-10-03.md` §4 parity bar). **No fixture-faking success.**
+> - **U4 and U11 move into the Config tab's cost simulator** (cost is no longer a top-level
+>   destination, §0), and **U5 / U9 stay in Config** — as do the channel-selection and
+>   consent-copy additions noted in §8.
+> - **Persona-related ideas are deliberately absent from this list**: surfaces render no
+>   persona widgets (`UX.md` §1, `dev/DECISIONS-2026-10-03.md` §4), so a "persona picker" or
+>   "which persona is this caller" proposal
+>   would be a regression, not an opportunity.

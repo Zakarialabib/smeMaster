@@ -1,9 +1,19 @@
 # Build Plan — from prototype to product
 
-> **Written:** 2026-09-28 · **For:** whoever implements Gate 3 onward, and any agent delegated a piece
-> **Read first:** [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) · [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> **Written:** 2026-09-28 · **Re-baselined:** 2026-10-03 · **For:** whoever implements Gate 3 onward, and any agent delegated a piece
+> **Read first:** [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) — canonical; where this plan
+> contradicts it, that file wins — then [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) · [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > (17-topology-decision removed 2026-10-03 — decisions captured in ADR-001; git history)
 > **The screens are already decided.** This plan is only about building them.
+>
+> **Re-baseline 2026-10-03 (summary):** Phases **C and D are merged into one backend batch** —
+> all endpoints + **real channels** → Config UI complete → Ops/Calls/Live parity UI as a later
+> phase. **10–14+ days, strictly single-writer** (the old 3–4 d Phase C estimate is gone).
+> Storage is **two databases** (desktop keeps its Rust migrations; agent-core gets its own up/down
+> SQL files, SQLite in dev, PG-shaped). Channels are all real, trial/free tiers only. Consent is
+> decided (announce-first, no audio, emergency + transfer ladder now — no longer Gate-4-blocking).
+> Auth is deferred to Gate 1. Per-phase rows are still updated **lazily, when each phase actually
+> starts** (DECISIONS §6) — this rewrite aligns prose, it does not invent decisions.
 
 ---
 
@@ -12,8 +22,8 @@
 ```
 PHASE A  Skeletons          everything compiles, nothing works      ← start here
 PHASE B  Contract           types + commands + migration, both sides agree
-PHASE C  Wiring             the console talks to a real agent-core
-PHASE D  Channels           WhatsApp sandbox, then telephony
+PHASE C  Wiring             the console talks to a real agent-core   ⤫ merged with D (2026-10-03)
+PHASE D  Channels           WhatsApp sandbox, then telephony         ⤫ merged with C (2026-10-03)
 PHASE E  Real data          metering, cost, ops snapshot
 ```
 
@@ -24,6 +34,23 @@ arrives. Porting the contract first means the screens port once.
 **The rule that makes this work: build the skeleton with the real types and a fake transport.**
 `agent-core` responds to the real `BACKEND.md` §13 shapes; only the provider calls are stubbed.
 The console is therefore never written against a shape that does not exist.
+
+**Re-baselined 2026-10-03 — C and D are one batch now** ([`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §1):
+
+1. Pre-flight: **disk cleanup only** (free 15+ GB). The direct-`TC` toolchain workaround stays
+   until it blocks; Docker installs when the FreeSWITCH step arrives.
+2. **Config endpoints + config tables first** (full BACKEND.md §13/14 schema, minus Postgres).
+3. Remaining endpoints — calls list, alerts, shadow, spam, replay (migrations land with their
+   endpoints, not before).
+4. **Real channels:** FreeSWITCH loopback → Twilio trial → Baileys → official WA API.
+5. **Full CALL-FLOW consent implementation** — announce-first disclosure, no audio recording,
+   emergency policy + transfer ladder (the two former DRAFT blockers, resolved).
+6. **Config UI complete** — review existing Settings+Config → extend Config with the cost
+   simulator (UNVERIFIED flags preserved) → enhancement of Settings voice/local-model tabs.
+7. **Later phase:** Ops/Calls/Live parity UI (endpoints already built in the batch).
+
+**Strict global single writer until that batch lands** — no parallel console work (DECISIONS §2,
+rationale: the 2026-09-30 BUILD-LOG hotspot incident). Estimated **10–14+ d**.
 
 ## 2. PHASE A — Skeletons + A+ Prototype Enrichment ✅ **CLOSED**
 
@@ -95,13 +122,23 @@ Both sides agree on shapes before either side has behaviour.
 **`turns` has no audio column. That is the schema enforcing `CALL-FLOW.md` §2.** If you find
 yourself adding one, stop.
 
-## 4. PHASE C — Wiring the console (3–4 days) 🟡 **IN PROGRESS**
+## 4. PHASE C — Wiring the console (3–4 days) → 🟡 **merged into the C+D batch (2026-10-03)**
 
-Port the screens now. [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) §2 is the file-by-file map.
+> **Re-baseline 2026-10-03:** the standalone 3–4 d console-wiring phase is gone. Console work now
+> rides the merged batch order in §1: **Config UI completes inside the batch** (step 6); Ops/Calls/Live
+> **parity UI is a later phase** (step 7) with all endpoints already built. C1 (console state
+> primitives + Ops screen) landed 2026-09-30 and survives. Two rules that changed how a screen is
+> ported: the console is the **existing tabbed `/agent-console`** (Ops · Calls · Live · Config — not a
+> 9-route split; see [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md)), and **i18n at write time** —
+> every touched string gets a `t()` key with en+fr+ar filled (DECISIONS §3.1).
+
+Port the screens with [`PROTOTYPE-HANDOVER.md`](PROTOTYPE-HANDOVER.md) §2 as the file-by-file map.
 
 Order that works: **Topology → Settings → Config → Knowledge → Cost → Calls → Live → Ops → Alert detail.**
 Rationale: the first two are static and prove the shell and the token classes; Ops is last because
 it is the densest and benefits from everything the others have already forced into the type system.
+**Re-baseline note:** inside the batch, **Config is the first screen to finish** (step 6) — the rest
+of this order runs in the later parity phase, each screen only after its endpoint exists.
 
 Per screen, the port is:
 
@@ -115,26 +152,43 @@ Per screen, the port is:
 **Verify per screen:** `tsc --noEmit` · `cargo check --workspace` · the four invariant greps from
 the handover §3 · one Playwright pass over the real app.
 
-## 5. PHASE D — Channels (7–11 days, the long pole) 🟡 **OPEN**
+## 5. PHASE D — Channels (7–11 days, the long pole) → 🟡 **pulled forward into the C+D batch (2026-10-03)**
+
+> **Re-baseline 2026-10-03:** channels are **real in this batch**, not a stubbed-then-real sequence —
+> Phase D was pulled forward and merged (DECISIONS §1/§3.6). All channels run against **trial/free
+> tiers only** (Twilio trial, Meta test app, Baileys free) — zero spend this batch. **Channel
+> selection lives in config** (the customer picks baileys / twilio / official / none; capability
+> flags show what is actually configured — never fake success). Telephony is **FreeSWITCH**
+> (not Asterisk/Telnyx-first): acceptance test = **FreeSWITCH loopback** (two FS endpoints calling
+> each other — no softphone, no paid numbers), tested as native FreeSWITCH on this Windows host;
+> Docker + a dedicated VPS arrive only at the migration step (production telephony never shares
+> the Contabo panel box).
 
 | Step | Work                                                                                         | Gate |
 | ---- | -------------------------------------------------------------------------------------------- | ---- |
-| D1   | `ChannelAdapter` + the Baileys **sandbox**, with `normalize_e164()` **before** the allowlist | 2    |
-| D2   | Telnyx inbound media stream, turn detection, transfer ladder, voicemail → WhatsApp           | 4    |
+| D1   | `ChannelAdapter` + **real Baileys**, with `normalize_e164()` **before** the allowlist        | 2    |
+| D2   | FreeSWITCH loopback → Twilio trial inbound, turn detection, transfer ladder, voicemail → WhatsApp | 4    |
 
 **D1's security rule is not negotiable and is the one thing a reviewer must check.** `+33…`,
 `0033…`, `…@c.us` and `0…` are one number; a raw string comparison is bypassed by formatting alone.
 Test all four formats resolve to one entry, and a non-sandbox number is rejected in every format.
 Under production config, a traffic run must show **zero** Baileys connections.
 
-**D2 is one writer, 5–7 days, and everything collides there.** Telephony, orchestrator and consent
-all touch the same files. If two agents are working, this is the gate that breaks.
+**Ban-risk containment (2026-10-03):** Baileys is unofficial — run it against a **dedicated test
+WhatsApp number**, never a client's or our main number (DECISIONS §3.6).
+
+**D2 remains the collision point — but single-writer now covers the WHOLE batch, not just D2.**
+Telephony, orchestrator and consent all touch the same files; DECISIONS §2 makes that a global
+rule until the batch lands.
 
 ## 6. PHASE E — Real data (3–4 days) 🟡 **OPEN**
 
 Metering events → `metering_events`; rollup → `GET /metering/rollup`; cost screen reads it.
 **Reuse the existing invoicing module** — a second billing path is a defect, not a caution.
 Ops snapshot feeds the digest in one round trip.
+
+> **Open question (DECISIONS §9):** are metering endpoints **in-batch** or Gate 5? Decided at the
+> start of endpoint work — it changes the batch's end-definition. Until then Phase E stands.
 
 ## 7. Verification — the commands that matter on this host
 
@@ -197,6 +251,12 @@ Select-String -Path (Get-ChildItem -Recurse src\*.tsx,src\*.ts | % FullName) `
 
 Gate on SUMMARY LINE / exact match, not exit code — false greens exist here (see §10 risks).
 
+**Verification gate per endpoint group (re-baselined 2026-10-03, DECISIONS §2)** — the whole set,
+per group, before moving to the next group: `tsc --noEmit` · `cargo check --workspace` · the four
+invariant greps · one Playwright pass over the real app · pytest summary-line green · the
+TS↔Python contract-drift check (B5 fixture pattern) · a `test_camel_acceptance`-style contract
+test covering **every new route** · **docs updated before commit** (docs-first).
+
 ```bash
 # Gate 1 / 2 / 4 — agent-core. Assert the SUMMARY LINE, not the exit code.
 cd services/agent-core && python -m pytest -q
@@ -225,12 +285,13 @@ inherits the app's full default features and compiles code `-p` skips.
 
 **READ FIRST, in order:**
 
-1. `docs/specs/2026-09-28-voice-agent.md` — the gates and the blocking decisions
-2. `docs/voice/dev/PROTOTYPE-HANDOVER.md` — the port map and the four invariants
-3. `docs/voice/client/Personas, Scopes & Innovations.md` — §1 six-persona model, §3.2 T0–T3 knowledge tiers, §3.3 A/B/C consent copy (exact FR), §4 5 blocking decisions + cascading insight, §5 20 ranked innovations (#2/#3/#6 build first). **The innovations with numbers #1-20 are referenced inline throughout the prototype UI.**
-4. `docs/voice/design/BACKEND.md` §13–15 — payloads, DDL, migrations
-5. `docs/voice/design/FRONTEND.md` §12 — types, selectors, WS machine, delta coalescing
-6. `prototype/voice-console/src/` — **9** surfaces (was 8 in handover). **Run `bun run dev` there before writing code.** The surfaces are:
+1. `docs/voice/dev/DECISIONS-2026-10-03.md` — **canonical re-baseline record; supersedes older plan text where they conflict**
+2. `docs/specs/2026-09-28-voice-agent.md` — the gates and the blocking decisions
+3. `docs/voice/dev/PROTOTYPE-HANDOVER.md` — the port map and the four invariants
+4. `docs/voice/client/Personas, Scopes & Innovations.md` — §1 six-persona model, §3.2 T0–T3 knowledge tiers, §3.3 A/B/C consent copy (exact FR), §4 5 blocking decisions + cascading insight, §5 20 ranked innovations (#2/#3/#6 build first). **The innovations with numbers #1-20 are referenced inline throughout the prototype UI.** (⚠️ the persona *study* informs agent-logic conditions only — **no persona cards on any surface**, DECISIONS §4.)
+5. `docs/voice/design/BACKEND.md` §13–15 — payloads, DDL, migrations (agent-core's own up/down SQL files, SQLite dev, PG-shaped — DECISIONS §3.3)
+6. `docs/voice/design/FRONTEND.md` §12 — types, selectors, WS machine, delta coalescing
+7. `prototype/voice-console/src/` — **9** surfaces (was 8 in handover). **Run `bun run dev` there before writing code.** The surfaces are:
    1 Calls · 2 Live · 3 Ops · 4 Alert · 5 Config · 6 Knowledge (NEW 2026-09-28) · 7 Cost · 8 Topology · 9 Scenarios (NEW 2026-09-28) · Settings
 
 **Non-breaking rules (unchanged):**
@@ -242,6 +303,23 @@ inherits the app's full default features and compiles code `-p` skips.
 - No `tenantId` from the client.
 - No compat shims, no "interim" state, no TODOs left unowned.
 - **Derived arrays in `useMemo`, never in a store selector.** (Prototype A+ confirmed this bug pattern.)
+
+**Re-baselined rules (added 2026-10-03 — DECISIONS):**
+
+- **Strict global single writer** until the C+D batch lands. No parallel console work (§2).
+- **i18n at write time** — every touched string gets a `t()` key with en+fr+ar filled; the AGENTS.md
+  rule outranks a feature's English-only precedent (§3.1).
+- **Tabbed console, not 9 routes** — extend `/agent-console` (`AgentConsolePage`, tabs
+  Ops · Calls · Live · Config); detail views are nested routes only when needed (§3.1).
+- **Settings ↔ Config boundary** — Settings owns hardware/model runtime (local tier, RTF gate,
+  model downloads); Config owns agent behaviour (provider mix/routing, consent variant, bilingual
+  toggle, channel selection + per-channel enablement, cost-sim inputs). **No data duplicated** (§3.2).
+- **Credentials live in `.env` on the server** (Baileys session, Twilio SID/token, Meta app token);
+  never commit `.env`/secrets; Settings Keys tab stays read-only in v1 (§3.5).
+- **Cost simulator ports with every `UNVERIFIED` flag and `source` string preserved** (§4);
+  real numbers wait for the vendor RFQ.
+- **No fixture-faked success** — parity only after an endpoint exists; absent capability renders the
+  mockup-06 "capability unavailable" pattern (§4).
 
 **Prototype-to-product porting note (added 2026-09-28 A+).**
 When porting a screen from the prototype to `src/features/agent/`:
@@ -257,8 +335,9 @@ When porting a screen from the prototype to `src/features/agent/`:
 - The `node node_modules/.bin/<cli>` shim crashes under git-bash — use the real ESM entry.
 - `search_files` fails on `/c/...` MSYS paths; use `terminal` grep.
 - `cargo check --workspace`, not `-p`.
-- Always `git status --short` first — concurrent agents work in this tree. Never commit with a
-  bare directory on a shared branch.
+- Always `git status --short` first. **Strict global single writer until the C+D batch lands**
+  (DECISIONS §2 — the 2026-09-30 hotspot incident). Never commit with a bare directory on a shared
+  branch; commit with explicit pathspecs.
 
 **Report:** files changed with explicit pathspecs, the verification output pasted verbatim, and
 anything you could **not** verify stated plainly.
@@ -278,16 +357,30 @@ anything you could **not** verify stated plainly.
 
 ## 10. The honest risks
 
-- **Gate 4 is one writer for 5–7 days.** It is the most likely cause of a slipped date.
-- **Meta verification is the longest lead time and is not ours to control.** Start it before Gate 1.
+- **Single writer + merged batch size = serial 2–4+ weeks.** The old "Gate 4 is one writer for
+  5–7 days" became a batch-wide rule on 2026-10-03 — biggest schedule exposure in the plan
+  (DECISIONS §8.1).
+- **Trial-tier caps may block parts of official-API/Twilio testing** (Meta test-mode 24h tokens,
+  Twilio no-inbound-from-unverified-numbers). FreeSWITCH loopback is the safety net for telephony
+  acceptance (DECISIONS §8.2).
+- **`.env` secrets with no rotation story** — accepted for dev; must be revisited before the pilot
+  (ties to Gate 1 auth). **Gate 1 also owns closing the "any non-empty bearer token" hole** — new
+  endpoints ship open on loopback until then (DECISIONS §3.9/§8.3).
+- **Baileys ban risk** — contained only by the dedicated test-number rule (§5, DECISIONS §3.6).
+- **Two-database surface** — double migration bookkeeping (desktop Rust + agent-core SQL files);
+  kept deliberately for clean boundaries (DECISIONS §8.5).
+- **Meta verification and ARCEP porting are no longer our schedule** — per-client, started when
+  each client starts, with guidance docs we provide; we build on dev accounts (DECISIONS §5).
+  The lead time still gates *their* pilot.
 - **The desktop embedder is English-only**, so French retrieval fails silently. It looks fixed the
   moment the UI exists and the agent is wrong. See `RAG-FORK.md`.
 - **The local tier is gated on an unmeasured RTF.** Until it is measured on this host, the tier
   stays disabled with its reason shown. _ConfigPage Innovations tab already carries this banner
   with the exact copy the pilot client will see._
-- **The client is still blocking.** Four decisions and a signed cost model. None of this work
-  needs them — but the pilot does. Prototype A+ built the _live_ cost simulator (Config #5) to
-  unblock Decision #1; prototype click-testing should unblock decisions #2–#5 before any signed
+- **The client is still blocking the pilot, not the build.** Four questionnaire answers and a
+  signed cost model; the docs' recommended defaults are used as flagged assumptions meanwhile
+  (DECISIONS §5). Prototype A+ built the _live_ cost simulator (Config #5) to unblock Decision #1;
+  prototype click-testing should unblock decisions #2–#5 before any signed
   document is required.
 - **🛡 Derisked by Phase A+ (2026-09-28):** Store shape defects, type union gaps, naming
   mismatches, 4-invariant regressions, and UI information density are all de-risked. The
@@ -343,7 +436,7 @@ as a workaround.
 
 ## 12. 📋 Compact status index (what's done · what's left)
 
-Last updated: **2026-09-30**. Phase status legend: ✅ CLOSED · 🟡 OPEN · 🔴 BLOCKED.
+Last updated: **2026-10-03** (re-baseline). Phase status legend: ✅ CLOSED · 🟡 OPEN · 🔴 BLOCKED.
 
 ### Phase matrix
 
@@ -352,9 +445,10 @@ Last updated: **2026-09-30**. Phase status legend: ✅ CLOSED · 🟡 OPEN · �
 | **A**  | Skeletons                                             | 1 day     | ✅ CLOSED      | 2026-09-28 morning   | —                                                                     |
 | **A+** | Prototype enrichment (9 surfaces, all 20 innovations) | 1 session | ✅ CLOSED      | 2026-09-28 afternoon | —                                                                     |
 | **B**  | Contract (types + migrations + provider traits)       | 2–3 days  | ✅ CLOSED      | 2026-09-28           | See `PHASE-B-COMPLETE.md`; real providers + auth + persistence remain |
-| **C**  | Console wiring → real product screens                 | 3–4 days  | 🟡 IN PROGRESS | C1 landed            | Continue §4 port order; verify with §7 checks                         |
-| **D**  | Channels (WhatsApp sandbox + telephony)               | 7–11 days | 🔴 BLOCKED     | 2026-09-30           | Client decisions D1–D4 + Meta/ARCEP lead times. Single writer D2      |
-| **E**  | Real data (metering + cost rollups)                   | 3–4 days  | 🟡 OPEN        | never started        | Reuse invoicing module per §6 first line                              |
+| **C+D** | **Merged backend batch** (re-baselined): config endpoints + config tables → remaining endpoints → **real channels** (FreeSWITCH loopback → Twilio trial → Baileys → official WA API) → full CALL-FLOW consent → Config UI complete; Ops/Calls/Live parity UI is a **later phase** | 10–14+ days | 🟡 OPEN, batch not started | 2026-10-03 re-baseline | Start DECISIONS §1 step 1 (disk cleanup → config endpoints + tables); **STRICT single writer** |
+| ~~**C**~~ | _Console wiring — absorbed into C+D above_          | —         | 🔲 merged      | 2026-10-03           | C1 (state primitives + Ops screen) landed 2026-09-30 and carries over  |
+| ~~**D**~~ | _Channels — pulled forward into C+D above_           | —         | 🔲 merged      | 2026-10-03           | Real channels this batch, trial/free tiers only                       |
+| **E**  | Real data (metering + cost rollups)                   | 3–4 days  | 🟡 OPEN        | never started        | Reuse invoicing module per §6 first; in-batch-vs-Gate-5 is DECISIONS §9 open |
 
 ### Prototype 9 surfaces coverage matrix
 
@@ -374,6 +468,13 @@ around `bun run dev`.
 | 9 Scenarios (NEW) | §4 decision #3 guardrail refusals + P3 persona rule copy                                                            | 11 guardrails, 8 progressive-play scenarios + "Why it matters" = #20 replay rationale                                                         |
 | Settings          | §3 all invariants, §3.3 consent receipt keys (read-only)                                                            | Forbidden list recap                                                                                                                          |
 
+> **Parity bar (2026-10-03, DECISIONS §4):** full numbered prototype innovations per surface —
+> **minus persona widgets** (no persona cards anywhere; the persona study informs workflow /
+> business-type *conditions* in agent logic only) — and **only after each feature's endpoint
+> exists** (backend-first). No fixture-faked success: where a capability is absent the UI shows
+> the mockup-06 "capability unavailable" pattern. Everything ports into the **tabbed
+> `/agent-console`**, not a 9-route split.
+
 ### 3 concrete defects caught pre-product (Phase A+ — must not regress)
 
 | #   | Defect                                                                                     | Location in prototype                                                                              | How it would have failed in Phase B                                                                                                                 |
@@ -384,4 +485,7 @@ around `bun run dev`.
 
 ---
 
-_End of BUILD-PLAN.md. Next section to write when Phase B starts: Phase B progress table with commit hashes per B1–B4, and a new Gate 1 contract-test evocation block in §7.2._
+_End of BUILD-PLAN.md (re-baselined 2026-10-03). Next section to write: the C+D batch progress
+table with commit hashes per batch step — appended when step 1 actually starts, per DECISIONS §6
+(rows updated lazily, when the phase starts). Its §7.2 contract-test block now covers every new
+route (see the verification gate above)._

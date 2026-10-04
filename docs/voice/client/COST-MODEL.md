@@ -3,6 +3,7 @@
 > **Status:** DRAFT — requires client sign-off (Gate 0) and dated price verification.
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Verified on:** 2026-09-28 · **Next re-verify:** on client signature, and monthly after
+> **Re-baselined:** 2026-10-03 — the volume-table approach is unchanged; **every vendor rate stays UNVERIFIED until the RFQ returns (§6)**.
 > **Currency:** USD for vendor cost, EUR for client billing. +5% FX buffer applied to quotes.
 > **Client VAT:** TVA 20% (B2B, FR domestic) — added at invoicing, not modelled here.
 
@@ -48,6 +49,14 @@ Meta's side inside the 24-hour window. Outbound templates are priced per message
 category (marketing / utility / authentication) and are **out of scope for v1**.
 ⚠️ Meta pricing changed category model effective 2025-07-01 — verify the current
 page and screenshot it (§6).
+
+**Which WhatsApp channel (decided 2026-10-03):** the WhatsApp connection is selected
+per deployment from configuration — **official WhatsApp Business API**, **Twilio**, or
+a free development bridge (**Baileys**). The Meta pricing above applies to the
+official-API path; the alternatives change the vendor mix in §2, not the shape of this
+table. Baileys is unofficial — Meta may block it — so it runs only against a dedicated
+test number, never a client's number. Whatever is selected, the discipline is the same:
+no rate in this document becomes real until the RFQ (§6) returns.
 
 ## 2. Fixed monthly cost — managed service, operated by us
 
@@ -98,12 +107,16 @@ ElevenLabs premium tier holds €0.25–0.35/min.
 - Audio recording storage (v1 records none — see CALL-FLOW.md).
 - Darija/Arabic voice (out of scope; Whisper is weak on Darija, MSA TTS is an
   audible tell to a Moroccan caller).
+- Client-side onboarding lead times — **Meta business verification and number porting
+  are run by the client** (FR / CH / BE) with our step-by-step guidance. They gate the
+  pilot start, not this model, and are not priced here.
 
 ## 5. Revalidation triggers
 
 Re-run §6 and re-issue this document when any of these change:
 vendor pricing page, expected monthly minute volume crossing 1,000 or 3,000, a
-provider change (BSP/carrier/TTS/STT), or a currency move beyond the +5% buffer.
+provider change (BSP/carrier/TTS/STT), a change to the selected WhatsApp channel,
+or a currency move beyond the +5% buffer.
 
 ## 6. Verification checklist — required before client signature
 
@@ -113,4 +126,5 @@ provider change (BSP/carrier/TTS/STT), or a currency move beyond the +5% buffer.
 - [ ] OpenRouter Gemini Flash price — screenshot, dated
 - [ ] Meta per-message vs service-conversation pricing — screenshot, dated
 - [ ] 2–3 BSP quotes (request template: [`docs/voice/client/VENDOR-QUOTE-REQUEST.md`](VENDOR-QUOTE-REQUEST.md))
+- [ ] WhatsApp channel selection confirmed with the client (official API / Twilio / Baileys) — it drives the WhatsApp lines in §1
 - [ ] Expected monthly minutes from the client (this is the input that makes §1 real)

@@ -1,10 +1,13 @@
 # Voice & Messaging Agent — Documentation Set
 
-> **Status (audited 2026-09-30):** Gate 0 complete · **Phases A–B closed, Phase C in progress** —
-> `agent-core` built, endpoints live, migrations 0001–0004 (living status:
-> [`dev/BUILD-LOG.md`](dev/BUILD-LOG.md)). RAG fork **signed** 2026-09-28 — **Option A**.
-> 4 client decisions + the agent knowledge-scope guardrail are still client-owned (2026-09-28) —
-> **they block the pilot, not the build** ([`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) §10).
+> **Status (re-baselined 2026-10-03):** Gate 0 complete · **Phases A–B closed · Phase C+D
+> MERGED** — one backend batch (all endpoints + **real channels**) → Config UI complete →
+> Ops/Calls/Live parity UI later. **All decisions from the 2026-10-03 grilling session live in
+> [`dev/DECISIONS-2026-10-03.md`](dev/DECISIONS-2026-10-03.md) — where an older doc
+> contradicts it, that file wins.** Living status: [`dev/BUILD-LOG.md`](dev/BUILD-LOG.md).
+> RAG fork **signed** 2026-09-28 — **Option A**.
+> **4 client decisions + the agent knowledge-scope guardrail are still client-owned —
+> they block the pilot, not the build** ([`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) §10).
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../specs/2026-09-28-voice-agent.md)
 > **Decisions:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > **Glossary:** [`glossary-voice-agent.md`](../glossary/glossary-voice-agent.md)
@@ -35,6 +38,7 @@ belongs in, ask: _who reads it, and does it leave the building?_
 
 | If you are…                              | Read                                                                                                             |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **picking up work after 2026-10-03**     | [`dev/DECISIONS-2026-10-03.md`](dev/DECISIONS-2026-10-03.md) — **the canonical decision record; supersedes older plans** |
 | **Phase A closed**                       | [`dev/PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md)                                                             |
 | **Phase B (seams)**                      | [`dev/PHASE-B-COMPLETE.md`](dev/PHASE-B-COMPLETE.md) — CLOSED, gates measured, 3 defects caught                  |
 | **Open-weight speech, licence-verified** | [`dev/OPEN-WEIGHT-SPEECH-VERIFIED.md`](dev/OPEN-WEIGHT-SPEECH-VERIFIED.md)                                       |
@@ -51,12 +55,15 @@ belongs in, ask: _who reads it, and does it leave the building?_
 every surface. Where it and a doc disagree, the prototype is newer
 and wins — it was written after the docs.
 
-**Phase status, 2026-09-30.** Phase A closed. Phase B complete: the four provider seams, the
+**Phase status, 2026-10-03.** Phase A closed. Phase B complete: the four provider seams, the
 executed swap test, `/session` + `/ws/transcript` + `/ops/snapshot`, the licence gate, migrations
-0002-0004, and live-server drift checks. **The `RAG-FORK` decision is signed — Option A
-(2026-09-28)** — it is no longer an open item. Still open before Gate 1 sign-off: one real
-provider per seam, real auth, and **persistence** (no Postgres yet — 5 migration tests skip).
-Run it with [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md).
+0002-0004, and live-server drift checks. **`RAG-FORK` signed — Option A.**
+**Phase C+D are now one merged batch** (decided 2026-10-03): config endpoints + agent-core's own
+SQLite migrations first → remaining endpoints → **real channels** (FreeSWITCH loopback → Twilio
+trial → Baileys → official WA API) → full CALL-FLOW consent → Config UI → later phase: Ops/Calls/Live
+parity. **Strictly single-writer until the batch lands.** Full rules:
+[`dev/DECISIONS-2026-10-03.md`](dev/DECISIONS-2026-10-03.md). Still open before Gate 1: real auth,
+Postgres bring-up. Run agent-core with [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md).
 
 **Never put an internal note in `client/`.** Two documents carry an internal footer today
 (`client/VENDOR-QUOTE-REQUEST.md` — the "Internal: what we do with the answers" table — and
@@ -90,6 +97,7 @@ Both sections must be stripped before the document is sent.
 
 | Doc                                                                    | What it covers                                                                                                                                                   | Status                                                  |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [`DECISIONS-2026-10-03.md`](dev/DECISIONS-2026-10-03.md)                     | **Canonical decision record** — Phase C+D merge, batch sequence, channels, storage, consent, execution rules. Supersedes older plan text where they conflict        | ✅ decided 2026-10-03                                    |
 | [`BUILD-LOG.md`](dev/BUILD-LOG.md)                                     | Living record of what is verified, what broke, what is not done. **Read first when picking work up**                                                             | 🔄 living                                               |
 | [`BUILD-PLAN.md`](dev/BUILD-PLAN.md)                                   | Phases, skeletons-first sequence, verification, delegation brief                                                                                                 | 🔄 Phase B+ (§12 status rows lag BUILD-LOG)             |
 | [`PHASE-A-COMPLETE.md`](dev/PHASE-A-COMPLETE.md)                       | Phase A record — four steps that compile and do nothing, gates pasted                                                                                            | ✅ closed 2026-09-28                                    |
@@ -180,13 +188,14 @@ Serial where gates touch shared files. Gate 0 is the only gate that can start to
 | ----- | --------------------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
 | **0** | Spec + client packet                                      | 1–2d   | ✅ complete (4 client answers outstanding)                                   |
 | **1** | `agent-core` skeleton + 4 provider seams + retrieval eval | 3–4d   | 🟡 skeleton + seams ✅ (swap test 15/15); retrieval eval 🔲 — not signed off |
-| **2** | WhatsApp channel, Baileys sandbox + E.164 allowlist       | 3–4d   | 🔲                                                                           |
-| **3** | Console + Rust IPC bridge                                 | 4–5d   | 🔲                                                                           |
-| **4** | Telephony, inbound FR number (**one writer**)             | 5–7d   | 🔲 longest gate                                                              |
-| **5** | Metering + provider tiers                                 | 1–2d   | 🔲                                                                           |
+| **2** | WhatsApp channel, Baileys sandbox + E.164 allowlist       | 3–4d   | 🟡 **pulled into the Phase C+D batch** (real Baileys this batch)             |
+| **3** | Console + Rust IPC bridge                                 | 4–5d   | 🟡 bridge ✅ compiles; Config UI after the backend batch                     |
+| **4** | Telephony, inbound FR number (**one writer**)             | 5–7d   | 🟡 **pulled into the batch** — FreeSWITCH loopback first, no number needed   |
+| **5** | Metering + provider tiers                                 | 1–2d   | 🔲 metering endpoints' in-batch status is an open question (DECISIONS §9)    |
 | **6** | Bilingual voice enforcement                               | 1–2d   | 🔲                                                                           |
 | **7** | Production BSP swap + ops runbooks                        | 4–5d   | 🔲 partly waiting on Meta                                                    |
 
-Two lead times are **outside our control and longer than the build**: Meta business
-verification (gates the pilot, not just Gate 7) and French number porting (ARCEP). Both should
-have started already — see `dev/AGENT-PROMPTS.md` Prompt A.
+**Posture change, 2026-10-03:** the two "outside our control" lead times (Meta business
+verification, ARCEP number porting) are now **per-client, started when each client starts**,
+with guidance guides we provide — we build on dev accounts. See
+[`dev/DECISIONS-2026-10-03.md`](dev/DECISIONS-2026-10-03.md) §5.

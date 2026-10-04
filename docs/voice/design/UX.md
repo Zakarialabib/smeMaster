@@ -4,6 +4,12 @@
 > **Sources:** [`CALL-FLOW.md`](../dev/CALL-FLOW.md) · [`OPS-ASSISTANT.md`](../dev/OPS-ASSISTANT.md) ·
 > [`PILOT-CRITERIA.md`](../client/PILOT-CRITERIA.md) · [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > **Wireframes:** [`WIREFRAMES.md`](WIREFRAMES.md) · **Mockups:** [`mockups/`](mockups/)
+>
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md`):** the console is the **tabbed
+> `AgentConsolePage` at `/agent-console`** (Ops · Calls · Live · Config) — §4's route list is
+> a panel map, not a nine-route plan. **No persona cards on any surface** (§1). **Consent =
+> announce-first, no audio recording; the emergency policy and transfer ladder are
+> implemented in this batch** — `CALL-FLOW.md` is no longer DRAFT-blocked (§7).
 
 ## 1. Who this is for
 
@@ -16,6 +22,12 @@
 **The persona that is easy to forget is the second one.** The console exists equally for
 incident response — which is why `OPS-ASSISTANT.md` §3's alert matrix, not the transcript, is
 the densest requirement in this document.
+
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §4) — no persona cards anywhere.**
+> The three rows above are *design* inputs only. The client persona study
+> (`client/Personas, Scopes & Innovations.md`) informs **workflow / business-type conditions
+> in agent logic** — it is never rendered: no persona widget, card, selector or
+> "which persona is this caller" chip exists on any surface or in the build.
 
 ## 2. Jobs to be done (ranked)
 
@@ -46,42 +58,57 @@ product.
 
 ## 4. Information architecture
 
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1) — one route, four tabs.**
+> The console is the **tabbed `AgentConsolePage` at `/agent-console`** — tabs
+> **Ops (default) · Calls · Live · Config** — *not* the nine-route split the prototype's
+> URLs suggest. The table below is the **tab → panel map**; the prototype/mockup route in the
+> second column is kept only so older docs and filenames still resolve, and **detail views
+> (call detail, alert detail) are nested routes only when a shareable URL is actually
+> needed**. Where the PROTOTYPE-HANDOVER port map implies nine top-level routes, the
+> tabbed-console decision supersedes it.
+
 The console is a **client of `agent-core`**, not a feature of the desktop's local data. It
 mounts as a new feature (`src/features/agent/`, spec Gate 3) with one nav entry, reached from
 the app's grouped rail (`NAV_GROUPS` in `src/shared/components/layout/shell/navConfig.ts`).
 
-| Route | Surface | Primary persona |
-|---|---|---|
-| `/calls` | Call log (default) | owner |
-| `/calls/live/:id` | Live call monitor | us (ops) |
-| `/calls/:id` | Call detail — transcript, summary, metrics, transfer outcome | owner + us |
-| `/ops` | Morning digest / "what happened" | owner |
-| `/ops/alerts` | Alert list, filterable by severity | owner + us |
-| `/ops/alerts/:id` | Alert detail — the decision, the evidence, the affected calls | us |
-| `/agent/config` | Voice, language, business hours, transfer target, tier | owner |
-| `/agent/knowledge` | Knowledge scope + ingestion status | owner (scope) + us (pipeline) |
-| `/agent/cost` | Metered minutes vs the signed model, per call type | owner |
+| Tab (`/agent-console`) | Panel — prototype route, for reference | Surface | Primary persona |
+|---|---|---|---|
+| **Ops** *(default)* | `/ops` | Morning digest / "what happened" | owner |
+| Ops | `/ops/alerts` | Alert list, filterable by severity | owner + us |
+| Ops | `/ops/alerts/:id` *(nested route only)* | Alert detail — the decision, the evidence, the affected calls | us |
+| **Calls** | `/calls` | Call log | owner |
+| Calls | `/calls/:id` *(nested route only)* | Call detail — transcript, summary, metrics, transfer outcome | owner + us |
+| **Live** | `/calls/live/:id` | Live call monitor | us (ops) |
+| **Config** | `/agent/config` | Voice, language, business hours, transfer target, tier, **channel selection** | owner |
+| Config | `/agent/knowledge` | Knowledge scope + ingestion status | owner (scope) + us (pipeline) |
+| Config | `/agent/cost` | **Cost simulator** + metered minutes vs the signed model, per call type | owner |
 
-**Why one nav entry and not four.** Nine routes behind one destination keeps the rail at the
-app's condensed target. `Calls` is the noun the owner uses; `Ops`, `Config` and `Cost` are its
-sub-items, not siblings competing with Mail and CRM.
+**Why one nav entry, and tabs rather than nine routes.** One destination keeps the rail at the
+app's condensed target and makes `getActiveSubItem` a non-problem (it returns `null` for
+`/agent-console`). `Ops` leads because the owner's question is "what happened"; `Calls`,
+`Live` and `Config` are panels of the same console, not siblings competing with Mail and CRM.
 
-**Where it does *not* belong:** the live monitor is not the landing route. An owner opening
-the app wants the digest; the live view is what an operator pins during an incident.
+**Where it does *not* belong:** the live monitor is not the landing state. An owner opening
+the app wants the **Ops** digest; the live view is what an operator pins during an incident
+(the Live tab is a tab, not a route, and never the default).
 
 ## 5. Surface inventory
 
+> Updated 2026-10-03 — the "Entry" column now names **tabs and panels** of
+> `/agent-console` (§4). Surfaces 7–9 all live under the **Config** tab; the cost simulator
+> is Config, not a top-level destination.
+
 | # | Surface | Answers | Entry | Primary action |
 |---|---|---|---|---|
-| 1 | Call log | "what calls came in?" | nav | open a call |
-| 2 | Live monitor | "what is happening on this call right now?" | log row marked *live*, or an alert | watch (no intervention in v1) |
-| 3 | Call detail | "what was said, and did it end well?" | log row | re-send the owner summary |
-| 4 | Digest | "what happened while I was away?" | nav/ops, morning push | open the top item |
-| 5 | Alert list | "what needs me?" | nav/ops, P1 push | open the alert |
-| 6 | Alert detail | "what do I do about it?" | alert row | take the decision |
-| 7 | Agent config | "how does it answer?" | nav/agent | save |
-| 8 | Knowledge scope | "what is it allowed to know?" | nav/agent | publish to the server |
-| 9 | Cost | "what is this costing?" | nav/agent | see the flagged calls |
+| 1 | Call log | "what calls came in?" | Calls tab | open a call |
+| 2 | Live monitor | "what is happening on this call right now?" | Live tab, a log row marked *live*, or an alert | watch (no intervention in v1) |
+| 3 | Call detail | "what was said, and did it end well?" | log row (nested view) | re-send the owner summary |
+| 4 | Digest | "what happened while I was away?" | Ops tab (default), morning push | open the top item |
+| 5 | Alert list | "what needs me?" | Ops tab, P1 push | open the alert |
+| 6 | Alert detail | "what do I do about it?" | alert row (nested view) | take the decision |
+| 7 | Agent config | "how does it answer?" | Config tab | save |
+| 8 | Knowledge scope | "what is it allowed to know?" | Config tab | publish to the server |
+| 9 | Cost | "what is this costing?" | Config tab (cost simulator) | see the flagged calls |
 
 **The five-second rule for surfaces 1, 4, 5.** If a doc could be answered by a log line the
 operator already had, the surface is decoration.
@@ -128,6 +155,17 @@ build item, not a polish item.
 | **Transcript partial** | mid-call | deltas append with a live region; never re-render the whole transcript per delta |
 | **Emergency policy triggered** | distress/urgency signal | logged and surfaced to a human immediately; **never treated as routine** |
 | **Cost over model** | > +20% | shows which calls/skills are expensive — not just the total |
+
+> **Updated 2026-10-03 — consent posture (see `dev/DECISIONS-2026-10-03.md` §3.8).**
+> **Announce-first disclosure** is the model: the agent says what it is before the first
+> meaningful exchange, and the disclosure line is a 100%-of-calls UI check (WIREFRAMES U5).
+> **No audio is recorded** — the `turns` schema has no audio column, so "no play button"
+> above is schema-enforced, not a UI choice. The **emergency policy and the transfer ladder
+> are implemented in this batch**, not at Gate 4, which resolves the two DRAFT items that
+> used to block it: **`CALL-FLOW.md` is no longer DRAFT-blocked**, and dev calls exercise the
+> same disclosure path the pilot needs. The two rows above that depend on it ("No audio to
+> audit", "Emergency policy triggered") are therefore **build items now**, not
+> consent-pending ones.
 
 ## 8. Notification design
 
@@ -204,9 +242,10 @@ v1 capability, and a thumb-sized button that appears to allow it is a support ti
 | Supervisor barge-in / live intervention | The only item here that can damage a real customer interaction. Deferred with a reason, not quietly |
 | Voice clips in the UI | No audio is retained (`CALL-FLOW.md` §2) — a play button cannot exist |
 | Outbound calls or campaigns | Different consent and spam regime |
-| CRM/calendar writes | Explicitly out of v1 scope; the agent talks, records, and summarises |
+| CRM/calendar writes | Explicitly out of v1 scope; the agent talks, **transcribes** and summarises (no audio is ever recorded) |
 | Arabic/Darija voice UI | UI locale ≠ voice locale. Promising it in the interface would be a lie |
 | Model/prompt editing in the console | Ops assistant "never rewrites prompts" (`OPS-ASSISTANT.md` §3). Config, not prompt authoring |
+| Persona cards / persona widgets on any surface | **Decided 2026-10-03** — the persona study feeds workflow/business-type *conditions* in agent logic only (`dev/DECISIONS-2026-10-03.md` §4). No surface renders a persona |
 
 ## 13. Open UX questions
 
@@ -282,6 +321,10 @@ anything not listed is not a control.
 **No keyboard shortcut acts on a live call.** There is no v1 action on a live call, so none
 exists. A shortcut that ends a call or transfers is a barge-in control wearing a disguise.
 
+> Updated 2026-10-03: the `g`-prefixed "go to" shortcuts **select the matching tab** of
+> `/agent-console` (Ops · Calls · Live · Config) rather than navigating nine routes;
+> a nested detail view is reached from its panel and `Esc` returns to the tab.
+
 ## 15. Focus order
 
 Focus follows **reading order**, and it is stated per surface because a streaming UI and a
@@ -335,6 +378,12 @@ matters is the interaction between the two.
 
 **Verification:** render every console string in all 5 locales and check RTL mirroring with
 `dir="rtl"` before the console is considered done. A string that only fits LTR will clip.
+
+> Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1) — **i18n at write time**: every
+> string this batch touches ships with its `t()` key **and en + fr + ar values in the same
+> change**. The 5-locale matrix above remains the bar for the console as a whole; the
+> re-baseline sets the floor for new work at three locales, so a touched string is never
+> English-only.
 
 ## 17. Open UX questions — resolution status
 

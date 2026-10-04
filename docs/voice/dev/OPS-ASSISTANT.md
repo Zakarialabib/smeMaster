@@ -1,7 +1,9 @@
 # Ops Assistant — AI That Manages Live Call Operations
 
 > **Status:** Gate 0 design proposal. Not built. Feeds [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md).
-> **Written:** 2026-09-28
+> **Written:** 2026-09-28 · **Re-baselined:** 2026-10-03 — design unchanged; the dev matrix (§4) and
+> sequencing (§7) updated for the merged Phase C+D batch per
+> [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) (canonical where this doc conflicts).
 > **Scope note:** the "no AI" rule in our product roadmap applies to the **SME Master SaaS product**. This is a separate client engagement with AI as the deliverable. Different product, different rule.
 
 ---
@@ -49,7 +51,7 @@ is what stops a helpful assistant becoming a liability.
 | Signal                                             | Severity | Assistant action                                                | Human action                                     | Never                          |
 | -------------------------------------------------- | -------- | --------------------------------------------------------------- | ------------------------------------------------ | ------------------------------ |
 | Transfer failed (target unreachable)               | **P1**   | Page immediately; surface the caller's message; flag the target | Take the call back yourself                      | Queue it                       |
-| Agent answered but caller hung up < 5s, repeatedly | **P1**   | Flag "agent may be breaking the call"                           | Listen to 3 recordings/transcripts               | Auto-change the greeting       |
+| Agent answered but caller hung up < 5s, repeatedly | **P1**   | Flag "agent may be breaking the call"                           | Read the 3 transcripts (no audio is retained — `CALL-FLOW.md` §2) | Auto-change the greeting       |
 | `turn_gap` p95 > 1.6s for 15 min                   | P2       | Show the stage breakdown (VAD/STT/LLM/TTS)                      | Identify the regressing stage                    | Restart the service unprompted |
 | `answer_latency` p95 > 2s for 15 min               | P2       | Same, plus provider status                                      | Same                                             | Same                           |
 | Containment below target over 24h                  | P2       | Show the call types that are leaking                            | Decide whether it is a prompt or a knowledge gap | Rewrite prompts                |
@@ -75,16 +77,16 @@ assumes reuse of what the repo already ships.
 | #                         | Work item                                          | Owner   | Effort | Blocks                         | Reuse / note                                       |
 | ------------------------- | -------------------------------------------------- | ------- | ------ | ------------------------------ | -------------------------------------------------- |
 | **Client decisions**      |                                                    |         |        |                                |                                                    |
-| D1                        | Vertical + killer outcome                          | client  | —      | everything                     | `CLIENT-QUESTIONNAIRE.md` §1                       |
-| D2                        | Cost model signed                                  | client  | —      | pricing                        | §3, volume table                                   |
-| D3                        | Two-channel split confirmed                        | client  | —      | **all**                        | §2 — send first                                    |
-| D4                        | Consent model approved                             | client  | —      | call path                      | `CALL-FLOW.md` §2                                  |
+| D1                        | Vertical + killer outcome                          | client  | —      | pilot (not the build)           | `CLIENT-QUESTIONNAIRE.md` §1 — defaults used as flagged assumptions meanwhile (DECISIONS §5) |
+| D2                        | Cost model signed                                  | client  | —      | pilot pricing                   | §3, volume table                                   |
+| D3                        | Two-channel split confirmed                        | client  | —      | pilot                           | §2 — send first                                    |
+| D4                        | Consent model approved (copy variant)              | client  | —      | pilot launch                    | **build side decided 2026-10-03** — no audio, announce-first, emergency+transfer now (`CALL-FLOW.md` §2/§6); client picks the A/B/C copy (DECISIONS §9) |
 | D5                        | RAG fork decided                                   | us      | 0.5d   | Gate 1                         | ✅ **signed 2026-09-28 — Option A**, `RAG-FORK.md` |
 | D6                        | Regulatory dates + counsel                         | counsel | —      | prod launch                    | AI Act Art. 50, French 2025 law                    |
 | **Vendors**               |                                                    |         |        |                                |                                                    |
-| V1                        | BSP + carrier quotes                               | vendors | —      | Gate 7                         | `VENDOR-QUOTE-REQUEST.md`                          |
-| V2                        | Meta business verification                         | client  | —      | **Gate 7 — longest lead time** | start in parallel with Gate 1                      |
-| V3                        | Number provisioning / porting (ARCEP)              | vendors | —      | Gate 4                         | timeline depends on port vs new                    |
+| V1                        | BSP + carrier quotes                               | vendors | —      | pilot pricing / Gate 7         | `VENDOR-QUOTE-REQUEST.md` — **zero spend this batch: trial/free tiers only** |
+| V2                        | Meta business verification                         | client  | —      | **pilot (per-client)**         | **2026-10-03: each client runs their own when they start**, with our guidance docs; we build on dev accounts (DECISIONS §5) |
+| V3                        | Number provisioning / porting (ARCEP)              | vendors | —      | **pilot (per-client)**         | clients port their own numbers; FreeSWITCH loopback acceptance needs no number (DECISIONS §5/§3.7) |
 | **Build — agent core**    |                                                    |         |        |                                |                                                    |
 | A1                        | `agent-core` skeleton + API surface                | us      | 1d     | G2, G3                         | `services/agent-core/`, outside Tauri build        |
 | A2                        | `LLMProvider` + OpenRouter impl                    | us      | 0.5d   | A6                             | map to `providerFactory` pattern                   |
@@ -96,13 +98,13 @@ assumes reuse of what the repo already ships.
 | A7                        | Bilingual voice config + language pin              | us      | 1d     | G6                             | FR UI already ships                                |
 | **Build — channels**      |                                                    |         |        |                                |                                                    |
 | C1                        | `ChannelAdapter` interface                         | us      | 0.5d   | C2, C3                         | one shape for both channels                        |
-| C2                        | WhatsApp: Baileys sandbox + E.164 allowlist        | us      | 2d     | C4                             | **sandbox numbers we own only**                    |
-| C3                        | WhatsApp: BSP impl (same signature)                | us      | 2d     | pilot                          | swap, not rewrite                                  |
-| C4                        | Telephony: Telnyx inbound, turn detection          | us      | 4d     | C5                             | **one writer**                                     |
-| C5                        | Transfer ladder + voicemail + WhatsApp summary     | us      | 2d     | pilot                          | `CALL-FLOW.md` §4, §5                              |
+| C2                        | WhatsApp: **real Baileys** + E.164 allowlist       | us      | 2d     | C4                             | **dedicated TEST number only** — ban-risk rule (DECISIONS §3.6) |
+| C3                        | WhatsApp: official WA Business API (same signature)| us      | 2d     | pilot                          | swap, not rewrite; Meta test app, 24h test tokens  |
+| C4                        | Telephony: **FreeSWITCH loopback → Twilio trial**, turn detection | us      | 4d     | C5                             | **in the merged batch; global single writer** (was "one writer, Telnyx") |
+| C5                        | Transfer ladder + voicemail + WhatsApp summary     | us      | 2d     | pilot                          | `CALL-FLOW.md` §4, §5 — consent impl is batch step 5 |
 | **Build — console**       |                                                    |         |        |                                |                                                    |
 | U1                        | Rust client + additive Tauri commands              | us      | 1.5d   | U2                             | `src/features/agent/`                              |
-| U2                        | Console: live transcript, call log, config, cost   | us      | 3d     | pilot                          | reuse Zustand stores                               |
+| U2                        | Console: live transcript, call log, config, cost   | us      | 3d     | pilot                          | **Config UI first (in-batch); Ops/Calls/Live parity later** — tabbed `/agent-console` |
 | **Build — ops assistant** |                                                    |         |        |                                |                                                    |
 | O1                        | Alert bus + rules engine (matrix §3)               | us      | 2d     | O2                             | deterministic, **not** LLM-driven                  |
 | O2                        | Call summariser                                    | us      | 1d     | O3                             | LLM over the transcript                            |
@@ -118,6 +120,12 @@ assumes reuse of what the repo already ships.
 **Total new build = 27.5 engineer-days** (sum of the A/C/U/O rows), plus **3d** of
 reuse-mapping (R rows) = **30.5 engineer-days of work**, against a 6–10 week calendar
 that is mostly waiting on clients and vendors, not on us.
+
+> **Re-baseline 2026-10-03:** treat the row totals as the *pre-re-baseline design estimate*.
+> The merged C+D backend batch alone is estimated **10–14+ d, strictly single-writer**
+> (DECISIONS §1), and the calendar no longer waits on clients for the *build* — the four
+> questionnaire answers block the **pilot**, not the build, and Meta/ARCEP lead times moved to
+> per-client, started when each client starts (DECISIONS §5).
 
 ## 5. How the assistant should talk to you
 
@@ -149,13 +157,17 @@ than none. **Instrument first, automate second.**
 ## 7. Sequencing — the part that actually matters
 
 ```
-NOW      → send client questionnaire + RFQ (D1-D4, V1). Long lead times start.
-DONE     → D5 (RAG fork) signed 2026-09-28, Option A.
-PARALLEL → V2 Meta verification starts NOW; it is the longest lead time we do
-           not control, and it gates the pilot, not just Gate 7.
-THEN     → Gate 1 (traits) — the whole plan's reversibility lives here.
-GATE 1-3 → build and prove the seams. Cheap, fast, no vendor dependency.
-GATE 4   → telephony. Only after D4 (consent) and V3 (number) are settled.
+DONE     → D5 (RAG fork) signed 2026-09-28, Option A. Consent BUILD side decided 2026-10-03
+           (no audio, announce-first, emergency + transfer now) — D4 no longer blocks the build.
+NOW      → send client questionnaire + RFQ (D1-D4, V1) — their answers gate the PILOT, not the
+           build; recommended defaults are used as flagged assumptions meanwhile.
+NOW      → Phase C+D merged batch, DECISIONS §1 order: config endpoints + config tables →
+           remaining endpoints → real channels (FreeSWITCH loopback → Twilio trial → Baileys →
+           official WA API) → full CALL-FLOW consent → Config UI. STRICT single writer,
+           10–14+ d. Ops/Calls/Live parity UI is the phase after.
+CLIENT  → V2 Meta verification + V3 ARCEP porting are PER-CLIENT, started when each client
+           starts (we provide guidance docs); we build on dev accounts.
+GATE 1   → auth (close the bearer-token hole) + Postgres/pgvector bring-up.
 OPS      → O1-O3 once real calls exist. An ops assistant over a demo is theatre.
 PILOT    → 2 weeks, ≥100 calls, against `PILOT-CRITERIA.md`.
 ```

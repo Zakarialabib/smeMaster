@@ -4,44 +4,70 @@
 > **Companions:** [`UX.md`](UX.md) (what to build) · [`BACKEND.md`](BACKEND.md) (what it talks to) ·
 > [`WIREFRAMES.md`](WIREFRAMES.md) · [`mockups/`](mockups/)
 > **Locked design system:** `src/styles/globals.css` (`@theme`) · `src/shared/styles/ui-tokens.ts`
+>
+> **Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md`):** the surface architecture is
+> the **tabbed `AgentConsolePage` at `/agent-console`** (tabs **Ops · Calls · Live · Config**)
+> — not the PROTOTYPE-HANDOVER 9-route split. Detail views are **nested routes only when
+> needed**. Every string touched in this batch gets a `t()` key with **en + fr + ar filled
+> at write time**.
 
 ## 1. Where it mounts
+
+> Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1) — one route, four tabs. The
+> per-surface paths below are **tab destinations inside `/agent-console`**, not nine sibling
+> routes; nested routes exist only for call detail / alert detail where a shareable URL is
+> actually needed.
 
 | Concern | Decision |
 |---|---|
 | Feature dir | `src/features/agent/` — mirrors the existing `src/features/assistant/` convention |
-| Route | `/calls`, `/calls/live/:id`, `/calls/:id`, `/ops`, `/ops/alerts`, `/ops/alerts/:id`, `/agent/config`, `/agent/knowledge`, `/agent/cost` (via `createRoute` in `src/router/routeTree.tsx`) |
-| Nav entry | one group in `NAV_GROUPS` (`src/shared/components/layout/shell/navConfig.ts`) + `getActiveNavFromPath` / `getActiveSubItem` wired for it, with the sub-items from `UX.md` §4 |
-| Insight rail | register the section in `INSIGHT_WIDGETS` so the right rail shows its own context (containment, open P1s) |
+| Route | **`/agent-console`** — `AgentConsolePage` (`src/features/agent/pages/AgentConsolePage.tsx`), a tabbed page: **Ops (default) · Calls · Live · Config**, registered in `src/router/routeTree.tsx` |
+| Tab destinations | `UX.md` §4's nine surfaces become tab panels; **call detail (`/calls/:id`) and alert detail (`/ops/alerts/:id`) become nested routes only when needed** (`getParentRoute()` + relative `path`, §12.1) |
+| Cost / Knowledge | presented inside the **Config** tab (the cost simulator is Config per the re-baseline), not as their own top-level route |
+| Nav entry | one group in `NAV_GROUPS` (`src/shared/components/layout/shell/navConfig.ts`) — key `agent-console`, `getActiveNavFromPath` already recognises the `/agent-console` prefix; tabs are page-internal, so the shell only ever highlights one item |
+| Insight rail | register the section in `INSIGHT_WIDGETS` (`'agent-console': ['ai-summary', 'recent']`) so the right rail shows its own context (containment, open P1s) |
 | Entry point | In `src-tauri/tauri.conf.json` the desktop already declares `externalBin: ["binaries/ml-sidecar"]`; the agent console adds **no** new sidecar |
 
 ⚠️ **No new files under `src/core` or `src/hooks`** — existing convention (spec invariant 8).
 
 ## 2. Component tree
 
+> Updated 2026-10-03 (see `dev/DECISIONS-2026-10-03.md` §3.1) — these four blocks are the
+> **tab panels** of `AgentConsolePage` (`OpsDigest` · `CallsTab` · `LiveTab` · `ConfigTab`),
+> not four separately-routed pages. Page names below are kept because they are the store
+> and test names too.
+
 ```
-AgentCallsPage                       src/features/agent/pages/
+AgentConsolePage  src/features/agent/pages/  — /agent-console, tabs Ops · Calls · Live · Config
+│
+├─ Calls tab — AgentCallsPage
 ├── PageHeader (title · live indicator · range filter)
 ├── AiSuggestionBanner               ← shared; --color-ai; the per-section AI callout
 │     "3 calls flagged: containment down 40% on pricing questions"
 ├── CallFilters (outcome · flagged · channel · range)
 └── CallTable                        ← shared DataTable, columns as config objects
-      └── CallRow → CallDrawer | /calls/:id
+      └── CallRow → CallDrawer | nested call-detail route (only if a shareable URL is wanted)
 
-AgentLiveCallPage
+├─ Live tab — AgentLiveCallPage
 ├── CallStateHeader (state · elapsed · caller · channel)
 ├── TranscriptStream                 ← virtualized; aria-live polite
 │     └── TurnRow (speaker · text · per-turn stage marks on expand)
 ├── StageMarksPanel (vad · stt · llm · tts for the current turn)
 └── LiveGuardNote                    ← "read-only in v1" — no fake control
 
-AgentOpsPage (digest)
+├─ Ops tab — AgentOpsPage (digest)
 ├── DigestHeader ("since 18:00 yesterday")
 ├── DigestGroup (by call type, newest first)
 │     └── DigestItem ("what happened" + the decision)
 └── DigestEmpty / DigestPartial states
 
-AgentAlertDetailPage
+├─ Config tab — AgentConfigPage      ← BACKEND.md §17: provider mix, consent copy,
+│     bilingual toggle, channel selection + capability flags, hours / transfer / tier,
+│     knowledge scope, and the cost simulator (UNVERIFIED flags preserved)
+│
+└─ detail views — NESTED ROUTES ONLY WHEN NEEDED
+
+AgentAlertDetailPage  (nested route — alert detail)
 ├── AlertHeadline (severity · age · blast radius)
 ├── DecisionCard (the one thing to do)  ← AiSuggestionBanner variant
 ├── EvidencePanel (affected calls · stage breakdown · provider status)
@@ -161,7 +187,7 @@ across `src/shared/stores`, `src/features/*/stores`):
 | `callListStore` | filter, page, rows, loading/error | Never holds transcript text |
 | `liveCallStore` | state, elapsed, current turns, stage marks, WS status | **Ring buffer** for turns, not an unbounded array |
 | `opsStore` | digest, alerts, snapshot, acknowledgement | Snapshot is one fetch (`agent_get_ops_snapshot`) |
-| `agentConfigStore` | voice, hours, transfer target, tier, KB scope | Dirty-state tracking; save is explicit |
+| `agentConfigStore` | voice, hours, transfer target, tier, KB scope, **provider mix, consent copy variant, bilingual toggle, channel selection + per-channel capability flags, cost-sim inputs** (`BACKEND.md` §17) | Dirty-state tracking; save is explicit. **Never holds credentials** — those live in the server's `.env` |
 | `speechEngineStore` | engine config, capabilities, model install state | Wraps the `SpeechEngine`/`ModelManager` services |
 
 Subscribe components to **slices**, not whole stores. Transcript deltas must not re-render the
@@ -182,6 +208,11 @@ All DB/IPC through the typed wrappers — **zero direct SQL in TypeScript** (AGE
 
 - All strings via `t()`; keys under `src/locales/{en,fr,ar,ja,it}/translation.json`. **Never
   hardcode** UI copy — the console ships in 5 locales.
+- **i18n at write time (2026-10-03):** every string this batch touches gets its `t()` key
+  **and** en + fr + ar values **in the same change** — no English-only additions, even
+  where a feature's older precedent was English-only. AGENTS.md's rule outranks precedent
+  (`dev/DECISIONS-2026-10-03.md` §3.1). A touched key is never left with en only; the
+  app-wide 5-locale matrix in `UX.md` §16 still applies to the console as a whole.
 - Logical properties only: `ms-*`/`me-*`, `text-start/end`, `inset-inline-*`. The existing
   physical-direction violations are tracked separately (`docs/03-FRONTEND/10-rtl-audit.md`).
 - ⚠️ **The UI must not imply Arabic voice support.** The app has an `ar` locale; the agent speaks
@@ -249,6 +280,12 @@ Per `UX.md` §9, with the concrete mechanism:
 - Direct SQL, or `invoke` imported from `@tauri-apps/api/core`.
 - A hardcoded model id or dimension (`ADR-001` D2 — the dimension is config, not a constant).
 - A third model-download path (§3.3).
+- A **persona card or persona widget** on any surface — the persona study informs
+  workflow/business-type *conditions* in agent logic only (`dev/DECISIONS-2026-10-03.md` §4).
+- An **editable credential** anywhere in the console: secrets live in the server's `.env`,
+  and Settings' Keys tab is a read-only display in v1 (`BACKEND.md` §12, §17).
+- An English-only string added in this batch — touched strings ship en + fr + ar at write
+  time (§6).
 
 ## 12. Implementer's working set — concrete, copyable
 
@@ -264,10 +301,13 @@ Per `UX.md` §9, with the concrete mechanism:
 | Nested routes use `getParentRoute()` + a **relative** `path` | ✅ | `routeTree.tsx:208-212` — `mailThreadRoute` is `path: "thread/$threadId"` under `mailRoute` |
 | The desktop already ships an `ml-sidecar` binary | ✅ | `src-tauri/tauri.conf.json:39` — **note: `externalBin` sits under `bundle`, not at the top level** |
 
-**Correction to §1:** the route list in §1 is written as absolute paths (`/calls/...`). Under
-`createRoute` the `path` field is **relative to the parent route**, as `mailThreadRoute` shows.
-A nested agent route (`calls/$callId`) declares `path: "$callId"`, not `"/calls/$callId"`. The
-spec's full paths remain the public contract; the `path` field does not repeat the prefix.
+**Correction to §1 (kept, re-scoped 2026-10-03):** §1 now names **one** route
+(`/agent-console`) plus nested detail routes. Under `createRoute` the `path` field is
+**relative to the parent route**, as `mailThreadRoute` shows — a nested agent route
+(`calls/$callId`) declares `path: "$callId"`, not `"/calls/$callId"`. The prototype's
+per-surface URLs remain a *naming* reference only; they are **not** a nine-route plan
+(`dev/DECISIONS-2026-10-03.md` §3.1 supersedes the PROTOTYPE-HANDOVER port-map split in
+part).
 
 **Adding the nav group** — one entry in `NAV_GROUPS` (`navConfig.ts:101`), one key in
 `INSIGHT_WIDGETS` (`:204`) if the right rail is wanted, and both `getActiveNavFromPath` and
@@ -335,6 +375,9 @@ export interface OpsAlert {
 "offline looks like no calls" failure returns.
 
 ### 12.3 Store selectors, per surface
+
+> Updated 2026-10-03: "surface" below = a **tab panel** of `AgentConsolePage` (or a nested
+> detail view), not a sibling route.
 
 Components subscribe to selectors, never to whole stores.
 

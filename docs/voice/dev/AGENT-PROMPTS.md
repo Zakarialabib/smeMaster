@@ -2,11 +2,25 @@
 
 > **Purpose:** the copy-paste prompt for each gate, so the next agent starts from the
 > decided state instead of re-deriving it. One prompt per gate, self-contained.
-> **Read first (every gate):** [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
+> **Read first (every gate):** [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) — **canonical
+> re-baseline; supersedes any prompt text below that conflicts** ·
+> [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`spec`](../../specs/2026-09-28-voice-agent.md) ·
 > [`glossary`](../../glossary/glossary-voice-agent.md)
 > (OSS landscape doc removed 2026-10-03 — git history)
-> **Last updated:** 2026-09-28
+> **Last updated:** 2026-10-03
+>
+> **⚠️ Re-baseline 2026-10-03 — rebase before use.** These prompts pre-date the grilling session.
+> What changed: **Phase C+D merged** into one backend batch (config endpoints + config tables →
+> remaining endpoints → real channels → full consent → Config UI; Ops/Calls/Live parity later),
+> **10–14+ d, strict global single writer**; **real channels this batch** (FreeSWITCH loopback →
+> Twilio trial → Baileys → official WA API, trial/free tiers only); **auth deferred to Gate 1**
+> (new endpoints ship open on loopback); **consent decided** (no audio, announce-first — CALL-FLOW
+> no longer blocks Gate 4); **Meta verification + ARCEP porting are per-client**, started when each
+> client starts (we build on dev accounts); the 4 client answers **block the pilot, not the build**.
+> Status: **Prompt B partly executed** (Gate 1 skeleton + four seams done, swap test 15/15 —
+> retrieval eval NOT built); **Prompt F partly executed** (mockups 06–10 built, README direct
+> links done). Prompts C/D/E remain unwritten.
 
 ## Rules that apply to every gate below
 
@@ -14,9 +28,14 @@
   `docs/00-INDEX.md` before adding a file. Invariant 1 in the spec.
 - **Assert the summary line, not the exit code.** `python -m pytest` and vitest both
   false-green on this host — read the `passed`/`failed` counts.
-- **`git status --short` first.** Concurrent agents work in this tree; never touch another
-  agent's uncommitted files.
-- **No secrets.** `.env.example` gets keys, never values.
+- **`git status --short` first.** **Strict global single writer until the merged C+D batch
+  lands** (DECISIONS §2 — the 2026-09-30 hotspot incident); never touch another agent's
+  uncommitted files, never commit a bare directory.
+- **Docs updated before commit** (docs-first), and the full verification gate per endpoint
+  group (DECISIONS §2: tsc · cargo check · 4 invariant greps · 1 Playwright pass · pytest
+  summary · TS↔Python contract-drift · a contract test per new route).
+- **i18n at write time** — every touched string gets a `t()` key with en+fr+ar filled.
+- **No secrets.** `.env.example` gets keys, never values; server `.env` never committed.
 - **No backwards-compat shims, no "interim" state** (spec invariant 6).
 
 ---
@@ -30,14 +49,16 @@ Read docs/voice/client/CLIENT-QUESTIONNAIRE.md and docs/voice/client/VENDOR-QUOT
 Both are marked SEND-AS-IS and were corrected on 2026-09-28 (four corrupted French
 strings in the questionnaire; a non-word in the CALL-FLOW spoken script). Verify the
 French reads correctly, then send:
-  1. CLIENT-QUESTIONNAIRE.md §1-4 to the client (4 blocking answers).
+  1. CLIENT-QUESTIONNAIRE.md §1-4 to the client (4 answers — note: they block the PILOT,
+     not the build; we proceed on the docs' recommended defaults as flagged assumptions).
   2. VENDOR-QUOTE-REQUEST.md to MessageBird, Twilio, 360dialog and Telnyx. Include §1.3b
      (owner-notification path: is a missed-call summary to the owner user-initiated/free
      or business-initiated/template-priced?). That answer decides whether the
      voicemail->WhatsApp path is EUR0 or a per-call cost.
 
-Also start Meta business verification for the client's FR entity NOW - it is the longest
-lead time we do not control, and it gates the pilot, not just Gate 7.
+Meta business verification + ARCEP number porting are now PER-CLIENT (2026-10-03): each
+client runs their own when they start, with step-by-step guidance docs we provide. We build
+on dev accounts meanwhile - no company-card spend this batch.
 Record the send date in both docs (they have a "Date sent" field). Do not commit secrets.
 ```
 
@@ -47,13 +68,15 @@ split · §3 → `COST-MODEL.md` §3 shape · §4 → `CALL-FLOW.md` §2 consent
 
 ---
 
-## Prompt B — Gate 1 (`agent-core` skeleton + four seams), 3–4 days
+## Prompt B — Gate 1 (`agent-core` skeleton + four seams), 3–4 days · 🟡 **partly executed**
 
 ```
 Repo: C:\laragon\www\smeMaster, branch private/voice-agent-client. Read these first, in
 order: docs/01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md,
-docs/specs/2026-09-28-voice-agent.md (Gate 1), docs/06-ROADMAP/15-voice-agent-oss-landscape.md
-(§5.1, §5.5, §7), docs/glossary/glossary-voice-agent.md.
+docs/specs/2026-09-28-voice-agent.md (Gate 1), docs/voice/dev/DECISIONS-2026-10-03.md
+(canonical re-baseline), docs/glossary/glossary-voice-agent.md.
+(docs/06-ROADMAP/15-voice-agent-oss-landscape.md was REMOVED 2026-10-03 - its decisions
+are captured in ADR-001; git history.)
 
 Build GATE 1 only.
 
@@ -96,15 +119,35 @@ Report the real pytest summary. Do not claim a gate passed without it.
 **Gate 1 exit:** four seams, one swap test, one retrieval eval at hit@3 ≥ 0.9, notices,
 and the pytest summary line. The knowledge-scope guardrail (`RAG-FORK.md` §Decision
 record) is still client-pending — build the ingestion shape against a **curated KB** and
-treat the mail/contact corpus as out of scope until told otherwise.
+treat the mail/contact corpus as out of scope until told otherwise (it blocks the pilot,
+not the build).
+
+**Execution status (2026-10-03):** the skeleton, the four seams, the swap test (15/15 live),
+the licence gate, migrations 0002–0004 and the WS/session endpoints are **done**
+([`PHASE-B-COMPLETE.md`](PHASE-B-COMPLETE.md)). **Still open inside this prompt:** the
+retrieval eval (`tests/rag/retrieval_eval.py`, hit@3 ≥ 0.9 — not built), THIRD-PARTY-NOTICES
+verification, and real auth. **Auth note (DECISIONS §3.9):** auth is deferred to Gate 1 —
+the C+D batch's new endpoints ship **open on loopback**, and the known "any non-empty bearer
+token" hole must be closed before anything leaves loopback. Rebase this prompt before reuse.
 
 ---
 
 ## Prompt C — Gate 2 (WhatsApp sandbox) · Prompt D — Gate 3 (console + Rust IPC) · Prompt E — Gate 5 (tiers)
 
+> **Re-baselined 2026-10-03 — rewrite these from DECISIONS §1's sequence, not the old gate order.**
+> **Gate 2 (WhatsApp) and Gate 4 (telephony) are pulled into the merged Phase C+D batch**: real
+> Baileys (dedicated test number), Twilio trial, official WA API — not a sandbox-only step.
+> Telephony acceptance is a **FreeSWITCH loopback** (no softphone, no paid numbers), native
+> FreeSWITCH on this Windows host; Docker + a dedicated VPS come only with the migration step.
+> **Gate 3** now means: Config UI completes inside the batch; Ops/Calls/Live parity UI is the
+> later phase, tabbed `/agent-console` (not a 9-route split), i18n at write time. **Gate 5** is
+> unchanged (tiers, RTF measurement) — metering endpoints' in-batch status is an open question
+> (DECISIONS §9).
+
 Not written yet. Gate 2 needs **only** the sample-format normalisation test the spec
 already specifies (spec Gate 2) — write it before the sandbox path, because a
-non-normalising allowlist is bypassable by formatting alone. Gate 3 must use
+non-normalising allowlist is bypassable by formatting alone. (Still true post-rebase: it is
+D1's security rule, and with real Baileys the blast radius is a real number.) Gate 3 must use
 `agent_get_ops_snapshot` (ADR-001 D4b) for the ops reads and add its commands to
 `generate_handler![]` without reordering existing entries.
 
@@ -119,7 +162,14 @@ line that is 88% of variable cost.
 
 ---
 
-## Prompt F — docs / UX / mockup pass (fill gaps, don't rewrite)
+## Prompt F — docs / UX / mockup pass (fill gaps, don't rewrite) · 🟡 **partly executed — rebase before use**
+
+> **Status 2026-10-03:** tasks **C** (mockups 06–10, incl. degraded states) and **I** (README
+> direct mockup links) are **done**; others (wireframe depth for surfaces 8–11, UX.md §13
+> resolutions, FRONTEND/BACKEND additions, glossary terms) are unverified — **re-check each task
+> against the repo before running it**, and run `git status --short` first (single-writer rule).
+> The "no console code exists" context line inside the prompt has been rebased (console code now
+> exists — C1), and the i18n-at-write-time + no-persona-cards rules were added.
 
 ```
 Repo: C:\laragon\www\smeMaster · branch private/voice-agent-client
@@ -140,8 +190,13 @@ you have:
   docs/01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md
 
 NON-NEGOTIABLE CONTEXT (violating any of these makes the work wrong, not bold)
-- No console code exists. This is design, not implementation. Do not invent
+- Console code NOW EXISTS (C1 landed 2026-09-30: state primitives + Ops screen ported) -
+  but this prompt's work is still design/docs, not implementation. Do not invent
   features that contradict settled decisions:
+    * i18n at write time: every touched string gets a t() key with en+fr+ar filled
+      (DECISIONS §3.1) - the tabbed /agent-console is the surface, not a 9-route split
+    * no persona cards anywhere (DECISIONS §4) - the persona study informs agent-logic
+      conditions only; surfaces do not render persona widgets
     * no audio is retained anywhere  -> no play button, waveform or "listen" UI, ever
     * no live-call barge-in           -> never add a control that implies one
     * no provider SDK on the desktop  -> keys live only in agent-core

@@ -2,6 +2,8 @@
 
 > Verified 2026-09-28 against a live server. Every command and output below was
 > actually run, not written from memory.
+> **Updated 2026-10-03** — re-baseline notes only ([`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md));
+> the commands are unchanged and still the verified ones.
 
 ## Start
 
@@ -33,6 +35,15 @@ This is the part worth internalising, because it is easy to over-read.
 `/providers/registry` returns `fixture_data: true` on purpose. The demo turn is a
 turn with no carrier, no microphone and no vendor key. It proves the chain and
 the frame shapes hold together; it does not place a call.
+
+> **Re-baseline 2026-10-03 — what is about to change** (DECISIONS §1/§3.3), none of it landed yet:
+> agent-core gets **its own up/down SQL files** (`services/agent-core/migrations/`, applied at
+> startup to a **server-side SQLite** in dev, PG-shaped — **config tables first**); the batch then
+> adds the remaining endpoints, **real channels** (FreeSWITCH loopback → Twilio trial → Baileys →
+> official WA API) and the **full consent implementation**. New endpoints ship **open on loopback**
+> (auth deferred to Gate 1 — DECISIONS §3.9). Re-run the two checks below after every step of the
+> batch; add new smoke checks here as they land. The table above is the verified 2026-09-28 state
+> until then.
 
 ## The two checks worth running
 
@@ -73,8 +84,12 @@ curl -s -X POST localhost:8788/session -H 'Content-Type: application/json' \
 - **WebSocket paths are not covered by the live script.** Probing them needs a
   `websockets` install that is not in the venv. The pytest suite does cover
   ping, no-auth refusal, the 4403 control-frame close, and malformed frames.
-- **No persistence.** The five skipped migration tests need Postgres
-  (`AGENT_CORE_TEST_DATABASE_URL`); there is none on this host, so nothing is
-  written anywhere yet.
-- **No auth.** The WS accepts any non-empty bearer token. Real tenant-scoped auth
-  is Phase C work and is the gating item before this is exposed beyond loopback.
+- **No persistence yet.** Decided 2026-10-03 (DECISIONS §3.3): agent-core gets **its own
+  up/down SQL files** applied to a **server-side SQLite** at startup — config tables first,
+  schema PG-shaped so the Gate 1 Postgres swap is driver + runner. **Not built yet.** Until
+  then: the five skipped migration tests need Postgres (`AGENT_CORE_TEST_DATABASE_URL`) and
+  nothing is written anywhere. Postgres/pgvector bring-up stays Gate 1.
+- **No auth.** The WS accepts any non-empty bearer token. **Decided 2026-10-03: auth is
+  deferred to Gate 1** (DECISIONS §3.9) — the C+D batch's new endpoints ship open on loopback,
+  and this hole must be closed before anything is exposed beyond loopback. Still the gating
+  item for that.

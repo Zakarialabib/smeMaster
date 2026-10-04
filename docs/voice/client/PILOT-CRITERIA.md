@@ -3,6 +3,7 @@
 > **Status:** PROPOSED — to be signed as part of Gate 0, before the pilot runs.
 > **Spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Defined:** 2026-09-28
+> **Re-checked:** 2026-10-03 — the bars are unchanged; preconditions and the channel note below were added.
 
 These are the numbers that decide whether phase 2 happens. They are proposed now,
 while nothing is built, so neither side is negotiating them after the fact.
@@ -12,6 +13,14 @@ while nothing is built, so neither side is negotiating them after the fact.
 - **Duration:** 2 weeks
 - **Volume:** ≥ 100 real calls
 - **Channels:** inbound voice (dedicated FR number) + inbound WhatsApp
+- **Channel selection:** which WhatsApp channel carries the pilot (official WhatsApp
+  Business API, Twilio, or a free development bridge) is chosen from configuration
+  before the pilot starts — it is a client choice, made once the questionnaire is back.
+- **Consent:** announce-first disclosure, **no audio recording** (transcripts only) is
+  the v1 model — the exact disclosure wording remains the client's to confirm.
+- **Preconditions:** the client starts its own **Meta business verification** and
+  **number porting** — run by the client (FR / CH / BE), with our step-by-step
+  guidance. These are lead-time items: they gate the pilot start, not the build.
 - **Not included:** outbound calls, outbound WhatsApp templates, CRM/calendar
   writes, languages other than FR/EN
 

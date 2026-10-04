@@ -1,16 +1,39 @@
 # Prototype → Product Handover
 
-> **Written:** 2026-09-28 · **Prototype:** [`prototype/voice-console/`](../../../prototype/voice-console/)
+> **Written:** 2026-09-28 · **Re-baselined:** 2026-10-03 · **Prototype:** [`prototype/voice-console/`](../../../prototype/voice-console/)
 > **Purpose:** the prototype is the **visual and behavioural source of truth**. This file is the
 > map from it to the product. It exists so an implementer never has to decide _what the screen
 > looks like_ — that is already settled and runnable — and instead only decides _how it is built_.
-> **Read with:** [`BUILD-PLAN.md`](BUILD-PLAN.md) (sequence) · [`BACKEND.md`](../design/BACKEND.md) (contract)
+> **Read with:** [`BUILD-PLAN.md`](BUILD-PLAN.md) (sequence) · [`BACKEND.md`](../design/BACKEND.md) (contract) ·
+> [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) (**canonical — supersedes this file where they conflict**)
+>
+> **⚠️ Re-baseline 2026-10-03 — how this map applies now** (DECISIONS §3.1–§4):
+>
+> - **Routes:** the console is the **existing tabbed `/agent-console`** (`AgentConsolePage`, tabs
+>   **Ops · Calls · Live · Config**) — **not** the multi-page split this file's route rows imply.
+>   Detail views (call detail, alert detail) become **nested routes only when needed**. The port
+>   map below still settles *what each screen contains*; route organisation follows the tabbed
+>   decision (its "port-map completion" is superseded in part — DECISIONS §7).
+> - **Sequencing:** Config UI completes **inside** the merged C+D backend batch; Ops/Calls/Live
+>   parity UI is a **later phase**, backend-first — parity only after a feature's endpoint exists;
+>   absent capability renders the mockup-06 "capability unavailable" pattern.
+> - **i18n at write time:** every touched string gets a `t()` key with en+fr+ar filled — the
+>   prototype being English-only is not a licence to ship English-only.
+> - **No persona cards anywhere:** the prototype's Config personas tab (#15) **does not port** —
+>   the persona study informs workflow/business-type *conditions* in agent logic only.
+> - **Settings ↔ Config boundary:** Settings = hardware/model runtime (local tier, RTF gate,
+>   model downloads); Config = agent behaviour (provider mix/routing, consent copy variant,
+>   bilingual toggle, channel selection + per-channel enablement, cost-sim inputs). **No data
+>   duplicated.**
+> - **Cost simulator:** port from `prototype/voice-console/src/data/costPresets.ts` with **every
+>   `UNVERIFIED` flag and `source` string preserved**.
 
 ---
 
 ## 1. What the prototype is, precisely
 
-A React 19 + Zustand 5 + Vite 7 app, **2,040 lines**, that runs the whole console against fixture
+A React 19 + Zustand 5 + Vite 7 app — **~5,000 lines of TS/TSX** (measured 2026-09-30; it was
+2,040 when this file was written) — that runs the whole console against fixture
 data. It is not a mockup and not a product: it is a **running specification**.
 
 ```bash

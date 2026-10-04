@@ -1,6 +1,8 @@
 # Personas, Scopes & Innovations — Brainstorm for the Voice Agent
 
 > **Status:** Brainstorm. Nothing here is decided. The four client decisions and the knowledge-scope guardrail are **client-owned** — this document is the menu we put in front of them, not the order we place.
+>
+> **Update 2026-10-03:** persona cards are **not** rendered on any console surface. This study is kept as input to the **workflow / business-type conditions** in agent logic (vertical, call types, escalation rules) — it shapes the agent's behaviour, not the UI.
 
 ---
 

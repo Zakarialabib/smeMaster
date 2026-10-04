@@ -26,6 +26,14 @@
 > and its React Native TurboModule binding
 > ([`XDcobra/react-native-sherpa-onnx`](https://github.com/XDcobra/react-native-sherpa-onnx), MIT).
 >
+> **Re-baseline 2026-10-03 (gate scheduling only — no verdict or class above changes):**
+> Gates **2 and 4 are pulled into the merged Phase C+D batch**
+> ([`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §1) — telephony acceptance is a
+> **FreeSWITCH loopback** and the first real carrier a **Twilio trial**, so the §0.3 tests below
+> move earlier (in-batch) but are unchanged in substance. **Consent is decided** (no audio,
+> announce-first — `CALL-FLOW.md` §2), which is exactly the retention rule §0.3's C4 test already
+> assumed: test-fixture audio is deleted after the test, product audio never exists.
+>
 > Related: [`ADR-001`](../../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
 > [`COST-MODEL.md`](../client/COST-MODEL.md)
 > (OSS landscape doc removed 2026-10-03 — git history)
@@ -68,6 +76,8 @@ are cost or marketing claims that the `COST-MODEL.md` §6 process already govern
 
 ### 0.3 The Gate 4 tests that would settle C1–C4
 
+*(Gate 4's build work is now in-batch as of 2026-10-03 — the tests themselves are unchanged and
+still pre-pilot.)*
 Written now, so the pilot is not the first time anyone asks these questions. Each is a real
 experiment with a pass criterion, not a literature review.
 

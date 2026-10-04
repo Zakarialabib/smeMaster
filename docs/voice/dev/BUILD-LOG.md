@@ -1,7 +1,9 @@
 # Build log — SMEMaster agent (voice + WhatsApp)
 
-> Living document. Last updated **2026-09-30** (status rows re-verified; content
-> otherwise from the 2026-09-28 session). Read this first when picking the
+> Living document. Last updated **2026-10-03** — **re-baseline:** Phase C+D merged into one
+> single-writer backend batch per [`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) (canonical);
+> phase rows + "not done" items below updated to match. Status rows otherwise re-verified
+> 2026-09-30 (content from the 2026-09-28 session). Read this first when picking the
 > work up; it records what is _verified_, what is _not_, and what broke.
 
 ## Current state
@@ -15,6 +17,13 @@ rust         ✅ cargo check --workspace CLEAN — 0 errors, 0 warnings
            ⚠️ test binary LINKS but will not EXECUTE on this host (see below)
 ```
 
+> **Re-baseline 2026-10-03 — what the numbers above do NOT cover yet:** no real channels, no new
+> endpoints, no config tables, no consent implementation. The merged **Phase C+D batch** (config
+> endpoints + config tables → remaining endpoints → real channels: FreeSWITCH loopback → Twilio
+> trial → Baileys → official WA API → full CALL-FLOW consent → Config UI; Ops/Calls/Live parity
+> later) has **not started**. Estimated **10–14+ d**, **strict global single writer** until it
+> lands. Order: DECISIONS §1.
+
 ## Phase status
 
 | Phase                                              | State          | Note                                                                                                                           |
@@ -23,13 +32,14 @@ rust         ✅ cargo check --workspace CLEAN — 0 errors, 0 warnings
 | B1 — four provider seams + swap test               | ✅             | `test_swap.py` **is** the Gate 1 exit criterion                                                                                |
 | B2 — `/session`, `/ws/transcript`, `/ops/snapshot` | ✅             | plus a real security bug fixed                                                                                                 |
 | B3 — licence gate (Voxtral TTS rejection)          | ✅             | [`OPEN-WEIGHT-SPEECH-VERIFIED.md`](OPEN-WEIGHT-SPEECH-VERIFIED.md)                                                             |
-| B4 — migrations 0002-0004                          | ✅             | structural tests; real PG still skipped                                                                                        |
+| B4 — migrations 0002-0004                          | ✅             | structural tests; real PG still skipped (Gate 1)                                                                               |
 | B5 — console HTTP client + captured fixtures       | ✅             | tested against the **live** server                                                                                             |
 | B6 — transcript WebSocket                          | ✅             | fixed an infinite-reconnect bug                                                                                                |
 | B7 — Rust IPC client                               | ✅ compiles    | 32 errors on first compile, all fixed; workspace now 0/0                                                                       |
-| C — console data loading                           | 🟡 in progress | `useAgentResource` hook done (4 states, race-safe). C1: console state primitives + Ops screen ported; rest of §4 order not yet |
-| D — channels (PSTN + WhatsApp)                     | ⬜             | **7–11 d, SINGLE WRITER** — do not parallelise                                                                                 |
-| E — real data (reuse invoicing module, §6)         | ⬜             |                                                                                                                                |
+| **C+D — MERGED backend batch (re-baselined 2026-10-03)** | 🟡 **OPEN, not started** | all endpoints + **real channels** + full consent → Config UI → later: Ops/Calls/Live parity. **10–14+ d, STRICT SINGLE WRITER** (DECISIONS §1/§2) |
+| C — console data loading (pre-merge C1)            | 🟡 partial     | `useAgentResource` hook done (4 states, race-safe); C1 console state primitives + Ops screen ported — carries into the batch    |
+| D — channels (PSTN + WhatsApp)                     | 🔲 merged into C+D | was 7–11 d / blocked on client+Meta; now **real this batch**, trial/free tiers only, FreeSWITCH loopback needs no number   |
+| E — real data (reuse invoicing module, §6)         | ⬜             | metering endpoints in-batch-or-Gate-5 is an open question (DECISIONS §9)                                                       |
 
 ## The three defects found (all by executing, not reading)
 
@@ -146,18 +156,31 @@ The machine sits at **95–99% full** during Rust builds. This caused the E0463,
 killed one build at 59 min, and is the single biggest time sink. Free 15+ G
 before any `cargo build`.
 
+**Re-baseline 2026-10-03:** this is now **step 1 of the batch** — pre-flight is *disk cleanup
+only* (free 15+ GB). The direct-`TC` toolchain workaround stays until it blocks; Docker installs
+only when the FreeSWITCH step arrives (DECISIONS §1).
+
 ## Not done / not verified
 
 - **Real providers.** Phase B proves the swap with fixtures. No vendor code.
-- **Real auth.** The WS accepts any non-empty bearer token. Gating item before
-  anything leaves loopback.
-- **Persistence.** No Postgres here; 5 migration tests skip. The structural
+  **Re-baseline 2026-10-03:** all channels go **real this batch** — FreeSWITCH loopback →
+  Twilio trial → Baileys → official WA API, **trial/free tiers only** (zero spend), channel
+  selection in config, Baileys on a dedicated test number (ban risk). **Nothing built yet.**
+- **Real auth.** The WS accepts any non-empty bearer token. **Decided 2026-10-03: auth is
+  deferred to Gate 1** — new endpoints ship open on loopback, and the hole must be closed before
+  anything leaves loopback (DECISIONS §3.9). Still a Gate 1 gating item.
+- **Persistence — two databases, decided 2026-10-03 (DECISIONS §3.3):** desktop keeps its Rust
+  `src-tauri` migrations; **agent-core gets its own up/down SQL files**
+  (`services/agent-core/migrations/`, already numbered 0001–0004 per BACKEND.md §15), applied at
+  startup to a **server-side SQLite** in dev, schema written **PG-shaped** for the Gate 1 swap.
+  **Config tables first**; calls/turns/metering/knowledge migrations land with their endpoints.
+  **None of that is built yet** — today: no Postgres here, 5 migration tests skip; structural
   tests run, the real ones don't.
+- **Consent implementation** — decided 2026-10-03 (announce-first, no audio, emergency policy +
+  transfer ladder: `CALL-FLOW.md` no longer DRAFT/blocking) but **not implemented** — batch step 5.
 - **`RAG-FORK` decision** — ✅ **signed 2026-09-28, Option A** (server pgvector +
   `bge-m3`). No longer open; it gates the embedding impl and the HNSW index,
-  which are still to be built.
-- **D channels** — needs a number, a BSP, Meta verification. Nothing can be
-  built here that answers a call.
+  which are still to be built (pgvector itself arrives with the Gate 1 Postgres swap).
 
 ## ⚠️ HOTSPOT — another agent is editing the same files
 
@@ -177,8 +200,11 @@ how a real conflict happens, and this was luck rather than design.
 **Affected files:** `src-tauri/src/orchestrator/services.rs`,
 `src-tauri/crates/ml-sidecar/src/main.rs`, `src/features/agent/api/`.
 
-**Recommendation:** one writer for the Rust side until Phase D. Same rule
-already agreed for D. I have stopped editing those files pending direction.
+**Recommendation (2026-09-30) — superseded 2026-10-03 by a hard rule:** the old "one writer for
+the Rust side until Phase D" is now **strict global single writer until the merged C+D batch
+lands** ([`DECISIONS-2026-10-03.md`](DECISIONS-2026-10-03.md) §2), adopting this incident's lesson
+for the whole tree: no parallel console work. (The affected files were held pending direction at
+the time; they are editable again under the single-writer rule.)
 
 ## ⚠️ Rust test binary will not launch on THIS host
 
