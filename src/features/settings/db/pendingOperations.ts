@@ -11,8 +11,28 @@ import {
   retryFailedOperations as dbRetryFailedOperations,
 } from '@/shared/services/db/db-invoke';
 import type { PendingOperation } from '@/shared/services/db/db-invoke';
+import { ACTIVE_COMPANY_ID } from '@/shared/constants/company';
 
 export type { PendingOperation };
+
+/**
+ * Scope column for the offline queue.
+ *
+ * `pending_operations.company_id` is a REAL foreign key to `companies(id)` —
+ * the table has NO `account_id` column. Earlier revisions wrote the mail
+ * account id into `company_id` (FOREIGN KEY failures) and filtered reads on
+ * `account_id` (`no such column` failures, see docs/Issues.md).
+ *
+ * This module is the single-company seam: every op is stored under
+ * `ACTIVE_COMPANY_ID`, and the mail account that enqueued it is embedded in
+ * the `params` JSON (`params.accountId`). Account-scoped reads filter on it
+ * via `json_extract`, so multi-account sync-conflict checks keep working
+ * without a schema migration.
+ */
+const SCOPE_COMPANY_ID = ACTIVE_COMPANY_ID;
+
+/** Name of the params field carrying the originating mail account id. */
+export const PENDING_OP_ACCOUNT_KEY = 'accountId';
 
 export async function enqueuePendingOperation(
   accountId: string,
@@ -23,13 +43,22 @@ export async function enqueuePendingOperation(
   holdUntil?: number,
 ): Promise<string> {
   return upsertPendingOperation({
-    companyId: accountId,
+    companyId: SCOPE_COMPANY_ID,
     operationType,
     resourceId,
-    params,
+    params: { ...params, [PENDING_OP_ACCOUNT_KEY]: accountId },
     campaignId: campaignId ?? null,
     holdUntil: holdUntil ?? null,
   });
+}
+
+const BASE_PENDING_FILTER = `company_id = $1 AND status = 'pending'
+  AND (next_retry_at IS NULL OR next_retry_at <= $2)
+  AND (hold_until IS NULL OR hold_until <= $2)`;
+
+/** `json_extract` clause matching ops enqueued by one mail account. */
+function accountClause(placeholder: string): string {
+  return `json_extract(params, '$.${PENDING_OP_ACCOUNT_KEY}') = ${placeholder}`;
 }
 
 export async function getPendingOperations(
@@ -40,20 +69,17 @@ export async function getPendingOperations(
   if (accountId) {
     return executeSearchQuery(
       `SELECT * FROM pending_operations
-       WHERE account_id = $1 AND status = 'pending'
-         AND (next_retry_at IS NULL OR next_retry_at <= $2)
-         AND (hold_until IS NULL OR hold_until <= $2)
-       ORDER BY created_at ASC LIMIT $3`,
-      [accountId, now, limit],
+       WHERE ${BASE_PENDING_FILTER}
+         AND ${accountClause('$3')}
+       ORDER BY created_at ASC LIMIT $4`,
+      [SCOPE_COMPANY_ID, now, accountId, limit],
     ) as unknown as Promise<PendingOperation[]>;
   }
   return executeSearchQuery(
     `SELECT * FROM pending_operations
-     WHERE status = 'pending'
-       AND (next_retry_at IS NULL OR next_retry_at <= $1)
-       AND (hold_until IS NULL OR hold_until <= $1)
-     ORDER BY created_at ASC LIMIT $2`,
-    [now, limit],
+     WHERE ${BASE_PENDING_FILTER}
+     ORDER BY created_at ASC LIMIT $3`,
+    [SCOPE_COMPANY_ID, now, limit],
   ) as unknown as Promise<PendingOperation[]>;
 }
 
@@ -92,14 +118,16 @@ export async function incrementRetry(id: string): Promise<void> {
 export async function getPendingOpsCount(accountId?: string): Promise<number> {
   if (accountId) {
     const rows = (await executeSearchQuery(
-      `SELECT COUNT(*) as count FROM pending_operations WHERE account_id = $1 AND status = 'pending'`,
-      [accountId],
+      `SELECT COUNT(*) as count FROM pending_operations
+       WHERE company_id = $1 AND status = 'pending' AND ${accountClause('$2')}`,
+      [SCOPE_COMPANY_ID, accountId],
     )) as unknown as { count: number }[];
     return rows[0]?.count ?? 0;
   }
   const rows = (await executeSearchQuery(
-    `SELECT COUNT(*) as count FROM pending_operations WHERE status = 'pending'`,
-    [],
+    `SELECT COUNT(*) as count FROM pending_operations
+     WHERE company_id = $1 AND status = 'pending'`,
+    [SCOPE_COMPANY_ID],
   )) as unknown as { count: number }[];
   return rows[0]?.count ?? 0;
 }
@@ -107,14 +135,16 @@ export async function getPendingOpsCount(accountId?: string): Promise<number> {
 export async function getFailedOpsCount(accountId?: string): Promise<number> {
   if (accountId) {
     const rows = (await executeSearchQuery(
-      `SELECT COUNT(*) as count FROM pending_operations WHERE account_id = $1 AND status = 'failed'`,
-      [accountId],
+      `SELECT COUNT(*) as count FROM pending_operations
+       WHERE company_id = $1 AND status = 'failed' AND ${accountClause('$2')}`,
+      [SCOPE_COMPANY_ID, accountId],
     )) as unknown as { count: number }[];
     return rows[0]?.count ?? 0;
   }
   const rows = (await executeSearchQuery(
-    `SELECT COUNT(*) as count FROM pending_operations WHERE status = 'failed'`,
-    [],
+    `SELECT COUNT(*) as count FROM pending_operations
+     WHERE company_id = $1 AND status = 'failed'`,
+    [SCOPE_COMPANY_ID],
   )) as unknown as { count: number }[];
   return rows[0]?.count ?? 0;
 }
@@ -125,9 +155,10 @@ export async function getPendingOpsForResource(
 ): Promise<PendingOperation[]> {
   return executeSearchQuery(
     `SELECT * FROM pending_operations
-     WHERE account_id = $1 AND resource_id = $2 AND status = 'pending'
+     WHERE company_id = $1 AND resource_id = $2 AND status = 'pending'
+       AND ${accountClause('$3')}
      ORDER BY created_at ASC`,
-    [accountId, resourceId],
+    [SCOPE_COMPANY_ID, resourceId, accountId],
   ) as unknown as Promise<PendingOperation[]>;
 }
 
@@ -138,21 +169,34 @@ export async function getPendingOperationById(id: string): Promise<PendingOperat
   return rows[0] ?? null;
 }
 
+/** Best-effort account id extraction from an op's params JSON. */
+function paramsAccountId(paramsJson: string): string | undefined {
+  try {
+    const parsed = JSON.parse(paramsJson) as Record<string, unknown>;
+    const v = parsed[PENDING_OP_ACCOUNT_KEY];
+    return typeof v === 'string' ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function compactQueue(accountId?: string): Promise<number> {
-  const params: unknown[] = [];
-  let whereClause = "WHERE status = 'pending'";
+  const bindings: unknown[] = [SCOPE_COMPANY_ID];
+  let whereClause = "WHERE company_id = $1 AND status = 'pending'";
   if (accountId) {
-    whereClause += ' AND account_id = $1';
-    params.push(accountId);
+    whereClause += ` AND ${accountClause('$2')}`;
+    bindings.push(accountId);
   }
   const ops = (await executeSearchQuery(
     `SELECT * FROM pending_operations ${whereClause} ORDER BY created_at ASC`,
-    params,
+    bindings,
   )) as unknown as PendingOperation[];
 
   const byResource = new Map<string, PendingOperation[]>();
   for (const op of ops) {
-    const key = `${op.company_id}:${op.resource_id}`;
+    // Group by scope + resource + originating account: thread ids are only
+    // unique per provider, so two accounts must never collapse each other's ops.
+    const key = `${op.company_id}:${op.resource_id}:${paramsAccountId(op.params) ?? ''}`;
     const list = byResource.get(key) ?? [];
     list.push(op);
     byResource.set(key, list);
@@ -206,10 +250,10 @@ export async function compactQueue(accountId?: string): Promise<number> {
   return toDelete.length;
 }
 
-export async function clearFailedOperations(accountId?: string): Promise<void> {
-  await dbClearFailedOperations(accountId);
+export async function clearFailedOperations(companyId?: string): Promise<void> {
+  await dbClearFailedOperations(companyId);
 }
 
-export async function retryFailedOperations(accountId?: string): Promise<void> {
-  await dbRetryFailedOperations(accountId);
+export async function retryFailedOperations(companyId?: string): Promise<void> {
+  await dbRetryFailedOperations(companyId);
 }

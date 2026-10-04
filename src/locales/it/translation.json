@@ -1004,6 +1004,8 @@
     "scopeVault": "Documenti del vault",
     "scopeContacts": "Contatti",
     "scopeDeals": "Affari",
+    "embeddingModel": "Modello di embedding",
+    "embeddingModelChanged": "Modello modificato — è necessario reindicizzare per applicare le modifiche.",
     "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
     "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",
     "lastIndexed": "Last Indexed",

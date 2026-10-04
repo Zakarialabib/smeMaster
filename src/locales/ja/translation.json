@@ -1000,6 +1000,8 @@
     "scopeVault": "保管庫ドキュメント",
     "scopeContacts": "連絡先",
     "scopeDeals": "取引",
+    "embeddingModel": "埋め込みモデル",
+    "embeddingModelChanged": "モデルが変更されました — 変更を反映するには再インデックスが必要です。",
     "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
     "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",
     "lastIndexed": "Last Indexed",

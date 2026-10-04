@@ -35,6 +35,7 @@ import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
 import { RAG_ANSWER_SYSTEM_PROMPT } from '@shared/services/ai/prompts';
 import { TestEmbeddingResult } from '@/shared/services/ai/types';
 import { streamAi } from '@shared/services/ai/aiService';
+import { getLocalModelById } from '@shared/services/ai/localModelCatalog';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -43,10 +44,6 @@ const RAG_MODEL_PATH_KEY = 'smemaster.rag.modelPath';
 const RAG_TOKENIZER_PATH_KEY = 'smemaster.rag.tokenizerPath';
 const RAG_LAST_INDEXED_KEY = 'smemaster.rag.lastIndexedAt';
 const RAG_EMBEDDING_SOURCE_KEY = 'smemaster.rag.embeddingSource';
-
-const BGE_REPO_ID = 'BAAI/bge-small-en-v1.5';
-const BGE_MODEL_FILE = 'model.safetensors';
-const BGE_TOKENIZER_FILE = 'tokenizer.json';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,6 +70,8 @@ export interface RagState {
   modelPath: string | null;
   tokenizerPath: string | null;
   modelError: string | null;
+  /** Selected local embedding model id (from catalog) */
+  embeddingModelId: string;
   /** Live progress of the BGE model download (`downloader:progress`). */
   downloadProgress: DownloaderProgressEvent | null;
   embeddingSource: EmbeddingSource;
@@ -104,6 +103,7 @@ export interface RagState {
   hydrate: () => Promise<void>;
   setEnabled: (val: boolean) => Promise<void>;
   setEmbeddingSource: (val: EmbeddingSource) => Promise<void>;
+  setEmbeddingModelId: (val: string) => Promise<void>;
   fetchModelsDir: () => Promise<void>;
   removeModel: () => Promise<void>;
   downloadBgeModel: () => Promise<void>;
@@ -139,6 +139,7 @@ export const useRagStore = create<RagState>((set, get) => ({
   modelPath: null,
   tokenizerPath: null,
   modelError: null,
+  embeddingModelId: 'bge-small-en-v1.5',
   downloadProgress: null,
   embeddingSource: null,
   modelsDir: null,
@@ -260,13 +261,29 @@ export const useRagStore = create<RagState>((set, get) => ({
     await tauriStoreStorage.setItem(RAG_ENABLED_KEY, val ? 'true' : 'false');
   },
 
-  // ── Download BGE-Small model ──
+  // ── Download embedding model ──
   downloadBgeModel: async () => {
     set({ modelStatus: 'downloading', modelError: null, downloadProgress: null });
     downloadRunning = true;
     try {
-      const modelPath = await aiDownloadModel(BGE_REPO_ID, BGE_MODEL_FILE);
-      const tokenizerPath = await aiDownloadModel(BGE_REPO_ID, BGE_TOKENIZER_FILE);
+      const modelId = get().embeddingModelId;
+      const modelDef = getLocalModelById(modelId);
+      if (!modelDef) throw new Error(`Unknown embedding model: ${modelId}`);
+
+      // Download all required files for the selected model
+      const paths: Record<string, string> = {};
+      for (const file of modelDef.files) {
+        if (file.required) {
+          const path = await aiDownloadModel(modelDef.repoId, file.path);
+          paths[file.dest] = path;
+        }
+      }
+
+      const modelPath = paths['model.safetensors'];
+      const tokenizerPath = paths['tokenizer.json'];
+      if (!modelPath || !tokenizerPath) {
+        throw new Error('Failed to download required model files');
+      }
 
       set({
         modelStatus: 'idle',
@@ -562,6 +579,12 @@ export const useRagStore = create<RagState>((set, get) => ({
     await tauriStoreStorage.setItem(RAG_EMBEDDING_SOURCE_KEY, val ?? 'auto');
   },
 
+  // ── Set embedding model (local model selection) ──
+  setEmbeddingModelId: async (val) => {
+    set({ embeddingModelId: val });
+    await tauriStoreStorage.setItem('smemaster.rag.embeddingModelId', val);
+  },
+
   // ── Validate the configured LM Studio embedding model ──
   testEmbedding: async () => {
     set({ embeddingTesting: true, embeddingTest: null });
@@ -595,7 +618,8 @@ export const useRagStore = create<RagState>((set, get) => ({
   // ── Remove the downloaded local embedding model ──
   removeModel: async () => {
     try {
-      await aiDeleteModel(BGE_REPO_ID);
+      const modelDef = getLocalModelById(get().embeddingModelId);
+      if (modelDef) await aiDeleteModel(modelDef.repoId);
       set({
         modelPath: null,
         tokenizerPath: null,

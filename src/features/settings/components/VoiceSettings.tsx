@@ -16,7 +16,7 @@
  * @module
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { SettingGroup, SettingRow, ToggleRow } from '@features/settings/components/SettingsHelpers';
 import { HelpCard } from '@features/settings/components/HelpCard';
 import { Button } from '@shared/components/ui/Button';
@@ -25,6 +25,9 @@ import { setSetting, setSecureSetting, getSetting } from '@features/settings/db/
 import {
   getVoiceConfig,
   getVoiceCapabilities,
+  synthesizeSpeech,
+  transcribeSpeech,
+  type VoiceConfig,
   type VoiceProviderType,
 } from '@shared/services/ai/voiceService';
 import {
@@ -36,6 +39,11 @@ import {
 import { Badge } from '@shared/components/ui/Badge';
 
 type VoiceProvider = VoiceProviderType;
+
+/** Sample sentence spoken by the TTS self-test. */
+const TEST_SAMPLE_TEXT = 'Hello! This is a test of the SMEMaster voice.';
+/** Microphone capture length (seconds) for the STT self-test. */
+const STT_RECORD_SECONDS = 5;
 
 /**
  * Report a settings read/write failure without treating the expected
@@ -96,6 +104,153 @@ export default function VoiceSettings() {
     stt: false,
     tts: false,
   });
+
+  // ── Voice self-test (TTS sample + STT mic check) ──────────────────────
+  // Tests run against the LIVE form values (no save required) so a freshly
+  // downloaded offline voice/model can be verified immediately.
+  const [ttsTest, setTtsTest] = useState<{
+    state: 'idle' | 'working' | 'playing' | 'done' | 'error';
+    message?: string;
+  }>({ state: 'idle' });
+  const [sttTest, setSttTest] = useState<{
+    state: 'idle' | 'recording' | 'working' | 'done' | 'error';
+    secondsLeft?: number;
+    message?: string;
+  }>({ state: 'idle' });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /** Config built from the current form — the test must not depend on save. */
+  const buildTestConfig = useCallback(
+    (): VoiceConfig => ({
+      provider,
+      baseUrl: baseUrl.trim(),
+      apiKey: apiKey.trim(),
+      ttsVoice: ttsVoice.trim() || 'alloy',
+      sttModel: sttModel.trim() || 'whisper-1',
+      // Forced on for the test: the user is explicitly asking "does it work".
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: Number.parseFloat(ttsSpeed) > 0 ? Number.parseFloat(ttsSpeed) : 1.0,
+      offlineSttSampleRate: 16000,
+    }),
+    [provider, baseUrl, apiKey, ttsVoice, sttModel, ttsSpeed],
+  );
+
+  async function testTts() {
+    audioRef.current?.pause();
+    setTtsTest({ state: 'working', message: 'Synthesizing…' });
+    try {
+      const blob = await synthesizeSpeech(TEST_SAMPLE_TEXT, buildTestConfig());
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          setTtsTest({ state: 'done', message: 'Sample played successfully.' });
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          setTtsTest({ state: 'error', message: 'Audio was synthesized but could not be played.' });
+        };
+        setTtsTest({ state: 'playing', message: 'Playing sample…' });
+        await audio.play();
+      } else if (provider === 'browser') {
+        setTtsTest({ state: 'done', message: 'Spoken via the browser voice.' });
+      } else {
+        setTtsTest({
+          state: 'error',
+          message: 'No audio returned. Check the voice/model configuration.',
+        });
+      }
+    } catch (err) {
+      setTtsTest({ state: 'error', message: describeIpcError(err) });
+    }
+  }
+
+  function stopMicTracks() {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }
+
+  function clearRecordTimer() {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+  }
+
+  async function testStt() {
+    // Toggle: clicking while recording stops early.
+    if (sttTest.state === 'recording') {
+      if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setSttTest({ state: 'error', message: 'Microphone capture is unavailable in this browser.' });
+      return;
+    }
+    setSttTest({ state: 'recording', secondsLeft: STT_RECORD_SECONDS });
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      setSttTest({ state: 'error', message: describeIpcError(err) });
+      return;
+    }
+    streamRef.current = stream;
+    const rec = new MediaRecorder(stream);
+    recorderRef.current = rec;
+    const chunks: BlobPart[] = [];
+    rec.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+    rec.onstop = () => {
+      clearRecordTimer();
+      stopMicTracks();
+      recorderRef.current = null;
+      void (async () => {
+        setSttTest({ state: 'working', message: 'Transcribing…' });
+        try {
+          const text = await transcribeSpeech(
+            new Blob(chunks, { type: rec.mimeType || 'audio/webm' }),
+            buildTestConfig(),
+          );
+          setSttTest({
+            state: 'done',
+            message: text ? `Heard: “${text}”` : 'No speech recognized.',
+          });
+        } catch (err) {
+          setSttTest({ state: 'error', message: describeIpcError(err) });
+        }
+      })();
+    };
+    rec.start();
+    // Auto-stop with a visible countdown.
+    let left = STT_RECORD_SECONDS;
+    recordTimerRef.current = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        if (recorderRef.current === rec && rec.state !== 'inactive') rec.stop();
+      } else {
+        setSttTest((s) => (s.state === 'recording' ? { ...s, secondsLeft: left } : s));
+      }
+    }, 1000);
+  }
+
+  // Release mic/audio resources if the settings page unmounts mid-test.
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      if (recorderRef.current?.state !== 'inactive') recorderRef.current?.stop();
+      clearRecordTimer();
+      stopMicTracks();
+    },
+    [],
+  );
 
   /**
    * Refresh sidecar state. Swallows the "no Tauri backend" case — in a plain
@@ -461,6 +616,72 @@ export default function VoiceSettings() {
             {saved ? 'Saved' : 'Save voice settings'}
           </Button>
         </div>
+      </SettingGroup>
+
+      <SettingGroup
+        title="Test voice"
+        description="Verify TTS and STT with the settings above — no need to save first. Useful right after downloading an offline voice or model."
+      >
+        <SettingRow label="Text-to-Speech">
+          <div className="flex flex-col gap-1.5">
+            <div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void testTts()}
+                disabled={ttsTest.state === 'working' || ttsTest.state === 'playing'}
+              >
+                {ttsTest.state === 'working'
+                  ? 'Synthesizing…'
+                  : ttsTest.state === 'playing'
+                    ? 'Playing…'
+                    : 'Test voice'}
+              </Button>
+            </div>
+            {ttsTest.message && (
+              <p
+                role="status"
+                className={`text-xs ${
+                  ttsTest.state === 'error' ? 'text-danger' : 'text-text-tertiary'
+                } break-words`}
+              >
+                {ttsTest.message}
+              </p>
+            )}
+          </div>
+        </SettingRow>
+
+        <SettingRow label="Speech-to-Text">
+          <div className="flex flex-col gap-1.5">
+            <div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void testStt()}
+                disabled={sttTest.state === 'working'}
+              >
+                {sttTest.state === 'recording'
+                  ? `Stop (${sttTest.secondsLeft ?? STT_RECORD_SECONDS}s)`
+                  : 'Record & transcribe'}
+              </Button>
+            </div>
+            {sttTest.state === 'recording' && (
+              <p role="status" className="text-xs text-accent">
+                Listening — speak now ({sttTest.secondsLeft ?? STT_RECORD_SECONDS}s)…
+              </p>
+            )}
+            {sttTest.message && sttTest.state !== 'recording' && (
+              <p
+                role="status"
+                className={`text-xs ${
+                  sttTest.state === 'error' ? 'text-danger' : 'text-text-tertiary'
+                } break-words`}
+              >
+                {sttTest.message}
+              </p>
+            )}
+          </div>
+        </SettingRow>
       </SettingGroup>
 
       <HelpCard

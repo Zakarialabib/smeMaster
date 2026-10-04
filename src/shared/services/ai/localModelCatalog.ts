@@ -295,6 +295,62 @@ export const LOCAL_MODELS: LocalModelEntry[] = [
     license: 'MIT',
     measured: { note: 'Already the default RAG embedding model in this app.' },
   },
+  {
+    id: 'bge-base-en-v1.5',
+    label: 'BGE Base EN v1.5 — Embeddings',
+    kind: 'embedding',
+    capability: 'embedding',
+    repoId: 'BAAI/bge-base-en-v1.5',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 438_022_592,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 711_396, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 743, required: true },
+      {
+        path: 'tokenizer_config.json',
+        dest: 'tokenizer_config.json',
+        sizeBytes: 366,
+        required: true,
+      },
+    ],
+    totalBytes: 438_735_097,
+    languages: ['en'],
+    license: 'MIT',
+    measured: { note: 'Higher quality than small, ~3x larger. 1024-dim vectors.' },
+  },
+  {
+    id: 'bge-m3',
+    label: 'BGE M3 — Multilingual Embeddings',
+    kind: 'embedding',
+    capability: 'embedding',
+    repoId: 'BAAI/bge-m3',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 2_269_817_856,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 711_396, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 743, required: true },
+      {
+        path: 'tokenizer_config.json',
+        dest: 'tokenizer_config.json',
+        sizeBytes: 366,
+        required: true,
+      },
+    ],
+    totalBytes: 2_270_530_311,
+    languages: ['en', 'fr', 'ar', 'zh', 'ja', 'es', 'de', 'it'],
+    license: 'MIT',
+    measured: { note: 'Multilingual, 1024-dim. ~2.2 GB — significantly larger.' },
+  },
 
   // ── LLM (candle / HF causal LM) ──────────────────────────────────────────
   {
