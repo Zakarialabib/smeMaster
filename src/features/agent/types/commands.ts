@@ -234,6 +234,9 @@ export interface ChannelCapability {
   /** DERIVED from .env on the server — never claims a channel with no
    *  credentials behind it. */
   configured: boolean;
+  /** The "why not", so the UI can render "capability unavailable" with a
+   *  cause instead of a dead switch. `null` when usable. */
+  reason?: string | null;
 }
 
 export interface ConfigResponse {

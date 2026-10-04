@@ -358,11 +358,42 @@ def _config_store(request: Request) -> Any:
     return store
 
 
+def _derive_channel_flags(stored: dict[str, Any]) -> dict[str, Any]:
+    """Overlay the SERVER's view of `configured` onto the stored channel flags.
+
+    `enabled` is the client's intent (stored). `configured` is what the server
+    can actually see in its environment (derived, never stored). The two are
+    separate because a client enabling a channel it has no credentials for is a
+    normal state the UI must show — and a stored `configured` would be a fake
+    success the moment credentials were removed.
+    """
+    from .channels import ADAPTERS
+
+    merged = {k: dict(v) for k, v in (stored or {}).items()}
+    for kind, adapter_cls in ADAPTERS.items():
+        cap = adapter_cls().capabilities()
+        entry = merged.setdefault(kind.value, {})
+        entry["enabled"] = bool(entry.get("enabled", False))
+        entry["configured"] = cap.configured
+        if not cap.configured and cap.reason:
+            entry["reason"] = cap.reason
+        else:
+            entry.pop("reason", None)
+    return merged
+
+
 @router.get("/config", response_model=ConfigResponse)
 async def get_config(request: Request) -> ConfigResponse:
-    """Return the current agent configuration."""
+    """Return the current agent configuration.
+
+    `channels[*].configured` is DERIVED from the server's environment here, not
+    read from storage — the stored value would go stale the moment a credential
+    was removed, and a stale `configured: true` is exactly the fake success the
+    design forbids.
+    """
     store = _config_store(request)
     data = store.get()
+    data["channels"] = _derive_channel_flags(data.get("channels", {}))
     return ConfigResponse.model_validate(data)
 
 
@@ -376,8 +407,10 @@ async def put_config(body: ConfigUpdate, request: Request) -> ConfigResponse:
     store = _config_store(request)
     updates = body.model_dump(exclude_unset=True, by_alias=True)
     # Convert camelCase keys to snake_case for the store
-    snake = { _camel_to_snake(k): v for k, v in updates.items() }
+    snake = {_camel_to_snake(k): v for k, v in updates.items()}
     result = store.put(snake)
+    # Same derivation as GET: the client never writes `configured`.
+    result["channels"] = _derive_channel_flags(result.get("channels", {}))
     return ConfigResponse.model_validate(result)
 
 

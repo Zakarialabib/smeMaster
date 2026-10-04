@@ -232,12 +232,22 @@ class TestPutConfig:
         assert resp.json()["providerMix"] == mix
 
     def test_put_channels(self, client: TestClient) -> None:
+        """`enabled` is the client's intent and round-trips; `configured` does NOT.
+
+        `configured` is derived from the server environment on every read
+        (`BACKEND.md` §4) — a stored true would be a fake success the moment a
+        credential was removed.
+        """
         channels = {
             "baileys": {"enabled": True, "configured": True},
             "twilio": {"enabled": False, "configured": False},
         }
         resp = client.put("/config", json={"channels": channels})
-        assert resp.json()["channels"] == channels
+        got = resp.json()["channels"]
+        assert got["baileys"]["enabled"] is True
+        assert got["twilio"]["enabled"] is False
+        # Derived, and no credentials are set in this test.
+        assert got["baileys"]["configured"] is False
 
     def test_put_cost_sim(self, client: TestClient) -> None:
         cost_sim = {"inputs": {"monthlyCalls": 500}, "unverified": True}
@@ -350,6 +360,11 @@ class TestConfigIntegration:
         resp = client.get("/config")
         data = resp.json()
         for key, value in payload.items():
+            if key == "channels":
+                # `configured` is derived, not echoed; compare `enabled` only.
+                for name, entry in value.items():
+                    assert data[key][name]["enabled"] == entry["enabled"], name
+                continue
             assert data[key] == value, f"Field {key} mismatch: {data[key]} != {value}"
 
     def test_updated_at_changes(self, client: TestClient) -> None:

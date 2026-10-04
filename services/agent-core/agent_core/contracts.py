@@ -400,9 +400,13 @@ class ChannelCapability(Camel):
     `configured` is DERIVED from .env on the server — the client may enable a
     channel, but the flag never claims a channel that has no credentials
     behind it.
+
+    `reason` is the "why not", so the console can render "capability
+    unavailable" with a cause instead of a dead switch. Absent when usable.
     """
     enabled: bool
     configured: bool
+    reason: str | None = None
 
 
 class ConfigResponse(Camel):
