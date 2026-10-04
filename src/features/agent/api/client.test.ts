@@ -72,7 +72,7 @@ describe.skipIf(!live)('agentApi against a live agent-core', () => {
     // inert because SessionRequest inherited BaseModel. This is the test that
     // would have caught it.
     const err = await agentApi
-      .createSession({ channel: 'voice', purpose: 'live', callerOverride: '+336****5678' })
+      .createSession({ channel: 'voice', purpose: 'live', callerOverride: '+33612345678' })
       .catch((e: unknown) => e as AgentClientError);
 
     expect(err).toBeInstanceOf(AgentClientError);
