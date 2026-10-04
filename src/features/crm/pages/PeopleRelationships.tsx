@@ -16,7 +16,7 @@ import {
   AiSuggestionBanner,
   type AiSuggestionItem,
 } from '@shared/components/ui/AiSuggestionBanner';
-import { DataTable, type DataTableColumn } from '@features/unified/components/DataTable';
+import { DataTable, type DataTableColumn } from '@features/dashboard/components/DataTable';
 import { getAllContacts, type DbContact } from '@features/contacts/db/contacts';
 import { useComposerStore } from '@features/mail/stores/composerStore';
 import { usePagination } from '@shared/hooks/usePagination';

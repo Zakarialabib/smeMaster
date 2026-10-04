@@ -6,7 +6,6 @@ import {
   Megaphone,
   Workflow,
   CalendarDays,
-  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -87,16 +86,6 @@ async function safeArray<T>(promise: Promise<T[]>): Promise<T[] | null> {
 }
 
 export const SECTION_CARDS: SectionCardConfig[] = [
-  {
-    id: 'unified',
-    to: '/unified',
-    icon: Sparkles,
-    titleKey: 'dashboard.sections.unified.title',
-    descriptionKey: 'dashboard.sections.unified.description',
-    accent: 'accent',
-    stats: [],
-    fetchValues: async () => [],
-  },
   {
     id: 'emails',
     to: '/mail/inbox',

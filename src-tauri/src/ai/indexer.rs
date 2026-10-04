@@ -144,11 +144,10 @@ impl Indexer {
 
         // Incremental indexing: check each source's last-indexed timestamp
         // and skip sources that haven't changed since the last index.
-        let now = chrono::Utc::now().timestamp();
 
         if scope.emails {
             let last = self.load_last_indexed("emails").await;
-            let changed = self.source_has_changes("emails", last).await;
+            let changed = self.source_has_changes("emails", last).await.unwrap_or(true);
             if changed {
                 if let Err(e) = self.index_all_emails(&table, &cfg).await {
                     log::error!("Error indexing emails: {:?}", e);
@@ -161,7 +160,7 @@ impl Indexer {
 
         if scope.attachments {
             let last = self.load_last_indexed("attachments").await;
-            let changed = self.source_has_changes("attachments", last).await;
+            let changed = self.source_has_changes("attachments", last).await.unwrap_or(true);
             if changed {
                 if let Err(e) = self.index_all_attachments(&table, &cfg).await {
                     log::error!("Error indexing attachments: {:?}", e);
@@ -174,7 +173,7 @@ impl Indexer {
 
         if scope.vault {
             let last = self.load_last_indexed("vault").await;
-            let changed = self.source_has_changes("vault", last).await;
+            let changed = self.source_has_changes("vault", last).await.unwrap_or(true);
             if changed {
                 if let Err(e) = self.index_vault_items(&table, &cfg).await {
                     log::error!("Error indexing vault items: {:?}", e);
@@ -187,7 +186,7 @@ impl Indexer {
 
         if scope.contacts {
             let last = self.load_last_indexed("contacts").await;
-            let changed = self.source_has_changes("contacts", last).await;
+            let changed = self.source_has_changes("contacts", last).await.unwrap_or(true);
             if changed {
                 if let Err(e) = self.index_all_contacts(&table, &cfg).await {
                     log::error!("Error indexing contacts: {:?}", e);
@@ -200,7 +199,7 @@ impl Indexer {
 
         if scope.deals {
             let last = self.load_last_indexed("deals").await;
-            let changed = self.source_has_changes("deals", last).await;
+            let changed = self.source_has_changes("deals", last).await.unwrap_or(true);
             if changed {
                 if let Err(e) = self.index_all_deals(&table, &cfg).await {
                     log::error!("Error indexing deals: {:?}", e);
@@ -217,61 +216,56 @@ impl Indexer {
 
     /// Check if a data source has new or modified records since `last_indexed`.
     /// Returns true if the source should be re-indexed.
-    async fn source_has_changes(&self, source: &str, last_indexed: Option<i64>) -> bool {
+    async fn source_has_changes(&self, source: &str, last_indexed: Option<i64>) -> Result<bool> {
         let Some(last_ts) = last_indexed else {
-            return true; // Never indexed — always index
+            return Ok(true); // Never indexed — always index
         };
 
-        let result: Result<bool> = match source {
+        let count: i64 = match source {
             "emails" => {
-                let count: i64 = sqlx::query_scalar(
+                sqlx::query_scalar::<_, i64>(
                     "SELECT COUNT(*) FROM messages WHERE date > ?"
                 )
                 .bind(last_ts)
                 .fetch_one(&self.pool)
-                .await?;
-                Ok(count > 0)
+                .await?
             }
             "attachments" => {
-                let count: i64 = sqlx::query_scalar(
+                sqlx::query_scalar::<_, i64>(
                     "SELECT COUNT(*) FROM attachments WHERE created_at > ?"
                 )
                 .bind(last_ts)
                 .fetch_one(&self.pool)
-                .await?;
-                Ok(count > 0)
+                .await?
             }
             "vault" => {
-                let count: i64 = sqlx::query_scalar(
+                sqlx::query_scalar::<_, i64>(
                     "SELECT COUNT(*) FROM vault_items WHERE created_at > ?"
                 )
                 .bind(last_ts)
                 .fetch_one(&self.pool)
-                .await?;
-                Ok(count > 0)
+                .await?
             }
             "contacts" => {
-                let count: i64 = sqlx::query_scalar(
+                sqlx::query_scalar::<_, i64>(
                     "SELECT COUNT(*) FROM contacts WHERE updated_at > ?"
                 )
                 .bind(last_ts)
                 .fetch_one(&self.pool)
-                .await?;
-                Ok(count > 0)
+                .await?
             }
             "deals" => {
-                let count: i64 = sqlx::query_scalar(
+                sqlx::query_scalar::<_, i64>(
                     "SELECT COUNT(*) FROM deals WHERE updated_at > ?"
                 )
                 .bind(last_ts)
                 .fetch_one(&self.pool)
-                .await?;
-                Ok(count > 0)
+                .await?
             }
-            _ => Ok(true),
+            _ => return Ok(true),
         };
 
-        result.unwrap_or(true) // On error, re-index to be safe
+        Ok(count > 0)
     }
 
     pub async fn index_all_emails(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {

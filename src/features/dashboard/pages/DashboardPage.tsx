@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import {
   Settings,
   ChevronUp,
@@ -43,6 +43,26 @@ import { QuickActionsWidget } from '@features/dashboard/components/QuickActionsW
 import { EntityNetworkGraph } from '@features/dashboard/components/EntityNetworkGraph';
 import { BusinessHealthWidget } from '@features/dashboard/components/BusinessHealthWidget';
 import { SectionConsole } from '@features/dashboard/components/SectionConsole';
+
+// Lazy: the unified workspace pulls the mail/people/tasks live queries — keep
+// it out of the initial dashboard bundle like the old `/unified` route did.
+const UnifiedWorkspace = lazy(() =>
+  import('@features/dashboard/components/UnifiedWorkspace').then((m) => ({
+    default: m.UnifiedWorkspace,
+  })),
+);
+
+function WorkspaceFallback() {
+  return (
+    <div
+      className="flex items-center justify-center h-[240px] text-sm text-text-tertiary"
+      role="status"
+      aria-label="Loading workspace"
+    >
+      Loading workspace…
+    </div>
+  );
+}
 
 // ─── Customization Modal ───────────────────────────────────────────────────
 
@@ -271,6 +291,12 @@ function HeroMetrics({
 
 function renderWidget(id: string, rangeDays: DashboardRangeDays): React.ReactNode {
   switch (id) {
+    case 'workspace':
+      return (
+        <Suspense fallback={<WorkspaceFallback />}>
+          <UnifiedWorkspace />
+        </Suspense>
+      );
     case 'emailVolume':
       return <EmailVolumeWidget rangeDays={rangeDays} />;
     case 'emailHeatmap':
@@ -304,16 +330,22 @@ function WidgetWrapper({
   widgetId,
   density,
   refreshKey,
+  className = '',
   children,
 }: {
   widgetId: string;
   density: DashboardDensity;
   refreshKey: number;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
     <ErrorBoundary name={`Widget-${widgetId}`}>
-      <GlassPanel key={refreshKey} variant="card" className={density === 'compact' ? 'p-3' : 'p-4'}>
+      <GlassPanel
+        key={refreshKey}
+        variant="card"
+        className={`${density === 'compact' ? 'p-3' : 'p-4'} ${className}`}
+      >
         {children}
       </GlassPanel>
     </ErrorBoundary>
@@ -478,7 +510,13 @@ export function DashboardPage() {
         aria-label="Dashboard widgets"
       >
         {visibleWidgets.map((w) => (
-          <WidgetWrapper key={w.id} widgetId={w.id} density={density} refreshKey={refreshNonce}>
+          <WidgetWrapper
+            key={w.id}
+            widgetId={w.id}
+            density={density}
+            refreshKey={refreshNonce}
+            className={w.id === 'workspace' ? 'md:col-span-2 lg:col-span-3' : ''}
+          >
             {renderWidget(w.id, rangeDays)}
           </WidgetWrapper>
         ))}

@@ -198,11 +198,9 @@ export default function InvoiceEditor() {
         setStatus(inv.status);
       } else {
         await updateInvoice(id, {
-          client_id: clientId,
-          document_type: docType,
-          invoice_number: number,
-          issue_date: issueDate,
-          due_date: dueDate,
+          clientId,
+          issueDate,
+          dueDate,
           currency,
           notes: notes || null,
         });

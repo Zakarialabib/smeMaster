@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Plus, Package, Boxes, Trash2, AlertTriangle, Layers } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID, formatMoney } from '../../utils/format';
 import type { Item } from '../../types';
@@ -246,10 +247,14 @@ export default function ItemList() {
       <ItemForm open={formOpen} onClose={() => setFormOpen(false)} item={editing} />
 
       {pendingDelete && (
-        <ConfirmDelete
-          name={items.find((it) => it.id === pendingDelete)?.name ?? ''}
-          onCancel={() => setPendingDelete(null)}
+        <ConfirmDialog
+          isOpen
+          onClose={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
+          title={`Delete ${items.find((it) => it.id === pendingDelete)?.name || 'this item'}?`}
+          message="This permanently removes the item from your catalog. This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
         />
       )}
     </div>
@@ -353,44 +358,6 @@ function EmptyState({ hasItems, onNew }: { hasItems: boolean; onNew: () => void 
           New Item
         </Button>
       )}
-    </div>
-  );
-}
-
-function ConfirmDelete({
-  name,
-  onCancel,
-  onConfirm,
-}: {
-  name: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onCancel}
-    >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-11 h-11 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4">
-          <Trash2 size={20} />
-        </div>
-        <h3 className="text-lg font-bold text-text-primary">Delete {name || 'this item'}?</h3>
-        <p className="text-sm text-text-secondary mt-1">
-          This permanently removes the item from your catalog. This cannot be undone.
-        </p>
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
-            Delete
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
