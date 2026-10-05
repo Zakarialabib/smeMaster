@@ -3,13 +3,13 @@
  *
  * Lets the user search the HF Hub, filter by task, and see model metadata
  * (downloads, likes, license, tags). Download is handled by the existing
- * Rust downloader via the local model catalog.
+ * Rust downloader via `downloaderCreateJob` with HF options.
  *
  * @module
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Download, ExternalLink } from 'lucide-react';
+import { Search, Download, ExternalLink, CheckCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import {
@@ -18,6 +18,7 @@ import {
   getPipelineLabel,
   type HfModel,
 } from '@shared/services/ai/hfApi';
+import { downloaderCreateJob } from '@shared/services/db/invoke/downloader';
 
 const PIPELINE_FILTERS = [
   { value: '', label: 'All' },
@@ -35,6 +36,7 @@ export function HfModelBrowser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
 
   const search = useCallback(async () => {
     setLoading(true);
@@ -62,9 +64,33 @@ export function HfModelBrowser() {
   const handleDownload = async (model: HfModel) => {
     setDownloading(model.id);
     try {
-      // TODO: Wire to downloader_create_job with HF repo
-      // For now, just show a placeholder
-      console.log('Download model:', model.id);
+      // Use the Rust downloader with HF options
+      // The downloader will resolve the HF URL and download the model files
+      const mainFile = model.siblings.find(
+        (f) =>
+          f.rfilename.endsWith('.safetensors') ||
+          f.rfilename.endsWith('.onnx') ||
+          f.rfilename.endsWith('.gguf'),
+      );
+
+      if (!mainFile) {
+        setError('No downloadable file found for this model');
+        return;
+      }
+
+      await downloaderCreateJob({
+        url: `https://huggingface.co/${model.id}/resolve/main/${mainFile.rfilename}`,
+        destinationPath: `models/${model.id}/${mainFile.rfilename}`,
+        category: 'ai_model',
+        options: {
+          hfRepoId: model.id,
+          hfFilename: mainFile.rfilename,
+        },
+      });
+
+      setDownloaded((prev) => new Set(prev).add(model.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Download failed');
     } finally {
       setDownloading(null);
     }
@@ -118,64 +144,85 @@ export function HfModelBrowser() {
         <div className="text-sm text-text-tertiary text-center py-8">No models found</div>
       ) : (
         <div className="space-y-2">
-          {models.map((model) => (
-            <div
-              key={model.id}
-              className="p-3 rounded-xl border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <a
-                      href={`https://huggingface.co/${model.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
-                    >
-                      {model.id}
-                    </a>
-                    <ExternalLink size={12} className="text-text-tertiary" />
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    {model.pipeline_tag && (
-                      <Badge variant="info" size="sm">
-                        {getPipelineLabel(model.pipeline_tag)}
-                      </Badge>
-                    )}
-                    <span className="text-[11px] text-text-tertiary">
-                      {formatHfCount(model.downloads)} downloads · {formatHfCount(model.likes)}{' '}
-                      likes
-                    </span>
-                    {model.license && (
-                      <span className="text-[11px] text-text-tertiary">{model.license}</span>
-                    )}
-                  </div>
-                  {model.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {model.tags.slice(0, 5).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-tertiary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+          {models.map((model) => {
+            const isDownloaded = downloaded.has(model.id);
+            const isDownloading = downloading === model.id;
+            return (
+              <div
+                key={model.id}
+                className="p-3 rounded-xl border border-border-primary bg-bg-secondary hover:bg-bg-hover transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <a
+                        href={`https://huggingface.co/${model.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-text-primary hover:text-accent transition-colors"
+                      >
+                        {model.id}
+                      </a>
+                      <ExternalLink size={12} className="text-text-tertiary" />
+                      {isDownloaded && (
+                        <Badge variant="success" size="sm">
+                          <CheckCircle size={10} />
+                          Downloaded
+                        </Badge>
+                      )}
                     </div>
-                  )}
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {model.pipeline_tag && (
+                        <Badge variant="info" size="sm">
+                          {getPipelineLabel(model.pipeline_tag)}
+                        </Badge>
+                      )}
+                      <span className="text-[11px] text-text-tertiary">
+                        {formatHfCount(model.downloads)} downloads · {formatHfCount(model.likes)}{' '}
+                        likes
+                      </span>
+                      {model.license && (
+                        <span className="text-[11px] text-text-tertiary">{model.license}</span>
+                      )}
+                    </div>
+                    {model.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {model.tags.slice(0, 5).map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-tertiary"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={isDownloaded ? 'secondary' : 'primary'}
+                    onClick={() => void handleDownload(model)}
+                    disabled={isDownloading}
+                    className="shrink-0"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 size={12} className="animate-spin" />
+                        Downloading…
+                      </>
+                    ) : isDownloaded ? (
+                      'Re-download'
+                    ) : (
+                      <>
+                        <Download size={12} />
+                        Download
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void handleDownload(model)}
-                  disabled={downloading === model.id}
-                  className="shrink-0"
-                >
-                  <Download size={12} />
-                  {downloading === model.id ? 'Downloading…' : 'Download'}
-                </Button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

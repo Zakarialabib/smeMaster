@@ -27,7 +27,7 @@ import {
   Server,
   Sparkles,
   Mic,
-  HardDrive,
+  Microchip,
 } from 'lucide-react';
 import BundleSettings from '../BundleSettings';
 import KnowledgeBaseSettings from '../KnowledgeBaseSettings';
@@ -47,9 +47,9 @@ interface SubTab {
 
 const SUB_TABS: SubTab[] = [
   { id: 'models', labelKey: 'settings.subtabProviderModels', icon: Server },
-  { id: 'features', labelKey: 'settings.subtabFeatures', icon: Sparkles },
   { id: 'voice', labelKey: 'settings.subtabVoice', icon: Mic },
-  { id: 'local-models', labelKey: 'settings.subtabLocalModels', icon: HardDrive },
+  { id: 'local-models', labelKey: 'settings.subtabLocalModels', icon: Microchip },
+  { id: 'features', labelKey: 'settings.subtabFeatures', icon: Sparkles },
   { id: 'kb', labelKey: 'settings.subtabKnowledgeBase', icon: Database },
   { id: 'ai-router', labelKey: 'settings.subtabAiRouter', icon: Cpu },
 ];
@@ -79,7 +79,7 @@ export default function AiTab() {
   const [customModel, setCustomModel] = useState('gpt-4o-mini');
   const [claudeModel, setClaudeModel] = useState('claude-haiku-4-5-20251001');
   const [openaiModel, setOpenaiModel] = useState('gpt-4o-mini');
-  const [geminiModel, setGeminiModel] = useState('gemini-2.5-flash-preview-05-20');
+  const [geminiModel, setGeminiModel] = useState('gemini-3.8-flash');
   const [mistralModel, setMistralModel] = useState('mistral-small');
   const [byteplusModel] = useState('doubao-pro-32k');
   const [copilotModel, setCopilotModel] = useState('openai/gpt-4o-mini');

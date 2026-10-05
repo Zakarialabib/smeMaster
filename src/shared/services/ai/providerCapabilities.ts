@@ -140,13 +140,17 @@ export const PROVIDER_CAPABILITIES: Record<AiProvider, string[]> = {
   local: ['stt', 'tts'],
 };
 
-/** Provider display metadata. */
+/** Provider display metadata — extended from the prototype's ProviderMeta
+ *  with baseUrlHost + docsUrl for the Keys/credential UI. */
 export interface ProviderMeta {
   id: AiProvider;
   label: string;
   description: string;
   authType: 'api_key' | 'server_url' | 'none';
   color: string;
+  /** Host shown in credential rows. No path, no scheme. */
+  baseUrlHost: string;
+  docsUrl: string;
 }
 
 export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
@@ -156,6 +160,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Anthropic Claude models',
     authType: 'api_key',
     color: '#d97757',
+    baseUrlHost: 'api.anthropic.com',
+    docsUrl: 'https://docs.anthropic.com',
   },
   openai: {
     id: 'openai',
@@ -163,6 +169,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'GPT, Whisper, TTS, Embeddings',
     authType: 'api_key',
     color: '#10a37f',
+    baseUrlHost: 'api.openai.com',
+    docsUrl: 'https://platform.openai.com/docs',
   },
   gemini: {
     id: 'gemini',
@@ -170,6 +178,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Google Gemini models',
     authType: 'api_key',
     color: '#4285f4',
+    baseUrlHost: 'generativelanguage.googleapis.com',
+    docsUrl: 'https://ai.google.dev/docs',
   },
   mistral: {
     id: 'mistral',
@@ -177,6 +187,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Mistral, Voxtral STT/TTS',
     authType: 'api_key',
     color: '#ff7000',
+    baseUrlHost: 'api.mistral.ai',
+    docsUrl: 'https://docs.mistral.ai',
   },
   byteplus: {
     id: 'byteplus',
@@ -184,6 +196,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Doubao, Seed ASR/TTS',
     authType: 'api_key',
     color: '#3c8cff',
+    baseUrlHost: 'ark.ap-southeast.bytepluses.com',
+    docsUrl: 'https://docs.byteplus.com',
   },
   ollama: {
     id: 'ollama',
@@ -191,6 +205,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Local models via Ollama',
     authType: 'server_url',
     color: '#888',
+    baseUrlHost: 'localhost:11434',
+    docsUrl: 'https://ollama.com',
   },
   copilot: {
     id: 'copilot',
@@ -198,6 +214,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'GitHub Models',
     authType: 'api_key',
     color: '#f0f0f0',
+    baseUrlHost: 'api.githubcopilot.com',
+    docsUrl: 'https://docs.github.com/copilot',
   },
   custom: {
     id: 'custom',
@@ -205,6 +223,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'OpenAI-compatible endpoint',
     authType: 'api_key',
     color: '#8b5cf6',
+    baseUrlHost: 'user-supplied',
+    docsUrl: '',
   },
   lmstudio: {
     id: 'lmstudio',
@@ -212,6 +232,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Local models via LM Studio',
     authType: 'server_url',
     color: '#ff6b35',
+    baseUrlHost: 'localhost:1234',
+    docsUrl: 'https://lmstudio.ai/docs',
   },
   openrouter: {
     id: 'openrouter',
@@ -219,6 +241,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Multi-provider router',
     authType: 'api_key',
     color: '#6366f1',
+    baseUrlHost: 'openrouter.ai',
+    docsUrl: 'https://openrouter.ai/docs',
   },
   local: {
     id: 'local',
@@ -226,6 +250,8 @@ export const PROVIDER_META: Record<AiProvider, ProviderMeta> = {
     description: 'Local sherpa-onnx models',
     authType: 'none',
     color: '#22c55e',
+    baseUrlHost: 'local',
+    docsUrl: '',
   },
 };
 

@@ -342,6 +342,26 @@ export default function VoiceSettings() {
             onChange={(e) => {
               const v = e.target.value as VoiceProvider;
               setProvider(v);
+              // Sync STT/TTS defaults to the provider's native models
+              if (v === 'elevenlabs') {
+                setTtsVoice('eleven_multilingual_v2');
+                setSttModel('whisper-1');
+              } else if (v === 'openai') {
+                setTtsVoice('alloy');
+                setSttModel('whisper-1');
+              } else if (v === 'browser') {
+                setTtsVoice('alloy');
+                setSttModel('whisper-1');
+              } else if (v === 'offline') {
+                setTtsVoice('');
+                setSttModel('');
+              } else if (v === 'lmstudio') {
+                setTtsVoice('');
+                setSttModel('');
+              } else if (v === 'custom') {
+                setTtsVoice('');
+                setSttModel('');
+              }
               void setSetting('voice_provider', v).catch((err) =>
                 logVoiceError('provider change', err),
               );
@@ -562,23 +582,61 @@ export default function VoiceSettings() {
         )}
 
         <SettingRow label="TTS Voice">
-          <input
-            type="text"
-            value={ttsVoice}
-            onChange={(e) => setTtsVoice(e.target.value)}
-            placeholder="alloy"
-            className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
-          />
+          {provider === 'openai' ? (
+            <select
+              value={ttsVoice}
+              onChange={(e) => setTtsVoice(e.target.value)}
+              className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+            >
+              <option value="alloy">alloy</option>
+              <option value="echo">echo</option>
+              <option value="fable">fable</option>
+              <option value="onyx">onyx</option>
+              <option value="nova">nova</option>
+              <option value="shimmer">shimmer</option>
+            </select>
+          ) : provider === 'elevenlabs' ? (
+            <select
+              value={ttsVoice}
+              onChange={(e) => setTtsVoice(e.target.value)}
+              className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+            >
+              <option value="eleven_multilingual_v2">Multilingual V2</option>
+              <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
+              <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
+              <option value="VR6AewLTigWEbQNOJfjx">Charlotte</option>
+              <option value="EXAVITQu4vr4xnSDxMaL">Sarah</option>
+              <option value="yoZ06aMxZJJ28mfd3POQ">Elli</option>
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={ttsVoice}
+              onChange={(e) => setTtsVoice(e.target.value)}
+              placeholder="alloy"
+              className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+            />
+          )}
         </SettingRow>
 
         <SettingRow label="STT Model">
-          <input
-            type="text"
-            value={sttModel}
-            onChange={(e) => setSttModel(e.target.value)}
-            placeholder="whisper-1"
-            className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
-          />
+          {provider === 'openai' || provider === 'browser' ? (
+            <select
+              value={sttModel}
+              onChange={(e) => setSttModel(e.target.value)}
+              className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+            >
+              <option value="whisper-1">whisper-1</option>
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={sttModel}
+              onChange={(e) => setSttModel(e.target.value)}
+              placeholder="whisper-1"
+              className="w-48 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+            />
+          )}
         </SettingRow>
 
         <ToggleRow
