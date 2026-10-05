@@ -1,9 +1,8 @@
 import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { toast } from '@shared/stores/toastStore';
 import { SkeletonPage } from '@shared/components/ui/Skeleton';
-import { CardTabBar, type CardTabItem } from '@shared/components/ui';
-import { useLocation, useNavigate } from '@tanstack/react-router';
-import { Users, ReceiptText, Plus, RefreshCw, AlertCircle, FileText, Sparkles } from 'lucide-react';
+import { useLocation } from '@tanstack/react-router';
+import { Plus, RefreshCw, AlertCircle } from 'lucide-react';
 
 // ── Error Boundary for tab content ────────────────────────────────────────
 class TabErrorBoundary extends Component<
@@ -47,18 +46,44 @@ class TabErrorBoundary extends Component<
 }
 
 // ── Tab configuration ────────────────────────────────────────────────────
-// Tasks and Calendar live on the Schedule page — not duplicated here.
-const TABS: CardTabItem[] = [
-  { id: 'contacts', label: 'Contacts', icon: Users },
-  { id: 'deals', label: 'Deals', icon: FileText },
-  { id: 'relationships', label: 'Relationships', icon: Sparkles },
-  { id: 'invoices', label: 'Invoices', icon: ReceiptText },
-];
+// Navigation lives in the CRM sidebar (like the mail sidebar) — no top tabs.
+// The active tab is URL-synced (`/people?tab=tasks`) so the sidebar,
+// refresh and deep links all agree on what is on screen. Tasks + Calendar
+// live here (folded in from the old Schedule page), not on a separate page.
+const TABS = [
+  { id: 'people', label: 'People' },
+  { id: 'deals', label: 'Deals' },
+  { id: 'activity', label: 'Activity' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'invoices', label: 'Invoices' },
+] as const;
+
+type CrmTab = (typeof TABS)[number]['id'];
+
+const TAB_TITLES: Record<CrmTab, string> = {
+  people: 'People & relationships',
+  deals: 'Deals pipeline',
+  activity: 'Activity timeline',
+  tasks: 'Tasks',
+  calendar: 'Calendar',
+  invoices: 'Invoices',
+};
 
 // ── Lazy-loaded tab content ──────────────────────────────────────────────
-const ContactsContent = lazy(() =>
-  import('@features/contacts/pages/ContactsPage').then((m) => ({
-    default: m.ContactsPage,
+const PeopleContent = lazy(() =>
+  import('@features/crm/pages/PeopleRelationships').then((m) => ({
+    default: function PeopleTab() {
+      return <m.PeopleRelationships section="people" />;
+    },
+  })),
+);
+
+const ActivityContent = lazy(() =>
+  import('@features/crm/pages/PeopleRelationships').then((m) => ({
+    default: function ActivityTab() {
+      return <m.PeopleRelationships section="activity" />;
+    },
   })),
 );
 
@@ -74,33 +99,38 @@ const DealsContent = lazy(() =>
   })),
 );
 
-const RelationshipsContent = lazy(() =>
-  import('@features/crm/pages/PeopleRelationships').then((m) => ({
-    default: m.PeopleRelationships,
+const TasksContent = lazy(() =>
+  import('@features/tasks/components/TasksPage').then((m) => ({
+    default: m.TasksPage,
   })),
 );
 
-const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
-  contacts: ContactsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+const CalendarContent = lazy(() =>
+  import('@features/calendar/components/CalendarPage').then((m) => ({
+    default: m.CalendarPage,
+  })),
+);
+
+const TAB_COMPONENTS: Record<CrmTab, React.LazyExoticComponent<React.ComponentType<unknown>>> = {
+  people: PeopleContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   deals: DealsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
-  relationships: RelationshipsContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  activity: ActivityContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  tasks: TasksContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
+  calendar: CalendarContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
   invoices: InvoicesContent as React.LazyExoticComponent<React.ComponentType<unknown>>,
 };
 
 // ── Main Component ───────────────────────────────────────────────────────
 export function CrmPage() {
   const location = useLocation();
-  const navigate = useNavigate();
 
-  // URL-synced tab (?tab=deals) — hash-aware via location.searchStr so the
-  // rail flyout, refresh and deep links all agree on the active tab.
+  // URL-synced tab — the CRM sidebar links here, so refresh and deep links
+  // agree with the sidebar highlight.
   const param = new URLSearchParams(location.searchStr).get('tab');
-  const activeTab = param && TABS.some((t) => t.id === param) ? param : 'contacts';
-
-  const handleTabChange = (id: string) => {
-    if (id === activeTab) return;
-    navigate({ to: '/people', search: (prev) => ({ ...prev, tab: id }) });
-  };
+  const activeTab: CrmTab =
+    param && (TABS as readonly { id: string }[]).some((t) => t.id === param)
+      ? (param as CrmTab)
+      : 'people';
 
   const TabContent = TAB_COMPONENTS[activeTab];
 
@@ -110,9 +140,7 @@ export function CrmPage() {
       <header className="flex items-center justify-between px-4 py-3 shrink-0 border-b border-border-secondary/30">
         <div>
           <h1 className="text-[17px] font-semibold text-text-primary">CRM</h1>
-          <p className="text-[11px] text-text-tertiary mt-0.5">
-            {TABS.find((t) => t.id === activeTab)?.label ?? ''}
-          </p>
+          <p className="text-[11px] text-text-tertiary mt-0.5">{TAB_TITLES[activeTab]}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -133,24 +161,13 @@ export function CrmPage() {
         </div>
       </header>
 
-      {/* Tab bar */}
-      <div className="py-2 shrink-0">
-        <CardTabBar
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          ariaLabel="CRM tabs"
-          className="mx-3"
-        />
-      </div>
-
-      {/* Tab content */}
+      {/* Tab content — switched by the CRM sidebar, not by in-page tabs */}
       <div
         id={`tabpanel-${activeTab}`}
         role="tabpanel"
         className="flex-1 overflow-hidden animate-[pageEnter_350ms_cubic-bezier(0.16,1,0.3,1)]"
       >
-        <TabErrorBoundary tabName={TABS.find((t) => t.id === activeTab)?.label ?? ''}>
+        <TabErrorBoundary tabName={TAB_TITLES[activeTab]}>
           <Suspense fallback={<SkeletonPage />}>{TabContent ? <TabContent /> : null}</Suspense>
         </TabErrorBoundary>
       </div>

@@ -2,7 +2,6 @@ import { PremiumSidebar } from './PremiumSidebar';
 import type { NavRailGroup } from './NavRail';
 import { MainWorkspace } from './MainWorkspace';
 import { SidebarContainer } from './SidebarContainer';
-import { useFocusModeStore } from '@shared/stores/focusModeStore';
 import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
@@ -25,9 +24,6 @@ interface AppLayoutProps {
  *
  * When `sidebar` is provided, renders a third pane via SidebarContainer
  * between the PremiumSidebar and MainWorkspace.
- *
- * In focus mode, all sidebars are hidden so only the main content is visible.
- * Press Escape to exit focus mode.
  */
 export function AppLayout({
   navGroups,
@@ -39,22 +35,16 @@ export function AppLayout({
   sidebar,
   sidebarTitle,
 }: AppLayoutProps) {
-  const focusMode = useFocusModeStore((s) => s.focusMode);
-
   return (
     <div className="flex flex-1 min-w-0 overflow-hidden">
-      {!focusMode && (
-        <PremiumSidebar
-          groups={navGroups}
-          activeGroupId={activeNavId}
-          activeSubItemId={activeSubItemId}
-          onGroupSelect={onNavSelect}
-          onSubItemSelect={onSubItemSelect}
-        />
-      )}
-      {!focusMode && sidebar && (
-        <SidebarContainer title={sidebarTitle ?? 'Sidebar'}>{sidebar}</SidebarContainer>
-      )}
+      <PremiumSidebar
+        groups={navGroups}
+        activeGroupId={activeNavId}
+        activeSubItemId={activeSubItemId}
+        onGroupSelect={onNavSelect}
+        onSubItemSelect={onSubItemSelect}
+      />
+      {sidebar && <SidebarContainer title={sidebarTitle ?? 'Sidebar'}>{sidebar}</SidebarContainer>}
       <MainWorkspace>{children}</MainWorkspace>
     </div>
   );

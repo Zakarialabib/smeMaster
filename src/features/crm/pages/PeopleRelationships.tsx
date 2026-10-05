@@ -1,16 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  Users,
-  Handshake,
-  Activity,
-  Plus,
-  Search,
-  Mail,
-  Tag,
-  MoreHorizontal,
-  Flame,
-} from 'lucide-react';
+import { Mail, Tag, MoreHorizontal, Flame } from 'lucide-react';
 import { Avatar } from '@shared/components/ui/Avatar';
 import {
   AiSuggestionBanner,
@@ -22,13 +12,7 @@ import { useComposerStore } from '@features/mail/stores/composerStore';
 import { usePagination } from '@shared/hooks/usePagination';
 import { formatRelativeDate } from '@shared/utils/date';
 
-type Section = 'people' | 'deals' | 'activity';
-
-const SECTIONS: { id: Section; label: string; icon: typeof Users }[] = [
-  { id: 'people', label: 'People', icon: Users },
-  { id: 'deals', label: 'Deals', icon: Handshake },
-  { id: 'activity', label: 'Activity', icon: Activity },
-];
+type Section = 'people' | 'activity';
 
 const STATUS_STYLES: Record<string, string> = {
   client: 'bg-success/15 text-success',
@@ -42,15 +26,14 @@ function isHot(c: DbContact) {
 }
 
 /**
- * Unified People & Relationships — a consolidated CRM view that follows the
- * same design system as the Unified Inbox: top navigation (no left sidebar),
- * a per-section AI callout, and the shared var-driven DataTable. Wired to the
- * real contacts data layer.
+ * People & Relationships — contact list, hot-lead callout and activity view.
+ *
+ * Navigation lives in the CRM sidebar (like the mail sidebar): this component
+ * renders one `section` with no top tabs or app chrome of its own.
  */
-export function PeopleRelationships() {
+export function PeopleRelationships({ section = 'people' }: { section?: Section }) {
   const navigate = useNavigate();
   const openComposer = useComposerStore((s) => s.openComposer);
-  const [section, setSection] = useState<Section>('people');
   const [aiDismissed, setAiDismissed] = useState(false);
 
   const {
@@ -89,22 +72,6 @@ export function PeopleRelationships() {
         },
         items,
         cta: 'Create deals',
-      };
-    }
-    if (section === 'deals') {
-      return {
-        suggestion: {
-          id: 'ai-deals',
-          title: 'AI summarized your pipeline',
-          description: '3 deals need a follow-up this week to stay on track.',
-          count: 3,
-          type: 'custom' as const,
-        },
-        items: [
-          { id: 'd1', title: 'Best Foods — Q3 proposal', source: 'stage: Lead' },
-          { id: 'd2', title: 'Atlas Group — renewal', source: 'stage: Lead' },
-        ],
-        cta: 'Open pipeline',
       };
     }
     return {
@@ -208,40 +175,8 @@ export function PeopleRelationships() {
   ];
 
   return (
-    <div className="unified-inbox flex flex-col h-full bg-bg-primary text-text-primary">
-      {/* TOP NAVIGATION */}
-      <header className="unified-topnav flex items-center gap-2 px-4 py-2.5 border-b border-border-secondary bg-bg-secondary/60 backdrop-blur shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-accent text-white grid place-items-center font-bold me-2">
-          S
-        </div>
-        <nav className="flex items-center gap-1" role="tablist" aria-label="CRM sections">
-          {SECTIONS.map((s) => {
-            const Icon = s.icon;
-            const active = section === s.id;
-            return (
-              <button
-                key={s.id}
-                role="tab"
-                aria-selected={active}
-                onClick={() => setSection(s.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:bg-bg-hover'}`}
-              >
-                <Icon size={16} /> {s.label}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="ms-auto flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-bg-tertiary rounded-lg px-3 py-1.5 text-sm text-text-tertiary w-64">
-            <Search size={14} /> <span className="truncate">Search contacts, deals…</span>
-          </div>
-          <button className="flex items-center gap-1.5 bg-accent text-white text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-accent-hover">
-            <Plus size={15} /> New contact
-          </button>
-        </div>
-      </header>
-
-      {/* BODY */}
+    <div className="flex flex-col h-full bg-bg-primary text-text-primary">
+      {/* BODY — navigation lives in the CRM sidebar; no top tabs here */}
       <div className="flex-1 overflow-auto p-4">
         {section === 'people' && (
           <>
@@ -278,12 +213,6 @@ export function PeopleRelationships() {
               }
             />
           </>
-        )}
-
-        {section === 'deals' && (
-          <div className="mb-4">
-            <AiSuggestionBanner suggestion={ai.suggestion} items={ai.items} variant="info" />
-          </div>
         )}
 
         {section === 'activity' && (

@@ -1,9 +1,11 @@
-import { getActiveProvider, getProviderClient } from './providerManager';
+import { getActiveProvider, getProviderClient, getActiveProviderName } from './providerManager';
 import type { AiProvider, AiCompletionRequest } from './types';
+import { DEFAULT_MODELS, MODEL_SETTINGS } from './types';
 import { isStreamingCapable } from './capabilities';
 import { getAiCache, setAiCache } from '@features/mail/db/aiCache';
 import { getSetting } from '@features/settings/db/settings';
 import { AiError } from './errors';
+import { recordAiCall } from './activityRecorder';
 import type { DbMessage } from '@shared/services/db/messages';
 import { tauriStoreStorage } from '@shared/services/storage/tauriStoreStorage';
 import { fetchRagContext, buildFusedContext } from './ragContext';
@@ -107,38 +109,94 @@ function sanitizeErrorMessage(raw: string): string {
   return sanitized;
 }
 
+/**
+ * Resolve which provider + model a call will actually use.
+ *
+ * Recording needs the *effective* pair, not the requested one: a call with no
+ * explicit provider goes to the active provider, and an omitted model falls
+ * back to that provider's configured default. Best-effort — never throws, so
+ * observability can't break the call it observes.
+ */
+async function resolveCallTarget(
+  provider?: AiProvider,
+  model?: string,
+): Promise<{ provider: string; model: string }> {
+  try {
+    const name = provider ?? (await getActiveProviderName());
+    let resolved = model;
+    if (!resolved) {
+      if (name === 'ollama') {
+        resolved = (await getSetting('ollama_model')) ?? DEFAULT_MODELS.ollama;
+      } else if (name === 'lmstudio') {
+        resolved = (await getSetting('lmstudio_model')) ?? '';
+      } else if (name === 'custom') {
+        resolved = (await getSetting('custom_model')) ?? 'gpt-4o-mini';
+      } else if (name in MODEL_SETTINGS) {
+        const key = MODEL_SETTINGS[name as keyof typeof MODEL_SETTINGS];
+        resolved = (await getSetting(key)) ?? DEFAULT_MODELS[name] ?? '';
+      } else {
+        resolved = DEFAULT_MODELS[name] ?? '';
+      }
+    }
+    return { provider: name, model: resolved ?? '' };
+  } catch {
+    return { provider: provider ?? 'unknown', model: model ?? '' };
+  }
+}
+
 export async function callAi(
   systemPrompt: string,
   userContent: string,
   provider?: AiProvider,
   model?: string,
 ): Promise<string> {
-  return withRetry(
-    async () => {
-      try {
-        const client = provider
-          ? await getProviderClient(provider, model)
-          : await getActiveProvider();
-        return await client.complete({ systemPrompt, userContent });
-      } catch (err) {
-        if (err instanceof AiError) throw err;
-        const message = err instanceof Error ? err.message : String(err);
-        if (message.includes('401') || message.includes('authentication')) {
-          throw new AiError('AUTH_ERROR', 'Invalid API key');
+  const started = Date.now();
+  const target = await resolveCallTarget(provider, model);
+
+  try {
+    const result = await withRetry(
+      async () => {
+        try {
+          const client = provider
+            ? await getProviderClient(provider, model)
+            : await getActiveProvider();
+          return await client.complete({ systemPrompt, userContent });
+        } catch (err) {
+          if (err instanceof AiError) throw err;
+          const message = err instanceof Error ? err.message : String(err);
+          if (message.includes('401') || message.includes('authentication')) {
+            throw new AiError('AUTH_ERROR', 'Invalid API key');
+          }
+          if (message.includes('429') || message.includes('rate')) {
+            throw new AiError('RATE_LIMITED', 'Rate limited â€” please try again shortly');
+          }
+          throw new AiError('NETWORK_ERROR', sanitizeErrorMessage(message));
         }
-        if (message.includes('429') || message.includes('rate')) {
-          throw new AiError('RATE_LIMITED', 'Rate limited â€” please try again shortly');
-        }
-        throw new AiError('NETWORK_ERROR', sanitizeErrorMessage(message));
-      }
-    },
-    {
-      maxRetries: 3,
-      baseDelayMs: 1000,
-      maxDelayMs: 10000,
-      retryableStatuses: [429, 500, 502, 503, 504],
-    },
-  );
+      },
+      {
+        maxRetries: 3,
+        baseDelayMs: 1000,
+        maxDelayMs: 10000,
+        retryableStatuses: [429, 500, 502, 503, 504],
+      },
+    );
+    recordAiCall({
+      provider: target.provider,
+      model: target.model,
+      outcome: 'ok',
+      latencyMs: Date.now() - started,
+    });
+    return result;
+  } catch (err) {
+    recordAiCall({
+      provider: target.provider,
+      model: target.model,
+      outcome: 'error',
+      detail: err instanceof Error ? err.message : String(err),
+      latencyMs: Date.now() - started,
+    });
+    throw err;
+  }
 }
 
 /**
@@ -160,19 +218,45 @@ export async function* streamAi(
   provider?: AiProvider,
   model?: string,
 ): AsyncIterable<string> {
-  const client = provider ? await getProviderClient(provider, model) : await getActiveProvider();
+  const started = Date.now();
+  const target = await resolveCallTarget(provider, model);
 
-  if (isStreamingCapable(client)) {
-    const req: AiCompletionRequest = { systemPrompt, userContent };
-    for await (const chunk of client.streamComplete(req)) {
-      if (chunk) yield chunk;
+  try {
+    const client = provider ? await getProviderClient(provider, model) : await getActiveProvider();
+
+    if (isStreamingCapable(client)) {
+      const req: AiCompletionRequest = { systemPrompt, userContent };
+      for await (const chunk of client.streamComplete(req)) {
+        if (chunk) yield chunk;
+      }
+      recordAiCall({
+        provider: target.provider,
+        model: target.model,
+        outcome: 'ok',
+        latencyMs: Date.now() - started,
+      });
+      return;
     }
-    return;
-  }
 
-  // Fallback: non-streaming provider — yield the full response as one chunk
-  const full = await client.complete({ systemPrompt, userContent });
-  if (full) yield full;
+    // Fallback: non-streaming provider — yield the full response as one chunk
+    const full = await client.complete({ systemPrompt, userContent });
+    if (full) yield full;
+    recordAiCall({
+      provider: target.provider,
+      model: target.model,
+      outcome: 'ok',
+      latencyMs: Date.now() - started,
+    });
+  } catch (err) {
+    recordAiCall({
+      provider: target.provider,
+      model: target.model,
+      outcome: 'error',
+      detail: err instanceof Error ? err.message : String(err),
+      latencyMs: Date.now() - started,
+    });
+    throw err;
+  }
 }
 
 /**

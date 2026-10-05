@@ -23,6 +23,7 @@ import { MoveToFolderDialog } from './features/mail/components/MoveToFolderDialo
 import { UpdateToast } from '@shared/components/ui/UpdateToast';
 import { NotificationToast } from '@shared/components/ui/NotificationToast';
 import { TemplateDemo } from './features/mail/components/templates/TemplateDemo';
+import { uiBus } from '@shared/services/events/uiBus';
 import { DEMO_FOLLOW_UP } from './features/mail/constants/templateDemos';
 import { ErrorBoundary } from '@shared/components/ui/ErrorBoundary';
 import { SkipLink } from '@shared/components/ui/SkipLink';
@@ -49,7 +50,6 @@ import { ConflictResolutionPanel } from '@features/sync/components/ConflictResol
 import { useConflictStore } from '@features/sync/stores/conflictStore';
 import { SyncProgressIndicator } from '@features/sync/components/SyncProgressIndicator';
 import { GitCompareArrows } from 'lucide-react';
-import { uiBus } from '@shared/services/events/uiBus';
 
 /**
  * Sync bridge: subscribes to router state changes and writes the selected
@@ -370,7 +370,10 @@ export default function App() {
   const showOnboarding =
     !onboardingDone && !onboardingDismissed && initialized && hasData === false && hasData !== null;
 
-  // Listen for command palette / shortcuts help / ask inbox toggle events
+  // Listen for command palette / shortcuts help / ask inbox toggle events.
+  // Two channels feed these: direct `window` CustomEvents (EmailList,
+  // CommandPalette) and the `uiBus` singleton (titlebar buttons, keyboard
+  // shortcuts) — both are subscribed so neither path stays dead.
   useEffect(() => {
     const togglePalette = () => setShowCommandPalette((p) => !p);
     const toggleHelp = () => setShowShortcutsHelp((p) => !p);
@@ -383,12 +386,18 @@ export default function App() {
     window.addEventListener('smemaster-toggle-shortcuts-help', toggleHelp);
     window.addEventListener('smemaster-toggle-ask-inbox', toggleAskInbox);
     uiBus.on('move-to-folder', handleMoveToFolder);
+    const offPalette = uiBus.on('toggle:command-palette', togglePalette);
+    const offHelp = uiBus.on('toggle:shortcuts-help', toggleHelp);
+    const offAskInbox = uiBus.on('toggle:ask-inbox', toggleAskInbox);
     window.addEventListener('smemaster-toggle-template-demo', toggleDemo);
     return () => {
       window.removeEventListener('smemaster-toggle-command-palette', togglePalette);
       window.removeEventListener('smemaster-toggle-shortcuts-help', toggleHelp);
       window.removeEventListener('smemaster-toggle-ask-inbox', toggleAskInbox);
       uiBus.off('move-to-folder', handleMoveToFolder);
+      offPalette();
+      offHelp();
+      offAskInbox();
       window.removeEventListener('smemaster-toggle-template-demo', toggleDemo);
     };
   }, []);
