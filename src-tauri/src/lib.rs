@@ -15,7 +15,7 @@ mod update_tracker;
 use commands::IdleRegistry;
 use imap::session::SessionPoolManager;
 mod contacts;
-mod agent;
+pub mod agent;
 mod deliverability;
 mod device;
 mod dns;
