@@ -27,16 +27,20 @@ import {
   Server,
   Sparkles,
   RefreshCw,
+  Mic,
+  HardDrive,
 } from 'lucide-react';
 import BundleSettings from '../BundleSettings';
 import KnowledgeBaseSettings from '../KnowledgeBaseSettings';
+import VoiceSettings from '../VoiceSettings';
+import LocalModelsSettings from '../LocalModelsSettings';
 import { useRagStore } from '@features/assistant/stores/ragStore';
 import { refreshAiSidecarRuntime } from '@features/assistant/services/aiSidecar';
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 
 interface SubTab {
-  id: 'models' | 'features' | 'kb' | 'ai-router';
+  id: 'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router';
   labelKey: string;
   icon: typeof Server;
 }
@@ -44,6 +48,8 @@ interface SubTab {
 const SUB_TABS: SubTab[] = [
   { id: 'models', labelKey: 'settings.subtabProviderModels', icon: Server },
   { id: 'features', labelKey: 'settings.subtabFeatures', icon: Sparkles },
+  { id: 'voice', labelKey: 'settings.subtabVoice', icon: Mic },
+  { id: 'local-models', labelKey: 'settings.subtabLocalModels', icon: HardDrive },
   { id: 'kb', labelKey: 'settings.subtabKnowledgeBase', icon: Database },
   { id: 'ai-router', labelKey: 'settings.subtabAiRouter', icon: Cpu },
 ];
@@ -94,9 +100,9 @@ export default function AiTab() {
   const [autoArchiveCategories, setAutoArchiveCategories] = useState<Set<string>>(() => new Set());
 
   // ── Sub-navigation + status row ──
-  const [activeSubTab, setActiveSubTab] = useState<'models' | 'features' | 'kb' | 'ai-router'>(
-    'models',
-  );
+  const [activeSubTab, setActiveSubTab] = useState<
+    'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router'
+  >('models');
   const [providerConnected, _setProviderConnected] = useState<boolean | null>(null);
   const [embeddingSet, _setEmbeddingSet] = useState<boolean | null>(null);
   const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
@@ -1290,7 +1296,13 @@ export default function AiTab() {
         </>
       )}
 
-      {/* ── Section C: Knowledge Base ─────────────────────────────── */}
+      {/* ── Section C: Voice & Speech ─────────────────────────────── */}
+      {activeSubTab === 'voice' && <VoiceSettings />}
+
+      {/* ── Section D: Local Models ───────────────────────────────── */}
+      {activeSubTab === 'local-models' && <LocalModelsSettings />}
+
+      {/* ── Section E: Knowledge Base ─────────────────────────────── */}
       {activeSubTab === 'kb' && <KnowledgeBaseSettings />}
     </>
   );

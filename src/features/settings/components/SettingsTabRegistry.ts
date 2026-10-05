@@ -17,7 +17,6 @@ import {
   Bell,
   Keyboard,
   Sparkles,
-  Mic,
   Filter,
   Lock,
   ShieldCheck,
@@ -46,8 +45,6 @@ import {
   PairingSettings,
   BackupTab,
   AiTab,
-  VoiceSettings,
-  LocalModelsSettings,
   ComplianceTab,
   MailRulesTab,
   NotificationsTab,
@@ -78,8 +75,6 @@ export type SettingsTabId =
   | 'deliverability-dashboard'
   | 'help-center'
   | 'ai'
-  | 'voice'
-  | 'local-models'
   | 'notifications'
   | 'compliance'
   | 'pgp'
@@ -202,22 +197,9 @@ export const tabGroups: SettingsGroup[] = [
     tabs: [
       {
         id: 'ai',
-        label: 'Text Generation',
+        label: 'AI & Automation',
         icon: Sparkles,
         subtitle: 'settings.tabSubtitles.ai',
-      },
-      {
-        id: 'voice',
-        label: 'Voice',
-        icon: Mic,
-        subtitle: 'settings.tabSubtitles.voice',
-      },
-      {
-        id: 'local-models',
-        label: 'Local Models',
-        icon: HardDrive,
-        subtitle: 'settings.tabSubtitles.localModels',
-        platform: 'desktop',
       },
       {
         id: 'mail-rules',
@@ -343,8 +325,6 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   shortcuts: ShortcutsTab,
   about: AboutTab,
   ai: AiTab,
-  voice: VoiceSettings,
-  'local-models': LocalModelsSettings,
   notifications: NotificationsTab,
   compliance: ComplianceTab,
   pgp: PgpTab,

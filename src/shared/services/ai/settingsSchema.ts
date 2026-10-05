@@ -92,6 +92,17 @@ export const AI_SETTINGS_SCHEMA = {
   voice_stt_model: { type: 'string', secure: false, description: 'STT model name' },
   voice_tts_enabled: { type: 'boolean', secure: false, description: 'TTS toggle' },
   voice_stt_enabled: { type: 'boolean', secure: false, description: 'STT toggle' },
+  voice_tts_speed: { type: 'number', secure: false, description: 'TTS speaking rate' },
+  voice_offline_tts_dir: {
+    type: 'string',
+    secure: false,
+    description: 'Offline TTS model directory',
+  },
+  voice_offline_stt_dir: {
+    type: 'string',
+    secure: false,
+    description: 'Offline STT model directory',
+  },
 
   // RAG settings
   rag_chunk_size: { type: 'number', secure: false, description: 'RAG chunk size' },

@@ -626,6 +626,8 @@
     "lmstudioConnected": "LM Studio connected",
     "subtabProviderModels": "Provider & Models",
     "subtabFeatures": "AI Features",
+    "subtabVoice": "Voice & Speech",
+    "subtabLocalModels": "Local Models",
     "subtabKnowledgeBase": "Knowledge Base",
     "subtabAiRouter": "AI Router",
     "statusProviderConnected": "Provider Connected",
