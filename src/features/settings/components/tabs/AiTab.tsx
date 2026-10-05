@@ -26,7 +26,6 @@ import {
   Loader2,
   Server,
   Sparkles,
-  RefreshCw,
   Mic,
   HardDrive,
 } from 'lucide-react';
@@ -34,8 +33,9 @@ import BundleSettings from '../BundleSettings';
 import KnowledgeBaseSettings from '../KnowledgeBaseSettings';
 import VoiceSettings from '../VoiceSettings';
 import LocalModelsSettings from '../LocalModelsSettings';
+import { AiRouterPanel } from '@features/assistant/components/AiRouterPanel';
+import { HfModelBrowser } from '@features/assistant/components/HfModelBrowser';
 import { useRagStore } from '@features/assistant/stores/ragStore';
-import { refreshAiSidecarRuntime } from '@features/assistant/services/aiSidecar';
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 
@@ -108,23 +108,7 @@ export default function AiTab() {
   const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
   const ragEmbeddingTest = useRagStore((s) => s.embeddingTest);
 
-  // ai-router observability
-  const [aiRouterVersion, _setAiRouterVersion] = useState<string | null>(null);
-  const [aiRouterHealthy, _setAiRouterHealthy] = useState<boolean | null>(null);
-  const [aiRouterRss, _setAiRouterRss] = useState<number | null>(null);
-  const [aiRouterModelLoaded, _setAiRouterModelLoaded] = useState<boolean | null>(null);
-  const [aiRouterRefreshing, setAiRouterRefreshing] = useState(false);
-
   useEffect(() => {
-    const refreshAi = async () => {
-      try {
-        setAiRouterRefreshing(true);
-        await refreshAiSidecarRuntime();
-      } finally {
-        setAiRouterRefreshing(false);
-      }
-    };
-
     async function load() {
       const provider = (await getSetting('ai_provider')) as AiProvider | null;
       if (provider) setAiProvider(provider);
@@ -199,13 +183,9 @@ export default function AiTab() {
           ),
         );
       }
-
-      await refreshAi();
     }
 
     load();
-    const id = setInterval(refreshAi, 10000);
-    return () => clearInterval(id);
   }, []);
 
   function isValidUrl(str: string): boolean {
@@ -1250,57 +1230,28 @@ export default function AiTab() {
         </>
       )}
 
-      {/* ── Section B: AiRouter runtime observability ────────────── */}
-      {activeSubTab === 'ai-router' && (
-        <>
-          <p className="text-xs text-text-tertiary mb-3">
-            Local AI runtime status, version, and process metrics provided by the Rust sidecar.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[
-              { label: t('settings.statusReady'), icon: Server, value: aiRouterHealthy },
-              { label: 'RSS', value: aiRouterRss ? `${aiRouterRss} MB` : '--', icon: Cpu },
-              { label: 'Model', value: aiRouterModelLoaded ? 'Loaded' : '--', icon: Database },
-              { label: 'Version', value: aiRouterVersion ?? '--', icon: CheckCircle2 },
-            ].map((item) => (
-              <div key={item.label} className="p-3 rounded-xl border border-border bg-bg-secondary">
-                <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">
-                  {item.label}
-                </p>
-                <div className="flex items-center gap-2">
-                  <item.icon size={14} className="text-text-tertiary" />
-                  <p className="text-xs font-semibold truncate">
-                    {item.value === null ? t('settings.statusLoading') : item.value}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button
-            className="mt-3"
-            size="sm"
-            variant="secondary"
-            disabled={aiRouterRefreshing}
-            onClick={async () => {
-              setAiRouterRefreshing(true);
-              try {
-                await refreshAiSidecarRuntime();
-              } finally {
-                setAiRouterRefreshing(false);
-              }
-            }}
-          >
-            <RefreshCw size={13} className={cn(aiRouterRefreshing && 'animate-spin')} />
-            <span className="ms-1">{t('commands.refresh')}</span>
-          </Button>
-        </>
-      )}
+      {/* ── Section B: AI Router — unified observability ────────────── */}
+      {activeSubTab === 'ai-router' && <AiRouterPanel />}
 
       {/* ── Section C: Voice & Speech ─────────────────────────────── */}
       {activeSubTab === 'voice' && <VoiceSettings />}
 
       {/* ── Section D: Local Models ───────────────────────────────── */}
-      {activeSubTab === 'local-models' && <LocalModelsSettings />}
+      {activeSubTab === 'local-models' && (
+        <div className="space-y-6">
+          <LocalModelsSettings />
+          <div className="border-t border-border-primary pt-4">
+            <h3 className="text-sm font-semibold text-text-primary mb-1">
+              Browse HuggingFace Models
+            </h3>
+            <p className="text-xs text-text-tertiary mb-3">
+              Search and discover models from the HuggingFace Hub. Download them to use with local
+              engines.
+            </p>
+            <HfModelBrowser />
+          </div>
+        </div>
+      )}
 
       {/* ── Section E: Knowledge Base ─────────────────────────────── */}
       {activeSubTab === 'kb' && <KnowledgeBaseSettings />}

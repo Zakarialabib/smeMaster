@@ -380,7 +380,51 @@ export const LOCAL_MODELS: LocalModelEntry[] = [
     languages: ['en', 'zh'],
     license: 'Apache-2.0',
     caveat:
-      'The sidecar’s text-generation path streams a "not available" progress until a causal LM is bound. Downloading the weights is not the same as it being wired up — treat this as staged, not working.',
+      'The sidecar\'s text-generation path streams a "not available" progress until a causal LM is bound. Downloading the weights is not the same as it being wired up — treat this as staged, not working.',
+  },
+  {
+    id: 'qwen3-0.6b',
+    label: 'Qwen3 0.6B — Small LLM',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'Qwen/Qwen3-0.6B',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 1_200_000_000,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 1_207_032_305,
+    languages: ['en', 'zh'],
+    license: 'Apache-2.0',
+    caveat: 'Qwen3 series. Not yet measured on this host.',
+  },
+  {
+    id: 'lfm2.5-1.2b-thinking',
+    label: 'LiquidAI LFM2.5 1.2B Thinking — On-Device Reasoning',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'LiquidAI/LFM2.5-1.2B-Thinking',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 2_400_000_000,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 2_407_032_305,
+    languages: ['en'],
+    license: 'Apache-2.0',
+    caveat: 'LiquidAI LFM2.5 series. Reasoning model under 1GB. Not yet measured on this host.',
   },
 ];
 
