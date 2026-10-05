@@ -20,7 +20,7 @@
 | **7**  | Feature Depth         | 🔶 2/7 done, 2 partial | 7.1 ✅ · 7.2 ✅ · 7.3 🔶 · 7.4 🔲 · 7.6 🔶 · 7.7 🔲                                  |
 | **8**  | Vault & Storage       | ✅ DONE (5/5)          | All verified                                                                         |
 | **9**  | Backend Hardening     | ✅ DONE (6/6)          | All verified                                                                         |
-| **10** | Agentic AI Automation | 🔶 RUST MODULE BUILT   | Config, providers, ops, automation rules in Rust. Voice call system dropped.         |
+| **10** | Agentic AI Automation | 🔶 ROSTER + CONSOLE BUILT | 5 seeded agents, per-agent voice config, activity recording wired. Voice call system dropped. |
 | **11** | Monetization          | 🔲 DESIGN ONLY         | 0 entitlement/paywall code files                                                     |
 
 ---
@@ -81,10 +81,14 @@ AI-powered automation for email and social channels. Voice call system (SIP, tel
 | #    | Task              | Status     | Evidence                                                    |
 | ---- | ----------------- | ---------- | ----------------------------------------------------------- |
 | 10.1 | Rust agent module | ✅         | config.rs, providers.rs, ops.rs, automation.rs, commands.rs |
-| 10.2 | Tauri commands    | ✅         | 10 new commands registered                                  |
+| 10.2 | Tauri commands    | ✅         | 13 console + 9 roster commands registered                   |
 | 10.3 | Frontend console  | ✅         | AgentConsolePage with Ops/Automations/Config tabs           |
 | 10.4 | Automation rules  | ✅         | 4 default rules (triage, drafts, follow-up, social)         |
 | 10.5 | Voice call system | ⛔ DROPPED | SIP/telephony too many dependencies                         |
+| 10.6 | Agent roster      | ✅         | `agents` table (mig 034) + 5 seeded built-ins (S7)          |
+| 10.7 | Per-agent voice   | ✅         | `voice_*` columns (mig 039); VoiceSettings binds to agent   |
+| 10.8 | Activity + metering | ✅       | `ai_activity` table; writer wired into callAi/streamAi      |
+| 10.9 | Activity surface  | 🔲         | Table is populated; no UI reads it yet (next sprint)        |
 
 ---
 
@@ -92,11 +96,12 @@ AI-powered automation for email and social channels. Voice call system (SIP, tel
 
 | Priority | Task                                                     | Effort      |
 | -------- | -------------------------------------------------------- | ----------- |
-| P0       | Manual tests (panic, WAL, watchdog, dev-verify) — Gate 1 | 1.5h        |
-| P1       | Code signing certs + public key — Gate 3                 | varies      |
-| P2       | Dogfooding + beta — Gate 9                               | 1–2w        |
-| P3       | Mobile Extended (Phase 6)                                | ~30h        |
-| P4       | Monetization (Phase 11)                                  | design only |
+| P0       | Activity surface — read `ai_activity` into the console    | 2h          |
+| P0       | Manual tests (panic, WAL, watchdog, dev-verify) — Gate 1  | 1.5h        |
+| P1       | Code signing certs + public key — Gate 3                  | varies      |
+| P2       | Dogfooding + beta — Gate 9                                | 1–2w        |
+| P3       | Mobile Extended (Phase 6)                                 | ~30h        |
+| P4       | Monetization (Phase 11)                                   | design only |
 
 ---
 

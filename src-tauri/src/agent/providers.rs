@@ -197,11 +197,17 @@ mod tests {
         });
 
         let result = chain
-            .run(&Seam::Llm, |name| async move {
-                if name == "primary" {
-                    Err("primary failed".to_string())
-                } else {
-                    Ok("fallback succeeded")
+            .run(&Seam::Llm, |name| {
+                // Own the name so the returned future doesn't borrow the
+                // closure parameter (which would tie Fut's lifetime to F's
+                // input and fail the `F: Fn(&str) -> Fut` bound).
+                let name = name.to_string();
+                async move {
+                    if name == "primary" {
+                        Err("primary failed".to_string())
+                    } else {
+                        Ok("fallback succeeded")
+                    }
                 }
             })
             .await;
