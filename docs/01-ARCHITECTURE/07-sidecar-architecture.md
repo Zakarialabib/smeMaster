@@ -8,15 +8,13 @@
 
 SMEMaster uses a **sidecar process architecture** for all on-device ML/AI workloads: embeddings, vector search (RAG), document parsing, and model management. The sidecar is a **separate OS process** (`ml-sidecar`) that communicates with the main app over **stdin/stdout JSON-RPC 2.0**.
 
-> **⚠️ Two different "sidecars" — do not conflate them.**
+> **⚠️ Terminology — there is only ONE sidecar now.**
 > `ml-sidecar` (this document) is a **Tauri-managed child process**: spawned by
 > `MlSidecarService`, supervised by the watchdog, bundled via `externalBin`, workspace member
 > `crates/ml-sidecar`. It runs **on the user's machine**.
-> `services/agent-core/` (voice agent) is a **network sidecar**: Python/FastAPI, 24/7 on our
-> VPS, **not** a Cargo workspace member and **not** supervised by Tauri. It shares only the
-> _contract shape_ (health/watchdog semantics) with `ml-sidecar`. See
-> [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D1 — adding `agent-core`
-> to `Cargo.toml` `members` or wrapping it in a Tauri child process is explicitly forbidden.
+> The former `services/agent-core/` Python network sidecar (voice-call system) was
+> **deleted outright on 2026-10-05** — no archive, git history preserves it. Any older
+> doc (notably ADR-001 §D1) describing agent-core as a live component is superseded.
 
 ```
 ┌─────────────────────────────────────────────────────┐

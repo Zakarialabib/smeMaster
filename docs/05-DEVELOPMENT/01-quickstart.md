@@ -127,25 +127,13 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-## The voice agent's second dev loop (`services/agent-core/`)
+## Runtimes (2026-10-05: only one remains)
 
-SMEMaster has a **second runtime** — a Python FastAPI service for the voice/messaging
-agent. It is **not** started by `bun run tauri dev` and is not a Cargo workspace member
-(see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D1).
-
-| You want to…                                                           | Read                                                                                                    |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Run `agent-core` in dev mode (uvicorn on `:8788`, the two live checks) | **[`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md)**                                        |
-| Know the build status, toolchain breakage, and what is _not_ verified  | **[`dev/BUILD-LOG.md`](dev/BUILD-LOG.md)** — read FIRST                               |
-| Pick up a gated piece of voice work                                    | [`dev/AGENT-PROMPTS.md`](dev/AGENT-PROMPTS.md)                                        |
-| Understand the phase sequence                                          | [`dev/BUILD-PLAN.md`](dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
-
-```bash
-# agent-core dev mode (NOT part of `bun run tauri dev`)
-cd services/agent-core
-.venv/Scripts/python.exe -m uvicorn agent_core.api:app \
-  --host 127.0.0.1 --port 8788 --reload --log-level info
-```
+SMEMaster used to have a **second runtime** — a Python FastAPI service
+(`services/agent-core/`) for the voice/messaging agent. It was **deleted
+outright** with the dropped voice-call system (no archive, git history
+preserves it), so the table, commands and `dev/` references below are gone
+with it. The desktop app (`bun run tauri dev`) is the only runtime.
 
 ## Source reconciliation (2026-07-19)
 

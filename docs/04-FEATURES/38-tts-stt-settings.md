@@ -2,17 +2,15 @@
 
 > Desktop voice & speech provider configuration for TTS and STT.
 > **Sources:** `src/features/settings/components/VoiceSettings.tsx`, `src/shared/services/ai/voiceService.ts`
-> **Status note (2026-10-01):** ⚠️ Five of the six providers throw on at least one
-> advertised direction, and the capability badges misreport two of them. See
-> [§Implementation status](#implementation-status-2026-10-01) — the tables below that
-> describe capability are **the intended contract, not the current behaviour**.
+> **Status note (2026-10-05):** the `agent-core` provider is gone (Python
+> backend deleted); ElevenLabs TTS/STT and browser STT are implemented, so the
+> stub tables further down are historical. "Voice" here means STT/TTS only —
+> the voice-call system was dropped.
 > **Engine decision for offline speech:** [20-tts-stt-email](../02-BACKEND/20-tts-stt-email.md)
 
 ## Overview
 
-The Voice Settings panel lets users configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers for the AI assistant. It supports multiple provider types, displays capability badges, and persists configuration via the settings store.
-
-**Note:** Desktop voice and Python agent-core are **separate systems** per ADR-001. The `agent-core` voice provider proxies through the Python backend, while all other providers operate directly from the desktop app.
+The Voice Settings panel lets users configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers for the AI assistant. It supports multiple provider types, displays capability badges, persists configuration via the settings store, and offers one-click **Test voice** / **Record & transcribe** self-tests that run against the live form values.
 
 ## VoiceSettings Component
 
@@ -43,18 +41,21 @@ The component displays real-time capability detection:
 
 ## Voice Provider Types
 
+> **2026-10-05:** the `agent-core` provider row is gone — the Python backend
+> was deleted with the voice-call system. Six providers remain.
+
 ```typescript
-type VoiceProviderType = 'browser' | 'openai' | 'elevenlabs' | 'lmstudio' | 'custom' | 'agent-core';
+type VoiceProviderType = 'browser' | 'openai' | 'elevenlabs' | 'lmstudio' | 'custom' | 'offline';
 ```
 
-| Provider     | STT | TTS | Auth    | URL                | Description                             |
-| ------------ | --- | --- | ------- | ------------------ | --------------------------------------- |
-| `browser`    | ✗   | ✓   | None    | None               | Web Speech API — zero-config, on-device |
-| `openai`     | ✓   | ✓   | API Key | Default OpenAI     | Whisper STT + TTS voices                |
-| `elevenlabs` | ✗   | ✓   | API Key | Default ElevenLabs | High-quality TTS                        |
-| `lmstudio`   | ✓   | ✓   | None    | Required           | Local OpenAI-compatible server          |
-| `custom`     | ✓   | ✓   | API Key | Required           | Any OpenAI-compatible endpoint          |
-| `agent-core` | ✓   | ✓   | None    | None               | Python agent-core proxy                 |
+| Provider     | STT | TTS | Auth    | URL                | Description                              |
+| ------------ | --- | --- | ------- | ------------------ | ---------------------------------------- |
+| `browser`    | ✓   | ✓   | None    | None               | Web Speech API — zero-config, on-device  |
+| `openai`     | ✓   | ✓   | API Key | Default OpenAI     | Whisper STT + TTS voices                 |
+| `elevenlabs` | ✓   | ✓   | API Key | Default ElevenLabs | High-quality TTS + STT                   |
+| `lmstudio`   | ✓   | ✓   | None    | Required           | Local OpenAI-compatible server           |
+| `custom`     | ✓   | ✓   | API Key | Required           | Any OpenAI-compatible endpoint           |
+| `offline`    | ✓   | ✓   | None    | None               | On-device sherpa-onnx (model dir needed) |
 
 ### Provider Selection Logic
 
@@ -109,14 +110,14 @@ function getVoiceCapabilities(config: VoiceConfig): { stt: boolean; tts: boolean
 
 Returns whether the selected provider supports STT and TTS:
 
-| Provider     | STT     | TTS                         |
-| ------------ | ------- | --------------------------- |
-| `browser`    | `false` | `isBrowserVoiceSupported()` |
-| `openai`     | `true`  | `true`                      |
-| `elevenlabs` | `false` | `true`                      |
-| `lmstudio`   | `true`  | `true`                      |
-| `custom`     | `true`  | `true`                      |
-| `agent-core` | `true`  | `true`                      |
+| Provider     | STT    | TTS                         |
+| ------------ | ------ | --------------------------- |
+| `browser`    | `true` | `isBrowserVoiceSupported()` |
+| `openai`     | `true` | `true`                      |
+| `elevenlabs` | `true` | `true`                      |
+| `lmstudio`   | `true` | `true`                      |
+| `custom`     | `true` | `true`                      |
+| `offline`    | `true` | `true`                      |
 
 ### Unified Voice Interface
 
@@ -178,21 +179,23 @@ Direct `fetch` calls to `{baseUrl}/audio/speech` and `{baseUrl}/audio/transcript
 Verified by reading `voiceService.ts`. **This is the current truth; the tables above
 describe the intended contract.**
 
-### What actually works
+### What actually works (2026-10-05)
 
-| Provider     | STT           | TTS           | Auth needed            | Notes                                                    |
-| ------------ | ------------- | ------------- | ---------------------- | -------------------------------------------------------- |
-| `browser`    | ❌ **throws** | ✅ works      | None                   | TTS via `window.speechSynthesis`; STT is a `TODO`        |
-| `openai`     | ✅ works      | ✅ works      | API Key                | Real `fetch` to `/audio/transcriptions`, `/audio/speech` |
-| `custom`     | ✅ works      | ✅ works      | API Key                | Same OpenAI-compatible path                              |
-| `lmstudio`   | ✅ works      | ✅ works      | None, **URL required** | Same path against a local server                         |
-| `elevenlabs` | ❌ **throws** | ❌ **throws** | API Key                | No implementation at all                                 |
-| `agent-core` | ❌ **throws** | ❌ **throws** | None                   | No implementation at all                                 |
+| Provider     | STT      | TTS      | Auth needed            | Notes                                                    |
+| ------------ | -------- | -------- | ---------------------- | -------------------------------------------------------- |
+| `browser`    | ✅ works | ✅ works | None                   | Web Speech API — zero-config                             |
+| `openai`     | ✅ works | ✅ works | API Key                | Real `fetch` to `/audio/transcriptions`, `/audio/speech` |
+| `custom`     | ✅ works | ✅ works | API Key                | Same OpenAI-compatible path                              |
+| `lmstudio`   | ✅ works | ✅ works | None, **URL required** | Same path against a local server                         |
+| `elevenlabs` | ✅ works | ✅ works | API Key                | ElevenLabs API for both directions                       |
+| `offline`    | ✅ works | ✅ works | None                   | sherpa-onnx via ml-sidecar; model dir required           |
 
-**Consequence:** there is **no zero-config offline STT**. Every working STT path needs
-either an API key or a user-installed local server.
+### The five historical stubs (all resolved)
 
-### The five stubs (exact locations)
+> At the time of writing, five code paths threw `not yet implemented`
+> (ElevenLabs TTS/STT, browser STT, agent-core both directions). ElevenLabs
+> and browser STT have since been implemented; `agent-core` was deleted with
+> its backend. Locations kept for archaeology:
 
 | Location                  | Message                              |
 | ------------------------- | ------------------------------------ |
@@ -202,18 +205,13 @@ either an API key or a user-installed local server.
 | `voiceService.ts:182-183` | `ElevenLabs STT not yet implemented` |
 | `voiceService.ts:185-186` | `Agent-core STT not yet implemented` |
 
-### Capability badges misreport two providers
+### Capability badges — now truthful (was: misreported two providers)
 
-`getVoiceCapabilities()` is what drives the ✓/✗ badges, and it disagrees with reality:
-
-| Provider     | Badge says                  | Reality    | Problem                                     |
-| ------------ | --------------------------- | ---------- | ------------------------------------------- |
-| `elevenlabs` | `{ stt: false, tts: true }` | TTS throws | ⚠️ Green **✓ TTS** on a stub                |
-| `agent-core` | `{ stt: true, tts: true }`  | Both throw | ⚠️ Reports full capability, implements none |
-| `browser`    | `{ stt: false, tts: … }`    | Honest     | ✅                                          |
-
-A user selects ElevenLabs, sees "✓ TTS", and gets a thrown error. Fixing this is
-**Phase 0** of [the offline-voice plan](../02-BACKEND/20-tts-stt-email.md#5-recommended-sequence).
+`getVoiceCapabilities()` drives the ✓/✗ badges. It previously disagreed with
+reality (green ✓ TTS on the ElevenLabs stub, full marks for the agent-core
+stub); the flags were flipped alongside each implementation, and the deleted
+provider reports nothing. The truthfulness contract lives on the function —
+flip the flag in the same change that implements a stub.
 
 ### Model registry: no local speech models
 
@@ -222,13 +220,11 @@ A user selects ElevenLabs, sees "✓ TTS", and gets a thrown error. Fixing this 
 offline engine has no registry entry yet. `ModelCapabilities` already declares
 `stt?` / `tts?` / `realtime?`, so adding local entries needs **no type change**.
 
-## Desktop Voice vs Python Agent-Core
+## Desktop voice only (no Python backend)
 
-Per ADR-001, desktop voice and Python agent-core are **separate systems**:
-
-- **Desktop voice** (this feature) operates entirely within the Tauri app, using the capability system and direct API calls
-- **Python agent-core** is a separate server-side system for multi-device sync and server-side AI processing
-- The `agent-core` voice provider is a **stub** — it reports full capabilities but throws `"not yet implemented"` for actual TTS/STT operations
+> **2026-10-05:** the Python agent-core backend was deleted outright, so
+> there is no proxy provider and no separate server-side voice system. All
+> providers below operate directly from the desktop app.
 
 ## Key Files
 

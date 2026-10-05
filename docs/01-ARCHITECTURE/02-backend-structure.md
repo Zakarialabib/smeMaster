@@ -48,7 +48,6 @@ src-tauri/src/
 │   ├── ops.rs          # Ops monitoring and alerts
 │   ├── automation.rs   # Email/social automation rules
 │   ├── types.rs        # Wire types (Health, OpsSnapshot, etc.)
-│   ├── client.rs       # HTTP client to agent-core (legacy compat)
 │   └── commands.rs     # Tauri commands for config/ops/automation
 │
 ├── db/                 # Database layer — schema, migrations, queries
@@ -107,6 +106,7 @@ pub async fn db_get_account(
 ```
 
 **Key rules:**
+
 - All DB commands use `db_` prefix — distinguishes them from native Tauri commands
 - Each command is a thin wrapper that delegates to a `db/tables/` query function
 - Errors flow through `AppDbError` → `SerializedError` — typed error codes on the frontend
@@ -130,6 +130,7 @@ SQLite                  ← WAL mode, connection pool managed in lib.rs
 ```
 
 **Why three tiers?**
+
 - Commands handle Tauri concerns (state extraction, serialization)
 - Query files handle SQL concerns (joins, filtering, pagination)
 - SQLite handles data concerns (storage, indexing, FK enforcement)
@@ -139,12 +140,16 @@ SQLite                  ← WAL mode, connection pool managed in lib.rs
 ## Core Systems
 
 ### Service Registry
+
 Long-running background services (Database, PGP, ImapSync) are managed through a centralized registry.
+
 - **Phased init**: Services initialize in priority order (P10 → P30 → P50)
 - **Progress events**: Emits `init:progress` and `init:ready` for the splash screen
 
 ### Watchdog
+
 Every 30 seconds, the watchdog pings all registered services:
+
 - **Health checks**: If a service doesn't respond, it gets flagged
 - **Self-healing**: Failed services are automatically restarted
 - **Exponential backoff**: Prevents restart loops on persistent failures

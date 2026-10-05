@@ -36,9 +36,11 @@ diverge. Verified by reading the providers:
 The refusals are **correct behaviour**, not stubs: the interface is satisfied and the
 error is truthful, so type guards can be used safely.
 
-Two layers are genuinely **unimplemented**, and both are tracked:
+Two layers were genuinely **unimplemented** at the time, and both were tracked
+(historical — ElevenLabs and browser STT have since been implemented and the
+`agent-core` backend deleted, 2026-10-04/05):
 
-1. **`voiceService.ts` provider dispatch** — five stubs that throw (`elevenlabs` TTS/STT,
+1. **`voiceService.ts` provider dispatch** — five stubs that threw (`elevenlabs` TTS/STT,
    `agent-core` TTS/STT, `browser` STT). Its `getVoiceCapabilities()` used to _advertise_
    two of them; fixed 2026-10-01 so the UI badge matches reality. See
    [Voice settings](../04-FEATURES/38-tts-stt-settings.md) §Implementation status.

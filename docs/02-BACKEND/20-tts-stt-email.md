@@ -12,7 +12,7 @@ reconciled them:
 
 | Doc                                                       | Assumed engine                               | Scope it covered                            |
 | --------------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
-| [SELF-HOSTING](dev/SELF-HOSTING.md) §2           | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
+| [SELF-HOSTING](dev/SELF-HOSTING.md) §2                    | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
 | 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** (Rust binding, in a sidecar) | Desktop local tier for the voice agent      |
 | an earlier draft of this doc                              | **candle whisper**                           | Desktop batch STT for the mail/AI assistant |
 
@@ -41,24 +41,31 @@ potentially different engines:
 **C1 + C2 + C5 are the desktop/offline scope of this doc.** C3/C6 stay with the
 voice-agent work — see §7.
 
-## 2. Verified current state (read from source, 2026-10-01)
+## 2. Verified current state (read from source; updated 2026-10-05)
+
+> **2026-10-05:** the `agent-core` provider row is gone — the Python backend
+> was deleted with the voice-call system, and `VoiceProviderType` no longer
+> lists it. ElevenLabs TTS/STT and browser STT have since been implemented,
+> so the stub inventory below is historical.
 
 ### 2.1 What works, what throws
 
-| Provider     | STT       | TTS       | Reality                                                       |
-| ------------ | --------- | --------- | ------------------------------------------------------------- |
-| `browser`    | ❌ throws | ✅ real   | TTS via `window.speechSynthesis`; STT is a `TODO` that throws |
-| `openai`     | ✅ real   | ✅ real   | `fetch` → `/audio/transcriptions`, `/audio/speech`            |
-| `custom`     | ✅ real   | ✅ real   | Same OpenAI-compatible `fetch` path                           |
-| `lmstudio`   | ✅ real   | ✅ real   | Same path against a local server                              |
-| `elevenlabs` | ❌ throws | ❌ throws | **No implementation at all**                                  |
-| `agent-core` | ❌ throws | ❌ throws | **No implementation at all**                                  |
+| Provider     | STT     | TTS     | Reality                                                  |
+| ------------ | ------- | ------- | -------------------------------------------------------- |
+| `browser`    | ✅ real | ✅ real | TTS via `window.speechSynthesis`; STT via Web Speech API |
+| `openai`     | ✅ real | ✅ real | `fetch` → `/audio/transcriptions`, `/audio/speech`       |
+| `custom`     | ✅ real | ✅ real | Same OpenAI-compatible `fetch` path                      |
+| `lmstudio`   | ✅ real | ✅ real | Same path against a local server                         |
+| `elevenlabs` | ✅ real | ✅ real | ElevenLabs API for both directions                       |
 
-**Working STT today = 3 providers, all requiring either an API key (`openai`) or a
-user-installed local server (`lmstudio`/`custom`).** There is **no** zero-config
-offline STT. The one zero-config provider (`browser`) has STT explicitly disabled.
+**Working STT today = 5 providers.** Zero-config paths: `browser` (Web Speech
+API) and on-device `offline` (sherpa-onnx via ml-sidecar, model dir required).
 
-### 2.2 The five stubs (exact locations)
+### 2.2 The five stubs — all resolved (exact locations, historical)
+
+> All five threw at the time of writing; each has since been implemented
+> (ElevenLabs both directions, browser STT via Web Speech API) or deleted
+> with its backend (`agent-core`). Kept so the archaeology survives.
 
 | File:line                 | Stub                                 | Impact                                   |
 | ------------------------- | ------------------------------------ | ---------------------------------------- |
@@ -68,9 +75,11 @@ offline STT. The one zero-config provider (`browser`) has STT explicitly disable
 | `voiceService.ts:182-183` | `ElevenLabs STT not yet implemented` | Same                                     |
 | `voiceService.ts:185-186` | `Agent-core STT not yet implemented` | Same                                     |
 
-### 2.3 The capability-detection bug
+### 2.3 The capability-detection bug — fixed
 
-`getVoiceCapabilities()` **reports capabilities that do not exist**:
+`getVoiceCapabilities()` **used to report** capabilities that did not exist
+(historical table — the flags have since been flipped alongside each
+implementation, per the function's truthfulness contract):
 
 | Provider     | `getVoiceCapabilities` says | Truth          | Verdict                                     |
 | ------------ | --------------------------- | -------------- | ------------------------------------------- |
@@ -105,7 +114,7 @@ registering local models needs **no type change**.
 | Source                                                    | Says                                                                                                                                 | Scope                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
 | 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** in a Tauri sidecar; "the repo already runs `ml-sidecar` over JSON-RPC — the pattern is proven here. RTF < 1 offline" | the **voice-agent** local tier       |
-| [SELF-HOSTING](dev/SELF-HOSTING.md) §2           | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
+| [SELF-HOSTING](dev/SELF-HOSTING.md) §2                    | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
 | earlier draft of this doc                                 | candle `whisper`                                                                                                                     | the **desktop assistant** STT        |
 
 **These are not actually in conflict once scope is separated** — but the earlier draft
@@ -495,7 +504,12 @@ over-reporting is reintroduced.
 | UI claims capability the build lacks         | **High** | Phase 0                                                                                |
 | Scope creep into live/streaming calls        | Medium   | §7 — batch desktop STT is separate from voice-agent P6                                 |
 
-## 7. Relationship to the voice-agent work (do not conflate)
+## 7. Relationship to the (dropped) voice-agent work
+
+> **2026-10-05:** the voice-call system was deleted outright — there is no
+> live-call tier, no P6, no Gate 5, no VPS voice agent. The comparison below
+> is kept for archaeology. "Voice" in this project now means batch STT/TTS
+> only.
 
 |                | Voice-agent **P6** (live)                                                    | **This doc** (batch) |
 | -------------- | ---------------------------------------------------------------------------- | -------------------- |

@@ -74,29 +74,14 @@ Two traps when writing one:
 Use `cargo check --workspace`, never `cargo check -p <crate>`: the workspace inherits the
 app's full default features and compiles code `-p` skips.
 
-## The voice agent's test layer (`services/agent-core/`)
+## Test layers (2026-10-05: TS + Rust only)
 
-A separate Python suite sits alongside the TS/Rust layers. It is **not** covered by
-`bun run test` or `cargo test`.
+The former third layer — the Python suite under `services/agent-core/` — was
+deleted with the dropped voice-call system (no archive, git history preserves
+it). The gates are:
 
-```bash
-cd services/agent-core
-python -m pytest -q                                   # 156 passed, 5 skipped (2026-09-28)
-# python -m pytest -q tests/rag/retrieval_eval.py     # 🔲 NOT BUILT YET — the hit@3 >= 0.9
-#                                                      gate from RAG-FORK; file does not exist yet
-```
-
-- **5 skips are the Postgres migration tests.** They need
-  `AGENT_CORE_TEST_DATABASE_URL`; there is no Postgres on this host, so migrations are
-  verified _structurally_, not against a real database. Say "skipped", never "passing".
-- **Two live-server checks** (server must be up on `:8788` — see
-  [`dev/RUNNING-DEV.md`](dev/RUNNING-DEV.md)):
-  `tests/live_swap.py --port 8788` (15 contract checks) and
-  `tests/verify_fixtures.py --port 8788` (4 key-set drift checks — the one that catches a
-  renamed field the console renders as `undefined` while every test still passes).
-- Current gate state, including `ruff`/`mypy`/`tsc`/`eslint` lines, lives in
-  **[`dev/BUILD-LOG.md`](dev/BUILD-LOG.md)** — treat that file, not this
-  page, as the source of truth for "what is green right now".
+- `bun run test` — colocated TS unit tests (vitest)
+- `cargo test` — Rust tests (`cd src-tauri`)
 
 ## Practical Guidance
 
@@ -125,9 +110,6 @@ The project uses a mixed approach:
 - `03-manual-tests.md` — pre-release manual gates
 - `../AGENTS.md` (agent contributor guide)
 - `../../PRODUCTION-READINESS.md`
-- `dev/BUILD-LOG.md` — live build/test state for `agent-core` + the Rust toolchain warning
-- `dev/RUNNING-DEV.md` — starting `agent-core` and running its two live checks
-- `dev/BUILD-PLAN.md` §7 — the verification commands that matter on this host
 
 ## Source reconciliation (2026-07-19)
 

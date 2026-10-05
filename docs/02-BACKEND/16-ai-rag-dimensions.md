@@ -1,21 +1,22 @@
 # AI RAG Multi-Dimension System
 
-> Three isolated embedding spaces with dimension-specific vector tables.
+> Two isolated embedding spaces with dimension-specific vector tables.
 > **Sources:** `src/features/assistant/stores/ragStore.ts`, `src/shared/services/db/invoke/rag.ts`, `src/shared/services/ai/modelRegistry.ts`
+> **2026-10-05:** former "Space C" (server agent-core, bge-m3) is gone with
+> the deleted Python backend. Two spaces remain.
 
 ## Overview
 
-SMEMaster's RAG system supports **three distinct embedding spaces** that are never merged. Each space produces vectors of a different dimensionality, and LanceDB stores them in dimension-specific tables (`knowledge_base_{dim}`) to prevent cross-space contamination.
+SMEMaster's RAG system supports **two distinct embedding spaces** that are never merged. Each space produces vectors of a different dimensionality, and LanceDB stores them in dimension-specific tables (`knowledge_base_{dim}`) to prevent cross-space contamination.
 
-This architecture is defined in **ADR-001 D2** and ensures that vectors from different embedding models are never compared against each other.
+This architecture is defined in **ADR-001 D2** (since superseded re: the server space) and ensures that vectors from different embedding models are never compared against each other.
 
-## The Three Embedding Spaces (ADR-001 D2)
+## The Two Embedding Spaces (ADR-001 D2, minus deleted Space C)
 
-| Space       | Source                     | Model                                  | Dimensions   | Table                 |
-| ----------- | -------------------------- | -------------------------------------- | ------------ | --------------------- |
-| **Space A** | Desktop candle (Rust)      | BGE-small-en-v1.5                      | 384 (fixed)  | `knowledge_base_384`  |
-| **Space B** | Desktop provider endpoint  | LM Studio / Ollama / OpenAI-compatible | N (variable) | `knowledge_base_{N}`  |
-| **Space C** | Server agent-core (Python) | bge-m3                                 | 1024 (fixed) | `knowledge_base_1024` |
+| Space       | Source                    | Model                                  | Dimensions   | Table                |
+| ----------- | ------------------------- | -------------------------------------- | ------------ | -------------------- |
+| **Space A** | Desktop candle (Rust)     | BGE-small-en-v1.5                      | 384 (fixed)  | `knowledge_base_384` |
+| **Space B** | Desktop provider endpoint | LM Studio / Ollama / OpenAI-compatible | N (variable) | `knowledge_base_{N}` |
 
 ### Space A — Desktop Candle BGE-Small (384-dim, Fixed)
 
@@ -33,15 +34,7 @@ This architecture is defined in **ADR-001 D2** and ensures that vectors from dif
 - **Use case:** Higher-quality local embeddings, multilingual support
 - **Configuration:** `lmstudio_embedding_model` setting
 
-### Space C — Server Agent-Core (1024-dim, bge-m3)
-
-- **Model:** `bge-m3` (via Python agent-core)
-- **Dimensions:** 1024 (fixed by model architecture)
-- **Engine:** Python agent-core server
-- **Use case:** Server-side RAG for multi-device sync
-- **Note:** Separate system from desktop voice (per ADR-001)
-
-## The Invariant: Three Spaces Are Never Merged
+## The Invariant: Spaces Are Never Merged
 
 **Critical rule:** Vectors from different embedding spaces are **NOT comparable**. A 384-dim BGE-small vector and a 1024-dim bge-m3 vector cannot be searched in the same index — the dimensions don't match, and even if they did, the semantic spaces are different.
 

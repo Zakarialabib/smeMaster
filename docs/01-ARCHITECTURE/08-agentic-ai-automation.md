@@ -14,7 +14,6 @@ src-tauri/src/agent/
 ├── ops.rs          # Ops monitoring and alerts
 ├── automation.rs   # Email/social automation rules
 ├── types.rs        # Wire types (Health, OpsSnapshot, etc.)
-├── client.rs       # HTTP client to agent-core (legacy compat)
 └── commands.rs     # Tauri commands for config/ops/automation
 ```
 
@@ -47,6 +46,7 @@ pub struct AgentConfig {
 ```
 
 **Key functions:**
+
 - `get_config(pool)` — Read current config
 - `update_config(pool, updates)` — Partial update (only known fields)
 - `set_tier(pool, tier)` — Set provider tier
@@ -68,6 +68,7 @@ pub struct ChainResult<T> {
 ```
 
 **Key functions:**
+
 - `ProviderChain::run(seam, call)` — Run call against each provider in order
 - `ChainExhausted` — Every provider failed (P1, not a retry loop)
 
@@ -105,12 +106,14 @@ pub struct AutomationRule {
 ```
 
 **Default rules:**
+
 1. **Email Triage** — Categorize + summarize + flag urgent
 2. **Smart Draft Replies** — Generate draft reply with context
 3. **Follow-up Reminders** — No reply after 48h → task
 4. **Social Media Monitor** — Brand mention → summarize + suggest response
 
 **Key functions:**
+
 - `get_rules(pool)` — Get all automation rules
 - `save_rules(pool, rules)` — Save automation rules
 - `toggle_rule(pool, rule_id)` — Toggle a rule on/off
@@ -120,18 +123,18 @@ pub struct AutomationRule {
 
 ## Tauri Commands
 
-| Command | Description |
-|---|---|
-| `agent_get_config` | Get current agent configuration |
-| `agent_update_config` | Update agent configuration |
-| `agent_set_provider_tier` | Set provider tier |
-| `agent_ops_snapshot` | Get ops snapshot |
-| `agent_list_alerts` | List alerts (optional severity filter) |
-| `agent_acknowledge_alert` | Acknowledge an alert |
-| `agent_get_automations` | Get all automation rules |
-| `agent_save_automations` | Save automation rules |
-| `agent_toggle_automation` | Toggle an automation rule |
-| `agent_run_automation` | Run an automation rule |
+| Command                   | Description                            |
+| ------------------------- | -------------------------------------- |
+| `agent_get_config`        | Get current agent configuration        |
+| `agent_update_config`     | Update agent configuration             |
+| `agent_set_provider_tier` | Set provider tier                      |
+| `agent_ops_snapshot`      | Get ops snapshot                       |
+| `agent_list_alerts`       | List alerts (optional severity filter) |
+| `agent_acknowledge_alert` | Acknowledge an alert                   |
+| `agent_get_automations`   | Get all automation rules               |
+| `agent_save_automations`  | Save automation rules                  |
+| `agent_toggle_automation` | Toggle an automation rule              |
+| `agent_run_automation`    | Run an automation rule                 |
 
 ---
 
@@ -155,6 +158,7 @@ const result = await invokeCommand<string>('agent_run_automation', { ruleId: 'au
 ## What Was Dropped
 
 The voice call system (SIP, telephony, realtime audio) was dropped because:
+
 - Too many hard dependencies (SIP, telephony, realtime audio)
 - WhatsApp live voice calls are exposed by no API
 - Voice runs on a dedicated PSTN number (ARCEP porting required)

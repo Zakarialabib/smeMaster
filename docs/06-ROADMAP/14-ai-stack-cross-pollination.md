@@ -181,7 +181,9 @@ If it is absent, the fix is the same as SignSync's T3: a build step that produce
 | 5   | Command-parity manifest (§1.4)                                                                                      | 1d     | `scripts/`, CI                                                                    |
 | 6   | Licence gate as code (§1.5)                                                                                         | 0.5d   | model fetch/load path                                                             |
 
-Items 2–4 also unblock the voice agent's Gate 1 `EmbeddingProvider` seam
-([`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D3) — the server
-seam and the desktop slot registry should share the dimension contract, or the three embedding spaces
-get harder to keep apart than they already are.
+Items 2–4 also unblocked the (now dropped, 2026-10-05) voice agent's Gate 1
+`EmbeddingProvider` seam
+([`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D3) — at the
+time, the server seam and the desktop slot registry needed a shared dimension
+contract across the three embedding spaces. With the server space deleted,
+only the two desktop spaces remain.

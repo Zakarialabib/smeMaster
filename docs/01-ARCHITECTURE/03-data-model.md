@@ -224,21 +224,25 @@ When changing data behavior:
 
 - avoid documenting deprecated tables as first-class features
 
-## A second index — server-side pgvector (voice agent)
+## Embedding spaces — desktop only (no server index)
 
-The voice agent's knowledge base does **not** live in SQLite. Per
+> **2026-10-05:** the server-side pgvector index inside `services/agent-core/`
+> was deleted with the voice-call system (no archive, git history preserves
+> it). There is no "Space C" anymore — the paragraph below describes the
+> pre-deletion layout and is kept for archaeology only.
+
+The voice agent's knowledge base did **not** live in SQLite. Per
 [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D2/D3 and
 [`RAG-FORK.md`](dev/RAG-FORK.md) (**decided 2026-09-28 — Option A**), agent
-retrieval runs server-side on Postgres + `pgvector` inside `services/agent-core/`, at
+retrieval ran server-side on Postgres + `pgvector` inside `services/agent-core/`, at
 **1024 dims** (`bge-m3` / `arctic-embed-l-v2.0`).
 
-### ⚠️ Invariant: three embedding spaces, never merged
+### ⚠️ Invariant: embedding spaces are never merged
 
 | Space | Runtime                                                            | Dim                                 |
 | ----- | ------------------------------------------------------------------ | ----------------------------------- |
 | A     | desktop, candle `bge-small-en-v1.5` (`embeddingSource = rust_bge`) | **384** fixed                       |
 | B     | desktop, provider endpoint (`embeddingSource = provider`)          | **N — read it from index metadata** |
-| C     | server, `agent-core` `EmbeddingProvider`                           | **1024**                            |
 
 Different models, different dimensions, different machines. **Never "unify" them** — a
 dimension mismatch is a hard failure at query time, and it is the most tempting wrong
