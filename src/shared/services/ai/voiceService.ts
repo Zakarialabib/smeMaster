@@ -478,7 +478,7 @@ export async function transcribeSpeech(
  * really does, not what the provider is intended to do eventually. Returning
  * `true` for a code path that throws shows the user a green badge and then
  * fails at call time — see the stub inventory in
- * `docs/02-BACKEND/20-offline-stt-and-audio-summarization.md` §2.
+ * `docs/02-BACKEND/20-tts-stt-email.md` §2.
  *
  * When a stub in `synthesizeSpeech`/`transcribeSpeech` is implemented, flip the
  * corresponding flag here in the same change.

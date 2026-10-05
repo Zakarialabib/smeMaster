@@ -39,7 +39,6 @@ SQLite (WAL mode)
 ```
 
 **Why this matters:**
-
 - UI calls are synchronous — no loading spinners for local data
 - Services are plain async functions (not classes), except `GmailClient`
 - All database access goes through Rust — zero direct SQL in TypeScript
@@ -49,13 +48,11 @@ SQLite (WAL mode)
 
 ## What Happens When You Start the App
 
-1. Tauri's `setup` hook fires → creates SQLite pool → runs **34 migrations** (re-verified 2026-10-03: `src-tauri/src/db/migrations/` holds exactly 34 `.sql` files, 001–034) → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
-
+1. Tauri's `setup` hook fires → creates SQLite pool → runs **36 migrations** → starts background services (snooze, follow-up, queue, pre-cache, scheduled send, bundle, update checker)
 2. `main.tsx` renders `<WindowBootstrap>` which checks: "what window are we in?"
-
 3. Based on the window label:
    - **"main"** → Full app with router + `useAppInit`:
-     - Seeds built-in email + campaign presets/templates (see `seedAllPresets`)
+     - Seeds built-in email + campaign presets/templates
      - Seeds default compliance profiles
      - Loads i18n → restores settings → loads accounts → initializes email clients
      - Seeds default signatures and quick replies per account
@@ -95,22 +92,16 @@ SQLite (WAL mode)
 
 ---
 
-## The Second Runtime: `services/agent-core/` (voice agent)
+## Agentic AI Automation
 
-A **separate product surface**, not part of the three layers above. The voice &
-messaging agent runs as a 24/7 **network sidecar** on our VPS:
+The agent module (`src-tauri/src/agent/`) provides AI-powered automation for email and social channels:
 
-- `services/agent-core/` — Python (FastAPI), **not** a Cargo workspace member, **not**
-  launched or supervised by Tauri. The desktop being closed must not stop a phone from ringing.
-- Console ↔ agent-core IPC is a **per-tenant bearer token**; tenant identity is derived
-  server-side and never comes from a client argument.
-- Its migrations (`services/agent-core/migrations/`, Postgres + pgvector) are **separate**
-  from the SQLite migrations above.
+- **Config management** — Agent configuration stored in settings table
+- **Provider chain** — Fallback chain for LLM/TTS/STT/embedding providers
+- **Ops monitoring** — Alert storage, acknowledgment, and snapshot generation
+- **Automation rules** — Email triage, smart drafts, follow-up reminders, social monitoring
 
-**Read first:** [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) —
-integration seams (4 provider ABCs), the three embedding spaces, and the IPC auth model.
-Dev-mode run instructions: [`docs/voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md);
-⚠️ build status: [`docs/voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md).
+**Read first:** [`docs/01-ARCHITECTURE/08-agentic-ai-automation.md`](08-agentic-ai-automation.md)
 
 ---
 

@@ -39,7 +39,7 @@ $TC/bin/cargo.exe check --workspace -j1
 Also: `cargo test` binaries **link but do not launch** here (`STATUS_ENTRYPOINT_NOT_FOUND
 0xc0000139`) — a Windows DLL/UCRT mismatch, not a code defect. Do not report Rust tests as
 passing on this host; they should run in CI. Full detail, including disk-space requirements
-(free 15+ G before any `cargo build`): **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)**
+(free 15+ G before any `cargo build`): **[`../archive/voice-call-system/dev/BUILD-LOG.md`](../archive/voice-call-system/dev/BUILD-LOG.md)**
 — read it FIRST when picking work up.
 
 ## Commands you'll actually use
@@ -135,10 +135,10 @@ agent. It is **not** started by `bun run tauri dev` and is not a Cargo workspace
 
 | You want to…                                                           | Read                                                                                                    |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Run `agent-core` in dev mode (uvicorn on `:8788`, the two live checks) | **[`../voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md)**                                        |
-| Know the build status, toolchain breakage, and what is _not_ verified  | **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** — read FIRST                               |
-| Pick up a gated piece of voice work                                    | [`../voice/dev/AGENT-PROMPTS.md`](../voice/dev/AGENT-PROMPTS.md)                                        |
-| Understand the phase sequence                                          | [`../voice/dev/BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
+| Run `agent-core` in dev mode (uvicorn on `:8788`, the two live checks) | **[`../archive/voice-call-system/dev/RUNNING-DEV.md`](../archive/voice-call-system/dev/RUNNING-DEV.md)**                                        |
+| Know the build status, toolchain breakage, and what is _not_ verified  | **[`../archive/voice-call-system/dev/BUILD-LOG.md`](../archive/voice-call-system/dev/BUILD-LOG.md)** — read FIRST                               |
+| Pick up a gated piece of voice work                                    | [`../archive/voice-call-system/dev/AGENT-PROMPTS.md`](../archive/voice-call-system/dev/AGENT-PROMPTS.md)                                        |
+| Understand the phase sequence                                          | [`../archive/voice-call-system/dev/BUILD-PLAN.md`](../archive/voice-call-system/dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
 
 ```bash
 # agent-core dev mode (NOT part of `bun run tauri dev`)

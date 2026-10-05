@@ -1,8 +1,10 @@
 # SMEMaster — Project Status
 
-> **Last updated:** 2026-10-02
+> **Last updated:** 2026-10-04 — voice call system dropped, pivoted to agentic AI automation.
 >
-> ✅ **Offline Speech — STT + TTS verified end-to-end (2026-10-02):** sherpa-onnx (Apache-2.0) behind an optional `offline-speech` feature in `ml-sidecar`. **Measured, not asserted:** STT (Zipformer Small en, int8) RTF **0.033** at **0.998** similarity vs published transcript; TTS (Piper fr_FR-siwis-medium) RTF **0.573**. A JSON-RPC E2E harness (`examples/e2e_speech.py`) drives the **real shipped binary** and passes 8/8 checks. The `espeak-ng-data` **9-file subset** was proven sufficient (full dir is 355 files/18 MB). Docs: `02-BACKEND/20-offline-stt-and-audio-summarization.md`.
+> ✅ **Offline Speech — STT + TTS verified end-to-end (2026-10-02):** sherpa-onnx (Apache-2.0) behind an optional `offline-speech` feature in `ml-sidecar`. **Measured, not asserted:** STT (Zipformer Small en, int8) RTF **0.033** at **0.998** similarity vs published transcript; TTS (Piper fr_FR-siwis-medium) RTF **0.573**. A JSON-RPC E2E harness (`examples/e2e_speech.py`) drives the **real shipped binary** and passes 8/8 checks. The `espeak-ng-data` **9-file subset** was proven sufficient (full dir is 355 files/18 MB). Docs: `02-BACKEND/20-tts-stt-email.md`.
+>
+> ✅ **Agentic AI Automation — Python → Rust conversion complete (2026-10-04):** Voice call system (SIP, telephony, realtime audio) **dropped entirely**. Agent module now in Rust: `config.rs`, `providers.rs`, `ops.rs`, `automation.rs`, `commands.rs`. Agent console pivoted to agentic AI for email/social automation. All gates green: typecheck ✓ · lint ✓ · build ✓ · cargo check ✓. Docs consolidated: voice call docs archived to `docs/archive/voice-call-system/`, TTS/STT docs moved to `02-BACKEND/20-tts-stt-email.md` + `04-FEATURES/38-tts-stt-settings.md`, new `01-ARCHITECTURE/08-agentic-ai-automation.md` created.
 >
 > ✅ **Model download → engine wiring (2026-10-02):** Downloads land in the hf-hub cache layout but the engines read a **flat** directory — `ai_prepare_model_dir` bridges them (hard-link, copy fallback). Verified: a model downloaded through the UI loads with `status:"loaded"`.
 >

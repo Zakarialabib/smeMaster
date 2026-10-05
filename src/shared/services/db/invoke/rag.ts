@@ -215,7 +215,7 @@ export async function aiListSidecarModels(): Promise<any> {
 // with "unknown method", which callers must handle as "offline speech not
 // available on this install" rather than a bug.
 //
-// See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+// See docs/02-BACKEND/20-tts-stt-email.md §10.
 
 /** Result of loading an offline STT model. */
 export interface SttModelInfo {

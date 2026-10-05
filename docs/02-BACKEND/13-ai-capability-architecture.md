@@ -41,10 +41,10 @@ Two layers are genuinely **unimplemented**, and both are tracked:
 1. **`voiceService.ts` provider dispatch** — five stubs that throw (`elevenlabs` TTS/STT,
    `agent-core` TTS/STT, `browser` STT). Its `getVoiceCapabilities()` used to _advertise_
    two of them; fixed 2026-10-01 so the UI badge matches reality. See
-   [Voice settings](../04-FEATURES/38-voice-settings.md) §Implementation status.
+   [Voice settings](../04-FEATURES/38-tts-stt-settings.md) §Implementation status.
 2. **No local/offline speech engine** — every working path needs an API key or a
    user-run server. Engine decision, phase plan and locale coverage:
-   [20-offline-stt-and-audio-summarization](20-offline-stt-and-audio-summarization.md).
+   [20-tts-stt-email](20-tts-stt-email.md).
 
 ### Voice Helper Types
 

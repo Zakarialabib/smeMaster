@@ -2,7 +2,7 @@
 
 > **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup. (Note: `SECURITY-AUDIT.md` was never created — security evidence lives in Gate 0 above.)
 
-> **Last updated:** 2026-09-30 (command/migration counts reconciled against source this pass)
+> **Last updated:** 2026-10-04 — voice call system dropped, pivoted to agentic AI automation.
 
 ## Status Summary
 

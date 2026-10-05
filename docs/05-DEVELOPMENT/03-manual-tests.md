@@ -23,7 +23,7 @@ Run these after a fresh `bun run tauri dev` before tagging a release:
 - `bun run tauri dev` needs a working Rust toolchain. On this host the rustup proxies
   are broken (`rustc.exe is not applicable to the toolchain`) — use the direct-toolchain
   workaround in [`01-quickstart.md`](01-quickstart.md) → "Toolchain warning", and read
-  **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** before touching `cargo`.
+  **[`../archive/voice-call-system/dev/BUILD-LOG.md`](../archive/voice-call-system/dev/BUILD-LOG.md)** before touching `cargo`.
 - Free 15+ GB of disk before any Rust build. The machine sits at 95–99% full during
   builds, which has already caused an `E0463` and a 59-minute killed build.
 - Automated Rust tests for panic, WAL, and watchdog behavior were added and pass:

@@ -228,7 +228,7 @@ When changing data behavior:
 
 The voice agent's knowledge base does **not** live in SQLite. Per
 [`ADR-001`](decisions/ADR-001-voice-agent-integration-seams.md) D2/D3 and
-[`RAG-FORK.md`](../voice/dev/RAG-FORK.md) (**decided 2026-09-28 — Option A**), agent
+[`RAG-FORK.md`](../archive/voice-call-system/dev/RAG-FORK.md) (**decided 2026-09-28 — Option A**), agent
 retrieval runs server-side on Postgres + `pgvector` inside `services/agent-core/`, at
 **1024 dims** (`bge-m3` / `arctic-embed-l-v2.0`).
 

@@ -1,276 +1,137 @@
-# SMEMaster Docs
+# SMEMaster — Documentation Index
 
-> **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 34 migrations (001–034, re-verified 2026-10-03) · **Tests:** 314 TS test files + 999 Rust tests (via `bun run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 868 (804 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-10-03) · **Stores:** 47 Zustand store modules (non-test, checker-verified 2026-10-03 via `scripts/check-ground-truth.mjs`)
-> **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
-> **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
-> **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases
->
-> ⚠️ **Ground-truth note (2026-07-15, refreshed 2026-09-30):** Several historical docs quote stale metrics (773/652/704/831 commands, 60/56/34/22 migrations, 38/21/42/43 stores). The numbers above are grepped directly from source and are canonical. **`docs/STATUS.md → Verified Ground Truth` still carries the 2026-07-15 figures (34/831/42) and is stale pending its own refresh** — trust this header over it until reconciled.
+> **Last updated:** 2026-10-04 — voice call system dropped, pivoted to agentic AI automation.
+> **Single source of truth:** This index + `docs/STATUS.md` + `docs/PRODUCTION-READINESS.md`.
 
 ---
 
-## How to use these docs
+## Quick Start
 
-**New here?** Start with [01-overview](01-ARCHITECTURE/01-overview.md) to understand the architecture, then [01-quickstart](05-DEVELOPMENT/01-quickstart.md) to get it running.
-
-**Adding a feature?** Read [05-reuse-patterns](05-DEVELOPMENT/05-reuse-patterns.md) first — it has the gotchas that'll save you hours.
-
-**Working on UI?** The [DESIGN_SYSTEM_GUIDE](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) is the source of truth for tokens, components, and visual patterns.
-
-**Working on AI prompts or RAG?** Start with the [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md) guide, then [AI RAG](04-FEATURES/ai-rag.md) for the big picture.
-
-**Just browsing?** The [STATUS.md](STATUS.md) gives you the full picture of where things stand.
-
-**Shipping a release?** See [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) for all 9 gate status, then [release/checklist.md](release/checklist.md) for the pre-release checklist. The automated pipeline is documented in [06-release-pipeline.md](05-DEVELOPMENT/06-release-pipeline.md).
+| I want to... | Go to |
+| --- | --- |
+| Understand the architecture | [01-ARCHITECTURE/01-overview.md](01-ARCHITECTURE/01-overview.md) |
+| See the Rust backend structure | [01-ARCHITECTURE/02-backend-structure.md](01-ARCHITECTURE/02-backend-structure.md) |
+| Understand agentic AI automation | [01-ARCHITECTURE/08-agentic-ai-automation.md](01-ARCHITECTURE/08-agentic-ai-automation.md) |
+| See the roadmap | [06-ROADMAP/09-master-plan.md](06-ROADMAP/09-master-plan.md) |
+| Check production readiness | [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) |
 
 ---
 
-## Architecture
+## 01 — Architecture
 
-How the system is built.
+| Doc | Status | What |
+| --- | --- | --- |
+| [01-overview.md](01-ARCHITECTURE/01-overview.md) | ✅ | Three layers, IPC, conventions |
+| [02-backend-structure.md](01-ARCHITECTURE/02-backend-structure.md) | ✅ | Rust backend layout, agent module |
+| [03-data-model.md](01-ARCHITECTURE/03-data-model.md) | ✅ | Schema ownership, domains |
+| [05-mobile-architecture.md](01-ARCHITECTURE/05-mobile-architecture.md) | ✅ | Android/iOS bridge |
+| [06-schema-relationships.md](01-ARCHITECTURE/06-schema-relationships.md) | ✅ | Table relationships |
+| [07-sidecar-architecture.md](01-ARCHITECTURE/07-sidecar-architecture.md) | ✅ | ml-sidecar process model |
+| [08-agentic-ai-automation.md](01-ARCHITECTURE/08-agentic-ai-automation.md) | 🆕 | Agent module: config, providers, ops, automation |
 
-| Doc                                                                   | Covers                                            |
-| --------------------------------------------------------------------- | ------------------------------------------------- |
-| [01-overview](01-ARCHITECTURE/01-overview.md)                         | Three-layer architecture: React → Service → Rust  |
-| [02-backend-structure](01-ARCHITECTURE/02-backend-structure.md)       | Rust module layout, DB commands, plugins          |
-| [03-data-model](01-ARCHITECTURE/03-data-model.md)                     | Schema ownership, domains, consolidation patterns |
-| [05-mobile-architecture](01-ARCHITECTURE/05-mobile-architecture.md)   | 80/20 code reuse, platform detection              |
-| [06-schema-relationships](01-ARCHITECTURE/06-schema-relationships.md) | 60+ foreign keys, full FK map                     |
+---
 
-## Backend
+## 02 — Backend
 
-Rust & Tauri — the native layer.
+| Doc | Status | What |
+| --- | --- | --- |
+| [01-imap-engine.md](02-BACKEND/01-imap-engine.md) | ✅ | IMAP sync engine |
+| [02-smtp-client.md](02-BACKEND/02-smtp-client.md) | ✅ | SMTP client |
+| [03-pgp-crypto.md](02-BACKEND/03-pgp-crypto.md) | ✅ | PGP encryption |
+| [04-oauth-flow.md](02-BACKEND/04-oauth-flow.md) | ✅ | OAuth PKCE |
+| [05-plugins-inventory.md](02-BACKEND/05-plugins-inventory.md) | ✅ | Plugin system |
+| [06-commands-reference.md](02-BACKEND/06-commands-reference.md) | ✅ | 868 IPC commands reference |
+| [07-key-management.md](02-BACKEND/07-key-management.md) | ✅ | Key management |
+| [10-error-system.md](02-BACKEND/10-error-system.md) | ✅ | Error types |
+| [11-event-system.md](02-BACKEND/11-event-system.md) | ✅ | Event bus |
+| [12-diagnostics.md](02-BACKEND/12-diagnostics.md) | ✅ | Diagnostics |
+| [13-ai-capability-architecture.md](02-BACKEND/13-ai-capability-architecture.md) | ✅ | Provider capability system |
+| [14-ai-task-router.md](02-BACKEND/14-ai-task-router.md) | ✅ | Task routing |
+| [15-ai-model-registry.md](02-BACKEND/15-ai-model-registry.md) | ✅ | Model definitions |
+| [16-ai-rag-dimensions.md](02-BACKEND/16-ai-rag-dimensions.md) | ✅ | RAG embedding dimensions |
+| [19-document-and-email-extraction.md](02-BACKEND/19-document-and-email-extraction.md) | ✅ | Doc/email extraction |
+| [20-tts-stt-email.md](02-BACKEND/20-tts-stt-email.md) | ✅ | TTS/STT for email (sherpa-onnx, ElevenLabs, browser) |
+| [ai-rag.md](02-BACKEND/ai-rag.md) | ✅ | RAG system |
 
-| Doc                                                                                            | Covers                                                                         |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [01-imap-engine](02-BACKEND/01-imap-engine.md)                                                 | async-imap, MIME parsing, delta sync                                           |
-| [02-smtp-client](02-BACKEND/02-smtp-client.md)                                                 | lettre transport, OAuth2                                                       |
-| [03-pgp-crypto](02-BACKEND/03-pgp-crypto.md)                                                   | PGP key gen, encrypt/decrypt                                                   |
-| [04-oauth-flow](02-BACKEND/04-oauth-flow.md)                                                   | PKCE OAuth, localhost server, token refresh                                    |
-| [05-plugins-inventory](02-BACKEND/05-plugins-inventory.md)                                     | 14 Tauri plugins + mobile                                                      |
-| [06-commands-reference](02-BACKEND/06-commands-reference.md)                                   | 831 IPC commands (35 invoicing + 12 POS)                                       |
-| [07-key-management](02-BACKEND/07-key-management.md)                                           | AES-256-GCM, PGP, security model                                               |
-| [08-mobile-build](02-BACKEND/08-mobile-build.md)                                               | APK generation, platform targets                                               |
-| [10-error-system](02-BACKEND/10-error-system.md)                                               | SerializedError type system                                                    |
-| [11-event-system](02-BACKEND/11-event-system.md)                                               | EventBus, AppEvent enum, DomainEventProcessor                                  |
-| [12-diagnostics](02-BACKEND/12-diagnostics.md)                                                 | Backend tech-debt & diagnostics tracking                                       |
-| [ai-rag](02-BACKEND/ai-rag.md)                                                                 | Rust: candle, LanceDB, parser, indexer                                         |
-| [13-ai-capability-architecture](02-BACKEND/13-ai-capability-architecture.md)                   | Capability interfaces, type guards, provider composition                       |
-| [14-ai-task-router](02-BACKEND/14-ai-task-router.md)                                           | Per-task provider+model routing, fallback chains, cost scoring                 |
-| [15-ai-model-registry](02-BACKEND/15-ai-model-registry.md)                                     | Data-driven model definitions, embedding space pinning                         |
-| [16-ai-rag-dimensions](02-BACKEND/16-ai-rag-dimensions.md)                                     | Multi-dimension RAG, three embedding spaces, migration guide                   |
-| [19-document-and-email-extraction](02-BACKEND/19-document-and-email-extraction.md)             | 📐 Proposal — OCR, scanned-invoice capture, DOCX stub defect                   |
-| [20-offline-stt-and-audio-summarization](02-BACKEND/20-offline-stt-and-audio-summarization.md) | ✅ Implemented — sherpa-onnx STT/TTS, verified RTF, model catalog, settings UI |
+---
 
-## Frontend
+## 03 — Frontend
 
-React 19, TypeScript, Tailwind, Zustand.
+| Doc | Status | What |
+| --- | --- | --- |
+| [02-state-management.md](03-FRONTEND/02-state-management.md) | ✅ | Zustand stores |
+| [03-service-layer.md](03-FRONTEND/03-service-layer.md) | ✅ | Service layer patterns |
+| [04-dependencies.md](03-FRONTEND/04-dependencies.md) | ✅ | Dependencies |
+| [06-mobile-ui-strategy.md](03-FRONTEND/06-mobile-ui-strategy.md) | ✅ | Mobile UI |
+| [07-event-bus.md](03-FRONTEND/07-event-bus.md) | ✅ | Event bus |
+| [08-ui-ux-roadmap.md](03-FRONTEND/08-ui-ux-roadmap.md) | ✅ | UI/UX roadmap |
+| [09-state-split.md](03-FRONTEND/09-state-split.md) | ✅ | State split rules |
+| [10-rtl-audit.md](03-FRONTEND/10-rtl-audit.md) | ✅ | RTL audit (0 violations) |
+| [11-typed-ipc.md](03-FRONTEND/11-typed-ipc.md) | ✅ | Typed IPC |
+| [13-deprecations.md](03-FRONTEND/13-deprecations.md) | ✅ | Deprecation log |
+| [14-navigation-ia-spec.md](03-FRONTEND/14-navigation-ia-spec.md) | ✅ | Navigation/IA spec |
+| [15-shared-components.md](03-FRONTEND/15-shared-components.md) | ✅ | Shared components |
+| [ai-context-engineering.md](03-FRONTEND/ai-context-engineering.md) | ✅ | AI context engineering |
+| [ai-prompt-engineering.md](03-FRONTEND/ai-prompt-engineering.md) | ✅ | AI prompt engineering |
+| [ai-rag.md](03-FRONTEND/ai-rag.md) | ✅ | RAG frontend |
 
-| Doc                                                           | Covers                                                     |
-| ------------------------------------------------------------- | ---------------------------------------------------------- |
-| [02-state-management](03-FRONTEND/02-state-management.md)     | Store boundaries and ownership                             |
-| [03-service-layer](03-FRONTEND/03-service-layer.md)           | Frontend service and runtime flow                          |
-| [04-dependencies](03-FRONTEND/04-dependencies.md)             | Current package and crate choices                          |
-| [06-mobile-ui-strategy](03-FRONTEND/06-mobile-ui-strategy.md) | Layout modes, touch                                        |
-| [07-event-bus](03-FRONTEND/07-event-bus.md)                   | App events and frontend bus (uiBus) usage                  |
-| [08-ui-ux-roadmap](03-FRONTEND/08-ui-ux-roadmap.md)           | Desktop + Mobile UI/UX plan                                |
-| [09-state-split](03-FRONTEND/09-state-split.md)               | UI store split                                             |
-| [10-rtl-audit](03-FRONTEND/10-rtl-audit.md)                   | RTL layout readiness audit (physical-direction violations) |
-| [11-typed-ipc](03-FRONTEND/11-typed-ipc.md)                   | Frontend ↔ Rust command boundary                           |
+---
 
-| [13-deprecations](03-FRONTEND/13-deprecations.md) | Frontend tech-debt & deprecation tracking |
-| [14-navigation-ia-spec](03-FRONTEND/14-navigation-ia-spec.md) | Email-first rail order, orphaned feature wiring |
-| [15-shared-components](03-FRONTEND/15-shared-components.md) | Reusable UI primitives + stability hooks/utils |
-| [ai-prompt-engineering](03-FRONTEND/ai-prompt-engineering.md) | All AI prompts — email, inbox, CRM, RAG, task extraction |
-| [ai-context-engineering](03-FRONTEND/ai-context-engineering.md) | Context construction — data sourcing, truncation, quality |
-| [ai-rag](03-FRONTEND/ai-rag.md) | TS wrappers, store, components, routing |
+## 04 — Features
 
-## Features
+| Doc | Status | What |
+| --- | --- | --- |
+| [01-email-management.md](04-FEATURES/01-email-management.md) | ✅ | Email management |
+| [02-campaigns-mail-merge.md](04-FEATURES/02-campaigns-mail-merge.md) | ✅ | Campaigns |
+| [03-crm-contacts.md](04-FEATURES/03-crm-contacts.md) | ✅ | CRM contacts |
+| [05-automation.md](04-FEATURES/05-automation.md) | ✅ | Automation rules |
+| [34-mail-composer.md](04-FEATURES/34-mail-composer.md) | ✅ | Mail composer |
+| [37-settings-redesign-spec.md](04-FEATURES/37-settings-redesign-spec.md) | ✅ | Settings redesign |
+| [38-tts-stt-settings.md](04-FEATURES/38-tts-stt-settings.md) | ✅ | TTS/STT settings UI |
 
-What the app does, grouped by functional area.
+---
 
-### Core Workflows
+## 05 — Development
 
-| Doc                                                    | Covers                                        |
-| ------------------------------------------------------ | --------------------------------------------- |
-| [Email](04-FEATURES/01-email-management.md)            | Inbox, threads, sync, triage, compose, search |
-| [Accounts](04-FEATURES/04-accounts.md)                 | Account setup, auth, providers, switching     |
-| [CRM](04-FEATURES/03-crm-contacts.md)                  | Contacts, companies, deals, Customer 360      |
-| [Campaigns](04-FEATURES/02-campaigns-mail-merge.md)    | Campaign builder, block editor, mail merge    |
-| [Calendar](04-FEATURES/07-calendar.md)                 | Calendars, events, views, CalDAV              |
-| [Tasks](04-FEATURES/08-tasks.md)                       | Priorities, recurrence, kanban, AI extraction |
-| [Automation](04-FEATURES/05-automation.md)        | Trigger/action rules                          |
-| [Account Cleaning](04-FEATURES/06-account-cleaning.md) | Retention policies and cleanup rules          |
-| [Dashboard](04-FEATURES/09-dashboard.md)               | Cross-feature overview, 10 widgets            |
+| Doc | Status | What |
+| --- | --- | --- |
+| [02-testing.md](05-DEVELOPMENT/02-testing.md) | ✅ | Testing strategy |
+| [03-manual-tests.md](05-DEVELOPMENT/03-manual-tests.md) | ✅ | Manual test procedures |
+| [04-wal-deletion.md](05-DEVELOPMENT/04-wal-deletion.md) | ✅ | WAL deletion |
+| [05-reuse-patterns.md](05-DEVELOPMENT/05-reuse-patterns.md) | ✅ | Reuse patterns |
+| [DESIGN_SYSTEM_GUIDE.md](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md) | ✅ | Design system |
 
-### Messaging Layer
+---
 
-| Doc                                                   | Covers                                                       |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| [Composer](04-FEATURES/34-mail-composer.md)           | Drafting, send, schedule, aliases                            |
-| [Templates](04-FEATURES/24-templates.md)              | Reusable template content                                    |
-| [Quick Replies](04-FEATURES/29-quick-replies.md)      | Fast reply snippets                                          |
-| [Filters](04-FEATURES/28-filters.md)                  | Rule-based filtering and testing                             |
-| [Deliverability](04-FEATURES/21-deliverability.md)    | DNS, blacklist, bounce health                                |
-| [38-voice-settings](04-FEATURES/38-voice-settings.md) | Desktop voice settings, STT/TTS providers, capability badges |
+## 06 — Roadmap
 
-### Security And Data
+| Doc | Status | What |
+| --- | --- | --- |
+| [09-master-plan.md](06-ROADMAP/09-master-plan.md) | ✅ | Master roadmap (all phases) |
+| [10-monetization-entitlement-engine.md](06-ROADMAP/10-monetization-entitlement-engine.md) | 🔲 design | Entitlement engine |
+| [11-monetization-frontend-paywall.md](06-ROADMAP/11-monetization-frontend-paywall.md) | 🔲 design | Frontend paywall |
+| [12-monetization-asset-delivery.md](06-ROADMAP/12-monetization-asset-delivery.md) | 🔲 design | Asset delivery |
+| [13-monetization-mobile-strategy.md](06-ROADMAP/13-monetization-mobile-strategy.md) | 🔲 design | Mobile monetization |
+| [14-ai-stack-cross-pollination.md](06-ROADMAP/14-ai-stack-cross-pollination.md) | ✅ | AI stack cross-pollination |
 
-| Doc                                               | Covers                              |
-| ------------------------------------------------- | ----------------------------------- |
-| [PGP](04-FEATURES/26-pgp-encryption.md)           | OpenPGP keys and encrypted messages |
-| [Vault](04-FEATURES/25-attachment-vault.md)       | Attachment and file workflows       |
-| [Compliance](04-FEATURES/23-compliance-engine.md) | Policy-aware sending checks         |
+---
 
-### Intelligence And UX
+## Archive
 
-| Doc                                                            | Covers                                                    |
-| -------------------------------------------------------------- | --------------------------------------------------------- |
-| [AI](04-FEATURES/22-ai-integration.md)                         | Providers and AI-powered helpers                          |
-| [AI RAG — Overview](04-FEATURES/ai-rag.md)                     | Local semantic search & RAG architecture                  |
-| [AI RAG — Backend](02-BACKEND/ai-rag.md)                       | Rust: candle, LanceDB, parser, indexer                    |
-| [AI RAG — Frontend](03-FRONTEND/ai-rag.md)                     | TS wrappers, store, components, routing                   |
-| [Prompt Engineering](03-FRONTEND/ai-prompt-engineering.md)     | All AI prompts — email, inbox, CRM, RAG, task extraction  |
-| [Context Engineering](03-FRONTEND/ai-context-engineering.md)   | Context construction — data sourcing, truncation, quality |
-| [Contact Intelligence](04-FEATURES/30-contact-intelligence.md) | Scoring and insight layer for contacts                    |
-| [Shortcuts](04-FEATURES/31-keyboard-shortcuts.md)              | Keyboard workflow                                         |
-| [i18n](04-FEATURES/32-i18n-localization.md)                    | Locales and RTL                                           |
+| Doc | Status | What |
+| --- | --- | --- |
+| [voice-call-system/](archive/voice-call-system/) | 🗄️ ARCHIVED | Voice call system docs (dropped 2026-10-04) |
 
-### Voice & Messaging Agent (client engagement — Gate 0)
+---
 
-FR/EN AI receptionist: WhatsApp (text) + inbound voice on a dedicated FR number.
-Spec-gated delivery. **`agent-core` is built — Phases A–B closed, Phase C (console
-wiring) in progress (2026-09-30)**; 4 client decisions still **block the pilot, not
-the build**. RAG fork **signed off 2026-09-28 (Option A)**; Gate 1's seams + swap test
-are done, retrieval eval and real providers remain.
+## Ground Truth (2026-10-04)
 
-**Entry point:** [`docs/voice/README.md`](voice/README.md) — routes **outbound** (`client/`) vs
-**internal** (`dev/`, `design/`). Never put an internal note in `client/`.
-
-| Doc                                                                                    | Covers                                                                            |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **[Voice Agent — SPEC](specs/2026-09-28-voice-agent.md)** 🔶                           | Full spec, ground truth, 8 gates, blocking decisions, risks                       |
-| **[Voice Agent — README](voice/README.md)** 🆕                                         | Folder map, reading order per role, gate map                                      |
-| **Outbound — `voice/client/`** _(these leave the building)_                            |                                                                                   |
-| [Client Questionnaire](voice/client/CLIENT-QUESTIONNAIRE.md)                           | FR email — 4 blocking questions + 6 unblocking ones                               |
-| [Cost Model](voice/client/COST-MODEL.md)                                               | Volume table, fixed vs variable, 3 pricing shapes — **prices unverified**         |
-| [Pilot Criteria](voice/client/PILOT-CRITERIA.md)                                       | Go/no-go bars for the 2-week pilot                                                |
-| [Vendor Quote Request](voice/client/VENDOR-QUOTE-REQUEST.md)                           | Send-as-is BSP + carrier RFQ (4 vendors) — **strip the internal footer**          |
-| [Personas, Scopes & Innovations](voice/client/Personas,%20Scopes%20&%20Innovations.md) | Personas, scopes, innovation backlog — **strip the §8 internal checklist**        |
-| **[Client Deck](voice/client/VOICE-AGENT-DECK.pptx)**                                  | 12-slide FR client deck (PPTX) — build: `scripts/build_voice_deck.py`             |
-| **[Prototype — RUNNING](../prototype/voice-console/README.md)** 🔶                     | React 19 + Zustand console, all surfaces (~5k lines) · **visual source of truth** |
-| **Internal — `voice/dev/`** _(engineering + ops)_                                      |                                                                                   |
-| [Build Log](voice/dev/BUILD-LOG.md) ⚠️                                                 | **Read first** — living verified/not-verified record + toolchain warning          |
-| [Build Plan](voice/dev/BUILD-PLAN.md)                                                  | Phases A–E, skeletons-first, verification, compact status index                   |
-| [Phase A Complete](voice/dev/PHASE-A-COMPLETE.md) ✅                                   | Skeletons closed 2026-09-28, gates pasted                                         |
-| [Phase B Complete](voice/dev/PHASE-B-COMPLETE.md) ✅                                   | Seams + endpoints closed — gates measured, 3 defects caught                       |
-| [Phase B Seams](voice/dev/PHASE-B-SEAMS.md)                                            | Seams plan (superseded record — gate counts live in PHASE-B-COMPLETE)             |
-| [Running Dev](voice/dev/RUNNING-DEV.md) ✅                                             | Every command to run agent-core locally, actually executed                        |
-| [Open-Weight Speech](voice/dev/OPEN-WEIGHT-SPEECH-VERIFIED.md) ✅                      | FR/EN speech models licence-verified (Voxtral TTS is NC — cannot ship)            |
-| [Prototype Handover](voice/dev/PROTOTYPE-HANDOVER.md)                                  | File-by-file port map prototype → `src/`, and the four invariants                 |
-| [Call Flow](voice/dev/CALL-FLOW.md) ⚠️ DRAFT                                           | Call states, consent model, transfer ladder, voicemail, latency metrics           |
-| [Ops Assistant](voice/dev/OPS-ASSISTANT.md)                                            | Alert→action matrix, dev work matrix                                              |
-| [RAG Fork](voice/dev/RAG-FORK.md) ✅ **Option A**                                      | Desktop-local vs server-side retrieval — **signed: pgvector + `bge-m3`**          |
-| [Performance](voice/dev/PERFORMANCE.md) ⚠️                                             | External draft **adjudicated** + **Part 6: self-hosted speech (sherpa-onnx)**     |
-| [Self-Hosting & Training](voice/dev/SELF-HOSTING.md) 🆕                                | The RTF gate, what is actually trainable, and the audio-retention conflict        |
-| [Agent Prompts](voice/dev/AGENT-PROMPTS.md) ⚠️                                         | Copy-paste handoff prompt per gate — **rebase before use**                        |
-| **Design — `voice/design/`** _(product · frontend · backend)_                          |                                                                                   |
-| [UX](voice/design/UX.md) 🆕                                                            | Personas, IA, surface inventory, states, notification + a11y design               |
-| [Frontend](voice/design/FRONTEND.md) 🆕                                                | Mount point, component tree, **speech abstraction**, stores, perf rules           |
-| [Backend](voice/design/BACKEND.md) 🆕                                                  | Topology, 4 seams, data model, endpoints, auth, deployment                        |
-| [Wireframes](voice/design/WIREFRAMES.md) 🆕                                            | Per-surface ASCII, region→action, 17 gaps ⚠️, 13 UX opportunities 💡              |
-| [Mockups](voice/design/mockups/) 🆕                                                    | 10 HTML mockups on the **real** design tokens (06–10 render degraded states)      |
-| **Cross-cutting**                                                                      |                                                                                   |
-| **[ADR-001](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)** 🆕   | Integration seams, 3 embedding spaces, IPC/auth gaps — **read before Gate 1**     |
-| [Glossary](glossary/glossary-voice-agent.md) 🆕                                        | Terms as used in this repo (spaces, gates, metrics, channel)                      |
-
-**New ADR convention:** [`docs/01-ARCHITECTURE/decisions/`](01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
-(created 2026-09-28 — the repo had none).
-
-**Hard constraint:** WhatsApp live voice calls are not exposed by any API. Voice
-runs on a dedicated number, not in WhatsApp.
-
-### Device And Mobile
-
-| Doc                                                       | Covers                                |
-| --------------------------------------------------------- | ------------------------------------- |
-| [Pairing](04-FEATURES/33-device-pairing.md)               | Device pairing flow                   |
-| [Mobile Native](04-FEATURES/35-mobile-native-features.md) | Native bridge and mobile-only surface |
-
-### Invoicing & ERP
-
-| Doc                                                             | Covers                                                     |
-| --------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Invoicing](04-FEATURES/36-invoicing.md)                        | Calc engine, 35 IPC commands, PDF/PEPPOL, SMTP             |
-| [Company & ERP](04-FEATURES/Invoicing-ERP/01-company-tenant.md) | Tenant model, company switcher, where `company_id` is used |
-
-### Feature Specs & Plans
-
-| Doc                                                                                 | Covers                                                                                               |
-| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [Settings Redesign](04-FEATURES/37-settings-redesign-spec.md) ✅ written 2026-07-15 | Settings IA regroup (9 groups), Appearance promotion, navConfig drift fix, global/per-account matrix |
-| [Navigation & IA Spec](03-FRONTEND/14-navigation-ia-spec.md) ✅ written 2026-07-15  | Email-first rail order, orphaned Tasks/Calendar/Campaigns fix, Customer-360 cross-wiring             |
-| [Onboarding Reboot](04-FEATURES/36-onboarding-reboot-plan.md) ✅ written 2026-10-03 | Full-screen 5-step wizard (Welcome → Account → Import → PGP → Tour)                                  |
-
-## Development
-
-For contributors and AI agents.
-
-| Doc                                                              | Covers                              |
-| ---------------------------------------------------------------- | ----------------------------------- |
-| [Quickstart](05-DEVELOPMENT/01-quickstart.md)                    | Setup, commands, Mailtrap           |
-| [Testing](05-DEVELOPMENT/02-testing.md)                          | Vitest patterns, Rust tests         |
-| [08-ai-provider-adding](05-DEVELOPMENT/08-ai-provider-adding.md) | Guide for adding new AI providers   |
-| [Reuse Patterns](05-DEVELOPMENT/05-reuse-patterns.md)            | Component/hook/service reuse        |
-| [Release Pipeline](05-DEVELOPMENT/06-release-pipeline.md)        | Daily PR → Release Please → Build   |
-| [Manual Tests](05-DEVELOPMENT/03-manual-tests.md)                | Panic, WAL, watchdog, dev verify    |
-| [WAL Deletion](05-DEVELOPMENT/04-wal-deletion.md)                | WAL file handling and safe deletion |
-| [Mobile Dev](05-DEVELOPMENT/07-mobile-development.md)            | Logcat, WebView, Kotlin             |
-| [Design System Guide](05-DEVELOPMENT/DESIGN_SYSTEM_GUIDE.md)     | Tokens, components, patterns        |
-
-## Roadmap
-
-| Doc                                                                                   | Covers                                                                 |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [STATUS.md](STATUS.md)                                                                | What's shipped, what's next                                            |
-| [Master Plan — v1.0](06-ROADMAP/09-master-plan.md)                                    | Single canonical roadmap — all remaining work merged                   |
-| [Monetization — Entitlement Engine](06-ROADMAP/10-monetization-entitlement-engine.md) | Entitlement/license engine design                                      |
-| [Monetization — Frontend Paywall](06-ROADMAP/11-monetization-frontend-paywall.md)     | Frontend paywall UI design                                             |
-| [Monetization — Asset Delivery](06-ROADMAP/12-monetization-asset-delivery.md)         | Asset delivery design                                                  |
-| [Monetization — Mobile Strategy](06-ROADMAP/13-monetization-mobile-strategy.md)       | Mobile monetization strategy                                           |
-| [AI Stack — Cross-Pollination](06-ROADMAP/14-ai-stack-cross-pollination.md) 🆕        | Bilateral AI-stack exchange with SignSync (doctor, slots, candle-only) |
-
-## Production Readiness
-
-For shipping v1.0.0.
-
-| Doc                                                | Covers                                                      |
-| -------------------------------------------------- | ----------------------------------------------------------- |
-| [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md) | Single source of truth for all 9 production gates           |
-| [Privacy Policy](privacy-policy.md)                | Legal — all data is local, no telemetry                     |
-| [Beta Test Plan](beta-testing/plan.md)             | Recruitment, schedule, exit criteria (NPS, install success) |
-| [Beta Test Scenarios](beta-testing/scenarios.md)   | 8 test scenarios for beta testers                           |
-| [Beta Test Feedback](beta-testing/feedback.md)     | Feedback form template                                      |
-| [Dogfooding Log](dogfooding/log.md)                | 7-day log template                                          |
-| [Dogfooding Checklist](dogfooding/checklist.md)    | Daily task checklist                                        |
-| [Pre-Release Checklist](release/checklist.md)      | 10-section pre-release verification                         |
-| [Code Signing Guide](release/signing.md)           | macOS/Windows/Linux signing                                 |
-| [Release Automation](release/automation.md)        | Script-based release process documentation                  |
-
-## User Documentation
-
-End-user guides.
-
-| Doc                                              | Covers                                      |
-| ------------------------------------------------ | ------------------------------------------- |
-| [Getting Started](user-guide/getting-started.md) | Install + first email in 5 minutes          |
-| [Account Setup](user-guide/account-setup.md)     | Gmail, Outlook, manual IMAP/SMTP            |
-| [PGP Setup](user-guide/pgp-setup.md)             | Generate, import, export, encrypt           |
-| [Backup & Restore](user-guide/backup-restore.md) | Auto + manual backup, integrity check       |
-| [Wallet](user-guide/wallet.md)                   | Local wallet / credential storage guide     |
-| [FAQ](user-guide/faq.md)                         | Common issues and solutions                 |
-| [Release Notes](user-guide/release-notes.md)     | v1.0.0 changelog                            |
-| [Automation (User)](user-guide/automation.md)    | Create rules, visual builder, AI generation |
-| [Company & ERP (User)](user-guide/company.md)    | Switch companies, ERP overview              |
+| Metric | Value |
+| --- | --- |
+| Rust IPC commands | 868 |
+| SQL migrations | 36 |
+| Zustand stores | 47 |
+| Rust tests | 999 |
+| TS test files | 314 |
+| RTL violations | 0 |
+| ja/it TODO tags | 0 |

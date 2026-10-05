@@ -13,7 +13,7 @@
  *
  * Every entry carries the measured or documented facts we actually have. Where a
  * number is unmeasured it is omitted rather than guessed — see
- * `docs/02-BACKEND/20-offline-stt-and-audio-summarization.md` §10 for the
+ * `docs/02-BACKEND/20-tts-stt-email.md` §10 for the
  * measurements behind the RTF figures.
  *
  * @module

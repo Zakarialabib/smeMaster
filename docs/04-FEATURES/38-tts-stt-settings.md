@@ -6,7 +6,7 @@
 > advertised direction, and the capability badges misreport two of them. See
 > [§Implementation status](#implementation-status-2026-10-01) — the tables below that
 > describe capability are **the intended contract, not the current behaviour**.
-> **Engine decision for offline speech:** [20-offline-stt-and-audio-summarization](../02-BACKEND/20-offline-stt-and-audio-summarization.md)
+> **Engine decision for offline speech:** [20-tts-stt-email](../02-BACKEND/20-tts-stt-email.md)
 
 ## Overview
 
@@ -213,7 +213,7 @@ either an API key or a user-installed local server.
 | `browser`    | `{ stt: false, tts: … }`    | Honest     | ✅                                          |
 
 A user selects ElevenLabs, sees "✓ TTS", and gets a thrown error. Fixing this is
-**Phase 0** of [the offline-voice plan](../02-BACKEND/20-offline-stt-and-audio-summarization.md#5-recommended-sequence).
+**Phase 0** of [the offline-voice plan](../02-BACKEND/20-tts-stt-email.md#5-recommended-sequence).
 
 ### Model registry: no local speech models
 

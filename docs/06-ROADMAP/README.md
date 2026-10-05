@@ -21,4 +21,4 @@ captured in ADR-001 and the voice-agent spec; content preserved in git history.
 | 13  | [Monetization — Mobile Strategy](13-monetization-mobile-strategy.md)       | monetization | 🔲 design only (0 code)           |
 | 14  | [AI Stack — Cross-Pollination](14-ai-stack-cross-pollination.md)           | ai           | 🔶 bilateral exchange w/ SignSync |
 
-**Voice engagement entry point:** [`../voice/README.md`](../voice/README.md).
+**Voice engagement entry point:** [`../archive/voice-call-system/README.md`](../archive/voice-call-system/README.md).
