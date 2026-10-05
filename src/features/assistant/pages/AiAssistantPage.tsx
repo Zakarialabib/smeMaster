@@ -18,11 +18,14 @@ import { RagEmptyState } from '@features/assistant/components/RagEmptyState';
 import { RagSkeleton } from '@features/assistant/components/RagSkeleton';
 import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { DownloadProgress } from '@features/assistant/components/DownloadProgress';
+import { ProviderModelPicker } from '@features/assistant/components/ProviderModelPicker';
+import { ProviderBadge } from '@features/assistant/components/ProviderBadge';
 import { GlassPanel } from '@shared/components/ui/glass-panel';
 import { Button } from '@shared/components/ui/Button';
 import { cn } from '@shared/utils/cn';
 import { TEXT_HINT } from '@shared/styles/ui-tokens';
 import { useAiReadiness } from '@features/assistant/hooks/useAiReadiness';
+import type { AiProvider } from '@shared/services/ai/types';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -45,6 +48,8 @@ export function AiAssistantPage() {
   const cancelDownload = useRagStore((s) => s.cancelDownload);
 
   const [query, setQuery] = useState('');
+  const [provider, setProvider] = useState<AiProvider>('claude');
+  const [model, setModel] = useState('claude-sonnet-5-5');
   const resultsEndRef = useRef<HTMLDivElement>(null);
 
   // Hydrate store on mount
@@ -59,10 +64,10 @@ export function AiAssistantPage() {
 
   const handleSubmit = useCallback(
     (q: string) => {
-      search(q);
+      search(q, provider, model);
       setQuery('');
     },
-    [search],
+    [search, provider, model],
   );
 
   // ── Disabled state (RAG turned off) ──
@@ -237,7 +242,7 @@ export function AiAssistantPage() {
         </div>
       </div>
 
-      {/* ── Search bar (sticky bottom) ── */}
+      {/* Search bar (sticky bottom) */}
       <div
         className={cn(
           'flex-shrink-0',
@@ -248,7 +253,48 @@ export function AiAssistantPage() {
         )}
       >
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2 flex-wrap">
+            <ProviderModelPicker
+              provider={provider}
+              model={model}
+              onChange={(p, m) => {
+                setProvider(p);
+                setModel(m);
+              }}
+              disabled={isSearching || showModelWarning}
+              compact
+            />
+            <ProviderBadge provider={provider} model={model} muted />
+            <span className="flex gap-1.5">
+              {(
+                [
+                  { id: 'embedding', label: 'Embed' },
+                  { id: 'stt', label: 'STT' },
+                  { id: 'tts', label: 'TTS' },
+                ] as const
+              ).map((cap) => {
+                const supported =
+                  cap.id === 'embedding'
+                    ? true
+                    : cap.id === 'stt'
+                      ? (provider as string) !== 'offline' &&
+                        provider !== 'claude' &&
+                        provider !== 'copilot' &&
+                        provider !== 'openrouter'
+                      : (provider as string) !== 'offline' &&
+                        provider !== 'claude' &&
+                        provider !== 'copilot' &&
+                        provider !== 'openrouter';
+                return (
+                  <span
+                    key={cap.id}
+                    className={`text-[9px] px-1.5 py-0.5 rounded ${supported ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}
+                  >
+                    {cap.label}
+                  </span>
+                );
+              })}
+            </span>
             <div className="flex-1">
               <RagSearchBar
                 value={query}

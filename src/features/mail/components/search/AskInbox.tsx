@@ -9,6 +9,7 @@ import { ensureAiSidecar, activateAiSidecar } from '@features/assistant/services
 import { useAiSidecarStore } from '@features/assistant/stores/aiSidecarStore';
 import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { ProviderModelPicker } from '@features/assistant/components/ProviderModelPicker';
+import { ProviderBadge } from '@features/assistant/components/ProviderBadge';
 
 interface AskInboxProps {
   isOpen: boolean;
@@ -135,7 +136,7 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
         </div>
 
         {/* Input */}
-        <div className="px-4 py-3 border-b border-border-secondary flex items-center gap-2">
+        <div className="px-4 py-3 border-b border-border-secondary flex items-center gap-2 flex-wrap">
           <ProviderModelPicker
             provider={provider as any}
             model={model}
@@ -146,6 +147,29 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
             disabled={loading}
             compact
           />
+          <ProviderBadge provider={provider as AiProvider} model={model} muted />
+          <span className="flex gap-1.5">
+            {[
+              { id: 'embedding', label: 'Embed' },
+              { id: 'stt', label: 'STT' },
+              { id: 'tts', label: 'TTS' },
+            ].map((cap) => {
+              const supported =
+                cap.id === 'embedding'
+                  ? true
+                  : cap.id === 'stt'
+                    ? provider !== 'offline'
+                    : provider !== 'offline';
+              return (
+                <span
+                  key={cap.id}
+                  className={`text-[9px] px-1.5 py-0.5 rounded ${supported ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}
+                >
+                  {cap.label}
+                </span>
+              );
+            })}
+          </span>
           <input
             ref={inputRef}
             autoFocus

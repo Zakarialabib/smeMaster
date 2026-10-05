@@ -33,7 +33,7 @@ import {
 } from '@shared/services/db/invoke/downloader';
 import { getProviderEmbedding } from '@shared/services/ai/embeddingService';
 import { RAG_ANSWER_SYSTEM_PROMPT } from '@shared/services/ai/prompts';
-import { TestEmbeddingResult } from '@/shared/services/ai/types';
+import { TestEmbeddingResult, type AiProvider } from '@/shared/services/ai/types';
 import { streamAi } from '@shared/services/ai/aiService';
 import { getLocalModelById } from '@shared/services/ai/localModelCatalog';
 
@@ -113,7 +113,7 @@ export interface RagState {
   loadEmbeddingModel: () => Promise<void>;
   indexAll: () => Promise<void>;
   search: (query: string) => Promise<void>;
-  searchStreaming: (query: string) => Promise<void>;
+  searchStreaming: (query: string, provider?: AiProvider, model?: string) => Promise<void>;
   testEmbedding: () => Promise<TestEmbeddingResult | null>;
   clearHistory: () => void;
 }
@@ -494,7 +494,7 @@ export const useRagStore = create<RagState>((set, get) => ({
   },
 
   // ── Streaming Search ──
-  searchStreaming: async (query: string) => {
+  searchStreaming: async (query: string, provider?: AiProvider, model?: string) => {
     if (!query.trim()) return;
 
     set({ isSearching: true, searchError: null, streamingAnswer: '' });
@@ -547,7 +547,7 @@ export const useRagStore = create<RagState>((set, get) => ({
       const { isAiAvailable } = await import('@shared/services/ai/providerManager');
       let accumulated = '';
       if (await isAiAvailable()) {
-        for await (const chunk of streamAi(RAG_ANSWER_SYSTEM_PROMPT, response)) {
+        for await (const chunk of streamAi(RAG_ANSWER_SYSTEM_PROMPT, response, provider, model)) {
           accumulated += chunk;
           set({ streamingAnswer: accumulated });
         }
