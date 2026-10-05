@@ -28,6 +28,7 @@ import {
   Sparkles,
   Mic,
   Microchip,
+  ShieldCheck,
 } from 'lucide-react';
 import BundleSettings from '../BundleSettings';
 import KnowledgeBaseSettings from '../KnowledgeBaseSettings';
@@ -36,11 +37,12 @@ import LocalModelsSettings from '../LocalModelsSettings';
 import { AiRouterPanel } from '@features/assistant/components/AiRouterPanel';
 import { HfModelBrowser } from '@features/assistant/components/HfModelBrowser';
 import { useRagStore } from '@features/assistant/stores/ragStore';
+import AgentsTab from '../AgentsTab';
 
 // ── Sub-tab definitions ──────────────────────────────────────────────────
 
 interface SubTab {
-  id: 'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router';
+  id: 'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router' | 'agent-roster';
   labelKey: string;
   icon: typeof Server;
 }
@@ -52,6 +54,7 @@ const SUB_TABS: SubTab[] = [
   { id: 'features', labelKey: 'settings.subtabFeatures', icon: Sparkles },
   { id: 'kb', labelKey: 'settings.subtabKnowledgeBase', icon: Database },
   { id: 'ai-router', labelKey: 'settings.subtabAiRouter', icon: Cpu },
+  { id: 'agent-roster', labelKey: 'settings.subtabAgentRoster', icon: ShieldCheck },
 ];
 
 export default function AiTab() {
@@ -101,7 +104,7 @@ export default function AiTab() {
 
   // ── Sub-navigation + status row ──
   const [activeSubTab, setActiveSubTab] = useState<
-    'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router'
+    'models' | 'features' | 'voice' | 'local-models' | 'kb' | 'ai-router' | 'agent-roster'
   >('models');
   const [providerConnected, _setProviderConnected] = useState<boolean | null>(null);
   const [embeddingSet, _setEmbeddingSet] = useState<boolean | null>(null);
@@ -1232,6 +1235,9 @@ export default function AiTab() {
 
       {/* ── Section B: AI Router — unified observability ────────────── */}
       {activeSubTab === 'ai-router' && <AiRouterPanel />}
+
+      {/* ── Section B+: Agent Roster ─────────────────────────── */}
+      {activeSubTab === 'agent-roster' && <AgentsTab />}
 
       {/* ── Section C: Voice & Speech ─────────────────────────────── */}
       {activeSubTab === 'voice' && <VoiceSettings />}

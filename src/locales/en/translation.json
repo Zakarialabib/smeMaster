@@ -630,6 +630,7 @@
     "subtabLocalModels": "Local Models",
     "subtabKnowledgeBase": "Knowledge Base",
     "subtabAiRouter": "AI Router",
+    "subtabAgentRoster": "Agent Roster",
     "statusProviderConnected": "Provider Connected",
     "statusEmbeddingSet": "Embedding Set",
     "statusIndexed": "Indexed",
