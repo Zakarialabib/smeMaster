@@ -36,7 +36,7 @@ import {
   aiStopSidecar,
   type SidecarControlStatus,
 } from '@shared/services/db/invoke/rag';
-import { listAgents, updateAgent } from '@shared/services/db/invoke/agents';
+import { listAgents, updateAgent, type AgentPatch } from '@shared/services/db/invoke/agents';
 import { Badge } from '@shared/components/ui/Badge';
 
 type VoiceProvider = VoiceProviderType;
@@ -276,26 +276,27 @@ export default function VoiceSettings() {
   useEffect(() => {
     (async () => {
       try {
-        // Load agent roster for selector
+        // Load agent roster for selector. Agent fields serialize snake_case
+        // (no serde rename on the Rust struct), so read them as such.
         const agentList = await listAgents();
         setAgents(agentList ?? []);
 
-        // Pick the first active agent by default (or the one with voice config)
-        const defaultAgent = agentList.find((a: any) => a.voiceProvider) ?? agentList[0] ?? null;
+        // Prefer an agent that already carries voice config, else the first.
+        const defaultAgent = agentList.find((a: any) => a.voice_provider) ?? agentList[0] ?? null;
         const agentId = defaultAgent?.id ?? null;
         setSelectedAgentId(agentId);
 
         if (defaultAgent) {
-          // Load voice config from agent record
+          // Load voice config from the agent record.
           const agent = defaultAgent;
-          const loadedProvider = (agent.voiceProvider as VoiceProvider) ?? 'browser';
-          const loadedBaseUrl = agent.voiceBaseUrl ?? 'https://api.openai.com/v1';
-          const loadedApiKey = agent.voiceApiKey ?? '';
-          const loadedTtsVoice = agent.voiceTtsVoice ?? 'alloy';
-          const loadedSttModel = agent.voiceSttModel ?? 'whisper-1';
-          const loadedTtsEnabled = agent.voiceTtsEnabled ?? false;
-          const loadedSttEnabled = agent.voiceSttEnabled ?? false;
-          const loadedTtsSpeed = agent.voiceTtsSpeed ?? 1.0;
+          const loadedProvider = (agent.voice_provider as VoiceProvider) ?? 'browser';
+          const loadedBaseUrl = agent.voice_base_url ?? 'https://api.openai.com/v1';
+          const loadedApiKey = ''; // never returned by list_agents; write-only
+          const loadedTtsVoice = agent.voice_tts_voice ?? 'alloy';
+          const loadedSttModel = agent.voice_stt_model ?? 'whisper-1';
+          const loadedTtsEnabled = agent.voice_tts_enabled === 1;
+          const loadedSttEnabled = agent.voice_stt_enabled === 1;
+          const loadedTtsSpeed = agent.voice_tts_speed ?? 1.0;
 
           setProvider(loadedProvider);
           setBaseUrl(loadedBaseUrl);
@@ -304,8 +305,8 @@ export default function VoiceSettings() {
           setSttModel(loadedSttModel);
           setTtsEnabled(loadedTtsEnabled);
           setSttEnabled(loadedSttEnabled);
-          setOfflineTtsDir(agent.voiceOfflineTtsDir ?? '');
-          setOfflineSttDir(agent.voiceOfflineSttDir ?? '');
+          setOfflineTtsDir(agent.voice_offline_tts_dir ?? '');
+          setOfflineSttDir(agent.voice_offline_stt_dir ?? '');
           setTtsSpeed(String(loadedTtsSpeed));
           setCapabilities(
             getVoiceCapabilities({
@@ -321,7 +322,7 @@ export default function VoiceSettings() {
             }),
           );
         } else {
-          // Fallback: try global settings (back-compat)
+          // Fallback: global settings (no agents seeded yet).
           const config = await getVoiceConfig();
           setProvider(config.provider);
           setBaseUrl(config.baseUrl);
@@ -354,24 +355,23 @@ export default function VoiceSettings() {
   async function save() {
     try {
       if (selectedAgentId) {
-        // Write voice config to the agent record instead of global settings
-        const patch: Record<string, any> = {
-          voiceProvider: provider,
-          voiceBaseUrl: baseUrl.trim(),
-          voiceTtsVoice: ttsVoice.trim(),
-          voiceSttModel: sttModel.trim(),
-          voiceTtsEnabled: ttsEnabled,
-          voiceSttEnabled: sttEnabled,
-          voiceOfflineTtsDir: offlineTtsDir.trim(),
-          voiceOfflineSttDir: offlineSttDir.trim(),
-          voiceTtsSpeed: Number.parseFloat(ttsSpeed) > 0 ? Number.parseFloat(ttsSpeed) : 1.0,
+        // Patch keys are SQL column names (snake_case); Rust validates them
+        // against a closed ALLOWED list and rejects unknown keys loudly.
+        // Booleans are stored as 0/1 integers.
+        const patch: AgentPatch = {
+          voice_provider: provider,
+          voice_base_url: baseUrl.trim(),
+          voice_tts_voice: ttsVoice.trim(),
+          voice_stt_model: sttModel.trim(),
+          voice_tts_enabled: ttsEnabled ? 1 : 0,
+          voice_stt_enabled: sttEnabled ? 1 : 0,
+          voice_offline_tts_dir: offlineTtsDir.trim(),
+          voice_offline_stt_dir: offlineSttDir.trim(),
+          voice_tts_speed: Number.parseFloat(ttsSpeed) > 0 ? Number.parseFloat(ttsSpeed) : 1.0,
         };
-        if (apiKey.trim()) {
-          patch.voiceApiKey = apiKey.trim();
-        }
         await updateAgent(selectedAgentId, patch);
       } else {
-        // Fallback: write to global settings (back-compat)
+        // No agent selected — write the global fallback settings.
         await setSetting('voice_provider', provider);
         await setSetting('voice_base_url', baseUrl.trim());
         if (apiKey.trim()) await setSecureSetting('voice_api_key', apiKey.trim());
@@ -450,9 +450,9 @@ export default function VoiceSettings() {
                 setTtsVoice('');
                 setSttModel('');
               }
-              // Persist to agent record or global settings
+              // Persist to the agent record when one is selected, else global.
               if (selectedAgentId) {
-                void updateAgent(selectedAgentId, { voiceProvider: v }).catch((err) =>
+                void updateAgent(selectedAgentId, { voice_provider: v }).catch((err) =>
                   logVoiceError('provider change', err),
                 );
               } else {

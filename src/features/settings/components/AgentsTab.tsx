@@ -21,7 +21,6 @@ import { Button } from '@shared/components/ui/Button';
 import { TextField } from '@shared/components/ui/TextField';
 import { Badge } from '@shared/components/ui/Badge';
 import { Toggle } from '@shared/components/ui/Toggle';
-import { StyledSelect } from '@shared/components/ui/StyledSelect';
 import { Modal } from '@shared/components/ui/Modal';
 import {
   Plus,
@@ -42,40 +41,67 @@ import { t } from 'i18next';
 interface Agent {
   id: string;
   name: string;
-  description?: string;
-  provider: string;
-  model: string;
-  scope: Record<string, any>;
-  tools: string[];
-  channels: string[];
-  budget: {
-    hourlyTokens?: number;
-    monthlyTokens?: number;
-    maxConcurrent?: number;
-    cooldownMs?: number;
-  };
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  persona?: string | null;
+  role: string;
+  description?: string | null;
+  instructions?: string | null;
+  knowledge_tiers: string;
+  knowledge_collections: string;
+  tools: string;
+  channels: string;
+  model_policy: string;
+  enabled: number;
+  is_builtin: number;
+  budget_minor: number;
+  currency: string;
+  voice_provider?: string | null;
+  voice_base_url?: string | null;
+  voice_tts_voice?: string | null;
+  voice_stt_model?: string | null;
+  voice_tts_enabled?: number | null;
+  voice_stt_enabled?: number | null;
+  voice_tts_speed?: number | null;
+  voice_offline_tts_dir?: string | null;
+  voice_offline_stt_dir?: string | null;
+  created_at: number;
+  updated_at: number;
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const PROVIDERS = ['claude', 'openai', 'gemini', 'ollama', 'custom'];
-const CHANNELS = ['voice', 'chat', 'email', 'cron', 'webhook'];
-const TOOLS = ['search', 'send', 'draft', 'label', 'filter', 'archive'];
+const CHANNELS = ['desktop', 'voice', 'whatsapp', 'cron'];
+const TOOLS = [
+  'text',
+  'streaming',
+  'embedding',
+  'stt',
+  'tts',
+  'vision',
+  'structured_output',
+  'tool_calling',
+];
+const TIERS = ['T0', 'T1', 'T2', 'T3'];
 
-function scopeLabel(scope: Record<string, any>): string {
-  if (!scope) return '—';
+/** Rust stores tools/channels/tiers as JSON-array TEXT. Parse tolerantly. */
+function parseList(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+function scopeLabel(agent: Agent): string {
+  const tiers = parseList(agent.knowledge_tiers);
+  const channels = parseList(agent.channels);
   const parts: string[] = [];
-  if (scope.mailbox) parts.push(`mailbox:${scope.mailbox}`);
-  if (scope.folder) parts.push(`folder:${scope.folder}`);
-  if (scope.labels?.length) parts.push(`labels:${scope.labels.join(',')}`);
-  if (scope.allowList?.length) parts.push(`allow:${scope.allowList.join(',')}`);
-  if (scope.denyList?.length) parts.push(`deny:${scope.denyList.join(',')}`);
-  return parts.join(' · ') || 'global';
+  if (tiers.length) parts.push(tiers.join(','));
+  if (channels.length) parts.push(channels.join(','));
+  return parts.join(' · ') || '—';
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +115,9 @@ export default function AgentsTab() {
   const [editing, setEditing] = useState<Agent | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [scopeResult, setScopeResult] = useState<{ ok: boolean; reason?: string } | null>(null);
+  const [scopeResult, setScopeResult] = useState<{ granted: boolean; reason?: string } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     try {
@@ -108,18 +136,17 @@ export default function AgentsTab() {
     load();
   }, [load]);
 
-  const handleCreate = async (values: Partial<Agent>) => {
+  const handleCreate = async (values: AgentFormValues) => {
     setSaving(true);
     try {
       const created = await createAgent({
-        name: values.name ?? '',
-        description: values.description,
-        provider: values.provider ?? 'claude',
-        model: values.model ?? '',
-        scope: values.scope ?? {},
-        tools: values.tools ?? [],
-        channels: values.channels ?? [],
-        budget: values.budget ?? {},
+        name: values.name,
+        role: values.role,
+        description: values.description || undefined,
+        instructions: values.instructions || undefined,
+        knowledgeTiers: values.knowledgeTiers,
+        tools: values.tools,
+        channels: values.channels,
       });
       setAgents((prev) => [...prev, created]);
       setShowCreate(false);
@@ -130,20 +157,21 @@ export default function AgentsTab() {
     }
   };
 
-  const handleUpdate = async (values: Partial<Agent>) => {
+  const handleUpdate = async (values: AgentFormValues) => {
     if (!editing) return;
     setSaving(true);
     try {
+      // Patch map uses snake_case column names — the Rust side validates
+      // against a closed ALLOWED list and rejects unknown keys loudly.
       const updated = await updateAgent(editing.id, {
         name: values.name,
+        role: values.role,
         description: values.description,
-        provider: values.provider,
-        model: values.model,
-        scope: values.scope,
+        instructions: values.instructions,
+        knowledge_tiers: values.knowledgeTiers,
         tools: values.tools,
         channels: values.channels,
-        budget: values.budget,
-        active: values.active,
+        enabled: values.enabled ? 1 : 0,
       });
       setAgents((prev) => prev.map((a) => (a.id === editing.id ? updated : a)));
       setEditing(null);
@@ -164,19 +192,22 @@ export default function AgentsTab() {
     }
   };
 
-  const handleScopeCheck = async (agentId: string) => {
+  /** Probe the agent's grant for the first tool it declares, or 'text'. */
+  const handleScopeCheck = async (agent: Agent) => {
     try {
-      const result = await checkAgentScope(agentId, { action: 'read', resource: 'inbox' });
+      const tools = parseList(agent.tools);
+      const probe = tools[0] ?? 'text';
+      const result = await checkAgentScope(agent.id, 'tool', probe);
       setScopeResult(result);
     } catch (e: any) {
-      setScopeResult({ ok: false, reason: e?.message });
+      setScopeResult({ granted: false, reason: e?.message });
     }
   };
 
   const handleSeed = async () => {
     try {
-      const seeded = await seedBuiltinAgents();
-      setAgents((prev) => [...prev, ...seeded]);
+      await seedBuiltinAgents();
+      await load();
     } catch (e: any) {
       setError(e?.message ?? 'Failed to seed agents');
     }
@@ -226,17 +257,17 @@ export default function AgentsTab() {
       {scopeResult && (
         <div
           className={`rounded-md border p-3 text-sm ${
-            scopeResult.ok
+            scopeResult.granted
               ? 'border-green-500/30 bg-green-500/10 text-green-400'
               : 'border-red-500/30 bg-red-500/10 text-red-400'
           }`}
         >
-          {scopeResult.ok ? (
+          {scopeResult.granted ? (
             <CheckCircle2 className="mr-1 inline h-4 w-4" />
           ) : (
             <XCircle className="mr-1 inline h-4 w-4" />
           )}
-          {scopeResult.ok
+          {scopeResult.granted
             ? t('settings.agents.scopeOk')
             : `${t('settings.agents.scopeDenied')}: ${scopeResult.reason}`}
         </div>
@@ -254,29 +285,33 @@ export default function AgentsTab() {
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{agent.name}</span>
-                  <Badge variant="default">{agent.provider}</Badge>
-                  {agent.active ? (
+                  {agent.persona && <Badge variant="default">{agent.persona}</Badge>}
+                  {agent.is_builtin === 1 && <Badge variant="info">builtin</Badge>}
+                  {agent.enabled === 1 ? (
                     <CheckCircle2 className="h-3 w-3 text-green-500" />
                   ) : (
                     <XCircle className="h-3 w-3 text-muted-foreground" />
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-mono">{agent.model}</span>
+                  <span>{agent.role}</span>
                   <span className="mx-2">·</span>
-                  <span>{scopeLabel(agent.scope)}</span>
-                  <span className="mx-2">·</span>
-                  <span>{agent.channels.join(', ')}</span>
+                  <span>{scopeLabel(agent)}</span>
                 </div>
               </div>
               <div className="flex gap-1">
                 <Button variant="ghost" size="sm" onClick={() => setEditing(agent)}>
                   <Pencil className="h-3 w-3" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleScopeCheck(agent.id)}>
+                <Button variant="ghost" size="sm" onClick={() => handleScopeCheck(agent)}>
                   <Shield className="h-3 w-3" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(agent.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(agent.id)}
+                  disabled={agent.is_builtin === 1}
+                >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
@@ -307,6 +342,18 @@ export default function AgentsTab() {
 // AgentModal — shared create/edit form
 // ---------------------------------------------------------------------------
 
+/** Form state shared by create + edit. Mirrors the Rust request/patch fields. */
+interface AgentFormValues {
+  name: string;
+  role: string;
+  description: string;
+  instructions: string;
+  knowledgeTiers: string[];
+  tools: string[];
+  channels: string[];
+  enabled: boolean;
+}
+
 function AgentModal({
   initial,
   onSave,
@@ -314,18 +361,18 @@ function AgentModal({
   saving,
 }: {
   initial?: Agent | null;
-  onSave: (values: Partial<Agent>) => void;
+  onSave: (values: AgentFormValues) => void;
   onCancel: () => void;
   saving: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
+  const [role, setRole] = useState(initial?.role ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [provider, setProvider] = useState(initial?.provider ?? 'claude');
-  const [model, setModel] = useState(initial?.model ?? '');
-  const [scopeMailbox, setScopeMailbox] = useState(initial?.scope?.mailbox ?? '');
-  const [tools, setTools] = useState<string[]>(initial?.tools ?? []);
-  const [channels, setChannels] = useState<string[]>(initial?.channels ?? ['chat']);
-  const [active, setActive] = useState(initial?.active ?? true);
+  const [instructions, setInstructions] = useState(initial?.instructions ?? '');
+  const [tiers, setTiers] = useState<string[]>(parseList(initial?.knowledge_tiers));
+  const [tools, setTools] = useState<string[]>(parseList(initial?.tools));
+  const [channels, setChannels] = useState<string[]>(parseList(initial?.channels));
+  const [enabled, setEnabled] = useState((initial?.enabled ?? 1) === 1);
 
   const toggleItem = (list: string[], item: string) =>
     list.includes(item) ? list.filter((x) => x !== item) : [...list, item];
@@ -333,13 +380,13 @@ function AgentModal({
   const handleSave = () => {
     onSave({
       name,
+      role,
       description,
-      provider,
-      model,
-      scope: scopeMailbox ? { mailbox: scopeMailbox } : {},
+      instructions,
+      knowledgeTiers: tiers,
       tools,
       channels,
-      active,
+      enabled,
     });
   };
 
@@ -365,6 +412,15 @@ function AgentModal({
           </div>
 
           <div>
+            <label className="mb-1 block text-sm font-medium">{t('settings.agents.role')}</label>
+            <TextField
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder={t('settings.agents.rolePlaceholder')}
+            />
+          </div>
+
+          <div>
             <label className="mb-1 block text-sm font-medium">
               {t('settings.agents.description')}
             </label>
@@ -375,36 +431,33 @@ function AgentModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                {t('settings.agents.provider')}
-              </label>
-              <StyledSelect value={provider} onChange={(e) => setProvider(e.target.value)}>
-                {PROVIDERS.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </StyledSelect>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">{t('settings.agents.model')}</label>
-              <TextField
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder={t('settings.agents.modelPlaceholder')}
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              {t('settings.agents.instructions')}
+            </label>
+            <TextField
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder={t('settings.agents.instructionsPlaceholder')}
+            />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">{t('settings.agents.mailbox')}</label>
-            <TextField
-              value={scopeMailbox}
-              onChange={(e) => setScopeMailbox(e.target.value)}
-              placeholder={t('settings.agents.mailboxPlaceholder')}
-            />
+            <label className="mb-1 block text-sm font-medium">
+              {t('settings.agents.knowledgeTiers')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TIERS.map((tier) => (
+                <Button
+                  key={tier}
+                  variant={tiers.includes(tier) ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setTiers((prev) => toggleItem(prev, tier))}
+                >
+                  {tier}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -442,7 +495,7 @@ function AgentModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <Toggle checked={active} onChange={setActive} />
+            <Toggle checked={enabled} onChange={setEnabled} />
             <label className="text-sm font-medium">{t('settings.agents.active')}</label>
           </div>
         </div>
@@ -451,7 +504,7 @@ function AgentModal({
           <Button variant="secondary" onClick={onCancel} disabled={saving}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={saving || !name}>
+          <Button onClick={handleSave} disabled={saving || !name || !role}>
             {saving ? t('settings.agents.saving') : t('settings.agents.save')}
           </Button>
         </div>

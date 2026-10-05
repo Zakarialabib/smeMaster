@@ -74,6 +74,16 @@ pub struct Agent {
     pub is_builtin: i64,
     pub budget_minor: i64,
     pub currency: String,
+    /// Voice config (migration 039). NULL = fall back to global settings.
+    pub voice_provider: Option<String>,
+    pub voice_base_url: Option<String>,
+    pub voice_tts_voice: Option<String>,
+    pub voice_stt_model: Option<String>,
+    pub voice_tts_enabled: Option<i64>,
+    pub voice_stt_enabled: Option<i64>,
+    pub voice_tts_speed: Option<f64>,
+    pub voice_offline_tts_dir: Option<String>,
+    pub voice_offline_stt_dir: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
 }
@@ -114,6 +124,16 @@ pub struct CreateAgentRequest {
     pub model_policy: Option<serde_json::Value>,
     pub budget_minor: Option<i64>,
     pub currency: Option<String>,
+    // Voice config (migration 039). Optional on create; NULL falls back to global.
+    pub voice_provider: Option<String>,
+    pub voice_base_url: Option<String>,
+    pub voice_tts_voice: Option<String>,
+    pub voice_stt_model: Option<String>,
+    pub voice_tts_enabled: Option<i64>,
+    pub voice_stt_enabled: Option<i64>,
+    pub voice_tts_speed: Option<f64>,
+    pub voice_offline_tts_dir: Option<String>,
+    pub voice_offline_stt_dir: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -242,8 +262,10 @@ pub async fn create_agent(
         "INSERT INTO agents
          (id, name, persona, role, description, instructions, knowledge_tiers,
           knowledge_collections, tools, channels, model_policy, enabled, is_builtin,
-          budget_minor, currency, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?, ?, ?)",
+          budget_minor, currency, voice_provider, voice_base_url, voice_tts_voice,
+          voice_stt_model, voice_tts_enabled, voice_stt_enabled, voice_tts_speed,
+          voice_offline_tts_dir, voice_offline_stt_dir, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(&id)
     .bind(&req.name)
@@ -258,6 +280,15 @@ pub async fn create_agent(
     .bind(&policy)
     .bind(req.budget_minor.unwrap_or(0))
     .bind(req.currency.unwrap_or_else(|| "MAD".to_string()))
+    .bind(&req.voice_provider)
+    .bind(&req.voice_base_url)
+    .bind(&req.voice_tts_voice)
+    .bind(&req.voice_stt_model)
+    .bind(req.voice_tts_enabled)
+    .bind(req.voice_stt_enabled)
+    .bind(req.voice_tts_speed)
+    .bind(&req.voice_offline_tts_dir)
+    .bind(&req.voice_offline_stt_dir)
     .bind(now)
     .bind(now)
     .execute(pool)
@@ -280,7 +311,7 @@ pub async fn update_agent(
     id: &str,
     fields: std::collections::HashMap<String, serde_json::Value>,
 ) -> Result<Agent, AppDbError> {
-    const ALLOWED: [&str; 12] = [
+    const ALLOWED: [&str; 21] = [
         "name",
         "persona",
         "role",
@@ -293,6 +324,16 @@ pub async fn update_agent(
         "model_policy",
         "enabled",
         "budget_minor",
+        // Voice config (migration 039)
+        "voice_provider",
+        "voice_base_url",
+        "voice_tts_voice",
+        "voice_stt_model",
+        "voice_tts_enabled",
+        "voice_stt_enabled",
+        "voice_tts_speed",
+        "voice_offline_tts_dir",
+        "voice_offline_stt_dir",
     ];
 
     let now = chrono::Utc::now().timestamp();

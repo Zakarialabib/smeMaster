@@ -1089,51 +1089,67 @@ type TauriCommands = {
   };
 
   // ── Agents ────────────────────────────────────────────────────────────
-  db_list_agents: { params: void; result: any[] };
-  db_get_agent: { params: { agentId: string }; result: any | null };
+  db_list_agents: { params: { enabledOnly?: boolean }; result: any[] };
+  db_get_agent: { params: { id: string }; result: any | null };
   db_create_agent: {
     params: {
-      agent: {
+      cmd: {
         name: string;
+        role: string;
+        persona?: string;
         description?: string;
-        provider: string;
-        model: string;
-        scope: Record<string, any>;
-        tools: string[];
-        channels: string[];
-        budget: Record<string, any>;
+        instructions?: string;
+        knowledgeTiers?: string[];
+        knowledgeCollections?: string[];
+        tools?: string[];
+        channels?: string[];
+        modelPolicy?: Record<string, unknown>;
+        budgetMinor?: number;
+        currency?: string;
+        voiceProvider?: string;
+        voiceBaseUrl?: string;
+        voiceTtsVoice?: string;
+        voiceSttModel?: string;
+        voiceTtsEnabled?: number;
+        voiceSttEnabled?: number;
+        voiceTtsSpeed?: number;
+        voiceOfflineTtsDir?: string;
+        voiceOfflineSttDir?: string;
       };
     };
     result: any;
   };
   db_update_agent: {
-    params: { agentId: string; patch: Record<string, any> };
+    params: { cmd: { id: string; fields: Record<string, unknown> } };
     result: any;
   };
-  db_delete_agent: { params: { agentId: string }; result: void };
+  db_delete_agent: { params: { id: string }; result: void };
   db_agent_scope_check: {
-    params: { agentId: string; request: Record<string, any> };
-    result: { ok: boolean; reason?: string };
+    params: { id: string; cmd: { kind: 'tool' | 'tier'; value: string } };
+    result: { granted: boolean; reason?: string };
   };
-  db_seed_builtin_agents: { params: void; result: any[] };
+  db_seed_builtin_agents: { params: void; result: number };
   db_record_ai_activity: {
     params: {
-      agentId: string;
-      activity: {
-        type: string;
-        channel: string;
-        detail: string;
-        durationMs?: number;
-        costTokens?: number;
-        costUsd?: number;
-        success: boolean;
-        error?: string;
+      cmd: {
+        agentId?: string;
+        task?: string;
+        provider: string;
+        model: string;
+        outcome?: string;
+        detail?: string;
+        promptTokens?: number;
+        completionTokens?: number;
+        costMinor?: number;
+        currency?: string;
+        latencyMs?: number;
+        guardrails?: string[];
       };
     };
     result: any;
   };
   db_list_ai_activity: {
-    params: { agentId: string; limit?: number };
+    params: { cmd: { agentId?: string; limit?: number } };
     result: any[];
   };
 };

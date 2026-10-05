@@ -21,7 +21,7 @@ import {
   Calculator,
   ListChecks,
   CalendarDays,
-  CalendarRange,
+  Activity,
   Bot,
   Store,
   ShoppingCart,
@@ -111,16 +111,6 @@ export const NAV_GROUPS: NavRailGroup[] = [
     items: [],
   },
   {
-    id: 'sell',
-    label: 'nav.sell',
-    icon: Store,
-    items: [
-      { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
-      { id: 'invoicing', label: 'common.invoicing', icon: ReceiptText, path: '/invoicing' },
-      { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
-    ],
-  },
-  {
     id: 'mail',
     icon: Mail,
     label: 'nav.mail',
@@ -145,26 +135,24 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Users,
     label: 'nav.crm',
     items: [
-      { id: 'contacts', label: 'common.contacts', icon: Users, path: '/people' },
+      { id: 'people', label: 'common.contacts', icon: Users, path: '/people' },
       { id: 'deals', label: 'nav.deals', icon: FileText, path: '/people?tab=deals' },
+      { id: 'activity', label: 'common.activity', icon: Activity, path: '/people?tab=activity' },
+      // ── divider ──
+      { id: '__divider__', label: '', icon: undefined },
+      { id: 'tasks', label: 'common.tasks', icon: ListChecks, path: '/people?tab=tasks' },
+      { id: 'calendar', label: 'common.calendar', icon: CalendarDays, path: '/people?tab=calendar' },
+      { id: 'invoices', label: 'common.invoices', icon: ReceiptText, path: '/people?tab=invoices' },
     ],
   },
   {
-    id: 'tasks',
-    icon: ListChecks,
-    label: 'common.schedule',
+    id: 'sell',
+    label: 'nav.sell',
+    icon: Store,
     items: [
-      { id: 'today', label: 'common.today', icon: ListChecks, path: '/tasks' },
-      { id: 'upcoming', label: 'nav.tasksUpcoming', icon: Clock, path: '/tasks?view=upcoming' },
-      // ── divider ──
-      { id: '__divider__', label: '', icon: undefined },
-      { id: 'month', label: 'nav.calendarMonth', icon: CalendarDays, path: '/tasks?tab=calendar' },
-      {
-        id: 'agenda',
-        label: 'nav.calendarAgenda',
-        icon: CalendarRange,
-        path: '/tasks?tab=calendar&view=agenda',
-      },
+      { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
+      { id: 'invoicing', label: 'common.invoicing', icon: ReceiptText, path: '/invoicing' },
+      { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
     ],
   },
   {

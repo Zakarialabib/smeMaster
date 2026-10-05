@@ -56,6 +56,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("036_knowledge_base_fts", include_str!("036_knowledge_base_fts.sql")),
     ("037_contacts_client_fields", include_str!("037_contacts_client_fields.sql")),
     ("038_pos", include_str!("038_pos.sql")),
+    ("039_voice_agent_config", include_str!("039_voice_agent_config.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────
