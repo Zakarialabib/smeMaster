@@ -83,15 +83,11 @@ pub async fn generate_snapshot(pool: &SqlitePool) -> Result<OpsSnapshot, String>
         p2_grouped.entry(alert.rule.clone()).or_default().push(alert);
     }
 
-    // Count calls (from threads table)
-    let call_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM threads")
-        .fetch_one(pool)
-        .await
-        .map_err(|e| e.to_string())
-        .unwrap_or(0);
-
-    // Calculate contained percentage (placeholder — would need call outcomes)
-    let contained_pct = if call_count > 0 { 79 } else { 0 };
+    // Contained = share of alerts already acknowledged by an operator.
+    // 100 when there is nothing to contain.
+    let total = alerts.len() as u32;
+    let acked = alerts.iter().filter(|a| a.acknowledged_at.is_some()).count() as u32;
+    let contained_pct = if total > 0 { acked * 100 / total } else { 100 };
 
     Ok(OpsSnapshot {
         generated_at: chrono::Utc::now().to_rfc3339(),
@@ -99,7 +95,6 @@ pub async fn generate_snapshot(pool: &SqlitePool) -> Result<OpsSnapshot, String>
         p1,
         p2_grouped,
         p3_count,
-        call_count: call_count as u32,
         contained_pct,
         reachable: true,
         last_seen_at: chrono::Utc::now().to_rfc3339(),

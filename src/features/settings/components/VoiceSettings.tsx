@@ -36,6 +36,7 @@ import {
   aiStopSidecar,
   type SidecarControlStatus,
 } from '@shared/services/db/invoke/rag';
+import { listAgents, updateAgent } from '@shared/services/db/invoke/agents';
 import { Badge } from '@shared/components/ui/Badge';
 
 type VoiceProvider = VoiceProviderType;
@@ -104,6 +105,10 @@ export default function VoiceSettings() {
     stt: false,
     tts: false,
   });
+
+  // ── Agent selector (bind voice config to agent record) ──
+  const [agents, setAgents] = useState<any[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   // ── Voice self-test (TTS sample + STT mic check) ──────────────────────
   // Tests run against the LIVE form values (no save required) so a freshly
@@ -271,24 +276,67 @@ export default function VoiceSettings() {
   useEffect(() => {
     (async () => {
       try {
-        const config = await getVoiceConfig();
-        setProvider(config.provider);
-        setBaseUrl(config.baseUrl);
-        setApiKey(config.apiKey);
-        setTtsVoice(config.ttsVoice);
-        setSttModel(config.sttModel);
-        setTtsEnabled(config.ttsEnabled);
-        setSttEnabled(config.sttEnabled);
-        setCapabilities(getVoiceCapabilities(config));
+        // Load agent roster for selector
+        const agentList = await listAgents();
+        setAgents(agentList ?? []);
 
-        // Offline engine paths live in settings, not in VoiceConfig — they are
-        // device-local facts, not provider configuration.
-        setOfflineTtsDir((await getSetting('voice_offline_tts_dir')) ?? '');
-        setOfflineSttDir((await getSetting('voice_offline_stt_dir')) ?? '');
-        setTtsSpeed(String(config.ttsSpeed));
+        // Pick the first active agent by default (or the one with voice config)
+        const defaultAgent = agentList.find((a: any) => a.voiceProvider) ?? agentList[0] ?? null;
+        const agentId = defaultAgent?.id ?? null;
+        setSelectedAgentId(agentId);
+
+        if (defaultAgent) {
+          // Load voice config from agent record
+          const agent = defaultAgent;
+          const loadedProvider = (agent.voiceProvider as VoiceProvider) ?? 'browser';
+          const loadedBaseUrl = agent.voiceBaseUrl ?? 'https://api.openai.com/v1';
+          const loadedApiKey = agent.voiceApiKey ?? '';
+          const loadedTtsVoice = agent.voiceTtsVoice ?? 'alloy';
+          const loadedSttModel = agent.voiceSttModel ?? 'whisper-1';
+          const loadedTtsEnabled = agent.voiceTtsEnabled ?? false;
+          const loadedSttEnabled = agent.voiceSttEnabled ?? false;
+          const loadedTtsSpeed = agent.voiceTtsSpeed ?? 1.0;
+
+          setProvider(loadedProvider);
+          setBaseUrl(loadedBaseUrl);
+          setApiKey(loadedApiKey);
+          setTtsVoice(loadedTtsVoice);
+          setSttModel(loadedSttModel);
+          setTtsEnabled(loadedTtsEnabled);
+          setSttEnabled(loadedSttEnabled);
+          setOfflineTtsDir(agent.voiceOfflineTtsDir ?? '');
+          setOfflineSttDir(agent.voiceOfflineSttDir ?? '');
+          setTtsSpeed(String(loadedTtsSpeed));
+          setCapabilities(
+            getVoiceCapabilities({
+              provider: loadedProvider,
+              baseUrl: loadedBaseUrl,
+              apiKey: loadedApiKey,
+              ttsVoice: loadedTtsVoice,
+              sttModel: loadedSttModel,
+              ttsEnabled: loadedTtsEnabled,
+              sttEnabled: loadedSttEnabled,
+              ttsSpeed: loadedTtsSpeed,
+              offlineSttSampleRate: 16000,
+            }),
+          );
+        } else {
+          // Fallback: try global settings (back-compat)
+          const config = await getVoiceConfig();
+          setProvider(config.provider);
+          setBaseUrl(config.baseUrl);
+          setApiKey(config.apiKey);
+          setTtsVoice(config.ttsVoice);
+          setSttModel(config.sttModel);
+          setTtsEnabled(config.ttsEnabled);
+          setSttEnabled(config.sttEnabled);
+          setOfflineTtsDir((await getSetting('voice_offline_tts_dir')) ?? '');
+          setOfflineSttDir((await getSetting('voice_offline_stt_dir')) ?? '');
+          setTtsSpeed(String(config.ttsSpeed));
+          setCapabilities(getVoiceCapabilities({ ...config, offlineSttSampleRate: 16000 }));
+        }
       } catch (err) {
-        // Keep the component defaults when settings can't be read.
-        logVoiceError('getVoiceConfig', err);
+        logVoiceError('loadVoiceConfig', err);
       }
     })();
     void refreshSidecar();
@@ -305,18 +353,38 @@ export default function VoiceSettings() {
 
   async function save() {
     try {
-      await setSetting('voice_provider', provider);
-      await setSetting('voice_base_url', baseUrl.trim());
-      if (apiKey.trim()) await setSecureSetting('voice_api_key', apiKey.trim());
-      await setSetting('voice_tts_voice', ttsVoice.trim());
-      await setSetting('voice_stt_model', sttModel.trim());
-      await setSetting('voice_tts_enabled', ttsEnabled ? 'true' : 'false');
-      await setSetting('voice_stt_enabled', sttEnabled ? 'true' : 'false');
-      await setSetting('voice_offline_tts_dir', offlineTtsDir.trim());
-      await setSetting('voice_offline_stt_dir', offlineSttDir.trim());
-      const speed = Number.parseFloat(ttsSpeed);
-      if (Number.isFinite(speed) && speed > 0) {
-        await setSetting('voice_tts_speed', String(speed));
+      if (selectedAgentId) {
+        // Write voice config to the agent record instead of global settings
+        const patch: Record<string, any> = {
+          voiceProvider: provider,
+          voiceBaseUrl: baseUrl.trim(),
+          voiceTtsVoice: ttsVoice.trim(),
+          voiceSttModel: sttModel.trim(),
+          voiceTtsEnabled: ttsEnabled,
+          voiceSttEnabled: sttEnabled,
+          voiceOfflineTtsDir: offlineTtsDir.trim(),
+          voiceOfflineSttDir: offlineSttDir.trim(),
+          voiceTtsSpeed: Number.parseFloat(ttsSpeed) > 0 ? Number.parseFloat(ttsSpeed) : 1.0,
+        };
+        if (apiKey.trim()) {
+          patch.voiceApiKey = apiKey.trim();
+        }
+        await updateAgent(selectedAgentId, patch);
+      } else {
+        // Fallback: write to global settings (back-compat)
+        await setSetting('voice_provider', provider);
+        await setSetting('voice_base_url', baseUrl.trim());
+        if (apiKey.trim()) await setSecureSetting('voice_api_key', apiKey.trim());
+        await setSetting('voice_tts_voice', ttsVoice.trim());
+        await setSetting('voice_stt_model', sttModel.trim());
+        await setSetting('voice_tts_enabled', ttsEnabled ? 'true' : 'false');
+        await setSetting('voice_stt_enabled', sttEnabled ? 'true' : 'false');
+        await setSetting('voice_offline_tts_dir', offlineTtsDir.trim());
+        await setSetting('voice_offline_stt_dir', offlineSttDir.trim());
+        const speed = Number.parseFloat(ttsSpeed);
+        if (Number.isFinite(speed) && speed > 0) {
+          await setSetting('voice_tts_speed', String(speed));
+        }
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -336,6 +404,26 @@ export default function VoiceSettings() {
         title="Voice & Speech"
         description="Configure Text-to-Speech (TTS) and Speech-to-Text (STT) providers. Used by the AI assistant for spoken replies and voice input."
       >
+        {/* Agent selector — voice config binds to the selected agent record */}
+        <SettingRow label="Agent">
+          <select
+            value={selectedAgentId ?? ''}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedAgentId(id || null);
+              // TODO: load voice config from the selected agent record
+            }}
+            className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
+          >
+            <option value="">— Global (fallback) —</option>
+            {agents.map((a: any) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        </SettingRow>
+
         <SettingRow label="Provider">
           <select
             value={provider}
@@ -362,9 +450,16 @@ export default function VoiceSettings() {
                 setTtsVoice('');
                 setSttModel('');
               }
-              void setSetting('voice_provider', v).catch((err) =>
-                logVoiceError('provider change', err),
-              );
+              // Persist to agent record or global settings
+              if (selectedAgentId) {
+                void updateAgent(selectedAgentId, { voiceProvider: v }).catch((err) =>
+                  logVoiceError('provider change', err),
+                );
+              } else {
+                void setSetting('voice_provider', v).catch((err) =>
+                  logVoiceError('provider change', err),
+                );
+              }
             }}
             className="w-48 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
           >

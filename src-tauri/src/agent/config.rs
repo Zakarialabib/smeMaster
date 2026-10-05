@@ -11,49 +11,32 @@ use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use crate::db::tables::core::settings;
 
-/// Agent configuration — mirrors the Python `ConfigResponse` contract.
+/// Agent configuration — email/social automation scope (call-era fields removed
+/// with the dropped voice-call system).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentConfig {
     #[serde(default)]
     pub provider_mix: std::collections::BTreeMap<String, String>,
-    #[serde(default = "default_consent_variant")]
-    pub consent_variant: String,
-    #[serde(default = "default_true")]
-    pub bilingual: bool,
     #[serde(default = "default_channel")]
     pub channel: String,
     #[serde(default)]
     pub channels: std::collections::BTreeMap<String, ChannelCapability>,
     #[serde(default)]
     pub cost_sim: serde_json::Value,
-    #[serde(default = "default_hours")]
-    pub hours: std::collections::BTreeMap<String, Vec<String>>,
     #[serde(default = "default_tz")]
     pub tz: String,
-    #[serde(default)]
-    pub transfer_target: Option<String>,
     #[serde(default = "default_tier")]
     pub tier: String,
     #[serde(default)]
     pub knowledge_scope: Vec<String>,
-    #[serde(default = "default_after_hours")]
-    pub after_hours_mode: String,
     #[serde(default)]
     pub updated_at: Option<String>,
 }
 
-fn default_consent_variant() -> String { "announce_first".to_string() }
-fn default_true() -> bool { true }
 fn default_channel() -> String { "none".to_string() }
 fn default_tz() -> String { "Europe/Paris".to_string() }
 fn default_tier() -> String { "standard".to_string() }
-fn default_after_hours() -> String { "take_message".to_string() }
-fn default_hours() -> std::collections::BTreeMap<String, Vec<String>> {
-    let mut m = std::collections::BTreeMap::new();
-    m.insert("mon-fri".to_string(), vec!["09:00".to_string(), "18:00".to_string()]);
-    m
-}
 
 /// Per-channel capability flags.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,17 +51,12 @@ impl Default for AgentConfig {
     fn default() -> Self {
         Self {
             provider_mix: std::collections::BTreeMap::new(),
-            consent_variant: default_consent_variant(),
-            bilingual: true,
             channel: default_channel(),
             channels: std::collections::BTreeMap::new(),
             cost_sim: serde_json::json!({"inputs": {}, "unverified": true}),
-            hours: default_hours(),
             tz: default_tz(),
-            transfer_target: None,
             tier: default_tier(),
             knowledge_scope: Vec::new(),
-            after_hours_mode: default_after_hours(),
             updated_at: None,
         }
     }
@@ -86,9 +64,9 @@ impl Default for AgentConfig {
 
 /// Allowed config fields for PUT updates.
 const ALLOWED_FIELDS: &[&str] = &[
-    "provider_mix", "consent_variant", "bilingual", "channel",
-    "channels", "cost_sim", "hours", "tz", "transfer_target",
-    "tier", "knowledge_scope", "after_hours_mode",
+    "provider_mix", "channel",
+    "channels", "cost_sim", "tz",
+    "tier", "knowledge_scope",
 ];
 
 /// Read the current config from the settings table.
@@ -144,8 +122,7 @@ mod tests {
     fn default_config_is_valid() {
         let config = AgentConfig::default();
         assert_eq!(config.tier, "standard");
-        assert_eq!(config.consent_variant, "announce_first");
-        assert!(config.bilingual);
+        assert_eq!(config.channel, "none");
     }
 
     #[test]

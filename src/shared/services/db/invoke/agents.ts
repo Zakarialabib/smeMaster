@@ -39,6 +39,14 @@ export async function createAgent(agent: {
     maxConcurrent?: number;
     cooldownMs?: number;
   };
+  voiceProvider?: string;
+  voiceTtsVoice?: string;
+  voiceSttModel?: string;
+  voiceTtsEnabled?: boolean;
+  voiceSttEnabled?: boolean;
+  voiceTtsSpeed?: number;
+  voiceOfflineTtsDir?: string;
+  voiceOfflineSttDir?: string;
 }): Promise<any> {
   return invoke('db_create_agent', { agent });
 }

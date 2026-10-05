@@ -19,7 +19,7 @@ pub struct Health {
 }
 
 /// `GET /ops/snapshot`. `reachable` is a bool and not an Option: "cannot reach
-/// the agent" and "no calls" are different screens, and a missing field renders
+/// the agent" and "no alerts" are different screens, and a missing field renders
 /// as the wrong one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,7 +29,6 @@ pub struct OpsSnapshot {
     pub p1: Vec<OpsAlert>,
     pub p2_grouped: std::collections::BTreeMap<String, Vec<OpsAlert>>,
     pub p3_count: u32,
-    pub call_count: u32,
     pub contained_pct: u32,
     pub reachable: bool,
     pub last_seen_at: String,
@@ -73,32 +72,6 @@ pub struct ProviderHealth {
     pub state: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionRequest {
-    pub channel: String,
-    pub purpose: String,
-    #[serde(default = "default_locale")]
-    pub locale: String,
-    /// Honoured only for `test_call`. The server refuses it otherwise; the field
-    /// exists so a test call can be placed without a carrier.
-    pub caller_override: Option<String>,
-}
-
-fn default_locale() -> String {
-    "fr".to_string()
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionResponse {
-    pub session_id: String,
-    pub state: String,
-    pub opened_at: String,
-    pub ws_url: String,
-    pub disclosure: String,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,20 +108,13 @@ mod tests {
     }
 
     #[test]
-    fn deserialises_a_camel_case_snapshot_from_the_server() {
+    fn deserialises_a_camel_case_snapshot() {
         let body = r#"{
             "generatedAt":"2026-09-28T14:51:00Z","since":"2026-09-28T08:51:00Z",
-            "p1":[],"p2Grouped":{},"p3Count":2,"callCount":128,"containedPct":79,
+            "p1":[],"p2Grouped":{},"p3Count":2,"containedPct":79,
             "reachable":true,"lastSeenAt":"2026-09-28T14:51:00Z"}"#;
         let snap: OpsSnapshot = serde_json::from_str(body).unwrap();
         assert!(snap.reachable, "reachable must survive the round trip");
-        assert_eq!(snap.call_count, 128);
-    }
-
-    #[test]
-    fn a_session_request_defaults_to_french() {
-        let req: SessionRequest =
-            serde_json::from_str(r#"{"channel":"voice","purpose":"live"}"#).unwrap();
-        assert_eq!(req.locale, "fr");
+        assert_eq!(snap.contained_pct, 79);
     }
 }
