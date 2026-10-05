@@ -60,6 +60,7 @@ import {
   HardwareTab,
   BusinessProfileTab,
   CacheTab,
+  AgentsTab,
 } from './tabs';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -88,7 +89,8 @@ export type SettingsTabId =
   | 'account-cleaning'
   | 'hardware'
   | 'business-profile'
-  | 'cache';
+  | 'cache'
+  | 'agents';
 
 export type SettingsPlatform = 'all' | 'desktop' | 'mobile';
 
@@ -200,6 +202,12 @@ export const tabGroups: SettingsGroup[] = [
         label: 'AI & Automation',
         icon: Sparkles,
         subtitle: 'settings.tabSubtitles.ai',
+      },
+      {
+        id: 'agents',
+        label: 'Agents',
+        icon: ShieldCheck,
+        subtitle: 'settings.tabSubtitles.agents',
       },
       {
         id: 'mail-rules',
@@ -325,6 +333,7 @@ export const sectionComponents: Record<string, React.ComponentType> = {
   shortcuts: ShortcutsTab,
   about: AboutTab,
   ai: AiTab,
+  agents: AgentsTab,
   notifications: NotificationsTab,
   compliance: ComplianceTab,
   pgp: PgpTab,
@@ -403,6 +412,7 @@ export const TAB_KEYWORDS: Record<string, string[]> = {
     'summarize',
     'writing style',
   ],
+  agents: ['agent', 'agents', 'roster', 'inbox assistant', 'ops watcher', 'bookkeeper', 'writer'],
   notifications: [
     'bell',
     'alert',
@@ -537,6 +547,7 @@ export function getTabLabel(id: string, t: (key: string) => string): string {
     backup: t('settings.tabs.backup'),
     'help-center': t('settings.tabs.helpCenter'),
     ai: t('search.ai'),
+    agents: 'Agents',
     notifications: t('settings.tabs.notifications'),
     compliance: t('settings.tabs.compliance'),
     pgp: t('settings.tabs.pgp'),
@@ -568,6 +579,7 @@ export function getSectionSubtitle(id: string): string | undefined {
     backup: 'settings.sectionSubtitles.backup',
     'deliverability-dashboard': 'settings.sectionSubtitles.deliverabilityDashboard',
     ai: 'settings.sectionSubtitles.ai',
+    agents: 'settings.sectionSubtitles.agents',
     notifications: 'settings.sectionSubtitles.notifications',
     compliance: 'settings.sectionSubtitles.compliance',
     pgp: 'settings.sectionSubtitles.pgp',
@@ -645,6 +657,11 @@ export const EDUCATION_CONTENT: Record<string, EducationItem[]> = {
     { type: 'how', text: 'settings.education.ai.how' },
     { type: 'when', text: 'settings.education.ai.when' },
   ],
+  agents: [
+    { type: 'why', text: 'settings.education.agents.why' },
+    { type: 'how', text: 'settings.education.agents.how' },
+    { type: 'when', text: 'settings.education.agents.when' },
+  ],
   'mail-rules': [
     { type: 'why', text: 'settings.education.mailRules.why' },
     { type: 'how', text: 'settings.education.mailRules.how' },
@@ -698,4 +715,5 @@ export const TAB_HELP_KEYS: Record<string, string[]> = {
   'deliverability-dashboard': ['deliverability-dns', 'deliverability-warming'],
   'mail-rules': ['smart-folders'],
   pgp: ['pgp-encryption'],
+  agents: ['agents', 'agent-roster', 'inbox-assistant', 'ops-watcher', 'bookkeeper', 'writer'],
 };

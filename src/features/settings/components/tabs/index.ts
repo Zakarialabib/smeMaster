@@ -23,3 +23,4 @@ export { default as HardwareTab } from './HardwareTab';
 export { default as BusinessProfileTab } from '../../../invoicing/components/tabs/BusinessProfileTab';
 export { default as PairingSettings } from '../PairingSettings';
 export { default as CacheTab } from './CacheTab';
+export { default as AgentsTab } from '../AgentsTab';
