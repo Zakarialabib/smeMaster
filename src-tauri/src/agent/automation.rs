@@ -247,6 +247,76 @@ async fn run_social_monitor(_pool: &SqlitePool) -> Result<String, String> {
     Ok("Social media monitoring not yet configured".to_string())
 }
 
+/// Get the data context for an automation rule.
+///
+/// This prepares the data that the AI provider needs to process the rule.
+/// For email triage, it returns the unread threads. For smart drafts, it
+/// returns recent threads from known contacts. For follow-ups, it returns
+/// threads with no reply after 48h.
+pub async fn get_rule_context(pool: &SqlitePool, rule_id: &str) -> Result<String, String> {
+    match rule_id {
+        "auto-triage" => {
+            let threads: Vec<(String, String, String)> = sqlx::query_as(
+                "SELECT id, subject, snippet FROM threads WHERE is_read = 0 ORDER BY last_message_at DESC LIMIT 10",
+            )
+            .fetch_all(pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+            if threads.is_empty() {
+                return Ok("No unread threads to triage".to_string());
+            }
+
+            let mut context = String::from("Unread threads:\n");
+            for (id, subject, snippet) in threads {
+                context.push_str(&format!("- [{}] {}: {}\n", id, subject, snippet));
+            }
+            Ok(context)
+        }
+        "auto-draft" => {
+            let threads: Vec<(String, String)> = sqlx::query_as(
+                "SELECT id, subject FROM threads ORDER BY last_message_at DESC LIMIT 5",
+            )
+            .fetch_all(pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+            if threads.is_empty() {
+                return Ok("No threads to draft replies for".to_string());
+            }
+
+            let mut context = String::from("Recent threads:\n");
+            for (id, subject) in threads {
+                context.push_str(&format!("- [{}] {}\n", id, subject));
+            }
+            Ok(context)
+        }
+        "auto-followup" => {
+            let threads: Vec<(String, String)> = sqlx::query_as(
+                "SELECT id, subject FROM threads WHERE last_message_at < ? ORDER BY last_message_at ASC LIMIT 10",
+            )
+            .bind((chrono::Utc::now() - chrono::Duration::hours(48)).timestamp())
+            .fetch_all(pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+            if threads.is_empty() {
+                return Ok("No threads need follow-up".to_string());
+            }
+
+            let mut context = String::from("Threads needing follow-up:\n");
+            for (id, subject) in threads {
+                context.push_str(&format!("- [{}] {}\n", id, subject));
+            }
+            Ok(context)
+        }
+        "auto-social" => {
+            Ok("Social media monitoring not yet configured".to_string())
+        }
+        _ => Err(format!("Unknown rule: {rule_id}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

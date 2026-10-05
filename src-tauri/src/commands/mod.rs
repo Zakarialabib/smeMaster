@@ -124,6 +124,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             crate::agent::commands::agent_save_automations,
             crate::agent::commands::agent_toggle_automation,
             crate::agent::commands::agent_run_automation,
+            crate::agent::commands::agent_run_automation_with_ai,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,

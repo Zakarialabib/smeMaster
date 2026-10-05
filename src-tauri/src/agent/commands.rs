@@ -170,3 +170,53 @@ pub async fn agent_run_automation(
 ) -> Result<String, String> {
     automation::run_rule(pool.inner(), &rule_id).await
 }
+
+/// Run an automation rule with AI completion.
+///
+/// This command takes the rule's data context and sends it to the AI provider
+/// for processing. The frontend's `aiService` handles the actual provider call.
+#[tauri::command]
+pub async fn agent_run_automation_with_ai(
+    pool: State<'_, SqlitePool>,
+    rule_id: String,
+) -> Result<AutomationRunResult, String> {
+    let rules = automation::get_rules(pool.inner()).await?;
+    let rule = rules.iter().find(|r| r.id == rule_id).cloned()
+        .ok_or_else(|| format!("Rule not found: {rule_id}"))?;
+
+    if !rule.enabled {
+        return Err(format!("Rule is disabled: {rule_id}"));
+    }
+
+    // Get the data context for this automation
+    let context = automation::get_rule_context(pool.inner(), &rule_id).await?;
+
+    // Update last_run and run_count
+    let mut updated_rules = rules;
+    for r in &mut updated_rules {
+        if r.id == rule_id {
+            r.last_run = Some(chrono::Utc::now().to_rfc3339());
+            r.run_count += 1;
+            break;
+        }
+    }
+    automation::save_rules(pool.inner(), &updated_rules).await?;
+
+    Ok(AutomationRunResult {
+        rule_id,
+        rule_name: rule.name,
+        channel: rule.channel.as_str().to_string(),
+        context,
+        timestamp: chrono::Utc::now().to_rfc3339(),
+    })
+}
+
+/// Result of an automation run with AI.
+#[derive(serde::Serialize)]
+pub struct AutomationRunResult {
+    pub rule_id: String,
+    pub rule_name: String,
+    pub channel: String,
+    pub context: String,
+    pub timestamp: String,
+}

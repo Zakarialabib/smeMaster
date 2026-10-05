@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { OpsAlert, ProviderHealth, AutomationRule } from '../types/commands';
 import { invokeCommand } from '@shared/services/db/invoke/command';
+import { callAi } from '@shared/services/ai/aiService';
 
 /**
  * Store split for the agent console — one store per domain.
@@ -8,6 +9,37 @@ import { invokeCommand } from '@shared/services/db/invoke/command';
  * Focus: agentic AI for email and social channel automation.
  * Voice/WhatsApp call system is dropped.
  */
+
+// ── Automation Prompt Builder ───────────────────────────────────────────────
+
+function buildAutomationPrompt(ruleName: string, channel: string, context: string): string {
+  const base = `You are an AI automation agent for SMEMaster. Your task: ${ruleName}.\n\nChannel: ${channel}\n\nData context:\n${context}\n\n`;
+
+  switch (ruleName) {
+    case 'Email Triage':
+      return (
+        base +
+        'Categorize each thread by urgency (urgent/meeting/finance/general), provide a one-line summary, and flag anything that needs immediate attention. Format as a bulleted list.'
+      );
+    case 'Smart Draft Replies':
+      return (
+        base +
+        'Generate a professional, concise draft reply for each thread. Match the tone of the original email. Keep replies under 100 words.'
+      );
+    case 'Follow-up Reminders':
+      return (
+        base +
+        'For each thread, suggest a follow-up action and create a task description. Prioritize by how long the thread has been waiting.'
+      );
+    case 'Social Media Monitor':
+      return (
+        base +
+        'Summarize the brand mention and suggest an appropriate response. If no mentions are found, say so.'
+      );
+    default:
+      return base + 'Process the data and provide a helpful response.';
+  }
+}
 
 // ── Ops ─────────────────────────────────────────────────────────────────────
 
@@ -133,7 +165,21 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
   },
   run: async (id) => {
     try {
-      return await invokeCommand<string>('agent_run_automation', { ruleId: id });
+      const result = await invokeCommand<{
+        ruleId: string;
+        ruleName: string;
+        channel: string;
+        context: string;
+        timestamp: string;
+      }>('agent_run_automation_with_ai', { ruleId: id });
+
+      // Build the AI prompt based on the rule
+      const prompt = buildAutomationPrompt(result.ruleName, result.channel, result.context);
+
+      // Call the AI provider
+      const aiResponse = await callAi('You are an AI automation agent for SMEMaster.', prompt);
+
+      return aiResponse || 'AI returned an empty response';
     } catch (err) {
       console.error('Failed to run automation:', err);
       return 'Failed to run automation';
