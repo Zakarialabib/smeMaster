@@ -1,7 +1,22 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AgentClientError } from './client';
 import { dataOr, isLoading, isUnreachable, useAgentResource } from './useAgentResource';
+
+/**
+ * Minimal structured error — replaces the `AgentClientError` that lived in
+ * the deleted HTTP client. The hook only reads `message`/`code`/`retryable`,
+ * so this local stand-in covers the contract.
+ */
+class AgentClientError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public retryable = true,
+  ) {
+    super(message);
+  }
+}
 
 /**
  * The four states, and the two concurrency bugs that make a data hook wrong in

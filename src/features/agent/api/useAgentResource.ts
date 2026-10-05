@@ -97,12 +97,20 @@ export function useAgentResource<T>(
         setState({ kind: 'ready', data });
       } catch (e) {
         if (cancelled || id !== requestId.current || !mounted.current) return;
-        const msg = (e as Error).message;
-        const unreachable = msg.includes('not reachable') || msg.includes('Connection refused');
+        // Structured errors (e.g. a client error carrying a machine-readable
+        // `code` and `retryable`) propagate their fields; anything else gets
+        // the generic unknown/retryable treatment.
+        const err = e as { message?: unknown; code?: unknown; retryable?: unknown };
+        const msg = typeof err?.message === 'string' ? err.message : String(e);
+        const lowered = msg.toLowerCase();
+        const unreachable =
+          lowered.includes('not reachable') || lowered.includes('connection refused');
+        const code = typeof err?.code === 'string' ? err.code : 'unknown';
+        const retryable = typeof err?.retryable === 'boolean' ? err.retryable : true;
         setState(
           unreachable
             ? { kind: 'unreachable', message: msg }
-            : { kind: 'error', message: msg, code: 'unknown', retryable: true },
+            : { kind: 'error', message: msg, code, retryable },
         );
       } finally {
         // Only the CURRENT request may clear the flag. A superseded request

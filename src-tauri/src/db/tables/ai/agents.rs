@@ -550,23 +550,13 @@ pub async fn list_activity(
 /// Idempotent: keyed on `is_builtin` + name, so a restart does not duplicate it
 /// and a user's edits to the seeded row are not clobbered.
 pub async fn seed_builtin_agents(pool: &SqlitePool) -> Result<usize, AppDbError> {
-    let existing: Option<(String,)> =
-        sqlx::query_as("SELECT id FROM agents WHERE is_builtin = 1 AND name = ?")
-            .bind("Receptionist")
-            .fetch_optional(pool)
-            .await
-            .map_err(AppDbError::Database)?;
-    if existing.is_some() {
-        return Ok(0);
-    }
-
     let now = chrono::Utc::now().timestamp();
-    let id = Uuid::new_v4().to_string();
+    let mut seeded = 0;
 
     // T0 + T1 by default. T2 (local-node) is opt-in because it requires a local
     // node to exist; granting it unconditionally would advertise a capability
     // the deployment may not have.
-    let policy = serde_json::json!({
+    let base_policy = serde_json::json!({
         "voice.stt": { "provider": "local", "model": "zipformer-small-en" },
         "voice.tts": { "provider": "local", "model": "vits-piper-fr-fr-siwis-medium" },
         "email.reply": { "provider": "claude", "model": "claude-sonnet-4-20250514" },
@@ -574,36 +564,112 @@ pub async fn seed_builtin_agents(pool: &SqlitePool) -> Result<usize, AppDbError>
     })
     .to_string();
 
-    sqlx::query(
-        "INSERT INTO agents
-         (id, name, persona, role, description, instructions, knowledge_tiers,
-          knowledge_collections, tools, channels, model_policy, enabled, is_builtin,
-          budget_minor, currency, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 0, 'MAD', ?, ?)",
-    )
-    .bind(&id)
-    .bind("Receptionist")
-    .bind("P3")
-    .bind("Answer inbound calls, triage, and transfer to a human when needed")
-    .bind("Inbound AI receptionist for a French-speaking SME. Voice and WhatsApp.")
-    .bind("Announce that you are an AI assistant before anything else. Never claim to be human.")
-    .bind(to_json_array(&["T0".to_string(), "T1".to_string()]))
-    .bind(to_json_array(&[]))
-    .bind(to_json_array(&[
-        "text".to_string(),
-        "stt".to_string(),
-        "tts".to_string(),
-        "tool_calling".to_string(),
-    ]))
-    .bind(to_json_array(&["voice".to_string(), "whatsapp".to_string()]))
-    .bind(&policy)
-    .bind(now)
-    .bind(now)
-    .execute(pool)
-    .await
-    .map_err(AppDbError::Database)?;
+    let inbox_policy = serde_json::json!({
+        "email.reply": { "provider": "claude", "model": "claude-sonnet-4-20250514" },
+        "rag.query": { "provider": "local", "model": "bge-small-en-v1.5" }
+    })
+    .to_string();
 
-    Ok(1)
+    let ops_policy = serde_json::json!({
+        "ops.snapshot": { "provider": "claude", "model": "claude-sonnet-4-20250514" },
+        "rag.query": { "provider": "local", "model": "bge-small-en-v1.5" }
+    })
+    .to_string();
+
+    let bookkeeper_policy = serde_json::json!({
+        "invoice.process": { "provider": "claude", "model": "claude-sonnet-4-20250514" },
+        "rag.query": { "provider": "local", "model": "bge-small-en-v1.5" }
+    })
+    .to_string();
+
+    let writer_policy = serde_json::json!({
+        "campaign.draft": { "provider": "claude", "model": "claude-sonnet-4-20250514" },
+        "rag.query": { "provider": "local", "model": "bge-small-en-v1.5" }
+    })
+    .to_string();
+
+    let agents: &[(&str, &str, &str, &str, &str, &[&str], &[&str], &[&str], &str)] = &[
+        (
+            "Receptionist", "P3",
+            "Answer inbound calls, triage, and transfer to a human when needed",
+            "Inbound AI receptionist for a French-speaking SME. Voice and WhatsApp.",
+            "Announce that you are an AI assistant before anything else. Never claim to be human.",
+            &["T0", "T1"], &["text", "stt", "tts", "tool_calling"],
+            &["voice", "whatsapp"], &base_policy,
+        ),
+        (
+            "Inbox Assistant", "P1",
+            "Triage and respond to inbound emails, draft replies, label and archive",
+            "Email-first agent for a French-speaking SME. Handles T1 inbox workflows.",
+            "You are an inbox assistant. Answer emails, draft replies, label and archive.",
+            &["T1"], &["text", "streaming", "embedding"],
+            &["chat", "email"], &inbox_policy,
+        ),
+        (
+            "Ops Watcher", "P2",
+            "Monitor ops snapshots, detect anomalies, alert on threshold breaches",
+            "Operations monitoring agent. Scheduled checks, snapshot analysis.",
+            "You are an ops watcher. Monitor snapshots, detect anomalies, alert on breaches.",
+            &["T1"], &["text", "streaming"],
+            &["desktop", "cron"], &ops_policy,
+        ),
+        (
+            "Bookkeeper", "P4",
+            "Process invoices, reconcile entries, generate DGI-compliant reports",
+            "Accounting agent. Vision for invoice OCR, structured output for entries.",
+            "You are a bookkeeper. Process invoices, reconcile entries, generate reports.",
+            &["T1", "T2"], &["text", "vision", "structured_output"],
+            &["desktop"], &bookkeeper_policy,
+        ),
+        (
+            "Writer", "P5",
+            "Draft campaigns, generate content, schedule sends",
+            "Marketing writer agent. Streaming for long-form content generation.",
+            "You are a writer. Draft campaigns, generate content, schedule sends.",
+            &["T1"], &["text", "streaming"],
+            &["chat", "email"], &writer_policy,
+        ),
+    ];
+
+    for (name, persona, role, desc, instructions, tiers, tools, channels, policy) in agents {
+        let exists: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM agents WHERE is_builtin = 1 AND name = ?",
+        )
+        .bind(name)
+        .fetch_optional(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+        if exists.is_some() {
+            continue;
+        }
+        let id = Uuid::new_v4().to_string();
+        sqlx::query(
+            "INSERT INTO agents
+             (id, name, persona, role, description, instructions, knowledge_tiers,
+              knowledge_collections, tools, channels, model_policy, enabled, is_builtin,
+              budget_minor, currency, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 0, 'MAD', ?, ?)",
+        )
+        .bind(&id)
+        .bind(name)
+        .bind(persona)
+        .bind(role)
+        .bind(desc)
+        .bind(instructions)
+        .bind(to_json_array(&tiers.iter().map(|s| s.to_string()).collect::<Vec<_>>()))
+        .bind(to_json_array(&[]))
+        .bind(to_json_array(&tools.iter().map(|s| s.to_string()).collect::<Vec<_>>()))
+        .bind(to_json_array(&channels.iter().map(|s| s.to_string()).collect::<Vec<_>>()))
+        .bind(policy)
+        .bind(now)
+        .bind(now)
+        .execute(pool)
+        .await
+        .map_err(AppDbError::Database)?;
+        seeded += 1;
+    }
+
+    Ok(seeded)
 }
 
 #[cfg(test)]
