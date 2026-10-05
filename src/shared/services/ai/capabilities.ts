@@ -229,6 +229,23 @@ export type AiCapability =
   | 'context_caching'
   | 'batch_processing';
 
+/** All 13 capabilities with metadata for the UI grid. */
+export const ALL_CAPABILITIES: { id: AiCapability; label: string; description: string }[] = [
+  { id: 'text', label: 'Text', description: 'Text completion' },
+  { id: 'streaming', label: 'Stream', description: 'Streaming tokens' },
+  { id: 'embedding', label: 'Embed', description: 'Text embeddings' },
+  { id: 'stt', label: 'STT', description: 'Speech to text' },
+  { id: 'tts', label: 'TTS', description: 'Text to speech' },
+  { id: 'realtime_voice', label: 'RT Voice', description: 'Realtime voice sessions' },
+  { id: 'model_discovery', label: 'Models', description: 'List available models' },
+  { id: 'structured_output', label: 'Structured', description: 'Zod schema output' },
+  { id: 'tool_calling', label: 'Tools', description: 'Function calling' },
+  { id: 'reasoning', label: 'Reasoning', description: 'Reasoning effort control' },
+  { id: 'vision', label: 'Vision', description: 'Multimodal input' },
+  { id: 'context_caching', label: 'Cache', description: 'Context caching' },
+  { id: 'batch_processing', label: 'Batch', description: 'Batch processing' },
+];
+
 // ── Provider Capability Declaration ────────────────────────────────────────
 
 export interface ProviderCapabilities {

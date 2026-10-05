@@ -1257,7 +1257,7 @@
       },
       "agents": {
         "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
-        "how": "Create agents here, then assign them to channels (voice, chat, cron). The Rust service layer enforces scope at call time.",
+        "how": "Create agents here, then assign them to channels (email, social, cron). The Rust service layer enforces scope at call time.",
         "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {

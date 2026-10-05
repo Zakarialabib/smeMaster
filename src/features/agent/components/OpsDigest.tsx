@@ -113,8 +113,7 @@ export function OpsDigest() {
                 The agent is not reachable. Figures below may be stale.
               </div>
             )}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Stat label="Calls" value={snap.callCount} />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               <Stat label="Contained" value={`${snap.containedPct}%`} />
               <Stat label="P3" value={snap.p3Count} />
               <Stat

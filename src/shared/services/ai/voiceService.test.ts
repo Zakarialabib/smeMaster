@@ -68,11 +68,11 @@ describe('voice service', () => {
   });
 
   it('getVoiceCapabilities does NOT advertise unimplemented providers', () => {
-    // Unknown providers (e.g. a removed agent-core) must report no
-    // capability. ElevenLabs used to be a stub, but both directions are now
-    // implemented via the ElevenLabs API, so it reports true.
-    const agentCore: VoiceConfig = {
-      provider: 'agent-core',
+    // Unknown providers (e.g. a removed backend) must report no capability.
+    // ElevenLabs used to be a stub, but both directions are now implemented
+    // via the ElevenLabs API, so it reports true.
+    const removed: VoiceConfig = {
+      provider: 'defunct-backend' as VoiceConfig['provider'],
       baseUrl: 'http://localhost:8000',
       apiKey: '',
       ttsVoice: 'alloy',
@@ -82,9 +82,9 @@ describe('voice service', () => {
       ttsSpeed: 1.0,
       offlineSttSampleRate: 16000,
     };
-    expect(getVoiceCapabilities(agentCore)).toEqual({ stt: false, tts: false });
+    expect(getVoiceCapabilities(removed)).toEqual({ stt: false, tts: false });
 
-    const elevenlabs: VoiceConfig = { ...agentCore, provider: 'elevenlabs' };
+    const elevenlabs: VoiceConfig = { ...removed, provider: 'elevenlabs' };
     expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: true, tts: true });
   });
 
@@ -98,7 +98,7 @@ describe('voice service', () => {
       'elevenlabs',
       'lmstudio',
       'custom',
-      'agent-core',
+      'defunct-backend',
       'offline',
     ] as const;
 

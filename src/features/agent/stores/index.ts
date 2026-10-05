@@ -47,7 +47,6 @@ interface OpsState {
   p1: OpsAlert[];
   p2Grouped: Record<string, OpsAlert[]>;
   p3Count: number;
-  callCount: number;
   containedPct: number;
   providerHealth: ProviderHealth[];
   reachable: boolean;
@@ -68,7 +67,6 @@ export const useOpsStore = create<OpsState>((set) => ({
   p1: [],
   p2Grouped: {},
   p3Count: 0,
-  callCount: 0,
   containedPct: 0,
   providerHealth: [],
   reachable: true,
@@ -99,21 +97,11 @@ export const useUnacknowledgedP1 = (): number =>
 // ── Config ──────────────────────────────────────────────────────────────────
 
 export type ConfigDraft = {
-  hours: string;
-  tz: string;
-  transferTarget: string;
-  afterHours: 'take_message' | 'transfer' | 'announce_only';
   tier: 'standard' | 'selfhosted' | 'premium';
-  disclosureEnabled: boolean;
 };
 
 const CONFIG_DEFAULTS: ConfigDraft = {
-  hours: 'Mon–Fri 09:00–18:00',
-  tz: 'Europe/Paris',
-  transferTarget: '',
-  afterHours: 'take_message',
   tier: 'standard',
-  disclosureEnabled: true,
 };
 
 interface ConfigState extends ConfigDraft {

@@ -13,7 +13,6 @@
 
 export type Severity = 'P1' | 'P2' | 'P3';
 export type ProviderTier = 'budget' | 'standard' | 'premium' | 'selfhosted';
-export type AfterHoursMode = 'take_message' | 'transfer' | 'announce_only';
 
 /* ── Health ───────────────────────────────────────────────────────────────── */
 
@@ -61,7 +60,6 @@ export interface OpsSnapshot {
   p1: OpsAlert[];
   p2Grouped: Record<string, OpsAlert[]>;
   p3Count: number;
-  callCount: number;
   containedPct: number;
   reachable: boolean;
   lastSeenAt: string | null;
@@ -69,21 +67,14 @@ export interface OpsSnapshot {
 
 /* ── Config ───────────────────────────────────────────────────────────────── */
 
-export type ConsentVariant = 'announce_first' | 'record_with_consent' | 'no_recording';
-
 export interface AgentConfig {
   providerMix: Record<string, string>;
-  consentVariant: ConsentVariant;
-  bilingual: boolean;
   channel: string;
   channels: Record<string, { enabled: boolean; configured: boolean; reason?: string | null }>;
   costSim: Record<string, unknown>;
-  hours: Record<string, string[]>;
   tz: string;
-  transferTarget: string | null;
   tier: ProviderTier;
   knowledgeScope: string[];
-  afterHoursMode: AfterHoursMode;
   updatedAt: string | null;
 }
 

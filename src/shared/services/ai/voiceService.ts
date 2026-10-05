@@ -3,8 +3,12 @@
  *
  * Provides a unified interface for STT/TTS that works with:
  * - Desktop AI providers (via capability interfaces)
- * - Python agent-core (via HTTP/WebSocket)
  * - Browser Web Speech API (fallback)
+ * - On-device sherpa-onnx via ml-sidecar (offline)
+ *
+ * Voice here means speech-to-text / text-to-speech only. The former
+ * voice-call system (SIP, telephony) was dropped; see
+ * `docs/01-ARCHITECTURE/08-agentic-ai-automation.md`.
  *
  * @module
  */

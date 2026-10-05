@@ -59,6 +59,12 @@ export interface RagConversationEntry {
   /** Optional LLM-generated natural-language answer (primary content) */
   answer?: string;
   timestamp: number;
+  /** Provider that generated the answer */
+  provider?: string;
+  /** Model that generated the answer */
+  model?: string;
+  /** Tool calls made during the response */
+  toolCalls?: Array<{ name: string; args: Record<string, unknown> }>;
 }
 
 export interface RagState {
@@ -535,6 +541,8 @@ export const useRagStore = create<RagState>((set, get) => ({
         response,
         answer: '',
         timestamp: Date.now(),
+        provider,
+        model,
       };
 
       set((s) => ({
