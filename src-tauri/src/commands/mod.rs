@@ -110,16 +110,14 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             #[cfg(desktop)]
             system_desktop::open_devtools,
 
-            // === agent (voice + WhatsApp console) ===
-            // The desktop holds no provider key and sends no tenant id; the
-            // bearer token is read from the auth store, not from an argument.
-            crate::agent::client::agent_health,
-            crate::agent::client::agent_ops_snapshot,
-            crate::agent::client::agent_provider_health,
-            crate::agent::client::agent_create_session,
-            crate::agent::client::agent_set_provider_tier,
+            // === agent (agentic AI automation) ===
+            // All commands use local SQLite — no HTTP, no auth token, no Python.
+            crate::agent::commands::agent_health,
+            crate::agent::commands::agent_ops_snapshot,
+            crate::agent::commands::agent_provider_health,
             crate::agent::commands::agent_get_config,
             crate::agent::commands::agent_update_config,
+            crate::agent::commands::agent_set_provider_tier,
             crate::agent::commands::agent_list_alerts,
             crate::agent::commands::agent_acknowledge_alert,
             crate::agent::commands::agent_get_automations,

@@ -5,14 +5,6 @@
  * The Rust code is the source of truth — when the two disagree,
  * the Rust wins and this file is the bug.
  *
- * Two things deliberately absent, and their absence is the design:
- *
- * - **No `tenantId` anywhere.** Tenant identity is derived server-side from the
- *   bearer token (`ADR-001` D4a). A field here would be a field a client could
- *   *set*, which is a security regression rather than a schema tidy-up.
- * - **No audio type.** No audio is retained anywhere, so there is no `audioUrl`,
- *   no `recordingId`, and therefore no play control.
- *
  * Focus: agentic AI for email and social channel automation.
  * Voice/WhatsApp call system is dropped.
  */
@@ -56,7 +48,7 @@ export interface OpsAlert {
 
 export interface ProviderHealth {
   provider: string;
-  role: 'STT' | 'TTS' | 'LLM' | 'EMBEDDING' | 'telephony' | 'whatsapp';
+  role: 'STT' | 'TTS' | 'LLM' | 'EMBEDDING';
   errorRate: number;
   latencyP95Ms: number | null;
   fallbackActive: boolean;
@@ -79,20 +71,12 @@ export interface OpsSnapshot {
 
 export type ConsentVariant = 'announce_first' | 'record_with_consent' | 'no_recording';
 
-export type Channel = 'baileys' | 'twilio' | 'official' | 'none';
-
-export interface ChannelCapability {
-  enabled: boolean;
-  configured: boolean;
-  reason?: string | null;
-}
-
 export interface AgentConfig {
   providerMix: Record<string, string>;
   consentVariant: ConsentVariant;
   bilingual: boolean;
-  channel: Channel;
-  channels: Record<string, ChannelCapability>;
+  channel: string;
+  channels: Record<string, { enabled: boolean; configured: boolean; reason?: string | null }>;
   costSim: Record<string, unknown>;
   hours: Record<string, string[]>;
   tz: string;
@@ -116,18 +100,4 @@ export interface AutomationRule {
   enabled: boolean;
   lastRun: string | null;
   runCount: number;
-}
-
-/* ── Errors ───────────────────────────────────────────────────────────────── */
-
-export interface ErrorBody {
-  code: string;
-  message: string;
-  retryable: boolean;
-  provider?: string | null;
-  at: string;
-}
-
-export interface ErrorResponse {
-  error: ErrorBody;
 }

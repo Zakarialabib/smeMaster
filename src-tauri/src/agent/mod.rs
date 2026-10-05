@@ -10,11 +10,9 @@
 //! - `providers` — Provider chain with fallback
 //! - `ops` — Ops monitoring and alerts
 //! - `automation` — Email/social automation rules
-//! - `types` — Wire types (existing)
-//! - `client` — HTTP client to agent-core (existing, kept for compat)
+//! - `types` — Wire types
 
 pub mod automation;
-pub mod client;
 pub mod commands;
 pub mod config;
 pub mod ops;

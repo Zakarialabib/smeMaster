@@ -9,17 +9,19 @@
  * Layout: top-nav sections (Ops · Automations · Config) with an AI
  * callout per section, following the unified design system.
  *
+ * All data flows through Tauri commands → local SQLite. No HTTP,
+ * no Python, no auth token.
+ *
  * @module
  */
 
-import { useState, useCallback } from 'react';
-import { Activity, Settings, Bot } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Activity, Settings, Bot, Play } from 'lucide-react';
 import { cn } from '@shared/utils/cn';
 import { BTN_BASE, BTN_GLASS_PRIMARY } from '@shared/styles/ui-tokens';
 import { OpsDigest } from '../components/OpsDigest';
 import { AgentCard, AgentBadge } from '../components/States';
-import { useUnacknowledgedP1, useReachable } from '../stores';
-import { setSetting } from '@features/settings/db/settings';
+import { useUnacknowledgedP1, useReachable, useAutomationStore, useConfigStore } from '../stores';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,96 +35,49 @@ const TABS: { id: ConsoleTab; label: string; icon: typeof Activity }[] = [
 
 // ── Automations tab ──────────────────────────────────────────────────────────
 
-interface AutomationRule {
-  id: string;
-  name: string;
-  channel: 'email' | 'social';
-  trigger: string;
-  action: string;
-  enabled: boolean;
-  lastRun: string | null;
-  runCount: number;
-}
-
-const DEFAULT_AUTOMATIONS: AutomationRule[] = [
-  {
-    id: 'auto-triage',
-    name: 'Email Triage',
-    channel: 'email',
-    trigger: 'New email received',
-    action: 'Categorize + summarize + flag urgent',
-    enabled: true,
-    lastRun: null,
-    runCount: 0,
-  },
-  {
-    id: 'auto-draft',
-    name: 'Smart Draft Replies',
-    channel: 'email',
-    trigger: 'Email from known contact',
-    action: 'Generate draft reply with context',
-    enabled: true,
-    lastRun: null,
-    runCount: 0,
-  },
-  {
-    id: 'auto-followup',
-    name: 'Follow-up Reminders',
-    channel: 'email',
-    trigger: 'No reply after 48h',
-    action: 'Create task + suggest follow-up',
-    enabled: false,
-    lastRun: null,
-    runCount: 0,
-  },
-  {
-    id: 'auto-social',
-    name: 'Social Media Monitor',
-    channel: 'social',
-    trigger: 'Brand mention detected',
-    action: 'Summarize + suggest response',
-    enabled: false,
-    lastRun: null,
-    runCount: 0,
-  },
-];
-
 function AutomationsTab() {
-  const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_AUTOMATIONS);
-  const [saving, setSaving] = useState(false);
+  const { rules, loading, toggle, run, refresh } = useAutomationStore();
+  const [runningId, setRunningId] = useState<string | null>(null);
+  const [runResult, setRunResult] = useState<string | null>(null);
 
-  const toggleRule = useCallback((id: string) => {
-    setRules((prev) => prev.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)));
-  }, []);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
-  const handleSave = useCallback(async () => {
-    setSaving(true);
-    try {
-      await setSetting('agent_automation_rules', JSON.stringify(rules));
-    } catch {
-      /* ignore */
-    } finally {
-      setSaving(false);
-    }
-  }, [rules]);
+  const handleRun = useCallback(
+    async (id: string) => {
+      setRunningId(id);
+      setRunResult(null);
+      try {
+        const result = await run(id);
+        setRunResult(result);
+      } catch {
+        setRunResult('Failed to run automation');
+      } finally {
+        setRunningId(null);
+      }
+    },
+    [run],
+  );
 
   const enabledCount = rules.filter((r) => r.enabled).length;
+
+  if (loading && rules.length === 0) {
+    return <div className="text-sm text-text-secondary">Loading automations…</div>;
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-text-secondary">
-            {enabledCount} of {rules.length} automations active
-          </p>
-        </div>
+        <p className="text-sm text-text-secondary">
+          {enabledCount} of {rules.length} automations active
+        </p>
         <button
           type="button"
           className={cn(BTN_BASE, BTN_GLASS_PRIMARY)}
-          onClick={handleSave}
-          disabled={saving}
+          onClick={() => void refresh()}
         >
-          {saving ? 'Saving…' : 'Save'}
+          Refresh
         </button>
       </div>
 
@@ -132,15 +87,25 @@ function AutomationsTab() {
             key={rule.id}
             title={rule.name}
             action={
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rule.enabled}
-                  onChange={() => toggleRule(rule.id)}
-                  className="accent-[var(--color-accent)]"
-                />
-                <span className="text-xs text-text-secondary">{rule.enabled ? 'On' : 'Off'}</span>
-              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className={cn(BTN_BASE, 'px-2 py-1 text-xs')}
+                  onClick={() => void handleRun(rule.id)}
+                  disabled={runningId === rule.id || !rule.enabled}
+                >
+                  {runningId === rule.id ? 'Running…' : <Play size={12} />}
+                </button>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rule.enabled}
+                    onChange={() => void toggle(rule.id)}
+                    className="accent-[var(--color-accent)]"
+                  />
+                  <span className="text-xs text-text-secondary">{rule.enabled ? 'On' : 'Off'}</span>
+                </label>
+              </div>
             }
           >
             <div className="space-y-2">
@@ -153,8 +118,11 @@ function AutomationsTab() {
               <p className="text-sm text-text-secondary">{rule.action}</p>
               {rule.lastRun && (
                 <p className="text-xs text-text-tertiary">
-                  Last run: {new Date(rule.lastRun).toLocaleString()}
+                  Last run: {new Date(rule.lastRun).toLocaleString()} · {rule.runCount} runs
                 </p>
+              )}
+              {runResult && rule.id === rules.find((r) => r.id === rule.id)?.id && (
+                <p className="text-xs text-text-tertiary mt-1">{runResult}</p>
               )}
             </div>
           </AgentCard>
@@ -167,25 +135,11 @@ function AutomationsTab() {
 // ── Config tab ───────────────────────────────────────────────────────────────
 
 function ConfigTab() {
-  const [tier, setTier] = useState<'standard' | 'selfhosted' | 'premium'>('standard');
-  const [autoDraft, setAutoDraft] = useState(true);
-  const [autoCategorize, setAutoCategorize] = useState(true);
-  const [autoSummarize, setAutoSummarize] = useState(true);
-  const [smartReplies, setSmartReplies] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { tier, set, save, dirty, saving } = useConfigStore();
 
   const handleSave = useCallback(async () => {
-    setSaving(true);
-    try {
-      await setSetting('agent_tier', tier);
-      await setSetting('ai_auto_draft_enabled', String(autoDraft));
-      await setSetting('ai_auto_categorize', String(autoCategorize));
-      await setSetting('ai_auto_summarize', String(autoSummarize));
-      await setSetting('ai_smart_replies_enabled', String(smartReplies));
-    } finally {
-      setSaving(false);
-    }
-  }, [tier, autoDraft, autoCategorize, autoSummarize, smartReplies]);
+    await save();
+  }, [save]);
 
   return (
     <div className="space-y-4">
@@ -198,31 +152,10 @@ function ConfigTab() {
                 name="tier"
                 value={t}
                 checked={tier === t}
-                onChange={() => setTier(t)}
+                onChange={() => set('tier', t)}
                 className="accent-[var(--color-accent)]"
               />
               <span className="text-sm text-text-primary capitalize">{t}</span>
-            </label>
-          ))}
-        </div>
-      </AgentCard>
-
-      <AgentCard title="Email automations">
-        <div className="space-y-3">
-          {[
-            { label: 'Auto-draft replies', value: autoDraft, set: setAutoDraft },
-            { label: 'Auto-categorize threads', value: autoCategorize, set: setAutoCategorize },
-            { label: 'Auto-summarize threads', value: autoSummarize, set: setAutoSummarize },
-            { label: 'Smart reply suggestions', value: smartReplies, set: setSmartReplies },
-          ].map((opt) => (
-            <label key={opt.label} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={opt.value}
-                onChange={(e) => opt.set(e.target.checked)}
-                className="accent-[var(--color-accent)]"
-              />
-              <span className="text-sm text-text-primary">{opt.label}</span>
             </label>
           ))}
         </div>
@@ -232,11 +165,12 @@ function ConfigTab() {
         <button
           type="button"
           className={cn(BTN_BASE, 'bg-accent text-white hover:bg-accent-hover')}
-          onClick={handleSave}
-          disabled={saving}
+          onClick={() => void handleSave()}
+          disabled={saving || !dirty}
         >
           {saving ? 'Saving…' : 'Save configuration'}
         </button>
+        {dirty && !saving && <span className="text-xs text-text-tertiary">Unsaved changes</span>}
       </div>
     </div>
   );

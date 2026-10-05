@@ -92,7 +92,7 @@ interface ConfigState extends ConfigDraft {
   discard: () => void;
 }
 
-export const useConfigStore = create<ConfigState>((set) => ({
+export const useConfigStore = create<ConfigState>((set, get) => ({
   ...CONFIG_DEFAULTS,
   dirty: false,
   saving: false,
@@ -100,7 +100,8 @@ export const useConfigStore = create<ConfigState>((set) => ({
   save: async () => {
     set({ saving: true });
     try {
-      await invokeCommand('agent_set_provider_tier', { tier: useConfigStore.getState().tier });
+      const { tier } = get();
+      await invokeCommand('agent_set_provider_tier', { tier });
       set({ dirty: false });
     } finally {
       set({ saving: false });

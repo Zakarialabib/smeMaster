@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AgentClientError } from './client';
 
 /**
  * The four states every data-backed console surface needs.
@@ -98,20 +97,13 @@ export function useAgentResource<T>(
         setState({ kind: 'ready', data });
       } catch (e) {
         if (cancelled || id !== requestId.current || !mounted.current) return;
-        if (e instanceof AgentClientError) {
-          setState(
-            e.isUnreachable
-              ? { kind: 'unreachable', message: e.message }
-              : { kind: 'error', message: e.message, code: e.code, retryable: e.retryable },
-          );
-        } else {
-          setState({
-            kind: 'error',
-            message: (e as Error).message,
-            code: 'unknown',
-            retryable: true,
-          });
-        }
+        const msg = (e as Error).message;
+        const unreachable = msg.includes('not reachable') || msg.includes('Connection refused');
+        setState(
+          unreachable
+            ? { kind: 'unreachable', message: msg }
+            : { kind: 'error', message: msg, code: 'unknown', retryable: true },
+        );
       } finally {
         // Only the CURRENT request may clear the flag. A superseded request
         // finishing later must not unblock polling while the real one is still

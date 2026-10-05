@@ -6,7 +6,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use crate::db::tables::core::settings;
-use super::types::{OpsAlert, AlertEvidence, OpsSnapshot};
+use super::types::{OpsAlert, OpsSnapshot};
 
 /// Alert severity levels.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
