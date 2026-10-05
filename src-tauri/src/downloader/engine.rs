@@ -1119,9 +1119,8 @@ async fn download_chunk_task(
         }
     } else if chunk.end_byte > chunk.start_byte {
         req = req.header(RANGE, format!("bytes={}-{}", chunk.start_byte, chunk.end_byte));
-        if let Some(e) = etag {
-            req = req.header("If-Match", e);
-        }
+        // No If-Match — ETag mismatch is handled by resolve_chunks_for_resume
+        // on resume. Sending If-Match causes 412 when the file rotated on the CDN.
     }
 
     let mut response = req.send().await.context("Failed chunk request")?;

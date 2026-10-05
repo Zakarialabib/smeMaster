@@ -48,9 +48,28 @@ export function AiAssistantPage() {
   const cancelDownload = useRagStore((s) => s.cancelDownload);
 
   const [query, setQuery] = useState('');
-  const [provider, setProvider] = useState<AiProvider>('claude');
-  const [model, setModel] = useState('claude-sonnet-5-5');
+  const [provider, setProvider] = useState<AiProvider>('local');
+  const [model, setModel] = useState('bge-small');
+  const [hasProviderKey, setHasProviderKey] = useState(false);
   const resultsEndRef = useRef<HTMLDivElement>(null);
+
+  // Check if any AI provider has a configured API key
+  useEffect(() => {
+    void (async () => {
+      try {
+        const { getSecureSetting } = await import('@features/settings/db/settings');
+        const keys = await Promise.all([
+          getSecureSetting('openai_api_key'),
+          getSecureSetting('anthropic_api_key'),
+          getSecureSetting('gemini_api_key'),
+          getSecureSetting('mistral_api_key'),
+        ]);
+        setHasProviderKey(keys.some((k) => k !== null && k !== ''));
+      } catch {
+        setHasProviderKey(false);
+      }
+    })();
+  }, []);
 
   // Hydrate store on mount
   useEffect(() => {
@@ -64,10 +83,15 @@ export function AiAssistantPage() {
 
   const handleSubmit = useCallback(
     (q: string) => {
-      search(q, provider, model);
+      // Offline-first: use local RAG when no provider key is configured
+      if (!hasProviderKey) {
+        search(q);
+      } else {
+        search(q, provider, model);
+      }
       setQuery('');
     },
-    [search, provider, model],
+    [search, provider, model, hasProviderKey],
   );
 
   // ── Disabled state (RAG turned off) ──
@@ -254,16 +278,21 @@ export function AiAssistantPage() {
       >
         <div className="max-w-3xl mx-auto">
           <div className="flex items-end gap-2 flex-wrap">
-            <ProviderModelPicker
-              provider={provider}
-              model={model}
-              onChange={(p, m) => {
-                setProvider(p);
-                setModel(m);
-              }}
-              disabled={isSearching || showModelWarning}
-              compact
-            />
+            {hasProviderKey ? (
+              <ProviderModelPicker
+                provider={provider}
+                model={model}
+                onChange={(p, m) => {
+                  setProvider(p);
+                  setModel(m);
+                }}
+                disabled={isSearching || showModelWarning}
+                compact
+                hasProviderKey
+              />
+            ) : (
+              <ProviderBadge provider="local" model="on-device" muted />
+            )}
             <ProviderBadge provider={provider} model={model} muted />
             <span className="flex gap-1.5">
               {(

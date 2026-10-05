@@ -35,6 +35,8 @@ interface ProviderModelPickerProps {
   disabled?: boolean;
   /** Compact variant (smaller) */
   compact?: boolean;
+  /** Only show providers with configured API keys; falls back to offline */
+  hasProviderKey?: boolean;
 }
 
 export function ProviderModelPicker({
@@ -43,6 +45,7 @@ export function ProviderModelPicker({
   onChange,
   disabled = false,
   compact = false,
+  hasProviderKey = false,
 }: ProviderModelPickerProps) {
   const [models, setModels] = useState(PROVIDER_MODELS[provider as ChatProvider] ?? []);
   const [loading, setLoading] = useState(false);
@@ -76,6 +79,11 @@ export function ProviderModelPicker({
 
   const providerModels = PROVIDER_MODELS[provider as ChatProvider] ?? [];
 
+  // When no provider key is configured, show only offline/local option
+  const availableProviders = hasProviderKey
+    ? PROVIDERS
+    : [{ id: 'offline' as AiProvider, label: 'Offline (Local)' }];
+
   return (
     <div className={cn('flex items-center gap-2', compact ? 'flex-row' : 'flex-row')}>
       <div className="flex items-center gap-1">
@@ -86,7 +94,7 @@ export function ProviderModelPicker({
           disabled={disabled || loading}
           className={cn('text-xs', compact ? 'py-1 px-2' : 'py-1.5 px-3')}
         >
-          {PROVIDERS.map((p) => (
+          {availableProviders.map((p) => (
             <option key={p.id} value={p.id}>
               {p.label}
             </option>
