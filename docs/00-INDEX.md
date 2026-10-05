@@ -116,12 +116,6 @@
 
 ---
 
-## Archive
-
-| Doc | Status | What |
-| --- | --- | --- |
-| [voice-call-system/](archive/voice-call-system/) | 🗄️ ARCHIVED | Voice call system docs (dropped 2026-10-04) |
-
 ---
 
 ## Ground Truth (2026-10-04)

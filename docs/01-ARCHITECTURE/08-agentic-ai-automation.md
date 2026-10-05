@@ -160,7 +160,7 @@ The voice call system (SIP, telephony, realtime audio) was dropped because:
 - Voice runs on a dedicated PSTN number (ARCEP porting required)
 - The agentic AI approach is more achievable and aligns with the product's core value
 
-**Archived docs:** `docs/archive/voice-call-system/`
+**Note:** Voice call system docs were removed (dropped 2026-10-04).
 
 ---
 

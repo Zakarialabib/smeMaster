@@ -2,7 +2,7 @@
 
 > **Status:** 📐 **Options + architecture + decision** (2026-10-01). Consolidates the
 > former `06-ROADMAP/18-offline-speech-engine-decision.md` brief — one doc, not two.
-> **Related:** [Voice settings](../04-FEATURES/38-tts-stt-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Self-hosting](../archive/voice-call-system/dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
+> **Related:** [Voice settings](../04-FEATURES/38-tts-stt-settings.md) · [AI RAG](../04-FEATURES/ai-rag.md) · [Self-hosting](dev/SELF-HOSTING.md) · [ADR-001](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md)
 > **Companion:** [Document & email extraction](./19-document-and-email-extraction.md)
 
 ## 1. Why this doc exists
@@ -12,7 +12,7 @@ reconciled them:
 
 | Doc                                                       | Assumed engine                               | Scope it covered                            |
 | --------------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
-| [SELF-HOSTING](../archive/voice-call-system/dev/SELF-HOSTING.md) §2           | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
+| [SELF-HOSTING](dev/SELF-HOSTING.md) §2           | **sherpa-onnx**                              | VPS-side budget tier for live calls         |
 | 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** (Rust binding, in a sidecar) | Desktop local tier for the voice agent      |
 | an earlier draft of this doc                              | **candle whisper**                           | Desktop batch STT for the mail/AI assistant |
 
@@ -21,7 +21,7 @@ resolves it. This doc also carries the **product framing**, the **stub inventory
 the **verified locale matrix** — and, since 2026-10-01, the **capability decomposition**
 that previously lived in a duplicate brief.
 
-It covers **TTS**, not just STT: per [SELF-HOSTING](../archive/voice-call-system/dev/SELF-HOSTING.md) §2,
+It covers **TTS**, not just STT: per [SELF-HOSTING](dev/SELF-HOSTING.md) §2,
 **TTS is 88% of variable voice cost**, so an offline STT-only plan optimises the cheap half.
 
 ## 1.1 What "offline speech" must cover
@@ -105,7 +105,7 @@ registering local models needs **no type change**.
 | Source                                                    | Says                                                                                                                                 | Scope                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
 | 17-topology-decision (removed 2026-10-03, git history) §3 | **sherpa-onnx** in a Tauri sidecar; "the repo already runs `ml-sidecar` over JSON-RPC — the pattern is proven here. RTF < 1 offline" | the **voice-agent** local tier       |
-| [SELF-HOSTING](../archive/voice-call-system/dev/SELF-HOSTING.md) §2           | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
+| [SELF-HOSTING](dev/SELF-HOSTING.md) §2           | **sherpa-onnx**; Apache-2.0, Rust bindings, bundles STT + TTS + VAD + diarization                                                    | the **voice-agent** self-hosted tier |
 | earlier draft of this doc                                 | candle `whisper`                                                                                                                     | the **desktop assistant** STT        |
 
 **These are not actually in conflict once scope is separated** — but the earlier draft
@@ -504,7 +504,7 @@ over-reporting is reintroduced.
 | Runs on        | VPS                                                                          | desktop              |
 | Trigger        | during a call                                                                | after the fact       |
 
-The landscape doc classifies P6 as _"⛔ live / ⚠️ OSS batch"_ and [SELF-HOSTING](../archive/voice-call-system/dev/SELF-HOSTING.md)
+The landscape doc classifies P6 as _"⛔ live / ⚠️ OSS batch"_ and [SELF-HOSTING](dev/SELF-HOSTING.md)
 §7 keeps self-hosted inference as a **Gate 5 candidate gated on an RTF measurement**.
 This doc **does not change those decisions.** Batch desktop STT ships independently and
 delivers "listen/summarize" value without waiting on the carrier or the streaming work.

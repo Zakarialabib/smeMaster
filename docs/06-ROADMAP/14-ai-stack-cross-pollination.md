@@ -3,8 +3,8 @@
 > **Status:** findings + proposals. Nothing implemented. Audited 2026-09-28 against both working trees.
 > **Companion:** `Simple-Signage/docs/06-ROADMAP/27-AI-STACK-INNOVATION-PLAN.md` (the plan this came from)
 > **Related here:** [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) ·
-> [`docs/archive/voice-call-system/dev/SELF-HOSTING.md`](../archive/voice-call-system/dev/SELF-HOSTING.md) ·
-> [`docs/archive/voice-call-system/dev/RAG-FORK.md`](../archive/voice-call-system/dev/RAG-FORK.md) ·
+> [`dev/SELF-HOSTING.md`](dev/SELF-HOSTING.md) ·
+> [`dev/RAG-FORK.md`](dev/RAG-FORK.md) ·
 > [`13-deprecations.md`](../03-FRONTEND/13-deprecations.md) · [`12-diagnostics.md`](../02-BACKEND/12-diagnostics.md)
 
 ## 0. Why this document exists
@@ -53,7 +53,7 @@ Why it matters more here than there: **SMEMaster already has three honest signal
 composes** — the stubbed `enabled/running/healthy` shape, the subsystem registry's health status, and the
 sidecar's own `memory_usage` reply. The doctor is a composition, not new machinery. Pair it with the
 `Capabilities` type already proposed in
-[`docs/archive/voice-call-system/design/FRONTEND.md`](../archive/voice-call-system/design/FRONTEND.md) §3.2 — they are the same idea at two
+[`design/FRONTEND.md`](design/FRONTEND.md) §3.2 — they are the same idea at two
 layers, and should be one type.
 
 ### 1.2 A slot registry to replace the 6 hard-coded embedder sites
@@ -102,7 +102,7 @@ a gate. (This also directly serves the `ADR-001` D4 IPC-surface work.)
 
 ### 1.5 Licence gate as code, not prose
 
-[`RAG-FORK.md`](../archive/voice-call-system/dev/RAG-FORK.md) correctly rejects `jina-embeddings-v3` (CC-BY-NC-4.0) in its
+[`RAG-FORK.md`](dev/RAG-FORK.md) correctly rejects `jina-embeddings-v3` (CC-BY-NC-4.0) in its
 model table, and SignSync's plan proposes the same idea as an **L4-model-licence** gate sitting alongside
 the existing L1/L3 vocabulary in that repo. A licence column that nothing enforces is a comment. Make
 fetch/load refuse a non-commercial model.

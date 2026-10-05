@@ -1,11 +1,11 @@
 # ADR-001 — Voice agent: integration seams, embedding spaces, IPC surface
 
 > **Status:** Accepted · **Date:** 2026-09-28 · **Decided by:** Zakaria (engineering)
-> **Supersedes:** nothing (first ADR). **Amends:** `docs/archive/voice-call-system/2026-09-28-voice-agent.md`,
-> `docs/archive/voice-call-system/dev/RAG-FORK.md`, `docs/archive/voice-call-system/dev/OPS-ASSISTANT.md` (corrections applied in-place)
-> **Anchor spec:** [`docs/archive/voice-call-system/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
+> **Supersedes:** nothing (first ADR). **Amends:** `2026-09-28-voice-agent.md`,
+> `dev/RAG-FORK.md`, `dev/OPS-ASSISTANT.md` (corrections applied in-place)
+> **Anchor spec:** [`2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Evidence read:** working tree @ `private/voice-agent-client` — `1c738db`, 2026-09-28
-> **Updated 2026-10-03 — see docs/archive/voice-call-system/dev/DECISIONS-2026-10-03.md** — re-baseline
+> **Updated 2026-10-03 — see dev/DECISIONS-2026-10-03.md** — re-baseline
 > status addendum + Open-table update only; D1–D6 and their rationale are unchanged.
 
 ## Context
@@ -22,7 +22,7 @@ What the tree actually contains (verified, not read from docs):
 | `ml-sidecar` is a real candle+lancedb sidecar   | ✅ `src-tauri/crates/ml-sidecar/Cargo.toml:33-38`, `src/main.rs:33-44` — JSON-RPC 2.0 over stdio, real                                                                                                                                           |
 | Workspace members                               | ⚠️ `src-tauri/Cargo.toml` `members = ["crates/ml-sidecar"]` — **one member**                                                                                                                                                                     |
 | `BAAI/bge-small-en-v1.5` hard-coded in 6 places | ✅ all 6 confirmed (`aiSidecar.ts:30`, `ragStore.ts:38`, `ml-sidecar/src/main.rs:575,747,754`, `ai/models.rs:37-39`, `aiSidecar.test.ts:141-142`)                                                                                                |
-| `services/agent-core/` exists                   | ✅ absent — consistent with "no code written" — **⚠️ superseded 2026-09-30: `services/agent-core/` now exists (Phases A–B closed, server on `:8788`). Row kept as the 2026-09-28 snapshot; see `docs/archive/voice-call-system/dev/BUILD-LOG.md` for current state** |
+| `services/agent-core/` exists                   | ✅ absent — consistent with "no code written" — **⚠️ superseded 2026-09-30: `services/agent-core/` now exists (Phases A–B closed, server on `:8788`). Row kept as the 2026-09-28 snapshot; see `dev/BUILD-LOG.md` for current state** |
 | Provider seam exists                            | ✅ `src/shared/services/ai/providerFactory.ts`, `providerManager.ts`                                                                                                                                                                             |
 | `reqwest` is a new main-crate dep for Gate 3    | ❌ **already present** — `src-tauri/Cargo.toml:54` (0.13.4, rustls). Gate 3 adds no dependency weight.                                                                                                                                           |
 | Vocode rejected because "repo 404"              | ❌ **wrong** — `vocodedev/vocode-core` resolves: MIT, 3.8k★, last push **2024-11-15**                                                                                                                                                            |
@@ -152,7 +152,7 @@ Applied in place, same commit as this ADR:
 
 ## Addendum — 2026-10-03 re-baseline (status only)
 
-> Updated 2026-10-03 — see docs/archive/voice-call-system/dev/DECISIONS-2026-10-03.md
+> Updated 2026-10-03 — see dev/DECISIONS-2026-10-03.md
 
 Decisions D1–D6 above, and their rationale, stand unchanged. `DECISIONS-2026-10-03.md`
 re-baselined Phase C+D and settled three topics adjacent to this ADR's scope; two stay
