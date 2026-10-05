@@ -1,33 +1,20 @@
-import type {
-  AlertListResponse,
-  CallDetail,
-  CallListItem,
-  CallListResponse,
-  CallOutcome,
-  ConfigResponse,
-  ConfigUpdate,
-  OpsSnapshot,
-  ProviderHealth,
-  SessionRequest,
-  SessionResponse,
-} from '../types/commands';
+import type { Health, OpsSnapshot, ProviderHealth, AgentConfig } from '../types/commands';
 
 /**
  * The HTTP client for agent-core.
  *
- * One place that knows the base URL, one place that turns a non-2xx into an
- * `AgentClientError`, and no other. The reason that matters: the console has
- * exactly one error parser, so a new endpoint cannot invent a new failure shape.
+ * One place that knows the base URL, one place that turns a non-2xx into
+ * an `AgentClientError`, and no other. The console has exactly one error
+ * parser, so a new endpoint cannot invent a new failure shape.
  *
- * **No tenant id, ever.** It is not a parameter on any function here, so there
- * is no call site that could pass one. Identity comes from the token, server
- * side (ADR-001 D4a).
+ * **No tenant id, ever.** It is not a parameter on any function here, so
+ * there is no call site that could pass one. Identity comes from the token,
+ * server side (ADR-001 D4a).
  *
  * Note this is a plain fetch wrapper, not a Tauri invoke. The desktop calls
  * through Rust (`src-tauri/src/agent/client.rs`) so the token is read from the
  * auth store and never crosses the IPC boundary as an argument; this module is
- * the browser/dev path against the same contract, which is what lets the console
- * be developed against a running server before the Rust layer is wired.
+ * the browser/dev path against the same contract.
  */
 
 export class AgentClientError extends Error {
@@ -43,27 +30,13 @@ export class AgentClientError extends Error {
     this.retryable = retryable;
   }
 
-  /** "Cannot reach the agent" is a different screen from "no calls". */
   get isUnreachable(): boolean {
     return this.status === 0;
   }
 }
 
-/**
- * Base URL resolution.
- *
- * `import.meta.env.VITE_AGENT_CORE_URL` is INLINED by Vite at build time into a
- * string literal. Reading it that way means it cannot be changed at runtime, so
- * a test that tries to point the client at another port silently keeps hitting
- * the original — which is exactly the bug this comment was written after.
- *
- * So: read it through bracket access (not inlined), and allow an explicit
- * override for tests. The override is module state, not a global, so two
- * concurrent tests cannot fight over it.
- */
 let overrideBaseUrl: string | null = null;
 
-/** Point the client somewhere else. Test-only; pass `null` to restore. */
 export function __setBaseUrlForTests(url: string | null): void {
   overrideBaseUrl = url;
 }
@@ -71,7 +44,6 @@ export function __setBaseUrlForTests(url: string | null): void {
 function baseUrl(): string {
   if (overrideBaseUrl !== null) return overrideBaseUrl;
   const env = (import.meta as { env?: Record<string, string | undefined> }).env;
-  // Bracket access, deliberately: `env.VITE_X` is inlined, `env['VITE_X']` is not.
   return env?.['VITE_AGENT_CORE_URL'] ?? 'http://127.0.0.1:8788';
 }
 
@@ -83,14 +55,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     });
   } catch (e) {
-    // Network failure, not an HTTP error. status 0 marks it, so the console can
-    // show "cannot reach" instead of inventing an API error.
     throw new AgentClientError(0, 'unreachable', (e as Error).message, true);
   }
 
   if (!res.ok) {
-    // The server always returns the same envelope, whether the error came from
-    // a route or from an exception handler. One parser, one shape.
     const body = (await res.json().catch(() => null)) as {
       error?: { code?: string; message?: string; retryable?: boolean };
     } | null;
@@ -105,45 +73,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const agentApi = {
-  health: () => request<{ ok: boolean; version: string }>('/healthz'),
-
+  health: () => request<Health>('/healthz'),
   opsSnapshot: () => request<OpsSnapshot>('/ops/snapshot'),
-
   providerHealth: () =>
     request<OpsSnapshot & { providerHealth: ProviderHealth[] }>('/ops/snapshot/dev').then(
       (s) => s.providerHealth,
     ),
-
-  /**
-   * `callerOverride` is for `purpose: 'test_call'` only. The server refuses it
-   * otherwise with 403 — and the client does not help you work around that,
-   * which is the point.
-   *
-   * The parameter type is `SessionRequest` as-is. It was briefly written as
-   * `Omit<SessionRequest, 'tenantId'>`, which is a no-op that implies a
-   * tenantId field exists and is being removed. There is no such field, and
-   * writing the Omit would suggest to a reader that one might be added.
-   */
-  createSession: (body: SessionRequest) =>
-    request<SessionResponse>('/session', { method: 'POST', body: JSON.stringify(body) }),
-
-  /** The call log, newest first. Masked numbers by default. */
-  listCalls: (limit = 50, offset = 0) =>
-    request<CallListResponse>(`/calls?limit=${limit}&offset=${offset}`),
-
-  /** One call plus its transcript — the replay surface. */
-  getCall: (callId: string) => request<CallDetail>(`/calls/${encodeURIComponent(callId)}`),
-
-  /** The ops alert list; `severity` filters to P1/P2/P3. */
-  listAlerts: (severity?: 'P1' | 'P2' | 'P3') =>
-    request<AlertListResponse>(severity ? `/alerts?severity=${severity}` : '/alerts'),
-
-  /** The current agent configuration. Never contains credentials. */
-  getConfig: () => request<ConfigResponse>('/config'),
-
-  /** Partial update. Unknown keys are dropped server-side. */
-  updateConfig: (body: ConfigUpdate) =>
-    request<ConfigResponse>('/config', { method: 'PUT', body: JSON.stringify(body) }),
+  getConfig: () => request<AgentConfig>('/config'),
+  updateConfig: (body: Partial<AgentConfig>) =>
+    request<AgentConfig>('/config', { method: 'PUT', body: JSON.stringify(body) }),
 };
-
-export type { CallListItem, CallOutcome };

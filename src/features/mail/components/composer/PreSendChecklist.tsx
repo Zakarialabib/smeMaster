@@ -17,6 +17,7 @@ import {
 import { checkContentQuality, type ContentQualityResult } from '@shared/services/ai/aiService';
 import { getScoreVariant } from '@shared/utils/scoreVariant';
 import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 
 export interface PreSendChecklistProps {
   subject: string;
@@ -337,25 +338,23 @@ export function PreSendChecklist({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-bg-primary border border-border-primary rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-secondary">
-          <div className="flex items-center gap-2.5">
-            <Shield size={18} className="text-text-primary" />
-            <h2 className="text-base font-semibold text-text-primary">Pre-send Checklist</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-text-tertiary hover:text-text-primary p-1 rounded transition-colors"
-          >
-            <X size={16} />
-          </button>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Pre-send Checklist"
+      size="lg"
+      renderHeader={
+        <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border-secondary">
+          <Shield size={18} className="text-text-primary" />
+          <h2 id="modal-title" className="text-sm font-semibold text-text-primary">
+            Pre-send Checklist
+          </h2>
         </div>
-
+      }
+    >
+      <div className="py-5">
         {/* Score */}
-        <div className={`mx-5 mt-4 p-4 rounded-xl border ${v.bgColor} ${v.borderColor}`}>
+        <div className={`mx-5 mt-0 p-4 rounded-xl border ${v.bgColor} ${v.borderColor}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${v.color} bg-current/10`}>
@@ -464,7 +463,7 @@ export function PreSendChecklist({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-border-secondary bg-bg-secondary rounded-b-xl">
+        <div className="flex items-center justify-end gap-3 px-5 pt-4 mt-4 border-t border-border-secondary bg-bg-secondary rounded-b-xl">
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -477,6 +476,6 @@ export function PreSendChecklist({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

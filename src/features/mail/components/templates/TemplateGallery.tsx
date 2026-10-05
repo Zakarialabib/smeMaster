@@ -448,63 +448,57 @@ export function TemplateGallery({
 
       {/* Preview modal */}
       {previewTemplate && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-          onClick={() => setPreviewTemplate(null)}
-        >
-          <div className="absolute inset-0 bg-black/40 glass-backdrop" />
-          <div
-            className="relative bg-bg-primary border border-border-primary rounded-xl glass-modal w-full max-w-2xl max-h-[80vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <Modal
+          isOpen
+          onClose={() => setPreviewTemplate(null)}
+          title={previewTemplate.name}
+          size="2xl"
+          renderHeader={
             <div className="px-4 py-3 border-b border-border-primary flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-text-primary">{previewTemplate.name}</h3>
+              <div className="flex items-center gap-2 min-w-0">
+                <h3 id="modal-title" className="text-sm font-semibold text-text-primary truncate">
+                  {previewTemplate.name}
+                </h3>
                 <span
-                  className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[previewTemplate.template_type] ?? 'bg-bg-tertiary text-text-tertiary'}`}
+                  className={`text-[0.625rem] font-medium px-2 py-0.5 rounded-full border shrink-0 ${TYPE_COLORS[previewTemplate.template_type] ?? 'bg-bg-tertiary text-text-tertiary'}`}
                 >
                   {TYPE_LABELS[previewTemplate.template_type] ?? previewTemplate.template_type}
                 </span>
               </div>
-              <button
-                onClick={() => setPreviewTemplate(null)}
-                className="text-text-tertiary hover:text-text-primary"
-              >
-                <X size={18} />
-              </button>
             </div>
-            <div className="p-4 overflow-y-auto max-h-[calc(80vh-120px)]">
-              {previewTemplate.subject && (
-                <div className="mb-3 pb-3 border-b border-border-secondary">
-                  <span className="text-[0.625rem] text-text-tertiary uppercase tracking-wider font-medium">
-                    Subject
-                  </span>
-                  <p className="text-sm text-text-primary mt-0.5">{previewTemplate.subject}</p>
-                </div>
-              )}
-              <iframe
-                srcDoc={previewTemplate.body_html}
-                className="w-full min-h-[300px] rounded-lg border border-border-primary bg-bg-primary"
-                sandbox="allow-same-origin"
-                title={previewTemplate.name}
-              />
-            </div>
-            <div className="px-4 py-3 border-t border-border-primary flex items-center justify-between">
-              <span className="text-xs text-text-tertiary flex items-center gap-1">
-                <Clock size={12} />
-                Used {previewTemplate.usage_count} times
-              </span>
-              <div className="flex items-center gap-2">
-                <Button variant="secondary" size="sm" onClick={() => setPreviewTemplate(null)}>
-                  Close
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => handleUse(previewTemplate)}>
-                  Use Template
-                </Button>
+          }
+        >
+          <div className="p-4">
+            {previewTemplate.subject && (
+              <div className="mb-3 pb-3 border-b border-border-secondary">
+                <span className="text-[0.625rem] text-text-tertiary uppercase tracking-wider font-medium">
+                  Subject
+                </span>
+                <p className="text-sm text-text-primary mt-0.5">{previewTemplate.subject}</p>
               </div>
+            )}
+            <iframe
+              srcDoc={previewTemplate.body_html}
+              className="w-full min-h-[300px] rounded-lg border border-border-primary bg-bg-primary"
+              sandbox="allow-same-origin"
+              title={previewTemplate.name}
+            />
+          </div>
+          <div className="px-4 py-3 border-t border-border-primary flex items-center justify-between">
+            <span className="text-xs text-text-tertiary flex items-center gap-1">
+              <Clock size={12} />
+              Used {previewTemplate.usage_count} times
+            </span>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setPreviewTemplate(null)}>
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => handleUse(previewTemplate)}>
+                Use Template
+              </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Demo overlay */}
