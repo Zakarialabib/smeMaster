@@ -16,20 +16,22 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Activity, Settings, Bot, Play } from 'lucide-react';
+import { Activity, Settings, Bot, Play, ListChecks } from 'lucide-react';
 import { cn } from '@shared/utils/cn';
 import { BTN_BASE, BTN_GLASS_PRIMARY } from '@shared/styles/ui-tokens';
 import { OpsDigest } from '../components/OpsDigest';
+import { ActivityTab } from '../components/ActivityTab';
 import { AgentCard, AgentBadge } from '../components/States';
 import { useUnacknowledgedP1, useReachable, useAutomationStore, useConfigStore } from '../stores';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type ConsoleTab = 'ops' | 'automations' | 'config';
+type ConsoleTab = 'ops' | 'automations' | 'activity' | 'config';
 
 const TABS: { id: ConsoleTab; label: string; icon: typeof Activity }[] = [
   { id: 'ops', label: 'Ops', icon: Activity },
   { id: 'automations', label: 'Automations', icon: Bot },
+  { id: 'activity', label: 'Activity', icon: ListChecks },
   { id: 'config', label: 'Config', icon: Settings },
 ];
 
@@ -230,6 +232,7 @@ export function AgentConsolePage() {
       <div>
         {activeTab === 'ops' && <OpsDigest />}
         {activeTab === 'automations' && <AutomationsTab />}
+        {activeTab === 'activity' && <ActivityTab />}
         {activeTab === 'config' && <ConfigTab />}
       </div>
     </div>
