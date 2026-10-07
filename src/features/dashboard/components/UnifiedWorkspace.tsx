@@ -50,11 +50,18 @@ const SECTION_META: {
   label: string;
   icon: typeof Mail;
   to: string;
+  search?: Record<string, string>;
 }[] = [
   { id: 'mail', label: 'Mail', icon: Mail, to: '/mail/inbox' },
   { id: 'people', label: 'People', icon: Users, to: '/people' },
-  { id: 'tasks', label: 'Tasks', icon: ListChecks, to: '/tasks' },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays, to: '/calendar' },
+  { id: 'tasks', label: 'Tasks', icon: ListChecks, to: '/people', search: { tab: 'tasks' } },
+  {
+    id: 'calendar',
+    label: 'Calendar',
+    icon: CalendarDays,
+    to: '/people',
+    search: { tab: 'calendar' },
+  },
   { id: 'automation', label: 'Automation', icon: Zap, to: '/automation' },
 ];
 
@@ -331,6 +338,7 @@ export function UnifiedWorkspace() {
                   <div className="flex justify-end py-1.5">
                     <Link
                       to={s.to}
+                      search={s.search}
                       className="inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:text-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       View all

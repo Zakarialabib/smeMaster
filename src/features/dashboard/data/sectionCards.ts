@@ -48,6 +48,8 @@ export interface SectionCardConfig {
   id: string;
   /** Router path (hash history) the card navigates to. */
   to: string;
+  /** Optional search params for query-bearing deep links (e.g. CRM tabs). */
+  search?: Record<string, string>;
   icon: LucideIcon;
   /** i18n key — card title. */
   titleKey: string;
@@ -126,7 +128,8 @@ export const SECTION_CARDS: SectionCardConfig[] = [
   },
   {
     id: 'tasks',
-    to: '/tasks',
+    to: '/people',
+    search: { tab: 'tasks' },
     icon: CheckSquare,
     titleKey: 'dashboard.sections.tasks.title',
     descriptionKey: 'dashboard.sections.tasks.description',
@@ -201,7 +204,8 @@ export const SECTION_CARDS: SectionCardConfig[] = [
   },
   {
     id: 'calendar',
-    to: '/calendar',
+    to: '/people',
+    search: { tab: 'calendar' },
     icon: CalendarDays,
     titleKey: 'common.calendar',
     descriptionKey: 'dashboard.sections.calendar.description',

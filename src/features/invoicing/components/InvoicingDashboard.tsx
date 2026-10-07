@@ -1,18 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from '@tanstack/react-router';
-import {
-  ReceiptText,
-  Plus,
-  Users,
-  Package,
-  Settings2,
-  Building2,
-  ChevronDown,
-  AlertTriangle,
-  RefreshCw,
-  AlertCircle,
-} from 'lucide-react';
+import { ReceiptText, Plus, Building2, AlertTriangle, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import { PageScaffold } from '@shared/components/layout';
 import { SkeletonPage } from '@shared/components/ui/Skeleton';
@@ -23,22 +12,25 @@ import InvoiceList from './InvoiceList';
 import ClientList from './clients/ClientList';
 import ItemList from './items/ItemList';
 import BusinessProfilePanel from './BusinessProfilePanel';
-import SettingsDrawer from './SettingsDrawer';
 
-type TabId = 'invoices' | 'clients' | 'items' | 'settings';
+export type InvoicingTabId = 'documents' | 'clients' | 'items' | 'business';
+
+const TAB_IDS: InvoicingTabId[] = ['documents', 'clients', 'items', 'business'];
+
+function tabFromSearch(searchStr: string): InvoicingTabId {
+  const tab = new URLSearchParams(searchStr).get('tab');
+  return (TAB_IDS as string[]).includes(tab ?? '') ? (tab as InvoicingTabId) : 'documents';
+}
 
 export default function InvoicingDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const TABS: { id: TabId; label: string; icon: typeof ReceiptText }[] = [
-    { id: 'invoices', label: t('invoicing.tabs.documents'), icon: ReceiptText },
-    { id: 'clients', label: t('invoicing.tabs.clients'), icon: Users },
-    { id: 'items', label: t('invoicing.tabs.items'), icon: Package },
-    { id: 'settings', label: t('common.settings'), icon: Settings2 },
-  ];
-
-  const [tab, setTab] = useState<TabId>('invoices');
+  // URL-synced tab (`/invoicing?tab=clients`) — navigation lives in the
+  // sidebar (like mail/CRM), so refresh and deep links agree with it.
+  // No in-page tab strip.
+  const tab = tabFromSearch(location.searchStr);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const company = useInvoicingStore((s) => s.company);
@@ -49,7 +41,6 @@ export default function InvoicingDashboard() {
   const fetchCompany = useInvoicingStore((s) => s.fetchCompany);
 
   const [lowStockCount, setLowStockCount] = useState(0);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     fetchCompany(ACTIVE_COMPANY_ID).catch((err: unknown) => {
@@ -73,7 +64,7 @@ export default function InvoicingDashboard() {
 
   useEffect(() => {
     setLoadError(null);
-    if (tab === 'invoices')
+    if (tab === 'documents')
       fetchInvoices(ACTIVE_COMPANY_ID).catch((err: unknown) => {
         setLoadError(err instanceof Error ? err.message : 'Failed to load invoices');
       });
@@ -89,16 +80,19 @@ export default function InvoicingDashboard() {
 
   const handleRetry = () => {
     setLoadError(null);
-    if (tab === 'invoices') fetchInvoices(ACTIVE_COMPANY_ID);
+    if (tab === 'documents') fetchInvoices(ACTIVE_COMPANY_ID);
     else if (tab === 'clients') fetchClients(ACTIVE_COMPANY_ID);
     else if (tab === 'items') fetchItems(ACTIVE_COMPANY_ID);
+  };
+
+  const goBusiness = () => {
+    navigate({ to: '/invoicing', search: (prev) => ({ ...prev, tab: 'business' }) });
   };
 
   const isLoading = listLoading && !loadError;
 
   // Child routes (/invoicing/new, /invoicing/edit/$invoiceId) render the
   // InvoiceEditor in place of the dashboard content.
-  const location = useLocation();
   if (location.pathname !== '/invoicing') {
     return <Outlet />;
   }
@@ -115,13 +109,13 @@ export default function InvoicingDashboard() {
         <button
           type="button"
           className="group flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-secondary transition-colors"
-          onClick={() => {}}
+          onClick={goBusiness}
+          title={t('invoicing.tabs.business')}
         >
           <Building2 size={13} />
           <span className="truncate max-w-[180px]">
             {company?.name ?? t('invoicing.yourCompany')}
           </span>
-          <ChevronDown size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
           {lowStockCount > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-danger/10 text-danger shrink-0">
               <AlertTriangle size={11} /> {lowStockCount} {t('invoicing.lowStock')}
@@ -130,48 +124,13 @@ export default function InvoicingDashboard() {
         </button>
       }
       actions={
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Settings2 size={16} />}
-            onClick={() => {}}
-            className="hidden sm:inline-flex"
-          />
-          <Button icon={<Plus size={18} />} onClick={() => navigate({ to: '/invoicing/new' })}>
-            {t('invoicing.newDocument')}
-          </Button>
-        </>
-      }
-      toolbar={
-        <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {TABS.map((tabDef) => {
-            const Icon = tabDef.icon;
-            const active = tab === tabDef.id;
-            return (
-              <button
-                key={tabDef.id}
-                type="button"
-                onClick={() => setTab(tabDef.id)}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                  active
-                    ? 'bg-accent/10 text-accent'
-                    : 'text-text-secondary hover:bg-bg-hover/60 hover:text-text-primary'
-                }`}
-              >
-                <Icon size={16} />
-                {tabDef.label}
-                {active && (
-                  <span className="absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full bg-accent" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+        <Button icon={<Plus size={18} />} onClick={() => navigate({ to: '/invoicing/new' })}>
+          {t('invoicing.newDocument')}
+        </Button>
       }
       maxWidth="full"
     >
-      {/* Tab content */}
+      {/* Tab content — switched by the sidebar */}
       <div className="max-w-7xl mx-auto">
         {isLoading && <SkeletonPage />}
 
@@ -190,12 +149,11 @@ export default function InvoicingDashboard() {
           </div>
         )}
 
-        {!isLoading && !loadError && tab === 'invoices' && <InvoiceList />}
+        {!isLoading && !loadError && tab === 'documents' && <InvoiceList />}
         {!isLoading && !loadError && tab === 'clients' && <ClientList />}
         {!isLoading && !loadError && tab === 'items' && <ItemList />}
-        {tab === 'settings' && <BusinessProfilePanel />}
+        {tab === 'business' && <BusinessProfilePanel />}
       </div>
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </PageScaffold>
   );
 }

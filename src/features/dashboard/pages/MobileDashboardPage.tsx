@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { toast } from '@shared/stores/toastStore';
+import { navigateToItemPath } from '@shared/components/layout/shell/navConfig';
 import { Mail, Users, ListChecks, BarChart3, CalendarDays, Settings, Sparkles } from 'lucide-react';
 
 interface FeatureCard {
@@ -33,7 +33,7 @@ const FEATURES: FeatureCard[] = [
     icon: ListChecks,
     label: 'Tasks',
     description: 'To-dos & follow-ups',
-    path: '/tasks',
+    path: '/people?tab=tasks',
     color: 'from-amber-500/20 to-amber-600/10',
   },
   {
@@ -49,7 +49,7 @@ const FEATURES: FeatureCard[] = [
     icon: CalendarDays,
     label: 'Calendar',
     description: 'Schedule & events',
-    path: '/calendar',
+    path: '/people?tab=calendar',
     color: 'from-violet-500/20 to-violet-600/10',
   },
   {

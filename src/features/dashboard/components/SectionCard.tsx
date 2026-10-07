@@ -37,6 +37,8 @@ export interface SectionCardProps {
   description: string;
   /** Router path the whole card navigates to (hash history). */
   to: string;
+  /** Optional search params for query-bearing deep links (e.g. CRM tabs). */
+  search?: Record<string, string>;
   /** Stats row — each label/hint is an i18n key. */
   stats?: SectionStat[];
   /** Rich content slot — can hold as much extra information as needed. */
@@ -59,6 +61,7 @@ export function SectionCard({
   icon: Icon,
   description,
   to,
+  search,
   stats,
   children,
   badge,
@@ -90,6 +93,7 @@ export function SectionCard({
               <h3 id={titleId} className="truncate text-sm font-semibold text-text-primary">
                 <Link
                   to={to}
+                  search={search}
                   className="rounded transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   {sectionTitle}

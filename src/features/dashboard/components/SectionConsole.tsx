@@ -79,6 +79,7 @@ export function SectionConsole({ refreshKey = 0 }: { refreshKey?: number }) {
             icon={card.icon}
             description={card.descriptionKey}
             to={card.to}
+            search={card.search}
             accent={card.accent}
             badge={card.badgeKey}
             stats={stats[card.id] ?? card.stats}

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Maximize2, Minimize2, ExternalLink, X, Mail, Building2, Eye } from 'lucide-react';
+import { Maximize2, Minimize2, X, Mail, Building2, Eye } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
 import type { Account } from '@features/accounts/stores/accountStore';
 
@@ -7,7 +7,6 @@ interface ComposerHeaderProps {
   modeLabel: string;
   isFullpage: boolean;
   onToggleView: () => void;
-  onPopOut: () => void;
   onClose: () => void;
   activeAccount?: Account | undefined;
   onToggleZen?: () => void;
@@ -17,7 +16,6 @@ export function ComposerHeader({
   modeLabel,
   isFullpage,
   onToggleView,
-  onPopOut,
   onClose,
   activeAccount,
   onToggleZen,
@@ -57,15 +55,7 @@ export function ComposerHeader({
         >
           {isFullpage ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
         </Button>
-        <Button
-          variant="ghost"
-          size="xs"
-          iconOnly
-          onClick={onPopOut}
-          title={t('composer.openInNewWindow')}
-        >
-          <ExternalLink size={13} />
-        </Button>
+
         {onToggleZen && (
           <Button variant="ghost" size="xs" iconOnly onClick={onToggleZen} title="Focus mode">
             <Eye size={13} />
