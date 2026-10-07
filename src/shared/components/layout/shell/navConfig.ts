@@ -22,6 +22,8 @@ import {
   ListChecks,
   CalendarDays,
   Activity,
+  Package,
+  Building2,
   Bot,
   Store,
   ShoppingCart,
@@ -141,7 +143,12 @@ export const NAV_GROUPS: NavRailGroup[] = [
       // ── divider ──
       { id: '__divider__', label: '', icon: undefined },
       { id: 'tasks', label: 'common.tasks', icon: ListChecks, path: '/people?tab=tasks' },
-      { id: 'calendar', label: 'common.calendar', icon: CalendarDays, path: '/people?tab=calendar' },
+      {
+        id: 'calendar',
+        label: 'common.calendar',
+        icon: CalendarDays,
+        path: '/people?tab=calendar',
+      },
       { id: 'invoices', label: 'common.invoices', icon: ReceiptText, path: '/people?tab=invoices' },
     ],
   },
@@ -151,7 +158,22 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Store,
     items: [
       { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
-      { id: 'invoicing', label: 'common.invoicing', icon: ReceiptText, path: '/invoicing' },
+      { id: 'documents', label: 'invoicing.tabs.documents', icon: ReceiptText, path: '/invoicing' },
+      {
+        id: 'clients',
+        label: 'invoicing.tabs.clients',
+        icon: Users,
+        path: '/invoicing?tab=clients',
+      },
+      { id: 'items', label: 'invoicing.tabs.items', icon: Package, path: '/invoicing?tab=items' },
+      {
+        id: 'business',
+        label: 'invoicing.tabs.business',
+        icon: Building2,
+        path: '/invoicing?tab=business',
+      },
+      // ── divider ──
+      { id: '__divider__', label: '', icon: undefined },
       { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
     ],
   },
@@ -245,8 +267,9 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/smart-folder')) return 'mail';
   if (pathname.startsWith('/people')) return 'crm';
   if (pathname.startsWith('/crm')) return 'crm';
-  if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/calendar')) return 'tasks';
+  // Legacy /tasks + /calendar deep links (redirected into /people tabs).
+  if (pathname.startsWith('/tasks')) return 'crm';
+  if (pathname.startsWith('/calendar')) return 'crm';
   if (pathname.startsWith('/automation')) return 'automation';
   if (pathname.startsWith('/workflows')) return 'automation';
   if (pathname.startsWith('/vault')) return 'vault';
@@ -266,7 +289,6 @@ export function getActiveSubItem(pathname: string, searchStr = ''): string | nul
   if (pathname === '/' || pathname === '') return 'inbox';
 
   const search = new URLSearchParams(searchStr);
-  const view = search.get('view');
 
   const mailMatch = pathname.match(/^\/mail\/([^/]+)/);
   if (mailMatch) return mailMatch[1]!;
@@ -279,24 +301,34 @@ export function getActiveSubItem(pathname: string, searchStr = ''): string | nul
   const settingsMatch = pathname.match(/^\/settings\/([^/]+)/);
   if (settingsMatch) return settingsMatch[1]!;
 
-  if (pathname.startsWith('/people')) return search.get('tab') === 'deals' ? 'deals' : 'contacts';
-  if (pathname.startsWith('/crm')) return 'contacts';
+  // CRM workspace — tab comes from `?tab=` (sidebar-driven, no top tabs).
+  if (pathname.startsWith('/people')) {
+    const tab = search.get('tab');
+    return tab && ['people', 'deals', 'activity', 'tasks', 'calendar', 'invoices'].includes(tab)
+      ? tab
+      : 'people';
+  }
+  if (pathname.startsWith('/crm')) return 'people';
   if (pathname.startsWith('/attachments')) return 'attachments';
 
   if (pathname.startsWith('/dashboard')) return null;
-  if (pathname.startsWith('/invoicing')) return 'invoicing';
+  // Invoicing workspace — tab comes from `?tab=` (sidebar-driven, no top tabs).
+  if (pathname.startsWith('/invoicing')) {
+    const tab = search.get('tab');
+    return tab && ['documents', 'clients', 'items', 'business'].includes(tab) ? tab : 'documents';
+  }
   if (pathname.startsWith('/erp')) return 'erp';
 
   const helpMatch = pathname.match(/^\/help\/([^/]+)/);
   if (helpMatch) return helpMatch[1]!;
   if (pathname.startsWith('/help')) return 'help-center';
 
+  // Legacy /tasks + /calendar deep links (redirected into /people tabs).
   if (pathname.startsWith('/tasks')) {
-    if (search.get('tab') === 'calendar') return view === 'agenda' ? 'agenda' : 'month';
-    return view === 'upcoming' ? 'upcoming' : 'today';
+    if (search.get('tab') === 'calendar') return 'calendar';
+    return 'tasks';
   }
-  // Legacy /calendar deep links (redirected to /tasks?tab=calendar).
-  if (pathname.startsWith('/calendar')) return view === 'agenda' ? 'agenda' : 'month';
+  if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/ai-assistant')) return null;
   if (pathname.startsWith('/agent-console')) return null;
   if (pathname.startsWith('/pos')) return 'pos';
@@ -314,8 +346,10 @@ export function getSubItemsForGroup(groupId: string): NavRailSubItem[] {
 /**
  * Navigate to a sub-item `path` like `/people?tab=deals` — splits off the
  * query string and passes it as typed search params instead of raw text.
+ * Shared by the sidebar, bottom bar, launcher and dashboard cards so
+ * query-bearing deep links behave identically everywhere.
  */
-function navigateToItemPath(path: string): void {
+export function navigateToItemPath(path: string): void {
   const [pathname, query] = path.split('?');
   if (!pathname) return;
   if (!query) {
@@ -337,7 +371,7 @@ export function handleNavSelect(id: string): void {
       navigateToHelp();
       break;
     case 'tasks':
-      router.navigate({ to: '/tasks' });
+      router.navigate({ to: '/people', search: (prev) => ({ ...prev, tab: 'tasks' }) });
       break;
     case 'sell':
       router.navigate({ to: '/pos' });

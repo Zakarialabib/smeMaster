@@ -2,10 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AppLauncher } from './AppLauncher';
 
-// Mock useNavigate
-vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => vi.fn(),
-}));
+// Mock useNavigate (keep the rest of the router module intact — navConfig
+// pulls the real route tree through the navigation helper).
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>();
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
+});
 
 describe('AppLauncher', () => {
   it('renders all default app tiles', () => {

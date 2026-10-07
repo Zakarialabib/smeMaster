@@ -2219,7 +2219,8 @@
     "tabs": {
       "documents": "Documenti",
       "clients": "Clienti",
-      "items": "Articoli"
+      "items": "Articoli",
+      "business": "Azienda"
     },
     "clientsNoMatches": "No matches",
     "clientsEmptyTitle": "No clients yet",

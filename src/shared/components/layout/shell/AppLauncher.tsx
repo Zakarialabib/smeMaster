@@ -1,6 +1,6 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useBreakpoint } from '@/shared/hooks/useBreakpoint';
+import { navigateToItemPath } from './navConfig';
 
 interface AppTile {
   id: string;
@@ -25,7 +25,7 @@ const DEFAULT_APPS: AppTile[] = [
     id: 'tasks',
     label: 'common.tasks',
     icon: <CheckSquareIcon />,
-    route: '/tasks',
+    route: '/people?tab=tasks',
     color: 'bg-amber-500',
     badge: 3,
   },
@@ -33,7 +33,7 @@ const DEFAULT_APPS: AppTile[] = [
     id: 'calendar',
     label: 'common.calendar',
     icon: <CalendarIcon />,
-    route: '/calendar',
+    route: '/people?tab=calendar',
     color: 'bg-violet-500',
   },
   {
@@ -58,7 +58,6 @@ interface AppLauncherProps {
 }
 
 export function AppLauncher({ apps = DEFAULT_APPS }: AppLauncherProps) {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const bp = useBreakpoint();
   const cols = bp === 'mobile' ? 'grid-cols-2' : bp === 'tablet' ? 'grid-cols-3' : 'grid-cols-4';
@@ -70,7 +69,7 @@ export function AppLauncher({ apps = DEFAULT_APPS }: AppLauncherProps) {
         {apps.map((app) => (
           <button
             key={app.id}
-            onClick={() => navigate({ to: app.route })}
+            onClick={() => navigateToItemPath(app.route)}
             className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-accent/30 transition-all active:scale-95 min-h-[100px] relative"
           >
             {app.badge && (

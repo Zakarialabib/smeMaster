@@ -1124,8 +1124,8 @@
       "backup": "Create backups and restore your data when needed.",
       "deliverabilityDashboard": "Track domain health, reputation, and deliverability.",
       "ai": "Set up AI providers, smart replies, and automation.",
-            "agents": "Manage AI agent roster, per-agent config, and channels.",
-            "notifications": "Choose what to be notified about and how.",
+      "agents": "Manage AI agent roster, per-agent config, and channels.",
+      "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
       "pgp": "Manage PGP keys for end-to-end encryption.",
       "mailRules": "Automate organization with labels and filters.",
@@ -2287,7 +2287,8 @@
     "tabs": {
       "documents": "Documents",
       "clients": "Clients",
-      "items": "Items"
+      "items": "Items",
+      "business": "Business"
     },
     "clientsEmptyTitle": "No clients yet",
     "clientsEmptyHint": "Only Client and Supplier contacts appear here. Contacts from your CRM or email sync are saved as 'contact' and won't show — add them with \"New Client\" to start billing them.",

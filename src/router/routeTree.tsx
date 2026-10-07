@@ -16,11 +16,6 @@ const HelpPage = lazy(() =>
     default: m.HelpPage,
   })),
 );
-const SchedulePage = lazy(() =>
-  import('@features/tasks/pages/SchedulePage').then((m) => ({
-    default: m.SchedulePage,
-  })),
-);
 const AttachmentLibrary = lazy(() =>
   import('@features/attachments/AttachmentLibrary').then((m) => ({ default: m.AttachmentLibrary })),
 );
@@ -128,21 +123,6 @@ function validateMailSearch(search: Record<string, unknown>): MailSearch {
   if (typeof cat === 'string' && (VALID_CATEGORIES as readonly string[]).includes(cat)) {
     result.category = cat as MailSearch['category'];
   }
-  return result;
-}
-
-// /tasks — Schedule (Tasks + Calendar) tab, optional view deep link.
-type ScheduleSearch = {
-  tab?: 'tasks' | 'calendar';
-  view?: string;
-};
-
-function validateScheduleSearch(search: Record<string, unknown>): ScheduleSearch {
-  const result: ScheduleSearch = {};
-  const tab = search['tab'];
-  if (tab === 'tasks' || tab === 'calendar') result.tab = tab;
-  const view = search['view'];
-  if (typeof view === 'string' && view) result.view = view;
   return result;
 }
 
@@ -292,24 +272,32 @@ export const attachmentsRoute = createRoute({
   component: AttachmentLibraryWrapper,
 });
 
-// ---------- /tasks (Schedule: Tasks + Calendar) ----------
-const SchedulePageWrapper = createPageWrapper('Schedule', SchedulePage as LazyComponent);
-
+// ---------- /tasks → redirect into the CRM workspace (keeps ?view= for TasksPage) ----------
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'tasks',
-  validateSearch: validateScheduleSearch,
-  component: SchedulePageWrapper,
+  beforeLoad: ({ location }) => {
+    const params = new URLSearchParams(location.searchStr);
+    const view = params.get('view');
+    const tab = params.get('tab');
+    throw redirect({
+      to: '/people',
+      search: {
+        tab: tab === 'calendar' ? 'calendar' : 'tasks',
+        ...(view ? { view } : {}),
+      },
+    });
+  },
 });
 
-// ---------- /calendar → redirect to /tasks (keeps ?view=, opens Calendar tab) ----------
+// ---------- /calendar → redirect into the CRM workspace (keeps ?view=) ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'calendar',
   beforeLoad: ({ location }) => {
     const view = new URLSearchParams(location.searchStr).get('view');
     throw redirect({
-      to: '/tasks',
+      to: '/people',
       search: { tab: 'calendar', ...(view ? { view } : {}) },
     });
   },

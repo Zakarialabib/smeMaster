@@ -37,8 +37,9 @@ export function useActiveLabel(): string {
     if (match.routeId === '/settings/$tab' || match.routeId === '/settings') {
       return 'settings';
     }
+    // Legacy route (redirected into /people?tab=calendar).
     if (match.routeId === '/calendar') {
-      return 'calendar';
+      return 'people';
     }
     if (match.routeId === '/help/$topic' || match.routeId === '/help') {
       return 'help';

@@ -27,10 +27,20 @@ export function DesktopShell({ syncing, licenseBanner }: DesktopShellProps) {
   const activeNavId = getActiveNavFromPath(location.pathname);
   const activeSubItemId = getActiveSubItem(location.pathname, location.searchStr);
   const sidebarCollapsed = useLayoutStore((s) => s.sidebarCollapsed);
-  // Icon rail always visible. Mail panel only expands on mail pages.
-  // All other pages (settings, help, tasks, calendar) show icon rail only.
+  // Icon rail always visible. Groups with sub-items (mail, crm, sell, …)
+  // expand a content panel; everything else shows the icon rail only.
   const isMailPage = activeNavId === 'mail';
-  const effectiveSidebarWidth = isMailPage && !sidebarCollapsed ? 344 : 64;
+  // Settings/help keep their own in-page navigation (no sidebar panel).
+  const panelGroupDef =
+    !sidebarCollapsed &&
+    activeNavId !== 'mail' &&
+    activeNavId !== 'settings' &&
+    activeNavId !== 'help'
+      ? NAV_GROUPS.find((g) => g.id === activeNavId)
+      : undefined;
+  const hasPanelItems = (panelGroupDef?.items.length ?? 0) > 0;
+  const effectiveSidebarWidth =
+    !sidebarCollapsed && (isMailPage || hasPanelItems) ? (isMailPage ? 344 : 324) : 64;
 
   const header = (
     <>

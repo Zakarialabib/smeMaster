@@ -2220,7 +2220,8 @@
     "tabs": {
       "documents": "المستندات",
       "clients": "العملاء",
-      "items": "العناصر"
+      "items": "العناصر",
+      "business": "الشركة"
     },
     "clientsNoMatches": "No matches",
     "clientsEmptyTitle": "No clients yet",

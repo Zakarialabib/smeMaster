@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from '@tanstack/react-router';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { usePosStore } from '@features/pos/stores/posStore';
 import { useSyncStore } from '@shared/stores/syncStore';
 import { usePlatform } from '@shared/hooks/usePlatform';
 import { useThemeStore } from '@shared/theme/themeStore';
@@ -29,6 +30,7 @@ import {
   Languages,
   ArrowLeftRight,
   Palette,
+  ShoppingCart,
 } from 'lucide-react';
 
 // ── Route path → breadcrumb i18n key ──────────────────────────────────
@@ -221,6 +223,11 @@ export function WindowTitleBar({
     () => (localStorage.getItem('i18nextLng') as SupportedLocale) || 'en',
   );
 
+  // ── POS cart summary (shown only on the POS route) ───────────────────
+  const isPosRoute = location.pathname.startsWith('/pos');
+  const posCount = usePosStore((s) => s.cart.reduce((n, i) => n + i.quantity, 0));
+  const posTotal = usePosStore((s) => s.cart.reduce((sum, i) => sum + i.price * i.quantity, 0));
+
   // ── Account / sync state ──────────────────────────────────────────────
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const accounts = useAccountStore((s) => s.accounts);
@@ -350,7 +357,19 @@ export function WindowTitleBar({
         </span>
       </div>
 
-      {/* ── Center: Account switcher (desktop, multi-account) ─────── */}
+      {/* ── Center: POS cart summary / account switcher ─────────────── */}
+      {isPosRoute && (
+        <div
+          data-tauri-drag-region
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold"
+          title={t('nav.pos')}
+        >
+          <ShoppingCart size={12} aria-hidden="true" />
+          <span className="tabular-nums">
+            {posCount} · ${posTotal.toFixed(2)}
+          </span>
+        </div>
+      )}
       {accounts.length > 1 && (
         <div data-tauri-drag-region className="hidden md:block">
           <Dropdown

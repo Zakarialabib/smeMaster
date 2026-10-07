@@ -31,7 +31,7 @@ export function navigateToLabel(
   }
 
   if (label === 'tasks') {
-    router.navigate({ to: '/tasks' });
+    router.navigate({ to: '/people', search: (prev) => ({ ...prev, tab: 'tasks' }) });
     return;
   }
 
@@ -46,7 +46,7 @@ export function navigateToLabel(
   }
 
   if (label === 'calendar') {
-    router.navigate({ to: '/calendar' });
+    router.navigate({ to: '/people', search: (prev) => ({ ...prev, tab: 'calendar' }) });
     return;
   }
 
@@ -280,11 +280,12 @@ export function getActiveLabel(): string {
     if (match.routeId === '/people' || match.routeId === '/people/$contactId') {
       return 'people';
     }
+    // Legacy routes (redirected into /people tabs) resolve to the CRM label.
     if (match.routeId === '/tasks') {
-      return 'tasks';
+      return 'people';
     }
     if (match.routeId === '/calendar') {
-      return 'calendar';
+      return 'people';
     }
     if (match.routeId === '/help/$topic' || match.routeId === '/help') {
       return 'help';

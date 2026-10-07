@@ -1892,11 +1892,9 @@
     "templates": "テンプレート",
     "invoicing": "請求書",
     "invoices": "請求書一覧",
-    "invoices": "請求書一覧",
     "settings": "設定",
     "sent": "送信済み",
     "attachments": "添付ファイル",
-    "activity": "アクティビティ",
     "activity": "アクティビティ",
     "tasks": "タスク",
     "right": "右",
@@ -2307,7 +2305,8 @@
     "tabs": {
       "documents": "Documents",
       "clients": "Clients",
-      "items": "Items"
+      "items": "Items",
+      "business": "会社情報"
     },
     "yourCompany": "あなたの会社",
     "failedToLoad": "{{tab}} の読み込みに失敗しました。",
