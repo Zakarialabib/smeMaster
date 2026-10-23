@@ -84,7 +84,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           $env:NO_COLOR = '1'
-          bunx vitest run --exclude integration 2>&1 |
+          bun run test 2>&1 |
             Tee-Object -FilePath vitest-output.log |
             ForEach-Object { Write-Host $_ }
           Write-Host "vitest exit code: $LASTEXITCODE (reported only - the next step gates on the summary line)"
