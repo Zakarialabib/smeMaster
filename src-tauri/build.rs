@@ -68,12 +68,12 @@ fn main() {
   // The path must stay quote-free (no spaces in CARGO_MANIFEST_DIR); if the
   // project ever moves to a path with spaces, switch to a linker response
   // file (@file) instead.
-  let manifest = std::path::Path::new(
-    &std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"),
-  )
-  .join("comctl-v6.manifest");
-  println!("cargo:rustc-link-arg-examples=/MANIFEST:EMBED");
-  println!("cargo:rustc-link-arg-examples=/MANIFESTINPUT:{}", manifest.display());
-  println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");
-  println!("cargo:rustc-link-arg-tests=/MANIFESTINPUT:{}", manifest.display());
+  if std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc") {
+    let manifest = std::path::Path::new(
+      &std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"),
+    )
+    .join("comctl-v6.manifest");
+    println!("cargo:rustc-link-arg=/MANIFEST:EMBED");
+    println!("cargo:rustc-link-arg=/MANIFESTINPUT:{}", manifest.display());
+  }
 }
