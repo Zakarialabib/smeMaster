@@ -25,27 +25,46 @@
 //! coverage — e.g. a host whose network corrupts large TLS transfers,
 //! documented in AGENTS.md), 1 = at least one FAIL or a hard error.
 
+#[cfg(not(feature = "local-ai"))]
+fn main() {
+    println!("hf_smoke example requires the 'local-ai' feature.");
+}
+
+#[cfg(feature = "local-ai")]
 use anyhow::{anyhow, Context, Result};
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::commands::validate_url;
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::db;
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::engine::EngineContext;
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::hf;
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::types::JobStatus;
+#[cfg(feature = "local-ai")]
 use app_lib::downloader::{download_hf_file_cached, DownloaderState};
+#[cfg(feature = "local-ai")]
 use sha2::{Digest, Sha256};
+#[cfg(feature = "local-ai")]
 use sqlx::{Pool, Sqlite};
+#[cfg(feature = "local-ai")]
 use std::io::Read;
+#[cfg(feature = "local-ai")]
 use std::path::Path;
+#[cfg(feature = "local-ai")]
 use std::time::{Duration, Instant};
 
 // ── Result tracking ─────────────────────────────────────────────────────────
 
+#[cfg(feature = "local-ai")]
 struct Suite {
     passed: u32,
     failed: u32,
     skipped: u32,
 }
 
+#[cfg(feature = "local-ai")]
 impl Suite {
     fn new() -> Self {
         Self {
@@ -84,6 +103,7 @@ impl Suite {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "local-ai")]
 /// Streamed SHA-256 of a file on disk (independent of the engine's hash).
 fn sha256_file(path: &Path) -> Result<String> {
     let mut file = std::fs::File::open(path)
@@ -100,6 +120,7 @@ fn sha256_file(path: &Path) -> Result<String> {
     Ok(format!("{:x}", hasher.finalize()))
 }
 
+#[cfg(feature = "local-ai")]
 /// Sum of on-disk `*.part_chunk_*` bytes next to the destination — the
 /// persisted resume offsets a paused job will continue from.
 fn partial_chunk_bytes(destination_path: &str) -> u64 {
@@ -116,6 +137,7 @@ fn partial_chunk_bytes(destination_path: &str) -> u64 {
         .sum()
 }
 
+#[cfg(feature = "local-ai")]
 /// Transport-shaped failures that mean the *host network* broke the TLS
 /// stream, not our code. This machine is documented in AGENTS.md as failing
 /// large transfers (`SEC_E_DECRYPT_FAILURE` — reproduced independently with
@@ -138,6 +160,7 @@ fn is_env_network_error(msg: &str) -> bool {
     MARKERS.iter().any(|k| m.contains(k))
 }
 
+#[cfg(feature = "local-ai")]
 /// Full terminal-state verification: status, byte accounting, local SHA-256
 /// vs the DB rows, and hf-hub offline resolution of the snapshot path.
 async fn verify_completed(
@@ -217,6 +240,7 @@ async fn verify_completed(
     Ok(())
 }
 
+#[cfg(feature = "local-ai")]
 /// Steps C & D: pause a real in-flight download from a flipper task, prove
 /// the cooperative pause contract, then resume to a fully verified file.
 async fn pause_resume_case(
@@ -366,6 +390,7 @@ async fn pause_resume_case(
     Ok(())
 }
 
+#[cfg(feature = "local-ai")]
 /// Step D: resolve the actual GGUF filename from the HF model API.
 async fn pick_qwen_gguf(client: &reqwest::Client) -> Result<String> {
     let api = "https://huggingface.co/api/models/Qwen/Qwen2.5-0.5B-Instruct-GGUF";
@@ -402,6 +427,7 @@ async fn pick_qwen_gguf(client: &reqwest::Client) -> Result<String> {
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "local-ai")]
 async fn run() -> Result<()> {
     // reqwest is declared with `rustls-no-provider` in Cargo.toml; the main
     // app installs the ring provider (lib.rs) before any Client is built —
@@ -504,6 +530,7 @@ async fn run() -> Result<()> {
     suite.summary_and_exit()
 }
 
+#[cfg(feature = "local-ai")]
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {

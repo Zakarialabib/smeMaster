@@ -226,7 +226,7 @@ export default function VoiceSettings() {
                 : provider === 'custom'
                   ? 'Any OpenAI-compatible TTS/STT endpoint. Provide a base URL and auth token.'
                   : provider === 'elevenlabs'
-                    ? 'High-quality TTS via ElevenLabs. STT uses a compatible endpoint.'
+                    ? 'High-quality TTS and Speech-to-Text via ElevenLabs.'
                     : 'OpenAI Whisper (STT) + TTS voices.'}
         </p>
 

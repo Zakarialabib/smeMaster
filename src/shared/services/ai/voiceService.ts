@@ -93,6 +93,13 @@ export function isBrowserVoiceSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
+export function isBrowserSttSupported(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  );
+}
+
 export function speakWithBrowser(text: string, voice?: string): void {
   if (!isBrowserVoiceSupported()) return;
   const utterance = new SpeechSynthesisUtterance(text);
@@ -102,6 +109,69 @@ export function speakWithBrowser(text: string, voice?: string): void {
     if (match) utterance.voice = match;
   }
   window.speechSynthesis.speak(utterance);
+}
+
+async function transcribeWithBrowser(
+  audio: Blob,
+  options?: SttOptions,
+): Promise<string> {
+  if (!isBrowserSttSupported()) {
+    throw new Error('Web Speech API SpeechRecognition is not supported in this browser environment.');
+  }
+
+  const SpeechRecognitionClass =
+    (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any })
+      .SpeechRecognition ||
+    (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any })
+      .webkitSpeechRecognition;
+
+  return new Promise((resolve, reject) => {
+    try {
+      const recognition = new SpeechRecognitionClass();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      if (options?.language) {
+        recognition.lang = options.language;
+      }
+
+      let finalTranscript = '';
+
+      recognition.onresult = (event: any) => {
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          if (event.results[i].isFinal || event.results[i][0]) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        reject(new Error(`Browser STT error: ${event.error || 'Speech recognition failed'}`));
+      };
+
+      recognition.onend = () => {
+        resolve(finalTranscript);
+      };
+
+      recognition.start();
+
+      if (audio && audio.size > 0 && typeof URL !== 'undefined' && URL.createObjectURL) {
+        try {
+          const audioUrl = URL.createObjectURL(audio);
+          const audioElement = new Audio(audioUrl);
+          audioElement.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+          };
+          audioElement.play().catch(() => {
+            // Playback might be blocked or unneeded in test environment
+          });
+        } catch {
+          // Ignore playback errors
+        }
+      }
+    } catch (err) {
+      reject(err instanceof Error ? err : new Error('Failed to start browser SpeechRecognition'));
+    }
+  });
 }
 
 // ── OpenAI-Compatible TTS/STT ──────────────────────────────────────────────
@@ -155,6 +225,83 @@ async function transcribeWithOpenAI(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`STT error (${response.status}): ${errorText}`);
+  }
+
+  const data = (await response.json()) as { text?: string };
+  return data.text ?? '';
+}
+
+// ── ElevenLabs TTS/STT ─────────────────────────────────────────────────────
+
+function getElevenLabsBaseUrl(config: VoiceConfig): string {
+  if (config.baseUrl && !config.baseUrl.includes('openai.com')) {
+    return config.baseUrl.replace(/\/$/, '');
+  }
+  return 'https://api.elevenlabs.io/v1';
+}
+
+async function synthesizeWithElevenLabs(
+  text: string,
+  config: VoiceConfig,
+  options?: TtsOptions,
+): Promise<Blob> {
+  const baseUrl = getElevenLabsBaseUrl(config);
+  let voiceId = options?.voice ?? config.ttsVoice;
+  if (!voiceId || voiceId === 'alloy') {
+    voiceId = '21m00Tcm4TlvDq8ikWAM';
+  }
+
+  const modelId = options?.model ?? 'eleven_multilingual_v2';
+
+  const response = await fetch(`${baseUrl}/text-to-speech/${voiceId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'xi-api-key': config.apiKey,
+    },
+    body: JSON.stringify({
+      text,
+      model_id: modelId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ElevenLabs TTS error (${response.status}): ${errorText}`);
+  }
+
+  return response.blob();
+}
+
+async function transcribeWithElevenLabs(
+  audio: Blob,
+  config: VoiceConfig,
+  options?: SttOptions,
+): Promise<string> {
+  const baseUrl = getElevenLabsBaseUrl(config);
+  const formData = new FormData();
+  formData.append('file', audio, 'audio.webm');
+
+  const modelId =
+    options?.model ??
+    (config.sttModel && config.sttModel !== 'whisper-1' ? config.sttModel : 'scribe_v1');
+  formData.append('model_id', modelId);
+
+  if (options?.language) {
+    formData.append('language_code', options.language);
+  }
+
+  const response = await fetch(`${baseUrl}/speech-to-text`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': config.apiKey,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ElevenLabs STT error (${response.status}): ${errorText}`);
   }
 
   const data = (await response.json()) as { text?: string };
@@ -314,8 +461,7 @@ export async function synthesizeSpeech(
     case 'lmstudio':
       return synthesizeWithOpenAI(text, config, options);
     case 'elevenlabs':
-      // TODO: Implement ElevenLabs TTS
-      throw new Error('ElevenLabs TTS not yet implemented');
+      return synthesizeWithElevenLabs(text, config, options);
     case 'agent-core':
       // TODO: Proxy through agent-core HTTP API
       throw new Error('Agent-core TTS not yet implemented');
@@ -336,15 +482,13 @@ export async function transcribeSpeech(
 
   switch (config.provider) {
     case 'browser':
-      // TODO: Implement browser STT using Web Speech API
-      throw new Error('Browser STT not yet implemented');
+      return transcribeWithBrowser(audio, options);
     case 'openai':
     case 'custom':
     case 'lmstudio':
       return transcribeWithOpenAI(audio, config, options);
     case 'elevenlabs':
-      // TODO: Implement ElevenLabs STT
-      throw new Error('ElevenLabs STT not yet implemented');
+      return transcribeWithElevenLabs(audio, config, options);
     case 'agent-core':
       // TODO: Proxy through agent-core HTTP API
       throw new Error('Agent-core STT not yet implemented');
@@ -377,16 +521,12 @@ export function getVoiceCapabilities(config: VoiceConfig): {
 } {
   switch (config.provider) {
     case 'browser':
-      // TTS: real (window.speechSynthesis). STT: throws — not implemented.
-      return { stt: false, tts: isBrowserVoiceSupported() };
+      return { stt: isBrowserSttSupported(), tts: isBrowserVoiceSupported() };
     case 'openai':
     case 'custom':
     case 'lmstudio':
-      // All three route through the OpenAI-compatible fetch path.
-      return { stt: true, tts: true };
     case 'elevenlabs':
-      // Both directions throw ("not yet implemented") — do not advertise them.
-      return { stt: false, tts: false };
+      return { stt: true, tts: true };
     case 'agent-core':
       // Both directions throw ("not yet implemented") — do not advertise them.
       // This previously reported { stt: true, tts: true } for two stubs.

@@ -9,7 +9,10 @@ import {
   getVoiceConfig,
   getVoiceCapabilities,
   isBrowserVoiceSupported,
+  isBrowserSttSupported,
   speakWithBrowser,
+  synthesizeSpeech,
+  transcribeSpeech,
 } from './voiceService';
 import type { VoiceConfig } from './voiceService';
 
@@ -21,6 +24,9 @@ describe('voice service', () => {
       configurable: true,
       value: { getVoices: () => [], speak: vi.fn(), cancel: vi.fn() },
     });
+    delete (window as any).SpeechRecognition;
+    delete (window as any).webkitSpeechRecognition;
+    vi.restoreAllMocks();
   });
 
   it('getVoiceConfig returns default config', async () => {
@@ -44,9 +50,16 @@ describe('voice service', () => {
       ttsSpeed: 1.0,
       offlineSttSampleRate: 16000,
     };
-    const caps = getVoiceCapabilities(config);
+    // Without SpeechRecognition, browser STT is false
+    let caps = getVoiceCapabilities(config);
     expect(caps.tts).toBe(true);
     expect(caps.stt).toBe(false);
+
+    // Mock SpeechRecognition
+    (window as any).SpeechRecognition = vi.fn();
+    caps = getVoiceCapabilities(config);
+    expect(caps.tts).toBe(true);
+    expect(caps.stt).toBe(true);
   });
 
   it('getVoiceCapabilities returns correct capabilities for openai', () => {
@@ -67,8 +80,7 @@ describe('voice service', () => {
   });
 
   it('getVoiceCapabilities does NOT advertise unimplemented providers', () => {
-    // agent-core previously reported { stt: true, tts: true } while both
-    // directions throw. The badge must reflect reality.
+    // agent-core remains unimplemented and throws
     const agentCore: VoiceConfig = {
       provider: 'agent-core',
       baseUrl: 'http://localhost:8000',
@@ -82,14 +94,14 @@ describe('voice service', () => {
     };
     expect(getVoiceCapabilities(agentCore)).toEqual({ stt: false, tts: false });
 
+    // elevenlabs is now fully implemented
     const elevenlabs: VoiceConfig = { ...agentCore, provider: 'elevenlabs' };
-    expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: false, tts: false });
+    expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: true, tts: true });
   });
 
   it('getVoiceCapabilities is truthful for every provider that throws', async () => {
-    // Guard against re-introducing the over-reporting bug: for each provider
-    // the badge claims support for, the corresponding call must not throw
-    // "not yet implemented".
+    (window as any).SpeechRecognition = vi.fn();
+
     const providers = [
       'browser',
       'openai',
@@ -115,12 +127,10 @@ describe('voice service', () => {
       const caps = getVoiceCapabilities(config);
 
       if (caps.tts) {
-        // Real TTS paths need fetch/network (or, for `offline`, the ml-sidecar);
-        // only assert the stub providers do not claim capability.
-        expect(['openai', 'custom', 'lmstudio', 'browser', 'offline']).toContain(provider);
+        expect(['openai', 'elevenlabs', 'custom', 'lmstudio', 'browser', 'offline']).toContain(provider);
       }
       if (caps.stt) {
-        expect(['openai', 'custom', 'lmstudio', 'offline']).toContain(provider);
+        expect(['openai', 'elevenlabs', 'custom', 'lmstudio', 'browser', 'offline']).toContain(provider);
       }
     }
   });
@@ -165,5 +175,130 @@ describe('voice service', () => {
   it('isBrowserVoiceSupported returns boolean', () => {
     const result = isBrowserVoiceSupported();
     expect(typeof result).toBe('boolean');
+  });
+
+  it('isBrowserSttSupported returns true when SpeechRecognition is present', () => {
+    expect(isBrowserSttSupported()).toBe(false);
+    (window as any).SpeechRecognition = vi.fn();
+    expect(isBrowserSttSupported()).toBe(true);
+  });
+
+  it('synthesizeSpeech calls ElevenLabs API correctly', async () => {
+    const mockBlob = new Blob(['audio data'], { type: 'audio/mpeg' });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      blob: async () => mockBlob,
+    } as Response);
+
+    const config: VoiceConfig = {
+      provider: 'elevenlabs',
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: 'xi-key-123',
+      ttsVoice: '21m00Tcm4TlvDq8ikWAM',
+      sttModel: 'scribe_v1',
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
+    };
+
+    const result = await synthesizeSpeech('Hello world', config);
+    expect(result).toBe(mockBlob);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'xi-api-key': 'xi-key-123',
+        }),
+        body: JSON.stringify({
+          text: 'Hello world',
+          model_id: 'eleven_multilingual_v2',
+        }),
+      }),
+    );
+  });
+
+  it('transcribeSpeech calls ElevenLabs STT API correctly', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ text: 'Transcribed audio text' }),
+    } as Response);
+
+    const config: VoiceConfig = {
+      provider: 'elevenlabs',
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: 'xi-key-123',
+      ttsVoice: '21m00Tcm4TlvDq8ikWAM',
+      sttModel: 'scribe_v1',
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
+    };
+
+    const audioBlob = new Blob(['fake audio'], { type: 'audio/webm' });
+    const result = await transcribeSpeech(audioBlob, config);
+
+    expect(result).toBe('Transcribed audio text');
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://api.elevenlabs.io/v1/speech-to-text',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'xi-api-key': 'xi-key-123',
+        }),
+      }),
+    );
+  });
+
+  it('transcribeSpeech uses browser Web Speech API when provider is browser', async () => {
+    let mockOnResult: ((event: any) => void) | undefined;
+    let mockOnEnd: (() => void) | undefined;
+
+    class MockSpeechRecognition {
+      continuous = false;
+      interimResults = false;
+      lang = '';
+      set onresult(cb: (event: any) => void) {
+        mockOnResult = cb;
+      }
+      set onend(cb: () => void) {
+        mockOnEnd = cb;
+      }
+      set onerror(_cb: any) {}
+      start() {
+        setTimeout(() => {
+          if (mockOnResult) {
+            mockOnResult({
+              resultIndex: 0,
+              results: [[{ transcript: 'Browser transcribed text' }]],
+            });
+          }
+          if (mockOnEnd) {
+            mockOnEnd();
+          }
+        }, 10);
+      }
+    }
+
+    (window as any).SpeechRecognition = MockSpeechRecognition;
+
+    const config: VoiceConfig = {
+      provider: 'browser',
+      baseUrl: '',
+      apiKey: '',
+      ttsVoice: '',
+      sttModel: '',
+      ttsEnabled: true,
+      sttEnabled: true,
+      ttsSpeed: 1.0,
+      offlineSttSampleRate: 16000,
+    };
+
+    const audioBlob = new Blob(['test audio'], { type: 'audio/webm' });
+    const result = await transcribeSpeech(audioBlob, config);
+    expect(result).toBe('Browser transcribed text');
   });
 });

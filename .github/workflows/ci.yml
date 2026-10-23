@@ -45,6 +45,14 @@ jobs:
         run: bun run test --project unit --reporter=default
 
       # Core app only — no ML sidecar (no protoc needed)
+      - name: Ensure sidecar stub binary for Tauri check
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src-tauri/binaries
+          if (-not (Test-Path "src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe")) {
+            New-Item -ItemType File -Force -Path "src-tauri/binaries/ml-sidecar-x86_64-pc-windows-msvc.exe"
+          }
+
       - name: Rust check (core app only)
         run: cargo check -p smemaster --no-default-features --features rustls-tls
         working-directory: src-tauri

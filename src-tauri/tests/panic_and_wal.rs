@@ -290,7 +290,7 @@ async fn test_rustls_provider_installation() {
     // Verify rustls crypto provider is installed at startup
     // (called once at app startup in lib.rs)
     let provider = rustls::crypto::ring::default_provider();
-    let installed = provider.install_default();
+    let installed = provider.clone().install_default();
 
     // First install succeeds, subsequent calls return false but are OK
     assert!(

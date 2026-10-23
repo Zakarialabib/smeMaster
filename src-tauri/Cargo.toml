@@ -157,3 +157,7 @@ local-ai = [
   "dep:candle-core", "dep:candle-nn", "dep:candle-transformers",
   "dep:hf-hub", "dep:tokenizers", "dep:calamine", "dep:docx-rs",
 ]
+
+[[example]]
+name = "hf_smoke"
+required-features = ["local-ai"]
