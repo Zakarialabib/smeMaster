@@ -182,16 +182,21 @@ pub async fn ai_index_emails(
     state: State<'_, AiState>,
 ) -> CmdResult<()> {
     // Prefer sidecar if running
+    #[cfg(feature = "local-ai")]
     if let Some(client) = try_sidecar(&app_handle) {
-        // Sidecar handles indexing internally via LanceDB
         let db_path = app_handle.path().app_data_dir()
             .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?
             .join("knowledge_base.lance");
         client.ensure_vector_db(&db_path.to_string_lossy()).await
             .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
-        // For now, sidecar indexing is async — the sidecar reads from the same SQLite DB
-        // TODO: wire indexer to sidecar once full IPC is implemented
-        log::info!("[ai] Sidecar mode: indexing request sent");
+
+        let vector_db = state.ensure_vector_db().await
+            .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+        let indexer = Indexer::new((*pool).clone(), state.engine_handle(), vector_db, app_handle);
+        indexer.index_all_with_sidecar(&client).await
+            .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+
+        log::info!("[ai] Sidecar mode: indexing completed successfully");
         return Ok(());
     }
 
