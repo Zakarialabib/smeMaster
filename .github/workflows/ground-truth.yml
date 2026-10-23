@@ -51,7 +51,7 @@ concurrency:
 
 jobs:
   metrics:
-    name: Ground-truth metrics (841 / 32 / 44)
+    name: Ground-truth metrics (859 / 33 / 44)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

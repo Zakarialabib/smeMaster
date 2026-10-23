@@ -14,7 +14,7 @@
  *   IPC commands   = literal occurrences of '#[tauri::command]' + '#[command]' in
  *                    src-tauri/src (all .rs files, recursive). Parameterised variants such as
  *                    '#[tauri::command(rename_all = "snake_case")]' are NOT counted
- *                    (7 exist as of 2026-09-30) so 777 + 64 = 841 matches the docs header.
+ *                    (7 exist as of 2026-09-30) so 795 + 64 = 859 matches the docs header.
  *
  *   Migrations     = count of *.sql files in src-tauri/src/db/migrations/
  *                    (001_core.sql ... 032_deals_pipeline.sql).
@@ -228,13 +228,13 @@ function main() {
       docsCheck('DB: ... migrations', docs.numbers.migrations, migrations.total) &
       docsCheck('Stores: ... Zustand', docs.numbers.stores, stores.total);
     docsOk = Boolean(docsOk);
-    // Breakdown (777 + 64) — informational, reported but not a gate row.
+    // Breakdown (795 + 64) — informational, reported but not a gate row.
     if (docs.numbers.tauriPart !== undefined || docs.numbers.plainPart !== undefined) {
       const ok =
         Number(docs.numbers.tauriPart) === commands.parts.tauri &&
         Number(docs.numbers.plainPart) === commands.parts.plain;
       docRows.push([
-        'Commands breakdown (777 + 64)',
+        `Commands breakdown (${commands.parts.tauri} + ${commands.parts.plain})`,
         `${docs.numbers.tauriPart} + ${docs.numbers.plainPart}`,
         `${commands.parts.tauri} + ${commands.parts.plain}`,
         ok ? 'PASS' : 'FAIL',
