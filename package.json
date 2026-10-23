@@ -126,7 +126,7 @@
     "lint-staged": "17.6.0",
     "prettier": "3.9.9",
     "tailwindcss": "4.3.3",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript": "npm:typescript@5.8.2",
     "@typescript/native": "npm:typescript@^7.0.2",
     "vite": "^8.3.2",
     "vitest": "5.0.3"
