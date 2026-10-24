@@ -19,7 +19,7 @@ import { invokeCommand } from './command';
  * @returns The local file path of the downloaded model
  */
 export async function aiDownloadModel(repoId: string, filename: string): Promise<string> {
-  return invokeCommand<string>('ai_download_model', { repoId, filename });
+  return invokeCommand<string>('ai_download_model', { repoId, filename }, 120_000);
 }
 
 /**
@@ -62,6 +62,20 @@ export async function aiIndexEmails(): Promise<void> {
  */
 export async function aiQueryRag(query: string): Promise<string> {
   return invokeCommand<string>('ai_query_rag', { query });
+}
+
+/**
+ * Perform a hybrid RAG search (BM25 + vector + RRF) and return an
+ * augmented prompt.
+ *
+ * The backend runs SQLite FTS5 (BM25) and LanceDB (vector) in parallel,
+ * then merges results with Reciprocal Rank Fusion.
+ *
+ * @param query - Natural language question or search phrase
+ * @returns Augmented prompt string with context + query
+ */
+export async function aiQueryRagHybrid(query: string): Promise<string> {
+  return invokeCommand<string>('ai_query_rag_hybrid', { query });
 }
 
 /**
@@ -139,6 +153,22 @@ export async function aiInsertProviderVectors(
   });
 }
 
+/**
+ * Fetch every chunked contact document (id + text) — without embedding.
+ * Used by the provider-embedding indexing path.
+ */
+export async function aiGetContactChunks(): Promise<{ id: string; text: string }[]> {
+  return invokeCommand<{ id: string; text: string }[]>('ai_get_contact_chunks');
+}
+
+/**
+ * Fetch every chunked deal document (id + text) — without embedding.
+ * Used by the provider-embedding indexing path.
+ */
+export async function aiGetDealChunks(): Promise<{ id: string; text: string }[]> {
+  return invokeCommand<{ id: string; text: string }[]>('ai_get_deal_chunks');
+}
+
 // ── Sidecar observability (gaps #1, #3, #5, #7, #9) ────────────────────────
 
 /** Sidecar runtime status: enabled, running, healthy, version. */
@@ -185,7 +215,7 @@ export async function aiListSidecarModels(): Promise<any> {
 // with "unknown method", which callers must handle as "offline speech not
 // available on this install" rather than a bug.
 //
-// See docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+// See docs/02-BACKEND/20-tts-stt-email.md §10.
 
 /** Result of loading an offline STT model. */
 export interface SttModelInfo {

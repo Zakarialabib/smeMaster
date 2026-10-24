@@ -29,10 +29,10 @@ Important mobile-related areas include:
 
 | Command                     | Purpose                        |
 | --------------------------- | ------------------------------ |
-| `npm run android`           | Start Android development flow |
-| `npm run android:build`     | Build Android target           |
-| `npm run android:build:apk` | Build APK                      |
-| `npm run android:build:aab` | Build AAB                      |
+| `bun run android`           | Start Android development flow |
+| `bun run android:build`     | Build Android target           |
+| `bun run android:build:apk` | Build APK                      |
+| `bun run android:build:aab` | Build AAB                      |
 
 ## Debugging Workflow
 

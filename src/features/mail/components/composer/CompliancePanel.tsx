@@ -8,6 +8,7 @@ import {
   aggregateResults,
 } from '@features/mail/services/compliance/ruleEngine';
 import { getActiveProfiles, insertCheck } from '@features/mail/db/complianceProfiles';
+import { ACTIVE_COMPANY_ID } from '@shared/constants/company';
 import type {
   ComplianceViolation,
   ComplianceCheckContext,
@@ -77,7 +78,7 @@ export function CompliancePanel({
       onViolationsChange?.(aggregated.violations.length);
 
       insertCheck(
-        accountId,
+        ACTIVE_COMPANY_ID,
         null,
         null,
         matched.map((p) => p.id).join(','),

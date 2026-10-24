@@ -129,7 +129,7 @@ export function CompletionStep({ data, onComplete, onBack }: CompletionStepProps
           onClick={onBack}
           className="inline-flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-all duration-200"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> {t('onboarding.back')}
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('common.back')}
         </button>
         <button
           type="button"

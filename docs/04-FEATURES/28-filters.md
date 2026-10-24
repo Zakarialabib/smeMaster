@@ -32,9 +32,9 @@ The filter subsystem lets users define structured rules that evaluate messages u
 
 Keep these responsibilities separate:
 
-- automation trigger/action orchestration belongs to `Core/05-automation.md`
+- automation trigger/action orchestration belongs to `05-automation.md`
 - quick snippets belong to `29-quick-replies.md`
-- general inbox behavior belongs to `Core/01-email-management.md`
+- general inbox behavior belongs to `01-email-management.md`
 
 Filters are about message matching and routing logic, not the full automation model.
 

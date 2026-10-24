@@ -17,28 +17,28 @@
     "addYourFirstLabel": "Aggiungi la tua prima etichetta",
     "mail": "Posta",
     "dashboard": "Pannello",
-    "automation": "Automazione",
     "vault": "Cassaforte",
     "aiAssistant": "Assistente IA",
-    "invoicing": "Fatturazione",
     "erp": "ERP",
     "deals": "Affari",
     "pos": "POS",
     "productivity": "Produttività",
     "about": "Informazioni",
-    "settings": "Impostazioni",
     "label": "Etichetta",
     "noItems": "Nessun elemento",
     "keyboardNavHint": "Use Tab and arrow keys to navigate the sidebar. Press Enter to activate an item.",
     "inbox": "Posta in arrivo",
     "starred": "Preferiti",
     "snoozed": "Posticipati",
-    "sent": "Inviati",
     "drafts": "Bozze",
     "trash": "Cestino",
     "spam": "Spam",
     "allMail": "Tutti i messaggi",
-    "attachments": "Allegati"
+    "agentConsole": "Console Agente",
+    "tasksUpcoming": "In arrivo",
+    "calendarMonth": "Mese",
+    "calendarAgenda": "Agenda",
+    "sell": "Vendite"
   },
   "onboarding": {
     "setupWizard": "Configurazione guidata",
@@ -79,7 +79,6 @@
     "skipToDemos": "Vai alle demo",
     "quickStart": "Avvio rapido",
     "continue": "Continua",
-    "back": "Indietro",
     "featuresTitle": "Scegli le funzionalità",
     "featuresDesc": "Abilita gli strumenti — puoi cambiare dopo",
     "featuresSelected": "{{count}} di {{total}} selezionati",
@@ -88,8 +87,6 @@
     "tools": {
       "mail": "Posta",
       "crm": "CRM",
-      "campaigns": "Campagne",
-      "calendar": "Calendario",
       "ai": "Funzionalità AI",
       "mailDesc": "Posta multi-account con thread intelligenti",
       "crmDesc": "Gestione contatti con punteggio",
@@ -163,7 +160,8 @@
   "thread": {
     "unknownSender": "Mittente sconosciuto",
     "noSubject": "(Nessun oggetto)",
-    "muted": "In silenzio"
+    "muted": "In silenzio",
+    "readAloud": "Leggi ad alta voce"
   },
   "email": {
     "selectAll": "Seleziona tutto",
@@ -171,7 +169,6 @@
     "hideReadingPane": "Nascondi pannello di lettura",
     "readingPane": "Pannello di lettura",
     "readingPaneExpanded": "Espanso",
-    "readingPaneRight": "Destra",
     "readingPaneBottom": "Sotto",
     "readingPaneHidden": "Nascosto",
     "selectAnEmailToRead": "Seleziona un'email da leggere",
@@ -245,9 +242,7 @@
     "switchToSplitInbox": "Passa alla posta divisa",
     "threadActions": "Azioni conversazione",
     "archive": "Archivia",
-    "snooze": "Posticipa",
     "all": "All",
-    "unread": "Unread",
     "read": "Read",
     "toggleSelectAll": "Seleziona tutto / niente",
     "markReadSelected": "Segna come letto",
@@ -264,14 +259,12 @@
     "replyAll": "Rispondi a tutti",
     "archive": "Archivia",
     "trash": "Cestino",
-    "snooze": "Posticipa",
     "star": "Stella",
     "unsubscribe": "Disiscriviti",
     "unsubscribed": "Disiscritto"
   },
   "composer": {
     "to": "A",
-    "subject": "Oggetto",
     "send": "Invia",
     "schedule": "Programma",
     "scheduleSend": "Invio programmato",
@@ -285,7 +278,6 @@
     "tomorrowMorning": "Domani mattina",
     "tomorrowAfternoon": "Domani pomeriggio",
     "mondayMorning": "Lunedì mattina",
-    "generate": "Genera",
     "improve": "Migliora",
     "shorter": "Più breve",
     "formal": "Formale",
@@ -295,7 +287,6 @@
     "code": "Codice",
     "rule": "— Regola",
     "link": "Link",
-    "undo": "Annulla",
     "redo": "Ripeti",
     "insertLink": "Inserisci link",
     "aiAssist": "Assistente AI",
@@ -314,18 +305,20 @@
     "attach": "Allega",
     "writeYourReply": "Scrivi la tua risposta...",
     "generatingDraft": "Generazione bozza...",
-    "regenerate": "Rigenera",
     "expandToFullComposer": "Espandi al compositore completo",
     "regenerateAiDraft": "Rigenera bozza AI",
     "clearAiDraft": "Cancella bozza AI",
     "via": "Via",
     "insertTemplate": "Inserisci template",
-    "templates": "Template"
+    "voiceCompose": "Composizione vocale",
+    "voiceComposeTitle": "Composizione vocale",
+    "voiceComposePlaceholder": "Premi il microfono e parla...",
+    "voiceComposeInsert": "Inserisci",
+    "voiceComposeLastResult": "Ultimo risultato: {result}"
   },
   "settings": {
     "tabs": {
       "general": "Generali",
-      "calendar": "Calendario",
       "notifications": "Notifiche",
       "composing": "Scrittura",
       "mailRules": "Regole posta",
@@ -335,7 +328,6 @@
       "shortcuts": "Scorciatoie",
       "pgp": "PGP e crittografia",
       "about": "Informazioni",
-      "snooze": "Posticipa",
       "compliance": "Conformità",
       "warming": "Riscaldamento",
       "blacklist": "Blacklist",
@@ -352,12 +344,12 @@
       "presend": "Pre-invio",
       "bounce": "Rimbalzi",
       "license": "Licenza",
-      "developer": "Sviluppatore",
       "accountCleaning": "Pulizia account",
       "hardware": "Hardware",
       "businessProfile": "Business Profile",
       "ai": "AI",
-      "cache": "Cache"
+      "cache": "Cache",
+      "agents": "Agenti"
     },
     "appearance": "Aspetto",
     "surface": "Surface",
@@ -368,7 +360,6 @@
     "light": "Chiaro",
     "dark": "Scuro",
     "readingPane": "Riquadro di lettura",
-    "right": "Destra",
     "bottom": "In basso",
     "off": "Spento",
     "emailDensity": "Densità email",
@@ -420,7 +411,6 @@
     "quickSteps": "Azioni rapide",
     "workflowRules": "Regole workflow",
     "workflowDescription": "Crea workflow email automatizzati con trigger e azioni",
-    "contacts": "Contatti",
     "subscriptions": "Abbonamenti",
     "syncPeriod": "Periodo di sincronizzazione",
     "syncEmailsFrom": "Sincronizza email da",
@@ -635,11 +625,9 @@
     "scoreLabel": "punteggio: {{score}}",
     "backToInbox": "Torna alla posta in arrivo",
     "tabGroupCompose": "Scrittura",
-    "tabGroupAiAutomation": "AI e automazione",
     "tabGroupDeliverability": "Recapito",
     "tabGroupSystem": "Sistema",
     "tabGroupHelp": "Aiuto",
-    "tabGroupDeveloper": "Sviluppatore",
     "reduceMotionDescription": "Disabilita gli effetti di sfondo animati (risolve sfarfallii su alcune GPU)",
     "launchAtLoginDescription": "Avvia SMEMaster automaticamente all'accesso (minimizzato nella tray)",
     "blockRemoteImagesDescription": "Nasconde i pixel di tracciamento e le immagini remote finché non scegli di caricarli",
@@ -743,8 +731,6 @@
     "pendingOperationsDescription": "Modifiche in attesa di sincronizzazione con il server",
     "failedOperations": "Operazioni fallite",
     "failedOperationsDescription": "Modifiche che non possono essere sincronizzate dopo vari tentativi",
-    "retry": "Riprova",
-    "clear": "Cancella",
     "updateAvailable": "v{{version}} disponibile",
     "openDevtoolsDescription": "Apri l'ispettore degli strumenti sviluppatore WebView",
     "appName": "SMEMaster Mail",
@@ -765,7 +751,6 @@
     "show": "Mostra",
     "resetToDefaults": "Reimposta impostazioni predefinite",
     "bundle": "Raggruppa",
-    "schedule": "Programma",
     "at": "alle",
     "nSeconds": "{{n}} secondi",
     "noUserLabels": "Nessuna etichetta utente",
@@ -793,7 +778,6 @@
     },
     "blacklist": {
       "description": "Verifica se il tuo IP o dominio di invio è presente in blacklist email.",
-      "checkNow": "Verifica ora",
       "results": "Risultati verifica",
       "history": "Cronologia verifiche",
       "noHistory": "Nessuna cronologia verifiche ancora.",
@@ -827,7 +811,6 @@
     "confirmImport": "Conferma importazione",
     "copyHtml": "Copia HTML",
     "dns": {
-      "checkNow": "Controlla ora",
       "description": "Descrizione",
       "healthScore": "Punteggio salute",
       "results": "Risultati"
@@ -882,7 +865,6 @@
     "testingOverridesDesc": "Quando abilitato, puoi sovrascrivere il piano e i conteggi di utilizzo per ogni funzionalità per simulare diversi stati di aggiornamento.",
     "resetAllOverrides": "Reimposta tutti gli override",
     "overrideUsage": "Override utilizzo:",
-    "featureStatusEnabled": "Abilitato",
     "featureStatusLimited": "Limitato",
     "legendEnabled": "Abilitato — disponibile nel piano attuale",
     "legendLimited": "Limitato — limite di utilizzo raggiunto",
@@ -922,17 +904,11 @@
       "pairingTitle": "Abbinamento"
     },
     "pairingDevicePlaceholder": "Nome dispositivo",
-    "generate": "Genera",
     "scanWithMobile": "Scansiona con mobile",
     "pairedDevices": "Dispositivi accoppiati",
     "microsoftApi": "API Microsoft",
     "backup": "Backup",
     "backupScheduler": "Pianificazione backup",
-    "calendar": {
-      "why": "Calendar sync keeps meetings and email in one place.",
-      "how": "Connect a CalDAV account and choose which calendars to display.",
-      "when": "Set this up when you start scheduling meetings from email."
-    },
     "deliverabilityDesc": "Monitora salute dominio, record DNS e consegnabilità.",
     "featureFlagTesterDesc": "Alterna tra tier Basic e Pro per testare la divulgazione progressiva.",
     "totalFeatures": "funzionalità totali",
@@ -983,7 +959,7 @@
     "statusReady": "Ready",
     "statusNotSet": "Not set",
     "statusLoading": "Checking…",
-    "embeddingModel": "Embedding Model",
+    "embeddingModel": "Modello di embedding",
     "embeddingModelPlaceholder": "e.g. text-embedding-nomic-embed-text-v1.5",
     "embeddingModelSelect": "Detected models…",
     "embeddingModelHint": "Load a dedicated embedding model in LM Studio (separate from the chat model) and enter its exact name. Use Test embedding to confirm it returns vectors.",
@@ -1022,6 +998,14 @@
     "removeModel": "Remove model",
     "knowledgeBaseIndexing": "Knowledge Base Indexing",
     "knowledgeBaseIndexingDescription": "Index your emails, attachments, and vault documents for semantic search.",
+    "indexScope": "Ambito di indicizzazione",
+    "indexScopeDescription": "Scegli le fonti dati incluse nella base di conoscenza.",
+    "scopeEmails": "Email",
+    "scopeAttachments": "Allegati",
+    "scopeVault": "Documenti del vault",
+    "scopeContacts": "Contatti",
+    "scopeDeals": "Affari",
+    "embeddingModelChanged": "Modello modificato — è necessario reindicizzare per applicare le modifiche.",
     "indexRequiresEmbeddingModel": "Load an embedding model in LM Studio and enter its name in Provider & Models to enable indexing.",
     "indexRequiresLmstudio": "Select the LM Studio provider in Provider & Models to use provider embeddings.",
     "lastIndexed": "Last Indexed",
@@ -1127,7 +1111,6 @@
     "featureGroups": {
       "gettingStarted": "Getting Started",
       "dailyWorkflow": "Daily Workflow",
-      "aiAutomation": "AI & Automation",
       "securityData": "Security & Data",
       "monitoring": "Monitoring",
       "deliverabilityTools": "Deliverability Tools",
@@ -1153,7 +1136,6 @@
         "desc": "Alerts and smart notifications"
       },
       "aiAutomation": {
-        "label": "AI & Automation",
         "desc": "Intelligent assistance and workflow automation"
       },
       "deliverability": {
@@ -1165,7 +1147,6 @@
         "desc": "Encryption, compliance, and business identity"
       },
       "developer": {
-        "label": "Developer",
         "desc": "Developer tools, diagnostics, and feature flags"
       },
       "aboutHelp": {
@@ -1196,7 +1177,8 @@
       "featureFlags": "Preview and toggle experimental features",
       "about": "Version, license, and credits",
       "voice": "Provider vocali e motori locali",
-      "localModels": "Scarica e gestisci i modelli locali"
+      "localModels": "Scarica e gestisci i modelli locali",
+      "agents": "Roster agenti e ambito"
     },
     "sectionSubtitles": {
       "composing": "Configure how you compose and send emails — editor, signatures, quick replies, and pre-send checks.",
@@ -1208,6 +1190,7 @@
       "backup": "Create backups and restore your data when needed.",
       "deliverabilityDashboard": "Track domain health, reputation, and deliverability.",
       "ai": "Set up AI providers, smart replies, and automation.",
+      "agents": "Crea e configura agenti AI con ruolo, ambito, strumenti e policy modello",
       "notifications": "Choose what to be notified about and how.",
       "compliance": "Configure legal disclaimers and compliance rules.",
       "pgp": "Manage PGP keys for end-to-end encryption.",
@@ -1271,6 +1254,11 @@
         "why": "AI assists with drafting, replies, and organization.",
         "how": "Connect a provider (Claude, OpenAI, Gemini) and enable smart features.",
         "when": "Enable AI when you want help writing or triaging mail."
+      },
+      "agents": {
+        "why": "Agents give the AI a roster — each agent is a named composition of role, knowledge scope, tools, model policy and channels.",
+        "how": "Create agents here, then assign them to channels (email, social, cron). The Rust service layer enforces scope at call time.",
+        "when": "Use when you need more than one AI behaviour — ops watcher, inbox assistant, bookkeeper."
       },
       "mailRules": {
         "why": "Rules automate the busywork of sorting incoming mail.",
@@ -1339,16 +1327,41 @@
       "lastSync": "Ultima sincronizzazione",
       "lastSyncDesc": "Ultimo tentativo di sincronizzazione in background (dal monitor di sincronizzazione).",
       "domains": "Domini cache",
-      "actions": "Actions",
       "runBenchmark": "Run Benchmark",
       "clearCaches": "Clear Caches",
       "actionsHint": "Benchmark measures read latency through the cache/DB path. Clearing caches forces a fresh reload from the database on next access."
     },
     "undoSendQuickPick": "Selezione rapida",
+    "calendar": "Calendario",
+    "calendarDesc": "Preferenze e sincronizzazione calendario",
     "pairingTitle": "settings.pairingTitle",
     "featuresTitle": "settings.featuresTitle",
     "contentQualityTitle": "settings.contentQualityTitle",
-    "pairNewDeviceComingSoon": "Device pairing setup is coming soon"
+    "pairNewDeviceComingSoon": "Device pairing setup is coming soon",
+    "agents": {
+      "loading": "Loading agents...",
+      "description": "Create and configure AI agents with role, scope, tools, and channels.",
+      "seed": "Seed Built-in",
+      "add": "Add Agent",
+      "confirmDelete": "Delete this agent? This cannot be undone.",
+      "scopeOk": "Scope check passed",
+      "scopeDenied": "Scope check denied",
+      "empty": "No agents yet. Create one or seed built-in agents.",
+      "edit": "Edit Agent",
+      "namePlaceholder": "e.g. Inbox Assistant",
+      "descriptionPlaceholder": "What does this agent do?",
+      "provider": "Provider",
+      "model": "Model",
+      "modelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "mailbox": "Mailbox Scope",
+      "mailboxPlaceholder": "e.g. inbox (empty = all)",
+      "tools": "Tools",
+      "channels": "Channels",
+      "active": "Active",
+      "saving": "Saving...",
+      "save": "Save"
+    },
+    "searchLimit": "Limite risultati di ricerca"
   },
   "addAccount": {
     "easySetup": "Configurazione facile (IMAP + password app)",
@@ -1358,7 +1371,6 @@
     "chooseMethod": "Scegli come connettere il tuo account Gmail",
     "connected": "Connesso",
     "connectedDesc": "Account connesso con successo",
-    "done": "Fatto",
     "chooseProvider": "Scegli provider email",
     "account": "Account",
     "incoming": "Entrante",
@@ -1372,7 +1384,6 @@
     "imapSecurity": "Sicurezza IMAP",
     "imapSecuritySsl": "SSL/TLS",
     "imapSecurityStarttls": "STARTTLS",
-    "imapSecurityNone": "Nessuna",
     "smtpHost": "Host SMTP",
     "smtpHostPlaceholder": "smtp.example.com",
     "smtpPort": "Porta SMTP",
@@ -1403,8 +1414,6 @@
     "toggleSidebar": "Mostra/Nascondi barra laterale",
     "nav": "Navigazione",
     "ai": "AI",
-    "settings": "Impostazioni",
-    "templates": "Modelli",
     "tryDifferentKeywords": "Prova parole chiave diverse",
     "navigate": "Naviga",
     "select": "Seleziona",
@@ -1423,15 +1432,13 @@
     "starThread": "Star Selected Thread",
     "archiveThread": "Archive Selected Thread",
     "markReadThread": "Mark Selected Thread as Read",
-    "templateDesc": "Crea modelli di email riutilizzabili con segnaposto variabili per messaggi coerenti."
+    "templateDesc": "Crea modelli di email riutilizzabili con segnaposto variabili per messaggi coerenti.",
+    "agents": "Agenti"
   },
   "empty": {
     "noImportantConversations": "Nessuna conversazione importante",
     "noUpdates": "Nessun aggiornamento",
     "updatesDescription": "Notifiche ed email transazionali appaiono qui"
-  },
-  "date": {
-    "today": "Oggi"
   },
   "contact": {
     "closeSidebar": "Chiudi pannello contatti",
@@ -1476,7 +1483,6 @@
       "clickedLabel": "Cliccato {date}"
     },
     "loading": "Loading",
-    "campaigns": "Campaigns",
     "opened": "Opened"
   },
   "calendar": {
@@ -1485,7 +1491,6 @@
     "week": "Settimana",
     "month": "Mese",
     "eventTitle": "Titolo evento",
-    "calendar": "Calendario",
     "start": "Inizio",
     "end": "Fine",
     "location": "Luogo",
@@ -1499,7 +1504,6 @@
     "islamic-civil": "Islamico civile",
     "event": "Evento",
     "task": "Attività",
-    "email": "Email",
     "allDay": "Tutto il giorno",
     "sendAt": "Invia il",
     "calendarType": "Tipo calendario",
@@ -1514,14 +1518,11 @@
     "noEvents": "Nessun evento in questo periodo",
     "connectAccountBtn": "Connect Account Btn",
     "title": "Title",
-    "retry": "Retry",
     "noEventsHint": "No Events Hint",
     "createEvent": "Create Event"
   },
   "tasks": {
-    "tasks": "Attività",
     "dueDate": "Data scadenza",
-    "title": "Attività",
     "search": "Cerca...",
     "toggleFilters": "Mostra filtri",
     "newTask": "Nuova attività",
@@ -1534,16 +1535,12 @@
     "addTask": "Aggiungi attività",
     "markComplete": "Contrassegna come completata",
     "markIncomplete": "Contrassegna come non completata",
-    "undo": "Annulla",
     "flag": "Contrassegna",
     "unflag": "Rimuovi contrassegno",
-    "delete": "Elimina",
     "linkedToEmailThread": "Collegata al thread email",
     "subtasks": "Sottoattività",
-    "recurring": "Ricorrente",
     "unableToLoad": "Impossibile caricare le attività",
     "failedToLoad": "Caricamento attività fallito",
-    "retry": "Riprova",
     "tasksList": "Elenco attività",
     "taskCreated": "Attività creata",
     "hasBeenAdded": "è stata aggiunta.",
@@ -1601,11 +1598,8 @@
       "button": "Pulsante",
       "spacer": "Spaziatore",
       "duplicate": "Duplica",
-      "delete": "Elimina",
       "configure": "Configura",
-      "undo": "Annulla",
       "redo": "Ripeti",
-      "preview": "Anteprima",
       "desktop": "Desktop",
       "mobile": "Mobile",
       "noContent": "Nessun contenuto",
@@ -1616,7 +1610,6 @@
       "align": "Allineamento",
       "left": "Sinistra",
       "center": "Centro",
-      "right": "Destra",
       "bgColor": "Sfondo",
       "textColor": "Colore testo",
       "borderRadius": "Raggio bordi",
@@ -1630,7 +1623,6 @@
       "fontFamilySerif": "Serif",
       "fontFamilyMono": "Monospace",
       "padding": "Spaziatura",
-      "subject": "Oggetto",
       "generateSubjects": "Genera oggetti",
       "writeBody": "Scrivi corpo",
       "rewrite": "Riscrivi",
@@ -1642,7 +1634,6 @@
       "apply": "Applica",
       "templateName": "Nome modello",
       "saveAsTemplate": "Salva come modello",
-      "gallery": "Modelli",
       "pickTemplate": "Scegli un modello",
       "useTemplate": "Usa modello",
       "fullWidth": "Larghezza piena",
@@ -1656,11 +1647,9 @@
       "lineHeight": "Line height",
       "fromVaultComingSoon": "Attach from Vault is coming soon"
     },
-    "campaigns": "Campagne",
     "newCampaign": "Nuova campagna",
     "noCampaigns": "Nessuna campagna",
     "createCampaign": "Crea campagna",
-    "sent": "Inviate",
     "opened": "Aperte",
     "clicked": "Cliccate",
     "bounced": "Respinte",
@@ -1693,7 +1682,6 @@
     "sendSchedule": "Programma di invio",
     "now": "Ora",
     "later": "Dopo",
-    "recurring": "Ricorrente",
     "date": "Data",
     "time": "Ora",
     "frequency": "Frequenza",
@@ -1705,7 +1693,6 @@
     "audience": "Destinatari",
     "schedule": "Programma",
     "tracking": "Tracciamento",
-    "enabled": "Attivato",
     "abTest": "Test A/B",
     "launchCampaign": "Lancia campagna",
     "deliveryStatus": "Stato consegna",
@@ -1744,9 +1731,7 @@
     "or": "OR",
     "valuePlaceholder": "Valore...",
     "weightTitle": "Peso (predefinito 1.0)",
-    "actions": "Azioni",
     "applyLabel": "Applica etichetta",
-    "none": "Nessuno",
     "scoreThreshold": "Soglia punteggio",
     "scoreThresholdPlaceholder": "es. 2.0",
     "chainingAction": "Azione di concatenamento",
@@ -1774,15 +1759,11 @@
     "emptyTitle": "Nessuna chiave PGP",
     "emptySubtitle": "Genera o importa una chiave per iniziare",
     "generateKeyTitle": "Genera nuova chiave PGP",
-    "nameLabel": "Nome",
-    "emailLabel": "Email",
     "comment": "Commento",
     "algorithm": "Algoritmo",
     "confirmPassphrase": "Conferma frase sicurezza",
     "passphraseMismatch": "Le frasi non coincidono",
-    "cancel": "Annulla",
     "generateProgress": "Generazione in corso...",
-    "confirmGenerate": "Genera",
     "importKeyTitle": "Importa chiave PGP",
     "importPasteLabel": "Incolla chiave",
     "importPastePlaceholder": "Incolla qui la chiave pubblica in formato ASCII",
@@ -1897,10 +1878,34 @@
     "noContactsFound": "Nessun contatto trovato",
     "taskDetails": "Dettagli attività",
     "connections": "Connessioni",
-    "enabled": "Enabled",
+    "enabled": "Abilitato",
     "skipToContent": "Salta al contenuto principale",
     "on": "Attivo",
-    "off": "Disattivo"
+    "off": "Disattivo",
+    "automation": "Automazione",
+    "calendar": "Calendario",
+    "campaigns": "Campagne",
+    "regenerate": "Rigenera",
+    "schedule": "Pianificazione",
+    "today": "Oggi",
+    "contacts": "Contatti",
+    "templates": "Modelli",
+    "invoicing": "Fatturazione",
+    "invoices": "Fatture",
+    "settings": "Impostazioni",
+    "sent": "Inviati",
+    "attachments": "Allegati",
+    "activity": "Attività recenti",
+    "tasks": "Attività",
+    "right": "Destra",
+    "snooze": "Posticipa",
+    "subject": "Oggetto",
+    "generate": "Genera",
+    "undo": "Annulla",
+    "developer": "Sviluppatore",
+    "aiAutomation": "AI e automazione",
+    "checkNow": "Controlla ora",
+    "recurring": "Ricorrente"
   },
   "quickReply": {
     "title": "Risposte rapide",
@@ -1935,7 +1940,6 @@
     "fixAddSignature": "Aggiungi firma",
     "fixAddUnsubscribe": "Aggiungi link cancellazione",
     "fixRemoveSensitiveData": "Rimuovi dati sensibili",
-    "import": "Importa",
     "invalidJson": "JSON non valido",
     "profilesDescription": "Gestisci profili di conformita email",
     "rules": "Regole",
@@ -1960,7 +1964,6 @@
     "heroNewContacts": "New Contacts",
     "heroTasksDue": "Tasks Due",
     "heroOverdue": "Overdue",
-    "heroCampaigns": "Campaigns",
     "range": "Range",
     "density": "Density",
     "autoRefresh": "Auto-refresh",
@@ -2000,24 +2003,18 @@
       "title": "Importa CSV",
       "selectFile": "Seleziona file",
       "csvFormat": "Formato CSV: nome,email",
-      "email": "Email",
-      "name": "Nome",
-      "cancel": "Annulla",
       "importing": "Importazione in corso...",
-      "importComplete": "Importazione completata",
-      "done": "Fatto"
+      "importComplete": "Importazione completata"
     },
     "export": {
       "title": "Esporta dati",
       "exportComplete": "Esportazione completata",
       "messagesExportedTo": "Messaggi esportati in",
-      "done": "Fatto",
       "chooseFormat": "Scegli formato",
       "next": "Avanti",
       "filterMessages": "Filtra messaggi",
       "fromDate": "Dal",
       "toDate": "Al",
-      "back": "Indietro",
       "chooseDestination": "Scegli destinazione",
       "noFileSelected": "Nessun file selezionato",
       "browse": "Sfoglia",
@@ -2045,11 +2042,9 @@
       "designingSignature": "Progettazione firma...",
       "style": "Stile",
       "generateSignature": "Genera firma",
-      "cancel": "Annulla",
       "variables": "Variabili",
       "insert": "Inserisci",
-      "save": "Salva",
-      "regenerate": "Rigenera"
+      "save": "Salva"
     },
     "aiTemplate": {
       "title": "Genera template AI",
@@ -2060,12 +2055,9 @@
       "describePlaceholder": "Descrivi il template desiderato...",
       "categoryOptional": "Categoria (opzionale)",
       "generateTemplate": "Genera template",
-      "cancel": "Annulla",
-      "preview": "Anteprima",
       "variables": "Variabili",
       "insertTemplate": "Inserisci template",
-      "saveTemplate": "Salva template",
-      "regenerate": "Rigenera"
+      "saveTemplate": "Salva template"
     },
     "aiWarmup": {
       "title": "Genera warmup AI",
@@ -2078,9 +2070,7 @@
       "contextOptional": "Contesto (opzionale)",
       "contextPlaceholder": "Es. rispondi a questa email...",
       "generateWarmup": "Genera warmup",
-      "cancel": "Annulla",
       "addWarmup": "Aggiungi warmup",
-      "regenerate": "Rigenera",
       "failedToGenerate": "Generazione fallita",
       "tryAgain": "Riprova"
     },
@@ -2095,12 +2085,9 @@
       "basicAutomation": "Automazione base",
       "aiEnhanced": "Migliorato AI",
       "generateWorkflow": "Genera flusso",
-      "cancel": "Annulla",
       "triggerLabel": "Trigger",
-      "actions": "Azioni",
       "viewRawConfig": "Vedi configurazione grezza",
-      "createWorkflow": "Crea flusso",
-      "regenerate": "Rigenera"
+      "createWorkflow": "Crea flusso"
     },
     "workflow": {
       "title": "Flusso di lavoro",
@@ -2109,9 +2096,6 @@
       "generating": "Generazione...",
       "designing": "Progettazione..."
     }
-  },
-  "mail": {
-    "subject": "Oggetto"
   },
   "updater": {
     "title": "Aggiornamento applicazione",
@@ -2134,7 +2118,6 @@
     "showNotes": "Mostra note di rilascio",
     "downloading": "Download in corso...",
     "lastCheck": "Ultimo controllo",
-    "checkNow": "Controlla ora",
     "download": "Aggiorna ora",
     "installRestart": "Installa e riavvia",
     "skip": "Salta"
@@ -2212,7 +2195,6 @@
     }
   },
   "contacts": {
-    "title": "Contatti",
     "newContact": "Nuovo contatto",
     "searchPlaceholder": "Cerca contatti...",
     "stats": {
@@ -2220,7 +2202,6 @@
       "active30": "Active (30d):"
     },
     "tabs": {
-      "contacts": "Contatti",
       "tags": "Etichette",
       "groups": "Gruppi",
       "segments": "Segmenti",
@@ -2231,17 +2212,15 @@
     "clearSearch": "Clear Search"
   },
   "invoicing": {
-    "title": "Invoicing",
     "newDocument": "Nuovo documento",
     "yourCompany": "La tua azienda",
     "failedToLoad": "Caricamento di {{tab}} fallito.",
     "lowStock": "scorta bassa",
-    "retry": "Riprova",
     "tabs": {
       "documents": "Documenti",
       "clients": "Clienti",
       "items": "Articoli",
-      "settings": "Impostazioni"
+      "business": "Azienda"
     },
     "clientsNoMatches": "No matches",
     "clientsEmptyTitle": "No clients yet",
@@ -2249,7 +2228,6 @@
     "clientsEmptyHint": "Only Client and Supplier contacts appear here. Contacts from your CRM or email sync are saved as 'contact' and won't show — add them with \"New Client\" to start billing them."
   },
   "automation": {
-    "title": "Automazione",
     "subtitle": "Gestisci le regole di automazione del flusso di lavoro",
     "createRule": "Crea regola",
     "addRule": "Aggiungi regola",
@@ -2259,7 +2237,6 @@
     "viewModeCard": "Vista schede",
     "switchToList": "Passa alla vista elenco",
     "switchToCard": "Passa alla vista schede",
-    "retry": "Riprova",
     "errorTitle": "Caricamento delle regole di automazione fallito",
     "emptyTitle": "Nessuna regola di automazione ancora",
     "emptySubtitle": "Le regole di automazione monitorano la tua posta ed eseguono azioni automaticamente — senza lavoro manuale.",
@@ -2274,16 +2251,12 @@
     },
     "deleteTitle": "Elimina regola",
     "deleteMessage": "Sei sicuro di voler eliminare questa regola di automazione? L'operazione non può essere annullata.",
-    "delete": "Elimina",
-    "notifyTitle": "Automazione",
     "notifyFailed": "Creazione della regola di workflow fallita.",
     "templatesTitle": "Workflow Templates",
     "templatesSubtitle": "Pre-built workflows — one click to activate",
-    "templatesAutomation": "Automation",
     "templatesAiEnhanced": "AI Enhanced",
     "applying": "Applying...",
-    "useTemplate": "Use Template",
-    "templates": "Modelli"
+    "useTemplate": "Use Template"
   },
   "erp": {
     "title": "Console ERP",
@@ -2294,12 +2267,20 @@
     "addCompany": "Add Company",
     "noCompanies": "No companies yet. Add your first company to get started.",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "tabs": {
+      "overview": "Panoramica",
+      "stock": "Scorte",
+      "accounting": "Contabilità",
+      "reports": "Report",
+      "wallet": "Cassa",
+      "roles": "Ruoli",
+      "company": "Azienda"
+    }
   },
   "attachments": {
     "senderUnknown": "Unknown",
     "filenameUnknown": "Unnamed",
-    "preview": "Preview",
     "download": "Download",
     "jumpToEmail": "Jump to email",
     "loadError": "Failed to load attachments",
@@ -2320,7 +2301,6 @@
     "archives": "Archivi",
     "other": "Altro",
     "anyTime": "In qualsiasi momento",
-    "today": "Oggi",
     "pastWeek": "Settimana scorsa",
     "pastMonth": "Mese scorso",
     "pastYear": "Anno scorso",
@@ -2333,11 +2313,9 @@
     "emptySubtitle": "When people email you files such as invoices, photos, or contracts, they appear here automatically so you can find them without digging through your inbox.",
     "noMatchesSubtitle": "Try adjusting your filters or searching for a different file name.",
     "goToMail": "Go to Mail",
-    "title": "Attachments",
     "subtitle": "Files shared with you across your mail, organized in one place.",
     "loading": "Loading attachments...",
-    "loadErrorTitle": "Failed to load attachments",
-    "retry": "Retry"
+    "loadErrorTitle": "Failed to load attachments"
   },
   "categories": {
     "primary": "Principale",

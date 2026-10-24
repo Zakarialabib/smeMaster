@@ -6,6 +6,8 @@ use crate::ai::vector_db::VectorDb;
 use crate::ai::parser::DocParser;
 use crate::db::mail::schema::{Message, Attachment};
 use crate::db::vault::schema::VaultItem;
+use crate::db::contacts::schema::Contact;
+use crate::db::tables::crm::deals::Deal;
 use crate::db::tables::core::settings;
 use std::sync::Arc;
 use arrow::array::{RecordBatch, StringArray, FixedSizeListArray, Float32Array, RecordBatchIterator};
@@ -49,6 +51,28 @@ impl Default for ChunkConfig {
     }
 }
 
+/// Index scope — which data sources are included in the knowledge base.
+#[derive(Debug, Clone)]
+pub struct IndexScope {
+    pub emails: bool,
+    pub attachments: bool,
+    pub vault: bool,
+    pub contacts: bool,
+    pub deals: bool,
+}
+
+impl Default for IndexScope {
+    fn default() -> Self {
+        Self {
+            emails: true,
+            attachments: true,
+            vault: true,
+            contacts: true,
+            deals: true,
+        }
+    }
+}
+
 pub struct Indexer {
     pool: SqlitePool,
     engine: Arc<Mutex<Option<LocalEngine>>>,
@@ -72,26 +96,176 @@ impl Indexer {
         ChunkConfig { size, overlap, splitter }
     }
 
+    /// Read the last-indexed timestamp for a source from settings.
+    /// Returns None if the source has never been indexed.
+    async fn load_last_indexed(&self, source: &str) -> Option<i64> {
+        let key = format!("rag_indexed_at_{source}");
+        settings::get(&self.pool, &key).await
+            .ok()
+            .flatten()
+            .and_then(|v| v.parse::<i64>().ok())
+    }
+
+    /// Save the current timestamp as the last-indexed time for a source.
+    async fn save_last_indexed(&self, source: &str) -> Result<()> {
+        let key = format!("rag_indexed_at_{source}");
+        let now = chrono::Utc::now().timestamp();
+        settings::set(&self.pool, &key, &now.to_string()).await?;
+        Ok(())
+    }
+
+    /// Read index scope from the settings table.
+    /// Stored as JSON: `{"emails":true,"attachments":true,"vault":true,"contacts":true,"deals":true}`
+    async fn load_index_scope(&self) -> IndexScope {
+        let raw = settings::get(&self.pool, "rag_index_scope").await.ok().flatten();
+        match raw {
+            Some(json_str) => {
+                match serde_json::from_str::<serde_json::Value>(&json_str) {
+                    Ok(v) => IndexScope {
+                        emails: v.get("emails").and_then(|x| x.as_bool()).unwrap_or(true),
+                        attachments: v.get("attachments").and_then(|x| x.as_bool()).unwrap_or(true),
+                        vault: v.get("vault").and_then(|x| x.as_bool()).unwrap_or(true),
+                        contacts: v.get("contacts").and_then(|x| x.as_bool()).unwrap_or(true),
+                        deals: v.get("deals").and_then(|x| x.as_bool()).unwrap_or(true),
+                    },
+                    Err(_) => IndexScope::default(),
+                }
+            }
+            None => IndexScope::default(),
+        }
+    }
+
     pub async fn index_all(&self) -> Result<()> {
         let _ = self.app_handle.emit("ai:indexing_started", ());
 
         let table = self.vector_db.ensure_default_table().await?;
         let cfg = self.load_chunk_config().await;
+        let scope = self.load_index_scope().await;
 
-        if let Err(e) = self.index_all_emails(&table, &cfg).await {
-            log::error!("Error indexing emails: {:?}", e);
+        // Incremental indexing: check each source's last-indexed timestamp
+        // and skip sources that haven't changed since the last index.
+
+        if scope.emails {
+            let last = self.load_last_indexed("emails").await;
+            let changed = self.source_has_changes("emails", last).await.unwrap_or(true);
+            if changed {
+                if let Err(e) = self.index_all_emails(&table, &cfg).await {
+                    log::error!("Error indexing emails: {:?}", e);
+                }
+                let _ = self.save_last_indexed("emails").await;
+            } else {
+                log::info!("Skipping emails — no changes since last index");
+            }
         }
 
-        if let Err(e) = self.index_all_attachments(&table, &cfg).await {
-            log::error!("Error indexing attachments: {:?}", e);
+        if scope.attachments {
+            let last = self.load_last_indexed("attachments").await;
+            let changed = self.source_has_changes("attachments", last).await.unwrap_or(true);
+            if changed {
+                if let Err(e) = self.index_all_attachments(&table, &cfg).await {
+                    log::error!("Error indexing attachments: {:?}", e);
+                }
+                let _ = self.save_last_indexed("attachments").await;
+            } else {
+                log::info!("Skipping attachments — no changes since last index");
+            }
         }
 
-        if let Err(e) = self.index_vault_items(&table, &cfg).await {
-            log::error!("Error indexing vault items: {:?}", e);
+        if scope.vault {
+            let last = self.load_last_indexed("vault").await;
+            let changed = self.source_has_changes("vault", last).await.unwrap_or(true);
+            if changed {
+                if let Err(e) = self.index_vault_items(&table, &cfg).await {
+                    log::error!("Error indexing vault items: {:?}", e);
+                }
+                let _ = self.save_last_indexed("vault").await;
+            } else {
+                log::info!("Skipping vault — no changes since last index");
+            }
+        }
+
+        if scope.contacts {
+            let last = self.load_last_indexed("contacts").await;
+            let changed = self.source_has_changes("contacts", last).await.unwrap_or(true);
+            if changed {
+                if let Err(e) = self.index_all_contacts(&table, &cfg).await {
+                    log::error!("Error indexing contacts: {:?}", e);
+                }
+                let _ = self.save_last_indexed("contacts").await;
+            } else {
+                log::info!("Skipping contacts — no changes since last index");
+            }
+        }
+
+        if scope.deals {
+            let last = self.load_last_indexed("deals").await;
+            let changed = self.source_has_changes("deals", last).await.unwrap_or(true);
+            if changed {
+                if let Err(e) = self.index_all_deals(&table, &cfg).await {
+                    log::error!("Error indexing deals: {:?}", e);
+                }
+                let _ = self.save_last_indexed("deals").await;
+            } else {
+                log::info!("Skipping deals — no changes since last index");
+            }
         }
 
         let _ = self.app_handle.emit("ai:indexing_completed", ());
         Ok(())
+    }
+
+    /// Check if a data source has new or modified records since `last_indexed`.
+    /// Returns true if the source should be re-indexed.
+    async fn source_has_changes(&self, source: &str, last_indexed: Option<i64>) -> Result<bool> {
+        let Some(last_ts) = last_indexed else {
+            return Ok(true); // Never indexed — always index
+        };
+
+        let count: i64 = match source {
+            "emails" => {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM messages WHERE date > ?"
+                )
+                .bind(last_ts)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            "attachments" => {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM attachments WHERE created_at > ?"
+                )
+                .bind(last_ts)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            "vault" => {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM vault_items WHERE created_at > ?"
+                )
+                .bind(last_ts)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            "contacts" => {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM contacts WHERE updated_at > ?"
+                )
+                .bind(last_ts)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            "deals" => {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM deals WHERE updated_at > ?"
+                )
+                .bind(last_ts)
+                .fetch_one(&self.pool)
+                .await?
+            }
+            _ => return Ok(true),
+        };
+
+        Ok(count > 0)
     }
 
     pub async fn index_all_emails(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
@@ -188,6 +362,84 @@ impl Indexer {
         Ok(())
     }
 
+    pub async fn index_all_contacts(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
+        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts")
+            .fetch_all(&self.pool)
+            .await?;
+
+        let total = contacts.len();
+        for (i, contact) in contacts.iter().enumerate() {
+            let _ = self.app_handle.emit("ai:indexing_progress", serde_json::json!({
+                "source": "contacts",
+                "current": i + 1,
+                "total": total,
+            }));
+
+            let tags: Vec<String> = sqlx::query_scalar(
+                "SELECT ct.name FROM contact_tags ct \
+                 INNER JOIN contact_tag_pivot ctp ON ctp.tag_id = ct.id \
+                 WHERE ctp.contact_id = ?",
+            )
+            .bind(&contact.id)
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+
+            let text = format!(
+                "Name: {}\nEmail: {}\nNotes: {}\nTags: {}\nType: {}",
+                contact.display_name.as_deref().unwrap_or(""),
+                contact.email,
+                contact.notes.as_deref().unwrap_or(""),
+                tags.join(", "),
+                contact.health_status,
+            );
+
+            if text.trim().is_empty() { continue; }
+            self.index_document(table, &contact.id, &text, cfg).await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn index_all_deals(&self, table: &lancedb::Table, cfg: &ChunkConfig) -> Result<()> {
+        let deals = sqlx::query_as::<_, Deal>("SELECT * FROM deals")
+            .fetch_all(&self.pool)
+            .await?;
+
+        let total = deals.len();
+        for (i, deal) in deals.iter().enumerate() {
+            let _ = self.app_handle.emit("ai:indexing_progress", serde_json::json!({
+                "source": "deals",
+                "current": i + 1,
+                "total": total,
+            }));
+
+            let stage_name: Option<String> = sqlx::query_scalar(
+                "SELECT name FROM deal_stages WHERE id = ?",
+            )
+            .bind(&deal.stage_id)
+            .fetch_one(&self.pool)
+            .await
+            .ok();
+
+            let amount = deal.amount_minor as f64 / 100.0;
+            let text = format!(
+                "Title: {}\nAmount: {} {}\nStage: {}\nStatus: {}\nNotes: {}",
+                deal.title,
+                amount,
+                deal.currency,
+                stage_name.as_deref().unwrap_or(""),
+                deal.status,
+                deal.notes.as_deref().unwrap_or(""),
+            );
+
+            if text.trim().is_empty() { continue; }
+            self.index_document(table, &deal.id, &text, cfg).await?;
+        }
+
+        Ok(())
+    }
+
     /// Split `text` into chunks (per `cfg`) and index each chunk.
     async fn index_document(&self, table: &lancedb::Table, id: &str, text: &str, cfg: &ChunkConfig) -> Result<()> {
         let chunks = split_text(text, cfg);
@@ -212,6 +464,7 @@ impl Indexer {
             engine.get_embeddings(text).await?
         };
 
+        // Write to LanceDB (vector index)
         let schema = table.schema().await?;
         let id_array = StringArray::from(vec![id.to_string()]);
         let text_array = StringArray::from(vec![text.to_string()]);
@@ -235,6 +488,14 @@ impl Indexer {
 
         let reader: Box<dyn arrow::array::RecordBatchReader + Send> = Box::new(RecordBatchIterator::new(vec![Ok(batch)], schema));
         table.add(reader).execute().await?;
+
+        // Write to SQLite FTS5 (BM25 index) for hybrid search
+        sqlx::query("INSERT INTO knowledge_base_fts(id, text) VALUES (?, ?)")
+            .bind(id)
+            .bind(text)
+            .execute(&self.pool)
+            .await?;
+
         Ok(())
     }
 
@@ -351,6 +612,78 @@ impl Indexer {
         Ok(out)
     }
 
+    /// Return all chunked contact documents (id, text) — without embedding.
+    pub async fn get_contact_chunks(&self) -> Result<Vec<(String, String)>> {
+        let cfg = self.load_chunk_config().await;
+        let mut out: Vec<(String, String)> = Vec::new();
+
+        let contacts = sqlx::query_as::<_, Contact>("SELECT * FROM contacts")
+            .fetch_all(&self.pool)
+            .await?;
+        for contact in contacts {
+            let tags: Vec<String> = sqlx::query_scalar(
+                "SELECT ct.name FROM contact_tags ct \
+                 INNER JOIN contact_tag_pivot ctp ON ctp.tag_id = ct.id \
+                 WHERE ctp.contact_id = ?",
+            )
+            .bind(&contact.id)
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+
+            let text = format!(
+                "Name: {}\nEmail: {}\nNotes: {}\nTags: {}\nType: {}",
+                contact.display_name.as_deref().unwrap_or(""),
+                contact.email,
+                contact.notes.as_deref().unwrap_or(""),
+                tags.join(", "),
+                contact.health_status,
+            );
+            if text.trim().is_empty() { continue; }
+            for chunk in split_text(&text, &cfg) {
+                out.push((contact.id.clone(), chunk));
+            }
+        }
+
+        Ok(out)
+    }
+
+    /// Return all chunked deal documents (id, text) — without embedding.
+    pub async fn get_deal_chunks(&self) -> Result<Vec<(String, String)>> {
+        let cfg = self.load_chunk_config().await;
+        let mut out: Vec<(String, String)> = Vec::new();
+
+        let deals = sqlx::query_as::<_, Deal>("SELECT * FROM deals")
+            .fetch_all(&self.pool)
+            .await?;
+        for deal in deals {
+            let stage_name: Option<String> = sqlx::query_scalar(
+                "SELECT name FROM deal_stages WHERE id = ?",
+            )
+            .bind(&deal.stage_id)
+            .fetch_one(&self.pool)
+            .await
+            .ok();
+
+            let amount = deal.amount_minor as f64 / 100.0;
+            let text = format!(
+                "Title: {}\nAmount: {} {}\nStage: {}\nStatus: {}\nNotes: {}",
+                deal.title,
+                amount,
+                deal.currency,
+                stage_name.as_deref().unwrap_or(""),
+                deal.status,
+                deal.notes.as_deref().unwrap_or(""),
+            );
+            if text.trim().is_empty() { continue; }
+            for chunk in split_text(&text, &cfg) {
+                out.push((deal.id.clone(), chunk));
+            }
+        }
+
+        Ok(out)
+    }
+  
     /// Return all chunked documents (id, text) from emails, attachments, and
     /// vault items — without embedding them. The frontend embeds each chunk
     /// with a provider (LM Studio / Ollama / …) and sends the vectors back
@@ -358,6 +691,7 @@ impl Indexer {
     /// from a local provider without downloading the BGE-small model.
     pub async fn get_email_chunks(&self) -> Result<Vec<(String, String)>> {
         self.get_email_chunks_with_ids().await
+
     }
 
     /// Insert pre-computed provider embeddings into the dimension-correct table.
@@ -365,6 +699,9 @@ impl Indexer {
     /// The table dimension is taken from the first vector's length, so LM Studio
     /// / Ollama models of any width (384 / 768 / 1536, …) each get their
     /// own `knowledge_base_{dim}` table.
+    ///
+    /// Also writes to FTS5 (`knowledge_base_fts`) for hybrid search support
+    /// in provider mode.
     pub async fn index_provider_vectors(
         &self,
         vectors: Vec<Vec<f32>>,
@@ -419,6 +756,16 @@ impl Indexer {
         let reader: Box<dyn arrow::array::RecordBatchReader + Send> =
             Box::new(RecordBatchIterator::new(vec![Ok(batch)], schema));
         table.add(reader).execute().await?;
+
+        // Write to FTS5 for hybrid search (BM25 + vector + RRF)
+        for i in 0..count {
+            sqlx::query("INSERT INTO knowledge_base_fts(id, text) VALUES (?, ?)")
+                .bind(&ids[i])
+                .bind(&texts[i])
+                .execute(&self.pool)
+                .await?;
+        }
+
         Ok(count)
     }
 }

@@ -39,32 +39,32 @@ $TC/bin/cargo.exe check --workspace -j1
 Also: `cargo test` binaries **link but do not launch** here (`STATUS_ENTRYPOINT_NOT_FOUND
 0xc0000139`) — a Windows DLL/UCRT mismatch, not a code defect. Do not report Rust tests as
 passing on this host; they should run in CI. Full detail, including disk-space requirements
-(free 15+ G before any `cargo build`): **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)**
+(free 15+ G before any `cargo build`): **[`dev/BUILD-LOG.md`](dev/BUILD-LOG.md)**
 — read it FIRST when picking work up.
 
 ## Commands you'll actually use
 
 ```bash
 # Start Tauri dev (frontend + backend together)
-npm run tauri dev
+bun run tauri dev
 
 # Vite dev server only (no Tauri window)
-npm run dev
+bun run dev
 
 # Run all tests
-npm run test
+bun run test
 
 # Run tests in watch mode (my go-to during dev)
-npm run test:watch
+bun run test:watch
 
 # Run a specific test file
-npx vitest run src/stores/core/uiStore.test.ts
+bunx vitest run src/stores/core/uiStore.test.ts
 
 # Type-check the whole TypeScript codebase
-npx tsc --noEmit
+bunx tsc --noEmit
 
 # Build for production
-npm run tauri build
+bun run tauri build
 
 # Rust-only commands (from src-tauri/)
 cargo build
@@ -127,28 +127,16 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-## The voice agent's second dev loop (`services/agent-core/`)
+## Runtimes (2026-10-05: only one remains)
 
-SMEMaster has a **second runtime** — a Python FastAPI service for the voice/messaging
-agent. It is **not** started by `npm run tauri dev` and is not a Cargo workspace member
-(see [`ADR-001`](../01-ARCHITECTURE/decisions/ADR-001-voice-agent-integration-seams.md) D1).
-
-| You want to…                                                           | Read                                                                                                    |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Run `agent-core` in dev mode (uvicorn on `:8788`, the two live checks) | **[`../voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md)**                                        |
-| Know the build status, toolchain breakage, and what is _not_ verified  | **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** — read FIRST                               |
-| Pick up a gated piece of voice work                                    | [`../voice/dev/AGENT-PROMPTS.md`](../voice/dev/AGENT-PROMPTS.md)                                        |
-| Understand the phase sequence                                          | [`../voice/dev/BUILD-PLAN.md`](../voice/dev/BUILD-PLAN.md) §7.2 (the commands that matter on this host) |
-
-```bash
-# agent-core dev mode (NOT part of `npm run tauri dev`)
-cd services/agent-core
-.venv/Scripts/python.exe -m uvicorn agent_core.api:app \
-  --host 127.0.0.1 --port 8788 --reload --log-level info
-```
+SMEMaster used to have a **second runtime** — a Python FastAPI service
+(`services/agent-core/`) for the voice/messaging agent. It was **deleted
+outright** with the dropped voice-call system (no archive, git history
+preserves it), so the table, commands and `dev/` references below are gone
+with it. The desktop app (`bun run tauri dev`) is the only runtime.
 
 ## Source reconciliation (2026-07-19)
 
-| Claim (before)                              | Verified reality                         | Evidence                             |
-| ------------------------------------------- | ---------------------------------------- | ------------------------------------ |
-| `npx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |
+| Claim (before)                               | Verified reality                         | Evidence                             |
+| -------------------------------------------- | ---------------------------------------- | ------------------------------------ |
+| `bunx vitest run src/stores/uiStore.test.ts` | Actual `src/stores/core/uiStore.test.ts` | `ls src/stores/core/uiStore.test.ts` |

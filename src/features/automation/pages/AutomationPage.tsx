@@ -115,10 +115,10 @@ export function AutomationPage() {
         });
         closeTemplates();
         await loadRules(ACTIVE_COMPANY_ID);
-        notify(t('automation.notifyTitle'), t('automation.notifyCreated', { name: preset.name }));
+        notify(t('common.automation'), t('automation.notifyCreated', { name: preset.name }));
       } catch (err) {
         console.error('Failed to create workflow from template:', err);
-        notify(t('automation.notifyTitle'), t('automation.notifyFailed'));
+        notify(t('common.automation'), t('automation.notifyFailed'));
       }
     },
     [activeAccountId, loadRules, closeTemplates, t],
@@ -139,10 +139,10 @@ export function AutomationPage() {
         });
         closeAiModal();
         await loadRules(ACTIVE_COMPANY_ID);
-        notify(t('automation.notifyTitle'), t('automation.notifyCreated', { name: preset.name }));
+        notify(t('common.automation'), t('automation.notifyCreated', { name: preset.name }));
       } catch (err) {
         console.error('Failed to create AI workflow:', err);
-        notify(t('automation.notifyTitle'), t('automation.notifyFailed'));
+        notify(t('common.automation'), t('automation.notifyFailed'));
       }
     },
     [activeAccountId, loadRules, closeAiModal, t],
@@ -177,7 +177,7 @@ export function AutomationPage() {
 
   if (error && rules.length === 0) {
     return (
-      <PageScaffold title={t('automation.title')} subtitle={t('automation.subtitle')}>
+      <PageScaffold title={t('common.automation')} subtitle={t('automation.subtitle')}>
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <p className="text-sm text-danger mb-1">{t('automation.errorTitle')}</p>
           <p className="text-xs text-text-tertiary mb-4 max-w-sm">{error}</p>
@@ -186,7 +186,7 @@ export function AutomationPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-lg transition-colors"
           >
             <RefreshCw size={14} />
-            {t('automation.retry')}
+            {t('common.retry')}
           </button>
         </div>
       </PageScaffold>
@@ -195,7 +195,7 @@ export function AutomationPage() {
 
   return (
     <PageScaffold
-      title={t('automation.title')}
+      title={t('common.automation')}
       subtitle={t('automation.subtitle')}
       actions={
         <>
@@ -217,7 +217,7 @@ export function AutomationPage() {
             icon={<LayoutTemplate size={14} />}
             onClick={openTemplates}
           >
-            {t('automation.templates')}
+            {t('common.templates')}
           </Button>
           <Button variant="primary" size="sm" icon={<Plus size={14} />} onClick={openEditor}>
             {t('automation.addRule')}
@@ -325,7 +325,7 @@ export function AutomationPage() {
         onConfirm={confirmDelete}
         title={t('automation.deleteTitle')}
         message={t('automation.deleteMessage')}
-        confirmLabel={t('automation.delete')}
+        confirmLabel={t('common.delete')}
         variant="danger"
         loading={deleting}
       />

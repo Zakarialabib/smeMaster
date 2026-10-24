@@ -42,7 +42,6 @@ import {
   FolderInput,
   Printer,
   Download,
-  ExternalLink,
   PanelRightClose,
   PanelRightOpen,
   ListTodo,
@@ -70,7 +69,6 @@ interface ActionBarProps {
   onForward?: () => void;
   onPrint?: () => void;
   onExport?: () => void;
-  onPopOut?: () => void;
   onToggleContactSidebar?: () => void;
   onToggleTaskSidebar?: () => void;
   isMobile?: boolean;
@@ -92,7 +90,6 @@ export function ActionBar({
   onForward,
   onPrint,
   onExport,
-  onPopOut,
   onToggleContactSidebar,
   onToggleTaskSidebar,
   isMobile = false,
@@ -306,7 +303,6 @@ export function ActionBar({
             : t('actionBar.unsubscribe'),
       print: t('email.print'),
       export: t('email.exportAsEml'),
-      popOut: t('composer.openInNewWindow'),
       taskSidebar: taskSidebarVisible ? t('email.hideTaskPanel') : t('email.showTaskPanel'),
       contactSidebar: contactSidebarVisible
         ? t('email.hideContactSidebar')
@@ -617,21 +613,7 @@ export function ActionBar({
                   <Download size={14} className="me-2" />
                   Export
                 </Button>
-                {onPopOut && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      onPopOut();
-                      setShowOverflow(false);
-                    }}
-                    title={ariaLabels.popOut}
-                    aria-label={ariaLabels.popOut}
-                    className="w-full justify-start px-3 py-1.5 text-xs"
-                  >
-                    <ExternalLink size={14} className="me-2" />
-                    Open in new window
-                  </Button>
-                )}
+
                 <Button
                   variant="ghost"
                   onClick={() => {

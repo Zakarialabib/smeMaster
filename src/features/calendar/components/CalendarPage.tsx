@@ -508,7 +508,7 @@ export function CalendarPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors shrink-0 mt-0.5"
           >
             <RefreshCw size={13} />
-            {t('calendar.retry')}
+            {t('common.retry')}
           </button>
         </div>
       )}

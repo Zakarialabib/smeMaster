@@ -13,7 +13,7 @@
  *
  * Every entry carries the measured or documented facts we actually have. Where a
  * number is unmeasured it is omitted rather than guessed — see
- * `docs/02-BACKEND/20-offline-stt-and-audio-summarization.md` §10 for the
+ * `docs/02-BACKEND/20-tts-stt-email.md` §10 for the
  * measurements behind the RTF figures.
  *
  * @module
@@ -295,6 +295,62 @@ export const LOCAL_MODELS: LocalModelEntry[] = [
     license: 'MIT',
     measured: { note: 'Already the default RAG embedding model in this app.' },
   },
+  {
+    id: 'bge-base-en-v1.5',
+    label: 'BGE Base EN v1.5 — Embeddings',
+    kind: 'embedding',
+    capability: 'embedding',
+    repoId: 'BAAI/bge-base-en-v1.5',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 438_022_592,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 711_396, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 743, required: true },
+      {
+        path: 'tokenizer_config.json',
+        dest: 'tokenizer_config.json',
+        sizeBytes: 366,
+        required: true,
+      },
+    ],
+    totalBytes: 438_735_097,
+    languages: ['en'],
+    license: 'MIT',
+    measured: { note: 'Higher quality than small, ~3x larger. 1024-dim vectors.' },
+  },
+  {
+    id: 'bge-m3',
+    label: 'BGE M3 — Multilingual Embeddings',
+    kind: 'embedding',
+    capability: 'embedding',
+    repoId: 'BAAI/bge-m3',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 2_269_817_856,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 711_396, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 743, required: true },
+      {
+        path: 'tokenizer_config.json',
+        dest: 'tokenizer_config.json',
+        sizeBytes: 366,
+        required: true,
+      },
+    ],
+    totalBytes: 2_270_530_311,
+    languages: ['en', 'fr', 'ar', 'zh', 'ja', 'es', 'de', 'it'],
+    license: 'MIT',
+    measured: { note: 'Multilingual, 1024-dim. ~2.2 GB — significantly larger.' },
+  },
 
   // ── LLM (candle / HF causal LM) ──────────────────────────────────────────
   {
@@ -324,7 +380,160 @@ export const LOCAL_MODELS: LocalModelEntry[] = [
     languages: ['en', 'zh'],
     license: 'Apache-2.0',
     caveat:
-      'The sidecar’s text-generation path streams a "not available" progress until a causal LM is bound. Downloading the weights is not the same as it being wired up — treat this as staged, not working.',
+      'The sidecar\'s text-generation path streams a "not available" progress until a causal LM is bound. Downloading the weights is not the same as it being wired up — treat this as staged, not working.',
+  },
+  {
+    id: 'qwen3-0.6b',
+    label: 'Qwen3 0.6B — Small LLM',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'Qwen/Qwen3-0.6B',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 1_200_000_000,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 1_207_032_305,
+    languages: ['en', 'zh'],
+    license: 'Apache-2.0',
+    caveat: 'Qwen3 series. Not yet measured on this host.',
+  },
+  {
+    id: 'lfm2.5-1.2b-thinking',
+    label: 'LiquidAI LFM2.5 1.2B Thinking — On-Device Reasoning',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'LiquidAI/LFM2.5-1.2B-Thinking',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model.safetensors',
+        dest: 'model.safetensors',
+        sizeBytes: 2_400_000_000,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 2_407_032_305,
+    languages: ['en'],
+    license: 'Apache-2.0',
+    caveat: 'LiquidAI LFM2.5 series. Reasoning model under 1GB. Not yet measured on this host.',
+  },
+  {
+    id: 'lfm2.5-2.6b',
+    label: 'LiquidAI LFM2.5 2.6B — Larger On-Device LLM',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'LiquidAI/LFM2.5-2.6B',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model-00001-of-00002.safetensors',
+        dest: 'model-00001-of-00002.safetensors',
+        sizeBytes: 5_329_406_264,
+        required: true,
+      },
+      {
+        path: 'model-00002-of-00002.safetensors',
+        dest: 'model-00002-of-00002.safetensors',
+        sizeBytes: 65_021_192,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 5_394_427_456,
+    languages: ['en', 'ar', 'zh', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko'],
+    license: 'Apache-2.0',
+    caveat: '~5.4 GB. Requires sufficient RAM/disk. Not yet measured on this host.',
+  },
+  {
+    id: 'qwen3-4b-instruct',
+    label: 'Qwen3 4B Instruct — Medium LLM',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'Qwen/Qwen3-4B-Instruct',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model-00001-of-00003.safetensors',
+        dest: 'model-00001-of-00003.safetensors',
+        sizeBytes: 3_957_900_840,
+        required: true,
+      },
+      {
+        path: 'model-00002-of-00003.safetensors',
+        dest: 'model-00002-of-00003.safetensors',
+        sizeBytes: 3_987_450_520,
+        required: true,
+      },
+      {
+        path: 'model-00003-of-00003.safetensors',
+        dest: 'model-00003-of-00003.safetensors',
+        sizeBytes: 99_630_640,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 8_044_583_000,
+    languages: ['en', 'zh', 'ar', 'fr', 'de', 'es', 'pt', 'ja', 'ko', 'ru'],
+    license: 'Apache-2.0',
+    caveat: '~8 GB total across 3 shards. Requires significant disk and RAM.',
+  },
+  {
+    id: 'qwen3-8b-instruct',
+    label: 'Qwen3 8B Instruct — Large LLM',
+    kind: 'llm',
+    capability: 'text',
+    repoId: 'Qwen/Qwen3-8B-Instruct',
+    source: 'hf-files',
+    files: [
+      {
+        path: 'model-00001-of-00005.safetensors',
+        dest: 'model-00001-of-00005.safetensors',
+        sizeBytes: 3_996_250_744,
+        required: true,
+      },
+      {
+        path: 'model-00002-of-00005.safetensors',
+        dest: 'model-00002-of-00005.safetensors',
+        sizeBytes: 3_993_160_032,
+        required: true,
+      },
+      {
+        path: 'model-00003-of-00005.safetensors',
+        dest: 'model-00003-of-00005.safetensors',
+        sizeBytes: 3_959_604_768,
+        required: true,
+      },
+      {
+        path: 'model-00004-of-00005.safetensors',
+        dest: 'model-00004-of-00005.safetensors',
+        sizeBytes: 3_187_841_392,
+        required: true,
+      },
+      {
+        path: 'model-00005-of-00005.safetensors',
+        dest: 'model-00005-of-00005.safetensors',
+        sizeBytes: 1_244_659_840,
+        required: true,
+      },
+      { path: 'tokenizer.json', dest: 'tokenizer.json', sizeBytes: 7_031_645, required: true },
+      { path: 'config.json', dest: 'config.json', sizeBytes: 660, required: true },
+    ],
+    totalBytes: 16_380_117_376,
+    languages: ['en', 'zh', 'ar', 'fr', 'de', 'es', 'pt', 'ja', 'ko', 'ru'],
+    license: 'Apache-2.0',
+    caveat:
+      '~16 GB total across 5 shards. Large model — ensure sufficient disk and RAM before downloading.',
   },
 ];
 

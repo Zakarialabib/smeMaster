@@ -75,7 +75,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'composer.templates': 'Templates',
+        'common.templates': 'Templates',
         'composer.openTemplatePicker': 'Open template picker',
       };
       return map[key] ?? key;

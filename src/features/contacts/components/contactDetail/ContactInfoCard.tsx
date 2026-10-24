@@ -97,7 +97,7 @@ export function ContactInfoCard({
         onEmail={() =>
           navigate({ to: '/mail/$label', params: { label: 'inbox' }, search: { q: contact.email } })
         }
-        onTask={() => navigate({ to: '/tasks' })}
+        onTask={() => navigate({ to: '/people', search: (prev) => ({ ...prev, tab: 'tasks' }) })}
         onCampaign={() => navigate({ to: '/campaigns' })}
         size="sm"
       />

@@ -17,14 +17,14 @@ a library swap already behind a seam (that is a config value).
 
 ## Records
 
-| ADR | Title | Status | Date | Scope |
-|---|---|---|---|---|
-| [ADR-001](ADR-001-voice-agent-integration-seams.md) | Voice agent — integration seams, embedding spaces, IPC surface | **Accepted** | 2026-09-28 | `services/agent-core/**`, `src/features/agent/**`, RAG |
+| ADR                                                 | Title                                                          | Status                                             | Date       | Scope                        |
+| --------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------- | ---------- | ---------------------------- |
+| [ADR-001](ADR-001-voice-agent-integration-seams.md) | Voice agent — integration seams, embedding spaces, IPC surface | **⛔ Superseded 2026-10-05** (call system dropped) | 2026-09-28 | `src/features/agent/**`, RAG |
 
 ## How an ADR is written here
 
 1. Copy the structure of ADR-001: **Context → Decisions → Consequences → Open**.
-2. One decision per numbered item, each stating *what is forbidden*, not just what is
+2. One decision per numbered item, each stating _what is forbidden_, not just what is
    chosen. A decision that does not name the wrong turn it prevents is a preference.
 3. Cite evidence as `path:line` against the working tree, with the date it was read.
    A claim of "verified" without a path is not verified.

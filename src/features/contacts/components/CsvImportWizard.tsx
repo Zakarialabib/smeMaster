@@ -160,10 +160,10 @@ export function CsvImportWizard({ isOpen, onClose }: CsvImportWizardProps) {
                 <thead>
                   <tr className="bg-bg-tertiary">
                     <th className="text-start px-3 py-1.5 text-text-secondary font-medium">
-                      {t('modals.csvImport.email')}
+                      {t('common.email')}
                     </th>
                     <th className="text-start px-3 py-1.5 text-text-secondary font-medium">
-                      {t('modals.csvImport.name')}
+                      {t('common.name')}
                     </th>
                   </tr>
                 </thead>
@@ -186,10 +186,10 @@ export function CsvImportWizard({ isOpen, onClose }: CsvImportWizardProps) {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={handleClose}>
-                {t('modals.csvImport.cancel')}
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" onClick={handleImport}>
-                {t('modals.csvImport.import', { count: contacts.length })}
+                {t('common.import', { count: contacts.length })}
               </Button>
             </div>
           </div>
@@ -221,7 +221,7 @@ export function CsvImportWizard({ isOpen, onClose }: CsvImportWizardProps) {
             </div>
             <div className="flex justify-end pt-2">
               <Button variant="primary" onClick={handleClose}>
-                {t('modals.csvImport.done')}
+                {t('common.done')}
               </Button>
             </div>
           </div>

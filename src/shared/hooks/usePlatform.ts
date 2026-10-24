@@ -3,6 +3,18 @@ import { getDeviceInfoBridge } from '@/shared/services/nativeBridges';
 import { isTauriEnvironment } from '@/shared/services/ipc';
 
 /**
+ * Non-standard Dual Screen Information API (Chromium dual-screen devices).
+ * Typed locally because the API is not in lib.dom.d.ts.
+ */
+interface DualScreenNavigator extends Navigator {
+  screen?: {
+    isDualScreen?: boolean;
+    addEventListener?: (type: 'screenchange', listener: () => void) => void;
+    removeEventListener?: (type: 'screenchange', listener: () => void) => void;
+  };
+}
+
+/**
  * Platform identity from Rust IPC. Matches the Rust `PlatformInfo` struct.
  */
 export interface PlatformInfo {
@@ -85,7 +97,7 @@ function getScreenAspect(width: number, height: number, isFoldable: boolean): Sc
   if (isFoldable && window.matchMedia('(device-posture: folded)').matches) return 'foldable';
   if (
     isFoldable &&
-    (navigator as any).screen?.isDualScreen &&
+    (navigator as DualScreenNavigator).screen?.isDualScreen &&
     window.screen.orientation?.type?.startsWith('landscape')
   )
     return 'seamless';
@@ -93,7 +105,7 @@ function getScreenAspect(width: number, height: number, isFoldable: boolean): Sc
 }
 
 function detectFoldable(): { isFoldable: boolean; hingeOffset: number } {
-  const nav = navigator as any;
+  const nav = navigator as DualScreenNavigator;
   const isDualScreen = Boolean(nav?.screen?.isDualScreen);
   const isFolded = window.matchMedia('(device-posture: folded)').matches;
   const isFoldable = isDualScreen || isFolded;
@@ -227,7 +239,7 @@ export function usePlatform(): FullPlatformInfo {
     window.addEventListener('orientationchange', handleChange);
     const foldMatch = window.matchMedia('(device-posture: folded)');
     foldMatch.addEventListener('change', handleChange);
-    const screen = (navigator as any).screen;
+    const screen = (navigator as DualScreenNavigator).screen;
     if (screen?.addEventListener) screen.addEventListener('screenchange', handleChange);
     // Track visualViewport for mobile keyboard detection
     window.visualViewport?.addEventListener('resize', handleChange);

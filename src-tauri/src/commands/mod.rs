@@ -9,6 +9,7 @@ pub mod compliance;
 pub mod contacts;
 pub mod core;
 pub mod crm;
+pub mod agents;
 pub mod deals;
 pub mod db;
 pub mod deliverability;
@@ -109,13 +110,21 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             #[cfg(desktop)]
             system_desktop::open_devtools,
 
-            // === agent (voice + WhatsApp console) ===
-            // The desktop holds no provider key and sends no tenant id; the
-            // bearer token is read from the auth store, not from an argument.
-            crate::agent::client::agent_health,
-            crate::agent::client::agent_ops_snapshot,
-            crate::agent::client::agent_provider_health,
-            crate::agent::client::agent_create_session,
+            // === agent (agentic AI automation) ===
+            // All commands use local SQLite — no HTTP, no auth token, no Python.
+            crate::agent::commands::agent_health,
+            crate::agent::commands::agent_ops_snapshot,
+            crate::agent::commands::agent_provider_health,
+            crate::agent::commands::agent_get_config,
+            crate::agent::commands::agent_update_config,
+            crate::agent::commands::agent_set_provider_tier,
+            crate::agent::commands::agent_list_alerts,
+            crate::agent::commands::agent_acknowledge_alert,
+            crate::agent::commands::agent_get_automations,
+            crate::agent::commands::agent_save_automations,
+            crate::agent::commands::agent_toggle_automation,
+            crate::agent::commands::agent_run_automation,
+            crate::agent::commands::agent_run_automation_with_ai,
             // === deliverability (submodules) ===
             crate::deliverability::diagnostic::check_domain_health,
             crate::deliverability::dnsbl::check_dnsbl_cmd,
@@ -252,6 +261,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_index_emails,
             #[cfg(feature = "local-ai")]
             ai::ai_query_rag,
+            ai::ai_query_rag_hybrid,
             #[cfg(feature = "local-ai")]
             ai::ai_search_by_vector,
             #[cfg(feature = "local-ai")]
@@ -264,6 +274,8 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             ai::ai_reset_vector_db,
             #[cfg(feature = "local-ai")]
             ai::ai_get_email_chunks,
+            ai::ai_get_contact_chunks,
+            ai::ai_get_deal_chunks,
             #[cfg(feature = "local-ai")]
             ai::ai_insert_provider_vectors,
             #[cfg(feature = "local-ai")]
@@ -711,6 +723,7 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             db::db_export_logs,
             db::db_get_migration_history,
             db::db_rollback_migrations,
+            db::db_list_threads,
 
             // === commands::deliverability (27 commands) ===
             deliverability::db_list_deliverability_configs,
@@ -1010,6 +1023,15 @@ pub fn register(builder: Builder<Wry>) -> Builder<Wry> {
             workflows::db_count_workflow_execution_logs,
 
             // === Deals / Pipeline (CRM sales) ===
+            agents::db_list_agents,
+            agents::db_get_agent,
+            agents::db_create_agent,
+            agents::db_update_agent,
+            agents::db_delete_agent,
+            agents::db_agent_scope_check,
+            agents::db_record_ai_activity,
+            agents::db_list_ai_activity,
+            agents::db_seed_builtin_agents,
             deals::db_create_deal,
             deals::db_update_deal,
             deals::db_delete_deal,

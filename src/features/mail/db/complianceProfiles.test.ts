@@ -166,14 +166,14 @@ describe('complianceProfiles service', () => {
   });
 
   describe('insertCheck', () => {
-    it('calls db_insert_compliance_check with generated id', async () => {
+    it('calls db_insert_compliance_check with generated id and company scope', async () => {
       const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1700000000000);
       mockInvoke.mockResolvedValue(undefined);
-      await insertCheck('acc-1', 'draft-1', null, 'cp-1', 0.95, JSON.stringify([]));
+      await insertCheck('company-1', 'draft-1', null, 'cp-1', 0.95, JSON.stringify([]));
       expect(mockInvoke).toHaveBeenCalledWith('db_insert_compliance_check', {
         check: {
-          id: 'acc-1_1700000000000',
-          accountId: 'acc-1',
+          id: 'company-1_1700000000000',
+          companyId: 'company-1',
           emailDraftId: 'draft-1',
           campaignId: null,
           profileIds: 'cp-1',

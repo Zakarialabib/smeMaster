@@ -26,7 +26,7 @@ export function CampaignPage() {
 
   if (isCampaignsLocked) {
     return (
-      <SettingGroup title={t('campaign.campaigns')}>
+      <SettingGroup title={t('common.campaigns')}>
         <UpgradeBanner
           featureName="Campaigns"
           description="Create and manage bulk email campaigns with mail merge, A/B testing, and detailed analytics. Upgrade to Pro to unlock."
@@ -37,7 +37,7 @@ export function CampaignPage() {
 
   if (!activeAccountId) {
     return (
-      <SettingGroup title={t('campaign.campaigns')}>
+      <SettingGroup title={t('common.campaigns')}>
         <div className="flex flex-col items-center justify-center h-full gap-4 text-sm text-text-tertiary">
           <p>{t('campaign.noCampaigns')}</p>
           <button
@@ -53,7 +53,7 @@ export function CampaignPage() {
 
   if (isLoading && campaigns.length === 0) {
     return (
-      <SettingGroup title={t('campaign.campaigns')}>
+      <SettingGroup title={t('common.campaigns')}>
         <GlassPanel variant="card" className="p-4">
           <SkeletonTable columns={5} rows={4} />
         </GlassPanel>
@@ -62,7 +62,7 @@ export function CampaignPage() {
   }
 
   return (
-    <SettingGroup title={t('campaign.campaigns')}>
+    <SettingGroup title={t('common.campaigns')}>
       <GlassPanel variant="card" className="p-4">
         <CampaignList accountId={activeAccountId} />
       </GlassPanel>

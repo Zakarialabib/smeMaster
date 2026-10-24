@@ -32,8 +32,8 @@ export function EmailEditor({ configPanel, onPickFromVault }: EmailEditorProps) 
               size="xs"
               iconOnly
               icon={<Undo2 className="h-4 w-4" />}
-              aria-label={t('campaign.editor.undo')}
-              title={t('campaign.editor.undo')}
+              aria-label={t('common.undo')}
+              title={t('common.undo')}
               disabled={store.historyIndex <= 0}
               onClick={() => store.undo()}
             />

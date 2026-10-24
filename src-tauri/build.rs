@@ -72,8 +72,32 @@ fn main() {
     &std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"),
   )
   .join("comctl-v6.manifest");
+
+  // ── Which targets need the manifest, and why BOTH directives ─────────────
+  //
+  // Cargo scopes link-arg directives by target kind:
+  //   rustc-link-arg-tests  → INTEGRATION tests (tests/*.rs), NOT the lib's own
+  //                           unit-test harness.
+  //   rustc-link-arg        → applies to ALL targets, which is the only way to
+  //                           reach the `--lib` unit-test binary.
+  //
+  // The `--lib` unit-test harness is a separate link of the lib with
+  // `--test`; it does NOT inherit `rustc-link-arg-tests`. Relying on the -tests
+  // variant alone left the unit-test exe with NO embedded manifest and no
+  // `.rsrc` section, so it bound System32's comctl32 v5.81 and died at process
+  // start with 0xC0000139 STATUS_ENTRYPOINT_NOT_FOUND — `cargo test --lib`
+  // could never run (verified 2026-10-05: the linked exe had sections
+  // [.text,.rdata,.data,.pdata,.reloc] with no .rsrc, while the app exe had it).
+  //
+  // `rustc-link-arg` covers the bin target too. That is harmless: tauri-build
+  // already embeds a manifest into the bins it manages, and duplicate
+  // /MANIFESTINPUT entries are merged by the linker rather than rejected.
+  println!("cargo:rustc-link-arg=/MANIFEST:EMBED");
+  println!("cargo:rustc-link-arg=/MANIFESTINPUT:{}", manifest.display());
   println!("cargo:rustc-link-arg-examples=/MANIFEST:EMBED");
   println!("cargo:rustc-link-arg-examples=/MANIFESTINPUT:{}", manifest.display());
   println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");
   println!("cargo:rustc-link-arg-tests=/MANIFESTINPUT:{}", manifest.display());
+  // Rebuild (and relink) whenever the manifest itself changes.
+  println!("cargo:rerun-if-changed=comctl-v6.manifest");
 }

@@ -276,7 +276,7 @@ export function AttachmentLibrary() {
           >
             {TYPE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -306,7 +306,7 @@ export function AttachmentLibrary() {
           >
             {DATE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -320,7 +320,7 @@ export function AttachmentLibrary() {
           >
             {SIZE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -377,7 +377,7 @@ export function AttachmentLibrary() {
 
   return (
     <PageScaffold
-      title={t('attachments.title')}
+      title={t('common.attachments')}
       count={filtered.length}
       subtitle={t('attachments.subtitle')}
       toolbar={toolbar}
@@ -397,7 +397,7 @@ export function AttachmentLibrary() {
           >
             {TYPE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -428,7 +428,7 @@ export function AttachmentLibrary() {
           >
             {DATE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -443,7 +443,7 @@ export function AttachmentLibrary() {
           >
             {SIZE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {t(`attachments.${o.labelKey}`)}
+                {t(`attachments.${o.labelKey}`, { defaultValue: t(`common.${o.labelKey}`) })}
               </option>
             ))}
           </StyledSelect>
@@ -467,7 +467,7 @@ export function AttachmentLibrary() {
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
           >
             <RefreshCw size={13} />
-            {t('attachments.retry')}
+            {t('common.retry')}
           </button>
         </div>
       ) : viewMode === 'grid' ? (

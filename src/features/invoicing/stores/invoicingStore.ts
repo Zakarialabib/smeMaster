@@ -86,7 +86,11 @@ interface InvoicingState {
 }
 
 const handle = (fn: () => Promise<void>, onError: (m: string) => void) =>
-  fn().catch((err: any) => onError(err?.message ?? 'Something went wrong'));
+  fn().catch((err: unknown) =>
+    onError(
+      err instanceof Error ? err.message : typeof err === 'string' ? err : 'Something went wrong',
+    ),
+  );
 
 export const useInvoicingStore = create<InvoicingState>()((set, get) => ({
   // ----- invoices -----

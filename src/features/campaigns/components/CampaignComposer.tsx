@@ -274,7 +274,7 @@ export function CampaignComposer({ isOpen, onClose, accountId }: CampaignCompose
     if (store.scheduleMode === 'immediate') return t('campaign.sendImmediately');
     if (store.scheduleMode === 'scheduled')
       return t('campaign.scheduledLabel', { date: store.scheduledDate, time: store.scheduledTime });
-    return t('campaign.recurringLabel', { frequency: store.recurringFrequency });
+    return t('common.recurring', { frequency: store.recurringFrequency });
   }
 
   const steps: { id: typeof store.step; label: string; icon: typeof Users }[] = [

@@ -219,7 +219,7 @@ export function ComplianceProfileManager() {
           onClick={handleImport}
           className="bg-bg-tertiary text-text-primary border border-border-primary"
         >
-          {t('compliance.import')}
+          {t('common.import')}
         </Button>
       </div>
 

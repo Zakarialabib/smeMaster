@@ -38,7 +38,8 @@ interface LabelFormProps {
 }
 
 export function LabelForm({ accountId, label, onDone, variant = 'settings' }: LabelFormProps) {
-  const { createLabel, updateLabel } = useLabelStore();
+  const createLabel = useLabelStore((s) => s.createLabel);
+  const updateLabel = useLabelStore((s) => s.updateLabel);
   const [name, setName] = useState(label?.name ?? '');
   const [selectedColor, setSelectedColor] = useState<{ bg: string; fg: string } | null>(
     label?.colorBg ? { bg: label.colorBg, fg: label.colorFg ?? '#000000' } : null,

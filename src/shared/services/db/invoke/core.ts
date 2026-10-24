@@ -1091,6 +1091,18 @@ export async function getRecentSentMessages(
   return invokeCommand<Message[]>('db_get_recent_sent_messages', { accountId, fromAddress, limit });
 }
 
+export async function dbListThreads(
+  accountId: string,
+  limit?: number,
+  offset?: number,
+): Promise<Thread[]> {
+  return invokeCommand<Thread[]>('db_list_threads', {
+    accountId,
+    limit: limit ?? 50,
+    offset: offset ?? 0,
+  });
+}
+
 export async function getThreads(
   accountId: string,
   limit: number,
@@ -1690,6 +1702,7 @@ export async function upsertPendingOperation(op: UpsertPendingOperationRequest):
     status: undefined as string | undefined,
     maxRetries: undefined as number | undefined,
     campaignId: op.campaignId ?? null,
+    holdUntil: op.holdUntil ?? null,
   });
 }
 

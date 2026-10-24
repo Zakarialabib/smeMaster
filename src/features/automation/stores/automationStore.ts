@@ -153,11 +153,7 @@ const editorOptions: EditorSliceOptions<AutomationEditorState, WorkflowRule> = {
 
 export const useAutomationStore = create<AutomationState>((set, get) => {
   const { withLoading } = createAsyncActions(set);
-  const editorSlice = createEditorSlice<AutomationEditorState, WorkflowRule>(
-    set,
-    get,
-    editorOptions,
-  );
+  const editorSlice = createEditorSlice<AutomationEditorState, WorkflowRule>(set, editorOptions);
   const deleteSlice = createDeleteConfirmation(set, get, {
     onDelete: async (id) => {
       await get().deleteRule(id);

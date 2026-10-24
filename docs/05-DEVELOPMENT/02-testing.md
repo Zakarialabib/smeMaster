@@ -25,12 +25,12 @@ Current repo-level numbers are tracked in `README.md`, `STATUS.md`, and `00-INDE
 
 ## Main Commands
 
-| Command            | Purpose                                  |
-| ------------------ | ---------------------------------------- |
-| `npm run test`     | Run the default frontend/unit test suite |
-| `npx tsc --noEmit` | Run TypeScript typecheck                 |
-| `cargo test`       | Run backend tests                        |
-| `cargo check`      | Fast backend compile verification        |
+| Command             | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `bun run test`      | Run the default frontend/unit test suite |
+| `bunx tsc --noEmit` | Run TypeScript typecheck                 |
+| `cargo test`        | Run backend tests                        |
+| `cargo check`       | Fast backend compile verification        |
 
 ### ⚠️ Three host-specific traps — gate on output, not exit codes
 
@@ -40,43 +40,55 @@ Current repo-level numbers are tracked in `README.md`, `STATUS.md`, and `00-INDE
 2. **`python -m pytest` false-greens too.** Always assert the `passed`/`failed` summary line.
 3. **`cargo test` compiles and links but the binary will not execute here**
    (`STATUS_ENTRYPOINT_NOT_FOUND 0xc0000139` — Windows DLL/UCRT mismatch). The Rust suite is
-   _written and compiling_, **not passing**. Run it in CI. Details: [`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)
+   _written and compiling_, **not passing**. Run it in CI. Details: [`dev/BUILD-LOG.md`](dev/BUILD-LOG.md)
    ("⚠️ Rust test binary will not launch on THIS host") and the toolchain warning in
    [`01-quickstart.md`](01-quickstart.md).
+
+#### Workaround — verify pure logic with a standalone binary
+
+`cargo test` being unable to launch does **not** mean pure Rust logic is unverifiable. A plain
+`rustc` binary **does** run on this host (verified — `rustc --edition 2021 x.rs -o x.exe && ./x.exe`
+prints and exits 0). So for functions with no DB, no async and no Tauri — parsers, scope checks,
+calculators, state machines — extract them into a standalone harness and gate on its verdict:
+
+```bash
+bun run verify:agent-scope      # scripts/verify/agent-scope.sh
+```
+
+That script mirrors the `#[cfg(test)]` assertions in `db/tables/ai/agents.rs` and reports
+**14 passed, 0 failed**. **If you change such a rule, change both copies** — the `cargo test`
+version for CI, the standalone one so it is actually observed here.
+
+Two traps when writing one:
+
+- **Output path must be relative.** rustc is a native Windows binary and MSYS path conversion is
+  disabled here, so `-o /tmp/x.exe` is passed through literally and the link fails with
+  unresolved externals. Use `-o x.exe`.
+- **Do not gate on a bare `/failed/`.** A passing run prints `14 passed, 0 failed`, which matches.
+  Anchor on the verdict line and a non-zero failure count (`[1-9][0-9]* failed`). This bit the
+  first version of the script — it reported FAILED on a fully passing run.
+
+> **This is a workaround, not a substitute.** It covers pure logic only. Anything touching the DB,
+> async or Tauri still needs a real `cargo test` run in CI on a properly provisioned host.
 
 Use `cargo check --workspace`, never `cargo check -p <crate>`: the workspace inherits the
 app's full default features and compiles code `-p` skips.
 
-## The voice agent's test layer (`services/agent-core/`)
+## Test layers (2026-10-05: TS + Rust only)
 
-A separate Python suite sits alongside the TS/Rust layers. It is **not** covered by
-`npm run test` or `cargo test`.
+The former third layer — the Python suite under `services/agent-core/` — was
+deleted with the dropped voice-call system (no archive, git history preserves
+it). The gates are:
 
-```bash
-cd services/agent-core
-python -m pytest -q                                   # 156 passed, 5 skipped (2026-09-28)
-# python -m pytest -q tests/rag/retrieval_eval.py     # 🔲 NOT BUILT YET — the hit@3 >= 0.9
-#                                                      gate from RAG-FORK; file does not exist yet
-```
-
-- **5 skips are the Postgres migration tests.** They need
-  `AGENT_CORE_TEST_DATABASE_URL`; there is no Postgres on this host, so migrations are
-  verified _structurally_, not against a real database. Say "skipped", never "passing".
-- **Two live-server checks** (server must be up on `:8788` — see
-  [`../voice/dev/RUNNING-DEV.md`](../voice/dev/RUNNING-DEV.md)):
-  `tests/live_swap.py --port 8788` (15 contract checks) and
-  `tests/verify_fixtures.py --port 8788` (4 key-set drift checks — the one that catches a
-  renamed field the console renders as `undefined` while every test still passes).
-- Current gate state, including `ruff`/`mypy`/`tsc`/`eslint` lines, lives in
-  **[`../voice/dev/BUILD-LOG.md`](../voice/dev/BUILD-LOG.md)** — treat that file, not this
-  page, as the source of truth for "what is green right now".
+- `bun run test` — colocated TS unit tests (vitest)
+- `cargo test` — Rust tests (`cd src-tauri`)
 
 ## Practical Guidance
 
 When changing code:
 
 - run the smallest relevant test set first
-- run `npx tsc --noEmit` for TypeScript-affecting changes
+- run `bunx tsc --noEmit` for TypeScript-affecting changes
 - run `cargo check` or `cargo test` for backend-affecting changes
 - add or adjust tests when the change meaningfully alters behavior or contracts
 
@@ -98,9 +110,6 @@ The project uses a mixed approach:
 - `03-manual-tests.md` — pre-release manual gates
 - `../AGENTS.md` (agent contributor guide)
 - `../../PRODUCTION-READINESS.md`
-- `../voice/dev/BUILD-LOG.md` — live build/test state for `agent-core` + the Rust toolchain warning
-- `../voice/dev/RUNNING-DEV.md` — starting `agent-core` and running its two live checks
-- `../voice/dev/BUILD-PLAN.md` §7 — the verification commands that matter on this host
 
 ## Source reconciliation (2026-07-19)
 
@@ -132,9 +141,9 @@ automated docs-rot detector.
 
 | metric            | expected (2026-09-30) | counting rule                                                                                                                                                                                                                           |
 | ----------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| IPC commands      | **841**               | literal `#[tauri::command]` (777) + `#[command]` (64) occurrences in `src-tauri/src` (recursive); parameterised forms such as `#[tauri::command(rename_all = ...)]` (7) are not counted                                                 |
-| SQLite migrations | **32**                | `*.sql` files in `src-tauri/src/db/migrations/` (`001_core.sql` … `032_deals_pipeline.sql`, sequential, no gaps)                                                                                                                        |
-| Zustand stores    | **44**                | non-test (excludes `*.test.*`, `*.spec.*`, `__tests__/`) `.ts`/`.tsx` under `src/shared/stores/**`, `src/stores/**`, `src/features/*/stores/**` containing the token `create` → 39 `create<` stores + 5 `create*` slice-factory modules |
+| IPC commands      | **868**               | literal `#[tauri::command]` (804) + `#[command]` (64) occurrences in `src-tauri/src` (recursive); parameterised forms such as `#[tauri::command(rename_all = ...)]` (7) are not counted                                                 |
+| SQLite migrations | **34**                | `*.sql` files in `src-tauri/src/db/migrations/` (`001_core.sql` … `034_*.sql`, sequential, no gaps)                                                                                                                                     |
+| Zustand stores    | **47**                | non-test (excludes `*.test.*`, `*.spec.*`, `__tests__/`) `.ts`/`.tsx` under `src/shared/stores/**`, `src/stores/**`, `src/features/*/stores/**` containing the token `create` → 39 `create<` stores + 5 `create*` slice-factory modules |
 
 ### Re-baselining `scripts/ground-truth.json`
 

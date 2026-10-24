@@ -15,7 +15,7 @@ mod update_tracker;
 use commands::IdleRegistry;
 use imap::session::SessionPoolManager;
 mod contacts;
-mod agent;
+pub mod agent;
 mod deliverability;
 mod device;
 mod dns;
@@ -478,7 +478,7 @@ pub fn run() {
         // Agent (voice + WhatsApp) console. Holds the bearer token for
         // agent-core calls so the token is never a #[tauri::command] argument —
         // a token that crosses the IPC boundary is one the frontend can log.
-        app.manage(agent::client::AgentAuth::default());
+
 
         // Bridge: EventBus → WebView `core-event`
         orchestrator::init::AppLifecycle::spawn_event_bridge(app.handle(), bus_rx);

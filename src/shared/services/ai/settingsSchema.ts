@@ -79,24 +79,38 @@ export const AI_SETTINGS_SCHEMA = {
   // Custom provider settings
   custom_base_url: { type: 'string', secure: false, description: 'Custom provider URL' },
 
-  // Voice settings
+  // Voice settings (agent-scoped — stored in agents table)
   voice_provider: {
     type: 'string',
     secure: false,
-    description: 'Voice provider',
-    options: ['browser', 'openai', 'elevenlabs', 'lmstudio', 'custom', 'agent-core'],
+    description: 'Voice provider (per-agent)',
+    options: ['browser', 'openai', 'elevenlabs', 'lmstudio', 'custom', 'offline'],
   },
-  voice_base_url: { type: 'string', secure: false, description: 'Voice base URL' },
-  voice_api_key: { type: 'string', secure: true, description: 'Voice API key' },
-  voice_tts_voice: { type: 'string', secure: false, description: 'TTS voice name' },
-  voice_stt_model: { type: 'string', secure: false, description: 'STT model name' },
-  voice_tts_enabled: { type: 'boolean', secure: false, description: 'TTS toggle' },
-  voice_stt_enabled: { type: 'boolean', secure: false, description: 'STT toggle' },
+  voice_base_url: { type: 'string', secure: false, description: 'Voice base URL (per-agent)' },
+  voice_api_key: { type: 'string', secure: true, description: 'Voice API key (per-agent)' },
+  voice_tts_voice: { type: 'string', secure: false, description: 'TTS voice name (per-agent)' },
+  voice_stt_model: { type: 'string', secure: false, description: 'STT model name (per-agent)' },
+  voice_tts_enabled: { type: 'boolean', secure: false, description: 'TTS toggle (per-agent)' },
+  voice_stt_enabled: { type: 'boolean', secure: false, description: 'STT toggle (per-agent)' },
+  voice_tts_speed: { type: 'number', secure: false, description: 'TTS speaking rate (per-agent)' },
+  voice_offline_tts_dir: {
+    type: 'string',
+    secure: false,
+    description: 'Offline TTS model dir (per-agent)',
+  },
+  voice_offline_stt_dir: {
+    type: 'string',
+    secure: false,
+    description: 'Offline STT model dir (per-agent)',
+  },
 
   // RAG settings
   rag_chunk_size: { type: 'number', secure: false, description: 'RAG chunk size' },
   rag_chunk_overlap: { type: 'number', secure: false, description: 'RAG chunk overlap' },
   rag_splitter: { type: 'string', secure: false, description: 'RAG splitter type' },
+  rag_index_scope: { type: 'json', secure: false, description: 'RAG index source toggles' },
+  rag_embedding_model: { type: 'string', secure: false, description: 'Local embedding model id' },
+  rag_search_limit: { type: 'number', secure: false, description: 'RAG search result limit' },
 
   // Task routing (NEW - Phase 2)
   ai_task_routes: { type: 'json', secure: false, description: 'User task routing overrides' },

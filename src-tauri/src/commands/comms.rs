@@ -1464,6 +1464,7 @@ pub async fn db_upsert_thread_category(
     cat: UpsertThreadCategoryRequest,
 ) -> CmdResult<()> {
     let now = chrono::Utc::now().timestamp();
+    let mut tx = pool.begin().await.map_err(AppDbError::Database)?;
     sqlx::query(
         "INSERT INTO thread_categories (account_id, thread_id, category, is_manual, is_user_override, applied_at) \
          VALUES (?, ?, ?, ?, ?, ?) \
@@ -1479,9 +1480,10 @@ pub async fn db_upsert_thread_category(
     .bind(cat.is_manual.map(|v| if v { 1 } else { 0 }).unwrap_or(0))
     .bind(cat.is_user_override.map(|v| if v { 1 } else { 0 }).unwrap_or(0))
     .bind(now)
-    .execute(&*pool)
+    .execute(&mut *tx)
     .await
     .map_err(AppDbError::Database)?;
+    tx.commit().await.map_err(AppDbError::Database)?;
     Ok(())
 }
 

@@ -244,7 +244,7 @@ export default function UpdateNotification({ updater, onDismiss }: UpdateNotific
           className="bg-bg-tertiary text-text-primary border border-border-primary"
         >
           <RefreshCw className="h-4 w-4 me-1.5" />
-          {t('updater.checkNow', 'Check Now')}
+          {t('common.checkNow', 'Check Now')}
         </Button>
 
         {hasUpdate && !state.downloading && !state.readyToInstall && (

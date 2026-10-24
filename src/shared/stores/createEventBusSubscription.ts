@@ -1,4 +1,4 @@
-import { eventBus } from '@shared/services/events/eventBus';
+import { eventBus, type EventHandler } from '@shared/services/events/eventBus';
 
 /**
  * A self-managed EventBus subscription handle. The returned `init()` is
@@ -44,9 +44,10 @@ export interface EventBusSubscription {
  * }
  * ```
  */
-export function createEventBusSubscription<
-  TSubscribers extends Record<string, (payload: any) => void>,
->(_name: string, subscribers: TSubscribers): EventBusSubscription {
+export function createEventBusSubscription<TSubscribers extends Record<string, EventHandler>>(
+  _name: string,
+  subscribers: TSubscribers,
+): EventBusSubscription {
   let cleanup: (() => void) | null = null;
 
   return {

@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from '@tanstack/react-router';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
+import { usePosStore } from '@features/pos/stores/posStore';
 import { useSyncStore } from '@shared/stores/syncStore';
 import { usePlatform } from '@shared/hooks/usePlatform';
-import { useFocusModeStore } from '@shared/stores/focusModeStore';
 import { useThemeStore } from '@shared/theme/themeStore';
 import type { ThemeMode } from '@shared/theme/themeStore';
 import { uiBus } from '@shared/services/events/uiBus';
@@ -21,7 +22,6 @@ import {
   Circle,
   Loader2,
   Keyboard,
-  Focus,
   Sun,
   Moon,
   Monitor,
@@ -30,6 +30,7 @@ import {
   Languages,
   ArrowLeftRight,
   Palette,
+  ShoppingCart,
 } from 'lucide-react';
 
 // ── Route path → breadcrumb i18n key ──────────────────────────────────
@@ -40,75 +41,105 @@ const ROUTE_KEYS: Record<string, string> = {
   '/mail': 'nav.mail',
   '/people': 'nav.crm',
   '/crm': 'nav.crm',
-  '/campaigns': 'campaign.campaigns',
+  '/campaigns': 'common.campaigns',
   '/calendar': 'nav.productivity',
   '/tasks': 'nav.productivity',
-  '/settings/general': 'nav.settings',
-  '/settings': 'nav.settings',
+  '/settings/general': 'common.settings',
+  '/settings': 'common.settings',
   '/vault': 'nav.vault',
-  '/automation': 'nav.automation',
+  '/automation': 'common.automation',
   '/ai-assistant': 'nav.aiAssistant',
-  '/invoicing': 'nav.invoicing',
+  '/invoicing': 'common.invoicing',
   '/erp': 'nav.erp',
   '/pos': 'nav.pos',
-  '/attachments': 'nav.attachments',
+  '/attachments': 'common.attachments',
   '/help': 'nav.help',
 };
 
 function getBreadcrumb(pathname: string, t: (key: string) => string): string {
   if (ROUTE_KEYS[pathname]) return t(ROUTE_KEYS[pathname]);
   if (pathname.startsWith('/mail/')) return t('nav.mail');
-  if (pathname.startsWith('/settings/')) return t('nav.settings');
+  if (pathname.startsWith('/settings/')) return t('common.settings');
   if (pathname.startsWith('/help/')) return t('nav.help');
   if (pathname.startsWith('/label/')) return t('nav.label');
   return 'SMEMaster';
 }
 
-// ── Dropdown wrapper (language selector) ───────────────────────────────
+// ── Dropdown (language selector, color picker, account switcher) ───────
+// Rendered in a portal at z-[100] so it floats above every sidebar, panel
+// and modal instead of being clipped by a stacking context.
 function Dropdown({
   trigger,
   children,
   align = 'end',
+  menuClassName = 'min-w-[160px] py-1.5 overflow-hidden',
+  buttonClassName = 'flex items-center justify-center w-8 h-8 rounded-xl text-text-secondary hover:text-text-primary hover:bg-white/10 dark:hover:bg-white/8 active:scale-90 transition-all duration-150',
 }: {
   trigger: React.ReactNode;
   children: React.ReactNode;
   align?: 'start' | 'end';
+  menuClassName?: string;
+  buttonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+    setAnchor(btnRef.current?.getBoundingClientRect() ?? null);
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
-    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', onDown);
+      document.addEventListener('keydown', onKey);
+    }, 0);
     return () => {
       clearTimeout(timer);
-      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
+  const isRtl = document.documentElement.dir === 'rtl';
+  const endSide = align === 'end';
+  const style: React.CSSProperties =
+    endSide !== isRtl
+      ? { top: (anchor?.bottom ?? 0) + 6, right: window.innerWidth - (anchor?.right ?? 0) }
+      : { top: (anchor?.bottom ?? 0) + 6, left: anchor?.left ?? 0 };
+
   return (
-    <div ref={ref} className="relative">
+    <>
       <button
+        ref={btnRef}
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center justify-center w-8 h-8 rounded-xl text-text-secondary hover:text-text-primary hover:bg-white/10 dark:hover:bg-white/8 active:scale-90 transition-all duration-150"
+        className={buttonClassName}
         aria-haspopup="true"
         aria-expanded={open}
       >
         {trigger}
       </button>
-      {open && (
-        <div
-          className={`absolute top-full ${align === 'end' ? 'inset-inline-end-0' : 'inset-inline-start-0'} mt-1.5 min-w-[160px] bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 py-1.5 overflow-hidden animate-[fadeIn_150ms_ease-out]`}
-        >
-          {children}
-        </div>
-      )}
-    </div>
+      {open &&
+        anchor &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            className={`fixed z-[100] bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl animate-[fadeIn_150ms_ease-out] ${menuClassName}`}
+            style={style}
+          >
+            {children}
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -181,17 +212,21 @@ export function WindowTitleBar({
 
   // ── Window state (desktop only) ────────────────────────────────────────
   const [maximized, setMaximized] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   // ── Theme config (mobile-native) ───────────────────────────────────────
   const breadcrumb = getBreadcrumb(location.pathname, t);
-  const { mode, colorTheme, setMode, setColorTheme } = useThemeStore();
+  const mode = useThemeStore((s) => s.mode);
+  const colorTheme = useThemeStore((s) => s.colorTheme);
+  const setMode = useThemeStore((s) => s.setMode);
+  const setColorTheme = useThemeStore((s) => s.setColorTheme);
   const [lang, setLang] = useState<SupportedLocale>(
     () => (localStorage.getItem('i18nextLng') as SupportedLocale) || 'en',
   );
-  const [colorsOpen, setColorsOpen] = useState(false);
-  const colorsRef = useRef<HTMLDivElement>(null);
+
+  // ── POS cart summary (shown only on the POS route) ───────────────────
+  const isPosRoute = location.pathname.startsWith('/pos');
+  const posCount = usePosStore((s) => s.cart.reduce((n, i) => n + i.quantity, 0));
+  const posTotal = usePosStore((s) => s.cart.reduce((sum, i) => sum + i.price * i.quantity, 0));
 
   // ── Account / sync state ──────────────────────────────────────────────
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -200,10 +235,6 @@ export function WindowTitleBar({
   const isSyncingFolder = useSyncStore((s) => s.isSyncingFolder);
   const isSyncing = isSyncingFolder !== null;
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
-
-  // ── Focus mode ────────────────────────────────────────────────────────
-  const focusMode = useFocusModeStore((s) => s.focusMode);
-  const toggleFocusMode = useFocusModeStore((s) => s.toggleFocusMode);
 
   // ── Window state tracking ──────────────────────────────────────────────
   useEffect(() => {
@@ -234,46 +265,6 @@ export function WindowTitleBar({
     };
   }, [showWindowControls]);
 
-  // ── Close color picker on outside click ────────────────────────────────
-  useEffect(() => {
-    if (!colorsOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (colorsRef.current && !colorsRef.current.contains(e.target as Node)) {
-        setColorsOpen(false);
-      }
-    };
-    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handler);
-    };
-  }, [colorsOpen]);
-
-  // ── Close account menu on outside click ────────────────────────────────
-  useEffect(() => {
-    if (!accountMenuOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
-        setAccountMenuOpen(false);
-      }
-    };
-    const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handleClick);
-    };
-  }, [accountMenuOpen]);
-
-  // ── Escape exits focus mode ────────────────────────────────────────────
-  useEffect(() => {
-    if (!focusMode) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') useFocusModeStore.getState().exitFocusMode();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [focusMode]);
-
   // ── Handlers ───────────────────────────────────────────────────────────
   const handleMinimize = useCallback(() => {
     try {
@@ -294,10 +285,6 @@ export function WindowTitleBar({
   const handleToggleShortcuts = useCallback(() => {
     uiBus.emit('toggle:shortcuts-help');
   }, []);
-
-  const handleToggleFocusMode = useCallback(() => {
-    toggleFocusMode();
-  }, [toggleFocusMode]);
 
   const handleLanguageChange = useCallback(async (lng: SupportedLocale) => {
     setLang(lng);
@@ -324,7 +311,6 @@ export function WindowTitleBar({
   const handleAccountSelect = useCallback(
     (id: string) => {
       setActiveAccount(id);
-      setAccountMenuOpen(false);
       onAccountSwitch?.(id);
     },
     [setActiveAccount, onAccountSwitch],
@@ -371,68 +357,74 @@ export function WindowTitleBar({
         </span>
       </div>
 
-      {/* ── Center: Account switcher (desktop, multi-account) ─────── */}
+      {/* ── Center: POS cart summary / account switcher ─────────────── */}
+      {isPosRoute && (
+        <div
+          data-tauri-drag-region
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold"
+          title={t('nav.pos')}
+        >
+          <ShoppingCart size={12} aria-hidden="true" />
+          <span className="tabular-nums">
+            {posCount} · ${posTotal.toFixed(2)}
+          </span>
+        </div>
+      )}
       {accounts.length > 1 && (
-        <div data-tauri-drag-region className="relative hidden md:block" ref={accountMenuRef}>
-          <button
-            data-tauri-drag-region
-            onClick={() => setAccountMenuOpen((p) => !p)}
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
-            title={activeAccount?.email ?? t('common.selectAccount')}
+        <div data-tauri-drag-region className="hidden md:block">
+          <Dropdown
+            align="end"
+            menuClassName="w-52 py-1 max-h-44 overflow-y-auto"
+            buttonClassName="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
+            trigger={
+              <span
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
+                title={activeAccount?.email ?? t('common.selectAccount')}
+              >
+                <span className="truncate max-w-[100px]">
+                  {activeAccount?.email ?? t('common.noAccount')}
+                </span>
+                <ChevronDown size={10} className="shrink-0" />
+              </span>
+            }
           >
-            <span className="truncate max-w-[100px]">
-              {activeAccount?.email ?? t('common.noAccount')}
-            </span>
-            <ChevronDown size={10} className="shrink-0" />
-          </button>
-          {accountMenuOpen && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-sidebar-bg border border-border-primary rounded-lg shadow-xl z-50 py-1 max-h-44 overflow-y-auto">
-              {accounts.map((acct) => (
-                <button
-                  key={acct.id}
-                  onClick={() => handleAccountSelect(acct.id)}
-                  className={`w-full text-start px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
-                    acct.id === activeAccountId
-                      ? 'text-accent bg-accent/10'
-                      : 'text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover'
-                  }`}
-                >
-                  <span className="truncate flex-1">{acct.email}</span>
-                  {acct.id === activeAccountId && (
-                    <Circle size={5} className="fill-accent text-accent shrink-0" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+            {accounts.map((acct) => (
+              <button
+                key={acct.id}
+                onClick={() => handleAccountSelect(acct.id)}
+                className={`w-full text-start px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
+                  acct.id === activeAccountId
+                    ? 'text-accent bg-accent/10'
+                    : 'text-sidebar-text/70 hover:text-sidebar-text hover:bg-sidebar-hover'
+                }`}
+              >
+                <span className="truncate flex-1">{acct.email}</span>
+                {acct.id === activeAccountId && (
+                  <Circle size={5} className="fill-accent text-accent shrink-0" />
+                )}
+              </button>
+            ))}
+          </Dropdown>
         </div>
       )}
 
       {/* ── Right: Configs + Desktop controls ────────────────────── */}
       <div data-tauri-drag-region className="flex items-center gap-0.5">
         {/* Color picker */}
-        <div ref={colorsRef} className="relative">
-          <button
-            onClick={() => setColorsOpen((p) => !p)}
-            className="flex items-center justify-center w-8 h-8 rounded-xl text-text-secondary hover:text-text-primary hover:bg-white/10 dark:hover:bg-white/8 active:scale-90 transition-all duration-150"
-            aria-label="Accent color"
-            title="Accent Color"
-          >
-            <Palette size={15} />
-          </button>
-          {colorsOpen && (
-            <div className="absolute inset-inline-end-0 top-full mt-1.5 flex items-center gap-1.5 px-2.5 py-1.5 bg-sidebar-bg/95 backdrop-blur-[20px] border border-white/15 dark:border-white/8 rounded-2xl shadow-xl z-50 animate-[fadeIn_150ms_ease-out]">
-              {accentColors.map((ct) => (
-                <ColorDot
-                  key={ct.id}
-                  color={ct.swatch}
-                  selected={colorTheme === ct.id}
-                  onClick={() => setColorTheme(ct.id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <Dropdown
+          trigger={<Palette size={15} />}
+          align="end"
+          menuClassName="flex items-center gap-1.5 px-2.5 py-1.5"
+        >
+          {accentColors.map((ct) => (
+            <ColorDot
+              key={ct.id}
+              color={ct.swatch}
+              selected={colorTheme === ct.id}
+              onClick={() => setColorTheme(ct.id)}
+            />
+          ))}
+        </Dropdown>
 
         {/* Theme toggle */}
         <button
@@ -476,19 +468,6 @@ export function WindowTitleBar({
 
         {/* ── Desktop-only controls (hidden on small screens) ──── */}
         <span className="hidden md:flex items-center gap-0.5 ms-1 ps-1.5 border-s border-white/10 dark:border-white/5">
-          {/* Focus mode */}
-          <button
-            onClick={handleToggleFocusMode}
-            className={`flex items-center justify-center w-8 h-8 rounded-xl transition-colors ${
-              focusMode
-                ? 'text-accent bg-accent/10'
-                : 'text-text-secondary hover:text-text-primary hover:bg-white/10 dark:hover:bg-white/8'
-            }`}
-            title={focusMode ? 'Exit Focus Mode (Esc)' : 'Focus Mode'}
-          >
-            <Focus size={14} />
-          </button>
-
           {/* Keyboard shortcuts */}
           <button
             onClick={handleToggleShortcuts}

@@ -207,7 +207,7 @@ export function AiSignatureGenerateModal({
               onClick={handleClose}
               className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiSignature.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -269,14 +269,14 @@ export function AiSignatureGenerateModal({
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ms-auto"
             >
               <Sparkles size={12} />
-              {t('modals.aiSignature.regenerate')}
+              {t('common.regenerate')}
             </button>
             <button
               type="button"
               onClick={handleClose}
               className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiSignature.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>

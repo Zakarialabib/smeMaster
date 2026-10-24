@@ -11,6 +11,7 @@ import {
   incrementRetry,
   getPendingOpsCount,
   compactQueue,
+  PENDING_OP_ACCOUNT_KEY,
 } from '@features/settings/db/pendingOperations';
 import { executeQueuedAction } from '@features/mail/services/emailActions';
 import { getEmailProvider } from '@features/mail/services/email/providerFactory';
@@ -102,10 +103,15 @@ async function processQueue(): Promise<void> {
       // Parse params
       const params = JSON.parse(op.params) as Record<string, unknown>;
 
+      // Ops are company-scoped in storage; the originating mail account
+      // travels inside params (embedded at enqueue time). Fall back to the
+      // scope id for rows written before that.
+      const accountId = (params[PENDING_OP_ACCOUNT_KEY] as string | undefined) ?? op.company_id;
+
       if (op.operation_type === 'send_campaign_email') {
-        await processSendCampaignEmail(op.id, op.company_id, params);
+        await processSendCampaignEmail(op.id, accountId, params);
       } else {
-        await executeQueuedAction(op.company_id, op.operation_type, params);
+        await executeQueuedAction(accountId, op.operation_type, params);
       }
 
       // Success — delete from queue

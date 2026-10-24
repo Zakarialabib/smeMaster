@@ -21,6 +21,13 @@ import {
   Calculator,
   ListChecks,
   CalendarDays,
+  Activity,
+  Package,
+  Building2,
+  Bot,
+  Store,
+  ShoppingCart,
+  FileText,
 } from 'lucide-react';
 import { navigateToLabel, navigateToSettings, navigateToHelp } from '@/router/navigate';
 import { router } from '@/router';
@@ -57,12 +64,12 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
   { id: 'inbox', label: 'nav.inbox', icon: Inbox },
   { id: 'starred', label: 'nav.starred', icon: Star },
   { id: 'snoozed', label: 'nav.snoozed', icon: Clock },
-  { id: 'sent', label: 'nav.sent', icon: Send },
+  { id: 'sent', label: 'common.sent', icon: Send },
   { id: 'drafts', label: 'nav.drafts', icon: FileEdit },
   { id: 'trash', label: 'nav.trash', icon: Trash2 },
   { id: 'spam', label: 'nav.spam', icon: Ban },
   { id: 'all', label: 'nav.allMail', icon: Mail },
-  { id: 'attachments', label: 'nav.attachments', icon: Paperclip },
+  { id: 'attachments', label: 'common.attachments', icon: Paperclip },
   { id: 'smart-folders', label: 'nav.smartFolders', icon: FolderSearch },
   { id: 'labels', label: 'nav.labels', icon: Tag },
 ];
@@ -72,7 +79,7 @@ export const ALL_NAV_ITEMS: { id: string; label: string; icon: LucideIcon }[] = 
 const SETTINGS_NAV_LABELS: Record<string, string> = {
   pairing: 'settings.devicePairing',
   'deliverability-dashboard': 'settings.tabGroupDeliverability',
-  developer: 'settings.tabGroupDeveloper',
+  developer: 'common.developer',
   about: 'nav.about',
 };
 
@@ -100,19 +107,10 @@ function buildSettingsItems(): NavRailSubItem[] {
 
 export const NAV_GROUPS: NavRailGroup[] = [
   {
-    id: 'unified',
-    icon: LayoutDashboard,
-    label: 'nav.unified',
-    items: [],
-  },
-  {
     id: 'dashboard',
     label: 'nav.dashboard',
     icon: LayoutDashboard,
-    items: [
-      { id: 'invoicing', label: 'nav.invoicing', icon: ReceiptText, path: '/invoicing' },
-      { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
-    ],
+    items: [],
   },
   {
     id: 'mail',
@@ -122,14 +120,14 @@ export const NAV_GROUPS: NavRailGroup[] = [
       { id: 'inbox', label: 'nav.inbox', icon: Inbox },
       { id: 'starred', label: 'nav.starred', icon: Star },
       { id: 'snoozed', label: 'nav.snoozed', icon: Clock },
-      { id: 'sent', label: 'nav.sent', icon: Send },
+      { id: 'sent', label: 'common.sent', icon: Send },
       { id: 'drafts', label: 'nav.drafts', icon: FileEdit },
       { id: 'trash', label: 'nav.trash', icon: Trash2 },
       { id: 'spam', label: 'nav.spam', icon: Ban },
       { id: 'all', label: 'nav.allMail', icon: Mail },
       // ── divider ──
       { id: '__divider__', label: '', icon: undefined },
-      { id: 'attachments', label: 'nav.attachments', icon: Paperclip },
+      { id: 'attachments', label: 'common.attachments', icon: Paperclip },
       { id: 'smart-folders', label: 'nav.smartFolders', icon: FolderSearch },
       { id: 'labels', label: 'nav.labels', icon: Tag },
     ],
@@ -139,42 +137,50 @@ export const NAV_GROUPS: NavRailGroup[] = [
     icon: Users,
     label: 'nav.crm',
     items: [
-      { id: 'contacts', label: 'nav.crm', icon: Users },
-      { id: 'deals', label: 'nav.deals', icon: ReceiptText, path: '/people?tab=deals' },
-    ],
-  },
-  {
-    id: 'tasks',
-    icon: ListChecks,
-    label: 'nav.tasks',
-    items: [
-      { id: 'today', label: 'nav.tasksToday', icon: ListChecks, path: '/tasks' },
+      { id: 'people', label: 'common.contacts', icon: Users, path: '/people' },
+      { id: 'deals', label: 'nav.deals', icon: FileText, path: '/people?tab=deals' },
+      { id: 'activity', label: 'common.activity', icon: Activity, path: '/people?tab=activity' },
+      // ── divider ──
+      { id: '__divider__', label: '', icon: undefined },
+      { id: 'tasks', label: 'common.tasks', icon: ListChecks, path: '/people?tab=tasks' },
       {
-        id: 'upcoming',
-        label: 'nav.tasksUpcoming',
+        id: 'calendar',
+        label: 'common.calendar',
         icon: CalendarDays,
-        path: '/tasks?view=upcoming',
+        path: '/people?tab=calendar',
       },
+      { id: 'invoices', label: 'common.invoices', icon: ReceiptText, path: '/people?tab=invoices' },
     ],
   },
   {
-    id: 'calendar',
-    icon: CalendarDays,
-    label: 'nav.calendar',
+    id: 'sell',
+    label: 'nav.sell',
+    icon: Store,
     items: [
-      { id: 'month', label: 'nav.calendarMonth', icon: CalendarDays, path: '/calendar' },
+      { id: 'pos', label: 'nav.pos', icon: ShoppingCart, path: '/pos' },
+      { id: 'documents', label: 'invoicing.tabs.documents', icon: ReceiptText, path: '/invoicing' },
       {
-        id: 'agenda',
-        label: 'nav.calendarAgenda',
-        icon: ListChecks,
-        path: '/calendar?view=agenda',
+        id: 'clients',
+        label: 'invoicing.tabs.clients',
+        icon: Users,
+        path: '/invoicing?tab=clients',
       },
+      { id: 'items', label: 'invoicing.tabs.items', icon: Package, path: '/invoicing?tab=items' },
+      {
+        id: 'business',
+        label: 'invoicing.tabs.business',
+        icon: Building2,
+        path: '/invoicing?tab=business',
+      },
+      // ── divider ──
+      { id: '__divider__', label: '', icon: undefined },
+      { id: 'erp', label: 'nav.erp', icon: Calculator, path: '/erp' },
     ],
   },
   {
     id: 'automation',
     icon: GitBranch,
-    label: 'nav.automation',
+    label: 'common.automation',
     items: [],
   },
   {
@@ -190,9 +196,15 @@ export const NAV_GROUPS: NavRailGroup[] = [
     items: [],
   },
   {
+    id: 'agent-console',
+    icon: Bot,
+    label: 'nav.agentConsole',
+    items: [],
+  },
+  {
     id: 'settings',
     icon: Settings,
-    label: 'nav.settings',
+    label: 'common.settings',
     items: buildSettingsItems(),
   },
   {
@@ -211,30 +223,30 @@ export type InsightWidget =
   'ai-tasks' | 'today' | 'hot-leads' | 'upcoming' | 'recent' | 'ai-summary';
 
 export const INSIGHT_WIDGETS: Record<string, InsightWidget[]> = {
-  unified: ['ai-tasks', 'today', 'hot-leads', 'upcoming'],
   mail: ['ai-tasks', 'today', 'hot-leads'],
   crm: ['hot-leads', 'ai-summary', 'upcoming'],
   tasks: ['today', 'upcoming', 'ai-tasks'],
-  calendar: ['upcoming', 'today', 'hot-leads'],
   automation: ['ai-summary', 'recent'],
   vault: ['recent'],
   'ai-assistant': ['ai-summary', 'recent'],
+  'agent-console': ['ai-summary', 'recent'],
   dashboard: ['today', 'upcoming', 'hot-leads'],
+  sell: ['today', 'upcoming', 'hot-leads'],
   settings: ['recent'],
   help: ['recent'],
 };
 
 /** Default insight rail title per section. */
 export const INSIGHT_TITLE: Record<string, string> = {
-  unified: 'Insights',
   mail: 'Today',
   crm: 'Relationships',
   tasks: 'My day',
-  calendar: 'Upcoming',
   automation: 'Activity',
   vault: 'Recent',
   'ai-assistant': 'AI',
+  'agent-console': 'Agent',
   dashboard: 'Overview',
+  sell: 'Sales',
   settings: 'Recent',
   help: 'Recent',
 };
@@ -255,25 +267,28 @@ export function getActiveNavFromPath(pathname: string): string {
   if (pathname.startsWith('/smart-folder')) return 'mail';
   if (pathname.startsWith('/people')) return 'crm';
   if (pathname.startsWith('/crm')) return 'crm';
-  if (pathname.startsWith('/tasks')) return 'tasks';
-  if (pathname.startsWith('/calendar')) return 'calendar';
+  // Legacy /tasks + /calendar deep links (redirected into /people tabs).
+  if (pathname.startsWith('/tasks')) return 'crm';
+  if (pathname.startsWith('/calendar')) return 'crm';
   if (pathname.startsWith('/automation')) return 'automation';
   if (pathname.startsWith('/workflows')) return 'automation';
   if (pathname.startsWith('/vault')) return 'vault';
   if (pathname.startsWith('/settings')) return 'settings';
   if (pathname.startsWith('/help')) return 'help';
   if (pathname.startsWith('/attachments')) return 'mail';
-  if (pathname.startsWith('/unified')) return 'unified';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
-  if (pathname.startsWith('/invoicing')) return 'dashboard';
-  if (pathname.startsWith('/erp')) return 'dashboard';
+  if (pathname.startsWith('/invoicing')) return 'sell';
+  if (pathname.startsWith('/erp')) return 'sell';
   if (pathname.startsWith('/ai-assistant')) return 'ai-assistant';
-  if (pathname.startsWith('/pos')) return 'mail';
+  if (pathname.startsWith('/agent-console')) return 'agent-console';
+  if (pathname.startsWith('/pos')) return 'sell';
   return 'mail';
 }
 
-export function getActiveSubItem(pathname: string): string | null {
+export function getActiveSubItem(pathname: string, searchStr = ''): string | null {
   if (pathname === '/' || pathname === '') return 'inbox';
+
+  const search = new URLSearchParams(searchStr);
 
   const mailMatch = pathname.match(/^\/mail\/([^/]+)/);
   if (mailMatch) return mailMatch[1]!;
@@ -286,22 +301,37 @@ export function getActiveSubItem(pathname: string): string | null {
   const settingsMatch = pathname.match(/^\/settings\/([^/]+)/);
   if (settingsMatch) return settingsMatch[1]!;
 
-  if (pathname.startsWith('/people')) return 'contacts';
-  if (pathname.startsWith('/crm')) return 'contacts';
+  // CRM workspace — tab comes from `?tab=` (sidebar-driven, no top tabs).
+  if (pathname.startsWith('/people')) {
+    const tab = search.get('tab');
+    return tab && ['people', 'deals', 'activity', 'tasks', 'calendar', 'invoices'].includes(tab)
+      ? tab
+      : 'people';
+  }
+  if (pathname.startsWith('/crm')) return 'people';
   if (pathname.startsWith('/attachments')) return 'attachments';
 
   if (pathname.startsWith('/dashboard')) return null;
-  if (pathname.startsWith('/invoicing')) return 'invoicing';
+  // Invoicing workspace — tab comes from `?tab=` (sidebar-driven, no top tabs).
+  if (pathname.startsWith('/invoicing')) {
+    const tab = search.get('tab');
+    return tab && ['documents', 'clients', 'items', 'business'].includes(tab) ? tab : 'documents';
+  }
   if (pathname.startsWith('/erp')) return 'erp';
 
   const helpMatch = pathname.match(/^\/help\/([^/]+)/);
   if (helpMatch) return helpMatch[1]!;
   if (pathname.startsWith('/help')) return 'help-center';
 
-  if (pathname.startsWith('/tasks')) return 'tasks';
+  // Legacy /tasks + /calendar deep links (redirected into /people tabs).
+  if (pathname.startsWith('/tasks')) {
+    if (search.get('tab') === 'calendar') return 'calendar';
+    return 'tasks';
+  }
   if (pathname.startsWith('/calendar')) return 'calendar';
   if (pathname.startsWith('/ai-assistant')) return null;
-  if (pathname.startsWith('/pos')) return null;
+  if (pathname.startsWith('/agent-console')) return null;
+  if (pathname.startsWith('/pos')) return 'pos';
 
   return null;
 }
@@ -312,6 +342,22 @@ export function getSubItemsForGroup(groupId: string): NavRailSubItem[] {
 }
 
 // ─── Navigation handlers ──────────────────────────────────────────────────────
+
+/**
+ * Navigate to a sub-item `path` like `/people?tab=deals` — splits off the
+ * query string and passes it as typed search params instead of raw text.
+ * Shared by the sidebar, bottom bar, launcher and dashboard cards so
+ * query-bearing deep links behave identically everywhere.
+ */
+export function navigateToItemPath(path: string): void {
+  const [pathname, query] = path.split('?');
+  if (!pathname) return;
+  if (!query) {
+    router.navigate({ to: pathname });
+    return;
+  }
+  router.navigate({ to: pathname, search: Object.fromEntries(new URLSearchParams(query)) });
+}
 
 export function handleNavSelect(id: string): void {
   switch (id) {
@@ -324,11 +370,11 @@ export function handleNavSelect(id: string): void {
     case 'help':
       navigateToHelp();
       break;
-    case 'calendar':
-      router.navigate({ to: '/calendar' });
-      break;
     case 'tasks':
-      router.navigate({ to: '/tasks' });
+      router.navigate({ to: '/people', search: (prev) => ({ ...prev, tab: 'tasks' }) });
+      break;
+    case 'sell':
+      router.navigate({ to: '/pos' });
       break;
     case 'automation':
       navigateToLabel('automation');
@@ -343,14 +389,14 @@ export function handleNavSelect(id: string): void {
     case 'people':
       router.navigate({ to: '/people' });
       break;
-    case 'unified':
-      router.navigate({ to: '/unified' });
-      break;
     case 'dashboard':
       router.navigate({ to: '/dashboard' });
       break;
     case 'ai-assistant':
       router.navigate({ to: '/ai-assistant' });
+      break;
+    case 'agent-console':
+      router.navigate({ to: '/agent-console' });
       break;
     case 'pos':
       router.navigate({ to: '/pos' });
@@ -362,6 +408,14 @@ export function handleNavSelect(id: string): void {
 }
 
 export function handleSubItemSelect(groupId: string, subItemId: string): void {
+  // Sub-items with a `path` (dashboard, crm, tasks, sell, …) navigate there.
+  const item = NAV_GROUPS.find((g) => g.id === groupId)?.items.find((i) => i.id === subItemId);
+  if (item?.path) {
+    navigateToItemPath(item.path);
+    return;
+  }
+
+  // Path-less groups resolve through their dedicated helpers.
   switch (groupId) {
     case 'mail':
       navigateToLabel(subItemId);
@@ -369,16 +423,14 @@ export function handleSubItemSelect(groupId: string, subItemId: string): void {
     case 'settings':
       navigateToSettings(subItemId);
       break;
-    case 'crm':
-    case 'people':
-      navigateToLabel(subItemId);
-      break;
     case 'help':
       if (subItemId === 'about') {
         navigateToSettings('about');
       } else {
         navigateToHelp();
       }
+      break;
+    default:
       break;
   }
 }

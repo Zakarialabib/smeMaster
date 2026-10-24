@@ -464,6 +464,24 @@ async fn seed_demo_data(pool: &sqlx::SqlitePool) -> Result<(), String> {
         return Ok(());
     }
 
+    // ── Always ensure the default company row exists ──
+    // The frontend hardcodes ACTIVE_COMPANY_ID = 'demo-company-1'
+    // (src/shared/constants/company.ts) and every company-scoped write
+    // (tasks, calendar_events, contacts, clients) FK-references
+    // companies(id). The demo seed below can legitimately be skipped (real
+    // email accounts present, explicit opt-out, or already seeded) — but
+    // without this row db_get_company / db_create_task /
+    // db_create_calendar_event all fail with "not found" / FK errors.
+    // INSERT OR IGNORE makes it idempotent on every boot.
+    if let Err(e) = sqlx::query(
+        "INSERT OR IGNORE INTO companies (id, name) VALUES ('demo-company-1', 'SME Master Demo')",
+    )
+    .execute(pool)
+    .await
+    {
+        log::error!("[seed] Failed to ensure default company row: {e}");
+    }
+
     // ── Dynamic guard: do not auto-seed when real data already exists ──
     // If the user has connected at least one real email account, demo data
     // would only pollute their real dataset — skip it so real data is shown

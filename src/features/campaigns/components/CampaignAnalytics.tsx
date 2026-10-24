@@ -106,7 +106,7 @@ export function CampaignAnalytics({
   }, [campaignId]);
 
   const barData = [
-    { name: t('campaign.sent'), value: stats.sent, fill: COLORS.accent },
+    { name: t('common.sent'), value: stats.sent, fill: COLORS.accent },
     { name: t('campaign.opened'), value: stats.opened, fill: COLORS.success },
     { name: t('campaign.clicked'), value: stats.clicked, fill: COLORS.warning },
     { name: t('campaign.bounced'), value: stats.bounced, fill: COLORS.danger },
@@ -162,7 +162,7 @@ export function CampaignAnalytics({
       <div className="flex items-center justify-between">
         <div className={`grid ${isMobileDevice ? 'grid-cols-1' : 'grid-cols-4'} gap-3 flex-1`}>
           <CampaignStatsCard
-            label={t('campaign.sent')}
+            label={t('common.sent')}
             value={stats.sent}
             icon={Send}
             color={COLORS.accent}
@@ -409,7 +409,7 @@ export function CampaignAnalytics({
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-text-tertiary">{t('campaign.sent')}:</span>{' '}
+                      <span className="text-text-tertiary">{t('common.sent')}:</span>{' '}
                       <span className="text-text-primary font-medium">{v.total}</span>
                     </div>
                     <div>

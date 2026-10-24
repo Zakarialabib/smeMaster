@@ -58,7 +58,7 @@ describe('invoicing IPC wrapper — command names', () => {
     });
   });
 
-  it('updateInvoice -> db_update_invoice with individual Option params (issue_date -> date)', async () => {
+  it('updateInvoice -> db_update_invoice with individual Option params (issue_date -> date, camelCase wire format)', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.updateInvoice('inv-1', {
       notes: 'Memo',
@@ -69,11 +69,13 @@ describe('invoicing IPC wrapper — command names', () => {
     });
     expect(mockInvoke).toHaveBeenCalledWith('db_update_invoice', {
       id: 'inv-1',
+      status: null,
       notes: 'Memo',
       date: 100,
-      due_date: 200,
+      dueDate: 200,
       currency: 'MAD',
-      client_id: 'client-9',
+      clientId: 'client-9',
+      items: null,
     });
   });
 
@@ -82,11 +84,13 @@ describe('invoicing IPC wrapper — command names', () => {
     await api.updateInvoice('inv-1', { notes: 'Only notes' });
     expect(mockInvoke).toHaveBeenCalledWith('db_update_invoice', {
       id: 'inv-1',
+      status: null,
       notes: 'Only notes',
       date: null,
-      due_date: null,
+      dueDate: null,
       currency: undefined,
-      client_id: null,
+      clientId: null,
+      items: null,
     });
   });
 
@@ -119,21 +123,23 @@ describe('invoicing IPC wrapper — command names', () => {
     });
   });
 
-  it('removeInvoiceItem -> db_remove_invoice_item', async () => {
+  it('removeInvoiceItem -> db_remove_invoice_item (itemId only — backend resolves the parent invoice)', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.removeInvoiceItem('inv-1', 'item-1');
     expect(mockInvoke).toHaveBeenCalledWith('db_remove_invoice_item', {
-      invoiceId: 'inv-1',
       itemId: 'item-1',
     });
   });
 });
 
 describe('invoicing IPC wrapper — clients', () => {
-  it('listClients -> db_list_clients (company_id passed, filtered server-side)', async () => {
+  it('listClients -> db_list_clients (companyId passed, filtered server-side)', async () => {
     mockInvoke.mockResolvedValueOnce([]);
     await api.listClients('company-1');
-    expect(mockInvoke).toHaveBeenCalledWith('db_list_clients', { companyId: 'company-1' });
+    expect(mockInvoke).toHaveBeenCalledWith('db_list_clients', {
+      companyId: 'company-1',
+      role: null,
+    });
   });
 
   it('createClient -> db_create_client with camelCase data', async () => {
@@ -149,25 +155,34 @@ describe('invoicing IPC wrapper — clients', () => {
     expect(mockInvoke).toHaveBeenCalledWith('db_create_client', data);
   });
 
-  it('updateClient -> db_update_client with individual params (no fields blob)', async () => {
+  it('updateClient -> db_update_client with individual params (no fields blob, camelCase wire format)', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.updateClient('client-1', { name: 'New', email: 'x@y.z' });
     expect(mockInvoke).toHaveBeenCalledWith('db_update_client', {
       id: 'client-1',
       name: 'New',
       email: 'x@y.z',
+      phone: null,
+      address: null,
+      city: null,
+      country: null,
+      taxId: null,
+      role: null,
+      creditLimit: null,
+      paymentTerms: null,
+      notes: null,
     });
   });
 
   it('deleteClient -> db_delete_client', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.deleteClient('client-1');
-    expect(mockInvoke).toHaveBeenCalledWith('db_delete_client', { id: 'client-1' });
+    expect(mockInvoke).toHaveBeenCalledWith('db_delete_client', { id: 'client-1', hard: null });
   });
 });
 
 describe('invoicing IPC wrapper — items', () => {
-  it('createItem -> db_create_item mapping type->item_type and adding required stock fields', async () => {
+  it('createItem -> db_create_item mapping type->itemType (camelCase wire format)', async () => {
     mockInvoke.mockResolvedValueOnce({ id: 'item-1' });
     await api.createItem({
       companyId: 'company-1',
@@ -181,39 +196,41 @@ describe('invoicing IPC wrapper — items', () => {
     expect(mockInvoke).toHaveBeenCalledWith('db_create_item', {
       name: 'Widget',
       description: null,
-      item_type: 'product',
+      itemType: 'product',
       sku: 'W-1',
       unit: 'pcs',
-      buy_price: 0,
-      sell_price: 10,
-      stock_qty: 0,
-      stock_alert: 0,
-      tax_rate: 20,
+      buyPrice: 0,
+      sellPrice: 10,
+      stockQty: 0,
+      stockAlert: 0,
+      taxRate: 20,
       barcode: null,
-      company_id: 'company-1',
+      imageUrl: null,
+      companyId: 'company-1',
     });
   });
 
-  it('createItem defaults item_type to product and sell/stock to 0', async () => {
+  it('createItem defaults itemType to product and sell/stock to 0', async () => {
     mockInvoke.mockResolvedValueOnce({ id: 'item-2' });
     await api.createItem({ companyId: 'company-1', name: 'Service' });
     expect(mockInvoke).toHaveBeenCalledWith('db_create_item', {
       name: 'Service',
       description: null,
-      item_type: 'product',
+      itemType: 'product',
       sku: null,
       unit: 'unit',
-      buy_price: 0,
-      sell_price: 0,
-      stock_qty: 0,
-      stock_alert: 0,
-      tax_rate: 0,
+      buyPrice: 0,
+      sellPrice: 0,
+      stockQty: 0,
+      stockAlert: 0,
+      taxRate: 0,
       barcode: null,
-      company_id: 'company-1',
+      imageUrl: null,
+      companyId: 'company-1',
     });
   });
 
-  it('updateItem -> db_update_item mapping type->item_type and camelCase->snake_case', async () => {
+  it('updateItem -> db_update_item mapping type->itemType (camelCase wire format)', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.updateItem('item-1', {
       type: 'service',
@@ -224,17 +241,19 @@ describe('invoicing IPC wrapper — items', () => {
     });
     expect(mockInvoke).toHaveBeenCalledWith('db_update_item', {
       id: 'item-1',
-      name: undefined,
+      name: null,
       description: null,
-      item_type: 'service',
+      itemType: 'service',
       sku: null,
-      unit: undefined,
-      buy_price: undefined,
-      sell_price: 5,
-      stock_qty: 3,
-      stock_alert: 1,
-      tax_rate: 10,
+      unit: null,
+      buyPrice: null,
+      sellPrice: 5,
+      stockQty: 3,
+      stockAlert: 1,
+      taxRate: 10,
       barcode: null,
+      imageUrl: null,
+      active: null,
     });
   });
 
@@ -252,14 +271,79 @@ describe('invoicing IPC wrapper — company + documents', () => {
     expect(mockInvoke).toHaveBeenCalledWith('db_get_company', { companyId: 'company-1' });
   });
 
-  it('updateCompany -> db_update_company with company_id (not id)', async () => {
+  it('createCompany -> db_create_company with camelCase keys', async () => {
+    mockInvoke.mockResolvedValueOnce({ id: 'company-1' });
+    await api.createCompany({
+      name: 'Acme',
+      legalName: 'Acme SARL',
+      addressLine1: '123 Main St',
+      postalCode: '20000',
+      taxId: '12345678',
+    });
+    expect(mockInvoke).toHaveBeenCalledWith('db_create_company', {
+      name: 'Acme',
+      legalName: 'Acme SARL',
+      email: null,
+      phone: null,
+      addressLine1: '123 Main St',
+      addressLine2: null,
+      city: null,
+      state: null,
+      postalCode: '20000',
+      country: null,
+      website: null,
+      industry: null,
+      timezone: 'Africa/Casablanca',
+      logoUrl: null,
+      ice: null,
+      taxId: '12345678',
+      rc: null,
+      cnss: null,
+    });
+  });
+
+  it('updateCompany -> db_update_company with companyId (not id) and camelCase keys', async () => {
     mockInvoke.mockResolvedValueOnce(undefined);
     await api.updateCompany('company-1', { name: 'Renamed', email: 'b@c.d' });
     expect(mockInvoke).toHaveBeenCalledWith('db_update_company', {
-      company_id: 'company-1',
+      companyId: 'company-1',
       name: 'Renamed',
+      legalName: null,
       email: 'b@c.d',
+      phone: null,
+      addressLine1: null,
+      addressLine2: null,
+      city: null,
+      state: null,
+      postalCode: null,
+      country: null,
+      website: null,
+      industry: null,
+      timezone: null,
+      logoUrl: null,
+      ice: null,
+      taxId: null,
+      rc: null,
+      cnss: null,
     });
+  });
+
+  it('updateCompany accepts snake_case aliases from DB-shaped forms', async () => {
+    mockInvoke.mockResolvedValueOnce(undefined);
+    await api.updateCompany('company-1', {
+      legal_name: 'Acme SARL',
+      address_line1: '123 Main St',
+      tax_id: '12345678',
+    });
+    expect(mockInvoke).toHaveBeenCalledWith(
+      'db_update_company',
+      expect.objectContaining({
+        companyId: 'company-1',
+        legalName: 'Acme SARL',
+        addressLine1: '123 Main St',
+        taxId: '12345678',
+      }),
+    );
   });
 
   it('generateInvoiceDocuments -> db_generate_invoice_documents returning [pdf, xml]', async () => {

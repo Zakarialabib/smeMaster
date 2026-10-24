@@ -1,6 +1,8 @@
 ﻿import { searchMessages, type SearchResult } from '@shared/services/db/search';
-import { askInbox as callAskInbox } from './aiService';
+import { askInbox as callAskInbox, streamAi } from './aiService';
 import { fetchRagContext } from './ragContext';
+import { ASK_INBOX_PROMPT } from './prompts';
+import type { AiProvider } from './types';
 
 /**
  * Extract key search terms from a natural language question.
@@ -143,7 +145,12 @@ export interface AskInboxResult {
  * Answer a natural language question by searching the user's inbox
  * and using AI to synthesize an answer from the results.
  */
-export async function askMyInbox(question: string, accountId: string): Promise<AskInboxResult> {
+export async function askMyInbox(
+  question: string,
+  accountId: string,
+  provider?: AiProvider,
+  model?: string,
+): Promise<AskInboxResult> {
   // Extract search terms
   const terms = extractSearchTerms(question);
   if (!terms.trim()) {
@@ -201,7 +208,97 @@ export async function askMyInbox(question: string, accountId: string): Promise<A
   }
 
   // Call AI with fused context
-  const answer = await callAskInbox(question, accountId, fusedContext);
+  const answer = await callAskInbox(question, accountId, fusedContext, provider, model);
+
+  return { answer, sourceMessages: results };
+}
+
+/**
+ * Answer a natural language question with streaming AI response.
+ *
+ * Performs the same search as `askMyInbox` but streams the AI answer
+ * token-by-token via `streamAi`. The `onChunk` callback is called for
+ * each text chunk as it arrives.
+ */
+export async function askMyInboxStreaming(
+  question: string,
+  accountId: string,
+  onChunk: (chunk: string) => void,
+  provider?: AiProvider,
+  model?: string,
+): Promise<AskInboxResult> {
+  // Extract search terms
+  const terms = extractSearchTerms(question);
+  if (!terms.trim()) {
+    return {
+      answer: "I couldn't understand the question. Please try rephrasing it.",
+      sourceMessages: [],
+    };
+  }
+
+  // Search messages using existing FTS
+  let results: Awaited<ReturnType<typeof searchMessages>>;
+  try {
+    results = await searchMessages(terms, accountId, 15);
+  } catch (err) {
+    console.warn('[askInbox] Search query failed:', err);
+    return {
+      answer:
+        "I couldn't search your inbox due to a database error. Please check the search functionality and try again.",
+      sourceMessages: [],
+    };
+  }
+
+  if (results.length === 0) {
+    return {
+      answer:
+        "I couldn't find any relevant emails for your question. Try a different question or check your search terms.",
+      sourceMessages: [],
+    };
+  }
+
+  // Format context for AI
+  const context = results
+    .map((r) => {
+      const date = new Date(r.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      const from = r.from_name
+        ? `${r.from_name} <${r.from_address}>`
+        : (r.from_address ?? 'Unknown');
+      return `[Message ID: ${r.message_id}]\nFrom: ${from}\nDate: ${date}\nSubject: ${r.subject ?? '(no subject)'}\nPreview: ${r.snippet ?? ''}`;
+    })
+    .join('\n---\n');
+
+  // Fetch RAG context for additional signal (fuse with FTS results)
+  let fusedContext = context;
+  try {
+    const ragContext = await fetchRagContext(question);
+    if (ragContext && ragContext.length > 100) {
+      fusedContext = `${context}\n\n---\nKnowledge base context:\n${ragContext.slice(0, 3000)}`;
+    }
+  } catch {
+    // RAG unavailable — use FTS only
+  }
+
+  // Stream AI answer token by token
+  let answer = '';
+  try {
+    for await (const chunk of streamAi(
+      ASK_INBOX_PROMPT,
+      `${fusedContext}\n\nQuestion: ${question}`,
+      provider,
+      model,
+    )) {
+      answer += chunk;
+      onChunk(chunk);
+    }
+  } catch (err) {
+    console.error('[askInbox] Streaming failed:', err);
+    answer = 'Sorry, something went wrong while generating the answer. Please try again.';
+  }
 
   return { answer, sourceMessages: results };
 }

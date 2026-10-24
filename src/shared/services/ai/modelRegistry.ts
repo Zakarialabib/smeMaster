@@ -384,7 +384,7 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
   //
   // These are REAL, measured models — not placeholders. STT was verified at
   // RTF 0.033 / 0.998 accuracy; the French TTS voice at RTF 0.573. See
-  // docs/02-BACKEND/20-offline-stt-and-audio-summarization.md §10.
+  // docs/02-BACKEND/20-tts-stt-email.md §10.
   //
   // `contextWindow: 0` matches the other speech models (whisper-1, tts-1).
   // The RTF figures live in the label because `ModelCapabilities` has no field

@@ -1,104 +1,60 @@
-# CRM And Contacts
+# CRM & Contacts
 
-> Contact management, groups, tags, segments, and contact-centric business context.
+> **Status:** Production — contacts, companies, deals pipeline, and Customer 360 timeline.
+> **Stack:** React 19 + Zustand + Rust + SQLite
 
-## Scope
+## Overview
 
-This page is the canonical contact and CRM surface for SMEMaster.
+CRM turns email people into managed relationships. Contacts link to companies, deals, invoices, and campaign memberships. The **Customer 360** timeline shows everything about a contact in one place.
 
-It covers:
+## Architecture
 
-- contact CRUD
-- groups and tags
-- segment-oriented workflows
-- contact detail and activity context
-- contact import/export-adjacent workflows where contacts are the primary focus
+```
+CrmPage.tsx → dealStore.ts / contact wrappers
+  → invokeCommand("db_*") → Rust (contacts, companies, deals domains)
+  → SQLite (contacts, companies, deals, entity_pivots)
+```
 
-Insight-oriented scoring and ranking belong to `../30-contact-intelligence.md`.
+Contact–invoice–campaign links resolve through the `entity_pivots` polymorphic table and the `Relations` tab.
 
-## Current Ownership
+## Core Capabilities
 
-Primary code lives in:
+| Area                     | What it does                                      | Key files                                                              |
+| ------------------------ | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Contacts**             | CRUD, groups, segments, virtualized list          | `pages/CrmPage.tsx`                                                    |
+| **Companies**            | Company records + switcher + `company_id` scoping | `components/` + `Invoicing-ERP/01-company-tenant.md`                   |
+| **Deals pipeline**       | Kanban board, stages, drag-drop                   | `pages/DealsPage.tsx`, `stores/dealStore.ts`                           |
+| **Deal cards**           | Per-deal view with stage + value                  | `components/deals/DealCard.tsx`, `DealColumn.tsx`, `PipelineBoard.tsx` |
+| **Relationships**        | Contact ↔ company graph                           | `pages/PeopleRelationships.tsx`                                        |
+| **Customer 360**         | Relations tab: company + invoices + campaigns     | `components/InvoicesTab.tsx` + mail `ContactSidebar`                   |
+| **Contact intelligence** | Scoring and insight layer                         | `30-contact-intelligence.md`                                           |
 
-- `src/features/contacts/`
+## Deal Pipeline
 
-Representative files:
+Stages are configurable. Cards drag between columns (`@dnd-kit`). Each deal carries value, stage, company, and linked contact. Pipeline state lives in `dealStore.ts`.
 
-- `src/features/contacts/pages/ContactsPage.tsx`
-- `src/features/contacts/pages/ContactDetailPage.tsx`
-- `src/features/contacts/stores/contactStore.ts`
-- `src/features/contacts/db/contacts.ts`
-- `src/features/contacts/services/groups.ts`
-- `src/features/contacts/services/tags.ts`
-- `src/features/contacts/services/segments.ts`
-- `src/features/contacts/services/merge.ts`
+## Customer 360
 
-Backend ownership includes:
+The mail `ContactSidebar` Relations tab shows:
 
-- `src-tauri/src/commands/contacts.rs`
-- CRM/contact tables under `src-tauri/src/db/tables/crm/`
+1. Linked company (via `company_id`)
+2. Company invoices (`listInvoices` by `company_id`)
+3. Campaign memberships (`db_list_campaigns_by_contact`)
 
-## What It Does
-
-### Contact management
-
-The CRM layer lets users manage contact records and related metadata used throughout email, campaigns, tasks, and dashboard views.
-
-### Groups, tags, and saved segmentation
-
-The contact surface supports organizational structures such as:
-
-- groups
-- tags
-- saved or refreshable segment workflows
-
-This page should describe the active contact segmentation model and avoid mixing legacy segment terminology into the main user-facing description unless both systems remain intentionally supported.
-
-### Contact context
-
-The contact experience also includes context around the person or organization, such as related activity, linked records, and merge/dedup workflows.
-
-### CSV import enhancements (2026-07-07)
-
-The CsvImportWizard now includes a **downloadable CSV template** button showing the expected format (`email,display_name` columns) with a live preview. Users can download a pre-formatted `.csv` file to fill in before uploading.
-
-### Company field on contacts
-
-Contacts now carry an optional `company` field. When populated, the company name is displayed as a compact badge (Building2 icon) alongside the contact in:
-
-- CampaignComposer AudienceStep contact selection
-- Composer address chips (via `getContactByEmail` lookup)
-- InlineReply expanded reply header
-
-## Boundaries
-
-Keep these responsibilities separate:
-
-- engagement scoring and intelligence layers belong to `../30-contact-intelligence.md`
-- campaign authoring belongs to `02-campaigns-mail-merge.md`
-- general email/thread handling belongs to `01-email-management.md`
-
-## Contact sidebar (Relations)
-
-The email `ContactSidebar` (`src/features/mail/components/ContactSidebar.tsx`) exposes a **Relations** tab that surfaces a contact's cross-feature context: the linked **company**, that company's **invoices** (`listInvoices` from the invoicing domain, keyed by the contact's `company_id`), and the **campaigns** the contact is a recipient of (`db_list_campaigns_by_contact` → `CampaignRecipientWithCampaign`, joining `campaign_recipients` to `campaigns`). This makes the sidebar a launch point for company send / invoice / campaign workflows directly from an email thread. See `02-campaigns-mail-merge.md` for the campaign side and `36-invoicing.md` for invoices.
+New Rust command `db_list_campaigns_by_contact` wraps `campaign_recipients::get_campaigns_for_contact`.
 
 ## Key Files
 
-| Area                  | Files                                                                            |
-| --------------------- | -------------------------------------------------------------------------------- |
-| Main pages            | `src/features/contacts/pages/ContactsPage.tsx`, `ContactDetailPage.tsx`          |
-| Store                 | `src/features/contacts/stores/contactStore.ts`                                   |
-| DB layer              | `src/features/contacts/db/contacts.ts`                                           |
-| Services              | `src/features/contacts/services/groups.ts`, `tags.ts`, `segments.ts`, `merge.ts` |
-| Route                 | `src/router/routeTree.tsx`                                                       |
-| Backend commands      | `src-tauri/src/commands/contacts.rs`                                             |
-| Backend schema/tables | `src-tauri/src/db/tables/crm/`, `src-tauri/src/db/contacts/`                     |
+| Layer      | Path                                                        |
+| ---------- | ----------------------------------------------------------- |
+| Pages      | `src/features/crm/pages/` (Crm, Deals, PeopleRelationships) |
+| Store      | `src/features/crm/stores/dealStore.ts`                      |
+| Components | `src/features/crm/components/` (deals board, InvoicesTab)   |
+| Rust       | `src-tauri/src/commands/` (contacts, companies, deals)      |
 
-## Update Rules
+## Related Docs
 
-Update this page when:
-
-- the active segment model changes materially
-- filtering/grouping behavior becomes substantially more capable
-- CRM ownership moves out of the contacts feature
-- contact detail pages gain major new responsibilities
+- [Contact Intelligence](30-contact-intelligence.md) — scoring layer
+- [Campaigns](02-campaigns-mail-merge.md) — campaign memberships
+- [Invoicing](36-invoicing.md) — company invoices
+- [Email Management](01-email-management.md) — ContactSidebar

@@ -12,6 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useInvoicingStore } from '../stores/invoicingStore';
 
 /* Invoicing list uses `store.clients` from the same unified contacts registry
@@ -281,13 +282,17 @@ export default function InvoiceList() {
       </div>
 
       {pendingDelete && (
-        <ConfirmDelete
-          number={invoices.find((i) => i.id === pendingDelete)?.invoice_number ?? ''}
-          onCancel={() => setPendingDelete(null)}
+        <ConfirmDialog
+          isOpen
+          onClose={() => setPendingDelete(null)}
           onConfirm={async () => {
             await removeInvoice(pendingDelete);
             setPendingDelete(null);
           }}
+          title={`Delete ${invoices.find((i) => i.id === pendingDelete)?.invoice_number || 'this document'}?`}
+          message="This permanently removes the document and its line items. This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
         />
       )}
     </div>
@@ -418,44 +423,6 @@ function EmptyState({ hasInvoices, onNew }: { hasInvoices: boolean; onNew: () =>
           Create Document
         </Button>
       )}
-    </div>
-  );
-}
-
-function ConfirmDelete({
-  number,
-  onCancel,
-  onConfirm,
-}: {
-  number: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onCancel}
-    >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-11 h-11 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4">
-          <Trash2 size={20} />
-        </div>
-        <h3 className="text-lg font-bold text-text-primary">Delete {number}?</h3>
-        <p className="text-sm text-text-secondary mt-1">
-          This permanently removes the document and its line items. This cannot be undone.
-        </p>
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
-            Delete
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

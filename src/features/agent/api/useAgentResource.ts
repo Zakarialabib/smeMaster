@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AgentClientError } from './client';
 
 /**
  * The four states every data-backed console surface needs.
@@ -98,20 +97,21 @@ export function useAgentResource<T>(
         setState({ kind: 'ready', data });
       } catch (e) {
         if (cancelled || id !== requestId.current || !mounted.current) return;
-        if (e instanceof AgentClientError) {
-          setState(
-            e.isUnreachable
-              ? { kind: 'unreachable', message: e.message }
-              : { kind: 'error', message: e.message, code: e.code, retryable: e.retryable },
-          );
-        } else {
-          setState({
-            kind: 'error',
-            message: (e as Error).message,
-            code: 'unknown',
-            retryable: true,
-          });
-        }
+        // Structured errors (e.g. a client error carrying a machine-readable
+        // `code` and `retryable`) propagate their fields; anything else gets
+        // the generic unknown/retryable treatment.
+        const err = e as { message?: unknown; code?: unknown; retryable?: unknown };
+        const msg = typeof err?.message === 'string' ? err.message : String(e);
+        const lowered = msg.toLowerCase();
+        const unreachable =
+          lowered.includes('not reachable') || lowered.includes('connection refused');
+        const code = typeof err?.code === 'string' ? err.code : 'unknown';
+        const retryable = typeof err?.retryable === 'boolean' ? err.retryable : true;
+        setState(
+          unreachable
+            ? { kind: 'unreachable', message: msg }
+            : { kind: 'error', message: msg, code, retryable },
+        );
       } finally {
         // Only the CURRENT request may clear the flag. A superseded request
         // finishing later must not unblock polling while the real one is still

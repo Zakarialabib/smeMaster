@@ -63,7 +63,7 @@ export default function PairingSettings() {
           />
           <Button variant="primary" size="sm" onClick={handleGenerate}>
             <RefreshCw size={14} />
-            {t('settings.generate')}
+            {t('common.generate')}
           </Button>
         </div>
 

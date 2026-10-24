@@ -76,6 +76,19 @@ where
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().timestamp();
 
+    // contacts.email is NOT NULL UNIQUE (CRM identity), but invoicing clients
+    // legitimately have no email (walk-in / cash customers). Synthesize a
+    // stable unique placeholder so creation succeeds instead of failing the
+    // NOT NULL constraint; display_name remains the human label everywhere.
+    let placeholder_email;
+    let email = match input.email {
+        Some(e) => e,
+        None => {
+            placeholder_email = format!("no-email-{id}@localhost");
+            placeholder_email.as_str()
+        }
+    };
+
     sqlx::query_as::<_, Client>(
         r#"
         INSERT INTO contacts (
@@ -88,7 +101,7 @@ where
     )
     .bind(&id)
     .bind(input.company_id)
-    .bind(input.email)
+    .bind(email)
     .bind(input.display_name)
     .bind(input.phone)
     .bind(input.address)

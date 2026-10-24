@@ -215,6 +215,7 @@ pub async fn ai_index_emails(
 #[tauri::command]
 pub async fn ai_query_rag(
     app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
     query: String,
 ) -> CmdResult<String> {
@@ -230,7 +231,7 @@ pub async fn ai_query_rag(
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine_handle());
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
     rag.generate_augmented_prompt(&query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }
@@ -238,6 +239,7 @@ pub async fn ai_query_rag(
 #[tauri::command]
 pub async fn ai_search_by_vector(
     app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
     state: State<'_, AiState>,
     embedding: Vec<f32>,
     query: String,
@@ -254,8 +256,28 @@ pub async fn ai_search_by_vector(
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let vector_db = state.ensure_vector_db().await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
-    let rag = RagSystem::new(vector_db, state.engine_handle());
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
     rag.generate_augmented_prompt_from_vector(embedding, &query).await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
+}
+
+/// Hybrid RAG search: BM25 (SQLite FTS5) + vector similarity (LanceDB),
+/// merged with Reciprocal Rank Fusion (RRF).
+///
+/// Returns an augmented prompt string with context + query.
+#[tauri::command]
+pub async fn ai_query_rag_hybrid(
+    _app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+    query: String,
+) -> CmdResult<String> {
+    state.ensure_engine_loaded().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let rag = RagSystem::new(vector_db, state.engine_handle(), (*pool).clone());
+    rag.generate_augmented_prompt_hybrid(&query).await
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e.to_string()))
 }
 
@@ -348,6 +370,38 @@ pub async fn ai_get_email_chunks(
         .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
     let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
     let chunks = indexer.get_email_chunks().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+    Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
+}
+
+/// Return every chunked contact document (id, text) — without embedding.
+/// Used by the provider-embedding indexing path.
+#[tauri::command]
+pub async fn ai_get_contact_chunks(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+) -> CmdResult<Vec<ChunkRecord>> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let chunks = indexer.get_contact_chunks().await
+        .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
+    Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
+}
+
+/// Return every chunked deal document (id, text) — without embedding.
+/// Used by the provider-embedding indexing path.
+#[tauri::command]
+pub async fn ai_get_deal_chunks(
+    app_handle: AppHandle,
+    pool: State<'_, SqlitePool>,
+    state: State<'_, AiState>,
+) -> CmdResult<Vec<ChunkRecord>> {
+    let vector_db = state.ensure_vector_db().await
+        .map_err(|e| SerializedError::new("AI_RAG_ERROR", e))?;
+    let indexer = Indexer::new((*pool).clone(), state.engine.clone(), vector_db, app_handle);
+    let chunks = indexer.get_deal_chunks().await
         .map_err(|e| SerializedError::new("AI_INDEX_ERROR", e.to_string()))?;
     Ok(chunks.into_iter().map(|(id, text)| ChunkRecord { id, text }).collect())
 }

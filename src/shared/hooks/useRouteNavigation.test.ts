@@ -73,9 +73,9 @@ describe('useRouteNavigation hooks', () => {
       expect(useActiveLabel()).toBe('settings');
     });
 
-    it("should return 'calendar' from calendar route", () => {
+    it("should return 'people' from legacy calendar route (redirected into CRM)", () => {
       setMatches([{ routeId: '/calendar', params: {} }]);
-      expect(useActiveLabel()).toBe('calendar');
+      expect(useActiveLabel()).toBe('people');
     });
 
     it("should return 'inbox' as fallback when no matches", () => {

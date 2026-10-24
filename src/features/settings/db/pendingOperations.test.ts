@@ -44,6 +44,7 @@ import {
   clearFailedOperations,
   retryFailedOperations,
 } from './pendingOperations';
+import { ACTIVE_COMPANY_ID } from '@/shared/constants/company';
 
 describe('pendingOperations DB service', () => {
   beforeEach(() => {
@@ -51,16 +52,16 @@ describe('pendingOperations DB service', () => {
   });
 
   describe('enqueuePendingOperation', () => {
-    it('inserts a new operation via db-invoke', async () => {
+    it('stores under the company scope and embeds the mail account in params', async () => {
       const id = await enqueuePendingOperation('acct-1', 'archive', 'thread-1', {
         messageIds: ['m1'],
       });
       expect(id).toBe('mock-id');
       expect(mockUpsertPendingOperation).toHaveBeenCalledWith({
-        companyId: 'acct-1',
+        companyId: ACTIVE_COMPANY_ID,
         operationType: 'archive',
         resourceId: 'thread-1',
-        params: { messageIds: ['m1'] },
+        params: { messageIds: ['m1'], accountId: 'acct-1' },
         campaignId: null,
         holdUntil: null,
       });
@@ -68,12 +69,16 @@ describe('pendingOperations DB service', () => {
   });
 
   describe('getPendingOperations', () => {
-    it('fetches pending ops for a specific account', async () => {
+    it('fetches pending ops for a specific account via the company scope + params filter', async () => {
       mockExecuteSearchQuery.mockResolvedValueOnce([]);
       await getPendingOperations('acct-1');
       expect(mockExecuteSearchQuery).toHaveBeenCalledWith(
-        expect.stringContaining('account_id = $1'),
-        expect.arrayContaining(['acct-1']),
+        expect.stringContaining('company_id = $1'),
+        expect.arrayContaining([ACTIVE_COMPANY_ID, 'acct-1']),
+      );
+      expect(mockExecuteSearchQuery).toHaveBeenCalledWith(
+        expect.stringContaining('json_extract'),
+        expect.any(Array),
       );
     });
 
@@ -149,12 +154,12 @@ describe('pendingOperations DB service', () => {
   });
 
   describe('getPendingOpsForResource', () => {
-    it('queries by account and resource', async () => {
+    it('queries by scope, account and resource', async () => {
       mockExecuteSearchQuery.mockResolvedValueOnce([]);
       await getPendingOpsForResource('acct-1', 'thread-1');
       expect(mockExecuteSearchQuery).toHaveBeenCalledWith(
         expect.stringContaining('resource_id = $2'),
-        ['acct-1', 'thread-1'],
+        [ACTIVE_COMPANY_ID, 'thread-1', 'acct-1'],
       );
     });
   });
@@ -164,19 +169,19 @@ describe('pendingOperations DB service', () => {
       mockExecuteSearchQuery.mockResolvedValueOnce([
         {
           id: 'op-1',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'star',
-          params: '{"starred":true}',
+          params: '{"starred":true,"accountId":"a1"}',
           status: 'pending',
           created_at: 1,
         },
         {
           id: 'op-2',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'star',
-          params: '{"starred":false}',
+          params: '{"starred":false,"accountId":"a1"}',
           status: 'pending',
           created_at: 2,
         },
@@ -192,7 +197,7 @@ describe('pendingOperations DB service', () => {
       mockExecuteSearchQuery.mockResolvedValueOnce([
         {
           id: 'op-1',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'addLabel',
           params: '{"labelId":"L1"}',
@@ -201,7 +206,7 @@ describe('pendingOperations DB service', () => {
         },
         {
           id: 'op-2',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'removeLabel',
           params: '{"labelId":"L1"}',
@@ -217,7 +222,7 @@ describe('pendingOperations DB service', () => {
       mockExecuteSearchQuery.mockResolvedValueOnce([
         {
           id: 'op-1',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'moveToFolder',
           params: '{"folderPath":"Folder1"}',
@@ -226,7 +231,7 @@ describe('pendingOperations DB service', () => {
         },
         {
           id: 'op-2',
-          account_id: 'a1',
+          company_id: ACTIVE_COMPANY_ID,
           resource_id: 't1',
           operation_type: 'moveToFolder',
           params: '{"folderPath":"Folder2"}',

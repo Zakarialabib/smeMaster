@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus, Users, Trash2, Check, AlertTriangle, Phone, MapPin } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { ConfirmDialog } from '@shared/components/ui/ConfirmDialog';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 
 /* UI client registry: invoicing clients are unified contacts with
@@ -238,10 +239,14 @@ export default function ClientList() {
       <ClientForm open={formOpen} onClose={() => setFormOpen(false)} client={editing} />
 
       {pendingDelete && (
-        <ConfirmDelete
-          name={clients.find((c) => c.id === pendingDelete)?.display_name ?? ''}
-          onCancel={() => setPendingDelete(null)}
+        <ConfirmDialog
+          isOpen
+          onClose={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
+          title={`Delete ${clients.find((c) => c.id === pendingDelete)?.display_name || 'this client'}?`}
+          message="This permanently removes the client from your directory. This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
         />
       )}
     </div>
@@ -344,44 +349,6 @@ function EmptyState({ hasClients, onNew }: { hasClients: boolean; onNew: () => v
           New Client
         </Button>
       )}
-    </div>
-  );
-}
-
-function ConfirmDelete({
-  name,
-  onCancel,
-  onConfirm,
-}: {
-  name: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onCancel}
-    >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-sm p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-11 h-11 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4">
-          <Trash2 size={20} />
-        </div>
-        <h3 className="text-lg font-bold text-text-primary">Delete {name || 'this client'}?</h3>
-        <p className="text-sm text-text-secondary mt-1">
-          This permanently removes the client from your directory. This cannot be undone.
-        </p>
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button variant="danger" icon={<Trash2 size={15} />} onClick={onConfirm}>
-            Delete
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

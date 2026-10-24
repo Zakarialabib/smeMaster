@@ -1198,8 +1198,8 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
         const opData = ((args?.op ?? args) as Record<string, unknown>) ?? {};
         const opId = (opData.id as string) ?? uuid();
         await db.execute(
-          `INSERT OR REPLACE INTO pending_operations (id, account_id, operation_type, resource_id, params, status, campaign_id, retry_count, max_retries, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, unixepoch())`,
+          `INSERT OR REPLACE INTO pending_operations (id, company_id, operation_type, resource_id, params, status, campaign_id, hold_until, retry_count, max_retries, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, unixepoch())`,
           [
             opId,
             opData.accountId ?? opData.companyId,
@@ -1208,6 +1208,7 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
             typeof opData.params === 'string' ? opData.params : JSON.stringify(opData.params ?? {}),
             opData.status ?? 'pending',
             opData.campaignId ?? opData.campaign_id ?? null,
+            opData.holdUntil ?? opData.hold_until ?? null,
             opData.retryCount ?? opData.retry_count ?? 0,
             opData.maxRetries ?? opData.max_retries ?? 3,
           ],
@@ -1221,8 +1222,8 @@ export function createDbInvokeHandlers(db: MockTauriDb) {
       }
 
       case 'db_list_pending_operations': {
-        return db.select<any[]>('SELECT * FROM pending_operations WHERE account_id = $1', [
-          args?.accountId,
+        return db.select<any[]>('SELECT * FROM pending_operations WHERE company_id = $1', [
+          args?.companyId,
         ]);
       }
 

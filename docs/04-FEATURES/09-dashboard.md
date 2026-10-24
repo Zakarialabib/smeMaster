@@ -1,74 +1,55 @@
 # Dashboard
 
-> Cross-feature summary surface built from contacts, campaigns, tasks, workflow, and email-oriented metrics.
+> **Status:** Production — 10 widgets, cross-feature overview, quick actions.
+> **Stack:** React 19 + Zustand + d3-force (network graph) + SQLite aggregates
 
-## Scope
+## Overview
 
-The dashboard is the overview layer for the product. It combines data from multiple feature domains into a configurable summary experience.
+Dashboard is the cross-feature overview: stats, activity, health, and quick actions. Ten widget components pull from email, contacts, tasks, campaigns, automation, and ERP.
 
-This page covers:
+## Architecture
 
-- dashboard pages and widgets
-- cross-feature aggregation
-- dashboard state and layout behavior
+```
+DashboardPage.tsx → dashboardStore.ts → per-widget data hooks
+  → invokeCommand("db_*") → Rust aggregates
+  → SQLite (threads, contacts, tasks, campaigns, ledger)
+```
 
-It should not hardcode a stale widget list if the active widget inventory changes in code.
+Widgets are independent — each fetches its own slice. `SectionCard` + `SectionConsole` provide the shell.
 
-## Current Ownership
+## Widgets (10)
 
-Primary frontend ownership lives in:
+| Widget               | What it shows                    | File                                               |
+| -------------------- | -------------------------------- | -------------------------------------------------- |
+| **Email stats**      | Volume + growth                  | `EmailVolumeWidget.tsx`, `ContactGrowthWidget.tsx` |
+| **Email heatmap**    | Activity calendar                | `EmailHeatmapWidget.tsx`                           |
+| **Entity network**   | Contact/company graph (d3-force) | `EntityNetworkGraph.tsx`                           |
+| **Contact stats**    | Totals + growth                  | `ContactsStatsWidget.tsx`                          |
+| **Campaign stats**   | Sent, open, click                | `CampaignsStatsWidget.tsx`                         |
+| **Task summary**     | Open, overdue, done              | `TaskSummaryWidget.tsx`                            |
+| **Automation rules** | Rule health                      | `AutomationRulesWidget.tsx`                        |
+| **Business health**  | ERP + cash snapshot              | `BusinessHealthWidget.tsx`                         |
+| **Recent activity**  | Cross-feature timeline           | `RecentActivityWidget.tsx`                         |
+| **Quick actions**    | Compose, add contact/task/event  | `QuickActionsWidget.tsx`                           |
 
-- `src/features/dashboard/`
+## Layout
 
-Representative files:
-
-- `src/features/dashboard/pages/DashboardPage.tsx`
-- `src/features/dashboard/stores/dashboardStore.ts`
-
-Backend/dashboard data comes from multiple command modules rather than one single dashboard backend file.
-
-Representative backend sources include:
-
-- `src-tauri/src/commands/contacts.rs`
-- `src-tauri/src/commands/crm.rs`
-- `src-tauri/src/commands/tasks.rs`
-- `src-tauri/src/commands/workflows.rs`
-
-## What It Does
-
-### Overview widgets
-
-The dashboard presents summary widgets drawn from the rest of the app. The exact widget list should be kept aligned with the current store defaults and rendered page components.
-
-### Cross-feature aggregation
-
-Dashboard data is intentionally cross-cutting. It exists to summarize activity and health across multiple domains rather than introduce a separate business subsystem.
-
-### Layout and visibility
-
-The dashboard also owns widget layout and visibility behavior on the frontend side.
-
-## Boundaries
-
-Keep these responsibilities separate:
-
-- detailed feature behavior remains owned by the feature-specific docs
-- dashboard summaries should not become the canonical description of campaigns, contacts, tasks, or automation
+- **Desktop:** grid of `SectionCard` widgets (`DashboardPage.tsx`)
+- **Mobile:** stacked + `MobileDashboardPage.tsx`
+- **Section config:** `data/sectionCards.ts` defines order and visibility
 
 ## Key Files
 
-| Area | Files |
-| --- | --- |
-| Main page | `src/features/dashboard/pages/DashboardPage.tsx` |
-| Store | `src/features/dashboard/stores/dashboardStore.ts` |
-| Feature root | `src/features/dashboard/index.ts` |
-| Route | `src/router/routeTree.tsx` |
-| Backend metric sources | `src-tauri/src/commands/contacts.rs`, `crm.rs`, `tasks.rs`, `workflows.rs` |
+| Layer      | Path                                                         |
+| ---------- | ------------------------------------------------------------ |
+| Pages      | `src/features/dashboard/pages/` (Dashboard, MobileDashboard) |
+| Store      | `src/features/dashboard/stores/dashboardStore.ts`            |
+| Components | `src/features/dashboard/components/` (10 widgets + shell)    |
+| Config     | `src/features/dashboard/data/sectionCards.ts`                |
 
-## Update Rules
+## Related Docs
 
-Update this page when:
-
-- the widget inventory changes materially
-- dashboard layout/state ownership changes
-- backend aggregation sources are restructured
+- [Email Management](01-email-management.md) — email stats source
+- [CRM & Contacts](03-crm-contacts.md) — contact stats source
+- [Tasks](08-tasks.md) — task stats source
+- [Campaigns](02-campaigns-mail-merge.md) — campaign stats source

@@ -330,7 +330,9 @@ describe('TaskCreateModal', () => {
     });
   });
 
-  it('passes all form fields to insertTask on submit', async () => {
+  // Load-sensitive: four userEvent.type sequences (~2.7s alone, >5s under
+  // full-suite contention) — raise the default 5s cap so it doesn't flake.
+  it('passes all form fields to insertTask on submit', { timeout: 15_000 }, async () => {
     mockInsertTask.mockResolvedValue('task-456');
     const onCreated = vi.fn();
     const onClose = vi.fn();

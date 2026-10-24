@@ -195,7 +195,7 @@ export function AiWarmupGenerateModal({ isOpen, onClose, onAdd }: AiWarmupGenera
               onClick={handleClose}
               className="px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiWarmup.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </form>
@@ -276,7 +276,7 @@ export function AiWarmupGenerateModal({ isOpen, onClose, onAdd }: AiWarmupGenera
               className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors ms-auto"
             >
               <RefreshCw size={12} />
-              {t('modals.aiWarmup.regenerate')}
+              {t('common.regenerate')}
             </button>
           </div>
         </div>
@@ -303,7 +303,7 @@ export function AiWarmupGenerateModal({ isOpen, onClose, onAdd }: AiWarmupGenera
               onClick={handleClose}
               className="px-4 py-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-xl hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiWarmup.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>

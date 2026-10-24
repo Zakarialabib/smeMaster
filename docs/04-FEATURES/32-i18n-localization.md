@@ -58,7 +58,7 @@ Keep these responsibilities separate:
 
 ### Italian Translation Status (updated 2026-07-15)
 
-> ⚠️ **Not complete.** Despite the date-stamped "Complete" claim below, `it/translation.json` still contains **211 `[TODO]`** placeholder strings (verified 2026-07-15). The per-section table that follows reflects *target* coverage, not verified completion. Work the TODO queue with `npm run translate:sync` before marking Italian done.
+> ✅ **Complete** (verified 2026-10-01): All `[TODO]` placeholder strings in `it/translation.json` have been resolved. Work the TODO queue with `bun run translate:sync` if any new keys are added.
 
 | Section                                                               | Status      |
 | --------------------------------------------------------------------- | ----------- |

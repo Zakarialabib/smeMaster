@@ -11,8 +11,10 @@ import { RemediationWizard } from './RemediationWizard';
 export function DeliverabilityPanel() {
   const [domain, setDomain] = useState('');
   const prevDomain = useRef<string | null>(null);
-  const { currentDomain, remediation, getRemediationForDomain, setCurrentDomain } =
-    useDomainHealthStore();
+  const currentDomain = useDomainHealthStore((s) => s.currentDomain);
+  const remediation = useDomainHealthStore((s) => s.remediation);
+  const getRemediationForDomain = useDomainHealthStore((s) => s.getRemediationForDomain);
+  const setCurrentDomain = useDomainHealthStore((s) => s.setCurrentDomain);
 
   const { data: health, isLoading, error } = useHealthScore(currentDomain);
 
@@ -43,10 +45,7 @@ export function DeliverabilityPanel() {
       failures.push(FailureType.MissingDmarc);
     }
     if (failures.length > 0) {
-      getRemediationForDomain(
-        currentDomain,
-        failures.map((f) => f.toString()),
-      );
+      getRemediationForDomain(currentDomain, failures);
     }
   }, [health, currentDomain, getRemediationForDomain]);
 

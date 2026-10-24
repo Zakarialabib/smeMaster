@@ -25,7 +25,12 @@ import {
 } from '@shared/services/db/invoke/pos';
 
 export const POSPage: React.FC = () => {
-  const { cart, products, setProducts, addToCart, updateQuantity, clearCart } = usePosStore();
+  const cart = usePosStore((s) => s.cart);
+  const products = usePosStore((s) => s.products);
+  const setProducts = usePosStore((s) => s.setProducts);
+  const addToCart = usePosStore((s) => s.addToCart);
+  const updateQuantity = usePosStore((s) => s.updateQuantity);
+  const clearCart = usePosStore((s) => s.clearCart);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

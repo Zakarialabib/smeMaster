@@ -212,7 +212,7 @@ export function CalendarToolbar({
             onPrev={onPrev}
             onToday={onToday}
             onNext={onNext}
-            todayLabel={t('date.today')}
+            todayLabel={t('common.today')}
           />
         </div>
 

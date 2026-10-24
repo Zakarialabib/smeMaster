@@ -48,6 +48,8 @@ export interface SectionCardConfig {
   id: string;
   /** Router path (hash history) the card navigates to. */
   to: string;
+  /** Optional search params for query-bearing deep links (e.g. CRM tabs). */
+  search?: Record<string, string>;
   icon: LucideIcon;
   /** i18n key — card title. */
   titleKey: string;
@@ -94,7 +96,7 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     descriptionKey: 'dashboard.sections.emails.description',
     accent: 'accent',
     stats: [
-      { label: 'dashboard.cards.stat.unread', value: null },
+      { label: 'common.unread', value: null },
       { label: 'dashboard.cards.stat.threads', value: null },
     ],
     fetchValues: async ({ accountId }) => {
@@ -126,7 +128,8 @@ export const SECTION_CARDS: SectionCardConfig[] = [
   },
   {
     id: 'tasks',
-    to: '/tasks',
+    to: '/people',
+    search: { tab: 'tasks' },
     icon: CheckSquare,
     titleKey: 'dashboard.sections.tasks.title',
     descriptionKey: 'dashboard.sections.tasks.description',
@@ -147,7 +150,7 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     id: 'invoicing',
     to: '/invoicing',
     icon: FileText,
-    titleKey: 'dashboard.sections.invoicing.title',
+    titleKey: 'common.invoicing',
     descriptionKey: 'dashboard.sections.invoicing.description',
     accent: 'danger',
     stats: [
@@ -165,12 +168,12 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     id: 'campaigns',
     to: '/campaigns',
     icon: Megaphone,
-    titleKey: 'dashboard.sections.campaigns.title',
+    titleKey: 'common.campaigns',
     descriptionKey: 'dashboard.sections.campaigns.description',
     accent: 'accent',
     stats: [
       { label: 'dashboard.cards.stat.total', value: null },
-      { label: 'dashboard.cards.stat.sent', value: null },
+      { label: 'common.sent', value: null },
     ],
     fetchValues: async () => {
       const [total, sent] = await Promise.all([
@@ -184,7 +187,7 @@ export const SECTION_CARDS: SectionCardConfig[] = [
     id: 'automation',
     to: '/automation',
     icon: Workflow,
-    titleKey: 'dashboard.sections.automation.title',
+    titleKey: 'common.automation',
     descriptionKey: 'dashboard.sections.automation.description',
     accent: 'success',
     stats: [
@@ -201,12 +204,13 @@ export const SECTION_CARDS: SectionCardConfig[] = [
   },
   {
     id: 'calendar',
-    to: '/calendar',
+    to: '/people',
+    search: { tab: 'calendar' },
     icon: CalendarDays,
-    titleKey: 'dashboard.sections.calendar.title',
+    titleKey: 'common.calendar',
     descriptionKey: 'dashboard.sections.calendar.description',
     accent: 'warning',
-    stats: [{ label: 'dashboard.cards.stat.eventsToday', value: null }],
+    stats: [{ label: 'common.today', value: null }],
     fetchValues: async () => {
       // Bounded to today — calendar times are epoch seconds (schema.ts).
       const start = new Date();

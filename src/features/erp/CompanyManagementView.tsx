@@ -48,6 +48,29 @@ const EMPTY_FORM: CompanyFormData = {
   cnss: '',
 };
 
+function formToPayload(form: CompanyFormData) {
+  // IPC wire format is camelCase (see CommandRegistry); the form mirrors the
+  // snake_case DB row shape, so map explicitly.
+  return {
+    name: form.name.trim(),
+    legalName: form.legal_name || null,
+    email: form.email || null,
+    phone: form.phone || null,
+    addressLine1: form.address_line1 || null,
+    addressLine2: form.address_line2 || null,
+    city: form.city || null,
+    state: form.state || null,
+    postalCode: form.postal_code || null,
+    country: form.country || null,
+    website: form.website || null,
+    industry: form.industry || null,
+    timezone: form.timezone,
+    ice: form.ice || null,
+    taxId: form.tax_id || null,
+    rc: form.rc || null,
+    cnss: form.cnss || null,
+  };
+}
 function companyToForm(c: Company): CompanyFormData {
   return {
     name: c.name,
@@ -141,46 +164,10 @@ export default function CompanyManagementView() {
     setSaving(true);
     try {
       if (creating) {
-        await createCompany({
-          name: form.name.trim(),
-          legal_name: form.legal_name || null,
-          email: form.email || null,
-          phone: form.phone || null,
-          address_line1: form.address_line1 || null,
-          address_line2: form.address_line2 || null,
-          city: form.city || null,
-          state: form.state || null,
-          postal_code: form.postal_code || null,
-          country: form.country || null,
-          website: form.website || null,
-          industry: form.industry || null,
-          timezone: form.timezone,
-          ice: form.ice || null,
-          tax_id: form.tax_id || null,
-          rc: form.rc || null,
-          cnss: form.cnss || null,
-        });
+        await createCompany(formToPayload(form));
         showToast('success', 'Company created');
       } else if (editingId) {
-        await updateCompany(editingId, {
-          name: form.name.trim(),
-          legal_name: form.legal_name || null,
-          email: form.email || null,
-          phone: form.phone || null,
-          address_line1: form.address_line1 || null,
-          address_line2: form.address_line2 || null,
-          city: form.city || null,
-          state: form.state || null,
-          postal_code: form.postal_code || null,
-          country: form.country || null,
-          website: form.website || null,
-          industry: form.industry || null,
-          timezone: form.timezone,
-          ice: form.ice || null,
-          tax_id: form.tax_id || null,
-          rc: form.rc || null,
-          cnss: form.cnss || null,
-        });
+        await updateCompany(editingId, formToPayload(form));
         showToast('success', 'Company updated');
       }
       setEditingId(null);

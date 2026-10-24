@@ -51,6 +51,12 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ("031_thread_importance_score", include_str!("031_thread_importance_score.sql")),
     ("032_deals_pipeline", include_str!("032_deals_pipeline.sql")),
     ("033_downloader", include_str!("033_downloader.sql")),
+    ("034_agents", include_str!("034_agents.sql")),
+    ("035_calendar_account_id", include_str!("035_calendar_account_id.sql")),
+    ("036_knowledge_base_fts", include_str!("036_knowledge_base_fts.sql")),
+    ("037_contacts_client_fields", include_str!("037_contacts_client_fields.sql")),
+    ("038_pos", include_str!("038_pos.sql")),
+    ("039_voice_agent_config", include_str!("039_voice_agent_config.sql")),
 ];
 
 // ── Public migration API ────────────────────────────────────────────────────
@@ -331,23 +337,25 @@ pub async fn check_db_state(pool: &SqlitePool) -> DbState {
 
 /// Drop all user tables in the database (for force-rebuild).
 pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
     // Disable FK checks to allow dropping in any order
     sqlx::query("PRAGMA foreign_keys = OFF")
-        .execute(pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
 
     // Get all user table names
     let tables: Vec<String> =
         sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-            .fetch_all(pool)
+            .fetch_all(&mut *tx)
             .await
             .map_err(|e| e.to_string())?;
 
     for table in &tables {
         let sql = format!("DROP TABLE IF EXISTS \"{table}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop table {table}: {e}"))?;
     }
@@ -356,14 +364,14 @@ pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
     let triggers: Vec<String> = sqlx::query_scalar(
         "SELECT name FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'sqlite_%'",
     )
-    .fetch_all(pool)
+    .fetch_all(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
     for trigger in &triggers {
         let sql = format!("DROP TRIGGER IF EXISTS \"{trigger}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop trigger {trigger}: {e}"))?;
     }
@@ -371,23 +379,25 @@ pub(crate) async fn drop_all_tables(pool: &SqlitePool) -> Result<(), String> {
     let indexes: Vec<String> = sqlx::query_scalar(
         "SELECT name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'",
     )
-    .fetch_all(pool)
+    .fetch_all(&mut *tx)
     .await
     .map_err(|e| e.to_string())?;
 
     for index in &indexes {
         let sql = format!("DROP INDEX IF EXISTS \"{index}\"");
         sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
-            .execute(pool)
+            .execute(&mut *tx)
             .await
             .map_err(|e| format!("Failed to drop index {index}: {e}"))?;
     }
 
     // Re-enable FK checks
     sqlx::query("PRAGMA foreign_keys = ON")
-        .execute(pool)
+        .execute(&mut *tx)
         .await
         .map_err(|e| e.to_string())?;
+
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     log::info!("[migrate] Dropped {} tables, {} triggers, {} indexes", tables.len(), triggers.len(), indexes.len());
     Ok(())

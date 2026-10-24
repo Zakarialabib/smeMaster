@@ -16,7 +16,7 @@ export function ComposerSubjectField({ subject, onChange }: ComposerSubjectField
           type="text"
           value={subject}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={t('composer.subject')}
+          placeholder={t('common.subject')}
           className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
         />
       </div>

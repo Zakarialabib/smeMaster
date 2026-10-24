@@ -823,7 +823,7 @@ export function AddImapAccount({ onClose, onSuccess, onBack, prefill }: AddImapA
           >
             <option value="ssl">{t('account.imapSecuritySsl')}</option>
             <option value="starttls">{t('account.imapSecurityStarttls')}</option>
-            <option value="none">{t('account.imapSecurityNone')}</option>
+            <option value="none">{t('common.none')}</option>
           </select>
         </div>
       </div>
@@ -892,7 +892,7 @@ export function AddImapAccount({ onClose, onSuccess, onBack, prefill }: AddImapA
           >
             <option value="ssl">{t('account.imapSecuritySsl')}</option>
             <option value="starttls">{t('account.imapSecurityStarttls')}</option>
-            <option value="none">{t('account.imapSecurityNone')}</option>
+            <option value="none">{t('common.none')}</option>
           </select>
         </div>
       </div>

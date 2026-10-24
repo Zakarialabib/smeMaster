@@ -158,7 +158,7 @@ function setupStepLabel(id: string, t: TFunction): string {
     case 'signatures':
       return t('settings.signatures');
     case 'templates':
-      return t('search.templates');
+      return t('common.templates');
     case 'quick-replies':
       return t('quickReply.title');
     case 'content-quality':
@@ -616,7 +616,7 @@ export default function ComposingTab() {
       {/* ── Templates Section ── */}
       <div id="composing-section-templates">
         <SettingGroup
-          title={t('search.templates')}
+          title={t('common.templates')}
           description={t(
             'search.templateDesc',
             'Create reusable email templates with variable placeholders for consistent messaging.',

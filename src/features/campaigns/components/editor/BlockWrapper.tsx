@@ -93,8 +93,8 @@ export function BlockWrapper({ id, selected, children, toolbar }: BlockWrapperPr
         </button>
         <button
           type="button"
-          aria-label={t('campaign.editor.delete')}
-          title={t('campaign.editor.delete')}
+          aria-label={t('common.delete')}
+          title={t('common.delete')}
           onClick={(e) => {
             e.stopPropagation();
             store.removeBlock(id);

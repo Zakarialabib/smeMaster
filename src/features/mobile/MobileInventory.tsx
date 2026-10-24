@@ -68,12 +68,6 @@ const MOBILE_COMPONENTS: MobileEntry[] = [
       'Encrypted file vault with biometric unlock, directory browsing, search, sort, drag-and-drop upload, and file deletion. Requires Tauri biometric APIs.',
   },
   {
-    name: 'MobileSettingsPage',
-    path: 'src/features/settings/pages/MobileSettingsPage.tsx',
-    description:
-      'Mobile-specific settings for background sync, cache management, biometric lock, device pairing, and push notifications.',
-  },
-  {
     name: 'DevicePairingPage',
     path: 'src/features/settings/pages/DevicePairingPage.tsx',
     description:
@@ -99,7 +93,7 @@ const GROUPS: { label: string; names: string[] }[] = [
   },
   {
     label: 'Pages / Routes',
-    names: ['VaultPage', 'MobileSettingsPage', 'DevicePairingPage'],
+    names: ['VaultPage', 'DevicePairingPage'],
   },
 ];
 

@@ -59,9 +59,12 @@ describe('navigate', () => {
       });
     });
 
-    it('should navigate to calendar', () => {
+    it('should navigate to calendar inside the CRM workspace', () => {
       navigateToLabel('calendar');
-      expect(mockNavigate).toHaveBeenCalledWith({ to: '/calendar' });
+      expect(mockNavigate).toHaveBeenCalledWith({
+        to: '/people',
+        search: expect.any(Function),
+      });
     });
 
     it('should navigate to smart folders', () => {
@@ -268,9 +271,9 @@ describe('navigate', () => {
       expect(getActiveLabel()).toBe('settings');
     });
 
-    it("should return 'calendar' from calendar route", () => {
+    it("should return 'people' from legacy calendar route (redirected into CRM)", () => {
       mockState.matches = [{ routeId: '/calendar', params: {} }];
-      expect(getActiveLabel()).toBe('calendar');
+      expect(getActiveLabel()).toBe('people');
     });
 
     it("should return 'inbox' as fallback", () => {

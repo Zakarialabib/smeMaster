@@ -236,7 +236,7 @@ export function DnsChecker() {
           className="flex items-center justify-center gap-2 px-6 py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 shrink-0"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-          {loading ? t('common.checking') : t('settings.dns.checkNow')}
+          {loading ? t('common.checking') : t('common.checkNow')}
         </button>
       </div>
 

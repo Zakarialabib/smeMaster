@@ -3,7 +3,7 @@
  * must be visible to native code (Android Kotlin / Tauri Rust).
  *
  * Replaces the old `localStorage`-based settings scattered across
- * `MobileSettingsPage`, `AboutTab`, and onboarding flows. The old
+ * `AboutTab` and onboarding flows. The old
  * approach desynced with the native layer (e.g. bg_sync_interval in JS
  * vs the actual WorkManager schedule) and was lost on Android
  * "clear data" / "clear cache" since `localStorage` lives in the WebView.

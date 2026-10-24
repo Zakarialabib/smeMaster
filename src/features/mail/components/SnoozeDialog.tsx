@@ -98,7 +98,7 @@ export function SnoozeDialog({ isOpen = true, onSnooze, onClose }: SnoozeDialogP
       title={t('dialog.snoozeTitle')}
       presets={allPresets}
       onSelect={onSnooze}
-      submitLabel={t('actionBar.snooze')}
+      submitLabel={t('common.snooze')}
       footer={
         <div className="mt-3 border-t border-border-primary pt-3">
           <label className="mb-1 block text-xs font-medium text-text-secondary">
@@ -127,7 +127,7 @@ export function SnoozeDialog({ isOpen = true, onSnooze, onClose }: SnoozeDialogP
               onClick={() => parsed && onSnooze(parsed.until)}
               className="rounded-md bg-accent px-3 py-1 text-sm font-medium text-white disabled:opacity-40"
             >
-              {t('actionBar.snooze', 'Snooze')}
+              {t('common.snooze', 'Snooze')}
             </button>
           </div>
           {parsed && (

@@ -3,7 +3,7 @@
 > **Status:** 📐 **Proposal / spike brief** (2026-10-01) — no code written yet.
 > **Related:** [AI RAG (feature)](../04-FEATURES/ai-rag.md) · [AI RAG dimensions](../02-BACKEND/16-ai-rag-dimensions.md) · [Invoicing](../04-FEATURES/36-invoicing.md) · [Attachment vault](../04-FEATURES/25-attachment-vault.md)
 > **Model sourcing:** [HF Spaces survey](#appendix-hf-spaces-survey) (appendix)
-> **Companion doc:** [Offline STT & audio summarization](./20-offline-stt-and-audio-summarization.md)
+> **Companion doc:** [Offline STT & audio summarization](./20-tts-stt-email.md)
 
 ## 1. Problem statement
 

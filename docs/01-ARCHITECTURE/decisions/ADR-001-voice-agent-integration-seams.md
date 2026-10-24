@@ -1,10 +1,19 @@
 # ADR-001 — Voice agent: integration seams, embedding spaces, IPC surface
 
-> **Status:** Accepted · **Date:** 2026-09-28 · **Decided by:** Zakaria (engineering)
-> **Supersedes:** nothing (first ADR). **Amends:** `docs/specs/2026-09-28-voice-agent.md`,
-> `docs/voice/dev/RAG-FORK.md`, `docs/voice/dev/OPS-ASSISTANT.md` (corrections applied in-place)
-> **Anchor spec:** [`docs/specs/2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
+> **⛔ SUPERSEDED 2026-10-05 — voice-call system dropped.** The telephony
+> decisions below (FreeSWITCH, Telnyx, PSTN, `services/agent-core/`) describe
+> a system that was **deleted outright** — no archive, git history preserves
+> it. "Voice" now means STT/TTS only; agentic automation lives in
+> [`08-agentic-ai-automation.md`](../08-agentic-ai-automation.md). This file
+> is kept byte-identical below this banner as the decision record.
+>
+> **Status:** ~~Accepted~~ **Superseded** · **Date:** 2026-09-28 · **Decided by:** Zakaria (engineering)
+> **Supersedes:** nothing (first ADR). **Amends:** `2026-09-28-voice-agent.md`,
+> `dev/RAG-FORK.md`, `dev/OPS-ASSISTANT.md` (corrections applied in-place)
+> **Anchor spec:** [`2026-09-28-voice-agent.md`](../../specs/2026-09-28-voice-agent.md)
 > **Evidence read:** working tree @ `private/voice-agent-client` — `1c738db`, 2026-09-28
+> **Updated 2026-10-03 — see dev/DECISIONS-2026-10-03.md** — re-baseline
+> status addendum + Open-table update only; D1–D6 and their rationale are unchanged.
 
 ## Context
 
@@ -15,15 +24,15 @@ spec was wrong. This ADR resolves them so Gate 1 can start without re-litigating
 
 What the tree actually contains (verified, not read from docs):
 
-| Claim in the docs                               | Status against the tree                                                                                                                                                                                                                          |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ml-sidecar` is a real candle+lancedb sidecar   | ✅ `src-tauri/crates/ml-sidecar/Cargo.toml:33-38`, `src/main.rs:33-44` — JSON-RPC 2.0 over stdio, real                                                                                                                                           |
-| Workspace members                               | ⚠️ `src-tauri/Cargo.toml` `members = ["crates/ml-sidecar"]` — **one member**                                                                                                                                                                     |
-| `BAAI/bge-small-en-v1.5` hard-coded in 6 places | ✅ all 6 confirmed (`aiSidecar.ts:30`, `ragStore.ts:38`, `ml-sidecar/src/main.rs:575,747,754`, `ai/models.rs:37-39`, `aiSidecar.test.ts:141-142`)                                                                                                |
-| `services/agent-core/` exists                   | ✅ absent — consistent with "no code written" — **⚠️ superseded 2026-09-30: `services/agent-core/` now exists (Phases A–B closed, server on `:8788`). Row kept as the 2026-09-28 snapshot; see `docs/voice/dev/BUILD-LOG.md` for current state** |
-| Provider seam exists                            | ✅ `src/shared/services/ai/providerFactory.ts`, `providerManager.ts`                                                                                                                                                                             |
-| `reqwest` is a new main-crate dep for Gate 3    | ❌ **already present** — `src-tauri/Cargo.toml:54` (0.13.4, rustls). Gate 3 adds no dependency weight.                                                                                                                                           |
-| Vocode rejected because "repo 404"              | ❌ **wrong** — `vocodedev/vocode-core` resolves: MIT, 3.8k★, last push **2024-11-15**                                                                                                                                                            |
+| Claim in the docs                               | Status against the tree                                                                                                                                                                                                               |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ml-sidecar` is a real candle+lancedb sidecar   | ✅ `src-tauri/crates/ml-sidecar/Cargo.toml:33-38`, `src/main.rs:33-44` — JSON-RPC 2.0 over stdio, real                                                                                                                                |
+| Workspace members                               | ⚠️ `src-tauri/Cargo.toml` `members = ["crates/ml-sidecar"]` — **one member**                                                                                                                                                          |
+| `BAAI/bge-small-en-v1.5` hard-coded in 6 places | ✅ all 6 confirmed (`aiSidecar.ts:30`, `ragStore.ts:38`, `ml-sidecar/src/main.rs:575,747,754`, `ai/models.rs:37-39`, `aiSidecar.test.ts:141-142`)                                                                                     |
+| `services/agent-core/` exists                   | ✅ absent — consistent with "no code written" — **⚠️ superseded 2026-09-30: `services/agent-core/` now exists (Phases A–B closed, server on `:8788`). Row kept as the 2026-09-28 snapshot; see `dev/BUILD-LOG.md` for current state** |
+| Provider seam exists                            | ✅ `src/shared/services/ai/providerFactory.ts`, `providerManager.ts`                                                                                                                                                                  |
+| `reqwest` is a new main-crate dep for Gate 3    | ❌ **already present** — `src-tauri/Cargo.toml:54` (0.13.4, rustls). Gate 3 adds no dependency weight.                                                                                                                                |
+| Vocode rejected because "repo 404"              | ❌ **wrong** — `vocodedev/vocode-core` resolves: MIT, 3.8k★, last push **2024-11-15**                                                                                                                                                 |
 
 ## Decisions
 
@@ -148,10 +157,28 @@ Applied in place, same commit as this ADR:
 - The RAG fork is **signed off** — Option A, server-side pgvector + `bge-m3`
   (`RAG-FORK.md` decision record, 2026-09-28). Gate 1 may proceed with the ingestion path.
 
+## Addendum — 2026-10-03 re-baseline (status only)
+
+> Updated 2026-10-03 — see dev/DECISIONS-2026-10-03.md
+
+Decisions D1–D6 above, and their rationale, stand unchanged. `DECISIONS-2026-10-03.md`
+re-baselined Phase C+D and settled three topics adjacent to this ADR's scope; two stay
+open. Status against ADR-001:
+
+| Topic                                        | Status (2026-10-03)                                 | Where / note                                                                                                                                                                                                                                                                             |
+| -------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Multi-channel choice (which channels ship)   | **Resolved — superseded elsewhere**                 | DECISIONS §1, §3.6: customer picks `baileys` / `twilio` / `official` / `none` from config; all channels real on trial/free tiers. This ADR never decided it; the spec's one-WhatsApp + one-PSTN framing (spec §1, §4) is now superseded.                                                 |
+| Storage split (where agent-core state lives) | **Resolved**                                        | DECISIONS §3.3: two databases — desktop keeps its `src-tauri` Rust migrations; `agent-core` gets its own up/down SQL in `services/agent-core/migrations/`, SQLite in dev, PG-shaped. Consistent with D1 (`agent-core` owns its persistence, is not a Cargo member). Config tables first. |
+| Telephony runtime                            | **Resolved — supersedes spec §4 / Gate 4 defaults** | DECISIONS §3.7: FreeSWITCH (native on this host for testing, dedicated Docker VPS for production), acceptance = loopback. Supersedes the spec's "telephony → Telnyx" default.                                                                                                            |
+| Carrier / BSP selection                      | **Open**                                            | DECISIONS §7/§9: chosen carrier/BSP, paid accounts and real pricing deferred to the vendor RFQ (COST-MODEL §6); asked when RFQ responses arrive. Tracked as Open row 4 below.                                                                                                            |
+| Auth                                         | **Open (design decided, enforcement deferred)**     | D4's design stands unchanged (per-tenant bearer token, server-derived tenant, `agent_get_ops_snapshot`). DECISIONS §3.9 defers enforcement to Gate 1: endpoints ship open on loopback and the "any non-empty bearer token" hole must close before anything leaves loopback. Open row 5.  |
+
 ## Open — must be closed before the gate that needs it
 
-| #   | Open item                                                                                                                                                                                                              | Owner        | Blocks                                                                  |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------- |
-| 1   | WhatsApp voicemail→owner trigger direction and its €0 claim (D6 row 5)                                                                                                                                                 | vendor (BSP) | `COST-MODEL.md` sign-off                                                |
-| 2   | Agent knowledge scope — what content is allowed to reach the server                                                                                                                                                    | **client**   | RAG ingestion (Gate 1) — the guardrail in `RAG-FORK.md` §Recommendation |
-| 3   | Desktop index written under `provider` mode will not match a later `rust_bge` switch — **deferred by decision 2026-09-28, filed as debt** (`docs/03-FRONTEND/13-deprecations.md`, `docs/02-BACKEND/12-diagnostics.md`) | us           | desktop RAG (pre-existing, not voice-agent scope)                       |
+| #   | Open item                                                                                                                                                                                                              | Owner        | Blocks                                                                         |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------ |
+| 1   | WhatsApp voicemail→owner trigger direction and its €0 claim (D6 row 5)                                                                                                                                                 | vendor (BSP) | `COST-MODEL.md` sign-off                                                       |
+| 2   | Agent knowledge scope — what content is allowed to reach the server                                                                                                                                                    | **client**   | RAG ingestion (Gate 1) — the guardrail in `RAG-FORK.md` §Recommendation        |
+| 3   | Desktop index written under `provider` mode will not match a later `rust_bge` switch — **deferred by decision 2026-09-28, filed as debt** (`docs/03-FRONTEND/13-deprecations.md`, `docs/02-BACKEND/12-diagnostics.md`) | us           | desktop RAG (pre-existing, not voice-agent scope)                              |
+| 4   | **Carrier / BSP selection for the pilot** (which provider actually carries calls + messages), paid accounts, real pricing — **open, re-confirmed 2026-10-03**                                                          | us / vendors | Pilot pricing — ask when RFQ responses arrive (DECISIONS §7/§9, COST-MODEL §6) |
+| 5   | **Auth enforcement on all routes** — design decided in D4; implementation **deferred to Gate 1 2026-10-03**: endpoints ship open on loopback, "any non-empty bearer token" hole accepted until then                    | us           | Gate 1 — must close before anything leaves loopback (DECISIONS §3.9)           |

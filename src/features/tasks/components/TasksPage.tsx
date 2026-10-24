@@ -182,7 +182,7 @@ export function TasksPage() {
       },
       {
         id: 'delete',
-        label: t('tasks.delete'),
+        label: t('common.delete'),
         icon: null,
         direction: 'long-left',
         destructive: true,
@@ -606,7 +606,7 @@ export function TasksPage() {
     (task: DbTask): SwipeActions => ({
       left: {
         primary: {
-          label: task.is_completed ? t('tasks.undo') : t('tasks.markComplete'),
+          label: task.is_completed ? t('common.undo') : t('tasks.markComplete'),
           icon: 'check-circle-2',
           color: 'bg-emerald-500',
           onAction: () => {
@@ -615,7 +615,7 @@ export function TasksPage() {
           },
         },
         secondary: {
-          label: t('tasks.delete'),
+          label: t('common.delete'),
           icon: 'trash-2',
           color: 'bg-red-500',
           onAction: () => {
@@ -834,7 +834,7 @@ export function TasksPage() {
                     {task.recurrence_rule && (
                       <span
                         className="text-[0.6rem] text-text-tertiary"
-                        aria-label={t('tasks.recurring')}
+                        aria-label={t('common.recurring')}
                       >
                         ↻
                       </span>
@@ -912,7 +912,7 @@ export function TasksPage() {
 
   return (
     <PageScaffold
-      title={t('tasks.title')}
+      title={t('common.tasks')}
       count={filteredTasks.length}
       actions={
         <button
@@ -1038,7 +1038,7 @@ export function TasksPage() {
             className="flex items-center gap-1 text-xs text-danger hover:opacity-80"
           >
             <Trash2 size={13} />
-            {t('tasks.delete')}
+            {t('common.delete')}
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
@@ -1145,7 +1145,7 @@ export function TasksPage() {
                         className="shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-full active:scale-95 transition-transform"
                       >
                         <RefreshCw size={12} />
-                        {t('tasks.retry')}
+                        {t('common.retry')}
                       </button>
                     </div>
                   </div>
@@ -1193,7 +1193,7 @@ export function TasksPage() {
                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-md transition-colors"
               >
                 <RefreshCw size={13} />
-                {t('tasks.retry')}
+                {t('common.retry')}
               </button>
             </div>
           ) : filteredTasks.length === 0 ? (

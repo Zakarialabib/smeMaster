@@ -18,30 +18,30 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 
 ### Desktop Shell & Navigation
 
-| Component        | Location                                                | Notes                                    |
-| ---------------- | ------------------------------------------------------- | ---------------------------------------- |
-| `DesktopShell`   | `src/shared/components/layout/shell/DesktopShell.tsx`   | Full sidebar, three-pane layout          |
-| `AppLayout`      | `src/shared/components/layout/AppLayout.tsx`            | Responsive container                     |
+| Component          | Location                                                  | Notes                                                                                          |
+| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DesktopShell`     | `src/shared/components/layout/shell/DesktopShell.tsx`     | Full sidebar, three-pane layout                                                                |
+| `AppLayout`        | `src/shared/components/layout/AppLayout.tsx`              | Responsive container                                                                           |
 | `SidebarContainer` | `src/shared/components/layout/shell/SidebarContainer.tsx` | Navigation + a11y, skip-to-content (note: no `Sidebar.tsx` exists; this is the real component) |
-| `CommandPalette` | `src/shared/components/layout/shell/CommandPalette.tsx` | Bottom-anchor mobile, top-center desktop |
-| `AppLauncher`    | `src/shared/components/layout/shell/AppLauncher.tsx`    | Odoo-inspired app tile grid              |
-| `ViewSwitcher`   | `src/shared/components/ui/ViewSwitcher.tsx`             | List/card/board/kanban toggle            |
-| `ActionBar`      | `src/features/mail/components/ActionBar.tsx`        | a11y-labeled icon buttons                |
-| `Modal`          | `src/shared/components/ui/Modal.tsx`                    | Focus trap, a11y attributes              |
-| `ConfirmDialog`  | `src/shared/components/ui/ConfirmDialog.tsx`            | Loading state, a11y labels               |
-| `SlidePanel`     | `src/shared/components/ui/SlidePanel.tsx`               | Desktop right panel                      |
+| `CommandPalette`   | `src/shared/components/layout/shell/CommandPalette.tsx`   | Bottom-anchor mobile, top-center desktop                                                       |
+| `AppLauncher`      | `src/shared/components/layout/shell/AppLauncher.tsx`      | Odoo-inspired app tile grid                                                                    |
+| `ViewSwitcher`     | `src/shared/components/ui/ViewSwitcher.tsx`               | List/card/board/kanban toggle                                                                  |
+| `ActionBar`        | `src/features/mail/components/ActionBar.tsx`              | a11y-labeled icon buttons                                                                      |
+| `Modal`            | `src/shared/components/ui/Modal.tsx`                      | Focus trap, a11y attributes                                                                    |
+| `ConfirmDialog`    | `src/shared/components/ui/ConfirmDialog.tsx`              | Loading state, a11y labels                                                                     |
+| `SlidePanel`       | `src/shared/components/ui/SlidePanel.tsx`                 | Desktop right panel                                                                            |
 
 ### Mobile Shell & Navigation
 
-| Component              | Location                                                      | Notes                               |
-| ---------------------- | ------------------------------------------------------------- | ----------------------------------- |
-| `MobileShell`          | `src/shared/components/layout/shell/MobileShell.tsx`          | Runtime shell selection             |
+| Component                             | Location                                                                                                  | Notes                                                                           |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `MobileShell`                         | `src/shared/components/layout/shell/MobileShell.tsx`                                                      | Runtime shell selection                                                         |
 | `PhoneShell` / `TabletLandscapeShell` | _(do not exist as files)_ — shell selection is handled at runtime inside `MobileShell.tsx` + `mobile.css` | Bottom tab bar / two-pane sidebar are runtime variants, not separate components |
-| `BottomTabBar`         | `src/features/mail/components/layout/BottomTabBar.tsx`        | 5 tabs + FAB entry                  |
-| `FloatingActionButton` | `src/shared/components/ui/FloatingActionButton.tsx`           | Radial menu mobile, toolbar desktop |
-| `PageTransition`       | `src/shared/components/layout/shell/PageTransition.tsx`       | Slide left/right spring transitions |
-| `MultiSelectBottomBar` | `src/shared/components/ui/MultiSelectBottomBar.tsx`           | Count + bulk actions                |
-| `AdaptiveBottomSheet`  | `src/shared/components/ui/AdaptiveBottomSheet.tsx`            | Desktop panel → mobile bottom sheet |
+| `BottomTabBar`                        | `src/features/mail/components/layout/BottomTabBar.tsx`                                                    | 5 tabs + FAB entry                                                              |
+| `FloatingActionButton`                | `src/shared/components/ui/FloatingActionButton.tsx`                                                       | Radial menu mobile, toolbar desktop                                             |
+| `PageTransition`                      | `src/shared/components/layout/shell/PageTransition.tsx`                                                   | Slide left/right spring transitions                                             |
+| `MultiSelectBottomBar`                | `src/shared/components/ui/MultiSelectBottomBar.tsx`                                                       | Count + bulk actions                                                            |
+| `AdaptiveBottomSheet`                 | `src/shared/components/ui/AdaptiveBottomSheet.tsx`                                                        | Desktop panel → mobile bottom sheet                                             |
 
 ### Gesture & Input System
 
@@ -49,12 +49,10 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 | ------------------- | --------------------------------------- | ---------------------------------------------- |
 | `useGestureActions` | `src/shared/hooks/useGestureActions.ts` | Registry: swipe direction → action per context |
 | `useSwipeGesture`   | `src/shared/hooks/useSwipeGesture.ts`   | Raw swipe detection                            |
-| `useLongPress`      | `src/shared/hooks/useLongPress.ts`      | Long-press for context menus                   |
 | `useHaptics`        | `src/shared/hooks/useHaptics.ts`        | Haptic feedback on key actions                 |
 | `useBreakpoint`     | `src/shared/hooks/useBreakpoint.ts`     | Unified 768px/1024px breakpoints               |
 | `useInputModality`  | `src/shared/hooks/useInputModality.ts`  | Touch vs mouse vs keyboard detection           |
 | `useDensity`        | `src/shared/hooks/useDensity.ts`        | UI density (spacious/compact/default)          |
-| `useLongPress`      | `src/shared/hooks/useLongPress.ts`      | Long press activation                          |
 
 ### Adaptive Components
 
@@ -76,12 +74,12 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 
 ### Offline & Sync UX
 
-| Component             | Location                                        | Behavior                    |
-| --------------------- | ----------------------------------------------- | --------------------------- |
-| `OfflineBanner`       | `src/shared/components/ui/OfflineBanner.tsx`    | Sync animation, queue count |
-| `MobileSyncStatus`     | `src/features/mobile/MobileSyncStatus.tsx`                          | Last sync time, refresh     |
-| `MobilePullToRefresh` | `src/features/mobile/MobilePullToRefresh.tsx`                      | Custom pull-to-refresh      |
-| `useNetworkStatus`    | `src/shared/hooks/useNetworkStatus.ts`          | Online/offline monitoring   |
+| Component             | Location                                      | Behavior                    |
+| --------------------- | --------------------------------------------- | --------------------------- |
+| `OfflineBanner`       | `src/shared/components/ui/OfflineBanner.tsx`  | Sync animation, queue count |
+| `MobileSyncStatus`    | `src/features/mobile/MobileSyncStatus.tsx`    | Last sync time, refresh     |
+| `MobilePullToRefresh` | `src/features/mobile/MobilePullToRefresh.tsx` | Custom pull-to-refresh      |
+| `useNetworkStatus`    | `src/shared/hooks/useNetworkStatus.ts`        | Online/offline monitoring   |
 
 ### Mobile Native Features
 
@@ -97,14 +95,14 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 
 ### Theming & Design System
 
-| Asset                   | Location                                  | Notes                            |
-| ----------------------- | ----------------------------------------- | -------------------------------- |
-| `ui-tokens.ts`          | `src/shared/styles/ui-tokens.ts`          | Active class token library       |
-| `mobile-animations.css` | `src/shared/styles/mobile-animations.css` | Spring curves, page transitions  |
-| 3 UI Densities          | `useDensity.ts` + store                   | spacious/compact/default         |
-| 8 Color Palettes        | Theme store                               | Light/dark + 6 accent colors     |
-| 5 Locales               | i18n system                               | en, fr, ar, ja, it (RTL support) |
-| 536 Typed IPC          | `src/shared/services/db/invoke/` (per-domain wrappers) + `src/shared/services/commands.ts` | Full Rust↔TS type safety (canonical count per STATUS.md: 479 `invoke/` + 57 `commands.ts`) |
+| Asset                   | Location                                                                                   | Notes                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `ui-tokens.ts`          | `src/shared/styles/ui-tokens.ts`                                                           | Active class token library                                                                 |
+| `mobile-animations.css` | `src/shared/styles/mobile-animations.css`                                                  | Spring curves, page transitions                                                            |
+| 3 UI Densities          | `useDensity.ts` + store                                                                    | spacious/compact/default                                                                   |
+| 8 Color Palettes        | Theme store                                                                                | Light/dark + 6 accent colors                                                               |
+| 5 Locales               | i18n system                                                                                | en, fr, ar, ja, it (RTL support)                                                           |
+| 536 Typed IPC           | `src/shared/services/db/invoke/` (per-domain wrappers) + `src/shared/services/commands.ts` | Full Rust↔TS type safety (canonical count per STATUS.md: 479 `invoke/` + 57 `commands.ts`) |
 
 ---
 
@@ -112,28 +110,28 @@ This document provides a unified, prioritized plan for UI and UX across both Des
 
 The 20-app analysis identified ~50 specific UI/UX actions. They have been consolidated into 5 cross-cutting phases and are now **100% implemented**:
 
-| App              | Key Pattern Taken                                                         | Status |
-| ---------------- | ------------------------------------------------------------------------- | ------ |
-| **Superhuman**   | Swipe gestures (archive/snooze/flag), quick reply sheet, adaptive toolbar | ✅     |
-| **Linear**       | Command palette (bottom mobile, top-center desktop), swipe actions        | ✅     |
-| **Adaptive knowledge apps** | Bottom sheet (desktop panel → mobile drawer), mobile writing mode | ✅     |
-| **Notion**       | Block cards, adaptive layouts                                             | ✅     |
-| **Ghost**        | Zen mode (full-screen composer), focus reader                             | ✅     |
-| **Mutt**         | Focus reader (chrome-less reading)                                        | ✅     |
-| **AppFlowy**     | Bottom navigation (phone) + sidebar (tablet)                              | ✅     |
-| **Odoo**         | App launcher grid with badge counts                                       | ✅     |
-| **Folk**         | Multi-select with bulk action bar, view switcher                          | ✅     |
-| **Twenty**       | Table → card adaptive pattern                                             | ✅     |
-| **Thunderbird**  | Unified actions                                                           | ✅     |
-| **Cal.com**      | Swipe navigation, page transitions                                        | ✅     |
-| **Monday.com**   | Spring physics, transitions                                               | ✅     |
-| **Salesforce**   | Dynamic field rendering                                                   | ✅     |
-| **HubSpot**      | Timeline animations, offline indicators                                   | ✅     |
-| **Superhuman**   | Breakpoint-adaptive layouts                                               | ✅     |
-| **Figma**        | Input modality detection                                                  | ✅     |
-| **iOS system**   | Floating format bar (text selection)                                      | ✅     |
-| **Material You** | Safe area, notch/status bar insets                                        | ✅     |
-| **Spotify**      | Long-press context menus                                                  | ✅     |
+| App                         | Key Pattern Taken                                                         | Status |
+| --------------------------- | ------------------------------------------------------------------------- | ------ |
+| **Superhuman**              | Swipe gestures (archive/snooze/flag), quick reply sheet, adaptive toolbar | ✅     |
+| **Linear**                  | Command palette (bottom mobile, top-center desktop), swipe actions        | ✅     |
+| **Adaptive knowledge apps** | Bottom sheet (desktop panel → mobile drawer), mobile writing mode         | ✅     |
+| **Notion**                  | Block cards, adaptive layouts                                             | ✅     |
+| **Ghost**                   | Zen mode (full-screen composer), focus reader                             | ✅     |
+| **Mutt**                    | Focus reader (chrome-less reading)                                        | ✅     |
+| **AppFlowy**                | Bottom navigation (phone) + sidebar (tablet)                              | ✅     |
+| **Odoo**                    | App launcher grid with badge counts                                       | ✅     |
+| **Folk**                    | Multi-select with bulk action bar, view switcher                          | ✅     |
+| **Twenty**                  | Table → card adaptive pattern                                             | ✅     |
+| **Thunderbird**             | Unified actions                                                           | ✅     |
+| **Cal.com**                 | Swipe navigation, page transitions                                        | ✅     |
+| **Monday.com**              | Spring physics, transitions                                               | ✅     |
+| **Salesforce**              | Dynamic field rendering                                                   | ✅     |
+| **HubSpot**                 | Timeline animations, offline indicators                                   | ✅     |
+| **Superhuman**              | Breakpoint-adaptive layouts                                               | ✅     |
+| **Figma**                   | Input modality detection                                                  | ✅     |
+| **iOS system**              | Floating format bar (text selection)                                      | ✅     |
+| **Material You**            | Safe area, notch/status bar insets                                        | ✅     |
+| **Spotify**                 | Long-press context menus                                                  | ✅     |
 
 ---
 

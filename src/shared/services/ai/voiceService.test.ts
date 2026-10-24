@@ -46,7 +46,8 @@ describe('voice service', () => {
     };
     const caps = getVoiceCapabilities(config);
     expect(caps.tts).toBe(true);
-    expect(caps.stt).toBe(false);
+    // Browser STT is implemented (Web Speech API) — no longer a stub.
+    expect(caps.stt).toBe(true);
   });
 
   it('getVoiceCapabilities returns correct capabilities for openai', () => {
@@ -67,10 +68,11 @@ describe('voice service', () => {
   });
 
   it('getVoiceCapabilities does NOT advertise unimplemented providers', () => {
-    // agent-core previously reported { stt: true, tts: true } while both
-    // directions throw. The badge must reflect reality.
-    const agentCore: VoiceConfig = {
-      provider: 'agent-core',
+    // Unknown providers (e.g. a removed backend) must report no capability.
+    // ElevenLabs used to be a stub, but both directions are now implemented
+    // via the ElevenLabs API, so it reports true.
+    const removed: VoiceConfig = {
+      provider: 'defunct-backend' as VoiceConfig['provider'],
       baseUrl: 'http://localhost:8000',
       apiKey: '',
       ttsVoice: 'alloy',
@@ -80,10 +82,10 @@ describe('voice service', () => {
       ttsSpeed: 1.0,
       offlineSttSampleRate: 16000,
     };
-    expect(getVoiceCapabilities(agentCore)).toEqual({ stt: false, tts: false });
+    expect(getVoiceCapabilities(removed)).toEqual({ stt: false, tts: false });
 
-    const elevenlabs: VoiceConfig = { ...agentCore, provider: 'elevenlabs' };
-    expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: false, tts: false });
+    const elevenlabs: VoiceConfig = { ...removed, provider: 'elevenlabs' };
+    expect(getVoiceCapabilities(elevenlabs)).toEqual({ stt: true, tts: true });
   });
 
   it('getVoiceCapabilities is truthful for every provider that throws', async () => {
@@ -96,7 +98,7 @@ describe('voice service', () => {
       'elevenlabs',
       'lmstudio',
       'custom',
-      'agent-core',
+      'defunct-backend',
       'offline',
     ] as const;
 
@@ -117,10 +119,14 @@ describe('voice service', () => {
       if (caps.tts) {
         // Real TTS paths need fetch/network (or, for `offline`, the ml-sidecar);
         // only assert the stub providers do not claim capability.
-        expect(['openai', 'custom', 'lmstudio', 'browser', 'offline']).toContain(provider);
+        expect(['openai', 'custom', 'lmstudio', 'browser', 'offline', 'elevenlabs']).toContain(
+          provider,
+        );
       }
       if (caps.stt) {
-        expect(['openai', 'custom', 'lmstudio', 'offline']).toContain(provider);
+        expect(['openai', 'custom', 'lmstudio', 'offline', 'browser', 'elevenlabs']).toContain(
+          provider,
+        );
       }
     }
   });

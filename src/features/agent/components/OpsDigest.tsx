@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { agentApi } from '../api/client';
+import { invokeCommand } from '@shared/services/db/invoke/command';
 import { useAgentResource } from '../api/useAgentResource';
 import {
   AgentBadge,
@@ -13,16 +13,9 @@ import type { OpsAlert, OpsSnapshot, ProviderHealth, Severity } from '../types/c
 /**
  * The Ops digest — the screen that decides whether a human does anything today.
  *
- * Ported from the prototype's `OpsPage.tsx`, with three differences that matter:
- *
- * 1. **No fixtures.** It reads the live `GET /ops/snapshot`. If the server is
- *    down the screen says so instead of showing a healthy-looking digest.
- * 2. **Four states, not one.** Loading, ready, unreachable, failed.
- * 3. **Token classes only.** The prototype's inline `style={{ color: '#9333ea' }}`
- *    is gone; a theme change now moves this screen with everything else.
- *
- * NOT WIRED YET: this component is not in the router. The prototype is still the
- * visual source of truth until someone puts it behind a route.
+ * Reads from local SQLite via Tauri commands. No HTTP, no Python, no auth token.
+ * If the DB is unreachable the screen says so instead of showing a
+ * healthy-looking digest.
  */
 
 /** Severity drives colour AND wording. A P1 that reads like a P3 is a bug. */
@@ -85,10 +78,6 @@ function ProviderRow({ p }: { p: ProviderHealth }) {
         <span className="text-text-tertiary">{p.role}</span>
       </span>
       <span className="flex items-center gap-3 text-text-secondary">
-        {/*
-          Telephony legitimately reports no p95. Rendering NaN or "null" would
-          be worse than an em-dash, so the absence is shown as absence.
-        */}
         <span>{p.latencyP95Ms === null ? '—' : `${p.latencyP95Ms} ms`}</span>
         <span>{(p.errorRate * 100).toFixed(1)}% err</span>
       </span>
@@ -97,13 +86,15 @@ function ProviderRow({ p }: { p: ProviderHealth }) {
 }
 
 export function OpsDigest() {
-  const fetcher = useCallback(
-    () => agentApi.opsSnapshot() as Promise<OpsSnapshot & { providerHealth?: ProviderHealth[] }>,
+  const fetcher = useCallback(() => invokeCommand<OpsSnapshot>('agent_ops_snapshot', {}), []);
+  const providerHealthFetcher = useCallback(
+    () => invokeCommand<ProviderHealth[]>('agent_provider_health', {}),
     [],
   );
   // 15s: fast enough that a fresh P1 appears without a manual refresh, slow
-  // enough that a laptop waking from sleep does not stampede the server.
+  // enough that a laptop waking from sleep does not stampede the DB.
   const { state, refresh } = useAgentResource(fetcher, [], { pollMs: 15_000 });
+  const { state: providerState } = useAgentResource(providerHealthFetcher, [], { pollMs: 15_000 });
 
   return (
     <AgentResource state={state} onRetry={refresh}>
@@ -111,6 +102,7 @@ export function OpsDigest() {
         const p2 = Object.entries(snap.p2Grouped).flatMap(([rule, list]) =>
           list.map((a) => ({ ...a, rule: a.rule || rule })),
         );
+        const providerHealth = providerState.kind === 'ready' ? providerState.data : [];
         return (
           <div className="space-y-4">
             {!snap.reachable && (
@@ -121,9 +113,7 @@ export function OpsDigest() {
                 The agent is not reachable. Figures below may be stale.
               </div>
             )}
-
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Stat label="Calls" value={snap.callCount} />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               <Stat label="Contained" value={`${snap.containedPct}%`} />
               <Stat label="P3" value={snap.p3Count} />
               <Stat
@@ -159,10 +149,10 @@ export function OpsDigest() {
               )}
             </AgentCard>
 
-            {snap.providerHealth && snap.providerHealth.length > 0 && (
+            {providerHealth.length > 0 && (
               <AgentCard title="Providers">
                 <ul>
-                  {snap.providerHealth.map((p) => (
+                  {providerHealth.map((p) => (
                     <ProviderRow key={`${p.provider}-${p.role}`} p={p} />
                   ))}
                 </ul>

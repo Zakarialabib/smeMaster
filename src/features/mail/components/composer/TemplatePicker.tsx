@@ -22,7 +22,9 @@ export function TemplatePicker({
 }: TemplatePickerProps) {
   const { t } = useTranslation();
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
-  const { mode, subject, setSubject } = useComposerStore();
+  const mode = useComposerStore((s) => s.mode);
+  const subject = useComposerStore((s) => s.subject);
+  const setSubject = useComposerStore((s) => s.setSubject);
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const isOpen = isControlled ? controlledOpen : internalOpen;
@@ -72,7 +74,7 @@ export function TemplatePicker({
           title={t('composer.insertTemplate') + ' (Ctrl+Shift+T)'}
         >
           <FileText size={12} />
-          {t('composer.templates')}
+          {t('common.templates')}
         </button>
       )}
 

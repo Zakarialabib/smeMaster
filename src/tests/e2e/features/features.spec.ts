@@ -263,9 +263,9 @@ test.describe('Calendar', () => {
     await skipOnboarding(page);
   });
 
-  test('calendar page renders', async ({ page }) => {
-    await gotoRoute(page, '/calendar');
-    await expectBreadcrumb(page, 'Calendar');
+  test('calendar tab renders inside CRM', async ({ page }) => {
+    await gotoRoute(page, '/people?tab=calendar');
+    await expectBreadcrumb(page, 'CRM');
   });
 });
 

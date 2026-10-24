@@ -270,7 +270,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'compose',
         label: t('search.composeNewEmail'),
         shortcut: 'c',
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: () => {
           openComposer();
           onClose();
@@ -280,7 +280,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'deselect',
         label: t('search.closeThread'),
         shortcut: 'Esc',
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: () => {
           navigateBack();
           onClose();
@@ -289,7 +289,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'reload-mail',
         label: t('search.reloadMail'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: () => {
           onClose();
           queryClient.invalidateQueries({ queryKey: ['emailThreads'] });
@@ -298,7 +298,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'toggle-focused',
         label: t('search.toggleFocused'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: () => {
           setFocusedInbox(!focusedInbox);
           onClose();
@@ -307,7 +307,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'toggle-split-inbox',
         label: t('search.toggleSplitInbox'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: () => {
           setInboxViewMode(inboxViewMode === 'split' ? 'unified' : 'split');
           onClose();
@@ -316,7 +316,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'snooze-selected',
         label: t('search.snoozeThread'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: async () => {
           onClose();
           const selectedId = getSelectedThreadId();
@@ -334,7 +334,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'star-selected',
         label: t('search.starThread'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: async () => {
           onClose();
           const selectedId = getSelectedThreadId();
@@ -351,7 +351,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'archive-selected',
         label: t('search.archiveThread'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: async () => {
           onClose();
           const selectedId = getSelectedThreadId();
@@ -369,7 +369,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'mark-read-selected',
         label: t('search.markReadThread'),
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: async () => {
           onClose();
           const selectedId = getSelectedThreadId();
@@ -388,7 +388,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'spam',
         label: activeLabel === 'spam' ? t('email.notSpam') : t('email.reportSpam'),
         shortcut: '!',
-        category: t('filter.actions'),
+        category: t('common.actions'),
         action: async () => {
           onClose();
           const selectedId = getSelectedThreadId();
@@ -412,7 +412,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'task-create',
         label: t('search.createTask'),
-        category: t('tasks.tasks'),
+        category: t('common.tasks'),
         action: () => {
           onClose();
           useLayoutStore.getState().setTaskSidebarVisible(true);
@@ -422,7 +422,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'task-extract',
         label: t('search.createTaskFromEmail'),
         shortcut: 't',
-        category: t('tasks.tasks'),
+        category: t('common.tasks'),
         action: () => {
           onClose();
           const threadId = getSelectedThreadId();
@@ -437,7 +437,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'task-view',
         label: t('search.viewTasks'),
         shortcut: 'g k',
-        category: t('tasks.tasks'),
+        category: t('common.tasks'),
         action: () => {
           navigateToLabel('tasks');
           onClose();
@@ -446,7 +446,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'task-toggle-panel',
         label: t('search.toggleTaskPanel'),
-        category: t('tasks.tasks'),
+        category: t('common.tasks'),
         action: () => {
           useLayoutStore.getState().toggleTaskSidebar();
           onClose();
@@ -469,7 +469,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         id: 'toggle-sidebar',
         label: t('search.toggleSidebar'),
         shortcut: 'Ctrl+Shift+E',
-        category: t('search.settings'),
+        category: t('common.settings'),
         action: () => {
           toggleSidebar();
           onClose();
@@ -478,7 +478,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'theme-light',
         label: t('search.switchToTheme', { theme: t('settings.light') }),
-        category: t('search.settings'),
+        category: t('common.settings'),
         action: () => {
           setTheme('light');
           onClose();
@@ -487,7 +487,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'theme-dark',
         label: t('search.switchToTheme', { theme: t('settings.dark') }),
-        category: t('search.settings'),
+        category: t('common.settings'),
         action: () => {
           setTheme('dark');
           onClose();
@@ -496,7 +496,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'theme-system',
         label: t('search.switchToTheme', { theme: t('settings.tabGroupSystem') }),
-        category: t('search.settings'),
+        category: t('common.settings'),
         action: () => {
           setTheme('system');
           onClose();
@@ -507,7 +507,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       ...templates.map((tmpl) => ({
         id: `template-${tmpl.id}`,
         label: t('search.insertTemplate', { name: tmpl.name }),
-        category: t('search.templates'),
+        category: t('common.templates'),
         action: () => {
           openComposer({
             mode: 'new' as const,

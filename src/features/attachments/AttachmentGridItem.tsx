@@ -68,7 +68,7 @@ export function AttachmentGridItem({
           <button
             onClick={onPreview}
             className="p-1.5 rounded-md bg-bg-primary/90 border border-border-primary text-text-secondary hover:text-text-primary transition-colors"
-            title={t('attachments.preview')}
+            title={t('common.preview')}
           >
             <Eye size={13} />
           </button>

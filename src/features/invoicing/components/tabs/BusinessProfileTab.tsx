@@ -33,19 +33,17 @@ export default function BusinessProfileTab() {
     if (!company) return;
     setSaving(true);
     try {
+      // Flat camelCase payload per the CommandRegistry wire format.
       await updateCompany(company.id, {
-        set: {
-          name: company.name,
-          legal_name: company.legal_name,
-          ice: company.ice,
-          tax_id: company.tax_id,
-          rc: company.rc,
-          cnss: company.cnss,
-          address_line1: company.address_line1,
-          city: company.city,
-          country: company.country,
-        },
-        unset: [],
+        name: company.name,
+        legalName: company.legal_name,
+        ice: company.ice,
+        taxId: company.tax_id,
+        rc: company.rc,
+        cnss: company.cnss,
+        addressLine1: company.address_line1,
+        city: company.city,
+        country: company.country,
       });
     } catch (err) {
       console.error('Failed to save company:', err);

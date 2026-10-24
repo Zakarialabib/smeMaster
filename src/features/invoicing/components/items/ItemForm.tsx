@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, Save, Loader2, Package } from 'lucide-react';
+import { Save, Loader2, Package } from 'lucide-react';
 import { Button } from '@shared/components/ui/Button';
+import { Modal } from '@shared/components/ui/Modal';
 import { useInvoicingStore } from '../../stores/invoicingStore';
 import { ACTIVE_COMPANY_ID } from '../../utils/format';
 import type { Item } from '../../types';
@@ -124,42 +125,33 @@ export default function ItemForm({
     }
   };
 
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-bg-primary rounded-2xl border border-border-primary w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 backdrop-blur-xl shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-              <Package size={20} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-text-primary">
-                {item ? 'Edit Item' : 'New Item'}
-              </h3>
-              <p className="text-xs text-text-tertiary">
-                {item
-                  ? 'Update the product or service details.'
-                  : 'Add a product or service to your catalog.'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            title="Close"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-bg-hover/60 transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
+  const title = item ? 'Edit Item' : 'New Item';
+  const subtitle = item
+    ? 'Update the product or service details.'
+    : 'Add a product or service to your catalog.';
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 mt-6">
+  return (
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title={title}
+      size="2xl"
+      renderHeader={
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border-primary">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+            <Package size={20} />
+          </div>
+          <div>
+            <h3 id="modal-title" className="text-sm font-semibold text-text-primary">
+              {title}
+            </h3>
+            <p className="text-xs text-text-tertiary">{subtitle}</p>
+          </div>
+        </div>
+      }
+    >
+      <div className="p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
           <Field label="Name" required className="sm:col-span-2">
             <input
               autoFocus
@@ -276,7 +268,7 @@ export default function ItemForm({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

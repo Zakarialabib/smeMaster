@@ -275,9 +275,7 @@ export function AIPanel({ onApplySubject, onInsertBody, onPickImage, context }: 
         {/* Subject chips */}
         {pendingSubjects.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-medium text-text-secondary">
-              {t('campaign.editor.subject')}
-            </p>
+            <p className="text-xs font-medium text-text-secondary">{t('common.subject')}</p>
             <div className="flex flex-wrap gap-2">
               {pendingSubjects.map((s, i) => (
                 <button

@@ -66,7 +66,7 @@ Keep these responsibilities separate:
 
 - message authoring belongs to `34-mail-composer.md`
 - regulatory and profile-based checks belong to `23-compliance-engine.md`
-- general email account/provider behavior belongs to `Core/01-email-management.md`
+- general email account/provider behavior belongs to `01-email-management.md`
 
 Deliverability should stay focused on sender health and send quality, not on duplicating the whole outbound mail stack.
 

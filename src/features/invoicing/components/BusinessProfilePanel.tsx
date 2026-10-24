@@ -68,7 +68,23 @@ export default function BusinessProfilePanel() {
     if (!company) return;
     setSaving(true);
     try {
-      await updateCompany(company.id, { ...form });
+      // The form mirrors the snake_case DB row shape; the IPC wire format is
+      // camelCase (see CommandRegistry), so map explicitly instead of
+      // spreading snake_case keys (which Tauri silently dropped).
+      await updateCompany(company.id, {
+        name: form.name,
+        legalName: form.legal_name,
+        email: form.email,
+        phone: form.phone,
+        website: form.website,
+        addressLine1: form.address_line1,
+        city: form.city,
+        country: form.country,
+        ice: form.ice,
+        taxId: form.tax_id,
+        rc: form.rc,
+        cnss: form.cnss,
+      });
       setSaved(true);
     } finally {
       setSaving(false);

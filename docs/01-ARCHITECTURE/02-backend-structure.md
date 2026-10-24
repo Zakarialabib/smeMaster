@@ -11,35 +11,44 @@ src-tauri/src/
 ├── lib.rs              # Tauri setup, command registration, tray, window events
 ├── main.rs             # Entry point (minimal)
 │
-├── commands/           # 31 domain command files (30 *.rs + mod.rs, verified 2026-07-19) — each a #[tauri::command] module
-│   ├── core.rs         # 1,409 — Accounts, Messages, Threads, Labels
-│   ├── contacts.rs     # 1,479 — CRM Contacts, Groups, Clients, Labels, Segments, Tags, Files
-│   ├── crm.rs          # 1,460 — Campaigns, Backup Schedules, Deliverability, Bounces
-│   ├── comms.rs        # 2,269 — Templates, Signatures, Drafts, Filters, Quick Steps
-│   ├── invoicing.rs    # 1,299 — Invoices, Clients, Items, PDF/UBL, Morocco DGI
-│   ├── db.rs           # 1,030 — Admin / generic DB ops (search, insert, maintenance)
-│   ├── deliverability.rs # 821 — Config, Events, Blacklist, ARF Reports
-│   ├── workflows.rs    # 842 — Workflow Rules, Follow-ups, Pending Ops
-│   ├── tasks.rs        # 568 — Tasks + Task Tags
-│   ├── calendar.rs     # 613 — Calendars, Events, Snooze Presets
-│   ├── security.rs     # 594 — PGP Keys, Allowlists, Link Scan, Notification VIPs
-│   ├── ai.rs           # 407 — AI Cache, AI Config, RAG
-│   ├── pos.rs           # 357 — POS hardware (printer/scanner), transactions
-│   ├── imap.rs         # 532 — IMAP operations
-│   ├── smtp.rs         # 173 — SMTP operations
-│   ├── compliance.rs   # 228 — Compliance Profiles + Checks
-│   ├── discovery.rs    # 258 — local account discovery
-│   ├── settings.rs     # 273 — Settings + Attachment Cache
-│   ├── deals.rs        # 218 — Deal/Pipeline + Lead Scoring
-│   ├── sync.rs         # 208 — sync engine commands
-│   ├── onboarding_cmds.rs # 198 — onboarding flow
-│   ├── wallet.rs       # 76 — company wallet (cash hub + ledger)
-│   ├── accounting.rs   # 61 — ERP accounts / journal
+├── commands/           # 31 domain command files — each a #[tauri::command] module
+│   ├── core.rs         # Accounts, Messages, Threads, Labels
+│   ├── contacts.rs     # CRM Contacts, Groups, Clients, Labels, Segments, Tags, Files
+│   ├── crm.rs          # Campaigns, Backup Schedules, Deliverability, Bounces
+│   ├── comms.rs        # Templates, Signatures, Drafts, Filters, Quick Steps
+│   ├── invoicing.rs    # Invoices, Clients, Items, PDF/UBL, Morocco DGI
+│   ├── db.rs           # Admin / generic DB ops (search, insert, maintenance)
+│   ├── deliverability.rs # Config, Events, Blacklist, ARF Reports
+│   ├── workflows.rs    # Workflow Rules, Follow-ups, Pending Ops
+│   ├── tasks.rs        # Tasks + Task Tags
+│   ├── calendar.rs     # Calendars, Events, Snooze Presets
+│   ├── security.rs     # PGP Keys, Allowlists, Link Scan, Notification VIPs
+│   ├── ai.rs           # AI Cache, AI Config, RAG
+│   ├── pos.rs           # POS hardware (printer/scanner), transactions
+│   ├── imap.rs         # IMAP operations
+│   ├── smtp.rs         # SMTP operations
+│   ├── compliance.rs   # Compliance Profiles + Checks
+│   ├── discovery.rs    # local account discovery
+│   ├── settings.rs     # Settings + Attachment Cache
+│   ├── deals.rs        # Deal/Pipeline + Lead Scoring
+│   ├── sync.rs         # sync engine commands
+│   ├── onboarding_cmds.rs # onboarding flow
+│   ├── wallet.rs       # company wallet (cash hub + ledger)
+│   ├── accounting.rs   # ERP accounts / journal
 │   ├── account_import.rs # account import
 │   ├── updater_commands.rs # app auto-update
 │   ├── system.rs / system_desktop.rs / system_android.rs # platform services
 │   ├── idle.rs # idle/activity detection
 │   └── logging.rs      # structured logging commands
+│
+├── agent/              # Agentic AI automation (email + social)
+│   ├── mod.rs          # Module declarations + Tauri registration
+│   ├── config.rs       # AgentConfig management (settings table)
+│   ├── providers.rs    # Provider chain with fallback
+│   ├── ops.rs          # Ops monitoring and alerts
+│   ├── automation.rs   # Email/social automation rules
+│   ├── types.rs        # Wire types (Health, OpsSnapshot, etc.)
+│   └── commands.rs     # Tauri commands for config/ops/automation
 │
 ├── db/                 # Database layer — schema, migrations, queries
 │   ├── connection.rs   # SQLite pool creation (WAL mode, busy_timeout, FK enforcement)
@@ -101,7 +110,7 @@ pub async fn db_get_account(
 - All DB commands use `db_` prefix — distinguishes them from native Tauri commands
 - Each command is a thin wrapper that delegates to a `db/tables/` query function
 - Errors flow through `AppDbError` → `SerializedError` — typed error codes on the frontend
-- Token fields (access*token, refresh_token, imap_password) are encrypted/decrypted \_inside* query functions — the command sees plaintext
+- Token fields (access*token, refresh_token, imap_password) are encrypted/decrypted _inside_ query functions — the command sees plaintext
 
 ---
 
@@ -111,10 +120,10 @@ pub async fn db_get_account(
 Frontend (React)
     │  invoke("db_get_account", { account_id: "abc" })
     ▼
-commands/<domain>.rs   ← **841 registered commands** (⚠️ re-grepped 2026-09-30: 777 `#[tauri::command]` + 64 `#[command]`. `docs/STATUS.md` and older docs say 831 = 768 + 63 — that snapshot predates the agent IPC work. **Re-grep before trusting:** `rg -c '#\[tauri::command\]|#\[command\]' src-tauri/src`), thin wrappers over db/tables queries
+commands/<domain>.rs   ← thin wrappers over db/tables queries
     │
     ▼
-db/tables/<domain>/    ← 67 query files using sqlx (parameterized, type-safe)
+db/tables/<domain>/    ← query files using sqlx (parameterized, type-safe)
     │
     ▼
 SQLite                  ← WAL mode, connection pool managed in lib.rs
@@ -198,10 +207,4 @@ No prefix mismatches. ✅ All verified.
 
 - [Data model →](03-data-model.md) — schema ownership, domains, and consolidation patterns
 - [Reuse patterns →](../05-DEVELOPMENT/05-reuse-patterns.md) — code reuse analysis across backend/frontend
-- **[ADR-001 — voice agent integration seams →](decisions/ADR-001-voice-agent-integration-seams.md)**
-  — `services/agent-core/` is a **network sidecar** (Python, on the VPS). It is **not** a
-  Cargo workspace member, **not** a Tauri child process, and has **no** stdio JSON-RPC
-  transport — `ml-sidecar` (above) is precedent for the _contract shape_, not the process
-  model. Forbidden: adding `agent-core` to `src-tauri/Cargo.toml` `members`.
-  Console reads go through one command, `agent_get_ops_snapshot`; no tenant id ever appears
-  in a command argument.
+- [Agentic AI Automation →](08-agentic-ai-automation.md) — Rust agent module for email/social automation

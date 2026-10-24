@@ -8,6 +8,7 @@ import { invoke } from '@shared/services/ipc';
 export async function invokeCommand<T>(
   command: string,
   args?: Record<string, unknown>,
+  timeoutMs?: number,
 ): Promise<T> {
   try {
     // Cast to a permissive type to allow any string command. The IPC wrapper
@@ -15,9 +16,16 @@ export async function invokeCommand<T>(
     const fn = invoke as unknown as (
       c: string,
       p: Record<string, unknown> | undefined,
-      o?: { log?: boolean; silent?: boolean },
+      o?: { log?: boolean; silent?: boolean; timeoutMs?: number },
     ) => Promise<unknown>;
-    const result = await fn(command, args ?? {}, { log: false, silent: true });
+    const options: { log: boolean; silent: boolean; timeoutMs?: number } = {
+      log: false,
+      silent: true,
+    };
+    if (timeoutMs) {
+      options.timeoutMs = timeoutMs;
+    }
+    const result = await fn(command, args ?? {}, options);
     return result as T;
   } catch (err) {
     // err is already a SerializedError from Rust: { code, message, details? }

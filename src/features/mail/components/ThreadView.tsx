@@ -12,7 +12,9 @@ import { useContextMenuStore } from '@features/mail/stores/contextMenuStore';
 import { markThreadRead } from '@features/mail/services/emailActions';
 import { getSetting } from '@features/settings/db/settings';
 import { getAllowlistedSenders } from '@features/deliverability/db/imageAllowlist';
-import { VolumeX } from 'lucide-react';
+import { VolumeX, Volume2 } from 'lucide-react';
+import { speakWithBrowser } from '@shared/services/ai/voiceService';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 import { escapeHtml, sanitizeHtml } from '@shared/utils/sanitize';
 import { isNoReplyAddress } from '@shared/utils/noReply';
 import { ThreadSummary } from './ThreadSummary';
@@ -465,6 +467,42 @@ export function ThreadView({ thread }: ThreadViewProps) {
                 <VolumeX size={isMobileDevice ? 14 : 16} />
               </span>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                const text = messages
+                  .map(
+                    (m) =>
+                      `${m.from_name ?? m.from_address ?? ''}: ${m.body_text ?? m.snippet ?? ''}`,
+                  )
+                  .join('\n\n');
+                speakWithBrowser(text);
+              }}
+              className="shrink-0 p-1.5 rounded-md hover:bg-bg-tertiary text-text-tertiary hover:text-text-secondary transition-colors"
+              title={t('thread.readAloud')}
+              aria-label={t('thread.readAloud')}
+            >
+              <Volume2 size={isMobileDevice ? 14 : 16} />
+            </button>
+            <VoiceButton
+              mode="input"
+              onTranscript={(text) => {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage) {
+                  useComposerStore.getState().openComposer({
+                    mode: 'reply',
+                    to:
+                      (lastMessage.reply_to ?? lastMessage.from_address)
+                        ? [lastMessage.reply_to ?? lastMessage.from_address!]
+                        : [],
+                    subject: `Re: ${lastMessage.subject ?? ''}`,
+                    bodyHtml: `<p>${text}</p>`,
+                  });
+                }
+              }}
+              disabled={messages.length === 0}
+              size="sm"
+            />
           </h1>
           <div className={`text-text-tertiary mt-1 ${isMobileDevice ? 'text-xs' : 'text-xs'}`}>
             {t('thread.nMessagesInThread', { n: messages.length })}

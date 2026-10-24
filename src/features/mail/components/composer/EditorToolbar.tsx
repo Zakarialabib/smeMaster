@@ -27,6 +27,7 @@ import { EmojiPicker } from './EmojiPicker';
 import { InvoiceSelectionModal } from '../../../invoicing/components/InvoiceSelectionModal';
 import { Invoice } from '../../../invoicing/types';
 import { formatMoney, formatDate } from '../../../invoicing/utils/format';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -269,6 +270,18 @@ export function EditorToolbar({
 
       <div className="w-px h-4 bg-border-primary mx-1" />
 
+      {/* Voice compose — inline in toolbar */}
+      <VoiceButton
+        mode="input"
+        size="sm"
+        onTranscript={(text) => {
+          editor?.chain().focus().insertContent(`<p>${text}</p>`).run();
+          useComposerStore.getState().setBodyHtml(editor.getHTML());
+        }}
+      />
+
+      <div className="w-px h-4 bg-border-primary mx-1" />
+
       <div className="relative">
         <button
           type="button"
@@ -413,7 +426,7 @@ export function EditorToolbar({
           className="px-1.5 py-1 text-xs rounded hover:bg-bg-hover transition-colors flex items-center gap-1 text-text-secondary"
         >
           <FileText size={12} />
-          {t('composer.templates')}
+          {t('common.templates')}
         </button>
       )}
 
@@ -493,7 +506,7 @@ export function EditorToolbar({
         />
       )}
 
-      {btn(t('composer.undo'), false, () => editor.chain().focus().undo().run())}
+      {btn(t('common.undo'), false, () => editor.chain().focus().undo().run())}
       {btn(t('composer.redo'), false, () => editor.chain().focus().redo().run())}
       {/* Format preview bar */}
       <FormatPreviewBar editor={editor} />

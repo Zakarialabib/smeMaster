@@ -16,11 +16,6 @@ const HelpPage = lazy(() =>
     default: m.HelpPage,
   })),
 );
-const SchedulePage = lazy(() =>
-  import('@features/tasks/pages/SchedulePage').then((m) => ({
-    default: m.SchedulePage,
-  })),
-);
 const AttachmentLibrary = lazy(() =>
   import('@features/attachments/AttachmentLibrary').then((m) => ({ default: m.AttachmentLibrary })),
 );
@@ -64,6 +59,11 @@ const DashboardPage = lazy(() =>
 const AiAssistantPage = lazy(() =>
   import('@features/assistant/pages/AiAssistantPage').then((m) => ({
     default: m.AiAssistantPage,
+  })),
+);
+const AgentConsolePage = lazy(() =>
+  import('@features/agent/pages/AgentConsolePage').then((m) => ({
+    default: m.AgentConsolePage,
   })),
 );
 const MobileDashboardPage = lazy(() =>
@@ -126,12 +126,32 @@ function validateMailSearch(search: Record<string, unknown>): MailSearch {
   return result;
 }
 
+// /erp — active console tab (single source of truth for the 7 tab ids).
+export const ERP_TAB_IDS = [
+  'overview',
+  'stock',
+  'accounting',
+  'reports',
+  'wallet',
+  'roles',
+  'company',
+] as const;
+export type ErpTabId = (typeof ERP_TAB_IDS)[number];
+
+function validateErpSearch(search: Record<string, unknown>): { tab?: ErpTabId } {
+  const tab = search['tab'];
+  if (typeof tab === 'string' && (ERP_TAB_IDS as readonly string[]).includes(tab)) {
+    return { tab: tab as ErpTabId };
+  }
+  return {};
+}
+
 // ---------- Root (shell: TitleBar, Sidebar, overlays) ----------
 export const rootRoute = createRootRoute({
   component: App,
 });
 
-// ---------- / (index) â†’ redirect to /mail/inbox ----------
+// ---------- / (index) → redirect to /dashboard ----------
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
@@ -252,21 +272,34 @@ export const attachmentsRoute = createRoute({
   component: AttachmentLibraryWrapper,
 });
 
-// ---------- /tasks (Schedule: Tasks + Calendar) ----------
-const SchedulePageWrapper = createPageWrapper('Schedule', SchedulePage as LazyComponent);
-
+// ---------- /tasks → redirect into the CRM workspace (keeps ?view= for TasksPage) ----------
 export const tasksRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'tasks',
-  component: SchedulePageWrapper,
+  beforeLoad: ({ location }) => {
+    const params = new URLSearchParams(location.searchStr);
+    const view = params.get('view');
+    const tab = params.get('tab');
+    throw redirect({
+      to: '/people',
+      search: {
+        tab: tab === 'calendar' ? 'calendar' : 'tasks',
+        ...(view ? { view } : {}),
+      },
+    });
+  },
 });
 
-// ---------- /calendar → redirect to /tasks ----------
+// ---------- /calendar → redirect into the CRM workspace (keeps ?view=) ----------
 export const calendarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'calendar',
-  beforeLoad: () => {
-    throw redirect({ to: '/tasks' });
+  beforeLoad: ({ location }) => {
+    const view = new URLSearchParams(location.searchStr).get('view');
+    throw redirect({
+      to: '/people',
+      search: { tab: 'calendar', ...(view ? { view } : {}) },
+    });
   },
 });
 
@@ -321,6 +354,7 @@ const ErpPageWrapper = createPageWrapper('Erp', ErpPage as LazyComponent);
 export const erpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'erp',
+  validateSearch: validateErpSearch,
   component: ErpPageWrapper,
 });
 
@@ -352,12 +386,23 @@ export const workflowsRoute = createRoute({
 });
 
 const AiAssistantPageWrapper = createPageWrapper('AiAssistant', AiAssistantPage as LazyComponent);
+const AgentConsolePageWrapper = createPageWrapper(
+  'AgentConsole',
+  AgentConsolePage as LazyComponent,
+);
 
 // ---------- /ai-assistant ----------
 export const aiAssistantRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'ai-assistant',
   component: AiAssistantPageWrapper,
+});
+
+// ---------- /agent-console ----------
+export const agentConsoleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'agent-console',
+  component: AgentConsolePageWrapper,
 });
 
 // ---------- /dashboard ----------
@@ -412,19 +457,13 @@ export const mobileDashboardRoute = createRoute({
   component: MobileDashboardWrapper,
 });
 
-// ---------- /unified (Unified Inbox — SMEMaster) ----------
-const UnifiedInboxPage = lazy(() =>
-  import('@features/unified/UnifiedInbox').then((m) => ({
-    default: m.UnifiedInbox,
-  })),
-);
-
-const UnifiedInboxWrapper = createPageWrapper('UnifiedInbox', UnifiedInboxPage as LazyComponent);
-
+// ---------- /unified (merged into /dashboard — UnifiedWorkspace widget) ----------
 export const unifiedRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'unified',
-  component: UnifiedInboxWrapper,
+  beforeLoad: () => {
+    throw redirect({ to: '/dashboard' });
+  },
 });
 
 // ---------- /pos ----------
@@ -491,6 +530,7 @@ export const routeTree = rootRoute.addChildren([
   invoicingRoute.addChildren([invoiceEditorRoute, invoiceCreateRoute]),
   erpRoute,
   aiAssistantRoute,
+  agentConsoleRoute,
   dashboardRoute,
   mobileDashboardRoute,
   unifiedRoute,

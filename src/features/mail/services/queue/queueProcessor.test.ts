@@ -23,6 +23,7 @@ vi.mock('@features/settings/db/pendingOperations', () => ({
   incrementRetry: vi.fn(() => Promise.resolve()),
   getPendingOpsCount: vi.fn(() => Promise.resolve(0)),
   compactQueue: vi.fn(() => Promise.resolve(0)),
+  PENDING_OP_ACCOUNT_KEY: 'accountId',
 }));
 
 vi.mock('@features/mail/services/emailActions', () => ({
@@ -105,6 +106,29 @@ describe('queueProcessor', () => {
       messageIds: [],
     });
     expect(deleteOperation).toHaveBeenCalledWith('op-1');
+  });
+  it('prefers the params-embedded account over the company scope id', async () => {
+    vi.mocked(getPendingOperations).mockResolvedValueOnce([
+      {
+        id: 'op-9',
+        company_id: 'demo-company-1',
+        operation_type: 'archive',
+        resource_id: 't9',
+        params: '{"threadId":"t9","messageIds":[],"accountId":"acct-9"}',
+        status: 'pending',
+        retry_count: 0,
+        max_retries: 10,
+        next_retry_at: null,
+        created_at: 1000,
+        error_message: null,
+      },
+    ]);
+    await triggerQueueFlush();
+    expect(executeQueuedAction).toHaveBeenCalledWith('acct-9', 'archive', {
+      threadId: 't9',
+      messageIds: [],
+      accountId: 'acct-9',
+    });
   });
   it('retries on retryable errors', async () => {
     vi.mocked(getPendingOperations).mockResolvedValueOnce([

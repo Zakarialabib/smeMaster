@@ -1,58 +1,56 @@
 # Account Cleaning
 
-> Retention, cleanup, and account-maintenance workflows exposed through settings.
+> **Status:** Production — retention rules and cleanup workflows (Settings → Account Cleaning).
+> **Stack:** React 19 + Rust + SQLite
 
-## Scope
+## Overview
 
-Account cleaning covers the settings-driven cleanup surface for mailbox maintenance and related retention workflows.
+Account Cleaning keeps inboxes tidy: retention policies define how long emails are kept, and cleanup rules match by sender, subject, age, or unsubscribe status — then delete, archive, or categorize.
 
-This includes:
+## Architecture
 
-- cleanup rule management
-- cleanup history and execution UI
-- account-level maintenance actions exposed to users
+```
+AccountCleaningTab.tsx → rule CRUD
+  → invokeCommand("db_*") → Rust (retention/cleanup domain)
+  → SQLite (cleanup_rules table with retention_days)
+```
 
-## Current Ownership
+Registered in `SettingsTabRegistry.ts` as `account-cleaning`, adjacent to `backup-restore`.
 
-This feature is primarily settings-hosted.
+## Core Capabilities
 
-Representative files:
+| Area                   | What it does                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| **Retention policies** | Default retention period (days); emails older than the period become cleanup candidates       |
+| **Cleanup rules**      | Match by sender, subject, age, or unsubscribe status → action (delete / archive / categorize) |
+| **Age rules**          | `retention_days` per rule; null for non-age rules                                             |
+| **Compliance link**    | Retention-notice checks in the compliance engine (`retention_notice` rule)                    |
 
-- `src/features/settings/components/tabs/AccountCleaningTab.tsx`
-- `src-tauri/src/commands/workflows.rs` for cleanup-related commands
+## Rule Model
 
-The cleanup system has dedicated storage and commands. It should not be documented as merely a synonym for generic automation rules.
+```ts
+{
+  rule_type: 'age' | 'sender' | 'subject' | 'unsubscribe',
+  retention_days: number | null,  // only for 'age'
+  condition: string,               // sender/subject match
+  action: 'delete' | 'archive' | 'categorize'
+}
+```
 
-## What It Does
-
-The account-cleaning surface allows users to define or run cleanup-oriented rules for mailbox maintenance, such as retention and cleanup actions that apply to account data.
-
-Important product rule:
-
-- cleanup behavior is user-configured and settings-driven
-- do not document a global built-in cleanup schedule unless one is actually enforced by the running product
-
-## Boundaries
-
-Keep these responsibilities separate:
-
-- general trigger/action automation belongs to `05-automation.md`
-- inbox/thread behavior belongs to `01-email-management.md`
-
-Account cleaning is a specialized maintenance subsystem with its own UI and backend command path.
+Schema: `src/shared/services/db/schema.ts` (`retention_days: number | null`).
 
 ## Key Files
 
-| Area | Files |
-| --- | --- |
-| Settings UI | `src/features/settings/components/tabs/AccountCleaningTab.tsx` |
-| Settings registry | `src/features/settings/components/SettingsTabRegistry.ts` |
-| Backend commands | `src-tauri/src/commands/workflows.rs` |
+| Layer      | Path                                                                           |
+| ---------- | ------------------------------------------------------------------------------ |
+| UI         | `src/features/settings/components/tabs/AccountCleaningTab.tsx`                 |
+| Registry   | `src/features/settings/components/SettingsTabRegistry.ts` (`account-cleaning`) |
+| Compliance | `src/features/mail/services/compliance/ruleEngine.ts` (`retention_notice`)     |
+| i18n       | `settings.tabs.accountCleaning` in all 5 locales                               |
 
-## Update Rules
+## Related Docs
 
-Update this page when:
-
-- cleanup rules move into or out of generic automation
-- cleanup scheduling semantics change materially
-- the settings UI gains major new maintenance capabilities
+- [Email Management](01-email-management.md) — inbox source
+- [Filters](28-filters.md) — rule-based filtering
+- [Compliance Engine](23-compliance-engine.md) — retention notices
+- [Backup & Restore](../user-guide/backup-restore.md) — data safety

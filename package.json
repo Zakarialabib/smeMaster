@@ -34,7 +34,8 @@
     "test:integration": "vitest run --project integration",
     "test:all": "vitest run",
     "sidecar:build": "bash scripts/build-sidecar.sh",
-    "sidecar:build:release": "bash scripts/build-sidecar.sh --release"
+    "sidecar:build:release": "bash scripts/build-sidecar.sh --release",
+    "verify:agent-scope": "bash scripts/verify/agent-scope.sh"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

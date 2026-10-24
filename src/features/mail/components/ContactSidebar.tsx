@@ -553,7 +553,7 @@ export function ContactSidebar({ email, name, accountId, bodyText, onClose }: Co
             {/* Campaigns (recipient of) */}
             <div>
               <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-                <Send size={11} /> {t('contact.campaigns')}
+                <Send size={11} /> {t('common.campaigns')}
               </h4>
               {relationsLoading ? (
                 <p className="text-xs text-text-tertiary">{t('contact.loading')}</p>

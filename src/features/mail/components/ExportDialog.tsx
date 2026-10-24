@@ -109,7 +109,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
               onClick={handleClose}
               className="mt-2 px-4 py-2 text-xs font-medium text-white bg-accent rounded-md hover:bg-accent-hover transition-colors"
             >
-              {t('modals.export.done')}
+              {t('common.done')}
             </button>
           </div>
         ) : step === 'format' ? (
@@ -186,7 +186,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                 onClick={() => setStep('format')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
-                {t('modals.export.back')}
+                {t('common.back')}
               </button>
               <button
                 onClick={() => setStep('destination')}
@@ -215,7 +215,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                 onClick={() => setStep('filter')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
-                {t('modals.export.back')}
+                {t('common.back')}
               </button>
               <button
                 onClick={() => setStep('encrypt')}
@@ -270,7 +270,7 @@ export function ExportDialog({ accountId, isOpen, onClose }: ExportDialogProps) 
                 onClick={() => setStep('destination')}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
-                {t('modals.export.back')}
+                {t('common.back')}
               </button>
               <button
                 onClick={handleExport}

@@ -1,11 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, X, Send, ExternalLink, Download } from 'lucide-react';
-import { askMyInbox, type AskInboxResult } from '@shared/services/ai/askInbox';
+import { askMyInboxStreaming, type AskInboxResult } from '@shared/services/ai/askInbox';
+import type { AiProvider } from '@shared/services/ai/types';
 import { useAccountStore } from '@features/accounts/stores/accountStore';
 import { navigateToLabel } from '@/router/navigate';
 import { ensureAiSidecar, activateAiSidecar } from '@features/assistant/services/aiSidecar';
 import { useAiSidecarStore } from '@features/assistant/stores/aiSidecarStore';
+import { VoiceButton } from '@features/assistant/components/VoiceButton';
+import { ProviderModelPicker } from '@features/assistant/components/ProviderModelPicker';
+import { ProviderBadge } from '@features/assistant/components/ProviderBadge';
 
 interface AskInboxProps {
   isOpen: boolean;
@@ -16,6 +20,10 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AskInboxResult | null>(null);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [provider, setProvider] = useState('claude');
+  const [model, setModel] = useState('claude-sonnet-5-5');
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
 
@@ -58,8 +66,18 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
     if (!question.trim() || !activeAccountId || loading) return;
     setLoading(true);
     setResult(null);
+    setStreamingAnswer('');
+    setIsStreaming(true);
     try {
-      const res = await askMyInbox(question.trim(), activeAccountId);
+      const res = await askMyInboxStreaming(
+        question.trim(),
+        activeAccountId,
+        (chunk) => {
+          setStreamingAnswer((prev) => prev + chunk);
+        },
+        provider as AiProvider,
+        model,
+      );
       setResult(res);
     } catch (err) {
       console.error('Ask inbox failed:', err);
@@ -69,8 +87,9 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
       });
     } finally {
       setLoading(false);
+      setIsStreaming(false);
     }
-  }, [question, activeAccountId, loading]);
+  }, [question, activeAccountId, loading, provider, model]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -117,7 +136,40 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
         </div>
 
         {/* Input */}
-        <div className="px-4 py-3 border-b border-border-secondary flex items-center gap-2">
+        <div className="px-4 py-3 border-b border-border-secondary flex items-center gap-2 flex-wrap">
+          <ProviderModelPicker
+            provider={provider as any}
+            model={model}
+            onChange={(p, m) => {
+              setProvider(p);
+              setModel(m);
+            }}
+            disabled={loading}
+            compact
+          />
+          <ProviderBadge provider={provider as AiProvider} model={model} muted />
+          <span className="flex gap-1.5">
+            {[
+              { id: 'embedding', label: 'Embed' },
+              { id: 'stt', label: 'STT' },
+              { id: 'tts', label: 'TTS' },
+            ].map((cap) => {
+              const supported =
+                cap.id === 'embedding'
+                  ? true
+                  : cap.id === 'stt'
+                    ? provider !== 'offline'
+                    : provider !== 'offline';
+              return (
+                <span
+                  key={cap.id}
+                  className={`text-[9px] px-1.5 py-0.5 rounded ${supported ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}
+                >
+                  {cap.label}
+                </span>
+              );
+            })}
+          </span>
           <input
             ref={inputRef}
             autoFocus
@@ -127,6 +179,14 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ask a question about your emails..."
             className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+          />
+          <VoiceButton
+            mode="input"
+            onTranscript={(text) => {
+              setQuestion(text);
+              handleAsk();
+            }}
+            disabled={loading}
           />
           <button
             onClick={handleAsk}
@@ -139,18 +199,32 @@ export function AskInbox({ isOpen, onClose }: AskInboxProps) {
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto">
-          {loading && (
+          {loading && !isStreaming && (
             <div className="flex items-center gap-2 px-4 py-6 text-text-tertiary justify-center">
               <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
               <span className="text-sm">Searching your inbox...</span>
             </div>
           )}
 
-          {result && (
+          {isStreaming && (
+            <div className="p-4 space-y-4">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                  {streamingAnswer}
+                  <span className="inline-block w-2 h-4 ml-0.5 bg-accent animate-pulse align-text-bottom" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {result && !isStreaming && (
             <div className="p-4 space-y-4">
               {/* Answer */}
-              <div className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
-                {result.answer}
+              <div className="flex items-start gap-2">
+                <div className="flex-1 text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                  {result.answer}
+                </div>
+                <VoiceButton mode="output" text={result.answer} size="sm" />
               </div>
 
               {/* Source messages */}

@@ -70,13 +70,16 @@ describe('SectionCard', () => {
     expect(link).toHaveAttribute('href', '#/people');
   });
 
-  it('navigates when the card surface is clicked', () => {
+  it('navigates when the title link is clicked, but not on card surface clicks', () => {
     renderCard();
-    fireEvent.click(screen.getByRole('link', { name: 'People' }));
+    // Title is the only navigation affordance — no stretched overlay link.
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(1);
+    fireEvent.click(links[0]!);
     expect(navigateSpy).toHaveBeenCalledWith('/people');
   });
 
-  it('opens the description slide via the info button WITHOUT navigating', async () => {
+  it('opens the in-card help popover via the info button WITHOUT navigating', async () => {
     renderCard();
     fireEvent.click(screen.getByRole('button', { name: 'About People' }));
 
@@ -85,8 +88,17 @@ describe('SectionCard', () => {
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveAttribute('aria-label', 'People');
     expect(screen.getByText(/Your contacts and CRM/)).toBeInTheDocument();
-    // "Open section" CTA lives in the slide footer
-    expect(screen.getAllByRole('link', { name: /Open section/ }).length).toBeGreaterThan(0);
+    // No "Open section" affordance anywhere — the title link is the way in.
+    expect(screen.queryByRole('link', { name: /Open section/ })).not.toBeInTheDocument();
+  });
+
+  it('closes the help popover via its close button', async () => {
+    renderCard();
+    fireEvent.click(screen.getByRole('button', { name: 'About People' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('renders the rich content slot (children)', () => {

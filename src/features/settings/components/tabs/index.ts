@@ -7,8 +7,7 @@ export { default as DeliverabilityTab } from './DeliverabilityTab';
 export { default as ShortcutsTab } from './ShortcutsTab';
 export { default as AboutTab } from './AboutTab';
 export { default as AiTab } from './AiTab';
-export { default as VoiceSettings } from '../VoiceSettings';
-export { default as LocalModelsSettings } from '../LocalModelsSettings';
+
 export { default as ComplianceTab } from './ComplianceTab';
 export { default as MailRulesTab } from './MailRulesTab';
 export { default as NotificationsTab } from './NotificationsTab';
@@ -24,3 +23,4 @@ export { default as HardwareTab } from './HardwareTab';
 export { default as BusinessProfileTab } from '../../../invoicing/components/tabs/BusinessProfileTab';
 export { default as PairingSettings } from '../PairingSettings';
 export { default as CacheTab } from './CacheTab';
+export { default as AgentsTab } from '../AgentsTab';

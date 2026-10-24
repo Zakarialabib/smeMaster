@@ -6,14 +6,14 @@ tag from a branch where any box is unchecked.**
 
 The checklist is intentionally short. If you find yourself wanting to add
 "verify that …" to this list, that probably belongs in a more specific gate
-document (e.g. PROD-GATE-6 for security).
+document (e.g. PRODUCTION-READINESS.md for security).
 
 ---
 
 ## 1. Gates
 
-- [ ] All Gate 0–8 marked **PASS** in the corresponding `PROD-GATE-*.md`
-      files. Confirm with the gate owner for each one — a stale "PASS" from
+- [ ] All Gate 0–8 marked **PASS** in [PRODUCTION-READINESS.md](../PRODUCTION-READINESS.md).
+      Confirm with the gate owner for each one — a stale "PASS" from
       last week is not a PASS for this release.
 - [ ] The release ticket links the latest commit SHA where each gate was
       signed off.
@@ -21,8 +21,8 @@ document (e.g. PROD-GATE-6 for security).
 ## 2. Security
 
 - [ ] **Dependency audit** shows zero exploitable **HIGH** or **MEDIUM**
-      vulnerabilities. Run `npm audit` and `cargo audit`. Suppressions must
-      be listed in `SECURITY-AUDIT.md` with justification and expiry.
+      vulnerabilities. Run `bun audit` and `cargo audit`. Suppressions must
+      be listed in [PRODUCTION-READINESS.md](../PRODUCTION-READINESS.md) with justification and expiry.
 - [ ] Code signing certificates are **valid** and not within 14 days of
       expiry.
 - [ ] Auto-updater public key in `tauri.conf.json` matches the private key

@@ -1,23 +1,23 @@
 # SMEMaster v1.0.0 — Production Readiness Status
 
-> **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup.
+> **Consolidated source of truth.** This single document replaces the per-gate `PROD-GATE-{0..9}.md` files and the standalone `dependency-audit.md`. Detailed evidence is in the linked companion documents; this file is the rollup. (Note: `SECURITY-AUDIT.md` was never created — security evidence lives in Gate 0 above.)
 
-> **Last updated:** 2026-09-30 (command/migration counts reconciled against source this pass)
+> **Last updated:** 2026-10-04 — voice call system dropped, pivoted to agentic AI automation.
 
 ## Status Summary
 
-| Gate | Name               | Status                         | Owner    |
-| ---- | ------------------ | ------------------------------ | -------- |
-| 0    | Stop Conditions    | ✅ PASS                        | Security |
-| 1    | Stability          | 🟢 PASS (automated tests added)  | Infra    |
-| 2    | Performance        | ✅ PASS                        | Backend  |
-| 3    | Distribution       | 🔶 IN PROGRESS (certs, pubkey) | Release  |
-| 4    | Data Safety        | ✅ PASS                        | Backend  |
-| 5    | User Experience    | ✅ PASS                        | Frontend |
-| 6    | Observability      | ✅ PASS                        | Backend  |
-| 7    | Documentation      | ✅ PASS                        | Docs     |
-| 8    | Legal & Compliance | ✅ PASS                        | Release  |
-| 9    | Final Validation   | 🔶 IN PROGRESS (dogfood, beta) | All      |
+| Gate | Name               | Status                          | Owner    |
+| ---- | ------------------ | ------------------------------- | -------- |
+| 0    | Stop Conditions    | ✅ PASS                         | Security |
+| 1    | Stability          | 🟢 PASS (automated tests added) | Infra    |
+| 2    | Performance        | ✅ PASS                         | Backend  |
+| 3    | Distribution       | 🔶 IN PROGRESS (certs, pubkey)  | Release  |
+| 4    | Data Safety        | ✅ PASS                         | Backend  |
+| 5    | User Experience    | ✅ PASS                         | Frontend |
+| 6    | Observability      | ✅ PASS                         | Backend  |
+| 7    | Documentation      | ✅ PASS                         | Docs     |
+| 8    | Legal & Compliance | ✅ PASS                         | Release  |
+| 9    | Final Validation   | 🔶 IN PROGRESS (dogfood, beta)  | All      |
 
 **Overall: 8 PASS, 2 IN PROGRESS, 0 FAIL.** Gate 1 upgraded from IN PROGRESS to PASS via automated test suite. Remaining blockers are human/manual (certificates, beta testing).
 
@@ -27,14 +27,14 @@
 
 ### 0.1 Attack Surface Audit
 
-- [x] ~841 `#[tauri::command]`/`#[command]` IPC commands audited (768 `#[tauri::command]` + 73 `#[command]`)
+- [x] ~868 `#[tauri::command]`/`#[command]` IPC commands audited (804 `#[tauri::command]` + 64 `#[command]`)
 - [x] No command accepts raw SQL strings — all use `sqlx::query!`/`query_as!` with parameterized bindings
 - [x] No command writes to arbitrary file paths — all paths rooted at `app_data_dir()`
 - [x] PGP/crypto commands sanitize all inputs (uses `spawn_blocking`, no `unwrap()` in production paths)
 - [x] `db_execute_insert` is gated — wrapped in `#[cfg(debug_assertions)]`
 - [x] High-risk commands documented
 
-**Full evidence:** [`../SECURITY-AUDIT.md`](../SECURITY-AUDIT.md)
+**Full evidence:** See Gate 0 section above.
 
 ### 0.2 Credential Storage
 
@@ -46,7 +46,7 @@
 
 ### 0.3 Migration Safety
 
-- [x] 32 migrations (numbered 001–032; 020 and 021 each split into two files), each with `up` semantics
+- [x] 34 migrations (numbered 001–034), each with `up` semantics
 - [x] All use `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE`, `CREATE INDEX` — no silent data loss
 - [x] Migration runner uses `RETURNING` with `sqlx::query_as`
 
@@ -142,7 +142,7 @@
 
 ### 3.1 Code Signing (DEFERRED — post-v1.0.0)
 
-> **v1.0.0 decision (see `../SECURITY-AUDIT.md`):** ships **Windows (MSI/NSIS) + Android (APK)** only, **unsigned**, no updater. macOS/Linux targets are removed for v1.0.0. The items below are future-state, not v1.0.0 scope.
+> **v1.0.0 decision:** ships **Windows (MSI/NSIS) + Android (APK)** only, **unsigned**, no updater. macOS/Linux targets are removed for v1.0.0. The items below are future-state, not v1.0.0 scope.
 
 - [ ] macOS: Apple Developer certificate + notarization (purchase required) — future
 - [ ] Windows: EV code signing certificate (purchase required) — future
@@ -160,7 +160,7 @@
 
 ### 3.3 Installer UX (v1.0.0 = Windows MSI/NSIS + Android APK, unsigned)
 
-- [x] Bundle targets: **MSI, NSIS (Windows) + APK (Android)** — per `SECURITY-AUDIT.md` (DMG/AppImage/DEB are NOT built for v1.0.0)
+- [x] Bundle targets: **MSI, NSIS (Windows) + APK (Android)** — DMG/AppImage/DEB are NOT built for v1.0.0
 - [x] Windows NSIS `installMode: currentUser`, WiX `language: en-US`
 - [x] App icons: 32x32.png, 128x128.png, 128x128@2x.png, icon.icns, icon.ico
 - [ ] Manual verify: installers on Windows + Android
@@ -223,7 +223,7 @@
 
 - [x] 4-step modal wizard (`OnboardingScreen.tsx` + `useOnboarding.ts`)
 - [x] Keyboard navigation (ArrowLeft/ArrowRight)
-- [x] State persisted: `useLocalStorage("smemaster.onboarding.done")` + Rust `onboarding.json`
+- [x] State persisted: `usePersistentStorage("smemaster.onboarding.done")` + Rust `onboarding.json`
 - [x] Auto-open AddAccount if no accounts configured
 - [x] Visible in App.tsx via `showOnboarding` flag
 - [ ] Could be expanded to 5 steps per spec (Welcome → Account → Import → PGP → Tour)
@@ -392,7 +392,7 @@ All under [user-guide/](user-guide/):
 - Dogfooding: 7 consecutive days with no critical bugs
 - Beta testing: NPS ≥ 30, install success ≥ 90%, zero P0 bugs
 - All platform installers smoke-tested
-- All automated tests green (~3,533 TS tests, 977 Rust tests)
+- All automated tests green (314 TS test files, 999 Rust tests)
 - Privacy policy live and linked from app
 - Code signing certificates acquired and configured
 
@@ -413,7 +413,7 @@ WEEK 4: v1.0.0 ship
 
 ## Companion Documents
 
-- **Security audit detail:** [`../SECURITY-AUDIT.md`](../SECURITY-AUDIT.md)
+- **Security audit detail:** See Gate 0 section above.
 - **Pre-release checklist:** [release/checklist.md](release/checklist.md)
 - **Code signing guide:** [release/signing.md](release/signing.md)
 - **User documentation:** [user-guide/](user-guide/)

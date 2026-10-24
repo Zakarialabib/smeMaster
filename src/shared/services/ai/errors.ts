@@ -1,4 +1,5 @@
-export type AiErrorCode = 'NOT_CONFIGURED' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'NETWORK_ERROR';
+export type AiErrorCode =
+  'NOT_CONFIGURED' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'NETWORK_ERROR' | 'STREAMING_UNSUPPORTED';
 
 export class AiError extends Error {
   code: AiErrorCode;

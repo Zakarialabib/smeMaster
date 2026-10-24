@@ -10,7 +10,8 @@ export function LabelEditor() {
   const { t } = useTranslation();
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
   const { data: labels = [] } = useLabels(activeAccountId);
-  const { deleteLabel, reorderLabels } = useLabelStore();
+  const deleteLabel = useLabelStore((s) => s.deleteLabel);
+  const reorderLabels = useLabelStore((s) => s.reorderLabels);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);

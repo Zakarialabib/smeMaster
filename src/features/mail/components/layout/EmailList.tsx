@@ -194,7 +194,7 @@ export function EmailList({
       },
       {
         id: 'snooze',
-        label: t('email.snooze'),
+        label: t('common.snooze'),
         icon: null,
         direction: 'right',
         color: 'bg-blue-500',

@@ -139,7 +139,7 @@ export function AiWorkflowGenerateModal({
               onClick={handleClose}
               className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
             >
-              {t('modals.aiWorkflow.cancel')}
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -195,7 +195,7 @@ export function AiWorkflowGenerateModal({
 
             <div className="rounded-lg border border-border-primary p-3 bg-bg-secondary/50">
               <span className="text-[0.625rem] font-medium text-text-tertiary uppercase tracking-wider">
-                {t('modals.aiWorkflow.actions')} ({parsedActions.length})
+                {t('common.actions')} ({parsedActions.length})
               </span>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedActions.map((action, idx) => {
@@ -247,14 +247,14 @@ export function AiWorkflowGenerateModal({
                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors ms-auto"
               >
                 <Sparkles size={12} />
-                {t('modals.aiWorkflow.regenerate')}
+                {t('common.regenerate')}
               </button>
               <button
                 type="button"
                 onClick={handleClose}
                 className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg hover:bg-bg-hover transition-colors"
               >
-                {t('modals.aiWorkflow.cancel')}
+                {t('common.cancel')}
               </button>
             </div>
           </div>

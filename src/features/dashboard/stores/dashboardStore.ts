@@ -27,17 +27,18 @@ interface DashboardState {
 }
 
 const DEFAULT_WIDGETS: DashboardWidgetConfig[] = [
-  { id: 'emailVolume', title: 'Email Volume', visible: true, order: 0 },
-  { id: 'emailHeatmap', title: 'Email Heatmap', visible: true, order: 1 },
-  { id: 'contactGrowth', title: 'Contact Growth', visible: true, order: 2 },
-  { id: 'businessHealth', title: 'Business Health', visible: true, order: 3 },
-  { id: 'contacts', title: 'Contacts Stats', visible: true, order: 4 },
-  { id: 'tasks', title: 'Task Summary', visible: true, order: 5 },
-  { id: 'campaigns', title: 'Campaigns Overview', visible: true, order: 6 },
-  { id: 'automation', title: 'Automation Rules', visible: true, order: 7 },
-  { id: 'activity', title: 'Recent Activity', visible: true, order: 8 },
-  { id: 'quick', title: 'Quick Actions', visible: true, order: 9 },
-  { id: 'networkGraph', title: 'Entity Network', visible: true, order: 10 },
+  { id: 'workspace', title: 'Unified Workspace', visible: true, order: 0 },
+  { id: 'emailVolume', title: 'Email Volume', visible: true, order: 1 },
+  { id: 'emailHeatmap', title: 'Email Heatmap', visible: true, order: 2 },
+  { id: 'contactGrowth', title: 'Contact Growth', visible: true, order: 3 },
+  { id: 'businessHealth', title: 'Business Health', visible: true, order: 4 },
+  { id: 'contacts', title: 'Contacts Stats', visible: true, order: 5 },
+  { id: 'tasks', title: 'Task Summary', visible: true, order: 6 },
+  { id: 'campaigns', title: 'Campaigns Overview', visible: true, order: 7 },
+  { id: 'automation', title: 'Automation Rules', visible: true, order: 8 },
+  { id: 'activity', title: 'Recent Activity', visible: true, order: 9 },
+  { id: 'quick', title: 'Quick Actions', visible: true, order: 10 },
+  { id: 'networkGraph', title: 'Entity Network', visible: true, order: 11 },
 ];
 
 interface PersistedPreferences {
@@ -58,8 +59,21 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       if (raw) {
         const parsed = JSON.parse(raw) as PersistedPreferences;
         if (parsed.widgets && Array.isArray(parsed.widgets)) {
+          // Merge in any default widgets added after the prefs were saved
+          // (e.g. `workspace` from the UnifiedInbox consolidation) so
+          // existing users get new widgets instead of silently missing them.
+          const known = new Set(parsed.widgets.map((w) => w.id));
+          const missing = DEFAULT_WIDGETS.filter((w) => !known.has(w.id));
+          const maxOrder = parsed.widgets.reduce(
+            (m, w) => Math.max(m, typeof w.order === 'number' ? w.order : 0),
+            0,
+          );
+          const widgets = [
+            ...parsed.widgets,
+            ...missing.map((w, i) => ({ ...w, order: maxOrder + 1 + i })),
+          ];
           set({
-            widgets: parsed.widgets,
+            widgets,
             rangeDays: DASHBOARD_RANGE_OPTIONS.includes(parsed.rangeDays as DashboardRangeDays)
               ? (parsed.rangeDays as DashboardRangeDays)
               : 30,

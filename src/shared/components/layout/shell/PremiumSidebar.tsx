@@ -117,15 +117,13 @@ function DroppableNavItem({
       onClick={onClick}
       onContextMenu={onContextMenu}
       title={title}
-      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${
-        collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
-      } ${
-        isOver
+      className={`sidebar-nav-item flex items-center w-full py-2 text-sm transition-all duration-150 press-scale ${collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
+        } ${isOver
           ? 'glass-accent-tint ring-1 ring-accent'
           : isActive
             ? 'glass-accent-tint text-accent font-medium'
             : 'hover:glass-accent-tint text-sidebar-text hover:text-text-primary'
-      }`}
+        }`}
     >
       {children(isOver)}
     </button>
@@ -160,15 +158,13 @@ function DroppableLabelItem({
       onClick={onClick}
       onContextMenu={onContextMenu}
       title={collapsed ? label.name : undefined}
-      className={`sidebar-nav-item group flex items-center w-full py-2 text-sm transition-all duration-150 ${
-        collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
-      } ${
-        isOver
+      className={`sidebar-nav-item group flex items-center w-full py-2 text-sm transition-all duration-150 ${collapsed ? 'justify-center px-0' : 'gap-3 px-3 text-start'
+        } ${isOver
           ? 'glass-accent-tint ring-1 ring-accent'
           : isActive
             ? 'glass-accent-tint text-accent font-medium'
             : 'hover:glass-accent-tint text-sidebar-text hover:text-text-primary'
-      }`}
+        }`}
     >
       {collapsed ? (
         <span
@@ -176,9 +172,9 @@ function DroppableLabelItem({
           style={
             label.colorBg
               ? {
-                  backgroundColor: label.colorBg,
-                  color: label.colorFg ?? '#ffffff',
-                }
+                backgroundColor: label.colorBg,
+                color: label.colorFg ?? '#ffffff',
+              }
               : undefined
           }
         >
@@ -405,9 +401,10 @@ export function PremiumSidebar({
     setFocusedSubItemIndex(-1);
   }, [activeGroupId, groups]);
 
-  // ── Click outside to close the panel ───────────────────────────────────
+  // ── Click outside to close the panel (flyout mode only — the expanded
+  // content panel stays open while its section is active) ────────────────
   useEffect(() => {
-    if (!openGroupId) return;
+    if (!openGroupId || !collapsed) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
         setOpenGroupId(null);
@@ -415,7 +412,7 @@ export function PremiumSidebar({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openGroupId]);
+  }, [openGroupId, collapsed]);
 
   // ── Load data when account changes ─────────────────────────────────────
   const refreshCategoryCounts = useCallback(async () => {
@@ -523,14 +520,16 @@ export function PremiumSidebar({
       // Don't open flyout for settings/help — their content panel handles
       // navigation with search, sections, and richer UI.
       if (hasItems && groupId !== 'settings' && groupId !== 'help') {
-        setOpenGroupId((prev) => (prev === groupId ? null : groupId));
+        // Expanded mode pins the content panel open (the layout reserves its
+        // width); toggling is only for the collapsed flyout.
+        setOpenGroupId(collapsed ? (prev) => (prev === groupId ? null : groupId) : groupId);
       } else {
         setOpenGroupId(null);
       }
 
       onGroupSelect(groupId);
     },
-    [groups, onGroupSelect],
+    [groups, onGroupSelect, collapsed],
   );
 
   // ── Panel keyboard navigation ────────────────────────────────────────
@@ -570,6 +569,8 @@ export function PremiumSidebar({
         }
         case 'Escape': {
           e.preventDefault();
+          // Flyout mode only — the pinned expanded panel stays open.
+          if (!collapsed) break;
           setOpenGroupId(null);
           const iconBtn = document.querySelector<HTMLButtonElement>(
             `[data-nav-icon-id="${openGroupId}"]`,
@@ -579,7 +580,7 @@ export function PremiumSidebar({
         }
       }
     },
-    [openGroupId, visibleItems, focusedSubItemIndex, onSubItemSelect],
+    [openGroupId, visibleItems, focusedSubItemIndex, onSubItemSelect, collapsed],
   );
 
   useEffect(() => {
@@ -680,11 +681,10 @@ export function PremiumSidebar({
           aria-label={t(group.label)}
           aria-expanded={openGroupId === group.id ? true : undefined}
           aria-haspopup={group.items.length > 0 ? ('true' as const) : undefined}
-          className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent ${
-            isActive
+          className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent ${isActive
               ? 'text-accent glass-accent-tint'
               : 'text-text-tertiary hover:text-text-primary hover:glass-accent-tint'
-          }`}
+            }`}
         >
           <Icon size={20} aria-hidden="true" />
 
@@ -746,13 +746,12 @@ export function PremiumSidebar({
                 role="option"
                 aria-selected={isSubItemActive}
                 tabIndex={isFocused ? 0 : -1}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
-                  isSubItemActive
+                className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${isSubItemActive
                     ? 'glass-accent-tint text-accent font-medium'
                     : isFocused
                       ? 'bg-bg-tertiary text-text-primary'
                       : 'text-text-tertiary hover:glass-accent-tint hover:text-text-primary'
-                }`}
+                  }`}
               >
                 {ItemIcon && (
                   <span className="flex items-center justify-center w-5 h-5 shrink-0">
@@ -809,7 +808,7 @@ export function PremiumSidebar({
                 isActive={
                   isInbox
                     ? activeLabel === 'inbox' &&
-                      (inboxViewMode === 'unified' || activeCategory === 'Primary')
+                    (inboxViewMode === 'unified' || activeCategory === 'Primary')
                     : activeLabel === item.id
                 }
                 collapsed={false}
@@ -860,11 +859,10 @@ export function PremiumSidebar({
                             ? t('email.switchToUnifiedInbox')
                             : t('email.switchToSplitInbox')
                         }
-                        className={`p-1 rounded transition-colors shrink-0 ${
-                          inboxViewMode === 'split'
+                        className={`p-1 rounded transition-colors shrink-0 ${inboxViewMode === 'split'
                             ? 'text-accent hover:bg-accent/10'
                             : 'text-sidebar-text/40 hover:text-sidebar-text hover:bg-bg-tertiary'
-                        }`}
+                          }`}
                       >
                         <Columns2 size={14} />
                       </span>
@@ -885,11 +883,10 @@ export function PremiumSidebar({
                         onClick={() => {
                           navigateToLabel('inbox', { category: cat.id });
                         }}
-                        className={`flex items-center gap-2 w-full py-1.5 ps-7 pe-3 text-start text-[0.8125rem] transition-all duration-150 ${
-                          isCatActive
+                        className={`flex items-center gap-2 w-full py-1.5 ps-7 pe-3 text-start text-[0.8125rem] transition-all duration-150 ${isCatActive
                             ? 'text-accent font-medium glass-accent-tint'
                             : 'text-text-tertiary/70 hover:text-text-tertiary hover:glass-accent-tint'
-                        }`}
+                          }`}
                       >
                         <CatIcon size={14} className="shrink-0" />
                         <span className="flex-1 truncate">{t(cat.label)}</span>
@@ -930,11 +927,10 @@ export function PremiumSidebar({
                 <button
                   key={folder.id}
                   onClick={() => navigateToLabel(`smart-folder:${folder.id}`)}
-                  className={`flex items-center gap-3 w-full px-3 py-2 text-sm transition-all duration-150 ${
-                    isActive
+                  className={`flex items-center gap-3 w-full px-3 py-2 text-sm transition-all duration-150 ${isActive
                       ? 'glass-accent-tint text-accent font-medium'
                       : 'text-text-tertiary hover:glass-accent-tint hover:text-text-primary'
-                  }`}
+                    }`}
                 >
                   <Icon
                     size={18}
@@ -1111,11 +1107,23 @@ export function PremiumSidebar({
 
   // ── Main render ─────────────────────────────────────────────────────────
 
+  // ── Panel visibility: mail gets its rich panel; every other group with
+  // items (crm, sell, …) gets the generic item list — same sidebar pattern.
+  // Settings/help keep their own in-page navigation (no sidebar panel).
+  const panelGroup = !collapsed ? openGroupId : null;
+  const panelGroupDef = panelGroup ? groups.find((g) => g.id === panelGroup) : undefined;
+  const showGenericPanel =
+    !!panelGroupDef &&
+    panelGroupDef.items.length > 0 &&
+    panelGroup !== 'mail' &&
+    panelGroup !== 'settings' &&
+    panelGroup !== 'help';
+
   return (
     <>
       <div
         ref={navRef}
-        className={`flex h-full shrink-0 ${activeGroupId === 'mail' && !collapsed ? 'w-[344px]' : 'w-16'}`}
+        className={`flex h-full shrink-0 ${!collapsed && (activeGroupId === 'mail' || showGenericPanel) ? (activeGroupId === 'mail' ? 'w-[344px]' : 'w-[324px]') : 'w-16'}`}
       >
         {/* Icon rail — always visible on every page */}
         <nav
@@ -1189,6 +1197,10 @@ export function PremiumSidebar({
 
         {/* Mail content panel — only shown on mail pages when expanded */}
         {activeGroupId === 'mail' && !collapsed && renderContentPanel()}
+
+        {/* Generic content panel — same sidebar pattern for every other
+            group with sub-items (crm, sell, …) when expanded */}
+        {showGenericPanel && renderPanel()}
       </div>
 
       {/* Smart folder creation dialog */}

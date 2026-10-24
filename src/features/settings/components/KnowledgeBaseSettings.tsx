@@ -51,6 +51,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { setSetting } from '@features/settings/db/settings';
+import {
+  getLocalModelsByKind,
+  formatBytes as formatModelBytes,
+} from '@shared/services/ai/localModelCatalog';
 
 // ── Status Dot ───────────────────────────────────────────────────────────────
 
@@ -86,7 +90,13 @@ function StatusDot({ status }: { status: ModelStatus }) {
 
 // ── Indexing Progress ────────────────────────────────────────────────────────
 
-function IndexingProgress({ status }: { status: string }) {
+function IndexingProgress({
+  status,
+  progress,
+}: {
+  status: string;
+  progress: { source: string; current: number; total: number } | null;
+}) {
   if (status === 'idle') return null;
 
   const isActive = status === 'indexing';
@@ -106,7 +116,9 @@ function IndexingProgress({ status }: { status: string }) {
         {isActive && (
           <>
             <Loader2 className="w-3 h-3 animate-spin" />
-            Indexing emails, attachments, and vault items…
+            {progress
+              ? `Indexing ${progress.source}: ${progress.current}/${progress.total}…`
+              : 'Indexing…'}
           </>
         )}
         {status === 'completed' && (
@@ -196,35 +208,48 @@ function ModelDownloadProgress({ progress }: { progress: DownloaderProgressEvent
 
 export default function KnowledgeBaseSettings() {
   const { t } = useTranslation();
-  const {
-    enabled,
-    modelStatus,
-    modelPath,
-    tokenizerPath,
-    modelError,
-    downloadProgress,
-    embeddingSource,
-    modelsDir,
-    indexingStatus,
-    lastIndexedAt,
-    indexingError,
-    embeddingTest,
-    embeddingTesting,
-    hydrate,
-    setEnabled,
-    setEmbeddingSource,
-    fetchModelsDir,
-    removeModel,
-    downloadBgeModel,
-    loadEmbeddingModel,
-    indexAll,
-    testEmbedding,
-  } = useRagStore();
+  const enabled = useRagStore((s) => s.enabled);
+  const modelStatus = useRagStore((s) => s.modelStatus);
+  const modelPath = useRagStore((s) => s.modelPath);
+  const tokenizerPath = useRagStore((s) => s.tokenizerPath);
+  const modelError = useRagStore((s) => s.modelError);
+  const downloadProgress = useRagStore((s) => s.downloadProgress);
+  const embeddingSource = useRagStore((s) => s.embeddingSource);
+  const modelsDir = useRagStore((s) => s.modelsDir);
+  const indexingStatus = useRagStore((s) => s.indexingStatus);
+  const lastIndexedAt = useRagStore((s) => s.lastIndexedAt);
+  const indexingError = useRagStore((s) => s.indexingError);
+  const indexingProgress = useRagStore((s) => s.indexingProgress);
+  const embeddingTest = useRagStore((s) => s.embeddingTest);
+  const embeddingTesting = useRagStore((s) => s.embeddingTesting);
+  const hydrate = useRagStore((s) => s.hydrate);
+  const setEnabled = useRagStore((s) => s.setEnabled);
+  const setEmbeddingSource = useRagStore((s) => s.setEmbeddingSource);
+  const fetchModelsDir = useRagStore((s) => s.fetchModelsDir);
+  const removeModel = useRagStore((s) => s.removeModel);
+  const downloadBgeModel = useRagStore((s) => s.downloadBgeModel);
+  const loadEmbeddingModel = useRagStore((s) => s.loadEmbeddingModel);
+  const indexAll = useRagStore((s) => s.indexAll);
+  const selectEmbeddingModel = useRagStore((s) => s.setEmbeddingModelId);
+  const testEmbedding = useRagStore((s) => s.testEmbedding);
   // ── Vector DB + chunking (local UI state) ──
   const [kbPath, setKbPath] = useState<string | null>(null);
   const [chunkSize, setChunkSize] = useState<number>(1000);
   const [chunkOverlap, setChunkOverlap] = useState<number>(100);
   const [splitter, setSplitter] = useState<'paragraph' | 'sentence' | 'token'>('paragraph');
+  // ── Index scope ──
+  const [scope, setScope] = useState({
+    emails: true,
+    attachments: true,
+    vault: true,
+    contacts: true,
+    deals: true,
+  });
+  // ── Embedding model selection ──
+  const [embeddingModelId, setEmbeddingModelId] = useState('bge-small-en-v1.5');
+  const [embeddingModelChanged, setEmbeddingModelChanged] = useState(false);
+  const embeddingModels = getLocalModelsByKind('embedding');
+  const [searchLimit, setSearchLimit] = useState(3);
   // ── Provider / embedding-model status (provider mode) ──
   const [aiProvider, setAiProvider] = useState<string>('claude');
   const [lmstudioEmbeddingModel, setLmstudioEmbeddingModel] = useState<string>('');
@@ -250,6 +275,25 @@ export default function KnowledgeBaseSettings() {
       if (provider) setAiProvider(provider);
       const emb = await getSetting('lmstudio_embedding_model');
       setLmstudioEmbeddingModel(emb ?? '');
+      const scopeRaw = await getSetting('rag_index_scope');
+      if (scopeRaw) {
+        try {
+          const parsed = JSON.parse(scopeRaw);
+          setScope({
+            emails: parsed.emails !== false,
+            attachments: parsed.attachments !== false,
+            vault: parsed.vault !== false,
+            contacts: parsed.contacts !== false,
+            deals: parsed.deals !== false,
+          });
+        } catch {
+          /* use defaults */
+        }
+      }
+      const embModel = await getSetting('rag_embedding_model');
+      if (embModel) setEmbeddingModelId(embModel);
+      const sl = await getSetting('rag_search_limit');
+      if (sl) setSearchLimit(Number(sl) || 3);
     })();
   }, []);
 
@@ -416,6 +460,50 @@ export default function KnowledgeBaseSettings() {
             <SettingRow label={t('settings.modelStatus')}>
               <StatusDot status={modelStatus} />
             </SettingRow>
+            <SettingRow label={t('settings.embeddingModel')}>
+              <select
+                value={embeddingModelId}
+                onChange={async (e) => {
+                  const v = e.target.value;
+                  setEmbeddingModelId(v);
+                  setEmbeddingModelChanged(true);
+                  await setSetting('rag_embedding_model', v);
+                  await selectEmbeddingModel(v);
+                }}
+                className="w-64 glass-select text-text-primary text-sm px-3 py-1.5 rounded-md"
+              >
+                {embeddingModels.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} ({formatModelBytes(m.totalBytes)})
+                  </option>
+                ))}
+              </select>
+            </SettingRow>
+            {embeddingModelChanged && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-warning flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  {t('settings.embeddingModelChanged')}
+                </p>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  className={BTN_GLASS}
+                  onClick={async () => {
+                    setEmbeddingModelChanged(false);
+                    await indexAll();
+                  }}
+                  disabled={indexingStatus === 'indexing'}
+                >
+                  {indexingStatus === 'indexing' ? (
+                    <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-3 h-3 me-1" />
+                  )}
+                  {t('settings.reindex')}
+                </Button>
+              </div>
+            )}
             {downloadProgress && <ModelDownloadProgress progress={downloadProgress} />}
             {modelPath && (
               <div className="text-xs font-mono text-text-tertiary bg-white/5 dark:bg-white/5 px-2.5 py-1.5 rounded-md border border-border-primary truncate">
@@ -518,6 +606,31 @@ export default function KnowledgeBaseSettings() {
         </SettingGroup>
       )}
 
+      {/* ── Indexing Scope ── */}
+      <SettingGroup
+        title={t('settings.indexScope')}
+        description={t('settings.indexScopeDescription')}
+      >
+        {[
+          { key: 'emails' as const, label: t('settings.scopeEmails') },
+          { key: 'attachments' as const, label: t('settings.scopeAttachments') },
+          { key: 'vault' as const, label: t('settings.scopeVault') },
+          { key: 'contacts' as const, label: t('settings.scopeContacts') },
+          { key: 'deals' as const, label: t('settings.scopeDeals') },
+        ].map(({ key, label }) => (
+          <ToggleRow
+            key={key}
+            label={label}
+            checked={scope[key]}
+            onToggle={async () => {
+              const next = { ...scope, [key]: !scope[key] };
+              setScope(next);
+              await setSetting('rag_index_scope', JSON.stringify(next));
+            }}
+          />
+        ))}
+      </SettingGroup>
+
       {/* ── Indexing Control ── */}
       <SettingGroup
         title={t('settings.knowledgeBaseIndexing')}
@@ -542,7 +655,7 @@ export default function KnowledgeBaseSettings() {
             <span className="text-sm text-text-secondary">{formatTimeAgo(lastIndexedAt)}</span>
           </SettingRow>
 
-          <IndexingProgress status={indexingStatus} />
+          <IndexingProgress status={indexingStatus} progress={indexingProgress} />
 
           <div className="pt-1">
             <Button
@@ -659,6 +772,20 @@ export default function KnowledgeBaseSettings() {
             onChange={(e) => setChunkOverlap(Number(e.target.value))}
             onBlur={async () => {
               await setSetting('rag_chunk_overlap', String(chunkOverlap));
+            }}
+            className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
+          />
+        </SettingRow>
+        <SettingRow label={t('settings.searchLimit')}>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            step={1}
+            value={searchLimit}
+            onChange={(e) => setSearchLimit(Number(e.target.value))}
+            onBlur={async () => {
+              await setSetting('rag_search_limit', String(searchLimit));
             }}
             className="w-32 text-text-primary text-sm px-3 py-1.5 rounded-md bg-bg-tertiary border border-border-primary"
           />

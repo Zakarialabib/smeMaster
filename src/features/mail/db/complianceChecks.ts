@@ -2,7 +2,7 @@ import { executeSearchQuery, deleteOldComplianceChecks } from '@shared/services/
 
 export interface DbComplianceCheck {
   id: string;
-  account_id: string;
+  company_id: string;
   email_draft_id: string | null;
   campaign_id: string | null;
   profile_ids: string;
@@ -12,12 +12,14 @@ export interface DbComplianceCheck {
 }
 
 export async function getRecentChecks(
-  accountId: string,
+  companyId: string,
   limit: number = 10,
 ): Promise<DbComplianceCheck[]> {
+  // compliance_checks is company-scoped (company_id FK to companies) — there
+  // is no account_id column on this table.
   return executeSearchQuery(
-    'SELECT * FROM compliance_checks WHERE account_id = $1 ORDER BY checked_at DESC LIMIT $2',
-    [accountId, limit],
+    'SELECT * FROM compliance_checks WHERE company_id = $1 ORDER BY checked_at DESC LIMIT $2',
+    [companyId, limit],
   ) as unknown as Promise<DbComplianceCheck[]>;
 }
 

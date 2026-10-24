@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from '@tanstack/react-router';
+import { useLocation } from '@tanstack/react-router';
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +15,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { AdaptiveBottomSheet } from '@shared/components/ui/AdaptiveBottomSheet';
+import { navigateToItemPath } from '@shared/components/layout/shell/navConfig';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -25,8 +26,8 @@ interface Props {
 /** Secondary destinations surfaced via the center Hub sheet (max 4 thumb tabs
  *  on the bar itself, so the rest live here). */
 const HUB_ITEMS = [
-  { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-  { path: '/calendar', icon: Calendar, label: 'Calendar' },
+  { path: '/people?tab=tasks', icon: CheckSquare, label: 'Tasks' },
+  { path: '/people?tab=calendar', icon: Calendar, label: 'Calendar' },
   { path: '/invoicing', icon: ReceiptText, label: 'Invoicing' },
   { path: '/erp', icon: Calculator, label: 'ERP' },
   { path: '/automation', icon: Zap, label: 'Automation' },
@@ -35,7 +36,6 @@ const HUB_ITEMS = [
 
 /** iOS-style production bottom tab bar with spring bounce indicator. */
 export function BottomTabBar({ onAddAccount, hingeOffset }: Props) {
-  const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   const [hubOpen, setHubOpen] = useState(false);
@@ -49,13 +49,22 @@ export function BottomTabBar({ onAddAccount, hingeOffset }: Props) {
     { path: '/settings/general', icon: Settings, label: 'Settings' },
   ];
 
-  const isActive = (path: string) => {
+  const isActive = (raw: string) => {
+    const [path, query] = raw.split('?');
     if (path === '/mail/inbox') return location.pathname.startsWith('/mail');
     if (path === '/settings/general') return location.pathname.startsWith('/settings');
     if (path === '/crm')
       return location.pathname.startsWith('/crm') || location.pathname.startsWith('/people');
     if (path === '/dashboard/mobile') return location.pathname.startsWith('/dashboard');
-    return location.pathname.startsWith(path);
+    // Query-bearing entries (e.g. /people?tab=tasks) only match when the tab agrees.
+    if (query && path === '/people') {
+      const want = new URLSearchParams(query).get('tab');
+      const current =
+        new URLSearchParams(location.searchStr).get('tab') ??
+        (location.pathname === '/people' ? 'people' : null);
+      return location.pathname === '/people' && want === current;
+    }
+    return location.pathname.startsWith(path ?? '');
   };
 
   const paddingBottom = hingeOffset
@@ -75,7 +84,7 @@ export function BottomTabBar({ onAddAccount, hingeOffset }: Props) {
           return (
             <button
               key={tab.path}
-              onClick={() => navigate({ to: tab.path })}
+              onClick={() => navigateToItemPath(tab.path)}
               aria-current={active ? 'page' : undefined}
               className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-1 bottom-tab-btn ios-tap transition-all duration-200 ${active ? 'text-accent' : 'text-sidebar-text/50'}`}
             >
@@ -120,7 +129,7 @@ export function BottomTabBar({ onAddAccount, hingeOffset }: Props) {
                 key={item.path}
                 onClick={() => {
                   setHubOpen(false);
-                  navigate({ to: item.path });
+                  navigateToItemPath(item.path);
                 }}
                 className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-colors ${active ? 'border-accent bg-accent/10 text-accent' : 'border-border-primary text-text-secondary'}`}
               >
