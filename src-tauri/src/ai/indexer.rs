@@ -499,12 +499,46 @@ impl Indexer {
         Ok(())
     }
 
-    /// Return all chunked documents (id, text) from emails, attachments, and
-    /// vault items — without embedding them. The frontend embeds each chunk
-    /// with a provider (LM Studio / Ollama / …) and sends the vectors back
-    /// via `index_provider_vectors`. This lets users build the RAG index
-    /// from a local provider without downloading the BGE-small model.
-    pub async fn get_email_chunks(&self) -> Result<Vec<(String, String)>> {
+    /// Index all documents using the ML sidecar process over IPC.
+    #[cfg(feature = "local-ai")]
+    pub async fn index_all_with_sidecar(&self, client: &crate::orchestrator::services::SidecarClient) -> Result<()> {
+        let _ = self.app_handle.emit("ai:indexing_started", ());
+
+        let chunks = self.get_email_chunks_with_ids().await?;
+        if chunks.is_empty() {
+            let _ = self.app_handle.emit("ai:indexing_completed", ());
+            return Ok(());
+        }
+
+        const BATCH_SIZE: usize = 32;
+        for chunk_batch in chunks.chunks(BATCH_SIZE) {
+            let texts: Vec<String> = chunk_batch.iter().map(|(_, text)| text.clone()).collect();
+            let metadata: Vec<serde_json::Value> = chunk_batch
+                .iter()
+                .map(|(id, text)| serde_json::json!({ "id": id, "text": text }))
+                .collect();
+
+            // Obtain embeddings via sidecar
+            let embeddings = match client.embed(texts.clone()).await {
+                Ok(v) => v,
+                Err(e) if e.to_string().contains("Model not loaded") => {
+                    log::info!("[indexer] Sidecar model not loaded, attempting load...");
+                    client.load_embedding_model("BAAI/bge-small-en-v1.5").await?;
+                    client.embed(texts).await?
+                }
+                Err(e) => return Err(e),
+            };
+
+            // Index vectors into sidecar's LanceDB table
+            client.index_vectors(embeddings, metadata).await?;
+        }
+
+        let _ = self.app_handle.emit("ai:indexing_completed", ());
+        Ok(())
+    }
+
+    /// Extract all chunked documents with unique chunk IDs.
+    pub async fn get_email_chunks_with_ids(&self) -> Result<Vec<(String, String)>> {
         let cfg = self.load_chunk_config().await;
         let mut out: Vec<(String, String)> = Vec::new();
 
@@ -518,8 +552,14 @@ impl Indexer {
                 msg.body_text.as_deref().unwrap_or("")
             );
             if text.trim().is_empty() { continue; }
-            for chunk in split_text(&text, &cfg) {
-                out.push((msg.id.clone(), chunk));
+            let chunks = split_text(&text, &cfg);
+            for (i, chunk) in chunks.iter().enumerate() {
+                let chunk_id = if chunks.len() == 1 {
+                    msg.id.clone()
+                } else {
+                    format!("{}#chunk{}", msg.id, i)
+                };
+                out.push((chunk_id, chunk.clone()));
             }
         }
 
@@ -531,8 +571,14 @@ impl Indexer {
                 let path = Path::new(local_path);
                 if let Ok(text) = DocParser::parse_file(path) {
                     if text.trim().is_empty() { continue; }
-                    for chunk in split_text(&text, &cfg) {
-                        out.push((attach.id.clone(), chunk));
+                    let chunks = split_text(&text, &cfg);
+                    for (i, chunk) in chunks.iter().enumerate() {
+                        let chunk_id = if chunks.len() == 1 {
+                            attach.id.clone()
+                        } else {
+                            format!("{}#chunk{}", attach.id, i)
+                        };
+                        out.push((chunk_id, chunk.clone()));
                     }
                 }
             }
@@ -542,13 +588,22 @@ impl Indexer {
             .fetch_all(&self.pool)
             .await?;
         for item in items {
-            let app_data = self.app_handle.path().app_data_dir().unwrap();
+            let app_data = match self.app_handle.path().app_data_dir() {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
             let full_path = app_data.join("vault").join(&item.company_id).join(&item.relative_path);
             if full_path.exists() {
                 if let Ok(text) = DocParser::parse_file(&full_path) {
                     if text.trim().is_empty() { continue; }
-                    for chunk in split_text(&text, &cfg) {
-                        out.push((item.id.clone(), chunk));
+                    let chunks = split_text(&text, &cfg);
+                    for (i, chunk) in chunks.iter().enumerate() {
+                        let chunk_id = if chunks.len() == 1 {
+                            item.id.clone()
+                        } else {
+                            format!("{}#chunk{}", item.id, i)
+                        };
+                        out.push((chunk_id, chunk.clone()));
                     }
                 }
             }
@@ -627,6 +682,16 @@ impl Indexer {
         }
 
         Ok(out)
+    }
+  
+    /// Return all chunked documents (id, text) from emails, attachments, and
+    /// vault items — without embedding them. The frontend embeds each chunk
+    /// with a provider (LM Studio / Ollama / …) and sends the vectors back
+    /// via `index_provider_vectors`. This lets users build the RAG index
+    /// from a local provider without downloading the BGE-small model.
+    pub async fn get_email_chunks(&self) -> Result<Vec<(String, String)>> {
+        self.get_email_chunks_with_ids().await
+
     }
 
     /// Insert pre-computed provider embeddings into the dimension-correct table.

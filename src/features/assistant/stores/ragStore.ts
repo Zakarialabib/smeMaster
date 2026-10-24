@@ -407,12 +407,12 @@ export const useRagStore = create<RagState>((set, get) => ({
         return;
       }
 
-      const vectors: number[][] = [];
-      for (const chunk of chunks) {
-        const emb = await getProviderEmbedding(chunk.text);
-        if (emb) vectors.push(emb.vectors[0] ?? []);
-        else vectors.push([]);
-      }
+      const vectors = await Promise.all(
+        chunks.map(async (chunk) => {
+          const emb = await getProviderEmbedding(chunk.text);
+          return emb?.vectors[0] ?? [];
+        }),
+      );
       const valid = vectors.filter((v) => v.length > 0);
       if (valid.length === 0) {
         throw new Error('The active provider did not return any embeddings.');
