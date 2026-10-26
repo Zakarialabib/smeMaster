@@ -3,8 +3,8 @@
 > **Last updated:** 2026-10-04 — voice call system dropped, pivoted to agentic AI automation.
 > **Single source of truth:** This index + `docs/STATUS.md` + `docs/PRODUCTION-READINESS.md`.
 > **Stack:** Tauri v2 + React 19 + Rust + SQLite (offline-first)
-> **Version:** 1.0.0-rc · **DB:** 33 migrations (001–033, re-verified 2026-10-23) · **Tests:** ~3,529 TS + 969 Rust (via `npm run test` / `cargo test`)
-> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 859 (795 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-10-23) · **Stores:** 44 Zustand store modules (non-test, checker-verified 2026-10-23 via `scripts/check-ground-truth.mjs`)
+> **Version:** 1.0.0-rc · **DB:** 39 migrations (001–039, re-verified 2026-10-26) · **Tests:** ~3,529 TS + 969 Rust (via `npm run test` / `cargo test`)
+> **Locales:** en, fr, ar, ja, it (RTL for ar) · **Commands:** 880 (816 `#[tauri::command]` + 64 `#[command]`, re-verified 2026-10-26) · **Stores:** 43 Zustand store modules (non-test, checker-verified 2026-10-26 via `scripts/check-ground-truth.mjs`)
 > **Features Added:** Invoicing (Morocco DGI-compliant) ✅ · POS Hardware Integration ✅
 > **Platforms:** Desktop (Windows · Linux · macOS) ✅ · Mobile (Android) ✅ · iOS (requires Mac) ⚠️
 > **Master Plan:** `docs/06-ROADMAP/09-master-plan.md` — remaining work phases

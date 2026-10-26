@@ -1,8 +1,8 @@
 {
-  "commands": 859,
-  "migrations": 33,
-  "stores": 44,
-  "verifiedOn": "2026-10-23",
+  "commands": 880,
+  "migrations": 39,
+  "stores": 43,
+  "verifiedOn": "2026-10-26",
   "owner": "qa-guardian",
   "checkedDoc": "docs/00-INDEX.md",
   "countingRules": {
