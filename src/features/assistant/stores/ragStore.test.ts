@@ -11,6 +11,8 @@ vi.mock('@shared/services/db/invoke/rag', () => ({
   aiGetModelsDir: vi.fn(),
   aiDeleteModel: vi.fn(),
   aiGetEmailChunks: vi.fn(),
+  aiGetContactChunks: vi.fn().mockResolvedValue([]),
+  aiGetDealChunks: vi.fn().mockResolvedValue([]),
   aiInsertProviderVectors: vi.fn(),
 }));
 

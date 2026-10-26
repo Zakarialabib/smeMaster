@@ -560,47 +560,6 @@ export function Composer() {
     closeComposer();
   }, [activeAccountId, closeComposer]);
 
-  const handlePopOutComposer = useCallback(async () => {
-    try {
-      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-      const state = useComposerStore.getState();
-      const params = new URLSearchParams();
-      params.set('compose', 'true');
-      params.set('mode', state.mode);
-      if (state.to.length > 0) params.set('to', state.to.join(','));
-      if (state.cc.length > 0) params.set('cc', state.cc.join(','));
-      if (state.bcc.length > 0) params.set('bcc', state.bcc.join(','));
-      if (state.subject) params.set('subject', state.subject);
-      if (state.threadId) params.set('threadId', state.threadId);
-      if (state.inReplyToMessageId) params.set('inReplyToMessageId', state.inReplyToMessageId);
-      if (state.draftId) params.set('draftId', state.draftId);
-      if (state.fromEmail) params.set('fromEmail', state.fromEmail);
-      // Encode body as base64 to safely pass HTML
-      const bodyHtml = editor?.getHTML() ?? '';
-      if (bodyHtml) params.set('body', btoa(unescape(encodeURIComponent(bodyHtml))));
-
-      const windowLabel = `compose-${Date.now()}`;
-      const existing = await WebviewWindow.getByLabel(windowLabel);
-      if (existing) {
-        await existing.setFocus();
-        return;
-      }
-
-      new WebviewWindow(windowLabel, {
-        url: `index.html?${params.toString()}`,
-        title: state.subject || 'New Message',
-        width: 700,
-        height: 650,
-        center: true,
-      });
-
-      stopAutoSave();
-      closeComposer();
-    } catch (err) {
-      console.error('Failed to pop out composer:', err);
-    }
-  }, [editor, closeComposer]);
-
   const { mobile: isMobileDevice } = usePlatform();
   const isFullpage = viewMode === 'fullpage' || isMobileDevice;
 
@@ -694,7 +653,6 @@ export function Composer() {
               modeLabel={modeLabel}
               isFullpage={isFullpage}
               onToggleView={() => setViewMode(isFullpage ? 'modal' : 'fullpage')}
-              onPopOut={handlePopOutComposer}
               onClose={closeComposer}
               activeAccount={activeAccount}
               onToggleZen={() => setZenMode((p) => !p)}

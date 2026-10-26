@@ -35,36 +35,6 @@ interface ThreadViewProps {
   thread: Thread;
 }
 
-async function handlePopOut(thread: Thread) {
-  try {
-    const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-    const windowLabel = `thread-${thread.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-    const url = `index.html?thread=${encodeURIComponent(thread.id)}&account=${encodeURIComponent(thread.accountId)}`;
-
-    // Check if window already exists
-    const existing = await WebviewWindow.getByLabel(windowLabel);
-    if (existing) {
-      await existing.setFocus();
-      return;
-    }
-
-    const win = new WebviewWindow(windowLabel, {
-      url,
-      title: thread.subject ?? 'Thread',
-      width: 800,
-      height: 700,
-      center: true,
-      dragDropEnabled: false,
-    });
-
-    win.once('tauri://error', (e) => {
-      console.error('Failed to create pop-out window:', e);
-    });
-  } catch (err) {
-    console.error('Failed to open pop-out window:', err);
-  }
-}
-
 export function ThreadView({ thread }: ThreadViewProps) {
   const { t } = useTranslation();
   const { mobile: isMobileDevice } = usePlatform();
@@ -448,7 +418,6 @@ export function ThreadView({ thread }: ThreadViewProps) {
           onForward={handleForward}
           onPrint={handlePrint}
           onExport={handleExport}
-          onPopOut={isMobileDevice ? undefined : () => handlePopOut(thread)}
           onToggleContactSidebar={toggleContactSidebar}
           onToggleTaskSidebar={() => useLayoutStore.getState().toggleTaskSidebar()}
           isMobile={isMobileDevice}

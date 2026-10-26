@@ -1,5 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from '@shared/stores/toastStore';
-import { navigateToItemPath } from '@shared/components/layout/shell/navConfig';
 import { Mail, Users, ListChecks, BarChart3, CalendarDays, Settings, Sparkles } from 'lucide-react';
 
 interface FeatureCard {
